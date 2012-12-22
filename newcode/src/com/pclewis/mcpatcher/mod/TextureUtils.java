@@ -258,6 +258,15 @@ public class TextureUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        try {
+            Method setTileSize = textureFXClass.getDeclaredMethod("setTileSize", Integer.TYPE);
+            setTileSize.setAccessible(true);
+            logger.info("calling %s(%d)", setTileSize, TileSize.int_size);
+            setTileSize.invoke(TileSize.int_size);
+        } catch (NoSuchMethodException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return textureFX;
     }
 
