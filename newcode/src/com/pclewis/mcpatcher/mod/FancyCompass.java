@@ -13,6 +13,7 @@ import org.lwjgl.opengl.GLContext;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Properties;
 
@@ -33,6 +34,8 @@ public class FancyCompass {
 
     private static FancyCompass instance;
 
+    private static final HashSet<Integer> keysDown = new HashSet<Integer>();
+
     private final float scaleX;
     private final float scaleY;
     private final float offsetX;
@@ -40,30 +43,45 @@ public class FancyCompass {
     private final boolean debug;
 
     private final int baseTexture;
+    private final int itemsTexture;
     private final int dialTexture;
     private final int overlayTexture;
+    private final int scratchTexture;
+    private final ByteBuffer scratchTextureBuffer;
     private final int tileSize;
     private final int compassX;
     private final int compassY;
     private final int frameBuffer;
 
-    private static final HashSet<Integer> keysDown = new HashSet<Integer>();
-
     private static final float STEP = 0.01f;
-    private float plusX;
-    private float plusY;
-    private float plusOX;
-    private float plusOY;
+    private float scaleXDelta;
+    private float scaleYDelta;
+    private float offsetXDelta;
+    private float offsetYDelta;
 
     private FancyCompass() {
         Minecraft minecraft = MCPatcherUtils.getMinecraft();
         RenderEngine renderEngine = minecraft.renderEngine;
 
-        int targetTexture = renderEngine.getTexture(ITEMS_PNG);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, targetTexture);
+        itemsTexture = renderEngine.getTexture(ITEMS_PNG);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, itemsTexture);
         tileSize = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH) / 16;
         compassX = (int) (RELATIVE_X * tileSize * 16);
         compassY = (int) (RELATIVE_Y * tileSize * 16);
+        final int targetTexture;
+        String config = MCPatcherUtils.getString(MCPatcherUtils.HD_TEXTURES, "use_glReadPixels", "").trim().toLowerCase();
+        if (config.equals("") ? tileSize > 64 : Boolean.parseBoolean(config)) {
+            BufferedImage image = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_ARGB);
+            scratchTexture = renderEngine.allocateAndSetupTexture(image);
+            targetTexture = scratchTexture;
+            scratchTextureBuffer = ByteBuffer.allocateDirect(4 * tileSize * tileSize);
+            logger.fine("rendering compass to %dx%d scratch texture", tileSize, tileSize);
+        } else {
+            scratchTexture = -1;
+            scratchTextureBuffer = null;
+            targetTexture = itemsTexture;
+            logger.fine("rendering compass directly to %s", ITEMS_PNG);
+        }
 
         Properties properties = TexturePackAPI.getProperties(COMPASS_PROPERTIES);
         scaleX = getFloatProperty(properties, "scaleX", 1.0f);
@@ -109,38 +127,42 @@ public class FancyCompass {
         if (!debug) {
             f = true;
         } else if (tap(Keyboard.KEY_NUMPAD2)) {
-            plusY -= STEP;
+            scaleYDelta -= STEP;
         } else if (tap(Keyboard.KEY_NUMPAD8)) {
-            plusY += STEP;
+            scaleYDelta += STEP;
         } else if (tap(Keyboard.KEY_NUMPAD4)) {
-            plusX -= STEP;
+            scaleXDelta -= STEP;
         } else if (tap(Keyboard.KEY_NUMPAD6)) {
-            plusX += STEP;
+            scaleXDelta += STEP;
         } else if (tap(Keyboard.KEY_DOWN)) {
-            plusOY += STEP;
+            offsetYDelta += STEP;
         } else if (tap(Keyboard.KEY_UP)) {
-            plusOY -= STEP;
+            offsetYDelta -= STEP;
         } else if (tap(Keyboard.KEY_LEFT)) {
-            plusOX -= STEP;
+            offsetXDelta -= STEP;
         } else if (tap(Keyboard.KEY_RIGHT)) {
-            plusOX += STEP;
+            offsetXDelta += STEP;
         } else if (tap(Keyboard.KEY_MULTIPLY)) {
-            plusX = plusY = plusOX = plusOY = 0.0f;
+            scaleXDelta = scaleYDelta = offsetXDelta = offsetYDelta = 0.0f;
         } else {
             f = true;
         }
         if (!f) {
             logger.info("");
-            logger.info("scaleX = %f", scaleX + plusX);
-            logger.info("scaleY = %f", scaleY + plusY);
-            logger.info("offsetX = %f", offsetX + plusOX);
-            logger.info("offsetY = %f", offsetY + plusOY);
+            logger.info("scaleX = %f", scaleX + scaleXDelta);
+            logger.info("scaleY = %f", scaleY + scaleYDelta);
+            logger.info("offsetX = %f", offsetX + offsetXDelta);
+            logger.info("offsetY = %f", offsetY + offsetYDelta);
         }
 
         GL11.glPushAttrib(GL11.GL_VIEWPORT_BIT | GL11.GL_SCISSOR_BIT | GL11.GL_DEPTH_BITS | GL11.GL_LIGHTING_BIT);
-        GL11.glViewport(compassX, compassY, tileSize, tileSize);
-        GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        GL11.glScissor(compassX, compassY, tileSize, tileSize);
+        if (scratchTexture >= 0) {
+            GL11.glViewport(0, 0, tileSize, tileSize);
+        } else {
+            GL11.glViewport(compassX, compassY, tileSize, tileSize);
+            GL11.glEnable(GL11.GL_SCISSOR_TEST);
+            GL11.glScissor(compassX, compassY, tileSize, tileSize);
+        }
 
         EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer);
 
@@ -170,8 +192,8 @@ public class FancyCompass {
         GL11.glPushMatrix();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, dialTexture);
         float angle = (float) (180.0 - compass.currentAngle * 180.0 / Math.PI);
-        GL11.glTranslatef(offsetX + plusOX, offsetY + plusOY, 0.0f);
-        GL11.glScalef(scaleX + plusX, scaleY + plusY, 1.0f);
+        GL11.glTranslatef(offsetX + offsetXDelta, offsetY + offsetYDelta, 0.0f);
+        GL11.glScalef(scaleX + scaleXDelta, scaleY + scaleYDelta, 1.0f);
         GL11.glRotatef(angle, 0.0f, 0.0f, 1.0f);
         drawBox();
         GL11.glPopMatrix();
@@ -179,6 +201,15 @@ public class FancyCompass {
         if (overlayTexture >= 0) {
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, overlayTexture);
             drawBox();
+        }
+
+        if (scratchTexture >= 0) {
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, scratchTexture);
+            scratchTextureBuffer.position(0);
+            GL11.glReadPixels(0, 0, tileSize, tileSize, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, scratchTextureBuffer);
+            scratchTextureBuffer.position(0);
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, itemsTexture);
+            GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, compassX, compassY, tileSize, tileSize, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, scratchTextureBuffer);
         }
 
         EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
