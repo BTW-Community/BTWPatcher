@@ -384,6 +384,11 @@ public class BetterSkies extends Mod {
         EffectRendererMod() {
             final ClassRef list = new ClassRef("java/util/List");
             final FieldRef fxLayers = new FieldRef(getDeobfClass(), "fxLayers", "[Ljava/util/List;");
+            final FieldRef renderer = new FieldRef(getDeobfClass(), "renderer", "LRenderEngine;");
+            final MethodRef renderParticles = new MethodRef(getDeobfClass(), "renderParticles", "(LEntity;F)V");
+            final MethodRef addEffect = new MethodRef(getDeobfClass(), "addEffect", "(LEntityFX;)V");
+            final MethodRef getFXLayer = new MethodRef("EntityFX", "getFXLayer", "()I");
+            final MethodRef getTexture = new MethodRef("RenderEngine", "getTexture", "(Ljava/lang/String;)I");
             final MethodRef glBlendFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBlendFunc", "(II)V");
 
             addClassSignature(new ConstSignature("/particles.png"));
@@ -402,6 +407,38 @@ public class BetterSkies extends Mod {
             }
                 .matchConstructorOnly(true)
                 .addXref(1, fxLayers)
+            );
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        push("/particles.png"),
+                        captureReference(INVOKEVIRTUAL)
+                    );
+                }
+            }
+                .setMethod(renderParticles)
+                .addXref(1, renderer)
+                .addXref(2, getTexture)
+            );
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin(),
+                        ALOAD_1,
+                        captureReference(INVOKEVIRTUAL),
+                        ISTORE_2
+
+                    );
+                }
+            }
+                .setMethod(addEffect)
+                .addXref(1, getFXLayer)
             );
 
             addPatch(new BytecodePatch() {
