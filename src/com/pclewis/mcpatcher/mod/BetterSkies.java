@@ -39,6 +39,7 @@ public class BetterSkies extends Mod {
 
         if (haveFireworks) {
             addClassMod(new EffectRendererMod());
+            addClassMod(new EntityFireworkSparkFXMod());
         }
 
         addClassFile(MCPatcherUtils.SKY_RENDERER_CLASS);
@@ -381,6 +382,8 @@ public class BetterSkies extends Mod {
         private static final int ORIG_LAYERS = 4;
         private static final int EXTRA_LAYERS = 1;
 
+        private int layerRegister;
+
         EffectRendererMod() {
             final ClassRef list = new ClassRef("java/util/List");
             final FieldRef fxLayers = new FieldRef(getDeobfClass(), "fxLayers", "[Ljava/util/List;");
@@ -450,7 +453,10 @@ public class BetterSkies extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push(ORIG_LAYERS),
+                        or(
+                            build(push(ORIG_LAYERS)),
+                            build(push(ORIG_LAYERS - 1))
+                        ),
                         lookAhead(or(
                             build(reference(ANEWARRAY, list)),
                             build(IF_ICMPLT_or_IF_ICMPGE, any(2))),
@@ -469,25 +475,135 @@ public class BetterSkies extends Mod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "override particle blending method";
+                    return "override entity fx layer";
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push(770), // GL_SRC_ALPHA
-                        push(771), // GL_ONE_MINUS_SRC_ALPHA
-                        reference(INVOKESTATIC, glBlendFunc)
+                        reference(INVOKEVIRTUAL, getFXLayer)
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() throws IOException {
                     return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "setParticleBlendMethod", "()V"))
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "getFXLayer", "(LEntityFX;)I"))
                     );
                 }
-            });
+            }.targetMethod(addEffect));
+
+            addPatch(new BytecodePatch.InsertAfter() {
+                @Override
+                public String getDescription() {
+                    return "render extra fx layers";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        reference(GETFIELD, fxLayers),
+                        ILOAD, capture(any()),
+                        AALOAD,
+                        reference(INVOKEINTERFACE, new InterfaceMethodRef("java/util/List", "isEmpty", "()Z"))
+                    );
+                }
+
+                @Override
+                public byte[] getInsertBytes() throws IOException {
+                    layerRegister = getCaptureGroup(1)[0] & 0xff;
+                    return buildCode(
+                        ILOAD, layerRegister,
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "skipThisLayer", "(ZI)Z"))
+                    );
+                }
+            }.targetMethod(renderParticles));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "bind texture for extra fx layers";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    if (layerRegister > 0) {
+                        return buildExpression(
+                            // if (layer == 0) {
+                            ILOAD, layerRegister,
+                            IFNE, any(2),
+
+                            // var9 = this.renderer.getTexture("/particles.png");
+                            capture(build(
+                                ALOAD_0,
+                                reference(GETFIELD, renderer),
+                                push("/particles.png"),
+                                reference(INVOKEVIRTUAL, getTexture),
+                                anyISTORE
+                            ))
+
+                            // }
+                        );
+                    } else {
+                        return null;
+                    }
+                }
+
+                @Override
+                public byte[] getReplacementBytes() throws IOException {
+                    return buildCode(
+                        // if (layer % 4 == 0) {
+                        ILOAD, layerRegister,
+                        push(ORIG_LAYERS),
+                        IREM,
+                        IFNE, branch("A"),
+
+                        // ...
+                        getCaptureGroup(1),
+
+                        // }
+                        label("A")
+                    );
+                }
+            }.targetMethod(renderParticles));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override particle blending method";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    if (layerRegister > 0) {
+                        return buildExpression(
+                            push(770), // GL_SRC_ALPHA
+                            push(771), // GL_ONE_MINUS_SRC_ALPHA
+                            reference(INVOKESTATIC, glBlendFunc)
+                        );
+                    } else {
+                        return null;
+                    }
+                }
+
+                @Override
+                public byte[] getReplacementBytes() throws IOException {
+                    return buildCode(
+                        ILOAD, layerRegister,
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "setParticleBlendMethod", "(I)V"))
+                    );
+                }
+            }.targetMethod(renderParticles));
+        }
+    }
+
+    private class EntityFireworkSparkFXMod extends ClassMod {
+        EntityFireworkSparkFXMod() {
+            setParentClass("EntityFX");
+
+            addClassSignature(new ConstSignature(0.75f));
+            addClassSignature(new ConstSignature(0.9100000262260437));
         }
     }
 }
