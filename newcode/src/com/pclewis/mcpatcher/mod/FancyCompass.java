@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.src.Compass;
 import net.minecraft.src.RenderEngine;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.EXTFramebufferObject;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLContext;
 
@@ -14,10 +15,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Properties;
-
-import static org.lwjgl.opengl.EXTFramebufferObject.*;
-import static org.lwjgl.opengl.GL11.glTexCoord2f;
-import static org.lwjgl.opengl.GL11.glVertex3f;
 
 public class FancyCompass {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.HD_TEXTURES);
@@ -101,10 +98,10 @@ public class FancyCompass {
             overlayTexture = renderEngine.allocateAndSetupTexture(image);
         }
 
-        frameBuffer = glGenFramebuffersEXT();
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, frameBuffer);
-        glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL11.GL_TEXTURE_2D, targetTexture, 0);
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        frameBuffer = EXTFramebufferObject.glGenFramebuffersEXT();
+        EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer);
+        EXTFramebufferObject.glFramebufferTexture2DEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT, GL11.GL_TEXTURE_2D, targetTexture, 0);
+        EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
     }
 
     private void onTick(Compass compass) {
@@ -140,18 +137,12 @@ public class FancyCompass {
             logger.info("offsetY = %f", offsetY + plusOY);
         }
 
-        GL11.glMatrixMode(GL11.GL_PROJECTION);
-        GL11.glPushMatrix();
-
-        GL11.glMatrixMode(GL11.GL_MODELVIEW);
-        GL11.glPushMatrix();
-
         GL11.glPushAttrib(GL11.GL_VIEWPORT_BIT | GL11.GL_SCISSOR_BIT | GL11.GL_DEPTH_BITS | GL11.GL_LIGHTING_BIT);
         GL11.glViewport(compassX, compassY, tileSize, tileSize);
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         GL11.glScissor(compassX, compassY, tileSize, tileSize);
 
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, frameBuffer);
+        EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer);
 
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         GL11.glDisable(GL11.GL_DEPTH_TEST);
@@ -165,10 +156,12 @@ public class FancyCompass {
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
         GL11.glMatrixMode(GL11.GL_PROJECTION);
+        GL11.glPushMatrix();
         GL11.glLoadIdentity();
         GL11.glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
 
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
+        GL11.glPushMatrix();
         GL11.glLoadIdentity();
 
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, baseTexture);
@@ -188,7 +181,7 @@ public class FancyCompass {
             drawBox();
         }
 
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
         GL11.glPopAttrib();
 
         GL11.glMatrixMode(GL11.GL_PROJECTION);
@@ -200,19 +193,19 @@ public class FancyCompass {
 
     private void drawBox() {
         GL11.glBegin(GL11.GL_QUADS);
-        glTexCoord2f(0.0f, 0.0f);
-        glVertex3f(-1.0f, -1.0f, 0.0f);
-        glTexCoord2f(1.0f, 0.0f);
-        glVertex3f(1.0f, -1.0f, 0.0f);
-        glTexCoord2f(1.0f, 1.0f);
-        glVertex3f(1.0f, 1.0f, 0.0f);
-        glTexCoord2f(0.0f, 1.0f);
-        glVertex3f(-1.0f, 1.0f, 0.0f);
+        GL11.glTexCoord2f(0.0f, 0.0f);
+        GL11.glVertex3f(-1.0f, -1.0f, 0.0f);
+        GL11.glTexCoord2f(1.0f, 0.0f);
+        GL11.glVertex3f(1.0f, -1.0f, 0.0f);
+        GL11.glTexCoord2f(1.0f, 1.0f);
+        GL11.glVertex3f(1.0f, 1.0f, 0.0f);
+        GL11.glTexCoord2f(0.0f, 1.0f);
+        GL11.glVertex3f(-1.0f, 1.0f, 0.0f);
         GL11.glEnd();
     }
 
     private void finish() {
-        glDeleteFramebuffersEXT(frameBuffer);
+        EXTFramebufferObject.glDeleteFramebuffersEXT(frameBuffer);
     }
 
     private static boolean getBooleanProperty(Properties properties, String key, boolean defaultValue) {
