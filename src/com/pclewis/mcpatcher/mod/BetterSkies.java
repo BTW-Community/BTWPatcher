@@ -378,11 +378,56 @@ public class BetterSkies extends Mod {
     }
 
     private class EffectRendererMod extends ClassMod {
+        private static final int ORIG_LAYERS = 4;
+        private static final int EXTRA_LAYERS = 1;
+
         EffectRendererMod() {
+            final ClassRef list = new ClassRef("java/util/List");
+            final FieldRef fxLayers = new FieldRef(getDeobfClass(), "fxLayers", "[Ljava/util/List;");
             final MethodRef glBlendFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBlendFunc", "(II)V");
 
             addClassSignature(new ConstSignature("/particles.png"));
             addClassSignature(new ConstSignature("/gui/items.png"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        push(ORIG_LAYERS),
+                        reference(ANEWARRAY, list),
+                        captureReference(PUTFIELD)
+                    );
+                }
+            }
+                .matchConstructorOnly(true)
+                .addXref(1, fxLayers)
+            );
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return String.format("increase fx layers from %d to %d", ORIG_LAYERS, ORIG_LAYERS + EXTRA_LAYERS);
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(ORIG_LAYERS),
+                        lookAhead(or(
+                            build(reference(ANEWARRAY, list)),
+                            build(IF_ICMPLT_or_IF_ICMPGE, any(2))),
+                        true)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() throws IOException {
+                    return buildCode(
+                        push(ORIG_LAYERS + EXTRA_LAYERS)
+                    );
+                }
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
