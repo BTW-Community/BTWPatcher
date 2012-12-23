@@ -215,27 +215,32 @@ public class TextureUtils {
         logger.info("attempting to refresh unknown animation %s", textureFXClass.getName());
         Minecraft minecraft = MCPatcherUtils.getMinecraft();
         loop:
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             Constructor<? extends TextureFX> constructor;
             try {
                 switch (i) {
                     case 0:
+                        constructor = textureFXClass.getConstructor(Integer.TYPE, Integer.TYPE, Integer.TYPE);
+                        textureFX = constructor.newInstance(textureFX.tileNumber, TileSize.int_size, TileSize.int_size);
+                        break loop;
+
+                    case 1:
                         constructor = textureFXClass.getConstructor(Minecraft.class, Integer.TYPE);
                         textureFX = constructor.newInstance(minecraft, TileSize.int_size);
                         break loop;
 
-                    case 1:
+                    case 2:
                         constructor = textureFXClass.getConstructor(Minecraft.class);
                         textureFX = constructor.newInstance(minecraft);
                         break loop;
 
-                    case 2:
+                    case 3:
                         constructor = textureFXClass.getConstructor();
                         textureFX = constructor.newInstance();
                         break loop;
 
                     default:
-                        break;
+                        break loop;
                 }
             } catch (NoSuchMethodException e) {
             } catch (IllegalAccessException e) {
