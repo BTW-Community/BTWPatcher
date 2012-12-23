@@ -11,6 +11,7 @@ import static javassist.bytecode.Opcode.*;
 public class BetterSkies extends Mod {
     private final boolean haveNewWorld;
     private final boolean haveNewWorldTime;
+    private final boolean haveFireworks;
     private final String worldObjClass;
 
     public BetterSkies(MinecraftVersion minecraftVersion) {
@@ -23,6 +24,7 @@ public class BetterSkies extends Mod {
 
         haveNewWorld = minecraftVersion.compareTo("12w18a") >= 0;
         haveNewWorldTime = minecraftVersion.compareTo("12w32a") >= 0;
+        haveFireworks = minecraftVersion.compareTo("12w50a") >= 0;
 
         addClassMod(new BaseMod.MinecraftMod().addWorldGetter(minecraftVersion));
         addClassMod(new WorldMod());
@@ -35,10 +37,15 @@ public class BetterSkies extends Mod {
         }
         addClassMod(new RenderGlobalMod());
 
+        if (haveFireworks) {
+            addClassMod(new EffectRendererMod());
+        }
+
         addClassFile(MCPatcherUtils.SKY_RENDERER_CLASS);
         addClassFile(MCPatcherUtils.SKY_RENDERER_CLASS + "$1");
         addClassFile(MCPatcherUtils.SKY_RENDERER_CLASS + "$WorldEntry");
         addClassFile(MCPatcherUtils.SKY_RENDERER_CLASS + "$Layer");
+        addClassFile(MCPatcherUtils.FIREWORKS_HELPER_CLASS);
     }
 
     private class WorldMod extends BaseMod.WorldMod {
@@ -367,6 +374,38 @@ public class BetterSkies extends Mod {
                     );
                 }
             }.targetMethod(renderSky));
+        }
+    }
+
+    private class EffectRendererMod extends ClassMod {
+        EffectRendererMod() {
+            final MethodRef glBlendFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBlendFunc", "(II)V");
+
+            addClassSignature(new ConstSignature("/particles.png"));
+            addClassSignature(new ConstSignature("/gui/items.png"));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override particle blending method";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(770), // GL_SRC_ALPHA
+                        push(771), // GL_ONE_MINUS_SRC_ALPHA
+                        reference(INVOKESTATIC, glBlendFunc)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() throws IOException {
+                    return buildCode(
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "setParticleBlendMethod", "()V"))
+                    );
+                }
+            });
         }
     }
 }

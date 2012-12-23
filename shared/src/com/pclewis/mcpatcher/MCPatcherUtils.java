@@ -65,6 +65,7 @@ public class MCPatcherUtils {
     public static final String RENDER_PASS_CLASS = "com.pclewis.mcpatcher.mod.RenderPass";
     public static final String RENDER_PASS_API_CLASS = "com.pclewis.mcpatcher.mod.RenderPassAPI";
     public static final String SKY_RENDERER_CLASS = "com.pclewis.mcpatcher.mod.SkyRenderer";
+    public static final String FIREWORKS_HELPER_CLASS = "com.pclewis.mcpatcher.mod.FireworksHelper";
     public static final String SHADERS_CLASS = "com.pclewis.mcpatcher.mod.Shaders";
 
     private MCPatcherUtils() {
