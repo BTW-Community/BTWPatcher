@@ -10,6 +10,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.EXTFramebufferObject;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLContext;
+import org.lwjgl.util.glu.GLU;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -42,8 +43,8 @@ public class FancyCompass {
     private final float offsetY;
     private final boolean debug;
 
-    private final int baseTexture;
     private final int itemsTexture;
+    private final int baseTexture;
     private final int dialTexture;
     private final int overlayTexture;
     private final int scratchTexture;
@@ -60,14 +61,14 @@ public class FancyCompass {
     private float offsetYDelta;
 
     private FancyCompass() {
-        Minecraft minecraft = MCPatcherUtils.getMinecraft();
-        RenderEngine renderEngine = minecraft.renderEngine;
+        RenderEngine renderEngine = MCPatcherUtils.getMinecraft().renderEngine;
 
         itemsTexture = renderEngine.getTexture(ITEMS_PNG);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, itemsTexture);
         tileSize = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH) / 16;
         compassX = (int) (RELATIVE_X * tileSize * 16);
         compassY = (int) (RELATIVE_Y * tileSize * 16);
+
         final int targetTexture;
         String config = MCPatcherUtils.getString(MCPatcherUtils.HD_TEXTURES, "use_glReadPixels", "").trim().toLowerCase();
         if (config.equals("") ? tileSize > 64 : Boolean.parseBoolean(config)) {
@@ -236,7 +237,22 @@ public class FancyCompass {
     }
 
     private void finish() {
-        EXTFramebufferObject.glDeleteFramebuffersEXT(frameBuffer);
+        if (frameBuffer >= 0) {
+            EXTFramebufferObject.glDeleteFramebuffersEXT(frameBuffer);
+        }
+        RenderEngine renderEngine = MCPatcherUtils.getMinecraft().renderEngine;
+        if (scratchTexture >= 0) {
+            renderEngine.deleteTexture(scratchTexture);
+        }
+        if (baseTexture >= 0) {
+            renderEngine.deleteTexture(baseTexture);
+        }
+        if (dialTexture >= 0) {
+            renderEngine.deleteTexture(dialTexture);
+        }
+        if (overlayTexture >= 0) {
+            renderEngine.deleteTexture(overlayTexture);
+        }
     }
 
     private static boolean getBooleanProperty(Properties properties, String key, boolean defaultValue) {
@@ -281,6 +297,12 @@ public class FancyCompass {
         if (fboSupported && TexturePackAPI.hasResource(COMPASS_DIAL_PNG)) {
             try {
                 instance = new FancyCompass();
+                int error = GL11.glGetError();
+                if (error != 0 || instance.frameBuffer < 0) {
+                    logger.severe("%s during compass setup", GLU.gluErrorString(error));
+                    instance.finish();
+                    instance = null;
+                }
             } catch (Throwable e) {
                 e.printStackTrace();
             } finally {
