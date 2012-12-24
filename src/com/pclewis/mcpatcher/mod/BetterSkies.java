@@ -2,6 +2,9 @@ package com.pclewis.mcpatcher.mod;
 
 import com.pclewis.mcpatcher.*;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 
 import static com.pclewis.mcpatcher.BinaryRegex.*;
@@ -18,7 +21,9 @@ public class BetterSkies extends Mod {
         name = MCPatcherUtils.BETTER_SKIES;
         author = "MCPatcher";
         description = "Adds support for custom skyboxes.";
-        version = "1.1";
+        version = "1.2";
+
+        configPanel = new ConfigPanel();
 
         addDependency(BaseTexturePackMod.NAME);
 
@@ -47,6 +52,33 @@ public class BetterSkies extends Mod {
         addClassFile(MCPatcherUtils.SKY_RENDERER_CLASS + "$WorldEntry");
         addClassFile(MCPatcherUtils.SKY_RENDERER_CLASS + "$Layer");
         addClassFile(MCPatcherUtils.FIREWORKS_HELPER_CLASS);
+    }
+
+    private static class ConfigPanel extends ModConfigPanel {
+        private JPanel panel;
+        private JCheckBox fireworksCheckBox;
+
+        ConfigPanel() {
+            fireworksCheckBox.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    MCPatcherUtils.set(MCPatcherUtils.BETTER_SKIES, "brightenFireworks", fireworksCheckBox.isSelected());
+                }
+            });
+        }
+
+        @Override
+        public JPanel getPanel() {
+            return panel;
+        }
+
+        @Override
+        public void load() {
+            fireworksCheckBox.setSelected(MCPatcherUtils.getBoolean(MCPatcherUtils.BETTER_SKIES, "brightenFireworks", true));
+        }
+
+        @Override
+        public void save() {
+        }
     }
 
     private class WorldMod extends BaseMod.WorldMod {
