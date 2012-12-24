@@ -25,11 +25,11 @@ final public class MCPatcher {
     /**
      * MCPatcher release number
      */
-    public static final int RELEASE_VERSION = 4;
+    public static final int RELEASE_VERSION = 5;
     /**
      * MCPatcher patch level
      */
-    public static final int PATCH_VERSION = 2;
+    public static final int PATCH_VERSION = 0;
     /**
      * MCPatcher beta version if > 0
      */
@@ -124,7 +124,7 @@ final public class MCPatcher {
             MCPatcherUtils.set(Config.TAG_LAST_VERSION, VERSION_STRING);
             MCPatcherUtils.set(Config.TAG_BETA_WARNING_SHOWN, false);
             MCPatcherUtils.set(Config.TAG_DEBUG, BETA_VERSION > 0);
-            if (lastVersion.equals("2.4.4")) {
+            if (lastVersion.startsWith("2.4.4")) {
                 MCPatcherUtils.set(MCPatcherUtils.HD_TEXTURES, "mipmap", false);
                 MCPatcherUtils.set(MCPatcherUtils.HD_TEXTURES, "maxMipmapLevel", 3);
             }
