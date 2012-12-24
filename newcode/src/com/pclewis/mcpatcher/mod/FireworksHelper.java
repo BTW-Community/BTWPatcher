@@ -12,9 +12,15 @@ public class FireworksHelper {
 
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.BETTER_SKIES);
     private static final boolean enable = MCPatcherUtils.getBoolean(MCPatcherUtils.BETTER_SKIES, "brightenFireworks", true);
+    private static final int srcBlend = MCPatcherUtils.getInt(MCPatcherUtils.BETTER_SKIES, "fwSrcBlend", GL11.GL_ONE);
+    private static final int dstBlend = MCPatcherUtils.getInt(MCPatcherUtils.BETTER_SKIES, "fwDstBlend", GL11.GL_ONE);
 
     static {
-        logger.config("using %s blending for fireworks particles", enable ? "dodge" : "multiply");
+        if (enable) {
+            logger.config("using glBlendFunc(%d, %d) for fireworks particles", srcBlend, dstBlend);
+        } else {
+            logger.config("using default blending for fireworks particles");
+        }
     }
 
     public static int getFXLayer(EntityFX entity) {
@@ -31,7 +37,7 @@ public class FireworksHelper {
 
     public static void setParticleBlendMethod(int layer) {
         if (enable && layer == DODGE_LAYER) {
-            GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
+            GL11.glBlendFunc(srcBlend, dstBlend);
         } else {
             GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         }
