@@ -12,10 +12,11 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 
 public class MobRandomizer {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.RANDOM_MOBS);
-    private static final HashMap<EntityLiving, String> cache = new HashMap<EntityLiving, String>();
+    private static final LinkedHashMap<String, String> cache = new LinkedHashMap<String, String>();
 
     static {
         TexturePackAPI.ChangeHandler.register(new TexturePackAPI.ChangeHandler(MCPatcherUtils.RANDOM_MOBS, 2) {
@@ -29,22 +30,28 @@ public class MobRandomizer {
     }
 
     public static String randomTexture(EntityLiving entity) {
-        String texture = cache.get(entity);
-        if (texture == null) {
-            texture = randomTexture(entity, entity.getEntityTexture());
-            cache.put(entity, texture);
-            logger.finer("entity %s using %s", entity, texture);
-        }
-        return texture;
+        return randomTexture(entity, entity.getEntityTexture());
     }
 
     public static String randomTexture(EntityLiving entity, String texture) {
-        if (!texture.startsWith("/mob/") || !texture.endsWith(".png")) {
+        if (texture == null || !texture.startsWith("/mob/") || !texture.endsWith(".png")) {
             return texture;
         }
-        ExtraInfo info = ExtraInfo.getInfo(entity);
-        MobRuleList list = MobRuleList.get(texture);
-        return list.getSkin(info.skin, info.origX, info.origY, info.origZ, info.origBiome);
+        String key = texture + ":" + entity.entityId;
+        String newTexture = cache.get(key);
+        if (newTexture == null) {
+            ExtraInfo info = ExtraInfo.getInfo(entity);
+            MobRuleList list = MobRuleList.get(texture);
+            newTexture = list.getSkin(info.skin, info.origX, info.origY, info.origZ, info.origBiome);
+            cache.put(key, newTexture);
+            logger.finer("entity %s using %s (cache: %d)", entity, newTexture, cache.size());
+            if (cache.size() > 250) {
+                while (cache.size() > 200) {
+                    cache.remove(cache.keySet().iterator().next());
+                }
+            }
+        }
+        return newTexture;
     }
 
     public static String randomTexture(Object entity, String texture) {
