@@ -29,7 +29,7 @@ final public class MCPatcher {
     /**
      * MCPatcher patch level
      */
-    public static final int PATCH_VERSION = 0;
+    public static final int PATCH_VERSION = 1;
     /**
      * MCPatcher beta version if > 0
      */
@@ -128,7 +128,9 @@ final public class MCPatcher {
                 MCPatcherUtils.set(MCPatcherUtils.HD_TEXTURES, "mipmap", false);
                 MCPatcherUtils.set(MCPatcherUtils.HD_TEXTURES, "maxMipmapLevel", 3);
             }
-            MinecraftJar.fixJarNames();
+            if (lastVersion.compareTo("2.3") > 0) {
+                MinecraftJar.fixJarNames();
+            }
         }
         if (BETA_VERSION > 0 && !MCPatcherUtils.getBoolean(Config.TAG_BETA_WARNING_SHOWN, false)) {
             ui.showBetaWarning();
