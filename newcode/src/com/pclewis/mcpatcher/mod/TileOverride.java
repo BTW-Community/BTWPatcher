@@ -219,9 +219,9 @@ abstract class TileOverride {
         } catch (NumberFormatException e) {
         }
         renderPass = pass;
-        if (forceMipmapType != null) {
+        if (forceMipmapType != null && renderPass > 2) {
             try {
-                forceMipmapType.invoke(null, textureName, renderPass > 2 ? 2 : 1);
+                forceMipmapType.invoke(null, textureName, 2);
             } catch (Throwable e) {
                 e.printStackTrace();
             }
