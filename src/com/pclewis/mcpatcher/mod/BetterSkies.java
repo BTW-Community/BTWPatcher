@@ -45,6 +45,7 @@ public class BetterSkies extends Mod {
         if (haveFireworks) {
             addClassMod(new EffectRendererMod());
             addClassMod(new EntityFireworkSparkFXMod());
+            addClassMod(new EntityFireworkOverlayFXMod());
         }
 
         addClassFile(MCPatcherUtils.SKY_RENDERER_CLASS);
@@ -636,6 +637,15 @@ public class BetterSkies extends Mod {
 
             addClassSignature(new ConstSignature(0.75f));
             addClassSignature(new ConstSignature(0.9100000262260437));
+        }
+    }
+
+    private class EntityFireworkOverlayFXMod extends ClassMod {
+        EntityFireworkOverlayFXMod() {
+            setParentClass("EntityFX");
+
+            addClassSignature(new ConstSignature(7.1f));
+            addClassSignature(new ConstSignature(0.6f));
         }
     }
 }

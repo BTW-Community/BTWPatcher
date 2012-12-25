@@ -3,7 +3,9 @@ package com.pclewis.mcpatcher.mod;
 import com.pclewis.mcpatcher.MCLogger;
 import com.pclewis.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.EntityFX;
+import net.minecraft.src.EntityFireworkOverlayFX;
 import net.minecraft.src.EntityFireworkSparkFX;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 public class FireworksHelper {
@@ -12,7 +14,7 @@ public class FireworksHelper {
 
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.BETTER_SKIES);
     private static final boolean enable = MCPatcherUtils.getBoolean(MCPatcherUtils.BETTER_SKIES, "brightenFireworks", true);
-    private static final int srcBlend = MCPatcherUtils.getInt(MCPatcherUtils.BETTER_SKIES, "fwSrcBlend", GL11.GL_ONE);
+    private static final int srcBlend = MCPatcherUtils.getInt(MCPatcherUtils.BETTER_SKIES, "fwSrcBlend", GL11.GL_SRC_ALPHA);
     private static final int dstBlend = MCPatcherUtils.getInt(MCPatcherUtils.BETTER_SKIES, "fwDstBlend", GL11.GL_ONE);
 
     static {
@@ -24,7 +26,7 @@ public class FireworksHelper {
     }
 
     public static int getFXLayer(EntityFX entity) {
-        if (enable && entity instanceof EntityFireworkSparkFX) {
+        if (enable && (entity instanceof EntityFireworkSparkFX || entity instanceof EntityFireworkOverlayFX)) {
             return DODGE_LAYER;
         } else {
             return entity.getFXLayer();
