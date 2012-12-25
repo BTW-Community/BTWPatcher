@@ -8,7 +8,6 @@ import net.minecraft.src.TextureFX;
 import org.lwjgl.opengl.*;
 import org.lwjgl.util.glu.GLU;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -93,15 +92,13 @@ public class MipmapHelper {
                 if (mipmaps > 0) {
                     logger.fine("generating %d mipmaps for %s, alpha=%s", mipmaps, textureName, type >= MIPMAP_ALPHA);
                     BufferedImage origImage = image;
-                    if (bgColorFix > 0 && type == MIPMAP_BASIC) {
-                        int fix;
-                        for (fix = 0; fix < bgColorFix && (width >> fix) > 1 && (height >> fix) > 1; fix++) {
+                    int scale = 1 << bgColorFix;
+                    int gcd = gcd(width, height);
+                    if (bgColorFix > 0 && gcd % scale == 0 && ((gcd / scale) & (gcd / scale - 1)) == 0) {
+                        BufferedImage scaledImage = mipmapImages.get(mipmapImages.size() - 1);
+                        while (gcd(scaledImage.getWidth(), scaledImage.getHeight()) > scale) {
+                            scaledImage = scaleHalf(scaledImage);
                         }
-                        BufferedImage scaledImage = new BufferedImage(width >> fix, height >> fix, BufferedImage.TYPE_INT_ARGB);
-                        Graphics2D graphics2D = scaledImage.createGraphics();
-                        graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                        graphics2D.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-                        graphics2D.drawImage(image, 0, 0, width, height, null);
                         setBackgroundColor(image, scaledImage);
                     }
                     for (int i = 0; i < mipmaps; i++) {
@@ -311,12 +308,16 @@ public class MipmapHelper {
         return GL11.glGetTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL);
     }
 
+    private static int gcd(int a, int b) {
+        return BigInteger.valueOf(a).gcd(BigInteger.valueOf(b)).intValue();
+    }
+
     private static int getMipmapLevels(String texture, BufferedImage image) {
         return getMipmapLevels(texture, image.getWidth(), image.getHeight());
     }
 
     private static int getMipmapLevels(String texture, int width, int height) {
-        int size = BigInteger.valueOf(width).gcd(BigInteger.valueOf(height)).intValue();
+        int size = gcd(width, height);
         int minSize = getMinSize(texture);
         int mipmap;
         for (mipmap = 0; size >= minSize && ((size & 1) == 0) && mipmap < maxMipmapLevel; size >>= 1, mipmap++) {
