@@ -39,6 +39,7 @@ public class MipmapHelper {
     private static int lodBias;
 
     private static final HashMap<String, Reference<BufferedImage>> imagePool = new HashMap<String, Reference<BufferedImage>>();
+    private static final HashMap<Integer, Reference<ByteBuffer>> bufferPool = new HashMap<Integer, Reference<ByteBuffer>>();
 
     private static int bgColorFix;
 
@@ -173,7 +174,7 @@ public class MipmapHelper {
     private static void update(String texture, int x, int y, int w, int h, ByteBuffer imageData) {
         int mipmaps = getMipmapLevels();
         for (int i = 1; i <= mipmaps && ((x | y | w | h) & mipmapAlignment) == 0; i++) {
-            ByteBuffer newImage = ByteBuffer.allocateDirect(w * h);
+            ByteBuffer newImage = getPooledBuffer(w * h);
             scaleHalf(imageData.asIntBuffer(), w, h, newImage.asIntBuffer());
             x >>= 1;
             y >>= 1;
@@ -343,6 +344,17 @@ public class MipmapHelper {
             imagePool.put(key, new SoftReference<BufferedImage>(image));
         }
         return image;
+    }
+
+    private static ByteBuffer getPooledBuffer(int size) {
+        Reference<ByteBuffer> ref = bufferPool.get(size);
+        ByteBuffer buffer = (ref == null ? null : ref.get());
+        if (buffer == null) {
+            buffer = ByteBuffer.allocateDirect(size);
+            bufferPool.put(size, new SoftReference<ByteBuffer>(buffer));
+        }
+        buffer.position(0);
+        return buffer;
     }
 
     private static void setBackgroundColor(BufferedImage image, BufferedImage scaledImage) {
