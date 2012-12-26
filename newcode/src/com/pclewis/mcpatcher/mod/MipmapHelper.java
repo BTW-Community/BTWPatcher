@@ -113,8 +113,20 @@ public class MipmapHelper {
         logger.fine("generating %d mipmaps for %s, alpha=%s", mipmaps, textureName, type >= MIPMAP_ALPHA);
         image = convertToARGB(image);
         mipmapImages.set(0, image);
+        int scale = 1 << bgColorFix;
+        int gcd = gcd(width, height);
+        if (bgColorFix > 0 && gcd % scale == 0 && ((gcd / scale) & (gcd / scale - 1)) == 0) {
+            long s1 = System.currentTimeMillis();
+            BufferedImage scaledImage = mipmapImages.get(mipmapImages.size() - 1);
+            while (gcd(scaledImage.getWidth(), scaledImage.getHeight()) > scale) {
+                scaledImage = scaleHalf(scaledImage);
+            }
+            long s2 = System.currentTimeMillis();
+            setBackgroundColor(image, scaledImage);
+            long s3 = System.currentTimeMillis();
+            logger.finer("bg fix: scaling %dms, setbg %dms", s2 - s1, s3 - s2);
+        }
         BufferedImage origImage = image;
-        long s1 = System.currentTimeMillis();
         for (int i = 0; i < mipmaps; i++) {
             origImage = scaleHalf(origImage);
             if (type >= MIPMAP_ALPHA) {
@@ -125,20 +137,6 @@ public class MipmapHelper {
                 resetOnOffTransparency(image);
             }
             mipmapImages.add(image);
-        }
-        int scale = 1 << bgColorFix;
-        int gcd = gcd(width, height);
-        if (bgColorFix > 0 && gcd % scale == 0 && ((gcd / scale) & (gcd / scale - 1)) == 0) {
-            BufferedImage scaledImage = mipmapImages.get(mipmapImages.size() - 1);
-            while (gcd(scaledImage.getWidth(), scaledImage.getHeight()) > scale) {
-                scaledImage = scaleHalf(scaledImage);
-            }
-            long s2 = System.currentTimeMillis();
-            for (BufferedImage image1 : mipmapImages) {
-                setBackgroundColor(image1, scaledImage);
-            }
-            long s3 = System.currentTimeMillis();
-            logger.finer("bg fix: scaling %dms, setbg %dms", s2 - s1, s3 - s2);
         }
         return mipmapImages;
     }
