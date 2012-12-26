@@ -9,6 +9,7 @@ import net.minecraft.src.RenderEngine;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.EXTFramebufferObject;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GLContext;
 import org.lwjgl.util.glu.GLU;
 
@@ -167,6 +168,15 @@ public class FancyCompass {
 
         EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer);
 
+        boolean lightmapEnabled = false;
+        if (GLContext.getCapabilities().OpenGL13) {
+            GL13.glActiveTexture(GL13.GL_TEXTURE1);
+            lightmapEnabled = GL11.glIsEnabled(GL11.GL_TEXTURE_2D);
+            if (lightmapEnabled) {
+                GL11.glDisable(GL11.GL_TEXTURE_2D);
+            }
+            GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        }
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
@@ -221,6 +231,12 @@ public class FancyCompass {
 
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glPopMatrix();
+
+        if (lightmapEnabled) {
+            GL13.glActiveTexture(GL13.GL_TEXTURE1);
+            GL11.glEnable(GL11.GL_TEXTURE_2D);
+            GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        }
     }
 
     private void drawBox() {
