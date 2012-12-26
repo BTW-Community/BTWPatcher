@@ -8,17 +8,18 @@ import net.minecraft.src.TextureFX;
 import org.lwjgl.opengl.*;
 import org.lwjgl.util.glu.GLU;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public class MipmapHelper {
     private static final MCLogger logger = MCLogger.getLogger("Mipmap");
@@ -77,8 +78,14 @@ public class MipmapHelper {
         if (texture < 0 || image == null) {
             return;
         }
+        long s1 = System.currentTimeMillis();
         ArrayList<BufferedImage> mipmapImages = getMipmapsForTexture(image, textureName);
+        long s2 = System.currentTimeMillis();
         setupTextureMipmaps(renderEngine, mipmapImages, texture, textureName);
+        long s3 = System.currentTimeMillis();
+        if (mipmapImages.size() > 1) {
+            logger.fine("%s: generate %dms, setup %dms, total %dms", textureName, s2 - s1, s3 - s2, s3 - s1);
+        }
     }
 
     private static ArrayList<BufferedImage> getMipmapsForTexture(BufferedImage image, String textureName) {
@@ -96,15 +103,20 @@ public class MipmapHelper {
                 int mipmaps = getMipmapLevels(textureName, image);
                 if (mipmaps > 0) {
                     logger.fine("generating %d mipmaps for %s, alpha=%s", mipmaps, textureName, type >= MIPMAP_ALPHA);
+                    image = convertToARGB(image);
                     BufferedImage origImage = image;
                     int scale = 1 << bgColorFix;
                     int gcd = gcd(width, height);
                     if (bgColorFix > 0 && gcd % scale == 0 && ((gcd / scale) & (gcd / scale - 1)) == 0) {
+                        long s1 = System.currentTimeMillis();
                         BufferedImage scaledImage = mipmapImages.get(mipmapImages.size() - 1);
                         while (gcd(scaledImage.getWidth(), scaledImage.getHeight()) > scale) {
                             scaledImage = scaleHalf(scaledImage);
                         }
+                        long s2 = System.currentTimeMillis();
                         setBackgroundColor(image, scaledImage);
+                        long s3 = System.currentTimeMillis();
+                        logger.fine("bg fix: scaling %dms, setbg %dms", s2 - s1, s3 - s2);
                     }
                     for (int i = 0; i < mipmaps; i++) {
                         origImage = scaleHalf(origImage);
@@ -175,7 +187,7 @@ public class MipmapHelper {
         int mipmaps = getMipmapLevels();
         for (int i = 1; i <= mipmaps && ((x | y | w | h) & mipmapAlignment) == 0; i++) {
             ByteBuffer newImage = getPooledBuffer(w * h);
-            scaleHalf(imageData.asIntBuffer(), w, h, newImage.asIntBuffer());
+            scaleHalf(imageData.asIntBuffer(), w, h, newImage.asIntBuffer(), 0);
             x >>= 1;
             y >>= 1;
             w >>= 1;
@@ -264,17 +276,13 @@ public class MipmapHelper {
         } else if (image == null) {
             return MIPMAP_BASIC;
         } else {
-            int width = image.getWidth();
-            int height = image.getHeight();
-            for (int i = 0; i < width; i++) {
-                for (int j = 0; j < height; j++) {
-                    int pixel = image.getRGB(i, j);
-                    int alpha = pixel >>> 24;
-                    if (alpha > 0x1a && alpha < 0xe5) {
-                        logger.finer("%s alpha transparency? yes, by pixel search", texture);
-                        mipmapType.put(texture, MIPMAP_ALPHA);
-                        return MIPMAP_ALPHA;
-                    }
+            IntBuffer buffer = getARGBAsIntBuffer(image);
+            for (int i = 0; i < buffer.limit(); i++) {
+                int alpha = buffer.get(i) >>> 24;
+                if (alpha > 0x1a && alpha < 0xe5) {
+                    logger.finer("%s alpha transparency? yes, by pixel search", texture);
+                    mipmapType.put(texture, MIPMAP_ALPHA);
+                    return MIPMAP_ALPHA;
                 }
             }
             logger.finer("%s alpha transparency? no, by pixel search", texture);
@@ -357,39 +365,67 @@ public class MipmapHelper {
         return buffer;
     }
 
+    private static BufferedImage convertToARGB(BufferedImage image) {
+        if (image.getType() == BufferedImage.TYPE_INT_ARGB) {
+            return image;
+        } else {
+            int width = image.getWidth();
+            int height = image.getHeight();
+            logger.fine("converting %dx%d image to ARGB", width, height);
+            BufferedImage newImage = getPooledImage(width, height, 0);
+            Graphics2D graphics = newImage.createGraphics();
+            Arrays.fill(getARGBAsIntBuffer(newImage).array(), 0);
+            graphics.drawImage(image, 0, 0, null);
+            return newImage;
+        }
+    }
+
+    private static IntBuffer getARGBAsIntBuffer(BufferedImage image) {
+        DataBuffer buffer = image.getRaster().getDataBuffer();
+        if (buffer instanceof DataBufferInt) {
+            return IntBuffer.wrap(((DataBufferInt) buffer).getData());
+        } else if (buffer instanceof DataBufferByte) {
+            return ByteBuffer.wrap(((DataBufferByte) buffer).getData()).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
+        } else {
+            int width = image.getWidth();
+            int height = image.getHeight();
+            int[] pixels = new int[width * height];
+            image.getRGB(0, 0, width, height, pixels, 0, width);
+            return IntBuffer.wrap(pixels);
+        }
+    }
+
     private static void setBackgroundColor(BufferedImage image, BufferedImage scaledImage) {
         int width = image.getWidth();
         int height = image.getHeight();
         int scale = width / scaledImage.getWidth();
+        IntBuffer buffer = getARGBAsIntBuffer(image);
+        IntBuffer scaledBuffer = getARGBAsIntBuffer(scaledImage);
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                int pixel = image.getRGB(i, j);
+                int k = width * j + i;
+                int pixel = buffer.get(k);
                 if ((pixel & 0xff000000) == 0) {
-                    pixel = scaledImage.getRGB(i / scale, j / scale);
-                    image.setRGB(i, j, pixel & 0x00ffffff);
+                    pixel = scaledBuffer.get((j / scale) * (width / scale) + i / scale);
+                    buffer.put(k, pixel & 0x00ffffff);
                 }
             }
         }
     }
 
     private static void resetOnOffTransparency(BufferedImage image) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                int pixel = image.getRGB(i, j);
-                int alpha = pixel >>> 24;
-                if (alpha < 0x7f) {
-                    pixel &= 0x00ffffff;
-                } else {
-                    pixel |= 0xff000000;
-                }
-                image.setRGB(i, j, pixel);
+        IntBuffer rgb = getARGBAsIntBuffer(image);
+        for (int i = 0; i < rgb.limit(); i++) {
+            int pixel = rgb.get(i);
+            if (pixel >>> 24 < 0x7f) {
+                rgb.put(i, pixel & 0x00ffffff);
+            } else {
+                rgb.put(i, pixel | 0xff000000);
             }
         }
     }
 
-    static void scaleHalf(IntBuffer in, int w, int h, IntBuffer out) {
+    static void scaleHalf(IntBuffer in, int w, int h, IntBuffer out, int rotate) {
         for (int i = 0; i < w / 2; i++) {
             for (int j = 0; j < h / 2; j++) {
                 int k = w * 2 * j + 2 * i;
@@ -397,25 +433,27 @@ public class MipmapHelper {
                 int pixel01 = in.get(k + 1);
                 int pixel10 = in.get(k + w);
                 int pixel11 = in.get(k + w + 1);
-                out.put(w / 2 * j + i, average4RGBA(pixel00, pixel01, pixel10, pixel11));
+                if (rotate != 0) {
+                    pixel00 = Integer.rotateLeft(pixel00, rotate);
+                    pixel01 = Integer.rotateLeft(pixel01, rotate);
+                    pixel10 = Integer.rotateLeft(pixel10, rotate);
+                    pixel11 = Integer.rotateLeft(pixel11, rotate);
+                }
+                int pixel = average4RGBA(pixel00, pixel01, pixel10, pixel11);
+                if (rotate != 0) {
+                    pixel = Integer.rotateRight(pixel, rotate);
+                }
+                out.put(w / 2 * j + i, pixel);
             }
         }
     }
 
-    private static BufferedImage scaleHalf(BufferedImage in) {
-        int w = in.getWidth();
-        int h = in.getHeight();
-        BufferedImage out = getPooledImage(w / 2, h / 2, 0);
-        for (int i = 0; i < w / 2; i++) {
-            for (int j = 0; j < h / 2; j++) {
-                int pixel00 = Integer.rotateLeft(in.getRGB(2 * i, 2 * j), 8);
-                int pixel01 = Integer.rotateLeft(in.getRGB(2 * i + 1, 2 * j), 8);
-                int pixel10 = Integer.rotateLeft(in.getRGB(2 * i, 2 * j + 1), 8);
-                int pixel11 = Integer.rotateLeft(in.getRGB(2 * i + 1, 2 * j + 1), 8);
-                out.setRGB(i, j, Integer.rotateRight(average4RGBA(pixel00, pixel01, pixel10, pixel11), 8));
-            }
-        }
-        return out;
+    private static BufferedImage scaleHalf(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        BufferedImage scaledImage = getPooledImage(width / 2, height / 2, 0);
+        scaleHalf(getARGBAsIntBuffer(image), width, height, getARGBAsIntBuffer(scaledImage), 8);
+        return scaledImage;
     }
 
     private static int average4RGBA(int pixel00, int pixel01, int pixel10, int pixel11) {

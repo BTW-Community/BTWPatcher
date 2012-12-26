@@ -141,7 +141,7 @@ public class CustomAnimation {
                 break;
             }
             ByteBuffer newImage = ByteBuffer.allocateDirect(width * height);
-            MipmapHelper.scaleHalf(imageData.asIntBuffer(), width, height, newImage.asIntBuffer());
+            MipmapHelper.scaleHalf(imageData.asIntBuffer(), width, height, newImage.asIntBuffer(), 0);
             imageData = newImage;
             width >>= 1;
             height >>= 1;
