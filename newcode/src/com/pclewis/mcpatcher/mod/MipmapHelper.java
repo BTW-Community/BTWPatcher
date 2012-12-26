@@ -84,59 +84,61 @@ public class MipmapHelper {
         setupTextureMipmaps(renderEngine, mipmapImages, texture, textureName);
         long s3 = System.currentTimeMillis();
         if (mipmapImages.size() > 1) {
-            logger.fine("%s: generate %dms, setup %dms, total %dms", textureName, s2 - s1, s3 - s2, s3 - s1);
+            logger.finer("%s: generate %dms, setup %dms, total %dms", textureName, s2 - s1, s3 - s2, s3 - s1);
         }
     }
 
     private static ArrayList<BufferedImage> getMipmapsForTexture(BufferedImage image, String textureName) {
-        int type = getMipmapType(textureName, image);
         ArrayList<BufferedImage> mipmapImages = new ArrayList<BufferedImage>();
         mipmapImages.add(image);
+        int type = getMipmapType(textureName, mipmapImages);
         if (type < MIPMAP_BASIC) {
-            // nothing
-        } else {
-            int width = image.getWidth();
-            int height = image.getHeight();
-            if (getCustomMipmaps(mipmapImages, textureName, width, height)) {
-                logger.fine("using %d custom mipmaps for %s", mipmapImages.size() - 1, textureName);
-            } else {
-                int mipmaps = getMipmapLevels(textureName, image);
-                if (mipmaps > 0) {
-                    logger.fine("generating %d mipmaps for %s, alpha=%s", mipmaps, textureName, type >= MIPMAP_ALPHA);
-                    image = convertToARGB(image);
-                    BufferedImage origImage = image;
-                    int scale = 1 << bgColorFix;
-                    int gcd = gcd(width, height);
-                    if (bgColorFix > 0 && gcd % scale == 0 && ((gcd / scale) & (gcd / scale - 1)) == 0) {
-                        long s1 = System.currentTimeMillis();
-                        BufferedImage scaledImage = mipmapImages.get(mipmapImages.size() - 1);
-                        while (gcd(scaledImage.getWidth(), scaledImage.getHeight()) > scale) {
-                            scaledImage = scaleHalf(scaledImage);
-                        }
-                        long s2 = System.currentTimeMillis();
-                        setBackgroundColor(image, scaledImage);
-                        long s3 = System.currentTimeMillis();
-                        logger.fine("bg fix: scaling %dms, setbg %dms", s2 - s1, s3 - s2);
-                    }
-                    for (int i = 0; i < mipmaps; i++) {
-                        origImage = scaleHalf(origImage);
-                        if (type >= MIPMAP_ALPHA) {
-                            image = origImage;
-                        } else {
-                            image = getPooledImage(origImage.getWidth(), origImage.getHeight(), 1);
-                            origImage.copyData(image.getRaster());
-                            resetOnOffTransparency(image);
-                        }
-                        mipmapImages.add(image);
-                    }
-                } else {
-                    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL, mipmaps);
-                    type = MIPMAP_NONE;
-                    if (textureName != null) {
-                        mipmapType.put(textureName, type);
-                    }
-                }
+            return mipmapImages;
+        }
+        int width = image.getWidth();
+        int height = image.getHeight();
+        if (getCustomMipmaps(mipmapImages, textureName, width, height)) {
+            logger.fine("using %d custom mipmaps for %s", mipmapImages.size() - 1, textureName);
+            return mipmapImages;
+        }
+        int mipmaps = getMipmapLevels(textureName, image);
+        if (mipmaps <= 0) {
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL, mipmaps);
+            type = MIPMAP_NONE;
+            if (textureName != null) {
+                mipmapType.put(textureName, type);
             }
+            return mipmapImages;
+        }
+        logger.fine("generating %d mipmaps for %s, alpha=%s", mipmaps, textureName, type >= MIPMAP_ALPHA);
+        image = convertToARGB(image);
+        mipmapImages.set(0, image);
+        BufferedImage origImage = image;
+        long s1 = System.currentTimeMillis();
+        for (int i = 0; i < mipmaps; i++) {
+            origImage = scaleHalf(origImage);
+            if (type >= MIPMAP_ALPHA) {
+                image = origImage;
+            } else {
+                image = getPooledImage(origImage.getWidth(), origImage.getHeight(), 1);
+                origImage.copyData(image.getRaster());
+                resetOnOffTransparency(image);
+            }
+            mipmapImages.add(image);
+        }
+        int scale = 1 << bgColorFix;
+        int gcd = gcd(width, height);
+        if (bgColorFix > 0 && gcd % scale == 0 && ((gcd / scale) & (gcd / scale - 1)) == 0) {
+            BufferedImage scaledImage = mipmapImages.get(mipmapImages.size() - 1);
+            while (gcd(scaledImage.getWidth(), scaledImage.getHeight()) > scale) {
+                scaledImage = scaleHalf(scaledImage);
+            }
+            long s2 = System.currentTimeMillis();
+            for (BufferedImage image1 : mipmapImages) {
+                setBackgroundColor(image1, scaledImage);
+            }
+            long s3 = System.currentTimeMillis();
+            logger.finer("bg fix: scaling %dms, setbg %dms", s2 - s1, s3 - s2);
         }
         return mipmapImages;
     }
@@ -258,7 +260,8 @@ public class MipmapHelper {
         return added;
     }
 
-    private static int getMipmapType(String texture, BufferedImage image) {
+    private static int getMipmapType(String texture, ArrayList<BufferedImage> mipmapImages) {
+        BufferedImage image = mipmapImages.get(0);
         if (!useMipmap || texture == null) {
             return MIPMAP_NONE;
         } else if (mipmapType.containsKey(texture)) {
@@ -276,6 +279,8 @@ public class MipmapHelper {
         } else if (image == null) {
             return MIPMAP_BASIC;
         } else {
+            image = convertToARGB(image);
+            mipmapImages.set(0, image);
             IntBuffer buffer = getARGBAsIntBuffer(image);
             for (int i = 0; i < buffer.limit(); i++) {
                 int alpha = buffer.get(i) >>> 24;
@@ -366,7 +371,9 @@ public class MipmapHelper {
     }
 
     private static BufferedImage convertToARGB(BufferedImage image) {
-        if (image.getType() == BufferedImage.TYPE_INT_ARGB) {
+        if (image == null) {
+            return null;
+        } else if (image.getType() == BufferedImage.TYPE_INT_ARGB) {
             return image;
         } else {
             int width = image.getWidth();
