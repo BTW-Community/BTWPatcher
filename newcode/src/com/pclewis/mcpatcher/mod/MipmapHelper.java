@@ -9,6 +9,8 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.util.glu.GLU;
 
 import java.awt.image.BufferedImage;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -35,6 +37,8 @@ public class MipmapHelper {
 
     private static final boolean lodSupported;
     private static int lodBias;
+
+    private static final HashMap<String, Reference<BufferedImage>> imagePool = new HashMap<String, Reference<BufferedImage>>();
 
     private static int bgColorFix;
 
@@ -106,7 +110,8 @@ public class MipmapHelper {
                         if (type >= MIPMAP_ALPHA) {
                             image = origImage;
                         } else {
-                            image = new BufferedImage(origImage.getColorModel(), origImage.copyData(null), origImage.getColorModel().isAlphaPremultiplied(), null);
+                            image = getPooledImage(origImage.getWidth(), origImage.getHeight(), 1);
+                            origImage.copyData(image.getRaster());
                             resetOnOffTransparency(image);
                         }
                         mipmapImages.add(image);
@@ -329,6 +334,17 @@ public class MipmapHelper {
         return texture.equals("/terrain.png") || texture.startsWith("/ctm/") ? 32 : 2;
     }
 
+    private static BufferedImage getPooledImage(int width, int height, int index) {
+        String key = String.format("%dx%d#%d", width, height, index);
+        Reference<BufferedImage> ref = imagePool.get(key);
+        BufferedImage image = (ref == null ? null : ref.get());
+        if (image == null) {
+            image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            imagePool.put(key, new SoftReference<BufferedImage>(image));
+        }
+        return image;
+    }
+
     private static void setBackgroundColor(BufferedImage image, BufferedImage scaledImage) {
         int width = image.getWidth();
         int height = image.getHeight();
@@ -377,7 +393,7 @@ public class MipmapHelper {
     private static BufferedImage scaleHalf(BufferedImage in) {
         int w = in.getWidth();
         int h = in.getHeight();
-        BufferedImage out = new BufferedImage(w / 2, h / 2, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage out = getPooledImage(w / 2, h / 2, 0);
         for (int i = 0; i < w / 2; i++) {
             for (int j = 0; j < h / 2; j++) {
                 int pixel00 = Integer.rotateLeft(in.getRGB(2 * i, 2 * j), 8);
