@@ -36,7 +36,7 @@ public class HDTexture extends BaseTexturePackMod {
         } else {
             updateDynamicTextureVersion = 2;
         }
-        haveItemFrames = updateDynamicTextureVersion >= 1;
+        haveItemFrames = minecraftVersion.compareTo("12w36a") >= 0;
 
         addClassMod(new RenderEngineMod());
         addClassMod(new TextureFXMod());

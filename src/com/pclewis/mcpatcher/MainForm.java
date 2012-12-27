@@ -822,7 +822,7 @@ class MainForm {
 
             sb.append(String.format(MOD_DESC_FORMAT1,
                 Math.max(frameWidth - 75, 350),
-                (ModList.isExperimental(mod.getName()) ? "<font color=\"red\" size=\"3\">(Experimental)</font> " : ""),
+                (mod.experimental ? "<font color=\"red\" size=\"3\">(Experimental)</font> " : ""),
                 htmlEscape(mod.getName()),
                 htmlEscape(mod.getVersion())
             ));

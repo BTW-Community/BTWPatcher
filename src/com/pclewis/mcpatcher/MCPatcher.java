@@ -201,7 +201,7 @@ final public class MCPatcher {
             modList.loadSavedMods();
         }
         if (!ignoreBuiltInMods) {
-            modList.loadBuiltInMods();
+            modList.loadBuiltInMods(false);
         }
         if (!ignoreCustomMods) {
             modList.loadCustomMods(MCPatcherUtils.getMinecraftPath("mcpatcher-mods"));
@@ -439,7 +439,7 @@ final public class MCPatcher {
 
     private static void printModList() {
         Logger.log(Logger.LOG_MAIN);
-        Logger.log(Logger.LOG_MAIN, "%d available mods:", modList.getVisible().size());
+        Logger.log(Logger.LOG_MAIN, "%d available mods:", modList.getAll().size());
         for (Mod mod : modList.getAll()) {
             Logger.log(Logger.LOG_MAIN, "[%3s] %s %s - %s", (mod.okToApply() ? "YES" : "NO"), mod.getName(), mod.getVersion(), mod.getDescription());
             for (ClassMod cm : mod.classMods) {
@@ -613,6 +613,7 @@ final public class MCPatcher {
     }
 
     static boolean patch() {
+        modList.refreshInternalMods();
         modList.setApplied(true);
         boolean patchOk = false;
         try {
@@ -621,6 +622,13 @@ final public class MCPatcher {
 
             for (Mod mod : modList.getAll()) {
                 mod.resetCounts();
+                Logger.log(Logger.LOG_MAIN, "[%s] %s %s - %s",
+                    (mod.isEnabled() && mod.okToApply() ? "*" : " "), mod.getName(), mod.getVersion(), mod.getDescription()
+                );
+            }
+
+            if (!modList.getSelected().isEmpty()) {
+                Logger.log(Logger.LOG_MAIN);
             }
 
             applyMods();

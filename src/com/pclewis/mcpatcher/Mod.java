@@ -54,9 +54,10 @@ public abstract class Mod {
     protected boolean defaultEnabled = true;
     protected ClassMap classMap = new ClassMap();
     private ArrayList<String> errors = new ArrayList<String>();
-    private boolean enabled = false;
-    boolean internal = false;
-    File customJar = null;
+    private boolean enabled;
+    boolean internal;
+    boolean experimental;
+    File customJar;
     ArrayList<Dependency> dependencies = new ArrayList<Dependency>();
     HashMap<String, String> filesAdded = new HashMap<String, String>();
 

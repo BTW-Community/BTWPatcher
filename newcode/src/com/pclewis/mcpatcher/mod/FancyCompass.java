@@ -33,6 +33,7 @@ public class FancyCompass {
     private static final float RELATIVE_Y = (COMPASS_TILE_NUM / 16) / 16.0f;
 
     private static final boolean fboSupported = GLContext.getCapabilities().GL_EXT_framebuffer_object;
+    private static final int drawList = GL11.glGenLists(1);
 
     private static FancyCompass instance;
 
@@ -122,6 +123,10 @@ public class FancyCompass {
         EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer);
         EXTFramebufferObject.glFramebufferTexture2DEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT, GL11.GL_TEXTURE_2D, targetTexture, 0);
         EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
+
+        GL11.glNewList(drawList, GL11.GL_COMPILE);
+        drawBox();
+        GL11.glEndList();
     }
 
     private void onTick(Compass compass) {
@@ -198,7 +203,7 @@ public class FancyCompass {
         GL11.glLoadIdentity();
 
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, baseTexture);
-        drawBox();
+        GL11.glCallList(drawList);
 
         GL11.glPushMatrix();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, dialTexture);
@@ -206,7 +211,7 @@ public class FancyCompass {
         GL11.glTranslatef(offsetX + offsetXDelta, offsetY + offsetYDelta, 0.0f);
         GL11.glScalef(scaleX + scaleXDelta, scaleY + scaleYDelta, 1.0f);
         GL11.glRotatef(angle, 0.0f, 0.0f, 1.0f);
-        drawBox();
+        GL11.glCallList(drawList);
         GL11.glPopMatrix();
 
         if (overlayTexture >= 0) {
