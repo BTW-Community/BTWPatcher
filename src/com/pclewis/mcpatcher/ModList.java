@@ -18,33 +18,46 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipFile;
 
 class ModList {
-    private Vector<Mod> modsByIndex = new Vector<Mod>();
-    private HashMap<String, Mod> modsByName = new HashMap<String, Mod>();
+    private final Vector<Mod> modsByIndex = new Vector<Mod>();
+    private final HashMap<String, Mod> modsByName = new HashMap<String, Mod>();
     private boolean applied;
 
+    private class ModDependencyException extends Exception {
+        ModDependencyException(String s) {
+            super(s);
+        }
+    }
+
+    private static class BuiltInMod {
+        final String name;
+        final Class<? extends Mod> modClass;
+        final boolean internal;
+        final boolean experimental;
+
+        BuiltInMod(String name, Class<? extends Mod> modClass, boolean internal, boolean experimental) {
+            this.name = name;
+            this.modClass = modClass;
+            this.internal = internal;
+            this.experimental = experimental;
+        }
+    }
+
     private static BuiltInMod[] builtInMods = new BuiltInMod[]{
-        new BuiltInMod(MCPatcherUtils.HD_TEXTURES, HDTexture.class, false),
-        new BuiltInMod(MCPatcherUtils.HD_FONT, HDFont.class, false),
-        new BuiltInMod(MCPatcherUtils.BETTER_GRASS, BetterGrass.class, false),
-        new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, RandomMobs.class, false),
-        new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, CustomColors.class, false),
-        new BuiltInMod(MCPatcherUtils.CONNECTED_TEXTURES, ConnectedTextures.class, false),
-        new BuiltInMod(MCPatcherUtils.BETTER_SKIES, BetterSkies.class, false),
-        new BuiltInMod(MCPatcherUtils.BETTER_GLASS, BetterGlass.class, false),
-        new BuiltInMod(MCPatcherUtils.GLSL_SHADERS, GLSLShader.class, true),
+        new BuiltInMod(BaseMod.NAME, BaseMod.class, true, false),
+        new BuiltInMod(BaseTexturePackMod.NAME, BaseTexturePackMod.class, true, false),
+        new BuiltInMod(MCPatcherUtils.HD_TEXTURES, HDTexture.class, false, false),
+        new BuiltInMod(MCPatcherUtils.HD_FONT, HDFont.class, false, false),
+        new BuiltInMod(MCPatcherUtils.BETTER_GRASS, BetterGrass.class, false, false),
+        new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, RandomMobs.class, false, false),
+        new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, CustomColors.class, false, false),
+        new BuiltInMod(MCPatcherUtils.CONNECTED_TEXTURES, ConnectedTextures.class, false, false),
+        new BuiltInMod(MCPatcherUtils.BETTER_SKIES, BetterSkies.class, false, false),
+        new BuiltInMod(MCPatcherUtils.BETTER_GLASS, BetterGlass.class, false, false),
+        new BuiltInMod(MCPatcherUtils.GLSL_SHADERS, GLSLShader.class, false, true),
     };
 
-    Mod baseMod;
-    Mod texturePackMod;
-
     ModList() {
-        MinecraftVersion version = MCPatcher.minecraft.getVersion();
-        baseMod = new BaseMod(version);
-        baseMod.internal = true;
-        texturePackMod = new BaseTexturePackMod(version);
-        texturePackMod.internal = true;
-        addNoReplace(baseMod);
-        addNoReplace(texturePackMod);
+        loadBuiltInMods(true);
     }
 
     void close() {
@@ -53,10 +66,10 @@ class ModList {
         }
     }
 
-    void loadBuiltInMods() {
+    void loadBuiltInMods(boolean internal) {
         for (BuiltInMod builtInMod : builtInMods) {
-            if (!modsByName.containsKey(builtInMod.name) && (MCPatcher.experimentalMods || !builtInMod.experimental)) {
-                addNoReplace(newModInstance(builtInMod.modClass));
+            if (!modsByName.containsKey(builtInMod.name) && (MCPatcher.experimentalMods || !builtInMod.experimental) && internal == builtInMod.internal) {
+                addNoReplace(newModInstance(builtInMod));
             }
         }
     }
@@ -311,12 +324,6 @@ class ModList {
         return -1;
     }
 
-    private class ModDependencyException extends Exception {
-        ModDependencyException(String s) {
-            super(s);
-        }
-    }
-
     void selectMod(Mod mod, boolean enable) {
         HashMap<Mod, Boolean> changes = new HashMap<Mod, Boolean>();
         try {
@@ -335,11 +342,7 @@ class ModList {
         refreshInternalMods();
     }
 
-    private void refreshInternalMods() {
-        modsByIndex.remove(baseMod);
-        modsByIndex.remove(texturePackMod);
-        modsByIndex.add(0, baseMod);
-        modsByIndex.add(1, texturePackMod);
+    void refreshInternalMods() {
         outer:
         while (true) {
             for (int i = 0; i < modsByIndex.size() - 1; i++) {
@@ -475,7 +478,7 @@ class ModList {
             } else if (type.equals(Config.VAL_BUILTIN)) {
                 for (BuiltInMod builtInMod : builtInMods) {
                     if (name.equals(builtInMod.name) && (MCPatcher.experimentalMods || !builtInMod.experimental)) {
-                        mod = newModInstance(builtInMod.modClass);
+                        mod = newModInstance(builtInMod);
                     }
                 }
                 if (mod == null) {
@@ -486,7 +489,7 @@ class ModList {
                 Element files = config.getElement(element, Config.TAG_FILES);
                 if (path != null && files != null) {
                     File file = new File(path);
-                    if (file.exists()) {
+                    if (file.isFile()) {
                         HashMap<String, String> fileMap = new HashMap<String, String>();
                         NodeList fileNodes = files.getElementsByTagName(Config.TAG_FILE);
                         for (int j = 0; j < fileNodes.getLength(); j++) {
@@ -612,19 +615,10 @@ class ModList {
         }
     }
 
-    static boolean isExperimental(String name) {
-        for (BuiltInMod builtInMod : builtInMods) {
-            if (builtInMod.name.equals(name)) {
-                return builtInMod.experimental;
-            }
-        }
-        return false;
-    }
-
-    static Mod newModInstance(Class<? extends Mod> modClass) {
+    private static Mod newModInstance(Class<? extends Mod> modClass) {
         Mod mod = null;
         try {
-            mod = modClass.getConstructor(MinecraftVersion.class).newInstance(MCPatcher.minecraft.getVersion());
+            mod = modClass.getDeclaredConstructor(MinecraftVersion.class).newInstance(MCPatcher.minecraft.getVersion());
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -633,7 +627,7 @@ class ModList {
             e.printStackTrace();
         } catch (NoSuchMethodException e) {
             try {
-                mod = modClass.newInstance();
+                mod = modClass.getDeclaredConstructor().newInstance();
             } catch (Exception e1) {
                 e1.printStackTrace();
             }
@@ -641,15 +635,12 @@ class ModList {
         return mod;
     }
 
-    private static class BuiltInMod {
-        String name;
-        Class<? extends Mod> modClass;
-        boolean experimental;
-
-        BuiltInMod(String name, Class<? extends Mod> modClass, boolean experimental) {
-            this.name = name;
-            this.modClass = modClass;
-            this.experimental = experimental;
+    private static Mod newModInstance(BuiltInMod builtInMod) {
+        Mod mod = newModInstance(builtInMod.modClass);
+        if (mod != null) {
+            mod.internal = builtInMod.internal;
+            mod.experimental = builtInMod.experimental;
         }
+        return mod;
     }
 }
