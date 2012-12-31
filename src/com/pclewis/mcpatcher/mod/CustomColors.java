@@ -1259,34 +1259,34 @@ public class CustomColors extends Mod {
         WorldMod() {
             setInterfaces("IBlockAccess");
 
-            MethodRef getSkyColor = new MethodRef(getDeobfClass(), "getSkyColor", "(LEntity;F)LVec3D;");
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // f8 = (f4 * 0.3f + f5 * 0.59f + f6 * 0.11f) * 0.6f;
-                        FLOAD, any(),
-                        push(0.3f),
-                        FMUL,
-                        FLOAD, any(),
-                        push(0.59f),
-                        FMUL,
-                        FADD,
-                        FLOAD, any(),
-                        push(0.11f),
-                        FMUL,
-                        FADD,
-                        push(0.6f),
-                        FMUL,
-                        FSTORE, any()
-                    );
-                }
-            }.setMethod(getSkyColor));
-
             addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getWorldChunkManager", "()LWorldChunkManager;")));
 
             addPatch(new BytecodePatch() {
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                // f8 = (f4 * 0.3f + f5 * 0.59f + f6 * 0.11f) * 0.6f;
+                                FLOAD, any(),
+                                push(0.3f),
+                                FMUL,
+                                FLOAD, any(),
+                                push(0.59f),
+                                FMUL,
+                                FADD,
+                                FLOAD, any(),
+                                push(0.11f),
+                                FMUL,
+                                FADD,
+                                push(0.6f),
+                                FMUL,
+                                FSTORE, any()
+                            );
+                        }
+                    });
+                }
+
                 @Override
                 public String getDescription() {
                     return "override sky color";
@@ -1370,7 +1370,7 @@ public class CustomColors extends Mod {
                         label("B")
                     );
                 }
-            }.targetMethod(getSkyColor));
+            });
         }
     }
 
