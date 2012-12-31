@@ -3253,24 +3253,48 @@ public class CustomColors extends Mod {
         RenderGlobalMod() {
             addClassSignature(new ConstSignature("/environment/clouds.png"));
 
-            MethodRef renderClouds = new MethodRef(getDeobfClass(), "renderClouds", "(F)V");
-            MethodRef renderSky = new MethodRef(getDeobfClass(), "renderSky", "(F)V");
+            final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
+            final FieldRef gameSettings = new FieldRef("Minecraft", "gameSettings", "LGameSettings;");
+            final FieldRef fancyGraphics = new FieldRef("GameSettings", "fancyGraphics", "Z");
+            final MethodRef renderClouds = new MethodRef(getDeobfClass(), "renderClouds", "(F)V");
+            final MethodRef renderSky = new MethodRef(getDeobfClass(), "renderSky", "(F)V");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // if (mc.gameSettings.fancyGraphics)
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        captureReference(GETFIELD),
+                        captureReference(GETFIELD),
+                        IFEQ_or_IFNE, any(2),
+
+                        // ...
+                        any(0, 100),
+
+                        // var3 = 32;
+                        // var4 = 256 / var3;
                         push(32),
                         anyISTORE,
                         push(256),
                         anyILOAD,
                         IDIV,
                         anyISTORE,
+
+                        // ...
                         any(1, 50),
+
+                        // GL11.glBindTexture(3553, this.i.b("/environment/clouds.png"));
                         push("/environment/clouds.png")
                     );
                 }
-            }.setMethod(renderClouds));
+            }
+                .setMethod(renderClouds)
+                .addXref(1, mc)
+                .addXref(2, gameSettings)
+                .addXref(3, fancyGraphics)
+            );
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -3290,12 +3314,11 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        lookBehind(any(21), false),
                         capture(build(
                             ALOAD_0,
-                            anyReference(GETFIELD),
-                            anyReference(GETFIELD),
-                            anyReference(GETFIELD)
+                            reference(GETFIELD, mc),
+                            reference(GETFIELD, gameSettings),
+                            reference(GETFIELD, fancyGraphics)
                         )),
                         capture(build(
                             IFEQ, any(2)
