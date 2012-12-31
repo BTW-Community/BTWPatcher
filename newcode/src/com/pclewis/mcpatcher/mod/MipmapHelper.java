@@ -209,10 +209,7 @@ public class MipmapHelper {
         forceMipmapType("/terrain.png", MIPMAP_BASIC);
         Properties properties = TexturePackAPI.getProperties(MIPMAP_PROPERTIES);
         if (properties != null) {
-            try {
-                bgColorFix = Integer.parseInt(properties.getProperty("bgColorFix", "4"));
-            } catch (NumberFormatException e) {
-            }
+            bgColorFix = MCPatcherUtils.getIntProperty(properties, "bgColorFix", 4);
             for (Map.Entry entry : properties.entrySet()) {
                 if (entry.getKey() instanceof String && entry.getValue() instanceof String) {
                     String key = ((String) entry.getKey()).trim();

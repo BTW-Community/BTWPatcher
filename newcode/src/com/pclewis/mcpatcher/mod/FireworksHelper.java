@@ -41,16 +41,9 @@ public class FireworksHelper {
     }
 
     static void reload() {
-        srcBlend = GL11.GL_SRC_ALPHA;
-        dstBlend = GL11.GL_ONE;
         Properties properties = TexturePackAPI.getProperties(PARTICLES_PROPERTIES);
-        if (properties != null) {
-            try {
-                srcBlend = Integer.parseInt(properties.getProperty("srcBlend." + DODGE_LAYER, "" + srcBlend));
-                dstBlend = Integer.parseInt(properties.getProperty("dstBlend." + DODGE_LAYER, "" + dstBlend));
-            } catch (NumberFormatException e) {
-            }
-        }
+        srcBlend = MCPatcherUtils.getIntProperty(properties, "srcBlend." + DODGE_LAYER, GL11.GL_SRC_ALPHA);
+        dstBlend = MCPatcherUtils.getIntProperty(properties, "dstBlend." + DODGE_LAYER, GL11.GL_ONE);
         if (enable) {
             logger.config("using glBlendFunc(%d, %d) for fireworks particles", srcBlend, dstBlend);
         } else {

@@ -87,12 +87,12 @@ public class FancyCompass {
         }
 
         Properties properties = TexturePackAPI.getProperties(COMPASS_PROPERTIES);
-        scaleX = getFloatProperty(properties, "scaleX", 1.0f);
-        scaleY = getFloatProperty(properties, "scaleY", 0.5f);
-        offsetX = getFloatProperty(properties, "offsetX", 1.0f / (2 * tileSize));
-        offsetY = getFloatProperty(properties, "offsetY", -1.0f / (2 * tileSize));
-        renderEngine.blurTexture = getBooleanProperty(properties, "filter", false);
-        debug = getBooleanProperty(properties, "debug", false);
+        scaleX = MCPatcherUtils.getFloatProperty(properties, "scaleX", 1.0f);
+        scaleY = MCPatcherUtils.getFloatProperty(properties, "scaleY", 0.5f);
+        offsetX = MCPatcherUtils.getFloatProperty(properties, "offsetX", 1.0f / (2 * tileSize));
+        offsetY = MCPatcherUtils.getFloatProperty(properties, "offsetY", -1.0f / (2 * tileSize));
+        renderEngine.blurTexture = MCPatcherUtils.getBooleanProperty(properties, "filter", false);
+        debug = MCPatcherUtils.getBooleanProperty(properties, "debug", false);
 
         BufferedImage image = TexturePackAPI.getImage(COMPASS_BASE_PNG);
         if (image == null) {
@@ -274,28 +274,6 @@ public class FancyCompass {
         if (overlayTexture >= 0) {
             renderEngine.deleteTexture(overlayTexture);
         }
-    }
-
-    private static boolean getBooleanProperty(Properties properties, String key, boolean defaultValue) {
-        if (properties != null) {
-            defaultValue = Boolean.parseBoolean(properties.getProperty(key, "" + defaultValue));
-        }
-        return defaultValue;
-    }
-
-
-    private static float getFloatProperty(Properties properties, String key, float defaultValue) {
-        if (properties != null) {
-            String value = properties.getProperty(key, "").trim();
-            if (!value.equals("")) {
-                try {
-                    return Float.parseFloat(value);
-                } catch (NumberFormatException e) {
-                    logger.severe("%s: invalid value %s for %s", COMPASS_PROPERTIES, value, key);
-                }
-            }
-        }
-        return defaultValue;
     }
 
     private static boolean tap(int key) {
