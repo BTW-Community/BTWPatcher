@@ -35,6 +35,7 @@ public class SkyRenderer {
                 if (world != null) {
                     getWorldEntry(world.worldProvider.worldType);
                 }
+                FireworksHelper.reload();
             }
         });
     }
