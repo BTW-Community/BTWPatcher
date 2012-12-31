@@ -493,7 +493,7 @@ public class BetterSkies extends Mod {
                         lookAhead(or(
                             build(reference(ANEWARRAY, list)),
                             build(IF_ICMPLT_or_IF_ICMPGE, any(2))),
-                        true)
+                            true)
                     );
                 }
 

@@ -362,8 +362,8 @@ public class MCPatcherUtils {
     /**
      * Get a value from a properties file.
      *
-     * @param properties properties file
-     * @param key property name
+     * @param properties   properties file
+     * @param key          property name
      * @param defaultValue default value if not found in properties file
      * @return property value
      */
@@ -378,8 +378,8 @@ public class MCPatcherUtils {
     /**
      * Get a value from a properties file.
      *
-     * @param properties properties file
-     * @param key property name
+     * @param properties   properties file
+     * @param key          property name
      * @param defaultValue default value if not found in properties file
      * @return property value
      */
@@ -399,8 +399,8 @@ public class MCPatcherUtils {
     /**
      * Get a value from a properties file.
      *
-     * @param properties properties file
-     * @param key property name
+     * @param properties   properties file
+     * @param key          property name
      * @param defaultValue default value if not found in properties file
      * @return property value
      */
@@ -417,8 +417,8 @@ public class MCPatcherUtils {
     /**
      * Get a value from a properties file.
      *
-     * @param properties properties file
-     * @param key property name
+     * @param properties   properties file
+     * @param key          property name
      * @param defaultValue default value if not found in properties file
      * @return property value
      */

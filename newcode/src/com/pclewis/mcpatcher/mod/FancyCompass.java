@@ -3,7 +3,6 @@ package com.pclewis.mcpatcher.mod;
 import com.pclewis.mcpatcher.MCLogger;
 import com.pclewis.mcpatcher.MCPatcherUtils;
 import com.pclewis.mcpatcher.TexturePackAPI;
-import net.minecraft.client.Minecraft;
 import net.minecraft.src.Compass;
 import net.minecraft.src.RenderEngine;
 import org.lwjgl.input.Keyboard;
