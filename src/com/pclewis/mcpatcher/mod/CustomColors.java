@@ -712,6 +712,7 @@ public class CustomColors extends Mod {
 
             final MethodRef colorMultiplier = new MethodRef(getDeobfClass(), "colorMultiplier", "(LIBlockAccess;III)I");
             final FieldRef waterColorMultiplier = new FieldRef("BiomeGenBase", "waterColorMultiplier", "I");
+            final MethodRef getWaterColorMultiplier = new MethodRef("BiomeGenBase", "getWaterColorMultiplier", "()I");
 
             if (haveNewBiomes) {
                 addClassSignature(new BytecodeSignature() {
@@ -744,7 +745,11 @@ public class CustomColors extends Mod {
                     public String getMatchExpression() {
                         return buildExpression(
                             reference(INVOKEINTERFACE, new InterfaceMethodRef("IBlockAccess", "getBiomeGenAt", "(II)LBiomeGenBase;")),
-                            reference(GETFIELD, waterColorMultiplier)
+                            or(
+                                build(reference(GETFIELD, waterColorMultiplier)), // vMC
+                                build(reference(INVOKEVIRTUAL, getWaterColorMultiplier)) // forge
+                            )
+
                         );
                     }
 

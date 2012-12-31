@@ -6,6 +6,8 @@ import net.minecraft.src.BiomeGenBase;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.WorldChunkManager;
 
+import java.lang.reflect.Method;
+
 abstract class BiomeHelper {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
@@ -96,6 +98,7 @@ abstract class BiomeHelper {
     static class New extends BiomeHelper {
         private static boolean logged;
 
+        private Method getWaterColorMultiplier;
         private BiomeGenBase lastBiome;
         private int lastI;
         private int lastK;
@@ -105,6 +108,12 @@ abstract class BiomeHelper {
             if (!logged) {
                 logged = true;
                 logger.config("biomes v1.2 detected");
+            }
+            try {
+                getWaterColorMultiplier = BiomeGenBase.class.getDeclaredMethod("getWaterColorMultiplier");
+                getWaterColorMultiplier.setAccessible(true);
+                logger.config("forge getWaterColorMultiplier detected");
+            } catch (NoSuchMethodException e) {
             }
         }
 
@@ -135,7 +144,16 @@ abstract class BiomeHelper {
 
         @Override
         int getWaterColorMultiplier(int i, int j, int k) {
-            return getBiomeGenAt(i, j, k).waterColorMultiplier;
+            BiomeGenBase biome = getBiomeGenAt(i, j, k);
+            if (getWaterColorMultiplier != null) {
+                try {
+                    return (Integer) getWaterColorMultiplier.invoke(biome);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    getWaterColorMultiplier = null;
+                }
+            }
+            return biome.waterColorMultiplier;
         }
     }
 }
