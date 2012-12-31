@@ -216,7 +216,7 @@ public class MCPatcherUtils {
      *
      * @param mod          name of mod
      * @param tag          property name
-     * @param defaultValue default value if not found in .properties file
+     * @param defaultValue default value if not found in profile
      * @return String value
      */
     public static String getString(String mod, String tag, Object defaultValue) {
@@ -235,7 +235,7 @@ public class MCPatcherUtils {
      * Gets a value from mcpatcher.xml.
      *
      * @param tag          property name
-     * @param defaultValue default value if not found in .properties file
+     * @param defaultValue default value if not found in profile
      * @return String value
      */
     public static String getString(String tag, Object defaultValue) {
@@ -255,7 +255,7 @@ public class MCPatcherUtils {
      *
      * @param mod          name of mod
      * @param tag          property name
-     * @param defaultValue default value if not found in .properties file
+     * @param defaultValue default value if not found in profile
      * @return int value or 0
      */
     public static int getInt(String mod, String tag, int defaultValue) {
@@ -272,7 +272,7 @@ public class MCPatcherUtils {
      * Gets a value from mcpatcher.xml.
      *
      * @param tag          property name
-     * @param defaultValue default value if not found in .properties file
+     * @param defaultValue default value if not found in profile
      * @return int value or 0
      */
     public static int getInt(String tag, int defaultValue) {
@@ -290,7 +290,7 @@ public class MCPatcherUtils {
      *
      * @param mod          name of mod
      * @param tag          property name
-     * @param defaultValue default value if not found in .properties file
+     * @param defaultValue default value if not found in profile
      * @return boolean value
      */
     public static boolean getBoolean(String mod, String tag, boolean defaultValue) {
@@ -308,7 +308,7 @@ public class MCPatcherUtils {
      * Gets a value from mcpatcher.xml.
      *
      * @param tag          property name
-     * @param defaultValue default value if not found in .properties file
+     * @param defaultValue default value if not found in profile
      * @return boolean value
      */
     public static boolean getBoolean(String tag, boolean defaultValue) {
@@ -357,6 +357,82 @@ public class MCPatcherUtils {
         if (config != null) {
             config.remove(config.getModConfig(mod, tag));
         }
+    }
+
+    /**
+     * Get a value from a properties file.
+     *
+     * @param properties properties file
+     * @param key property name
+     * @param defaultValue default value if not found in properties file
+     * @return property value
+     */
+    public static String getStringProperty(Properties properties, String key, String defaultValue) {
+        if (properties == null) {
+            return defaultValue;
+        } else {
+            return properties.getProperty(key, defaultValue);
+        }
+    }
+
+    /**
+     * Get a value from a properties file.
+     *
+     * @param properties properties file
+     * @param key property name
+     * @param defaultValue default value if not found in properties file
+     * @return property value
+     */
+    public static int getIntProperty(Properties properties, String key, int defaultValue) {
+        if (properties != null) {
+            String value = properties.getProperty(key, "").trim();
+            if (!value.equals("")) {
+                try {
+                    return Integer.parseInt(value);
+                } catch (NumberFormatException e) {
+                }
+            }
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Get a value from a properties file.
+     *
+     * @param properties properties file
+     * @param key property name
+     * @param defaultValue default value if not found in properties file
+     * @return property value
+     */
+    public static boolean getBooleanProperty(Properties properties, String key, boolean defaultValue) {
+        if (properties != null) {
+            String value = properties.getProperty(key, "").trim().toLowerCase();
+            if (!value.equals("")) {
+                return Boolean.parseBoolean(value);
+            }
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Get a value from a properties file.
+     *
+     * @param properties properties file
+     * @param key property name
+     * @param defaultValue default value if not found in properties file
+     * @return property value
+     */
+    public static float getFloatProperty(Properties properties, String key, float defaultValue) {
+        if (properties != null) {
+            String value = properties.getProperty(key, "").trim();
+            if (!value.equals("")) {
+                try {
+                    return Float.parseFloat(value);
+                } catch (NumberFormatException e) {
+                }
+            }
+        }
+        return defaultValue;
     }
 
     /**
