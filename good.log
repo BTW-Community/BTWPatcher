@@ -1,6 +1,6 @@
-MCPatcher version is 2.4.5
+MCPatcher version is 2.4.5_01
 OS: Linux 3.6.10-2.fc16.x86_64 amd64
-JVM: Sun Microsystems Inc. 1.6.0_37 (64 bit)
+JVM: Sun Microsystems Inc. 1.6.0_38 (64 bit)
 Classpath: out/artifacts/mcpatcher/mcpatcher.jar
 Minecraft version is 1.4.6 (md5 48677dc4c2b98c29918722b5ab27b4fd)
 
@@ -56,6 +56,7 @@ Analyzing /home/prupe/.minecraft/bin/minecraft-1.4.6.jar (1933 files)
   EntitySplashFX matches azy.class
   EntityAuraFX matches baa.class
   EntitySuspendFX matches azz.class
+  EntityFireworkOverlayFX matches azg.class
   WorldServer matches azr.class
   WorldServer matches azr.class
   EffectRenderer matches azr.class
@@ -472,6 +473,7 @@ Analyzing /home/prupe/.minecraft/bin/minecraft-1.4.6.jar (methods and fields)
   RenderGlobal (bav.class)
   EffectRenderer (azr.class)
   EntityFireworkSparkFX (azh.class)
+  EntityFireworkOverlayFX (azg.class)
   Minecraft (net/minecraft/client/Minecraft.class)
   Block (amq.class)
    field blockID matches cm I
@@ -485,7 +487,7 @@ Analyzing /home/prupe/.minecraft/bin/minecraft-1.4.6.jar (methods and fields)
   RenderGlobal (bav.class)
   RenderBlocks (bbb.class)
 
-8 available mods:
+10 available mods:
 [YES] __Base 1.0 - Internal mod required by the patcher.
 [YES] __TexturePackBase 1.1 - Internal mod required by the patcher.
 [YES] HD Textures 1.5 - Provides support for high-resolution texture packs and custom animations.
@@ -1236,6 +1238,8 @@ Better Skies
     class Entity (lq.class)
     class EntityFX (azq.class)
         method getFXLayer -> b ()I
+    class EntityFireworkOverlayFX (azg.class) extends EntityFX
+        method getFXLayer -> b ()I
     class EntityFireworkSparkFX (azh.class) extends EntityFX
         method getFXLayer -> b ()I
     class IBlockAccess (ym.class)
@@ -1275,6 +1279,7 @@ Better Skies
     class net.minecraft.src.EffectRenderer alias for EffectRenderer
     class net.minecraft.src.Entity alias for Entity
     class net.minecraft.src.EntityFX alias for EntityFX
+    class net.minecraft.src.EntityFireworkOverlayFX alias for EntityFireworkOverlayFX
     class net.minecraft.src.EntityFireworkSparkFX alias for EntityFireworkSparkFX
     class net.minecraft.src.IBlockAccess alias for IBlockAccess
     class net.minecraft.src.RenderEngine alias for RenderEngine
@@ -1328,6 +1333,17 @@ Better Glass
 
 
 Patching...
+[*] __Base 1.0 - Internal mod required by the patcher.
+[*] __TexturePackBase 1.1 - Internal mod required by the patcher.
+[*] HD Textures 1.5 - Provides support for high-resolution texture packs and custom animations.
+[*] HD Font 1.4 - Provides support for higher resolution fonts.
+[*] Better Grass 1.1 - Improves the look of the sides of grass blocks. Inspired by MrMessiah's mod.
+[*] Random Mobs 1.4 - Randomize mob skins if texture pack supports it. Based on Balthichou's mod.
+[*] Custom Colors 1.4 - Gives texture packs control over hardcoded colors in the game.
+[*] Connected Textures 1.5 - Connects adjacent blocks of the same type.
+[*] Better Skies 1.2 - Adds support for custom skyboxes.
+[*] Better Glass 1.9 - Enables partial transparency for glass blocks.
+
  applying GetResource patch to ars.class for mod __TexturePackBase
     ImageIO.read(getResource(...)) -> getImage(...) <init>()V@10
      INVOKEVIRTUAL 0x00 0x14   NOP
@@ -6494,36 +6510,36 @@ Patching...
      PUTFIELD 0x00 0x32        PUTFIELD 0x02 0x0b
     field ref net.minecraft.src.RenderEngine.blurTexture Z -> bba.b Z refresh()Z@125
      PUTFIELD 0x00 0x32        PUTFIELD 0x02 0x0b
-    field ref net.minecraft.src.Compass.currentAngle D -> bdf.a D onTick(Lbdf;)V@562
-     GETFIELD 0x00 0x65        GETFIELD 0x02 0x0f
+    field ref net.minecraft.src.Compass.currentAngle D -> bdf.a D onTick(Lbdf;)V@602
+     GETFIELD 0x00 0x6f        GETFIELD 0x02 0x0f
     method ref net.minecraft.src.RenderEngine.deleteTexture (I)V -> bba.a (I)V finish()V@33
-     INVOKEVIRTUAL 0x00 0x75   INVOKEVIRTUAL 0x02 0x11
+     INVOKEVIRTUAL 0x00 0x7f   INVOKEVIRTUAL 0x02 0x11
     method ref net.minecraft.src.RenderEngine.deleteTexture (I)V -> bba.a (I)V finish()V@48
-     INVOKEVIRTUAL 0x00 0x75   INVOKEVIRTUAL 0x02 0x11
+     INVOKEVIRTUAL 0x00 0x7f   INVOKEVIRTUAL 0x02 0x11
     method ref net.minecraft.src.RenderEngine.deleteTexture (I)V -> bba.a (I)V finish()V@63
-     INVOKEVIRTUAL 0x00 0x75   INVOKEVIRTUAL 0x02 0x11
+     INVOKEVIRTUAL 0x00 0x7f   INVOKEVIRTUAL 0x02 0x11
     method ref net.minecraft.src.RenderEngine.deleteTexture (I)V -> bba.a (I)V finish()V@78
-     INVOKEVIRTUAL 0x00 0x75   INVOKEVIRTUAL 0x02 0x11
+     INVOKEVIRTUAL 0x00 0x7f   INVOKEVIRTUAL 0x02 0x11
     method ref com.pclewis.mcpatcher.mod.FancyCompass.onTick (Lnet/minecraft/src/Compass;)V -> com.pclewis.mcpatcher.mod.FancyCompass.onTick (Lbdf;)V update(Lbdf;)V@10
-     INVOKESPECIAL 0x00 0x90   INVOKESPECIAL 0x02 0x13
+     INVOKESPECIAL 0x00 0x91   INVOKESPECIAL 0x02 0x13
    string replace Lnet/minecraft/src/RenderEngine; -> Lbba; @319
-   string replace Lnet/minecraft/src/Compass; -> Lbdf; @2873
+   string replace Lnet/minecraft/src/Compass; -> Lbdf; @2958
   adding com/pclewis/mcpatcher/mod/MipmapHelper.class for HD Textures
    method signature (Lnet/minecraft/src/RenderEngine;Ljava/awt/image/BufferedImage;ILjava/lang/String;)V -> (Lbba;Ljava/awt/image/BufferedImage;ILjava/lang/String;)V
    method signature (Lnet/minecraft/src/RenderEngine;Ljava/util/ArrayList;ILjava/lang/String;)V -> (Lbba;Ljava/util/ArrayList;ILjava/lang/String;)V
    method signature (IIIIIIIILjava/nio/ByteBuffer;Lnet/minecraft/src/TextureFX;)V -> (IIIIIIIILjava/nio/ByteBuffer;Lbdg;)V
-    method ref com.pclewis.mcpatcher.mod.MipmapHelper.setupTextureMipmaps (Lnet/minecraft/src/RenderEngine;Ljava/util/ArrayList;ILjava/lang/String;)V -> com.pclewis.mcpatcher.mod.MipmapHelper.setupTextureMipmaps (Lbba;Ljava/util/ArrayList;ILjava/lang/String;)V setupTexture(Lbba;Ljava/awt/image/BufferedImage;ILjava/lang/String;)V@21
-     INVOKESTATIC 0x00 0x03    INVOKESTATIC 0x02 0xc0
+    method ref com.pclewis.mcpatcher.mod.MipmapHelper.setupTextureMipmaps (Lnet/minecraft/src/RenderEngine;Ljava/util/ArrayList;ILjava/lang/String;)V -> com.pclewis.mcpatcher.mod.MipmapHelper.setupTextureMipmaps (Lbba;Ljava/util/ArrayList;ILjava/lang/String;)V setupTexture(Lbba;Ljava/awt/image/BufferedImage;ILjava/lang/String;)V@31
+     INVOKESTATIC 0x00 0x04    INVOKESTATIC 0x03 0x04
     method ref net.minecraft.src.RenderEngine.setupTexture (Ljava/awt/image/BufferedImage;I)V -> bba.a (Ljava/awt/image/BufferedImage;I)V setupTextureMipmaps(Lbba;Ljava/util/ArrayList;ILjava/lang/String;)V@171
-     INVOKEVIRTUAL 0x00 0x38   INVOKEVIRTUAL 0x02 0xc4
+     INVOKEVIRTUAL 0x00 0x37   INVOKEVIRTUAL 0x03 0x08
     field ref net.minecraft.src.TextureFX.tileImage I -> bdg.i I glTexSubImage2D(IIIIIIIILjava/nio/ByteBuffer;Lbdg;)V@19
-     GETFIELD 0x00 0x3f        GETFIELD 0x02 0xc8
+     GETFIELD 0x00 0x3e        GETFIELD 0x03 0x0c
     field ref net.minecraft.client.Minecraft.renderEngine Lnet/minecraft/src/RenderEngine; -> net/minecraft/client/Minecraft.o Lbba; forceMipmapType(Ljava/lang/String;I)V@98
-     GETFIELD 0x00 0x8b        GETFIELD 0x02 0xcc
+     GETFIELD 0x00 0x88        GETFIELD 0x03 0x10
     method ref com.pclewis.mcpatcher.mod.MipmapHelper.setupTexture (Lnet/minecraft/src/RenderEngine;Ljava/awt/image/BufferedImage;ILjava/lang/String;)V -> com.pclewis.mcpatcher.mod.MipmapHelper.setupTexture (Lbba;Ljava/awt/image/BufferedImage;ILjava/lang/String;)V forceMipmapType(Ljava/lang/String;I)V@107
-     INVOKESTATIC 0x00 0x8c    INVOKESTATIC 0x02 0xce
+     INVOKESTATIC 0x00 0x89    INVOKESTATIC 0x03 0x12
    string replace Lnet/minecraft/src/RenderEngine; -> Lbba; @288
-   string replace Lnet/minecraft/src/TextureFX; -> Lbdg; @3806
+   string replace Lnet/minecraft/src/TextureFX; -> Lbdg; @3572
   adding com/pclewis/mcpatcher/mod/FontUtils.class for HD Font
    method signature (Lnet/minecraft/client/Minecraft;Lnet/minecraft/src/FontRenderer;Ljava/lang/String;)V -> (Lnet/minecraft/client/Minecraft;Latq;Ljava/lang/String;)V
    method signature (Lnet/minecraft/src/FontRenderer;Ljava/lang/String;Ljava/awt/image/BufferedImage;[I[I)[F -> (Latq;Ljava/lang/String;Ljava/awt/image/BufferedImage;[I[I)[F
@@ -7258,7 +7274,7 @@ Patching...
      GETFIELD 0x00 0x3b        GETFIELD 0x02 0x3a
     method ref net.minecraft.src.RenderEngine.allocateAndSetupTexture (Ljava/awt/image/BufferedImage;)I -> bba.a (Ljava/awt/image/BufferedImage;)I <init>(Ljava/awt/image/BufferedImage;I)V@22
      INVOKEVIRTUAL 0x00 0x3c   INVOKEVIRTUAL 0x02 0x3e
-    field ref net.minecraft.src.Block.blocksList [Lnet/minecraft/src/Block; -> amq.p [Lamq; <init>(Ljava/lang/String;Ljava/util/Properties;)V@175
+    field ref net.minecraft.src.Block.blocksList [Lnet/minecraft/src/Block; -> amq.p [Lamq; <init>(Ljava/lang/String;Ljava/util/Properties;)V@171
      GETSTATIC 0x00 0x54       GETSTATIC 0x02 0x44
     field ref net.minecraft.src.Block.blocksList [Lnet/minecraft/src/Block; -> amq.p [Lamq; shouldConnect(Lym;Lamq;IIIII[I)Z@55
      GETSTATIC 0x00 0x54       GETSTATIC 0x02 0x44
@@ -7495,11 +7511,11 @@ Patching...
    string replace Lnet/minecraft/src/World; -> Lyc; @309
   adding com/pclewis/mcpatcher/mod/SkyRenderer$1.class for Better Skies
     method ref net.minecraft.client.Minecraft.getWorld ()Lnet/minecraft/src/World; -> net/minecraft/client/Minecraft.getWorld ()Lyc; onChange()V@9
-     INVOKEVIRTUAL 0x00 0x05   INVOKEVIRTUAL 0x00 0x49
+     INVOKEVIRTUAL 0x00 0x05   INVOKEVIRTUAL 0x00 0x4e
     field ref net.minecraft.src.World.worldProvider Lnet/minecraft/src/WorldProvider; -> yc.u Laaq; onChange()V@18
-     GETFIELD 0x00 0x06        GETFIELD 0x00 0x4f
+     GETFIELD 0x00 0x06        GETFIELD 0x00 0x54
     field ref net.minecraft.src.WorldProvider.worldType I -> aaq.h I onChange()V@21
-     GETFIELD 0x00 0x07        GETFIELD 0x00 0x54
+     GETFIELD 0x00 0x07        GETFIELD 0x00 0x59
    string replace Lnet/minecraft/src/World; -> Lyc; @313
   adding com/pclewis/mcpatcher/mod/SkyRenderer$WorldEntry.class for Better Skies
    method signature (Lnet/minecraft/src/Tessellator;)V -> (Lbaz;)V
@@ -7545,9 +7561,11 @@ Patching...
   adding com/pclewis/mcpatcher/mod/FireworksHelper.class for Better Skies
    method signature (Lnet/minecraft/src/EntityFX;)I -> (Lazq;)I
     class ref net.minecraft.src.EntityFireworkSparkFX -> azh getFXLayer(Lazq;)I@7
-     INSTANCEOF 0x00 0x03      INSTANCEOF 0x00 0x64
-    method ref net.minecraft.src.EntityFX.getFXLayer ()I -> azq.b ()I getFXLayer(Lazq;)I@16
-     INVOKEVIRTUAL 0x00 0x04   INVOKEVIRTUAL 0x00 0x69
+     INSTANCEOF 0x00 0x03      INSTANCEOF 0x00 0x73
+    class ref net.minecraft.src.EntityFireworkOverlayFX -> azg getFXLayer(Lazq;)I@14
+     INSTANCEOF 0x00 0x04      INSTANCEOF 0x00 0x75
+    method ref net.minecraft.src.EntityFX.getFXLayer ()I -> azq.b ()I getFXLayer(Lazq;)I@23
+     INVOKEVIRTUAL 0x00 0x05   INVOKEVIRTUAL 0x00 0x7a
    string replace Lnet/minecraft/src/EntityFX; -> Lazq; @237
   adding com/pclewis/mcpatcher/mod/RenderPass.class for Better Glass
    method signature (Lnet/minecraft/src/Block;)I -> (Lamq;)I
@@ -8019,6 +8037,7 @@ Better Skies
         [1] override entity fx layer
         [1] override particle blending method
         [1] render extra fx layers
+    EntityFireworkOverlayFX (azg.class)
     EntityFireworkSparkFX (azh.class)
     Minecraft (net/minecraft/client/Minecraft.class)
     RenderGlobal (bav.class)
