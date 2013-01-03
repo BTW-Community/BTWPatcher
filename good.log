@@ -1,4 +1,4 @@
-MCPatcher version is 2.4.5_01
+MCPatcher version is 2.4.5_02
 OS: Linux 3.6.10-2.fc16.x86_64 amd64
 JVM: Sun Microsystems Inc. 1.6.0_38 (64 bit)
 Classpath: out/artifacts/mcpatcher/mcpatcher.jar
@@ -186,7 +186,6 @@ Analyzing /home/prupe/.minecraft/bin/minecraft-1.4.6.jar (1933 files)
   RecipesDyedArmor matches we.class
   ColorizerFoliage matches xy.class
   World matches yc.class
-   getSkyColor matches a (Llq;F)Laoj;
    getSunAngle matches b (F)F
   World matches yc.class
    getRainStrength matches j (F)F
@@ -1011,6 +1010,7 @@ Custom Colors
         field colorCode -> g [I
         field fontTextureName -> a I
     class GameSettings (ast.class)
+        field fancyGraphics -> j Z
         field gammaSetting -> ag F
     class IBlockAccess (ym.class)
         method getBiomeGenAt -> a (II)Lyy;
@@ -1063,6 +1063,7 @@ Custom Colors
     class RenderGlobal (bav.class)
         method renderClouds -> b (F)V
         method renderSky -> a (F)V
+        field mc -> q Lnet/minecraft/client/Minecraft;
     class RenderLiving (bcj.class)
     class RenderWolf (bdc.class) extends RenderLiving
     class RenderXPOrb (bbw.class)
@@ -1077,7 +1078,6 @@ Custom Colors
         method getBiomeGenAt -> a (II)Lyy;
         method getBlockId -> a (III)I
         method getBlockMetadata -> h (III)I
-        method getSkyColor -> a (Llq;F)Laoj;
         method getSunAngle -> b (F)F
         method getWorldChunkManager -> t ()Lzd;
         field lightningFlash -> q I
@@ -5980,7 +5980,7 @@ Patching...
                                NOP
                                NOP
                                NOP
-                               INVOKESTATIC 0x00 0xfa
+                               INVOKESTATIC 0x00 0xfd
  applying BlockMycelium patch to alg.class for mod Better Grass
     insert field grassMatrix [[I
     initialize grassMatrix <init>(I)V@28
@@ -6483,45 +6483,45 @@ Patching...
    method signature (Lnet/minecraft/src/Compass;)V -> (Lbdf;)V
    method signature (Lnet/minecraft/src/Compass;)V -> (Lbdf;)V
     field ref net.minecraft.client.Minecraft.renderEngine Lnet/minecraft/src/RenderEngine; -> net/minecraft/client/Minecraft.o Lbba; <init>()V@7
-     GETFIELD 0x00 0x03        GETFIELD 0x02 0x01
+     GETFIELD 0x00 0x03        GETFIELD 0x02 0x18
     field ref net.minecraft.client.Minecraft.renderEngine Lnet/minecraft/src/RenderEngine; -> net/minecraft/client/Minecraft.o Lbba; finish()V@17
-     GETFIELD 0x00 0x03        GETFIELD 0x02 0x01
+     GETFIELD 0x00 0x03        GETFIELD 0x02 0x18
     field ref net.minecraft.client.Minecraft.renderEngine Lnet/minecraft/src/RenderEngine; -> net/minecraft/client/Minecraft.o Lbba; refresh()Z@89
-     GETFIELD 0x00 0x03        GETFIELD 0x02 0x01
+     GETFIELD 0x00 0x03        GETFIELD 0x02 0x18
     field ref net.minecraft.client.Minecraft.renderEngine Lnet/minecraft/src/RenderEngine; -> net/minecraft/client/Minecraft.o Lbba; refresh()Z@107
-     GETFIELD 0x00 0x03        GETFIELD 0x02 0x01
+     GETFIELD 0x00 0x03        GETFIELD 0x02 0x18
     field ref net.minecraft.client.Minecraft.renderEngine Lnet/minecraft/src/RenderEngine; -> net/minecraft/client/Minecraft.o Lbba; refresh()Z@121
-     GETFIELD 0x00 0x03        GETFIELD 0x02 0x01
+     GETFIELD 0x00 0x03        GETFIELD 0x02 0x18
     method ref net.minecraft.src.RenderEngine.getTexture (Ljava/lang/String;)I -> bba.b (Ljava/lang/String;)I <init>()V@15
-     INVOKEVIRTUAL 0x00 0x05   INVOKEVIRTUAL 0x02 0x06
+     INVOKEVIRTUAL 0x00 0x05   INVOKEVIRTUAL 0x02 0x1d
     method ref net.minecraft.src.RenderEngine.allocateAndSetupTexture (Ljava/awt/image/BufferedImage;)I -> bba.a (Ljava/awt/image/BufferedImage;)I <init>()V@146
-     INVOKEVIRTUAL 0x00 0x19   INVOKEVIRTUAL 0x02 0x09
+     INVOKEVIRTUAL 0x00 0x19   INVOKEVIRTUAL 0x02 0x20
     method ref net.minecraft.src.RenderEngine.allocateAndSetupTexture (Ljava/awt/image/BufferedImage;)I -> bba.a (Ljava/awt/image/BufferedImage;)I <init>()V@458
-     INVOKEVIRTUAL 0x00 0x19   INVOKEVIRTUAL 0x02 0x09
+     INVOKEVIRTUAL 0x00 0x19   INVOKEVIRTUAL 0x02 0x20
     method ref net.minecraft.src.RenderEngine.allocateAndSetupTexture (Ljava/awt/image/BufferedImage;)I -> bba.a (Ljava/awt/image/BufferedImage;)I <init>()V@475
-     INVOKEVIRTUAL 0x00 0x19   INVOKEVIRTUAL 0x02 0x09
+     INVOKEVIRTUAL 0x00 0x19   INVOKEVIRTUAL 0x02 0x20
     method ref net.minecraft.src.RenderEngine.allocateAndSetupTexture (Ljava/awt/image/BufferedImage;)I -> bba.a (Ljava/awt/image/BufferedImage;)I <init>()V@505
-     INVOKEVIRTUAL 0x00 0x19   INVOKEVIRTUAL 0x02 0x09
+     INVOKEVIRTUAL 0x00 0x19   INVOKEVIRTUAL 0x02 0x20
     field ref net.minecraft.src.RenderEngine.blurTexture Z -> bba.b Z <init>()V@324
-     PUTFIELD 0x00 0x32        PUTFIELD 0x02 0x0b
+     PUTFIELD 0x00 0x32        PUTFIELD 0x02 0x22
     field ref net.minecraft.src.RenderEngine.blurTexture Z -> bba.b Z refresh()Z@93
-     PUTFIELD 0x00 0x32        PUTFIELD 0x02 0x0b
+     PUTFIELD 0x00 0x32        PUTFIELD 0x02 0x22
     field ref net.minecraft.src.RenderEngine.blurTexture Z -> bba.b Z refresh()Z@111
-     PUTFIELD 0x00 0x32        PUTFIELD 0x02 0x0b
+     PUTFIELD 0x00 0x32        PUTFIELD 0x02 0x22
     field ref net.minecraft.src.RenderEngine.blurTexture Z -> bba.b Z refresh()Z@125
-     PUTFIELD 0x00 0x32        PUTFIELD 0x02 0x0b
-    field ref net.minecraft.src.Compass.currentAngle D -> bdf.a D onTick(Lbdf;)V@602
-     GETFIELD 0x00 0x6f        GETFIELD 0x02 0x0f
+     PUTFIELD 0x00 0x32        PUTFIELD 0x02 0x22
+    field ref net.minecraft.src.Compass.currentAngle D -> bdf.a D onTick(Lbdf;)V@641
+     GETFIELD 0x00 0x73        GETFIELD 0x02 0x26
     method ref net.minecraft.src.RenderEngine.deleteTexture (I)V -> bba.a (I)V finish()V@33
-     INVOKEVIRTUAL 0x00 0x7f   INVOKEVIRTUAL 0x02 0x11
+     INVOKEVIRTUAL 0x00 0x83   INVOKEVIRTUAL 0x02 0x28
     method ref net.minecraft.src.RenderEngine.deleteTexture (I)V -> bba.a (I)V finish()V@48
-     INVOKEVIRTUAL 0x00 0x7f   INVOKEVIRTUAL 0x02 0x11
+     INVOKEVIRTUAL 0x00 0x83   INVOKEVIRTUAL 0x02 0x28
     method ref net.minecraft.src.RenderEngine.deleteTexture (I)V -> bba.a (I)V finish()V@63
-     INVOKEVIRTUAL 0x00 0x7f   INVOKEVIRTUAL 0x02 0x11
+     INVOKEVIRTUAL 0x00 0x83   INVOKEVIRTUAL 0x02 0x28
     method ref net.minecraft.src.RenderEngine.deleteTexture (I)V -> bba.a (I)V finish()V@78
-     INVOKEVIRTUAL 0x00 0x7f   INVOKEVIRTUAL 0x02 0x11
+     INVOKEVIRTUAL 0x00 0x83   INVOKEVIRTUAL 0x02 0x28
     method ref com.pclewis.mcpatcher.mod.FancyCompass.onTick (Lnet/minecraft/src/Compass;)V -> com.pclewis.mcpatcher.mod.FancyCompass.onTick (Lbdf;)V update(Lbdf;)V@10
-     INVOKESPECIAL 0x00 0x91   INVOKESPECIAL 0x02 0x13
+     INVOKESPECIAL 0x00 0x95   INVOKESPECIAL 0x02 0x2a
    string replace Lnet/minecraft/src/RenderEngine; -> Lbba; @319
    string replace Lnet/minecraft/src/Compass; -> Lbdf; @2958
   adding com/pclewis/mcpatcher/mod/MipmapHelper.class for HD Textures
@@ -7005,30 +7005,32 @@ Patching...
    method signature (III)Lnet/minecraft/src/BiomeGenBase; -> (III)Lyy;
    field signature Lnet/minecraft/src/BiomeGenBase; -> Lyy;
     method ref com.pclewis.mcpatcher.mod.BiomeHelper.<init> (Lnet/minecraft/src/IBlockAccess;)V -> com.pclewis.mcpatcher.mod.BiomeHelper.<init> (Lym;)V <init>(Lym;)V@2
-     INVOKESPECIAL 0x00 0x01   INVOKESPECIAL 0x00 0x56
+     INVOKESPECIAL 0x00 0x01   INVOKESPECIAL 0x00 0x7e
     field ref com.pclewis.mcpatcher.mod.BiomeHelper$New.lastBiome Lnet/minecraft/src/BiomeGenBase; -> com.pclewis.mcpatcher.mod.BiomeHelper$New.lastBiome Lyy; getBiomeGenAt(III)Lyy;@1
-     GETFIELD 0x00 0x07        GETFIELD 0x00 0x58
+     GETFIELD 0x00 0x0f        GETFIELD 0x00 0x80
     field ref com.pclewis.mcpatcher.mod.BiomeHelper$New.lastBiome Lnet/minecraft/src/BiomeGenBase; -> com.pclewis.mcpatcher.mod.BiomeHelper$New.lastBiome Lyy; getBiomeGenAt(III)Lyy;@45
-     PUTFIELD 0x00 0x07        PUTFIELD 0x00 0x58
+     PUTFIELD 0x00 0x0f        PUTFIELD 0x00 0x80
     field ref com.pclewis.mcpatcher.mod.BiomeHelper$New.lastBiome Lnet/minecraft/src/BiomeGenBase; -> com.pclewis.mcpatcher.mod.BiomeHelper$New.lastBiome Lyy; getBiomeGenAt(III)Lyy;@49
-     GETFIELD 0x00 0x07        GETFIELD 0x00 0x58
+     GETFIELD 0x00 0x0f        GETFIELD 0x00 0x80
     field ref com.pclewis.mcpatcher.mod.BiomeHelper$New.blockAccess Lnet/minecraft/src/IBlockAccess; -> com.pclewis.mcpatcher.mod.BiomeHelper$New.blockAccess Lym; getBiomeGenAt(III)Lyy;@35
-     GETFIELD 0x00 0x0a        GETFIELD 0x00 0x5b
+     GETFIELD 0x00 0x12        GETFIELD 0x00 0x83
     interface method ref net.minecraft.src.IBlockAccess.getBiomeGenAt (II)Lnet/minecraft/src/BiomeGenBase; -> ym.a (II)Lyy; getBiomeGenAt(III)Lyy;@40
-     INVOKEINTERFACE 0x00 0x0b 0x03 0x00  INVOKEINTERFACE 0x00 0x61 0x03 0x00
+     INVOKEINTERFACE 0x00 0x13 0x03 0x00  INVOKEINTERFACE 0x00 0x89 0x03 0x00
     method ref com.pclewis.mcpatcher.mod.BiomeHelper$New.getBiomeGenAt (III)Lnet/minecraft/src/BiomeGenBase; -> com.pclewis.mcpatcher.mod.BiomeHelper$New.getBiomeGenAt (III)Lyy; getTemperature(III)F@4
-     INVOKEVIRTUAL 0x00 0x0c   INVOKEVIRTUAL 0x00 0x63
+     INVOKEVIRTUAL 0x00 0x14   INVOKEVIRTUAL 0x00 0x8b
     method ref com.pclewis.mcpatcher.mod.BiomeHelper$New.getBiomeGenAt (III)Lnet/minecraft/src/BiomeGenBase; -> com.pclewis.mcpatcher.mod.BiomeHelper$New.getBiomeGenAt (III)Lyy; getRainfall(III)F@4
-     INVOKEVIRTUAL 0x00 0x0c   INVOKEVIRTUAL 0x00 0x63
+     INVOKEVIRTUAL 0x00 0x14   INVOKEVIRTUAL 0x00 0x8b
     method ref com.pclewis.mcpatcher.mod.BiomeHelper$New.getBiomeGenAt (III)Lnet/minecraft/src/BiomeGenBase; -> com.pclewis.mcpatcher.mod.BiomeHelper$New.getBiomeGenAt (III)Lyy; getWaterColorMultiplier(III)I@4
-     INVOKEVIRTUAL 0x00 0x0c   INVOKEVIRTUAL 0x00 0x63
+     INVOKEVIRTUAL 0x00 0x14   INVOKEVIRTUAL 0x00 0x8b
     method ref net.minecraft.src.BiomeGenBase.getTemperaturef ()F -> yy.j ()F getTemperature(III)F@7
-     INVOKEVIRTUAL 0x00 0x0d   INVOKEVIRTUAL 0x00 0x67
+     INVOKEVIRTUAL 0x00 0x15   INVOKEVIRTUAL 0x00 0x8f
     method ref net.minecraft.src.BiomeGenBase.getRainfallf ()F -> yy.i ()F getRainfall(III)F@7
-     INVOKEVIRTUAL 0x00 0x0e   INVOKEVIRTUAL 0x00 0x69
-    field ref net.minecraft.src.BiomeGenBase.waterColorMultiplier I -> yy.H I getWaterColorMultiplier(III)I@7
-     GETFIELD 0x00 0x0f        GETFIELD 0x00 0x6c
-   string replace Lnet/minecraft/src/IBlockAccess; -> Lym; @233
+     INVOKEVIRTUAL 0x00 0x16   INVOKEVIRTUAL 0x00 0x91
+    field ref net.minecraft.src.BiomeGenBase.waterColorMultiplier I -> yy.H I getWaterColorMultiplier(III)I@50
+     GETFIELD 0x00 0x1c        GETFIELD 0x00 0x94
+   string replace Lnet/minecraft/src/IBlockAccess; -> Lym; @310
+   string replace net/minecraft/src/BiomeGenBase -> yy @556
+   string replace Lnet/minecraft/src/BiomeGenBase; -> Lyy; @1191
   adding com/pclewis/mcpatcher/mod/CTMUtils.class for Connected Textures
    method signature (Lnet/minecraft/src/IBlockAccess;I)Z -> (Lym;I)Z
    method signature (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;IIIII)Z -> (Lbbb;Lamq;IIIII)Z
