@@ -547,7 +547,7 @@ public class ConnectedTextures extends Mod {
                         renderBlockPaneMapped = map(renderBlockPane);
                     }
                     MethodInfo methodInfo = getMethodInfo();
-                    return methodInfo.getDescriptor().matches("^\\(L[a-z]+;III.*") &&
+                    return methodInfo.getDescriptor().matches("^\\(L[a-z]+;III.*[IVZ]$") &&
                         !(methodInfo.getDescriptor().equals(renderBlockPaneMapped.getType()) &&
                             methodInfo.getName().equals(renderBlockPaneMapped.getName()));
                 }
@@ -574,6 +574,13 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public byte[] getInsertBytes() throws IOException {
                     Logger.log(Logger.LOG_BYTECODE, "tessellator register %d", tessellatorRegister);
+                    final byte[] returnCode;
+                    if (getMethodInfo().getDescriptor().endsWith("V")) {
+                        Logger.log(Logger.LOG_BYTECODE, "%s method return type void", getDeobfClass());
+                        returnCode = new byte[]{(byte) RETURN};
+                    } else {
+                        returnCode = new byte[]{ICONST_0, (byte) IRETURN};
+                    }
                     return buildCode(
                         // if (overrideBlockTexture < 0
                         ALOAD_0,
@@ -605,9 +612,8 @@ public class ConnectedTextures extends Mod {
                         reference(INVOKESTATIC, skipDefaultRendering),
                         IFEQ, branch("B"),
 
-                        // return false;
-                        push(0),
-                        IRETURN,
+                        // return false; / return;
+                        returnCode,
 
                         // }
                         label("B")
