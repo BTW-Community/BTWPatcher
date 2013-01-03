@@ -32,6 +32,8 @@ public class FancyCompass {
     private static final float RELATIVE_Y = (COMPASS_TILE_NUM / 16) / 16.0f;
 
     private static final boolean fboSupported = GLContext.getCapabilities().GL_EXT_framebuffer_object;
+    private static final boolean gl13Supported = GLContext.getCapabilities().OpenGL13;
+    private static final boolean useGL13 = MCPatcherUtils.getBoolean(MCPatcherUtils.HD_TEXTURES, "useGL13", true);
     private static final int drawList = GL11.glGenLists(1);
 
     private static FancyCompass instance;
@@ -60,6 +62,11 @@ public class FancyCompass {
     private float scaleYDelta;
     private float offsetXDelta;
     private float offsetYDelta;
+
+    static {
+        logger.config("fbo: supported=%s", fboSupported);
+        logger.config("GL13: supported=%s, enabled=%s", gl13Supported, useGL13);
+    }
 
     private FancyCompass() {
         RenderEngine renderEngine = MCPatcherUtils.getMinecraft().renderEngine;
@@ -161,7 +168,11 @@ public class FancyCompass {
             logger.info("offsetY = %f", offsetY + offsetYDelta);
         }
 
-        GL11.glPushAttrib(GL11.GL_VIEWPORT_BIT | GL11.GL_SCISSOR_BIT | GL11.GL_DEPTH_BITS | GL11.GL_LIGHTING_BIT);
+        int bits = GL11.GL_VIEWPORT_BIT | GL11.GL_SCISSOR_BIT | GL11.GL_DEPTH_BITS | GL11.GL_LIGHTING_BIT;
+        if (gl13Supported && useGL13) {
+            bits |= GL13.GL_MULTISAMPLE_BIT;
+        }
+        GL11.glPushAttrib(bits);
         if (scratchTexture >= 0) {
             GL11.glViewport(0, 0, tileSize, tileSize);
         } else {
@@ -188,6 +199,9 @@ public class FancyCompass {
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
         GL11.glDisable(GL11.GL_LIGHTING);
+        if (gl13Supported && useGL13) {
+            GL11.glDisable(GL13.GL_MULTISAMPLE);
+        }
 
         GL11.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
