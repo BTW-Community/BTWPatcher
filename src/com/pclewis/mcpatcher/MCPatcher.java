@@ -128,7 +128,7 @@ final public class MCPatcher {
                 MCPatcherUtils.set(MCPatcherUtils.HD_TEXTURES, "mipmap", false);
                 MCPatcherUtils.set(MCPatcherUtils.HD_TEXTURES, "maxMipmapLevel", 3);
             }
-            if (lastVersion.compareTo("2.3") > 0) {
+            if (lastVersion.compareTo("2.3") < 0) {
                 MinecraftJar.fixJarNames();
             }
         }

@@ -169,6 +169,9 @@ final public class MinecraftVersion {
             addKnownVersion("13w01a", "57dd5c298dff8906b4fe406f81d6914d");
             addKnownVersion("13w01b", "0a1cb9b3ea4381d898316109e58f5635");
 
+            // New texture pack format
+            addKnownVersion("13w02a", "1b794176aabd9c0e2be09ee9c8a45d77");
+
             for (int i = 0; i < versionOrdering.size(); i++) {
                 MinecraftVersion a = versionOrdering.get(i);
                 for (int j = 0; j < versionOrdering.size(); j++) {
