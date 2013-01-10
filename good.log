@@ -1,10 +1,10 @@
 MCPatcher version is 2.4.5_02
-OS: Linux 3.6.10-2.fc16.x86_64 amd64
+OS: Linux 3.6.11-1.fc16.x86_64 amd64
 JVM: Sun Microsystems Inc. 1.6.0_38 (64 bit)
 Classpath: out/artifacts/mcpatcher/mcpatcher.jar
-Minecraft version is 1.4.6 (md5 48677dc4c2b98c29918722b5ab27b4fd)
+Minecraft version is 1.4.7 (md5 8e80fb01b321c6b3c7efca397a3eea35)
 
-Analyzing /home/prupe/.minecraft/bin/minecraft-1.4.6.jar (1933 files)
+Analyzing /home/prupe/.minecraft/bin/minecraft-1.4.7.jar (1933 files)
   GameSettings matches ast.class
   GLAllocation matches arx.class
    createDirectByteBuffer matches c (I)Ljava/nio/ByteBuffer;
@@ -237,7 +237,7 @@ Analyzing /home/prupe/.minecraft/bin/minecraft-1.4.6.jar (1933 files)
    getRenderBlockPass matches n ()I
   BlockLilyPad matches anf.class
 
-Analyzing /home/prupe/.minecraft/bin/minecraft-1.4.6.jar (5 dependent classes)
+Analyzing /home/prupe/.minecraft/bin/minecraft-1.4.7.jar (5 dependent classes)
   ITexturePack matches bem.class (pass 2)
   ITexturePack matches bem.class (pass 2)
   ColorizerWater matches yw.class (pass 2)
@@ -247,7 +247,7 @@ Analyzing /home/prupe/.minecraft/bin/minecraft-1.4.6.jar (5 dependent classes)
   ColorizerFoliage matches xy.class (pass 2)
    loadColorBuffer matches a ([I)V
 
-Analyzing /home/prupe/.minecraft/bin/minecraft-1.4.6.jar (methods and fields)
+Analyzing /home/prupe/.minecraft/bin/minecraft-1.4.7.jar (methods and fields)
   Minecraft (net/minecraft/client/Minecraft.class)
   Minecraft (net/minecraft/client/Minecraft.class)
    field texturePackList matches C Lben;
