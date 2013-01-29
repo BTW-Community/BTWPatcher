@@ -1,5 +1,9 @@
-MCPatcher is a bytecode-level patcher for Minecraft. The main use right now
-is changing the hard-coded texture sizes, but it is eventually intended to
-apply arbitrary patches.
+MCPatcher is a bytecode-level patcher for Minecraft. Its original purpose was
+changing the hard-coded texture sizes, but it now adds a variety of graphical
+enhancements to the game such as connected textures, random mob skins, and
+custom skyboxes.
+
+Additionally it offers a Java API for applying your own arbitrary patches to
+the game.
 
 See LICENSE for license details.
