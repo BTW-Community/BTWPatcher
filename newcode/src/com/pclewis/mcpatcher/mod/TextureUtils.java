@@ -255,7 +255,12 @@ public class TextureUtils {
             textureFX.imageData = new byte[TileSize.int_numBytes];
         }
         try {
-            Method setup = textureFXClass.getDeclaredMethod("setup");
+            Method setup;
+            try {
+                setup = textureFXClass.getDeclaredMethod("setup");
+            } catch (NoSuchMethodException e) {
+                setup = textureFXClass.getMethod("setup");
+            }
             setup.setAccessible(true);
             logger.info("calling %s", setup);
             setup.invoke(textureFX);
