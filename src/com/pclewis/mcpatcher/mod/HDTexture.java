@@ -711,8 +711,6 @@ public class HDTexture extends BaseTexturePackMod {
             final FieldRef currentAngle = new FieldRef(getDeobfClass(), "currentAngle", "D");
             final FieldRef targetAngle = new FieldRef(getDeobfClass(), "targetAngle", "D");
             final FieldRef instance = new FieldRef(getDeobfClass(), "instance", "LCompass;");
-            final MethodRef onTick = new MethodRef(getDeobfClass(), "onTick", "()V");
-            final MethodRef updateNeedle = new MethodRef(getDeobfClass(), "updateNeedle", "(DDDZZ)V");
             final MethodRef updateFancyCompass = new MethodRef(MCPatcherUtils.FANCY_COMPASS_CLASS, "update", "(LCompass;)V");
 
             addClassSignature(new ConstSignature("/gui/items.png"));
@@ -730,10 +728,7 @@ public class HDTexture extends BaseTexturePackMod {
             addMemberMapper(new FieldMapper(currentAngle, targetAngle));
             if (haveItemFrames) {
                 addMemberMapper(new FieldMapper(instance));
-                addMemberMapper(new MethodMapper(updateNeedle).accessFlag(AccessFlag.STATIC, true));
             } else {
-                addMemberMapper(new MethodMapper(onTick));
-
                 addPatch(new MakeMemberPublicPatch(currentAngle));
             }
 
@@ -750,6 +745,18 @@ public class HDTexture extends BaseTexturePackMod {
 
 
             addPatch(new BytecodePatch.InsertBefore() {
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                push(2.0 * Math.PI),
+                                DADD
+                            );
+                        }
+                    });
+                }
+
                 @Override
                 public String getDescription() {
                     return "update custom compass";
@@ -765,11 +772,11 @@ public class HDTexture extends BaseTexturePackMod {
                 @Override
                 public byte[] getInsertBytes() throws IOException {
                     return buildCode(
-                        haveItemFrames ? reference(GETSTATIC, instance) : buildCode(ALOAD_0),
+                        (getMethodInfo().getAccessFlags() & AccessFlag.STATIC) == 0 ? buildCode(ALOAD_0) : reference(GETSTATIC, instance),
                         reference(INVOKESTATIC, updateFancyCompass)
                     );
                 }
-            }.targetMethod(haveItemFrames ? updateNeedle : onTick));
+            });
         }
     }
 
