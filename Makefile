@@ -9,7 +9,7 @@ JIP = $(HOME)/jip-1.2/profile/profile.jar
 LAUNCH4J = $(HOME)/launch4j/launch4j
 LAUNCH4J_XML = launch4j.xml
 CLASSPATH = lib/javassist.jar
-PACKAGE = com.pclewis.mcpatcher
+PACKAGE = com.prupe.mcpatcher
 DOC_OUT = doc/javadoc
 DOC_SRC = $(PACKAGE)
 DOC_SRCPATH = shared/src:stubs/src:newcode/src:src:
@@ -71,7 +71,7 @@ modjar: $(MCPATCHER)
 	rm -rf $(TMPDIR)
 	mkdir -p $(TMPDIR)
 	cd $(TMPDIR) && jar -xf ../$(MCPATCHER)
-	cd $(TMPDIR) && rm -rf javassist META-INF *.class com/intellij com/pclewis/mcpatcher/*.class
+	cd $(TMPDIR) && rm -rf javassist META-INF *.class com/intellij com/prupe/mcpatcher/*.class
 	cd $(TMPDIR) && jar -cf ../$(MODJAR) *
 	rm -rf $(TMPDIR)
 
