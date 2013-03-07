@@ -1,166 +1,291 @@
 package com.pclewis.mcpatcher.mod;
 
-import com.pclewis.mcpatcher.MCLogger;
-import com.pclewis.mcpatcher.MCPatcherUtils;
-import com.pclewis.mcpatcher.TexturePackAPI;
-import net.minecraft.src.Block;
-import net.minecraft.src.IBlockAccess;
-import net.minecraft.src.RenderBlocks;
-import net.minecraft.src.Tessellator;
-import org.lwjgl.opengl.GL11;
+import com.pclewis.mcpatcher.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.src.*;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.Properties;
+import java.util.*;
 
 public class CTMUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CONNECTED_TEXTURES, "CTM");
 
-    private static final boolean enableGlass = MCPatcherUtils.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "glass", true);
-    private static final boolean enableGlassPane = MCPatcherUtils.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "glassPane", true);
-    private static final boolean enableBookshelf = MCPatcherUtils.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "bookshelf", true);
-    private static final boolean enableSandstone = MCPatcherUtils.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "sandstone", true);
-    private static final boolean enableStandard = MCPatcherUtils.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "standard", true);
-    private static final boolean enableNonStandard = MCPatcherUtils.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "nonStandard", true);
-    private static final boolean enableOutline = MCPatcherUtils.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "outline", false);
+    private static final boolean enableStandard = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "standard", true);
+    private static final boolean enableNonStandard = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "nonStandard", true);
+    private static final boolean enableGrass = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "grass", false);
+    private static final int splitTextures = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "splitTextures", 1);
+    private static final int maxRecursion = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "maxRecursion", 4);
 
     static final int BLOCK_ID_LOG = 17;
+    static final int BLOCK_ID_QUARTZ = 155;
     static final int BLOCK_ID_GLASS = 20;
-    static final int BLOCK_ID_BED = 26;
     static final int BLOCK_ID_GLASS_PANE = 102;
     static final int BLOCK_ID_BOOKSHELF = 47;
+    static final int BLOCK_ID_GRASS = 2;
+    static final int BLOCK_ID_MYCELIUM = 110;
+    static final int BLOCK_ID_SNOW = 78;
+    static final int BLOCK_ID_CRAFTED_SNOW = 80;
 
-    static final int NUM_TILES = 256;
+    private static final int CTM_TEXTURE_MAP_INDEX = 2;
+    private static final int MAX_CTM_TEXTURE_SIZE;
 
-    static final int TILE_NUM_STILL_LAVA = 14 * 16 + 13;
-    static final int TILE_NUM_FLOWING_LAVA = 14 * 16 + 14;
-    static final int TILE_NUM_STILL_WATER = 12 * 16 + 13;
-    static final int TILE_NUM_FLOWING_WATER = 12 * 16 + 14;
-    static final int TILE_NUM_FIRE_E_W = 1 * 16 + 15;
-    static final int TILE_NUM_FIRE_N_S = 2 * 16 + 15;
-    static final int TILE_NUM_PORTAL = 0 * 16 + 14;
-    static final int TILE_NUM_SANDSTONE_SIDE = 192;
-    static final int TILE_NUM_GLASS = 49;
-    static final int TILE_NUM_GLASS_PANE_SIDE = 148;
-
-    static TileOverride lastOverride;
-    static int terrainTexture = -1;
-    private static final TileOverride blockOverrides[][] = new TileOverride[Block.blocksList.length][];
-    private static final TileOverride tileOverrides[][] = new TileOverride[NUM_TILES][];
+    private static final ITileOverride blockOverrides[][] = new ITileOverride[Block.blocksList.length][];
+    private static final Map<String, ITileOverride[]> tileOverrides = new HashMap<String, ITileOverride[]>();
+    private static final List<ITileOverride> overridesToRegister = new ArrayList<ITileOverride>();
+    private static final TexturePackChangeHandler changeHandler;
+    private static boolean changeHandlerCalled;
+    private static boolean registerIconsCalled;
 
     static boolean active;
+    static TextureMap terrainMap;
+    private static BufferedImage missingTextureImage = TileOverride.generateDebugTexture("missing", 64, 64, false);
+    private static List<TextureMap> ctmMaps = new ArrayList<TextureMap>();
+    static String overrideTextureName;
 
-    public static int newTextureIndex;
-    public static Tessellator newTessellator;
+    static ITileOverride lastOverride;
 
     static {
-        TexturePackAPI.ChangeHandler.register(new TexturePackAPI.ChangeHandler(MCPatcherUtils.CONNECTED_TEXTURES, 2) {
-            @Override
-            protected void onChange() {
-                terrainTexture = getTexture("/terrain.png");
-                SuperTessellator.instance.clearTessellators();
+        try {
+            Class.forName(MCPatcherUtils.RENDER_PASS_CLASS).getMethod("finish").invoke(null);
+        } catch (Throwable e) {
+        }
 
+        int maxSize = Minecraft.getMaxTextureSize();
+        logger.config("max texture size is %dx%d", maxSize, maxSize);
+        MAX_CTM_TEXTURE_SIZE = (maxSize * maxSize) * 7 / 8;
+
+        changeHandler = new TexturePackChangeHandler(MCPatcherUtils.CONNECTED_TEXTURES, 2) {
+            @Override
+            public void initialize() {
+            }
+
+            @Override
+            public void beforeChange() {
+                changeHandlerCalled = true;
+                try {
+                    for (TextureMap textureMap : ctmMaps) {
+                        textureMap.getTexture().unloadGLTexture();
+                    }
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+                ctmMaps.clear();
+                RenderPassAPI.instance.clear();
+                TessellatorUtils.clear(Tessellator.instance);
                 Arrays.fill(blockOverrides, null);
-                Arrays.fill(tileOverrides, null);
+                tileOverrides.clear();
+                overridesToRegister.clear();
 
                 if (enableStandard || enableNonStandard) {
-                    for (String s : TexturePackAPI.listResources("/ctm", ".properties")) {
-                        registerOverride(TileOverride.create(s.replace(".properties", ""), null));
+                    List<String> fileList = new ArrayList<String>();
+                    for (String dir : TexturePackAPI.listDirectories("/ctm")) {
+                        for (String s : TexturePackAPI.listResources(dir, ".properties")) {
+                            fileList.add(s);
+                        }
+                    }
+                    Collections.sort(fileList, new Comparator<String>() {
+                        public int compare(String o1, String o2) {
+                            String f1 = o1.replaceAll(".*/", "").replaceFirst("\\.properties", "");
+                            String f2 = o2.replaceAll(".*/", "").replaceFirst("\\.properties", "");
+                            int result = f1.compareTo(f2);
+                            if (result != 0) {
+                                return result;
+                            }
+                            return o1.compareTo(o2);
+                        }
+                    });
+                    for (String s : fileList) {
+                        registerOverride(TileOverride.create(s));
                     }
                 }
+            }
 
-                Properties properties = new Properties();
-
-                if (enableGlass) {
-                    properties.clear();
-                    properties.setProperty("method", "glass");
-                    properties.setProperty("connect", "block");
-                    properties.setProperty("blockIDs", "" + BLOCK_ID_GLASS);
-                    registerOverride(TileOverride.create("/ctm", properties));
+            @Override
+            public void afterChange() {
+                if (splitTextures > 0 && (enableStandard || enableNonStandard)) {
+                    for (int index = 0; !overridesToRegister.isEmpty(); index++) {
+                        registerIconsCalled = false;
+                        TextureMap ctmMap = new TextureMap(CTM_TEXTURE_MAP_INDEX, "ctm" + index, "not_used", missingTextureImage);
+                        ctmMap.refresh();
+                        if (!registerIconsCalled) {
+                            logger.severe("CTMUtils.registerIcons was never called!  Possible conflict in TextureMap.class");
+                            break;
+                        }
+                        ctmMaps.add(ctmMap);
+                    }
                 }
+                overridesToRegister.clear();
 
-                if (enableGlassPane) {
-                    properties.clear();
-                    properties.setProperty("method", "glass");
-                    properties.setProperty("connect", "block");
-                    properties.setProperty("blockIDs", "" + BLOCK_ID_GLASS_PANE);
-                    registerOverride(TileOverride.create("/ctm", properties));
-                }
-
-                if (enableBookshelf) {
-                    properties.clear();
-                    properties.setProperty("method", "bookshelf");
-                    properties.setProperty("connect", "block");
-                    properties.setProperty("blockIDs", "" + BLOCK_ID_BOOKSHELF);
-                    registerOverride(TileOverride.create("/ctm", properties));
-                }
-
-                if (enableSandstone) {
-                    properties.clear();
-                    properties.setProperty("method", "sandstone");
-                    properties.setProperty("connect", "tile");
-                    properties.setProperty("tileIDs", "" + TILE_NUM_SANDSTONE_SIDE);
-                    properties.setProperty("metadata", "0");
-                    registerOverride(TileOverride.create("/ctm", properties));
-                }
-
-                if (enableOutline) {
-                    setupOutline();
-                }
-
-                RenderPassAPI.instance.clear();
                 for (int i = 0; i < blockOverrides.length; i++) {
                     if (blockOverrides[i] != null && Block.blocksList[i] != null) {
-                        for (TileOverride override : blockOverrides[i]) {
-                            if (override != null && !override.disabled && override.renderPass >= 0) {
-                                RenderPassAPI.instance.setRenderPassForBlock(Block.blocksList[i], override.renderPass);
+                        for (ITileOverride override : blockOverrides[i]) {
+                            if (override != null && !override.isDisabled() && override.getRenderPass() >= 0) {
+                                RenderPassAPI.instance.setRenderPassForBlock(Block.blocksList[i], override.getRenderPass());
                             }
                         }
                     }
                 }
-
-                GL11.glBindTexture(GL11.GL_TEXTURE_2D, terrainTexture);
+                changeHandlerCalled = false;
             }
-        });
+        };
+        TexturePackChangeHandler.register(changeHandler);
     }
 
     public static void start() {
         lastOverride = null;
-        if (terrainTexture >= 0) {
-            SuperTessellator.instance.texture = terrainTexture;
-            active = true;
-        } else {
-            SuperTessellator.instance.texture = -1;
+        if (terrainMap == null) {
             active = false;
+            Tessellator.instance.textureMap = null;
+        } else {
+            active = true;
+            Tessellator.instance.textureMap = terrainMap;
         }
     }
 
-    private static boolean check(IBlockAccess blockAccess, int blockID) {
-        return active && blockAccess != null && blockID != BLOCK_ID_BED && blockID != BLOCK_ID_GLASS_PANE && Tessellator.instance instanceof SuperTessellator;
+    public static Icon getTile(RenderBlocks renderBlocks, Block block, int i, int j, int k, Icon origIcon, Tessellator tessellator) {
+        return getTile(renderBlocks, block, i, j, k, -1, origIcon, tessellator);
     }
 
-    public static boolean setup(RenderBlocks renderBlocks, Block block, int i, int j, int k, int face, int origTexture) {
-        IBlockAccess blockAccess = renderBlocks.blockAccess;
-        if (!enableStandard || !check(blockAccess, block.blockID) || face < 0 || face > 5) {
-            return false;
-        } else if (getConnectedTexture(renderBlocks, blockAccess, block, origTexture, i, j, k, face)) {
-            return true;
-        } else {
-            reset();
-            return false;
+    public static Icon getTile(RenderBlocks renderBlocks, Block block, final int i, final int j, final int k, final int face, Icon icon, Tessellator tessellator) {
+        lastOverride = null;
+        if (checkFace(face) && checkBlock(renderBlocks, block)) {
+            final IBlockAccess blockAccess = renderBlocks.blockAccess;
+            TileOverrideIterator iterator = new TileOverrideIterator(block, icon) {
+                @Override
+                Icon getTile(ITileOverride override, Block block, Icon currentIcon) {
+                    return override.getTile(blockAccess, block, currentIcon, i, j, k, face);
+                }
+            };
+            lastOverride = iterator.go();
+            if (lastOverride != null) {
+                icon = iterator.getIcon();
+            }
+        }
+        return lastOverride == null && skipDefaultRendering(block) ? null : icon;
+    }
+
+    public static Icon getTile(RenderBlocks renderBlocks, Block block, int face, int metadata, Tessellator tessellator) {
+        return getTile(renderBlocks, block, face, metadata, renderBlocks.getIconBySideAndMetadata(block, face, metadata), tessellator);
+    }
+
+    public static Icon getTile(RenderBlocks renderBlocks, Block block, int face, Tessellator tessellator) {
+        return getTile(renderBlocks, block, face, 0, renderBlocks.getIconBySide(block, face), tessellator);
+    }
+
+    private static Icon getTile(RenderBlocks renderBlocks, Block block, final int face, final int metadata, Icon icon, Tessellator tessellator) {
+        lastOverride = null;
+        if (checkFace(face)) {
+            TileOverrideIterator iterator = new TileOverrideIterator(block, icon) {
+                @Override
+                Icon getTile(ITileOverride override, Block block, Icon currentIcon) {
+                    return override.getTile(block, currentIcon, face, metadata);
+                }
+            };
+            lastOverride = iterator.go();
+            if (lastOverride != null) {
+                icon = iterator.getIcon();
+            }
+        }
+        return icon;
+    }
+
+    public static Tessellator getTessellator(Icon icon) {
+        return TessellatorUtils.getTessellator(Tessellator.instance, icon);
+    }
+
+    public static void registerIcons(TextureMap textureMap, Stitcher stitcher, String mapName, Map<StitchHolder, List<Texture>> map) {
+        TessellatorUtils.registerTextureMap(textureMap, mapName);
+        if (mapName == null || (!mapName.equals("terrain") && !mapName.matches("ctm\\d+"))) {
+            return;
+        }
+        registerIconsCalled = true;
+        if (!changeHandlerCalled) {
+            logger.severe("beforeChange was not called, invoking directly");
+            changeHandler.beforeChange();
+        }
+
+        int totalSize = 0;
+        for (List<Texture> list : map.values()) {
+            if (list != null && list.size() > 0) {
+                Texture texture = list.get(0);
+                totalSize += texture.getWidth() * texture.getHeight();
+            }
+        }
+
+        logger.fine("begin registerIcons(%s): %.1fMB used, %d items to go",
+            mapName, 4 * totalSize / 1048576.0f, overridesToRegister.size()
+        );
+
+        if (mapName.equals("terrain")) {
+            terrainMap = textureMap;
+            if (enableGrass) {
+                registerOverride(new TileOverrideImpl.BetterGrass(textureMap, BLOCK_ID_GRASS, "grass"));
+                registerOverride(new TileOverrideImpl.BetterGrass(textureMap, BLOCK_ID_MYCELIUM, "mycel"));
+            }
+            if (splitTextures > 1) {
+                return;
+            }
+        }
+
+        boolean warned = false;
+        boolean progress = false;
+        for (Iterator<ITileOverride> iterator = overridesToRegister.iterator(); iterator.hasNext(); ) {
+            ITileOverride override = iterator.next();
+            if (override == null || override.isDisabled()) {
+                continue;
+            }
+            totalSize += override.getTotalTextureSize();
+            if (totalSize > MAX_CTM_TEXTURE_SIZE) {
+                float sizeMB = 4 * totalSize / 1048576.0f;
+                if (splitTextures > 0) {
+                    logger.info("%s map is nearly full (%.1fMB), starting a new one", mapName, sizeMB);
+                    totalSize -= override.getTotalTextureSize();
+                    break;
+                } else if (!warned) {
+                    logger.warning("%s map is nearly full (%.1fMB), crash may be imminent", mapName, sizeMB);
+                    warned = true;
+                }
+            }
+            override.registerIcons(textureMap, stitcher, map);
+            iterator.remove();
+            progress = true;
+        }
+
+        logger.fine("end registerIcons(%s): %.1fMB used, %d items to go",
+            mapName, 4 * totalSize / 1048576.0f, overridesToRegister.size()
+        );
+        if (warned || (!progress && !mapName.equals("terrain"))) {
+            logger.warning("clearing all remaining items");
+            overridesToRegister.clear();
         }
     }
 
-    public static boolean setup(RenderBlocks renderBlocks, Block block, int i, int j, int k, int origTexture) {
-        IBlockAccess blockAccess = renderBlocks.blockAccess;
-        if (!enableNonStandard || !check(blockAccess, block.blockID)) {
-            return false;
-        } else if (getConnectedTexture(renderBlocks, blockAccess, block, origTexture, i, j, k, -1)) {
-            return true;
+    public static String getOverridePath(String prefix, String name, String ext) {
+        String path;
+        if (name.startsWith("/")) {
+            path = name.substring(1).replaceFirst("\\.[^.]+$", "") + ext;
         } else {
-            reset();
-            return false;
+            path = prefix + name + ext;
+        }
+        logger.finer("getOverridePath(%s, %s, %s) -> %s", prefix, name, ext, path);
+        return path;
+    }
+
+    public static String getOverrideTextureName(String name) {
+        if (overrideTextureName == null) {
+            if (name.matches("^\\d+$")) {
+                logger.warning("no override set for %s", name);
+            }
+            return name;
+        } else {
+            logger.finer("getOverrideTextureName(%s) -> %s", name, overrideTextureName);
+            return overrideTextureName;
+        }
+    }
+
+    public static void updateAnimations() {
+        for (TextureMap textureMap : ctmMaps) {
+            textureMap.updateAnimations();
         }
     }
 
@@ -170,149 +295,157 @@ public class CTMUtils {
     public static void finish() {
         reset();
         RenderPassAPI.instance.finish();
-        SuperTessellator.instance.texture = -1;
+        Tessellator.instance.textureMap = null;
         lastOverride = null;
         active = false;
     }
 
-    public static boolean skipDefaultRendering(Block block) {
+    private static boolean checkBlock(RenderBlocks renderBlocks, Block block) {
+        return active && renderBlocks.blockAccess != null;
+    }
+
+    private static boolean checkFace(int face) {
+        return active && (face < 0 ? enableNonStandard : enableStandard);
+    }
+
+    private static boolean skipDefaultRendering(Block block) {
         return RenderPassAPI.instance.skipDefaultRendering(block);
     }
 
-    static boolean getConnectedTexture(RenderBlocks renderBlocks, IBlockAccess blockAccess, Block block, int origTexture, int i, int j, int k, int face) {
-        lastOverride = null;
-        return getConnectedTexture(renderBlocks, blockAccess, block, origTexture, i, j, k, face, tileOverrides, origTexture) ||
-            getConnectedTexture(renderBlocks, blockAccess, block, origTexture, i, j, k, face, blockOverrides, block.blockID);
+    private static void registerOverride(ITileOverride override) {
+        if (override != null && !override.isDisabled()) {
+            if (override.getTotalTextureSize() > 0) {
+                overridesToRegister.add(override);
+            }
+            if (override.getMatchingBlocks() != null) {
+                for (int index : override.getMatchingBlocks()) {
+                    String blockName = "";
+                    if (index >= 0 && index < Block.blocksList.length && Block.blocksList[index] != null) {
+                        blockName = Block.blocksList[index].getShortName();
+                        if (blockName == null) {
+                            blockName = "";
+                        } else {
+                            blockName = " (" + blockName + ")";
+                        }
+                    }
+                    blockOverrides[index] = registerOverride(blockOverrides[index], override, "block " + index + blockName);
+                }
+            }
+            if (override.getMatchingTiles() != null) {
+                for (String name : override.getMatchingTiles()) {
+                    tileOverrides.put(name, registerOverride(tileOverrides.get(name), override, "tile " + name));
+                }
+            }
+        }
     }
 
-    private static boolean getConnectedTexture(RenderBlocks renderBlocks, IBlockAccess blockAccess, Block block, int origTexture, int i, int j, int k, int face, TileOverride[][] allOverrides, int index) {
-        if (index < 0 || index >= allOverrides.length) {
-            return false;
-        }
-        TileOverride[] overrides = allOverrides[index];
+    private static ITileOverride[] registerOverride(ITileOverride[] overrides, ITileOverride override, String description) {
+        logger.fine("using %s for %s", override.toString(), description);
         if (overrides == null) {
-            return false;
+            return new ITileOverride[]{override};
+        } else {
+            ITileOverride[] newList = new ITileOverride[overrides.length + 1];
+            System.arraycopy(overrides, 0, newList, 0, overrides.length);
+            newList[overrides.length] = override;
+            return newList;
         }
-        for (int n = 0; n < overrides.length; n++) {
-            TileOverride override = overrides[n];
-            if (override == null) {
-                continue;
-            }
-            if (override.disabled) {
-                overrides[n] = null;
-                continue;
-            }
-            lastOverride = override;
-            newTextureIndex = override.getTile(renderBlocks, blockAccess, block, origTexture, i, j, k, face);
-            if (newTextureIndex >= 0) {
-                newTessellator = SuperTessellator.instance.getTessellator(override.texture);
+    }
+
+    abstract private static class TileOverrideIterator implements Iterator<ITileOverride> {
+        private final Block block;
+        private Icon currentIcon;
+        private ITileOverride[] blockOverrides;
+        private ITileOverride[] iconOverrides;
+        private final Set<ITileOverride> skipOverrides = new HashSet<ITileOverride>();
+
+        private int blockPos;
+        private int iconPos;
+        private boolean foundNext;
+        private ITileOverride nextOverride;
+
+        private ITileOverride lastMatchedOverride;
+
+        TileOverrideIterator(Block block, Icon icon) {
+            this.block = block;
+            currentIcon = icon;
+            blockOverrides = CTMUtils.blockOverrides[block.blockID];
+            iconOverrides = CTMUtils.tileOverrides.get(this.currentIcon.getName());
+        }
+
+        private void resetForNextPass() {
+            blockOverrides = null;
+            iconOverrides = CTMUtils.tileOverrides.get(currentIcon.getName());
+            blockPos = 0;
+            iconPos = 0;
+            foundNext = false;
+        }
+
+        public boolean hasNext() {
+            if (foundNext) {
                 return true;
             }
+            if (iconOverrides != null) {
+                while (iconPos < iconOverrides.length) {
+                    if (checkOverride(iconOverrides[iconPos++])) {
+                        return true;
+                    }
+                }
+            }
+            if (blockOverrides != null) {
+                while (blockPos < blockOverrides.length) {
+                    if (checkOverride(blockOverrides[blockPos++])) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
-        return false;
-    }
 
-    private static void registerOverride(TileOverride override) {
-        if (override != null) {
-            registerOverride(override, override.blockIDs, blockOverrides, "block");
-            registerOverride(override, override.tileIDs, tileOverrides, "tile");
+        public ITileOverride next() {
+            if (!foundNext) {
+                throw new IllegalStateException("next called before hasNext() == true");
+            }
+            foundNext = false;
+            return nextOverride;
         }
-    }
 
-    private static void registerOverride(TileOverride override, int[] ids, TileOverride[][] allOverrides, String type) {
-        if (override == null || ids == null || allOverrides == null) {
-            return;
+        public void remove() {
+            throw new UnsupportedOperationException("remove not supported");
         }
-        for (int index : ids) {
-            TileOverride[] oldList = allOverrides[index];
-            if (oldList == null) {
-                allOverrides[index] = new TileOverride[]{override};
+
+        private boolean checkOverride(ITileOverride override) {
+            if (override != null && !override.isDisabled() && !skipOverrides.contains(override)) {
+                foundNext = true;
+                nextOverride = override;
+                return true;
             } else {
-                TileOverride[] newList = new TileOverride[oldList.length + 1];
-                System.arraycopy(oldList, 0, newList, 0, oldList.length);
-                newList[oldList.length] = override;
-                allOverrides[index] = newList;
+                return false;
             }
-            logger.fine("using %s for %s %d", override.toString(), type, index);
-        }
-    }
-
-    private static void setupOutline() {
-        BufferedImage terrain = TexturePackAPI.getImage("/terrain.png");
-        if (terrain == null) {
-            return;
-        }
-        BufferedImage template = TexturePackAPI.getImage("/ctm/template.png");
-        if (template == null) {
-            return;
         }
 
-        int width = terrain.getWidth();
-        int height = terrain.getHeight();
-        if (template.getWidth() != width) {
-            BufferedImage newImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D graphics2D = newImage.createGraphics();
-            graphics2D.drawImage(template, 0, 0, width, height, null);
-            template = newImage;
-        }
-
-        for (int i = 0; i < tileOverrides.length; i++) {
-            TileOverride override = setupOutline(i, terrain, template);
-            if (override != null) {
-                TileOverride[] oldList = tileOverrides[i];
-                if (oldList == null) {
-                    tileOverrides[i] = new TileOverride[]{override};
-                } else {
-                    TileOverride[] newList = new TileOverride[oldList.length + 1];
-                    System.arraycopy(oldList, 0, newList, 0, oldList.length);
-                    newList[oldList.length] = override;
-                    tileOverrides[i] = newList;
+        ITileOverride go() {
+            pass:
+            for (int pass = 0; pass < maxRecursion; pass++) {
+                while (hasNext()) {
+                    ITileOverride override = next();
+                    Icon newIcon = getTile(override, block, currentIcon);
+                    if (newIcon != null) {
+                        lastMatchedOverride = override;
+                        skipOverrides.add(override);
+                        currentIcon = newIcon;
+                        resetForNextPass();
+                        continue pass;
+                    }
                 }
-            }
-        }
-    }
-
-    private static TileOverride setupOutline(int tileNum, BufferedImage terrain, BufferedImage template) {
-        switch (tileNum) {
-            case TILE_NUM_STILL_LAVA: // still lava
-            case TILE_NUM_FLOWING_LAVA: // flowing lava
-            case TILE_NUM_STILL_WATER: // still water
-            case TILE_NUM_FLOWING_WATER: // flowing water
-            case TILE_NUM_FIRE_E_W: // fire east-west
-            case TILE_NUM_FIRE_N_S: // fire north-south
-            case TILE_NUM_PORTAL: // portal
-                return null;
-
-            default:
                 break;
-        }
-
-        int tileSize = terrain.getWidth() / 16;
-        int tileX = (tileNum % 16) * tileSize;
-        int tileY = (tileNum / 16) * tileSize;
-        BufferedImage newImage = new BufferedImage(template.getWidth(), template.getHeight(), BufferedImage.TYPE_INT_ARGB);
-
-        for (int x = 0; x < template.getWidth(); x++) {
-            for (int y = 0; y < template.getHeight(); y++) {
-                int rgb = template.getRGB(x, y);
-                if ((rgb & 0xff000000) == 0) {
-                    rgb = terrain.getRGB(tileX + (x % tileSize), tileY + (y % tileSize));
-                }
-                newImage.setRGB(x, y, rgb);
             }
+            return lastMatchedOverride;
         }
 
-        return TileOverride.create(newImage, tileNum);
-    }
+        Icon getIcon() {
+            return currentIcon;
+        }
 
-    static int getTexture(String name) {
-        if (name == null) {
-            return -1;
-        }
-        if (TexturePackAPI.hasResource(name)) {
-            return MCPatcherUtils.getMinecraft().renderEngine.getTexture(name);
-        } else {
-            return -1;
-        }
+        abstract Icon getTile(ITileOverride override, Block block, Icon currentIcon);
     }
 }

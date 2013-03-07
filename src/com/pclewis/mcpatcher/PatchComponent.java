@@ -3,8 +3,6 @@ package com.pclewis.mcpatcher;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.MethodInfo;
 
-import java.io.IOException;
-
 interface PatchComponent {
     /**
      * Gets current javassist ClassFile object.
@@ -35,9 +33,8 @@ interface PatchComponent {
      *
      * @param objects
      * @return bytecode
-     * @throws IOException
      */
-    public byte[] buildCode(Object... objects) throws IOException;
+    public byte[] buildCode(Object... objects);
 
     /**
      * Push a single constant (int, double, float, string) onto the stack.

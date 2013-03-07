@@ -125,6 +125,9 @@ public class ClassMap {
                 classDescName, descName, obfName, oldName
             ));
         }
+        if (descName.equals("<init>") || descName.equals("<clinit>")) {
+            return;
+        }
         entry.addMethod(descName, obfName, obfType);
     }
 
@@ -540,7 +543,7 @@ public class ClassMap {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         getCaptureGroup(1),
                         ConstPoolUtils.reference(getMethodInfo().getConstPool(), newRef, true)
@@ -666,7 +669,8 @@ public class ClassMap {
      * @return true if className is in the class map
      */
     public boolean hasMap(String className) {
-        return getEntry(className) != null;
+        ClassMapEntry entry = getEntry(className);
+        return entry != null && entry.getObfName() != null;
     }
 
     /**

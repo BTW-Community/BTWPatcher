@@ -17,19 +17,19 @@ final public class MCPatcher {
     /**
      * Major MCPatcher version number
      */
-    public static final int MAJOR_VERSION = 2;
+    public static final int MAJOR_VERSION = 3;
     /**
      * Minor MCPatcher version number
      */
-    public static final int MINOR_VERSION = 4;
+    public static final int MINOR_VERSION = 0;
     /**
      * MCPatcher release number
      */
-    public static final int RELEASE_VERSION = 5;
+    public static final int RELEASE_VERSION = 1;
     /**
      * MCPatcher patch level
      */
-    public static final int PATCH_VERSION = 2;
+    public static final int PATCH_VERSION = 0;
     /**
      * MCPatcher beta version if > 0
      */
@@ -51,7 +51,7 @@ final public class MCPatcher {
     private static boolean enableAllMods = false;
     static boolean experimentalMods = false;
 
-    private static UserInterface ui;
+    static UserInterface ui;
 
     private MCPatcher() {
     }
@@ -69,6 +69,7 @@ final public class MCPatcher {
      * -ignorecustommods: do not load mods from the mcpatcher-mods directory<br>
      * -enableallmods: enable all valid mods instead of selected mods from last time<br>
      * -experimental: load mods considered "experimental"<br>
+     * -convert &lt;path&gt;: convert a texture pack<br>
      *
      * @param args command-line arguments
      */
@@ -102,6 +103,16 @@ final public class MCPatcher {
                 enableAllMods = true;
             } else if (args[i].equals("-experimental")) {
                 experimentalMods = true;
+            } else if (args[i].equals("-convert") && i + 1 < args.length) {
+                i++;
+                try {
+                    if (new TexturePackConverter(new File(args[i])).convert(new UserInterface.CLI())) {
+                        System.exit(0);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                System.exit(1);
             }
         }
 
@@ -119,22 +130,22 @@ final public class MCPatcher {
 
         Util.logOSInfo();
 
-        String lastVersion = MCPatcherUtils.getString(Config.TAG_LAST_VERSION, "");
+        String lastVersion = Config.getString(Config.TAG_LAST_VERSION, "");
         if (!lastVersion.equals(VERSION_STRING)) {
-            MCPatcherUtils.set(Config.TAG_LAST_VERSION, VERSION_STRING);
-            MCPatcherUtils.set(Config.TAG_BETA_WARNING_SHOWN, false);
-            MCPatcherUtils.set(Config.TAG_DEBUG, BETA_VERSION > 0);
+            Config.set(Config.TAG_LAST_VERSION, VERSION_STRING);
+            Config.set(Config.TAG_BETA_WARNING_SHOWN, false);
+            Config.set(Config.TAG_DEBUG, BETA_VERSION > 0);
             if (lastVersion.startsWith("2.4.4")) {
-                MCPatcherUtils.set(MCPatcherUtils.HD_TEXTURES, "mipmap", false);
-                MCPatcherUtils.set(MCPatcherUtils.HD_TEXTURES, "maxMipmapLevel", 3);
+                Config.set(MCPatcherUtils.HD_TEXTURES, "mipmap", false);
+                Config.set(MCPatcherUtils.HD_TEXTURES, "maxMipmapLevel", 3);
             }
             if (lastVersion.compareTo("2.3") < 0) {
                 MinecraftJar.fixJarNames();
             }
         }
-        if (BETA_VERSION > 0 && !MCPatcherUtils.getBoolean(Config.TAG_BETA_WARNING_SHOWN, false)) {
+        if (BETA_VERSION > 0 && !Config.getBoolean(Config.TAG_BETA_WARNING_SHOWN, false)) {
             ui.showBetaWarning();
-            MCPatcherUtils.set(Config.TAG_BETA_WARNING_SHOWN, true);
+            Config.set(Config.TAG_BETA_WARNING_SHOWN, true);
         }
 
         if (ui.go()) {
@@ -148,9 +159,9 @@ final public class MCPatcher {
     }
 
     static void saveProperties() {
-        if (!ignoreSavedMods && modList != null && MCPatcherUtils.config.selectedProfile != null) {
+        if (!ignoreSavedMods && modList != null && Config.instance.selectedProfile != null) {
             modList.updateProperties();
-            MCPatcherUtils.config.saveProperties();
+            Config.instance.saveProperties();
         }
     }
 
@@ -173,15 +184,15 @@ final public class MCPatcher {
             }
             minecraft.logVersion();
             String defaultProfile = Config.getDefaultProfileName(minecraft.getVersion().getProfileString());
-            MCPatcherUtils.config.setDefaultProfileName(defaultProfile);
-            String selectedProfile = MCPatcherUtils.config.getConfigValue(Config.TAG_SELECTED_PROFILE);
-            if (MCPatcherUtils.config.selectedProfile == null) {
-                MCPatcherUtils.config.selectProfile(selectedProfile);
+            Config.instance.setDefaultProfileName(defaultProfile);
+            String selectedProfile = Config.instance.getConfigValue(Config.TAG_SELECTED_PROFILE);
+            if (Config.instance.selectedProfile == null) {
+                Config.instance.selectProfile(selectedProfile);
             }
             if (Config.isDefaultProfile(selectedProfile)) {
-                MCPatcherUtils.config.selectProfile(defaultProfile);
+                Config.instance.selectProfile(defaultProfile);
             } else {
-                MCPatcherUtils.config.selectProfile();
+                Config.instance.selectProfile();
             }
             getAllMods();
         } catch (IOException e) {

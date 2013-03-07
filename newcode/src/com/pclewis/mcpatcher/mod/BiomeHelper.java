@@ -3,157 +3,65 @@ package com.pclewis.mcpatcher.mod;
 import com.pclewis.mcpatcher.MCLogger;
 import com.pclewis.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.BiomeGenBase;
-import net.minecraft.src.IBlockAccess;
-import net.minecraft.src.WorldChunkManager;
 
 import java.lang.reflect.Method;
 
-abstract class BiomeHelper {
+class BiomeHelper {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
-    static BiomeHelper instance;
+    private static Method getWaterColorMultiplier;
+    private static BiomeGenBase lastBiome;
+    private static int lastI;
+    private static int lastK;
 
-    IBlockAccess blockAccess;
+    static {
+        try {
+            getWaterColorMultiplier = BiomeGenBase.class.getDeclaredMethod("getWaterColorMultiplier");
+            getWaterColorMultiplier.setAccessible(true);
+            logger.config("forge getWaterColorMultiplier detected");
+        } catch (NoSuchMethodException e) {
+        }
+    }
 
     static String getBiomeNameAt(int i, int j, int k) {
-        if (instance == null) {
-            return null;
-        } else {
-            BiomeGenBase biome = instance.getBiomeGenAt(i, j, k);
-            return biome == null ? null : biome.biomeName;
+        BiomeGenBase biome = getBiomeGenAt(i, j, k);
+        if (biome == null) {
+            return "";
         }
+        String biomeName = biome.biomeName;
+        if (biomeName == null) {
+            return "";
+        }
+        return biomeName.toLowerCase().replace(" ", "");
     }
 
-    BiomeHelper(IBlockAccess blockAccess) {
-        this.blockAccess = blockAccess;
+    static BiomeGenBase getBiomeGenAt(int i, int j, int k) {
+        if (lastBiome == null || i != lastI || k != lastK) {
+            lastI = i;
+            lastK = k;
+            lastBiome = MCPatcherUtils.getMinecraft().theWorld.getBiomeGenAt(i, k);
+        }
+        return lastBiome;
     }
 
-    boolean useBlockBlending() {
-        return false;
+    static float getTemperature(int i, int j, int k) {
+        return getBiomeGenAt(i, j, k).getTemperaturef();
     }
 
-    abstract BiomeGenBase getBiomeGenAt(int i, int j, int k);
-
-    abstract float getTemperature(int i, int j, int k);
-
-    abstract float getRainfall(int i, int j, int k);
-
-    abstract int getWaterColorMultiplier(int i, int j, int k);
-
-    static class Stub extends BiomeHelper {
-        Stub() {
-            super(null);
-        }
-
-        @Override
-        BiomeGenBase getBiomeGenAt(int i, int j, int k) {
-            return null;
-        }
-
-        @Override
-        float getTemperature(int i, int j, int k) {
-            return 0.5f;
-        }
-
-        @Override
-        float getRainfall(int i, int j, int k) {
-            return 1.0f;
-        }
-
-        @Override
-        int getWaterColorMultiplier(int i, int j, int k) {
-            return 0xffffff;
-        }
+    static float getRainfall(int i, int j, int k) {
+        return getBiomeGenAt(i, j, k).getRainfallf();
     }
 
-    static class Old extends BiomeHelper {
-        WorldChunkManager chunkManager;
-
-        Old(IBlockAccess blockAccess) {
-            super(blockAccess);
-            chunkManager = blockAccess.getWorldChunkManager();
-        }
-
-        @Override
-        BiomeGenBase getBiomeGenAt(int i, int j, int k) {
-            return chunkManager.getBiomeGenAt(i, k);
-        }
-
-        @Override
-        float getTemperature(int i, int j, int k) {
-            return chunkManager.getTemperature(i, j, k);
-        }
-
-        @Override
-        float getRainfall(int i, int j, int k) {
-            return chunkManager.getRainfall(i, k);
-        }
-
-        @Override
-        int getWaterColorMultiplier(int i, int j, int k) {
-            return getBiomeGenAt(i, j, k).waterColorMultiplier;
-        }
-    }
-
-    static class New extends BiomeHelper {
-        private static boolean logged;
-
-        private Method getWaterColorMultiplier;
-        private BiomeGenBase lastBiome;
-        private int lastI;
-        private int lastK;
-
-        New(IBlockAccess blockAccess) {
-            super(blockAccess);
-            if (!logged) {
-                logged = true;
-                logger.config("biomes v1.2 detected");
-            }
+    static int getWaterColorMultiplier(int i, int j, int k) {
+        BiomeGenBase biome = getBiomeGenAt(i, j, k);
+        if (getWaterColorMultiplier != null) {
             try {
-                getWaterColorMultiplier = BiomeGenBase.class.getDeclaredMethod("getWaterColorMultiplier");
-                getWaterColorMultiplier.setAccessible(true);
-                logger.config("forge getWaterColorMultiplier detected");
-            } catch (NoSuchMethodException e) {
+                return (Integer) getWaterColorMultiplier.invoke(biome);
+            } catch (Throwable e) {
+                e.printStackTrace();
+                getWaterColorMultiplier = null;
             }
         }
-
-        @Override
-        boolean useBlockBlending() {
-            return true;
-        }
-
-        @Override
-        BiomeGenBase getBiomeGenAt(int i, int j, int k) {
-            if (lastBiome == null || i != lastI || k != lastK) {
-                lastI = i;
-                lastK = k;
-                lastBiome = blockAccess.getBiomeGenAt(i, k);
-            }
-            return lastBiome;
-        }
-
-        @Override
-        float getTemperature(int i, int j, int k) {
-            return getBiomeGenAt(i, j, k).getTemperaturef();
-        }
-
-        @Override
-        float getRainfall(int i, int j, int k) {
-            return getBiomeGenAt(i, j, k).getRainfallf();
-        }
-
-        @Override
-        int getWaterColorMultiplier(int i, int j, int k) {
-            BiomeGenBase biome = getBiomeGenAt(i, j, k);
-            if (getWaterColorMultiplier != null) {
-                try {
-                    return (Integer) getWaterColorMultiplier.invoke(biome);
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                    getWaterColorMultiplier = null;
-                }
-            }
-            return biome.waterColorMultiplier;
-        }
+        return biome.waterColorMultiplier;
     }
 }

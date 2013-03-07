@@ -1,5 +1,6 @@
 package com.pclewis.mcpatcher.mod;
 
+import com.pclewis.mcpatcher.Config;
 import com.pclewis.mcpatcher.MCLogger;
 import com.pclewis.mcpatcher.MCPatcherUtils;
 import com.pclewis.mcpatcher.TexturePackAPI;
@@ -17,7 +18,7 @@ public final class Lightmap {
     private static final int HEIGHT_WITHOUT_NIGHTVISION = 2 * LIGHTMAP_SIZE;
     private static final int HEIGHT_WITH_NIGHTVISION = 4 * LIGHTMAP_SIZE;
 
-    private static final boolean useLightmaps = MCPatcherUtils.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "lightmaps", true);
+    private static final boolean useLightmaps = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "lightmaps", true);
 
     private static final HashMap<Integer, Lightmap> lightmaps = new HashMap<Integer, Lightmap>();
 
@@ -33,7 +34,7 @@ public final class Lightmap {
     private final float[] torchrgbnv = new float[3 * LIGHTMAP_SIZE];
     private final float[] rgb = new float[3];
 
-    static void clear() {
+    static void reset() {
         lightmaps.clear();
     }
 
@@ -67,7 +68,7 @@ public final class Lightmap {
         image.getRGB(0, 0, width, height, origMap, 0, width);
         valid = (height == HEIGHT_WITHOUT_NIGHTVISION || height == HEIGHT_WITH_NIGHTVISION);
         if (!valid) {
-            logger.severe("%s must be exactly %d or %d pixels high", name, HEIGHT_WITHOUT_NIGHTVISION, HEIGHT_WITH_NIGHTVISION);
+            logger.error("%s must be exactly %d or %d pixels high", name, HEIGHT_WITHOUT_NIGHTVISION, HEIGHT_WITH_NIGHTVISION);
         }
     }
 

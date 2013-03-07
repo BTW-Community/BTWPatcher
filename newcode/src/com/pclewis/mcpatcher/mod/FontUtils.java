@@ -3,6 +3,7 @@ package com.pclewis.mcpatcher.mod;
 import com.pclewis.mcpatcher.MCLogger;
 import com.pclewis.mcpatcher.MCPatcherUtils;
 import com.pclewis.mcpatcher.TexturePackAPI;
+import com.pclewis.mcpatcher.TexturePackChangeHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.FontRenderer;
 
@@ -21,33 +22,7 @@ public class FontUtils {
 
     private static final boolean showLines = false;
 
-    static {
-        TexturePackAPI.loadFontFromTexturePack = true;
-
-        TexturePackAPI.ChangeHandler.register(new TexturePackAPI.ChangeHandler(MCPatcherUtils.HD_FONT, 2) {
-            @Override
-            protected void onChange() {
-                Minecraft minecraft = MCPatcherUtils.getMinecraft();
-                setFontRenderer(minecraft, minecraft.fontRenderer, "/font/default.png");
-                if (minecraft.alternateFontRenderer != minecraft.fontRenderer) {
-                    setFontRenderer(minecraft, minecraft.alternateFontRenderer, "/font/alternate.png");
-                }
-            }
-        });
-    }
-
-    private static void setFontRenderer(Minecraft minecraft, FontRenderer fontRenderer, String filename) {
-        if (fontRenderer != null) {
-            boolean saveUnicode = fontRenderer.isUnicode;
-            fontRenderer.initialize(minecraft.gameSettings, filename, minecraft.renderEngine);
-            fontRenderer.isUnicode = saveUnicode;
-        }
-    }
-
     public static float[] computeCharWidths(FontRenderer fontRenderer, String filename, BufferedImage image, int[] rgb, int[] charWidth) {
-        if (fontRenderer.FONT_HEIGHT == 0) {
-            fontRenderer.FONT_HEIGHT = 8;
-        }
         float[] charWidthf = new float[charWidth.length];
         int width = image.getWidth();
         int height = image.getHeight();

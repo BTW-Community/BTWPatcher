@@ -19,7 +19,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.Level;
 
-class Config {
+/**
+ * Methods for getting and setting mod configuration.  Supports multiple profiles (by default, one profile
+ * per Minecraft version)
+ */
+public class Config {
+    static Config instance = null;
     private File xmlFile = null;
     Document xml;
     Element selectedProfile;
@@ -32,24 +37,24 @@ class Config {
     *         <last-version>2.0.1</last-version>
     *         <beta-warning-shown>false</beta-warning-shown>
     *     </config>
-    *     <mods profile="Minecraft 1.8.1">
+    *     <mods profile="Minecraft 1.5">
     *         <mod>
-    *             <name>HD Textures</name>
+    *             <name>Extended HD</name>
     *             <type>builtin</type>
     *             <enabled>true</enabled>
     *             <config>
-    *                 <useAnimatedTextures>true</useAnimatedTextures>
+    *                 <animations>true</animations>
     *             </config>
     *         </mod>
     *         <mod>
     *             <name>ModLoader</name>
     *             <type>external zip</type>
-    *             <path>/home/user/.minecraft/mods/ModLoader.zip</path>
+    *             <path>/home/user/.minecraft/mods/1.5/ModLoader.zip</path>
     *             <prefix />
     *             <enabled>true</enabled>
     *         </mod>
     *     </mods>
-    *     <mods profile="Minecraft 1.9">
+    *     <mods profile="Minecraft 1.5.1">
     *         ...
     *     </mods>
     * </mcpatcher-profile>
@@ -60,6 +65,7 @@ class Config {
     static final String TAG_LAST_MOD_DIRECTORY = "lastModDirectory";
     static final String TAG_DEBUG = "debug";
     static final String TAG_JAVA_HEAP_SIZE = "javaHeapSize";
+    static final String TAG_DIRECT_MEMORY_SIZE = "directMemorySize";
     static final String TAG_LAST_VERSION = "lastVersion";
     static final String TAG_BETA_WARNING_SHOWN = "betaWarningShown";
     static final String TAG_LOGGING = "logging";
@@ -95,7 +101,7 @@ class Config {
             "</xsl:stylesheet>";
 
     Config(File minecraftDir) throws ParserConfigurationException {
-        xmlFile = new File(minecraftDir, "mcpatcher.xml");
+        xmlFile = new File(minecraftDir, "mcpatcher3.xml");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         boolean save = false;
@@ -115,6 +121,186 @@ class Config {
         if (save) {
             saveProperties();
         }
+    }
+
+    /**
+     * Gets a value from mcpatcher.xml.
+     *
+     * @param mod          name of mod
+     * @param tag          property name
+     * @param defaultValue default value if not found in profile
+     * @return String value
+     */
+    public static String getString(String mod, String tag, Object defaultValue) {
+        if (instance == null) {
+            return defaultValue == null ? null : defaultValue.toString();
+        }
+        String value = instance.getModConfigValue(mod, tag);
+        if (value == null && defaultValue != null) {
+            value = defaultValue.toString();
+            instance.setModConfigValue(mod, tag, value);
+        }
+        return value;
+    }
+
+    /**
+     * Gets a value from mcpatcher.xml.
+     *
+     * @param tag          property name
+     * @param defaultValue default value if not found in profile
+     * @return String value
+     */
+    public static String getString(String tag, Object defaultValue) {
+        if (instance == null) {
+            return defaultValue == null ? null : defaultValue.toString();
+        }
+        String value = instance.getConfigValue(tag);
+        if (value == null && defaultValue != null) {
+            value = defaultValue.toString();
+            instance.setConfigValue(tag, value);
+        }
+        return value;
+    }
+
+    /**
+     * Gets a value from mcpatcher.xml.
+     *
+     * @param mod          name of mod
+     * @param tag          property name
+     * @param defaultValue default value if not found in profile
+     * @return int value or 0
+     */
+    public static int getInt(String mod, String tag, int defaultValue) {
+        int value;
+        try {
+            value = Integer.parseInt(getString(mod, tag, defaultValue));
+        } catch (NumberFormatException e) {
+            value = defaultValue;
+        }
+        return value;
+    }
+
+    /**
+     * Gets a value from mcpatcher.xml.
+     *
+     * @param tag          property name
+     * @param defaultValue default value if not found in profile
+     * @return int value or 0
+     */
+    public static int getInt(String tag, int defaultValue) {
+        int value;
+        try {
+            value = Integer.parseInt(getString(tag, defaultValue));
+        } catch (NumberFormatException e) {
+            value = defaultValue;
+        }
+        return value;
+    }
+
+    /**
+     * Gets a value from mcpatcher.xml.
+     *
+     * @param mod          name of mod
+     * @param tag          property name
+     * @param defaultValue default value if not found in profile
+     * @return boolean value
+     */
+    public static boolean getBoolean(String mod, String tag, boolean defaultValue) {
+        String value = getString(mod, tag, defaultValue).toLowerCase();
+        if (value.equals("false")) {
+            return false;
+        } else if (value.equals("true")) {
+            return true;
+        } else {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Gets a value from mcpatcher.xml.
+     *
+     * @param tag          property name
+     * @param defaultValue default value if not found in profile
+     * @return boolean value
+     */
+    public static boolean getBoolean(String tag, boolean defaultValue) {
+        String value = getString(tag, defaultValue).toLowerCase();
+        if (value.equals("false")) {
+            return false;
+        } else if (value.equals("true")) {
+            return true;
+        } else {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Sets a value in mcpatcher.xml.
+     *
+     * @param mod   name of mod
+     * @param tag   property name
+     * @param value property value (must support toString())
+     */
+    public static void set(String mod, String tag, Object value) {
+        if (instance != null) {
+            instance.setModConfigValue(mod, tag, value.toString());
+        }
+    }
+
+    /**
+     * Set a global config value in mcpatcher.xml.
+     *
+     * @param tag   property name
+     * @param value property value (must support toString())
+     */
+    static void set(String tag, Object value) {
+        if (instance != null) {
+            instance.setConfigValue(tag, value.toString());
+        }
+    }
+
+    /**
+     * Remove a value from mcpatcher.xml.
+     *
+     * @param mod name of mod
+     * @param tag property name
+     */
+    public static void remove(String mod, String tag) {
+        if (instance != null) {
+            instance.remove(instance.getModConfig(mod, tag));
+        }
+    }
+
+    /**
+     * Remove a global config value from mcpatcher.xml.
+     *
+     * @param tag property name
+     */
+    static void remove(String tag) {
+        if (instance != null) {
+            instance.remove(instance.getConfig(tag));
+        }
+    }
+
+    static void setLogLevel(String category, Level level) {
+        instance.setLogLevel1(category, level);
+    }
+
+    static Level getLogLevel(String category) {
+        return instance.getLogLevel1(category);
+    }
+
+    static boolean load(File minecraftDir) {
+        instance = null;
+        if (minecraftDir != null && minecraftDir.exists()) {
+            try {
+                instance = new Config(minecraftDir);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+        return false;
     }
 
     Element getElement(Element parent, String tag) {
@@ -455,11 +641,11 @@ class Config {
         return element;
     }
 
-    void setLogLevel(String category, Level level) {
+    void setLogLevel1(String category, Level level) {
         getLogLevelElement(category).setAttribute(TAG_LEVEL, level.toString());
     }
 
-    Level getLogLevel(String category) {
+    Level getLogLevel1(String category) {
         Level level = Level.INFO;
         Element element = getLogLevelElement(category);
         try {
@@ -477,12 +663,7 @@ class Config {
         if (xml != null) {
             getRoot();
             getConfig();
-            if (selectedProfile != null) {
-                getMods();
-                setText(getMod(MCPatcherUtils.HD_TEXTURES), TAG_ENABLED, "true");
-                setText(getMod(MCPatcherUtils.HD_FONT), TAG_ENABLED, "true");
-                setText(getMod(MCPatcherUtils.BETTER_GRASS), TAG_ENABLED, "false");
-            }
+            getMods();
         }
     }
 

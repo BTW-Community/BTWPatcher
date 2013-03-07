@@ -4,10 +4,7 @@ import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
 
 import java.io.*;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Properties;
+import java.util.*;
 import java.util.jar.JarException;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -23,7 +20,7 @@ class MinecraftJar {
     private JarFile origJar;
     private JarOutputStream outputJar;
 
-    public MinecraftJar(File file) throws IOException {
+    MinecraftJar(File file) throws IOException {
         info = new Info(file);
         if (!info.isOk()) {
             throw info.exception;
@@ -54,15 +51,15 @@ class MinecraftJar {
         super.finalize();
     }
 
-    public MinecraftVersion getVersion() {
+    MinecraftVersion getVersion() {
         return info.version;
     }
 
-    public boolean isModded() {
+    boolean isModded() {
         return info.result == Info.MODDED_JAR;
     }
 
-    public void logVersion() {
+    void logVersion() {
         Logger.log(Logger.LOG_MAIN, "Minecraft version is %s (md5 %s)", info.version, info.md5);
         if (info.origMD5 == null) {
             Logger.log(Logger.LOG_MAIN, "WARNING: could not determine original md5 sum");
@@ -94,7 +91,7 @@ class MinecraftJar {
                         renameProfile = true;
                     }
                     if (renameProfile) {
-                        Config config = MCPatcherUtils.config;
+                        Config config = Config.instance;
                         String oldProfile = "Minecraft " + oldVersion;
                         String newProfile = "Minecraft " + version.getProfileString();
                         config.renameProfile(oldProfile, newProfile);
@@ -151,48 +148,48 @@ class MinecraftJar {
         }
     }
 
-    public void createBackup() throws IOException {
+    void createBackup() throws IOException {
         closeStreams();
         if (outputFile.exists() && !origFile.exists()) {
             Util.copyFile(outputFile, origFile);
         }
     }
 
-    public void restoreBackup() throws IOException {
+    void restoreBackup() throws IOException {
         closeStreams();
         if (origFile.exists()) {
             Util.copyFile(origFile, outputFile);
         }
     }
 
-    public void setOutputFile(File file) {
+    void setOutputFile(File file) {
         outputFile = file;
         closeStreams();
     }
 
-    public JarFile getInputJar() throws IOException {
+    JarFile getInputJar() throws IOException {
         if (origJar == null) {
             origJar = new JarFile(origFile, false);
         }
         return origJar;
     }
 
-    public JarOutputStream getOutputJar() throws IOException {
+    JarOutputStream getOutputJar() throws IOException {
         if (outputJar == null) {
             outputJar = new JarOutputStream(new FileOutputStream(outputFile));
         }
         return outputJar;
     }
 
-    public File getInputFile() {
+    File getInputFile() {
         return origFile;
     }
 
-    public File getOutputFile() {
+    File getOutputFile() {
         return outputFile;
     }
 
-    public void checkOutput() throws Exception {
+    void checkOutput() throws Exception {
         closeStreams();
         JarFile jar = null;
         try {
@@ -202,14 +199,14 @@ class MinecraftJar {
         }
     }
 
-    public void closeStreams() {
+    void closeStreams() {
         MCPatcherUtils.close(origJar);
         MCPatcherUtils.close(outputJar);
         origJar = null;
         outputJar = null;
     }
 
-    public void run() {
+    void run() {
         File file = getOutputFile();
         File directory = file.getParentFile();
         StringBuilder cp = new StringBuilder();
@@ -220,15 +217,23 @@ class MinecraftJar {
             cp.append(File.pathSeparatorChar);
         }
 
-        int heapSize = MCPatcherUtils.getInt(Config.TAG_JAVA_HEAP_SIZE, 1024);
-        ProcessBuilder pb = new ProcessBuilder(
-            "java",
-            "-cp", cp.toString(),
-            "-Djava.library.path=" + new File(directory, "natives").getPath(),
-            "-Xmx" + heapSize + "M",
-            "-Xms" + Math.min(heapSize, 512) + "M",
-            "net.minecraft.client.Minecraft"
-        );
+        List<String> params = new ArrayList<String>();
+        params.add("java");
+        params.add("-cp");
+        params.add(cp.toString());
+        params.add("-Djava.library.path=" + new File(directory, "natives").getPath());
+        int heapSize = Config.getInt(Config.TAG_JAVA_HEAP_SIZE, 1024);
+        if (heapSize > 0) {
+            params.add("-Xmx" + heapSize + "M");
+            params.add("-Xms" + Math.min(heapSize, 512) + "M");
+        }
+        int directSize = Config.getInt(Config.TAG_DIRECT_MEMORY_SIZE, 0);
+        if (directSize > 0) {
+            params.add("-XX:MaxDirectMemorySize=" + directSize + "M");
+        }
+        params.add("net.minecraft.client.Minecraft");
+
+        ProcessBuilder pb = new ProcessBuilder(params.toArray(new String[params.size()]));
         pb.redirectErrorStream(true);
         pb.directory(MCPatcherUtils.getMinecraftPath());
 
@@ -402,8 +407,6 @@ class MinecraftJar {
                                 version = MinecraftVersion.parseVersion("Minecraft RC2 Prerelease 1");
                             } else if (version.getVersionString().equals("11w49a") && md5.equals("8763eb2747d57e2958295bbd06e764b1")) {
                                 version = MinecraftVersion.parseVersion("Minecraft 11w50a");
-                            } else if (version.getVersionString().equals("1.4.5") && md5.equals("469c9743ba88b7aa498769db75e31b1c")) {
-                                version = MinecraftVersion.parseVersion("Minecraft 1.4.5 Prerelease 1");
                             }
                             break;
                         }

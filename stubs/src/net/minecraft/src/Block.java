@@ -11,6 +11,10 @@ public class Block {
         return 0;
     }
 
+    public Icon getBlockIcon(IBlockAccess blockAccess, int i, int j, int k, int face) {
+        return null;
+    }
+
     public boolean renderAsNormalBlock() {
         return false;
     }
@@ -25,5 +29,9 @@ public class Block {
 
     public boolean shouldSideBeRendered(IBlockAccess blockAccess, int i, int j, int k, int face) {
         return true;
+    }
+
+    public String getShortName() {
+        return null;
     }
 }

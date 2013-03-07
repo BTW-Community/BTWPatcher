@@ -4,6 +4,7 @@
 
 package com.pclewis.mcpatcher.mod;
 
+import com.pclewis.mcpatcher.TexturePackAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.Block;
 import net.minecraft.src.EntityLiving;
@@ -175,7 +176,7 @@ public class Shaders {
             glLoadIdentity();
             glTranslatef(0.0f, 0.0f, -100.0f);
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-            float angle = -mc.getWorld().getCelestialAngle(f) * 360.0f;
+            float angle = -mc.theWorld.getCelestialAngle(f) * 360.0f;
             if (angle < -90.0 && angle > -270.0) {
                 // night time
                 glRotatef(angle + 180.0f, 0.0f, 0.0f, 1.0f);
@@ -381,9 +382,9 @@ public class Shaders {
     public static void beginTerrain() {
         useProgram(Shaders.ProgramTerrain);
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, mc.renderEngine.getTexture("/terrain_nh.png"));
+        TexturePackAPI.bindTexture("/terrain_nh.png");
         glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, mc.renderEngine.getTexture("/terrain_s.png"));
+        TexturePackAPI.bindTexture("/terrain_s.png");
         glActiveTexture(GL_TEXTURE0);
         FloatBuffer projection = BufferUtils.createFloatBuffer(16);
     }
@@ -395,9 +396,9 @@ public class Shaders {
     public static void beginWater() {
         useProgram(Shaders.ProgramWater);
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, mc.renderEngine.getTexture("/terrain_nh.png"));
+        TexturePackAPI.bindTexture("/terrain_nh.png");
         glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, mc.renderEngine.getTexture("/terrain_s.png"));
+        TexturePackAPI.bindTexture("/terrain_s.png");
         glActiveTexture(GL_TEXTURE0);
     }
 
@@ -518,11 +519,11 @@ public class Shaders {
                 setProgramUniformMatrix4ARB("shadowModelViewInverse", false, shadowModelViewInverse);
             }
         }
-        ItemStack stack = mc.getPlayer().inventory.getCurrentItem();
+        ItemStack stack = mc.thePlayer.inventory.getCurrentItem();
         setProgramUniform1i("heldItemId", (stack == null ? -1 : stack.itemID));
         setProgramUniform1i("heldBlockLightValue", (stack == null || stack.itemID >= 256 ? 0 : Block.lightValue[stack.itemID]));
         setProgramUniform1i("fogMode", (fogEnabled ? glGetInteger(GL_FOG_MODE) : 0));
-        setProgramUniform1i("worldTime", (int) (mc.getWorld().getWorldTime() % 24000L));
+        setProgramUniform1i("worldTime", (int) (mc.theWorld.getWorldTime() % 24000L));
         setProgramUniform1f("aspectRatio", (float) renderWidth / (float) renderHeight);
         setProgramUniform1f("viewWidth", (float) renderWidth);
         setProgramUniform1f("viewHeight", (float) renderHeight);

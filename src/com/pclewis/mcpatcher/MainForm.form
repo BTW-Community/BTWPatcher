@@ -278,7 +278,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <scrollpane id="17ee4">
+              <scrollpane id="17ee4" binding="optionsScrollPane">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -336,7 +336,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <scrollpane id="40da7">
+              <scrollpane id="40da7" binding="logScrollPane">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -372,7 +372,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <scrollpane id="9c7c9">
+              <scrollpane id="9c7c9" binding="classMapScrollPane">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -408,7 +408,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <scrollpane id="35ad6">
+              <scrollpane id="35ad6" binding="patchSummaryScrollPane">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>

@@ -38,7 +38,7 @@ final class ColorMap {
             return;
         }
         if (map.length != COLORMAP_SIZE * COLORMAP_SIZE) {
-            logger.severe("%s must be %dx%d", filename, COLORMAP_SIZE, COLORMAP_SIZE);
+            logger.error("%s must be %dx%d", filename, COLORMAP_SIZE, COLORMAP_SIZE);
             map = null;
             return;
         }
@@ -71,6 +71,6 @@ final class ColorMap {
     }
 
     int colorize(int defaultColor, int i, int j, int k) {
-        return colorize(defaultColor, BiomeHelper.instance.getTemperature(i, j, k), BiomeHelper.instance.getRainfall(i, j, k));
+        return colorize(defaultColor, BiomeHelper.getTemperature(i, j, k), BiomeHelper.getRainfall(i, j, k));
     }
 }

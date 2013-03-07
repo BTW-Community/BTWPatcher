@@ -5,48 +5,30 @@ import com.pclewis.mcpatcher.*;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 
 import static com.pclewis.mcpatcher.BinaryRegex.*;
 import static com.pclewis.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class BetterSkies extends Mod {
-    private final boolean haveNewWorld;
-    private final boolean haveNewWorldTime;
-    private final boolean haveFireworks;
-    private final String worldObjClass;
-
-    public BetterSkies(MinecraftVersion minecraftVersion) {
+    public BetterSkies() {
         name = MCPatcherUtils.BETTER_SKIES;
         author = "MCPatcher";
         description = "Adds support for custom skyboxes.";
-        version = "1.2";
+        version = "1.3";
 
         configPanel = new ConfigPanel();
 
         addDependency(BaseTexturePackMod.NAME);
 
-        haveNewWorld = minecraftVersion.compareTo("12w18a") >= 0;
-        haveNewWorldTime = minecraftVersion.compareTo("12w32a") >= 0;
-        haveFireworks = minecraftVersion.compareTo("12w50a") >= 0;
-
-        addClassMod(new BaseMod.MinecraftMod().addWorldGetter(minecraftVersion));
+        addClassMod(new BaseMod.MinecraftMod().mapWorldClient());
         addClassMod(new WorldMod());
-        if (haveNewWorld) {
-            addClassMod(new BaseMod.WorldServerMPMod(minecraftVersion));
-            addClassMod(new BaseMod.WorldServerMod(minecraftVersion));
-            worldObjClass = "WorldServerMP";
-        } else {
-            worldObjClass = "World";
-        }
+        addClassMod(new BaseMod.WorldClientMod());
         addClassMod(new RenderGlobalMod());
 
-        if (haveFireworks) {
-            addClassMod(new EffectRendererMod());
-            addClassMod(new EntityFireworkSparkFXMod());
-            addClassMod(new EntityFireworkOverlayFXMod());
-        }
+        addClassMod(new EffectRendererMod());
+        addClassMod(new EntityFireworkSparkFXMod());
+        addClassMod(new EntityFireworkOverlayFXMod());
 
         addClassFile(MCPatcherUtils.SKY_RENDERER_CLASS);
         addClassFile(MCPatcherUtils.SKY_RENDERER_CLASS + "$1");
@@ -57,12 +39,19 @@ public class BetterSkies extends Mod {
 
     private static class ConfigPanel extends ModConfigPanel {
         private JPanel panel;
+        private JCheckBox skyCheckBox;
         private JCheckBox fireworksCheckBox;
 
         ConfigPanel() {
+            skyCheckBox.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    Config.set(MCPatcherUtils.BETTER_SKIES, "skybox", skyCheckBox.isSelected());
+                }
+            });
+
             fireworksCheckBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    MCPatcherUtils.set(MCPatcherUtils.BETTER_SKIES, "brightenFireworks", fireworksCheckBox.isSelected());
+                    Config.set(MCPatcherUtils.BETTER_SKIES, "brightenFireworks", fireworksCheckBox.isSelected());
                 }
             });
         }
@@ -74,7 +63,8 @@ public class BetterSkies extends Mod {
 
         @Override
         public void load() {
-            fireworksCheckBox.setSelected(MCPatcherUtils.getBoolean(MCPatcherUtils.BETTER_SKIES, "brightenFireworks", true));
+            skyCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "skybox", true));
+            fireworksCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "brightenFireworks", true));
         }
 
         @Override
@@ -86,11 +76,7 @@ public class BetterSkies extends Mod {
         WorldMod() {
             final MethodRef getWorldTime = new MethodRef(getDeobfClass(), "getWorldTime", "()J");
 
-            if (haveNewWorldTime) {
-                addMemberMapper(new MethodMapper(null, null, getWorldTime));
-            } else {
-                addMemberMapper(new MethodMapper(null, getWorldTime));
-            }
+            addMemberMapper(new MethodMapper(null, null, getWorldTime));
         }
     }
 
@@ -98,9 +84,7 @@ public class BetterSkies extends Mod {
         private final MethodRef renderSky = new MethodRef(getDeobfClass(), "renderSky", "(F)V");
 
         RenderGlobalMod() {
-            final MethodRef getTexture = new MethodRef("RenderEngine", "getTexture", "(Ljava/lang/String;)I");
-            final MethodRef bindTexture = new MethodRef("RenderEngine", "bindTexture", "(I)V");
-            final MethodRef getCelestialAngle = new MethodRef(worldObjClass, "getCelestialAngle", "(F)F");
+            final MethodRef getCelestialAngle = new MethodRef("WorldClient", "getCelestialAngle", "(F)F");
             final MethodRef getRainStrength = new MethodRef("World", "getRainStrength", "(F)F");
             final MethodRef startDrawingQuads = new MethodRef("Tessellator", "startDrawingQuads", "()V");
             final MethodRef setColorOpaque_I = new MethodRef("Tessellator", "setColorOpaque_I", "(I)V");
@@ -113,7 +97,7 @@ public class BetterSkies extends Mod {
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final FieldRef worldProvider = new FieldRef("World", "worldProvider", "LWorldProvider;");
             final FieldRef worldType = new FieldRef("WorldProvider", "worldType", "I");
-            final FieldRef worldObj = new FieldRef(getDeobfClass(), "worldObj", "L" + worldObjClass + ";");
+            final FieldRef worldObj = new FieldRef(getDeobfClass(), "worldObj", "LWorldClient;");
             final FieldRef glSkyList = new FieldRef(getDeobfClass(), "glSkyList", "I");
             final FieldRef glSkyList2 = new FieldRef(getDeobfClass(), "glSkyList2", "I");
             final FieldRef glStarList = new FieldRef(getDeobfClass(), "glStarList", "I");
@@ -137,14 +121,12 @@ public class BetterSkies extends Mod {
                         // ...
                         any(0, 100),
 
-                        // renderEngine.bindTexture(renderEngine.getTexture("/misc/tunnel.png"));
+                        // renderEngine....("/misc/tunnel.png");
                         ALOAD_0,
                         captureReference(GETFIELD),
-                        ALOAD_0,
-                        backReference(4),
+                        any(0, 6),
                         push("/misc/tunnel.png"),
-                        captureReference(INVOKEVIRTUAL),
-                        captureReference(INVOKEVIRTUAL),
+                        any(0, 8),
 
                         // Tessellator tessellator = Tessellator.instance;
                         captureReference(GETSTATIC),
@@ -175,7 +157,7 @@ public class BetterSkies extends Mod {
 
                         // GL11.glRotatef(worldObj.getCelestialAngle(par1) * 360F, 1.0F, 0.0F, 0.0F);
                         ALOAD_0,
-                        backReference(8),
+                        backReference(6),
                         FLOAD_1,
                         captureReference(INVOKEVIRTUAL),
                         push(360.0f),
@@ -192,12 +174,10 @@ public class BetterSkies extends Mod {
                 .addXref(2, worldProvider)
                 .addXref(3, worldType)
                 .addXref(4, renderEngine)
-                .addXref(5, getTexture)
-                .addXref(6, bindTexture)
-                .addXref(7, tessellator)
-                .addXref(8, worldObj)
-                .addXref(9, getRainStrength)
-                .addXref(10, getCelestialAngle)
+                .addXref(5, tessellator)
+                .addXref(6, worldObj)
+                .addXref(7, getRainStrength)
+                .addXref(8, getCelestialAngle)
             );
 
             addClassSignature(new BytecodeSignature() {
@@ -304,7 +284,7 @@ public class BetterSkies extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         ALOAD_0,
                         reference(GETFIELD, worldObj),
@@ -320,7 +300,7 @@ public class BetterSkies extends Mod {
                 }
             }.targetMethod(renderSky));
 
-            addPatch(new BytecodePatch.InsertBefore() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "render custom sky";
@@ -344,12 +324,15 @@ public class BetterSkies extends Mod {
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "renderAll", "()V"))
                     );
                 }
-            }.targetMethod(renderSky));
+            }
+                .setInsertBefore(true)
+                .targetMethod(renderSky)
+            );
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -373,7 +356,7 @@ public class BetterSkies extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         reference(GETSTATIC, active),
                         IFNE, branch("A"),
@@ -383,12 +366,12 @@ public class BetterSkies extends Mod {
                 }
             }.targetMethod(renderSky));
 
-            addCelestialObjectPatch("sun", "/terrain/sun.png");
-            addCelestialObjectPatch("moon", "/terrain/moon_phases.png");
+            addCelestialObjectPatch("sun", "sun.png");
+            addCelestialObjectPatch("moon", "moon_phases.png");
         }
 
         private void addCelestialObjectPatch(final String objName, final String textureName) {
-            addPatch(new BytecodePatch.InsertAfter() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "override " + objName + " texture";
@@ -397,17 +380,20 @@ public class BetterSkies extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push(textureName)
+                        push("/environment/" + textureName)
                     );
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setupCelestialObject", "(Ljava/lang/String;)Ljava/lang/String;"))
                     );
                 }
-            }.targetMethod(renderSky));
+            }
+                .setInsertAfter(true)
+                .targetMethod(renderSky)
+            );
         }
     }
 
@@ -424,7 +410,7 @@ public class BetterSkies extends Mod {
             final MethodRef renderParticles = new MethodRef(getDeobfClass(), "renderParticles", "(LEntity;F)V");
             final MethodRef addEffect = new MethodRef(getDeobfClass(), "addEffect", "(LEntityFX;)V");
             final MethodRef getFXLayer = new MethodRef("EntityFX", "getFXLayer", "()I");
-            final MethodRef getTexture = new MethodRef("RenderEngine", "getTexture", "(Ljava/lang/String;)I");
+            final MethodRef bindTexture = new MethodRef("RenderEngine", "bindTexture", "(Ljava/lang/String;)V");
             final MethodRef glBlendFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBlendFunc", "(II)V");
 
             addClassSignature(new ConstSignature("/particles.png"));
@@ -458,7 +444,7 @@ public class BetterSkies extends Mod {
             }
                 .setMethod(renderParticles)
                 .addXref(1, renderer)
-                .addXref(2, getTexture)
+                .addXref(2, bindTexture)
             );
 
             addClassSignature(new BytecodeSignature() {
@@ -498,7 +484,7 @@ public class BetterSkies extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         push(ORIG_LAYERS + EXTRA_LAYERS)
                     );
@@ -519,14 +505,14 @@ public class BetterSkies extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "getFXLayer", "(LEntityFX;)I"))
                     );
                 }
             }.targetMethod(addEffect));
 
-            addPatch(new BytecodePatch.InsertAfter() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "render extra fx layers";
@@ -544,62 +530,17 @@ public class BetterSkies extends Mod {
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     layerRegister = getCaptureGroup(1)[0] & 0xff;
                     return buildCode(
                         ILOAD, layerRegister,
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "skipThisLayer", "(ZI)Z"))
                     );
                 }
-            }.targetMethod(renderParticles));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "bind texture for extra fx layers";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    if (layerRegister > 0) {
-                        return buildExpression(
-                            // if (layer == 0) {
-                            ILOAD, layerRegister,
-                            IFNE, any(2),
-
-                            // var9 = this.renderer.getTexture("/particles.png");
-                            capture(build(
-                                ALOAD_0,
-                                reference(GETFIELD, renderer),
-                                push("/particles.png"),
-                                reference(INVOKEVIRTUAL, getTexture),
-                                anyISTORE
-                            ))
-
-                            // }
-                        );
-                    } else {
-                        return null;
-                    }
-                }
-
-                @Override
-                public byte[] getReplacementBytes() throws IOException {
-                    return buildCode(
-                        // if (layer % 4 == 0) {
-                        ILOAD, layerRegister,
-                        push(ORIG_LAYERS),
-                        IREM,
-                        IFNE, branch("A"),
-
-                        // ...
-                        getCaptureGroup(1),
-
-                        // }
-                        label("A")
-                    );
-                }
-            }.targetMethod(renderParticles));
+            }
+                .setInsertAfter(true)
+                .targetMethod(renderParticles)
+            );
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -621,7 +562,7 @@ public class BetterSkies extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         ILOAD, layerRegister,
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "setParticleBlendMethod", "(I)V"))

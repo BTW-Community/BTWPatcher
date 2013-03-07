@@ -7,13 +7,14 @@ import javassist.bytecode.MethodInfo;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Base class of all class patches.
  */
 abstract public class ClassPatch implements PatchComponent {
     ClassMod classMod;
-    HashMap<String, Integer> numMatches = new HashMap<String, Integer>();
+    final Map<String, Integer> numMatches = new HashMap<String, Integer>();
     boolean optional;
 
     /**
@@ -81,7 +82,7 @@ abstract public class ClassPatch implements PatchComponent {
         return classMod.buildExpression(objects);
     }
 
-    final public byte[] buildCode(Object... objects) throws IOException {
+    final public byte[] buildCode(Object... objects) {
         return classMod.buildCode(objects);
     }
 

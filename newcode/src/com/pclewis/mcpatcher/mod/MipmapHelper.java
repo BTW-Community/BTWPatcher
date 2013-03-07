@@ -1,10 +1,11 @@
 package com.pclewis.mcpatcher.mod;
 
+import com.pclewis.mcpatcher.Config;
 import com.pclewis.mcpatcher.MCLogger;
 import com.pclewis.mcpatcher.MCPatcherUtils;
 import com.pclewis.mcpatcher.TexturePackAPI;
 import net.minecraft.src.RenderEngine;
-import net.minecraft.src.TextureFX;
+import net.minecraft.src.Texture;
 import org.lwjgl.opengl.*;
 import org.lwjgl.util.glu.GLU;
 
@@ -22,15 +23,16 @@ import java.nio.IntBuffer;
 import java.util.*;
 
 public class MipmapHelper {
-    private static final MCLogger logger = MCLogger.getLogger("Mipmap");
+    private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
 
     private static final String MIPMAP_PROPERTIES = "/mipmap.properties";
 
     private static final boolean mipmapSupported;
-    private static final boolean mipmapEnabled = MCPatcherUtils.getBoolean(MCPatcherUtils.HD_TEXTURES, "mipmap", false);
-    private static final int maxMipmapLevel = MCPatcherUtils.getInt(MCPatcherUtils.HD_TEXTURES, "maxMipmapLevel", 3);
+    private static final boolean mipmapEnabled = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "mipmap", false);
+    private static final int maxMipmapLevel = Config.getInt(MCPatcherUtils.EXTENDED_HD, "maxMipmapLevel", 3);
     private static final boolean useMipmap;
-    private static final int mipmapAlignment = (1 << MCPatcherUtils.getInt(MCPatcherUtils.HD_TEXTURES, "mipmapAlignment", 3)) - 1;
+    private static final int mipmapAlignment = (1 << Config.getInt(MCPatcherUtils.EXTENDED_HD, "mipmapAlignment", 3)) - 1;
+    private static final int byteBufferAllocation = Config.getInt(MCPatcherUtils.EXTENDED_HD, "byteBufferAllocation", 1);
 
     private static final boolean anisoSupported;
     private static final int anisoLevel;
@@ -42,7 +44,7 @@ public class MipmapHelper {
     private static final HashMap<String, Reference<BufferedImage>> imagePool = new HashMap<String, Reference<BufferedImage>>();
     private static final HashMap<Integer, Reference<ByteBuffer>> bufferPool = new HashMap<Integer, Reference<ByteBuffer>>();
 
-    private static int bgColorFix;
+    private static int bgColorFix = 4;
 
     public static int currentLevel;
 
@@ -50,6 +52,9 @@ public class MipmapHelper {
     private static final int MIPMAP_NONE = 0;
     private static final int MIPMAP_BASIC = 1;
     private static final int MIPMAP_ALPHA = 2;
+
+    private static Texture currentTexture;
+    private static boolean flippedTextureLogged;
 
     static {
         mipmapSupported = GLContext.getCapabilities().OpenGL12;
@@ -59,14 +64,14 @@ public class MipmapHelper {
         if (anisoSupported) {
             anisoMax = (int) GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
             checkGLError("glGetFloat(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)");
-            anisoLevel = Math.max(Math.min(MCPatcherUtils.getInt(MCPatcherUtils.HD_TEXTURES, "anisotropicFiltering", 1), anisoMax), 1);
+            anisoLevel = Math.max(Math.min(Config.getInt(MCPatcherUtils.EXTENDED_HD, "anisotropicFiltering", 1), anisoMax), 1);
         } else {
             anisoMax = anisoLevel = 1;
         }
 
         lodSupported = GLContext.getCapabilities().GL_EXT_texture_lod_bias;
         if (lodSupported) {
-            lodBias = MCPatcherUtils.getInt(MCPatcherUtils.HD_TEXTURES, "lodBias", 0);
+            lodBias = Config.getInt(MCPatcherUtils.EXTENDED_HD, "lodBias", 0);
         }
 
         logger.config("mipmap: supported=%s, enabled=%s, level=%d", mipmapSupported, mipmapEnabled, maxMipmapLevel);
@@ -74,18 +79,92 @@ public class MipmapHelper {
         logger.config("lod bias: supported=%s, bias=%d", lodSupported, lodBias);
     }
 
-    public static void setupTexture(RenderEngine renderEngine, BufferedImage image, int texture, String textureName) {
+    public static void setupTexture(int target, int level, int internalFormat, int width, int height, int border, int format, int dataType, ByteBuffer buffer, Texture texture) {
+        int[] byteOrder = (format == GL11.GL_RGBA ? new int[]{3, 0, 1, 2} : new int[]{3, 2, 1, 0});
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        byte[] rgba = new byte[4 * width * height];
+        int[] argb = new int[width * height];
+        buffer.position(0);
+        buffer.get(rgba, 0, rgba.length);
+        for (int i = 0; i < rgba.length; i += 4) {
+            argb[i / 4] = ((rgba[i + byteOrder[0]] & 0xff) << 24) |
+                ((rgba[i + byteOrder[1]] & 0xff) << 16) |
+                ((rgba[i + byteOrder[2]] & 0xff) << 8) |
+                (rgba[i + byteOrder[3]] & 0xff);
+        }
+        image.setRGB(0, 0, width, height, argb, 0, width);
+
+        currentTexture = texture;
+        setupTexture(MCPatcherUtils.getMinecraft().renderEngine, image, texture.getGLTexture(), false, false, texture.getName());
+        currentTexture = null;
+    }
+
+    public static ByteBuffer allocateByteBuffer(int capacity) {
+        if (byteBufferAllocation == 0) {
+            return ByteBuffer.allocateDirect(capacity);
+        } else {
+            return ByteBuffer.allocate(capacity);
+        }
+    }
+
+    public static void copySubTexture(Texture dst, Texture src, int x, int y, boolean flipped) {
+        ByteBuffer srcBuffer = src.getByteBuffer();
+        srcBuffer.position(0);
+        if (byteBufferAllocation == 1 && !srcBuffer.isDirect()) {
+            logger.finer("creating %d direct byte buffer for texture %s", srcBuffer.capacity(), src.getName());
+            ByteBuffer newBuffer = ByteBuffer.allocateDirect(srcBuffer.capacity()).order(srcBuffer.order());
+            newBuffer.put(srcBuffer).flip();
+            src.byteBuffer = srcBuffer = newBuffer;
+        }
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, dst.getGLTexture());
+        int mipmaps = dst.useMipmaps ? getMipmapLevels() : 0;
+        int width = src.getWidth();
+        int height = src.getHeight();
+        if (flipped && !flippedTextureLogged) {
+            flippedTextureLogged = true;
+            logger.warning("copySubTexture(%s, %s, %d, %d, %s): flipped texture not yet supported",
+                dst.getName(), src.getName(), x, y, flipped
+            );
+        }
+        for (int i = 0; ; i++) {
+            if (byteBufferAllocation == 2 && !srcBuffer.isDirect()) {
+                ByteBuffer newBuffer = getPooledBuffer(srcBuffer.capacity());
+                newBuffer.put(srcBuffer).flip();
+                srcBuffer = newBuffer;
+            }
+            GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, i, x, y, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, srcBuffer);
+            checkGLError("%s -> %s: glTexSubImage2D(%d, %d, %d, %d, %d)",
+                src.getName(), dst.getName(), i, x, y, width, height
+            );
+            ByteBuffer newBuffer = getPooledBuffer(width * height);
+            scaleHalf(srcBuffer.asIntBuffer(), width, height, newBuffer.asIntBuffer(), 0);
+            if (i >= mipmaps) {
+                break;
+            }
+            width >>= 1;
+            height >>= 1;
+            x >>= 1;
+            y >>= 1;
+            srcBuffer = newBuffer;
+        }
+    }
+
+    public static void setupTexture(RenderEngine renderEngine, BufferedImage image, int texture, boolean blurTexture, boolean clampTexture, String textureName) {
         if (texture < 0 || image == null) {
             return;
         }
         long s1 = System.currentTimeMillis();
         ArrayList<BufferedImage> mipmapImages = getMipmapsForTexture(image, textureName);
         long s2 = System.currentTimeMillis();
-        setupTextureMipmaps(renderEngine, mipmapImages, texture, textureName);
+        setupTextureMipmaps(renderEngine, mipmapImages, texture, textureName, blurTexture, clampTexture);
         long s3 = System.currentTimeMillis();
         if (mipmapImages.size() > 1) {
             logger.finer("%s: generate %dms, setup %dms, total %dms", textureName, s2 - s1, s3 - s2, s3 - s1);
         }
+    }
+
+    public static void setupTexture(RenderEngine renderEngine, BufferedImage image, int texture, String textureName) {
+        setupTexture(renderEngine, image, texture, renderEngine.blurTexture, renderEngine.clampTexture, textureName);
     }
 
     private static ArrayList<BufferedImage> getMipmapsForTexture(BufferedImage image, String textureName) {
@@ -101,7 +180,7 @@ public class MipmapHelper {
             logger.fine("using %d custom mipmaps for %s", mipmapImages.size() - 1, textureName);
             return mipmapImages;
         }
-        int mipmaps = getMipmapLevels(textureName, image);
+        int mipmaps = getMipmapLevels(image.getWidth(), image.getHeight(), 2);
         if (mipmaps <= 0) {
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL, mipmaps);
             type = MIPMAP_NONE;
@@ -141,7 +220,7 @@ public class MipmapHelper {
         return mipmapImages;
     }
 
-    private static void setupTextureMipmaps(RenderEngine renderEngine, ArrayList<BufferedImage> mipmapImages, int texture, String textureName) {
+    private static void setupTextureMipmaps(RenderEngine renderEngine, ArrayList<BufferedImage> mipmapImages, int texture, String textureName, boolean blurTexture, boolean clampTexture) {
         try {
             int mipmaps = mipmapImages.size() - 1;
             for (currentLevel = 0; currentLevel <= mipmaps; currentLevel++) {
@@ -149,6 +228,11 @@ public class MipmapHelper {
                     GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST_MIPMAP_LINEAR);
                     GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
                     GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL, mipmaps);
+                    if (currentTexture != null) {
+                        currentTexture.useMipmaps = true;
+                        currentTexture.glMinFilter = GL11.GL_NEAREST_MIPMAP_LINEAR;
+                        currentTexture.glMagFilter = GL11.GL_NEAREST;
+                    }
                     checkGLError("set GL_TEXTURE_MAX_LEVEL = %d", mipmaps);
                     if (anisoSupported && anisoLevel > 1) {
                         GL11.glTexParameterf(GL11.GL_TEXTURE_2D, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisoLevel);
@@ -160,7 +244,7 @@ public class MipmapHelper {
                     }
                 }
                 BufferedImage image = mipmapImages.get(currentLevel);
-                renderEngine.setupTexture(image, texture);
+                renderEngine.setupTexture2(image, texture, blurTexture, clampTexture);
                 checkGLError("setupTexture %s#%d", textureName, currentLevel);
                 if (currentLevel > 0) {
                     logger.finest("%s mipmap level %d (%dx%d)", textureName, currentLevel, image.getWidth(), image.getHeight());
@@ -173,40 +257,11 @@ public class MipmapHelper {
         }
     }
 
-    public static void glTexSubImage2D(int target, int level, int xoffset, int yoffset, int width, int height, int format, int type, ByteBuffer pixels, TextureFX textureFX) {
-        GL11.glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
-        if (textureFX.tileImage == 0) {
-            ByteOrder saveOrder = pixels.order();
-            pixels.order(ByteOrder.BIG_ENDIAN);
-            update("/terrain.png", xoffset, yoffset, width, height, pixels);
-            pixels.order(saveOrder);
-        }
-    }
-
-    private static void update(String texture, int x, int y, int w, int h, ByteBuffer imageData) {
-        int mipmaps = getMipmapLevels();
-        for (int i = 1; i <= mipmaps && ((x | y | w | h) & mipmapAlignment) == 0; i++) {
-            ByteBuffer newImage = getPooledBuffer(w * h);
-            scaleHalf(imageData.asIntBuffer(), w, h, newImage.asIntBuffer(), 0);
-            x >>= 1;
-            y >>= 1;
-            w >>= 1;
-            h >>= 1;
-            int width = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, i, GL11.GL_TEXTURE_WIDTH);
-            int height = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, i, GL11.GL_TEXTURE_HEIGHT);
-            if (width < 0 || height < 0) {
-                break;
-            }
-            GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, i, x, y, w, h, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) newImage.position(0));
-            checkGLError("glTexSubImage2D(%d, %d, %d, %d, %d, %d), width %d, height %d, mipmaps %d", i, x, y, w, h, newImage.limit(), width, height, mipmaps);
-            imageData = newImage;
-        }
-    }
-
     static void reset() {
         bgColorFix = 4;
         mipmapType.clear();
-        forceMipmapType("/terrain.png", MIPMAP_BASIC);
+        forceMipmapType("terrain", MIPMAP_BASIC);
+        forceMipmapType("items", MIPMAP_NONE);
         Properties properties = TexturePackAPI.getProperties(MIPMAP_PROPERTIES);
         if (properties != null) {
             bgColorFix = MCPatcherUtils.getIntProperty(properties, "bgColorFix", 4);
@@ -222,7 +277,7 @@ public class MipmapHelper {
                         } else if (value.equals("alpha")) {
                             mipmapType.put(key, MIPMAP_ALPHA);
                         } else {
-                            logger.warning("%s: unknown value '%s' for %s", MIPMAP_PROPERTIES, value, key);
+                            logger.error("%s: unknown value '%s' for %s", MIPMAP_PROPERTIES, value, key);
                         }
                     }
                 }
@@ -232,7 +287,7 @@ public class MipmapHelper {
 
     private static boolean getCustomMipmaps(ArrayList<BufferedImage> mipmaps, String texture, int baseWidth, int baseHeight) {
         boolean added = false;
-        if (useMipmap && texture != null) {
+        if (useMipmap && texture != null && texture.startsWith("/")) {
             for (int i = 1; baseWidth > 0 && baseHeight > 0 && i <= maxMipmapLevel; i++) {
                 baseWidth >>>= 1;
                 baseHeight >>>= 1;
@@ -247,7 +302,7 @@ public class MipmapHelper {
                     mipmaps.add(image);
                     added = true;
                 } else {
-                    logger.warning("%s has wrong size %dx%d (expecting %dx%d)", name, width, height, baseWidth, baseHeight);
+                    logger.error("%s has wrong size %dx%d (expecting %dx%d)", name, width, height, baseWidth, baseHeight);
                     break;
                 }
             }
@@ -256,7 +311,7 @@ public class MipmapHelper {
     }
 
     private static int getMipmapType(String texture, ArrayList<BufferedImage> mipmapImages) {
-        BufferedImage image = mipmapImages.get(0);
+        BufferedImage image = mipmapImages == null ? null : mipmapImages.get(0);
         if (!useMipmap || texture == null) {
             return MIPMAP_NONE;
         } else if (mipmapType.containsKey(texture)) {
@@ -269,7 +324,8 @@ public class MipmapHelper {
             texture.startsWith("/gui/") ||
             texture.startsWith("/misc/") ||
             texture.startsWith("/terrain/") ||
-            texture.startsWith("/title/")) {
+            texture.startsWith("/title/") ||
+            texture.contains("item")) {
             return MIPMAP_NONE;
         } else if (image == null) {
             return MIPMAP_BASIC;
@@ -326,21 +382,12 @@ public class MipmapHelper {
         return BigInteger.valueOf(a).gcd(BigInteger.valueOf(b)).intValue();
     }
 
-    private static int getMipmapLevels(String texture, BufferedImage image) {
-        return getMipmapLevels(texture, image.getWidth(), image.getHeight());
-    }
-
-    private static int getMipmapLevels(String texture, int width, int height) {
+    private static int getMipmapLevels(int width, int height, int minSize) {
         int size = gcd(width, height);
-        int minSize = getMinSize(texture);
         int mipmap;
         for (mipmap = 0; size >= minSize && ((size & 1) == 0) && mipmap < maxMipmapLevel; size >>= 1, mipmap++) {
         }
         return mipmap;
-    }
-
-    private static int getMinSize(String texture) {
-        return texture.equals("/terrain.png") || texture.startsWith("/ctm/") ? 32 : 2;
     }
 
     private static BufferedImage getPooledImage(int width, int height, int index) {

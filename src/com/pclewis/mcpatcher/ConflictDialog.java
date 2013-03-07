@@ -6,6 +6,7 @@ import java.util.*;
 class ConflictDialog {
     private JPanel contentPane;
     private JTextArea conflictsText;
+    private JScrollPane conflictsScrollPane;
 
     static String getText(HashMap<String, ArrayList<Mod>> conflicts) {
         HashMap<ArrayList<Mod>, ArrayList<String>> conflictGroups = new HashMap<ArrayList<Mod>, ArrayList<String>>();
@@ -55,6 +56,7 @@ class ConflictDialog {
         String text = getText(conflicts);
         conflictsText.setRows(Math.max(6, Math.min(24, text.split("\n").length + 1)));
         conflictsText.setText(text);
+        conflictsScrollPane.getVerticalScrollBar().setUnitIncrement(16);
     }
 
     int getResult(JPanel parent) {

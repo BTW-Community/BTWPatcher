@@ -1,8 +1,6 @@
 package com.pclewis.mcpatcher.mod;
 
-import com.pclewis.mcpatcher.MCLogger;
-import com.pclewis.mcpatcher.MCPatcherUtils;
-import com.pclewis.mcpatcher.TexturePackAPI;
+import com.pclewis.mcpatcher.*;
 import net.minecraft.src.RenderEngine;
 import net.minecraft.src.Tessellator;
 import net.minecraft.src.World;
@@ -16,6 +14,8 @@ import java.util.Properties;
 public class SkyRenderer {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.BETTER_SKIES);
 
+    private static final boolean enable = Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "skybox", true);
+
     private static RenderEngine renderEngine;
     private static double worldTime;
     private static float celestialAngle;
@@ -27,13 +27,19 @@ public class SkyRenderer {
     public static boolean active;
 
     static {
-        TexturePackAPI.ChangeHandler.register(new TexturePackAPI.ChangeHandler(MCPatcherUtils.BETTER_SKIES, 2) {
+        TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.BETTER_SKIES, 2) {
             @Override
-            protected void onChange() {
+            public void beforeChange() {
                 worldSkies.clear();
-                World world = MCPatcherUtils.getMinecraft().getWorld();
-                if (world != null) {
-                    getWorldEntry(world.worldProvider.worldType);
+            }
+
+            @Override
+            public void afterChange() {
+                if (enable) {
+                    World world = MCPatcherUtils.getMinecraft().theWorld;
+                    if (world != null) {
+                        getWorldEntry(world.worldProvider.worldType);
+                    }
                 }
                 FireworksHelper.reload();
             }
@@ -44,7 +50,7 @@ public class SkyRenderer {
         if (TexturePackAPI.isDefaultTexturePack()) {
             active = false;
         } else {
-            int worldType = MCPatcherUtils.getMinecraft().getWorld().worldProvider.worldType;
+            int worldType = MCPatcherUtils.getMinecraft().theWorld.worldProvider.worldType;
             WorldEntry newEntry = getWorldEntry(worldType);
             if (newEntry != currentWorld && currentWorld != null) {
                 currentWorld.unloadTextures();
@@ -99,13 +105,13 @@ public class SkyRenderer {
             objects = new HashMap<String, Layer>();
             textures = new HashSet<String>();
             loadSkies();
-            loadCelestialObject("sun", "/terrain/sun.png");
-            loadCelestialObject("moon", "/terrain/moon_phases.png");
+            loadCelestialObject("sun", "/environment/sun.png");
+            loadCelestialObject("moon", "/environment/moon_phases.png");
         }
 
         private void loadSkies() {
             for (int i = -1; ; i++) {
-                String prefix = "/terrain/sky" + worldType + "/sky" + (i < 0 ? "" : "" + i);
+                String prefix = "/environment/sky" + worldType + "/sky" + (i < 0 ? "" : "" + i);
                 Layer layer = Layer.create(prefix);
                 if (layer == null) {
                     if (i > 0) {
@@ -120,7 +126,7 @@ public class SkyRenderer {
         }
 
         private void loadCelestialObject(String objName, String textureName) {
-            String prefix = "/terrain/sky" + worldType + "/" + objName;
+            String prefix = "/environment/sky" + worldType + "/" + objName;
             Properties properties = TexturePackAPI.getProperties(prefix + ".properties");
             if (properties != null) {
                 properties.setProperty("fade", "false");
@@ -176,14 +182,6 @@ public class SkyRenderer {
 
         private static final double SKY_DISTANCE = 100.0;
 
-        private static final int METHOD_ADD = 1;
-        private static final int METHOD_SUBTRACT = 2;
-        private static final int METHOD_MULTIPLY = 3;
-        private static final int METHOD_DODGE = 4;
-        private static final int METHOD_BURN = 5;
-        private static final int METHOD_SCREEN = 6;
-        private static final int METHOD_REPLACE = 7;
-
         private String prefix;
         private Properties properties;
         private String texture;
@@ -191,7 +189,7 @@ public class SkyRenderer {
         private boolean rotate;
         private float[] axis;
         private float speed;
-        private int blendMethod;
+        private BlendMethod blendMethod;
 
         private double a;
         private double b;
@@ -227,7 +225,7 @@ public class SkyRenderer {
         }
 
         private boolean readRotation() {
-            rotate = Boolean.parseBoolean(properties.getProperty("rotate", "true"));
+            rotate = MCPatcherUtils.getBooleanProperty(properties, "rotate", true);
             if (rotate) {
                 try {
                     speed = Float.parseFloat(properties.getProperty("speed", "1.0"));
@@ -260,22 +258,9 @@ public class SkyRenderer {
         }
 
         private boolean readBlendingMethod() {
-            String value = properties.getProperty("blend", "add").trim().toLowerCase();
-            if (value.equals("add")) {
-                blendMethod = METHOD_ADD;
-            } else if (value.equals("subtract")) {
-                blendMethod = METHOD_SUBTRACT;
-            } else if (value.equals("multiply")) {
-                blendMethod = METHOD_MULTIPLY;
-            } else if (value.equals("dodge")) {
-                blendMethod = METHOD_DODGE;
-            } else if (value.equals("burn")) {
-                blendMethod = METHOD_BURN;
-            } else if (value.equals("screen")) {
-                blendMethod = METHOD_SCREEN;
-            } else if (value.equals("replace")) {
-                blendMethod = METHOD_REPLACE;
-            } else {
+            String value = properties.getProperty("blend", "add");
+            blendMethod = BlendMethod.parse(value);
+            if (blendMethod == null) {
                 return addError("unknown blend method %s", value);
             }
             return true;
@@ -330,7 +315,7 @@ public class SkyRenderer {
         }
 
         private boolean addError(String format, Object... params) {
-            logger.severe(prefix + ".properties: " + format, params);
+            logger.error(prefix + ".properties: " + format, params);
             valid = false;
             return false;
         }
@@ -385,7 +370,7 @@ public class SkyRenderer {
         }
 
         boolean render(Tessellator tessellator) {
-            renderEngine.bindTexture(renderEngine.getTexture(texture));
+            TexturePackAPI.bindTexture(texture);
             setBlendingMethod(brightness);
 
             GL11.glPushMatrix();
@@ -440,60 +425,9 @@ public class SkyRenderer {
         }
 
         void setBlendingMethod(float brightness) {
-            if (blendMethod == METHOD_ADD || blendMethod == METHOD_REPLACE) {
-                GL11.glColor4f(1.0f, 1.0f, 1.0f, brightness);
-            } else if (blendMethod == METHOD_MULTIPLY) {
-                GL11.glColor4f(brightness, brightness, brightness, brightness);
-            } else {
-                GL11.glColor4f(brightness, brightness, brightness, 1.0f);
-            }
-
-            switch (blendMethod) {
-                case METHOD_ADD:
-                    GL11.glDisable(GL11.GL_ALPHA_TEST);
-                    GL11.glEnable(GL11.GL_BLEND);
-                    GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-                    break;
-
-                case METHOD_SUBTRACT:
-                    GL11.glDisable(GL11.GL_ALPHA_TEST);
-                    GL11.glEnable(GL11.GL_BLEND);
-                    GL11.glBlendFunc(GL11.GL_ONE_MINUS_DST_COLOR, GL11.GL_ZERO);
-                    break;
-
-                case METHOD_MULTIPLY:
-                    GL11.glDisable(GL11.GL_ALPHA_TEST);
-                    GL11.glEnable(GL11.GL_BLEND);
-                    GL11.glBlendFunc(GL11.GL_DST_COLOR, GL11.GL_ONE_MINUS_SRC_ALPHA);
-                    break;
-
-                case METHOD_DODGE:
-                    GL11.glDisable(GL11.GL_ALPHA_TEST);
-                    GL11.glEnable(GL11.GL_BLEND);
-                    GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
-                    break;
-
-                case METHOD_BURN:
-                    GL11.glDisable(GL11.GL_ALPHA_TEST);
-                    GL11.glEnable(GL11.GL_BLEND);
-                    GL11.glBlendFunc(GL11.GL_ZERO, GL11.GL_ONE_MINUS_SRC_COLOR);
-                    break;
-
-                case METHOD_SCREEN:
-                    GL11.glDisable(GL11.GL_ALPHA_TEST);
-                    GL11.glEnable(GL11.GL_BLEND);
-                    GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_COLOR);
-                    break;
-
-                case METHOD_REPLACE:
-                    GL11.glEnable(GL11.GL_ALPHA_TEST);
-                    GL11.glDisable(GL11.GL_BLEND);
-                    break;
-
-                default:
-                    break;
-            }
-
+            blendMethod.applyFade(brightness);
+            blendMethod.applyAlphaTest();
+            blendMethod.applyBlending();
             GL11.glEnable(GL11.GL_TEXTURE_2D);
         }
 

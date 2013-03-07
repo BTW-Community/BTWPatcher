@@ -15,19 +15,15 @@ import static com.pclewis.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class GLSLShader extends Mod {
-    private final boolean haveNewWorld;
-
-    public GLSLShader(MinecraftVersion minecraftVersion) {
+    public GLSLShader() {
         name = MCPatcherUtils.GLSL_SHADERS;
         author = "daxnitro";
         description = "Adds graphical shaders to the game.  Based on daxnitro's mod.";
-        version = "2.0";
+        version = "2.1";
         website = "http://daxnitro.wikia.com/wiki/Shaders_2.0";
         defaultEnabled = false;
 
-        haveNewWorld = minecraftVersion.compareTo("12w18a") >= 0;
-
-        addClassMod(new MinecraftMod(minecraftVersion));
+        addClassMod(new MinecraftMod());
         addClassMod(new BaseMod.GLAllocationMod());
         addClassMod(new RenderEngineMod());
         addClassMod(new RenderGlobalMod());
@@ -35,32 +31,24 @@ public class GLSLShader extends Mod {
         addClassMod(new EntityRendererMod());
         addClassMod(new EntityLivingMod());
         addClassMod(new BlockMod());
+        addClassMod(new BaseMod.IconMod());
         addClassMod(new GameSettingsMod());
         addClassMod(new TessellatorMod());
         addClassMod(new RenderBlocksMod());
         addClassMod(new EntityPlayerMod());
         addClassMod(new EntityPlayerSPMod());
-        if (haveNewWorld) {
-            addClassMod(new EntityPlayerSPSubMod());
-        }
-        addClassMod(new InventoryPlayerMod(minecraftVersion));
+        addClassMod(new EntityClientPlayerMPMod());
+        addClassMod(new InventoryPlayerMod());
         addClassMod(new ItemStackMod());
         addClassMod(new WorldMod());
-        if (haveNewWorld) {
-            addClassMod(new BaseMod.WorldServerMod(minecraftVersion));
-            addClassMod(new BaseMod.WorldServerMPMod(minecraftVersion));
-        }
+        addClassMod(new BaseMod.WorldClientMod());
         addClassMod(new WorldRendererMod());
 
         addClassFile(MCPatcherUtils.SHADERS_CLASS);
     }
 
     private class MinecraftMod extends BaseMod.MinecraftMod {
-        MinecraftMod(MinecraftVersion minecraftVersion) {
-            final FieldRef thePlayer = new FieldRef(getDeobfClass(), "thePlayer", "LEntityPlayerSP;");
-            final FieldRef playerSub = new FieldRef(getDeobfClass(), "playerSub", "LEntityPlayerSPSub;");
-            final MethodRef getPlayer = new MethodRef(getDeobfClass(), "getPlayer", "()LEntityPlayerSP;");
-
+        MinecraftMod() {
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
@@ -82,15 +70,11 @@ public class GLSLShader extends Mod {
                 }
             }.addXref(1, new FieldRef("GameSettings", "thirdPersonView", "I")));
 
-            addWorldGetter(minecraftVersion);
+            mapWorldClient();
+            mapPlayer();
 
             addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "renderEngine", "LRenderEngine;")));
             addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "gameSettings", "LGameSettings;")));
-            if (haveNewWorld) {
-                addMemberMapper(new FieldMapper(playerSub));
-            } else {
-                addMemberMapper(new FieldMapper(thePlayer));
-            }
             addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "entityRenderer", "LEntityRenderer;")));
             addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "renderViewEntity", "LEntityLiving;")));
 
@@ -107,17 +91,6 @@ public class GLSLShader extends Mod {
                 .accessFlag(AccessFlag.PUBLIC, true)
                 .accessFlag(AccessFlag.STATIC, true)
             );
-
-            addPatch(new AddMethodPatch(getPlayer) {
-                @Override
-                public byte[] generateMethod() throws BadBytecode, IOException {
-                    return buildCode(
-                        ALOAD_0,
-                        reference(GETFIELD, haveNewWorld ? playerSub : thePlayer),
-                        ARETURN
-                    );
-                }
-            });
         }
     }
 
@@ -143,8 +116,7 @@ public class GLSLShader extends Mod {
     private class RenderGlobalMod extends ClassMod {
         RenderGlobalMod() {
             final MethodRef renderSky = new MethodRef(getDeobfClass(), "renderSky", "(F)V");
-            final String worldClass = haveNewWorld ? "WorldServerMP" : "World";
-            final FieldRef worldObj = new FieldRef(getDeobfClass(), "worldObj", "L" + worldClass + ";");
+            final FieldRef worldObj = new FieldRef(getDeobfClass(), "worldObj", "LWorldClient;");
 
             addClassSignature(new ConstSignature("smoke"));
             addClassSignature(new ConstSignature("/environment/clouds.png"));
@@ -177,7 +149,7 @@ public class GLSLShader extends Mod {
             addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "renderAllRenderLists", "(ID)V")));
             addMemberMapper(new FieldMapper(worldObj));
 
-            addPatch(new BytecodePatch.InsertAfter() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "call setCelestialPosition";
@@ -190,7 +162,7 @@ public class GLSLShader extends Mod {
                         ALOAD_0,
                         reference(GETFIELD, worldObj),
                         FLOAD_1,
-                        reference(INVOKEVIRTUAL, new MethodRef(worldClass, "getStarBrightness", "(F)F")),
+                        reference(INVOKEVIRTUAL, new MethodRef("WorldClient", "getStarBrightness", "(F)F")),
                         anyFLOAD,
                         FMUL,
                         anyFSTORE
@@ -198,12 +170,15 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SHADERS_CLASS, "setCelestialPosition", "()V"))
                     );
                 }
-            }.targetMethod(renderSky));
+            }
+                .setInsertAfter(true)
+                .targetMethod(renderSky)
+            );
 
             addGLWrapper("glEnable");
             addGLWrapper("glDisable");
@@ -224,7 +199,7 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SHADERS_CLASS, name + "Wrapper", "(I)V"))
                     );
@@ -266,7 +241,7 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SHADERS_CLASS, name + "Wrapper", "(I)V"))
                     );
@@ -370,7 +345,7 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         ALOAD_0,
                         reference(GETFIELD, new FieldRef(getDeobfClass(), "mc", "LMinecraft;")),
@@ -381,7 +356,7 @@ public class GLSLShader extends Mod {
                 }
             }.targetMethod(renderWorld));
 
-            addPatch(new BytecodePatch.InsertBefore() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "call endRender";
@@ -395,12 +370,15 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SHADERS_CLASS, "endRender", "()V"))
                     );
                 }
-            }.targetMethod(renderWorld));
+            }
+                .setInsertBefore(true)
+                .targetMethod(renderWorld)
+            );
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -419,7 +397,7 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // Shaders.setClearColor(fogColorRed, fogColorGreen, fogColorBlue);
                         ALOAD_0,
@@ -454,7 +432,7 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SHADERS_CLASS, "sortAndRenderWrapper", "(LRenderGlobal;LEntityLiving;ID)I"))
                     );
@@ -487,7 +465,7 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // Shaders.beginWater(); ...; Shaders.endWater();
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SHADERS_CLASS, "beginWater", "()V")),
@@ -513,7 +491,7 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // Shaders.beginWeather(); ...; Shaders.endWeather();
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SHADERS_CLASS, "beginWeather", "()V")),
@@ -540,7 +518,7 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // Shaders.beginHand(); ...; Shaders.endHand();
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SHADERS_CLASS, "beginHand", "()V")),
@@ -555,7 +533,7 @@ public class GLSLShader extends Mod {
         }
 
         private void addLightmapPatch(final String name) {
-            addPatch(new BytecodePatch.InsertBefore() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "wrap " + name;
@@ -569,12 +547,15 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SHADERS_CLASS, name, "()V"))
                     );
                 }
-            }.targetMethod(new MethodRef(getDeobfClass(), name, "(D)V")));
+            }
+                .setInsertBefore(true)
+                .targetMethod(new MethodRef(getDeobfClass(), name, "(D)V"))
+            );
         }
     }
 
@@ -746,7 +727,7 @@ public class GLSLShader extends Mod {
             addPatch(new AddFieldPatch(new FieldRef(getDeobfClass(), "shadersShortBuffer", "Ljava.nio.ShortBuffer;")));
             addPatch(new AddFieldPatch(shadersData));
 
-            addPatch(new BytecodePatch.InsertBefore() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "initialize shadersData";
@@ -760,7 +741,7 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // shadersData = new short[]{-1, 0};
                         ALOAD_0,
@@ -795,11 +776,14 @@ public class GLSLShader extends Mod {
                         reference(PUTFIELD, shadersShortBuffer)
                     );
                 }
-            }.matchConstructorOnly(true));
+            }
+                .setInsertBefore(true)
+                .matchConstructorOnly(true)
+            );
 
             addPatch(new AddMethodPatch(new MethodRef(getDeobfClass(), "setEntity", "(I)V")) {
                 @Override
-                public byte[] generateMethod() throws BadBytecode, IOException {
+                public byte[] generateMethod() {
                     return buildCode(
                         // if (Shaders.entityAttrib >= 0) {
                         reference(GETSTATIC, new FieldRef(MCPatcherUtils.SHADERS_CLASS, "entityAttrib", "I")),
@@ -834,7 +818,7 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         ALOAD_0,
                         reference(GETFIELD, shadersBuffer),
@@ -858,7 +842,7 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         ALOAD_0,
                         reference(GETFIELD, shadersShortBuffer),
@@ -881,7 +865,7 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // if (drawMode == 7
                         ALOAD_0,
@@ -919,7 +903,7 @@ public class GLSLShader extends Mod {
                     );
                 }
 
-                private byte[] getRawBufferCode(int offset1, int offset2) throws IOException {
+                private byte[] getRawBufferCode(int offset1, int offset2) {
                     return buildCode(
                         // rawBuffer[rawBufferIndex + offset1] = rawBuffer[rawBufferIndex + offset2];
                         ALOAD_0,
@@ -939,7 +923,7 @@ public class GLSLShader extends Mod {
                     );
                 }
 
-                private byte[] getShaderBufferCode() throws IOException {
+                private byte[] getShaderBufferCode() {
                     return buildCode(
                         // shadersBuffer.putShort(shadersData[0]).putShort(shadersData[1]);
                         ALOAD_0,
@@ -977,9 +961,9 @@ public class GLSLShader extends Mod {
         }
 
         private void setupBlockFace(int face, final String direction, final int x, final int y, final int z) {
-            faceMethods[face] = new MethodRef(getDeobfClass(), "render" + direction + "Face", "(LBlock;DDDI)V");
+            faceMethods[face] = new MethodRef(getDeobfClass(), "render" + direction + "Face", "(LBlock;DDDLIcon;)V");
 
-            addPatch(new BytecodePatch.InsertAfter() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "set normal when rendering block " + direction.toLowerCase() + " face";
@@ -995,7 +979,7 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         ALOAD, getCaptureGroup(1),
                         push((float) x),
@@ -1004,7 +988,10 @@ public class GLSLShader extends Mod {
                         reference(INVOKEVIRTUAL, new MethodRef("Tessellator", "setNormal", "(FFF)V"))
                     );
                 }
-            }.targetMethod(faceMethods[face]));
+            }
+                .setInsertAfter(true)
+                .targetMethod(faceMethods[face])
+            );
         }
     }
 
@@ -1029,8 +1016,8 @@ public class GLSLShader extends Mod {
         }
     }
 
-    private class EntityPlayerSPSubMod extends ClassMod {
-        EntityPlayerSPSubMod() {
+    private class EntityClientPlayerMPMod extends ClassMod {
+        EntityClientPlayerMPMod() {
             setParentClass("EntityPlayerSP");
 
             addClassSignature(new BytecodeSignature() {
@@ -1046,12 +1033,8 @@ public class GLSLShader extends Mod {
     }
 
     private class InventoryPlayerMod extends ClassMod {
-        InventoryPlayerMod(MinecraftVersion minecraftVersion) {
-            if (minecraftVersion.compareTo("12w04a") >= 0) {
-                addClassSignature(new ConstSignature("container.inventory"));
-            } else {
-                addClassSignature(new ConstSignature("Inventory"));
-            }
+        InventoryPlayerMod() {
+            addClassSignature(new ConstSignature("container.inventory"));
             addClassSignature(new ConstSignature("Slot"));
 
             addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getCurrentItem", "()LItemStack;")));
@@ -1190,7 +1173,7 @@ public class GLSLShader extends Mod {
 
             addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "worldObj", "LWorld;")));
 
-            addPatch(new BytecodePatch.InsertBefore() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "call Tessellator.setEntity";
@@ -1212,7 +1195,7 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // Tessellator.instance.setEntity(block1.blockID);
                         reference(GETSTATIC, new FieldRef("Tessellator", "instance", "LTessellator;")),
@@ -1221,9 +1204,12 @@ public class GLSLShader extends Mod {
                         reference(INVOKEVIRTUAL, new MethodRef("Tessellator", "setEntity", "(I)V"))
                     );
                 }
-            }.targetMethod(updateRenderer));
+            }
+                .setInsertBefore(true)
+                .targetMethod(updateRenderer)
+            );
 
-            addPatch(new BytecodePatch.InsertBefore() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "clear Tessellator.setEntity";
@@ -1238,7 +1224,7 @@ public class GLSLShader extends Mod {
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // Tessellator.instance.setEntity(-1);
                         reference(GETSTATIC, new FieldRef("Tessellator", "instance", "LTessellator;")),
@@ -1246,7 +1232,10 @@ public class GLSLShader extends Mod {
                         reference(INVOKEVIRTUAL, new MethodRef("Tessellator", "setEntity", "(I)V"))
                     );
                 }
-            }.targetMethod(updateRenderer));
+            }
+                .setInsertBefore(true)
+                .targetMethod(updateRenderer)
+            );
         }
     }
 }

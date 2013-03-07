@@ -1,6 +1,8 @@
-MCVER = 1.4.7
+MCVER = 1.5
+MCVERSS = 
 MCJAR = ../bin/minecraft.jar
 MCJARV = ../bin/minecraft-$(MCVER).jar
+MCJARVSS = ../bin/minecraft-$(MCVERSS).jar
 MODJAR = ../mcpatcher-mods/mcpatcher-builtin.jar
 MCPATCHER = out/artifacts/mcpatcher/mcpatcher.jar
 JIP = $(HOME)/jip-1.2/profile/profile.jar
@@ -17,7 +19,7 @@ GOOD_LOG = good.log
 TMPDIR = t.1
 FILTER = ./testfilter.pl
 
-.PHONY: default build release run test testfilter javadoc control profile clean modjar restore
+.PHONY: default build release run test testfilter javadoc control profile clean modjar restore restoresnapshot
 
 default:
 
@@ -75,3 +77,6 @@ modjar: $(MCPATCHER)
 
 restore: $(MCJARV)
 	cp -pf $(MCJARV) $(MCJAR)
+
+restoresnapshot: $(MCJARVSS)
+	cp -pf $(MCJARVSS) $(MCJAR)

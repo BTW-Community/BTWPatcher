@@ -1,21 +1,21 @@
 package com.pclewis.mcpatcher.mod;
 
-import com.pclewis.mcpatcher.MCLogger;
-import com.pclewis.mcpatcher.MCPatcherUtils;
-import com.pclewis.mcpatcher.TexturePackAPI;
-import com.pclewis.mcpatcher.WeightedIndex;
-import net.minecraft.src.Block;
-import net.minecraft.src.IBlockAccess;
-import net.minecraft.src.RenderBlocks;
+import com.pclewis.mcpatcher.*;
+import net.minecraft.src.*;
+import org.lwjgl.opengl.GL11;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Method;
-import java.util.Properties;
+import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-abstract class TileOverride {
+abstract class TileOverride implements ITileOverride {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CONNECTED_TEXTURES, "CTM");
+
+    private static final boolean debugTextures = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "debugTextures", false);
 
     static final int BOTTOM_FACE = 0; // 0, -1, 0
     static final int TOP_FACE = 1; // 0, 1, 0
@@ -24,9 +24,18 @@ abstract class TileOverride {
     static final int WEST_FACE = 4; // -1, 0, 0
     static final int EAST_FACE = 5; // 1, 0, 0
 
+    private static final int META_MASK = 0xffff;
+    private static final int ORIENTATION_U_D = 0;
+    private static final int ORIENTATION_E_W = 1 << 16;
+    private static final int ORIENTATION_N_S = 2 << 16;
+    private static final int ORIENTATION_E_W_2 = 3 << 16;
+    private static final int ORIENTATION_N_S_2 = 4 << 16;
+
     private static final int[][] ROTATE_UV_MAP = new int[][]{
         {WEST_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, 2, -2, 2, -2, 0, 0},
         {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, 2},
+        {WEST_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, 2, -2, -2, -2, 0, 0},
+        {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, -2},
     };
 
     private static final int[] GO_DOWN = new int[]{0, -1, 0};
@@ -36,6 +45,15 @@ abstract class TileOverride {
     private static final int[] GO_WEST = new int[]{-1, 0, 0};
     private static final int[] GO_EAST = new int[]{1, 0, 0};
 
+    private static final int[][] NORMALS = new int[][]{
+        GO_DOWN,
+        GO_UP,
+        GO_NORTH,
+        GO_SOUTH,
+        GO_WEST,
+        GO_EAST,
+    };
+
     // NEIGHBOR_OFFSETS[a][b][c] = offset from starting block
     // a: face 0-5
     // b: neighbor 0-7
@@ -43,7 +61,7 @@ abstract class TileOverride {
     //    0   *   4
     //    1   2   3
     // c: coordinate (x,y,z) 0-2
-    private static final int[][][] NEIGHBOR_OFFSET = new int[][][]{
+    protected static final int[][][] NEIGHBOR_OFFSET = new int[][][]{
         // BOTTOM_FACE
         {
             GO_WEST,
@@ -116,43 +134,49 @@ abstract class TileOverride {
     private static final int CONNECT_BY_TILE = 1;
     private static final int CONNECT_BY_MATERIAL = 2;
 
-    private static final Method forceMipmapType;
+    private static Method getBiomeNameAt;
 
-    final String filePrefix;
-    final String textureName;
-    final int texture;
-    final int renderPass;
-    final int[] blockIDs;
-    final int[] tileIDs;
-    final int faces;
-    final int metadata;
-    final int connectType;
-    final int[] tileMap;
+    private final String propertiesFile;
+    private final String texturesDirectory;
+    private final String propertiesName;
+    private final String directoryName;
+    private final int renderPass;
+    private final Set<Integer> matchBlocks;
+    private final Set<String> matchTiles;
+    private final int faces;
+    private final int metadata;
+    private final int connectType;
+    private final boolean innerSeams;
+    private final Set<String> biomes;
+    private final int minHeight;
+    private final int maxHeight;
 
-    boolean disabled;
-    int[] reorient;
-    int metamask;
-    int rotateUV;
-    boolean rotateTop;
+    private List<String> iconImages;
+    private int totalTextureSize;
+    protected Icon[] icons;
+    private boolean disabled;
+    private int[] reorient;
+    private int rotateUV;
+    protected boolean rotateTop;
 
     static {
-        Method method = null;
         try {
-            Class<?> cl = Class.forName(MCPatcherUtils.MIPMAP_HELPER_CLASS);
-            method = cl.getDeclaredMethod("forceMipmapType", String.class, Integer.TYPE);
-        } catch (ClassNotFoundException e) {
-        } catch (NoSuchMethodException e) {
+            Class<?> biomeHelperClass = Class.forName(MCPatcherUtils.BIOME_HELPER_CLASS);
+            getBiomeNameAt = biomeHelperClass.getDeclaredMethod("getBiomeNameAt", Integer.TYPE, Integer.TYPE, Integer.TYPE);
+        } catch (Throwable e) {
         }
-        forceMipmapType = method;
+        if (getBiomeNameAt == null) {
+            logger.warning("biome integration failed");
+        } else {
+            logger.fine("biome integration active");
+        }
     }
 
-    static TileOverride create(String filePrefix, Properties properties) {
-        if (filePrefix == null) {
+    static TileOverride create(String propertiesFile) {
+        if (propertiesFile == null) {
             return null;
         }
-        if (properties == null) {
-            properties = TexturePackAPI.getProperties(filePrefix + ".properties");
-        }
+        Properties properties = TexturePackAPI.getProperties(propertiesFile);
         if (properties == null) {
             return null;
         }
@@ -161,27 +185,24 @@ abstract class TileOverride {
         TileOverride override = null;
 
         if (method.equals("default") || method.equals("glass") || method.equals("ctm")) {
-            override = new CTM(filePrefix, properties);
+            override = new TileOverrideImpl.CTM(propertiesFile, properties);
         } else if (method.equals("random")) {
-            override = new Random1(filePrefix, properties);
+            override = new TileOverrideImpl.Random1(propertiesFile, properties);
         } else if (method.equals("fixed") || method.equals("static")) {
-            override = new Fixed(filePrefix, properties);
+            override = new TileOverrideImpl.Fixed(propertiesFile, properties);
         } else if (method.equals("bookshelf") || method.equals("horizontal")) {
-            override = new Horizontal(filePrefix, properties);
+            override = new TileOverrideImpl.Horizontal(propertiesFile, properties);
         } else if (method.equals("vertical")) {
-            override = new Vertical(filePrefix, properties);
+            override = new TileOverrideImpl.Vertical(propertiesFile, properties);
         } else if (method.equals("sandstone") || method.equals("top")) {
-            override = new Top(filePrefix, properties);
+            override = new TileOverrideImpl.Top(propertiesFile, properties);
         } else if (method.equals("repeat") || method.equals("pattern")) {
-            override = new Repeat(filePrefix, properties);
+            override = new TileOverrideImpl.Repeat(propertiesFile, properties);
         } else {
-            logger.severe("%s.properties: unknown method \"%s\"", filePrefix, method);
+            logger.error("%s: unknown method \"%s\"", propertiesFile, method);
         }
 
-        if (override == null || override.disabled) {
-        } else if (override.tileMap == null || override.tileMap.length == 0) {
-            override.error("no tile map given");
-        } else {
+        if (override != null && !override.disabled) {
             String status = override.checkTileMap();
             if (status != null) {
                 override.error("invalid %s tile map: %s", override.getMethod(), status);
@@ -191,55 +212,28 @@ abstract class TileOverride {
         return override == null || override.disabled ? null : override;
     }
 
-    static TileOverride create(BufferedImage image, int tileID) {
-        TileOverride override = new CTM(image, tileID);
-        return override.disabled ? null : override;
-    }
+    protected TileOverride(String propertiesFile, Properties properties) {
+        this.propertiesFile = propertiesFile;
+        texturesDirectory = propertiesFile.replaceFirst("/[^/]*$", "");
+        directoryName = texturesDirectory.replaceAll(".*/", "");
+        propertiesName = propertiesFile.replaceFirst(".*/", "").replaceFirst("\\.properties$", "");
 
-    private TileOverride(BufferedImage image, int tileID) {
-        filePrefix = null;
-        textureName = null;
-        texture = MCPatcherUtils.getMinecraft().renderEngine.allocateAndSetupTexture(image);
-        renderPass = -1;
-        blockIDs = new int[0];
-        tileIDs = new int[]{tileID};
-        faces = -1;
-        metadata = -1;
-        connectType = CONNECT_BY_MATERIAL;
-        tileMap = null;
-    }
-
-    private TileOverride(String filePrefix, Properties properties) {
-        this.filePrefix = filePrefix;
-        textureName = properties.getProperty("source", filePrefix + ".png");
-
-        int pass = 0;
-        try {
-            pass = Integer.parseInt(properties.getProperty("renderPass", "-1"));
-        } catch (NumberFormatException e) {
+        iconImages = loadIcons(properties);
+        if (iconImages.isEmpty()) {
+            error("no images found in %s/", texturesDirectory);
         }
-        renderPass = pass;
-        if (forceMipmapType != null && renderPass > 2) {
-            try {
-                forceMipmapType.invoke(null, textureName, 2);
-            } catch (Throwable e) {
-                e.printStackTrace();
+
+        String[] mappings = new String[Block.blocksList.length];
+        for (int i = 0; i < Block.blocksList.length; i++) {
+            Block block = Block.blocksList[i];
+            if (block != null) {
+                mappings[i] = block.getShortName();
             }
         }
-
-        texture = CTMUtils.getTexture(textureName);
-        if (texture < 0) {
-            if (properties.contains("source")) {
-                error("source texture %s not found", textureName);
-            } else {
-                disabled = true;
-            }
-        }
-
-        blockIDs = getIDList(properties, "blockIDs", "block", Block.blocksList.length - 1);
-        tileIDs = getIDList(properties, "tileIDs", "terrain", CTMUtils.NUM_TILES - 1);
-        if (blockIDs.length == 0 && tileIDs.length == 0) {
-            error("no block or tile IDs matched");
+        matchBlocks = getIDList(properties, "matchBlocks", "block", mappings);
+        matchTiles = getIDList(properties, "matchTiles");
+        if (matchBlocks.isEmpty() && matchTiles.isEmpty()) {
+            matchTiles.add(propertiesName);
         }
 
         int flags = 0;
@@ -272,7 +266,7 @@ abstract class TileOverride {
 
         String connectType1 = properties.getProperty("connect", "").trim().toLowerCase();
         if (connectType1.equals("")) {
-            connectType = tileIDs.length > 0 ? CONNECT_BY_TILE : CONNECT_BY_BLOCK;
+            connectType = matchTiles.isEmpty() ? CONNECT_BY_BLOCK : CONNECT_BY_TILE;
         } else if (connectType1.equals("block")) {
             connectType = CONNECT_BY_BLOCK;
         } else if (connectType1.equals("tile")) {
@@ -284,31 +278,140 @@ abstract class TileOverride {
             connectType = CONNECT_BY_BLOCK;
         }
 
-        String tileList = properties.getProperty("tiles", "");
-        if (tileList.equals("")) {
-            tileMap = getDefaultTileMap();
-        } else {
-            tileMap = MCPatcherUtils.parseIntegerList(tileList, 0, 255);
-        }
+        innerSeams = MCPatcherUtils.getBooleanProperty(properties, "innerSeams", false);
 
+        Set<String> biomes = new HashSet<String>();
+        String biomeList = properties.getProperty("biomes", "").trim().toLowerCase();
+        if (!biomeList.equals("")) {
+            Collections.addAll(biomes, biomeList.split("\\s+"));
+        }
+        if (biomes.isEmpty()) {
+            biomes = null;
+        }
+        this.biomes = biomes;
+
+        minHeight = MCPatcherUtils.getIntProperty(properties, "minHeight", -1);
+        maxHeight = MCPatcherUtils.getIntProperty(properties, "maxHeight", Integer.MAX_VALUE);
+
+        renderPass = MCPatcherUtils.getIntProperty(properties, "renderPass", -1);
         if (renderPass > 3) {
             error("renderPass must be 0-3");
-        } else if (renderPass >= 0 && tileIDs.length > 0) {
+        } else if (renderPass >= 0 && !matchTiles.isEmpty()) {
             error("renderPass=%d must be block-based not tile-based", renderPass);
         }
     }
 
-    private int[] getIDList(Properties properties, String key, String type, int maxID) {
-        int[] list = MCPatcherUtils.parseIntegerList(properties.getProperty(key, "").trim(), 0, maxID);
-        if (list.length > 0) {
-            return list;
+    private boolean addIcon(String name, List<String> list, boolean alwaysAdd) {
+        if (!name.toLowerCase().endsWith(".png")) {
+            name += ".png";
         }
-        Matcher m = Pattern.compile("/" + type + "(\\d+)").matcher(filePrefix);
-        if (m.find()) {
-            try {
-                list = new int[]{Integer.parseInt(m.group(1))};
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
+        BufferedImage image = TexturePackAPI.getImage(name);
+        if (image == null) {
+            if (alwaysAdd) {
+                list.add(name);
+            }
+            return false;
+        }
+        list.add(name);
+        int width = image.getWidth();
+        int height = image.getHeight();
+        if (height > width && height % width == 0) {
+            totalTextureSize += width * width;
+        } else {
+            totalTextureSize += width * height;
+        }
+        return true;
+    }
+
+    private List<String> loadIcons(Properties properties) {
+        List<String> list = new ArrayList<String>();
+        String tileList = properties.getProperty("tiles", "").trim();
+        if (tileList.equals("")) {
+            for (int i = 0; ; i++) {
+                if (!addIcon(texturesDirectory + "/" + i + ".png", list, false)) {
+                    break;
+                }
+            }
+        } else {
+            Pattern range = Pattern.compile("(\\d+)-(\\d+)");
+            for (String token : tileList.split("\\s+")) {
+                Matcher matcher = range.matcher(token);
+                if (token.equals("")) {
+                    // nothing
+                } else if (matcher.matches()) {
+                    try {
+                        int from = Integer.parseInt(matcher.group(1));
+                        int to = Integer.parseInt(matcher.group(2));
+                        for (int i = from; i <= to; i++) {
+                            String path = texturesDirectory + "/" + i + ".png";
+                            if (!addIcon(path, list, true)) {
+                                warn("could not find %s", path);
+                            }
+                        }
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                    }
+                } else if (token.startsWith("/")) {
+                    if (!addIcon(token, list, true)) {
+                        warn("could not find image %s", token);
+                    }
+                } else {
+                    if (!addIcon(texturesDirectory + "/" + token, list, true)) {
+                        warn("could not find image %s in %s", token, texturesDirectory);
+                    }
+                }
+            }
+        }
+        return list;
+    }
+
+    private Set<Integer> getIDList(Properties properties, String key, String type, String[] mappings) {
+        Set<Integer> list = new HashSet<Integer>();
+        String property = properties.getProperty(key, "");
+        token:
+        for (String token : property.split("\\s+")) {
+            if (token.equals("")) {
+                // nothing
+            } else if (token.matches("\\d+")) {
+                try {
+                    int id = Integer.parseInt(token);
+                    if (id >= 0 && id < mappings.length) {
+                        list.add(id);
+                    } else {
+                        warn("%s value %d is out of range", key, id);
+                    }
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                for (int i = 0; i < mappings.length; i++) {
+                    if (token.equals(mappings[i])) {
+                        list.add(i);
+                        continue token;
+                    }
+                }
+                warn("unknown %s value %s", key, token);
+            }
+        }
+        if (list.isEmpty()) {
+            Matcher m = Pattern.compile(type + "(\\d+)").matcher(propertiesName);
+            if (m.find()) {
+                try {
+                    list.add(Integer.parseInt(m.group(1)));
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return list;
+    }
+
+    private Set<String> getIDList(Properties properties, String key) {
+        Set<String> list = new HashSet<String>();
+        String property = properties.getProperty(key, "");
+        for (String token : property.split("\\s+")) {
+            if (!token.equals("")) {
+                list.add(token);
             }
         }
         return list;
@@ -325,8 +428,8 @@ abstract class TileOverride {
         return c;
     }
 
-    int[] getDefaultTileMap() {
-        return null;
+    protected int getNumberOfTiles() {
+        return iconImages == null ? 0 : iconImages.size();
     }
 
     String checkTileMap() {
@@ -339,34 +442,145 @@ abstract class TileOverride {
 
     @Override
     public String toString() {
-        return String.format("%s[%s]", getMethod(), textureName);
+        return String.format("%s[%s]", getMethod(), propertiesFile);
+    }
+
+    public final int getTotalTextureSize() {
+        return totalTextureSize;
+    }
+
+    public final void registerIcons(TextureMap textureMap, Stitcher stitcher, Map<StitchHolder, List<Texture>> map) {
+        icons = new Icon[iconImages.size()];
+        for (int i = 0; i < iconImages.size(); i++) {
+            String imageName = iconImages.get(i);
+            icons[i] = TessellatorUtils.getIconByName(imageName);
+            if (icons[i] != null) {
+                continue;
+            }
+            List<Texture> textures;
+            try {
+                CTMUtils.overrideTextureName = imageName;
+                if (!debugTextures && TexturePackAPI.hasResource(imageName)) {
+                    textures = TextureManager.getInstance().createTexture(imageName.replaceFirst("^/", ""));
+                    if (textures == null || textures.isEmpty()) {
+                        continue;
+                    }
+                } else {
+                    BufferedImage fallbackImage = generateDebugTexture(imageName, 64, 64, renderPass > 2);
+                    Texture texture = TextureManager.getInstance().setupTexture(
+                        imageName, 2, fallbackImage.getWidth(), fallbackImage.getHeight(), GL11.GL_CLAMP, GL11.GL_RGBA, GL11.GL_NEAREST, GL11.GL_NEAREST, false, fallbackImage
+                    );
+                    if (texture == null) {
+                        continue;
+                    }
+                    textures = new ArrayList<Texture>();
+                    textures.add(texture);
+                }
+            } finally {
+                CTMUtils.overrideTextureName = null;
+            }
+            Texture texture = textures.get(0);
+            StitchHolder holder = new StitchHolder(texture);
+            stitcher.registerStitchHolder(holder);
+            map.put(holder, textures);
+            icons[i] = textureMap.getIcon(imageName);
+            TessellatorUtils.registerIcon(textureMap, icons[i]);
+            String extra = (textures.size() > 1 ? ", " + textures.size() + " frames" : "");
+            logger.finer("%s -> icon: %dx%d%s",
+                imageName, texture.getWidth(), texture.getHeight(), extra
+            );
+        }
+        iconImages.clear();
+    }
+
+    static BufferedImage generateDebugTexture(String text, int width, int height, boolean alternate) {
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics graphics = image.getGraphics();
+        graphics.setColor(alternate ? new Color(0, 255, 255, 128) : Color.WHITE);
+        graphics.fillRect(0, 0, width, height);
+        graphics.setColor(alternate ? Color.RED : Color.BLACK);
+        int ypos = 10;
+        if (alternate) {
+            ypos += height / 2;
+        }
+        int charsPerRow = width / 8;
+        if (charsPerRow <= 0) {
+            return image;
+        }
+        while (text.length() % charsPerRow != 0) {
+            text += " ";
+        }
+        while (ypos < height && !text.equals("")) {
+            graphics.drawString(text.substring(0, charsPerRow), 1, ypos);
+            ypos += graphics.getFont().getSize();
+            text = text.substring(charsPerRow);
+        }
+        return image;
     }
 
     final void error(String format, Object... params) {
-        if (filePrefix != null && !filePrefix.equals("/ctm")) {
-            logger.severe(filePrefix + ".properties: " + format, params);
+        if (propertiesFile != null) {
+            logger.error(propertiesFile + ": " + format, params);
         }
         disabled = true;
     }
 
-    final boolean shouldConnect(IBlockAccess blockAccess, Block block, int tileNum, int i, int j, int k, int face, int[] offset) {
-        int meta = blockAccess.getBlockMetadata(i, j, k);
+    final void warn(String format, Object... params) {
+        if (propertiesFile != null) {
+            logger.warning(propertiesFile + ": " + format, params);
+        }
+    }
+
+    final public boolean isDisabled() {
+        return disabled;
+    }
+
+    final public Set<Integer> getMatchingBlocks() {
+        return matchBlocks;
+    }
+
+    final public Set<String> getMatchingTiles() {
+        return matchTiles;
+    }
+
+    final public int getRenderPass() {
+        return renderPass;
+    }
+
+    final boolean shouldConnect(IBlockAccess blockAccess, Block block, Icon icon, int i, int j, int k, int face, int[] offset) {
+        int blockID = block.blockID;
+        int metadata = blockAccess.getBlockMetadata(i, j, k);
         i += offset[0];
         j += offset[1];
         k += offset[2];
         int neighborID = blockAccess.getBlockId(i, j, k);
+        int neighborMeta = blockAccess.getBlockMetadata(i, j, k);
         Block neighbor = Block.blocksList[neighborID];
-        if (exclude(blockAccess, neighbor, tileNum, i, j, k, face)) {
+        if (exclude(neighbor, face, neighborMeta)) {
             return false;
-        } else if (metamask != -1 && (blockAccess.getBlockMetadata(i, j, k) & ~metamask) != (meta & ~metamask)) {
+        }
+        int orientation = getOrientationFromMetadata(blockID, metadata);
+        int neighborOrientation = getOrientationFromMetadata(neighborID, neighborMeta);
+        if ((orientation & ~META_MASK) != (neighborOrientation & ~META_MASK)) {
             return false;
+        }
+        if (this.metadata != -1) {
+            if ((orientation & META_MASK) != (neighborOrientation & META_MASK)) {
+                return false;
+            }
+        }
+        if (face >= 0 && innerSeams) {
+            int[] normal = NORMALS[face];
+            if (!neighbor.shouldSideBeRendered(blockAccess, i + normal[0], j + normal[1], k + normal[2], face)) {
+                return false;
+            }
         }
         switch (connectType) {
             case CONNECT_BY_BLOCK:
-                return neighborID == block.blockID;
+                return neighborID == blockID;
 
             case CONNECT_BY_TILE:
-                return neighbor.getBlockTexture(blockAccess, i, j, k, face) == tileNum;
+                return neighbor.getBlockIcon(blockAccess, i, j, k, face) == icon;
 
             case CONNECT_BY_MATERIAL:
                 return block.blockMaterial == neighbor.blockMaterial;
@@ -384,475 +598,159 @@ abstract class TileOverride {
         }
     }
 
-    final boolean exclude(IBlockAccess blockAccess, Block block, int origTexture, int i, int j, int k, int face) {
+    final int rotateUV(int neighbor) {
+        return (neighbor + rotateUV) & 7;
+    }
+
+    final boolean exclude(Block block, int face, int metadata) {
         if (block == null) {
-            return true;
-        } else if (RenderPassAPI.instance.skipThisRenderPass(block, renderPass)) {
             return true;
         } else if ((faces & (1 << reorient(face))) == 0) {
             return true;
-        } else if (metadata != -1) {
-            int meta = blockAccess.getBlockMetadata(i, j, k);
-            if (meta >= 0 && meta < 32 && (metadata & ((1 << meta) | (1 << (meta & metamask)))) == 0) {
+        } else if (this.metadata != -1 && metadata >= 0 && metadata < 32) {
+            int altMetadata = getOrientationFromMetadata(block.blockID, metadata) & META_MASK;
+            if ((this.metadata & ((1 << metadata) | (1 << altMetadata))) == 0) {
                 return true;
             }
         }
         return false;
     }
 
-    final int getTile(RenderBlocks renderBlocks, IBlockAccess blockAccess, Block block, int origTexture, int i, int j, int k, int face) {
-        if (face < 0) {
-            if (requiresFace()) {
-                error("method=%s is not supported for non-standard blocks", getMethod());
-                return -1;
-            }
+    private static int getOrientationFromMetadata(int blockID, int metadata) {
+        int newMeta = metadata;
+        int orientation = ORIENTATION_U_D;
+
+        switch (blockID) {
+            case CTMUtils.BLOCK_ID_LOG:
+                newMeta = metadata & ~0xc;
+                switch (metadata & 0xc) {
+                    case 4:
+                        orientation = ORIENTATION_E_W;
+                        break;
+
+                    case 8:
+                        orientation = ORIENTATION_N_S;
+                        break;
+
+                    default:
+                        break;
+                }
+                break;
+
+            case CTMUtils.BLOCK_ID_QUARTZ:
+                switch (metadata) {
+                    case 3:
+                        newMeta = 2;
+                        orientation = ORIENTATION_E_W_2;
+                        break;
+
+                    case 4:
+                        newMeta = 2;
+                        orientation = ORIENTATION_N_S_2;
+                        break;
+
+                    default:
+                        break;
+                }
+                break;
+
+            default:
+                break;
         }
-        reorient = null;
-        metamask = -1;
-        rotateUV = 0;
-        rotateTop = false;
-        if (block.blockID == CTMUtils.BLOCK_ID_LOG) {
-            metamask = ~0xc;
-            int orientation = blockAccess.getBlockMetadata(i, j, k) & 0xc;
-            if (orientation == 4) { // east/west cut
+
+        return orientation | newMeta;
+    }
+
+    private void setupOrientation(int orientation, int face) {
+        switch (orientation & ~META_MASK) {
+            case ORIENTATION_E_W:
                 reorient = ROTATE_UV_MAP[0];
                 rotateUV = ROTATE_UV_MAP[0][face + 6];
                 rotateTop = true;
-            } else if (orientation == 8) { // north/south cut
+                break;
+
+            case ORIENTATION_N_S:
                 reorient = ROTATE_UV_MAP[1];
                 rotateUV = ROTATE_UV_MAP[1][face + 6];
+                rotateTop = false;
+                break;
+
+            case ORIENTATION_E_W_2:
+                reorient = ROTATE_UV_MAP[2];
+                rotateUV = ROTATE_UV_MAP[2][face + 6];
+                rotateTop = true;
+                break;
+
+            case ORIENTATION_N_S_2:
+                reorient = ROTATE_UV_MAP[3];
+                rotateUV = ROTATE_UV_MAP[3][face + 6];
+                rotateTop = false;
+                break;
+
+            default:
+                reorient = null;
+                rotateUV = 0;
+                rotateTop = false;
+                break;
+        }
+    }
+
+    public final Icon getTile(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int face) {
+        if (icons == null) {
+            error("no images loaded, disabling");
+            return null;
+        }
+        if (face < 0 && requiresFace()) {
+            error("method=%s is not supported for non-standard blocks", getMethod());
+            return null;
+        }
+        if (block == null || RenderPassAPI.instance.skipThisRenderPass(block, renderPass)) {
+            return null;
+        }
+        int metadata = blockAccess.getBlockMetadata(i, j, k);
+        setupOrientation(getOrientationFromMetadata(block.blockID, metadata), face);
+        if (exclude(block, face, metadata)) {
+            return null;
+        }
+        if (j < minHeight || j > maxHeight) {
+            return null;
+        }
+        if (biomes != null && getBiomeNameAt != null) {
+            try {
+                if (!biomes.contains(getBiomeNameAt.invoke(null, i, j, k))) {
+                    return null;
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
+                getBiomeNameAt = null;
             }
         }
-        if (exclude(blockAccess, block, origTexture, i, j, k, face)) {
-            return -1;
+        return getTileImpl(blockAccess, block, origIcon, i, j, k, face);
+    }
+
+    public final Icon getTile(Block block, Icon origIcon, int face, int metadata) {
+        if (icons == null) {
+            error("no images loaded, disabling");
+            return null;
+        }
+        if (face < 0 && requiresFace()) {
+            error("method=%s is not supported for non-standard blocks", getMethod());
+            return null;
+        }
+        if (minHeight >= 0 || maxHeight < Integer.MAX_VALUE || biomes != null) {
+            return null;
+        }
+        setupOrientation(getOrientationFromMetadata(block.blockID, metadata), face);
+        if (exclude(block, face, metadata)) {
+            return null;
         } else {
-            return getTileImpl(blockAccess, block, origTexture, i, j, k, face);
+            return getTileImpl(block, origIcon, face, metadata);
         }
-    }
-
-    final int rotateUV(int neighbor) {
-        return (neighbor + rotateUV) & 7;
-    }
-
-    private static int[] compose(int[] map1, int[] map2) {
-        int[] newMap = new int[map2.length];
-        for (int i = 0; i < map2.length; i++) {
-            newMap[i] = map1[map2[i]];
-        }
-        return newMap;
     }
 
     abstract String getMethod();
 
-    abstract int getTileImpl(IBlockAccess blockAccess, Block block, int origTexture, int i, int j, int k, int face);
+    abstract Icon getTileImpl(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int face);
 
-    final static class CTM extends TileOverride {
-        private static final int[] defaultTileMap = new int[]{
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,
-            32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43,
-            48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
-        };
-
-        // Index into this array is formed from these bit values:
-        // 128 64  32
-        // 1   *   16
-        // 2   4   8
-        private static final int[] neighborMap = new int[]{
-            0, 3, 0, 3, 12, 5, 12, 15, 0, 3, 0, 3, 12, 5, 12, 15,
-            1, 2, 1, 2, 4, 7, 4, 29, 1, 2, 1, 2, 13, 31, 13, 14,
-            0, 3, 0, 3, 12, 5, 12, 15, 0, 3, 0, 3, 12, 5, 12, 15,
-            1, 2, 1, 2, 4, 7, 4, 29, 1, 2, 1, 2, 13, 31, 13, 14,
-            36, 17, 36, 17, 24, 19, 24, 43, 36, 17, 36, 17, 24, 19, 24, 43,
-            16, 18, 16, 18, 6, 46, 6, 21, 16, 18, 16, 18, 28, 9, 28, 22,
-            36, 17, 36, 17, 24, 19, 24, 43, 36, 17, 36, 17, 24, 19, 24, 43,
-            37, 40, 37, 40, 30, 8, 30, 34, 37, 40, 37, 40, 25, 23, 25, 45,
-            0, 3, 0, 3, 12, 5, 12, 15, 0, 3, 0, 3, 12, 5, 12, 15,
-            1, 2, 1, 2, 4, 7, 4, 29, 1, 2, 1, 2, 13, 31, 13, 14,
-            0, 3, 0, 3, 12, 5, 12, 15, 0, 3, 0, 3, 12, 5, 12, 15,
-            1, 2, 1, 2, 4, 7, 4, 29, 1, 2, 1, 2, 13, 31, 13, 14,
-            36, 39, 36, 39, 24, 41, 24, 27, 36, 39, 36, 39, 24, 41, 24, 27,
-            16, 42, 16, 42, 6, 20, 6, 10, 16, 42, 16, 42, 28, 35, 28, 44,
-            36, 39, 36, 39, 24, 41, 24, 27, 36, 39, 36, 39, 24, 41, 24, 27,
-            37, 38, 37, 38, 30, 11, 30, 32, 37, 38, 37, 38, 25, 33, 25, 26,
-        };
-
-        private final int[] neighborTileMap;
-
-        private CTM(BufferedImage image, int tileID) {
-            super(image, tileID);
-            neighborTileMap = compose(defaultTileMap, neighborMap);
-        }
-
-        private CTM(String filePrefix, Properties properties) {
-            super(filePrefix, properties);
-            neighborTileMap = compose(tileMap, neighborMap);
-        }
-
-        @Override
-        String getMethod() {
-            return "ctm";
-        }
-
-        @Override
-        int[] getDefaultTileMap() {
-            return defaultTileMap;
-        }
-
-        @Override
-        String checkTileMap() {
-            if (tileMap.length >= 47) {
-                return null;
-            } else {
-                return "requires at least 47 tiles";
-            }
-        }
-
-        @Override
-        boolean requiresFace() {
-            return true;
-        }
-
-        @Override
-        int getTileImpl(IBlockAccess blockAccess, Block block, int origTexture, int i, int j, int k, int face) {
-            int[][] offsets = NEIGHBOR_OFFSET[face];
-            int neighborBits = 0;
-            for (int bit = 0; bit < 8; bit++) {
-                if (shouldConnect(blockAccess, block, origTexture, i, j, k, face, offsets[bit])) {
-                    neighborBits |= (1 << bit);
-                }
-            }
-            return neighborTileMap[neighborBits];
-        }
-    }
-
-    final static class Horizontal extends TileOverride {
-        private static final int[] defaultTileMap = new int[]{
-            12, 13, 14, 15,
-        };
-
-        // Index into this array is formed from these bit values:
-        // 1   *   2
-        private static final int[] neighborMap = new int[]{
-            3, 2, 0, 1,
-        };
-
-        private final int[] neighborTileMap;
-
-        private Horizontal(String filePrefix, Properties properties) {
-            super(filePrefix, properties);
-            neighborTileMap = compose(tileMap, neighborMap);
-        }
-
-        @Override
-        String getMethod() {
-            return "horizontal";
-        }
-
-        @Override
-        int[] getDefaultTileMap() {
-            return defaultTileMap;
-        }
-
-        @Override
-        String checkTileMap() {
-            if (tileMap.length == 4) {
-                return null;
-            } else {
-                return "requires exactly 4 tiles";
-            }
-        }
-
-        @Override
-        int getTileImpl(IBlockAccess blockAccess, Block block, int origTexture, int i, int j, int k, int face) {
-            if (face < 0) {
-                face = NORTH_FACE;
-            } else if (reorient(face) <= TOP_FACE) {
-                return -1;
-            }
-            int[][] offsets = NEIGHBOR_OFFSET[face];
-            int neighborBits = 0;
-            if (shouldConnect(blockAccess, block, origTexture, i, j, k, face, offsets[rotateUV(0)])) {
-                neighborBits |= 1;
-            }
-            if (shouldConnect(blockAccess, block, origTexture, i, j, k, face, offsets[rotateUV(4)])) {
-                neighborBits |= 2;
-            }
-            return neighborTileMap[neighborBits];
-        }
-    }
-
-    final static class Vertical extends TileOverride {
-        private static final int[] defaultTileMap = new int[]{
-            48, 32, 16, 0,
-        };
-
-        // Index into this array is formed from these bit values:
-        // 2
-        // *
-        // 1
-        private static final int[] neighborMap = new int[]{
-            3, 2, 0, 1,
-        };
-
-        private final int[] neighborTileMap;
-
-        private Vertical(String filePrefix, Properties properties) {
-            super(filePrefix, properties);
-            neighborTileMap = compose(tileMap, neighborMap);
-        }
-
-        @Override
-        String getMethod() {
-            return "vertical";
-        }
-
-        @Override
-        int[] getDefaultTileMap() {
-            return defaultTileMap;
-        }
-
-        @Override
-        String checkTileMap() {
-            if (tileMap.length == 4) {
-                return null;
-            } else {
-                return "requires exactly 4 tiles";
-            }
-        }
-
-        @Override
-        int getTileImpl(IBlockAccess blockAccess, Block block, int origTexture, int i, int j, int k, int face) {
-            if (face < 0) {
-                face = NORTH_FACE;
-            } else if (reorient(face) <= TOP_FACE) {
-                return -1;
-            }
-            int[][] offsets = NEIGHBOR_OFFSET[face];
-            int neighborBits = 0;
-            if (shouldConnect(blockAccess, block, origTexture, i, j, k, face, offsets[rotateUV(2)])) {
-                neighborBits |= 1;
-            }
-            if (shouldConnect(blockAccess, block, origTexture, i, j, k, face, offsets[rotateUV(6)])) {
-                neighborBits |= 2;
-            }
-            return neighborTileMap[neighborBits];
-        }
-    }
-
-    final static class Top extends TileOverride {
-        private static final int[] defaultTileMap = new int[]{
-            66,
-        };
-
-        private Top(String filePrefix, Properties properties) {
-            super(filePrefix, properties);
-        }
-
-        @Override
-        String getMethod() {
-            return "top";
-        }
-
-        @Override
-        int[] getDefaultTileMap() {
-            return defaultTileMap;
-        }
-
-        @Override
-        String checkTileMap() {
-            if (tileMap.length == 1) {
-                return null;
-            } else {
-                return "requires exactly 1 tile";
-            }
-        }
-
-        @Override
-        int getTileImpl(IBlockAccess blockAccess, Block block, int origTexture, int i, int j, int k, int face) {
-            if (face < 0) {
-                face = NORTH_FACE;
-            } else if (reorient(face) <= TOP_FACE) {
-                return -1;
-            }
-            int[][] offsets = NEIGHBOR_OFFSET[face];
-            if (shouldConnect(blockAccess, block, origTexture, i, j, k, face, offsets[rotateUV(6)])) {
-                return tileMap[0];
-            }
-            return -1;
-        }
-    }
-
-    final static class Random1 extends TileOverride {
-        private static final long P1 = 0x1c3764a30115L;
-        private static final long P2 = 0x227c1adccd1dL;
-        private static final long P3 = 0xe0d251c03ba5L;
-        private static final long P4 = 0xa2fb1377aeb3L;
-        private static final long MULTIPLIER = 0x5deece66dL;
-        private static final long ADDEND = 0xbL;
-
-        private final int symmetry;
-        private final WeightedIndex chooser;
-
-        private Random1(String filePrefix, Properties properties) {
-            super(filePrefix, properties);
-
-            String sym = properties.getProperty("symmetry", "none");
-            if (sym.equals("all")) {
-                symmetry = 6;
-            } else if (sym.equals("opposite")) {
-                symmetry = 2;
-            } else {
-                symmetry = 1;
-            }
-
-            chooser = WeightedIndex.create(tileMap.length, properties.getProperty("weights", ""));
-            if (chooser == null) {
-                error("invalid weights");
-            }
-        }
-
-        @Override
-        String getMethod() {
-            return "random";
-        }
-
-        @Override
-        int getTileImpl(IBlockAccess blockAccess, Block block, int origTexture, int i, int j, int k, int face) {
-            if (tileMap.length == 1) {
-                return tileMap[0];
-            }
-            if (face < 0) {
-                face = 0;
-            }
-            face = reorient(face) / symmetry;
-            long n = P1 * i * (i + ADDEND) + P2 * j * (j + ADDEND) + P3 * k * (k + ADDEND) + P4 * face * (face + ADDEND);
-            n = MULTIPLIER * (n + i + j + k + face) + ADDEND;
-            int index = chooser.choose(n);
-            return tileMap[index];
-        }
-    }
-
-    final static class Repeat extends TileOverride {
-        private final int width;
-        private final int height;
-        private final int symmetry;
-
-        Repeat(String filePrefix, Properties properties) {
-            super(filePrefix, properties);
-            int w = 0;
-            int h = 0;
-            try {
-                w = Integer.parseInt(properties.getProperty("width", "0"));
-                h = Integer.parseInt(properties.getProperty("height", "0"));
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
-            width = w;
-            height = h;
-            if (width <= 0 || height <= 0 || width * height > CTMUtils.NUM_TILES) {
-                error("invalid width and height (%dx%d)", width, height);
-            }
-
-            String sym = properties.getProperty("symmetry", "none");
-            if (sym.equals("opposite")) {
-                symmetry = ~1;
-            } else {
-                symmetry = -1;
-            }
-        }
-
-        @Override
-        String getMethod() {
-            return "repeat";
-        }
-
-        @Override
-        String checkTileMap() {
-            if (tileMap.length == width * height) {
-                return null;
-            } else {
-                return String.format("requires exactly %dx%d tiles", width, height);
-            }
-        }
-
-        @Override
-        int getTileImpl(IBlockAccess blockAccess, Block block, int origTexture, int i, int j, int k, int face) {
-            if (face < 0) {
-                face = 0;
-            }
-            face &= symmetry;
-            int x;
-            int y;
-            switch (face) {
-                case TOP_FACE:
-                case BOTTOM_FACE:
-                    if (rotateTop) {
-                        x = k;
-                        y = i;
-                    } else {
-                        x = i;
-                        y = k;
-                    }
-                    break;
-
-                case NORTH_FACE:
-                    x = -i - 1;
-                    y = -j;
-                    break;
-
-                case SOUTH_FACE:
-                    x = i;
-                    y = -j;
-                    break;
-
-                case WEST_FACE:
-                    x = k;
-                    y = -j;
-                    break;
-
-                case EAST_FACE:
-                    x = -k - 1;
-                    y = -j;
-                    break;
-
-                default:
-                    return -1;
-            }
-            x %= width;
-            if (x < 0) {
-                x += width;
-            }
-            y %= height;
-            if (y < 0) {
-                y += height;
-            }
-            return tileMap[width * y + x];
-        }
-    }
-
-    final static class Fixed extends TileOverride {
-        private Fixed(String filePrefix, Properties properties) {
-            super(filePrefix, properties);
-        }
-
-        @Override
-        String getMethod() {
-            return "fixed";
-        }
-
-        @Override
-        String checkTileMap() {
-            if (tileMap.length == 1) {
-                return null;
-            } else {
-                return "requires exactly 1 tile";
-            }
-        }
-
-        @Override
-        int getTileImpl(IBlockAccess blockAccess, Block block, int origTexture, int i, int j, int k, int face) {
-            return tileMap[0];
-        }
-    }
+    abstract Icon getTileImpl(Block block, Icon origIcon, int face, int metadata);
 }

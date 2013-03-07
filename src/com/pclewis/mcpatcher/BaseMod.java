@@ -1,18 +1,13 @@
 package com.pclewis.mcpatcher;
 
 import javassist.bytecode.AccessFlag;
-import javassist.bytecode.BadBytecode;
-import javassist.bytecode.ClassFile;
-import javassist.bytecode.MethodInfo;
 
 import javax.swing.*;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 
@@ -31,11 +26,11 @@ import static javassist.bytecode.Opcode.*;
 public final class BaseMod extends Mod {
     public static final String NAME = "__Base";
 
-    BaseMod(MinecraftVersion minecraftVersion) {
+    BaseMod() {
         name = NAME;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
-        version = "1.0";
+        version = "1.1";
         configPanel = new ConfigPanel();
         dependencies.clear();
 
@@ -45,7 +40,9 @@ public final class BaseMod extends Mod {
         addClassFile(MCPatcherUtils.LOGGER_CLASS);
         addClassFile(MCPatcherUtils.LOGGER_CLASS + "$1");
         addClassFile(MCPatcherUtils.LOGGER_CLASS + "$1$1");
+        addClassFile(MCPatcherUtils.LOGGER_CLASS + "$ErrorLevel");
         addClassFile(MCPatcherUtils.CONFIG_CLASS);
+        addClassFile(MCPatcherUtils.TILE_MAPPING_CLASS);
     }
 
     @Override
@@ -56,13 +53,14 @@ public final class BaseMod extends Mod {
     class ConfigPanel extends ModConfigPanel {
         private JPanel panel;
         private JTextField heapSizeText;
+        private JTextField directSizeText;
         private JCheckBox autoRefreshTexturesCheckBox;
         private JTable logTable;
 
         ConfigPanel() {
             autoRefreshTexturesCheckBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    MCPatcherUtils.set("autoRefreshTextures", autoRefreshTexturesCheckBox.isSelected());
+                    Config.set("autoRefreshTextures", autoRefreshTexturesCheckBox.isSelected());
                 }
             });
 
@@ -112,7 +110,7 @@ public final class BaseMod extends Mod {
                     if (category == null) {
                         return null;
                     }
-                    return columnIndex == 0 ? category : MCPatcherUtils.getLogLevel(category);
+                    return columnIndex == 0 ? category : Config.getLogLevel(category);
                 }
 
                 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
@@ -121,7 +119,7 @@ public final class BaseMod extends Mod {
                         return;
                     }
                     try {
-                        MCPatcherUtils.setLogLevel(category, Level.parse(aValue.toString()));
+                        Config.setLogLevel(category, Level.parse(aValue.toString()));
                     } catch (IllegalArgumentException e) {
                     }
                 }
@@ -159,22 +157,42 @@ public final class BaseMod extends Mod {
 
         @Override
         public void load() {
-            heapSizeText.setText("" + MCPatcherUtils.getInt(Config.TAG_JAVA_HEAP_SIZE, 1024));
-            autoRefreshTexturesCheckBox.setSelected(MCPatcherUtils.getBoolean("autoRefreshTextures", false));
+            loadIntConfig(Config.TAG_JAVA_HEAP_SIZE, heapSizeText, 1024);
+            loadIntConfig(Config.TAG_DIRECT_MEMORY_SIZE, directSizeText, 0);
+            autoRefreshTexturesCheckBox.setSelected(Config.getBoolean("autoRefreshTextures", false));
         }
 
         @Override
         public void save() {
-            try {
-                MCPatcherUtils.set(Config.TAG_JAVA_HEAP_SIZE, Integer.parseInt(heapSizeText.getText()));
-            } catch (Exception e) {
+            saveIntConfig(Config.TAG_JAVA_HEAP_SIZE, heapSizeText);
+            saveIntConfig(Config.TAG_DIRECT_MEMORY_SIZE, directSizeText);
+        }
+
+        private void loadIntConfig(String tag, JTextField field, int defaultValue) {
+            int value = Config.getInt(tag, defaultValue);
+            if (value > 0) {
+                field.setText("" + value);
+            } else {
+                field.setText("");
             }
+        }
+
+        private void saveIntConfig(String tag, JTextField field) {
+            String value = field.getText().trim();
+            int num = 0;
+            if (!value.isEmpty()) {
+                try {
+                    num = Integer.parseInt(value);
+                } catch (NumberFormatException e) {
+                }
+            }
+            Config.set(tag, num);
         }
     }
 
     private class XMinecraftMod extends MinecraftMod {
         XMinecraftMod() {
-            addPatch(new BytecodePatch.InsertAfter() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "MCPatcherUtils.setMinecraft(this)";
@@ -182,19 +200,15 @@ public final class BaseMod extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    if (getMethodInfo().getName().equals("<init>")) {
-                        return buildExpression(
-                            begin(),
-                            ALOAD_0,
-                            reference(INVOKESPECIAL, new MethodRef("java.lang.Object", "<init>", "()V"))
-                        );
-                    } else {
-                        return null;
-                    }
+                    return buildExpression(
+                        begin(),
+                        ALOAD_0,
+                        reference(INVOKESPECIAL, new MethodRef("java.lang.Object", "<init>", "()V"))
+                    );
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         ALOAD_0,
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.UTILS_CLASS, "setMinecraft", "(LMinecraft;)V")),
@@ -203,7 +217,10 @@ public final class BaseMod extends Mod {
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.UTILS_CLASS, "setVersions", "(Ljava/lang/String;Ljava/lang/String;)V"))
                     );
                 }
-            });
+            }
+                .setInsertAfter(true)
+                .matchConstructorOnly(true)
+            );
         }
 
         @Override
@@ -214,27 +231,6 @@ public final class BaseMod extends Mod {
 
     /**
      * Matches Minecraft class and maps the texturePackList field.
-     * <p/>
-     * Including
-     * <pre>
-     *     addClassMod(new BaseMod.MinecraftMod().mapTexturePackList();
-     *     addClassMod(new BaseMod.TexturePackListMod());
-     *     addClassMod(new BaseMod.TexturePackBaseMod());
-     * </pre>
-     * will allow you to detect when a different texture pack has been selected:
-     * <pre>
-     *     private TexturePackBase lastTexturePack;
-     *     ...
-     *     {
-     *         TexturePackBase currentTexturePack = MCPatcherUtils.getMinecraft().texturePackList.selectedTexturePack;
-     *         if (currentTexturePack == lastTexturePack) {
-     *             // texture pack has not changed
-     *         } else {
-     *             // texture pack has changed
-     *             lastTexturePack = currentTexturePack;
-     *         }
-     *     }
-     * </pre>
      */
     public static class MinecraftMod extends ClassMod {
         public MinecraftMod() {
@@ -246,180 +242,14 @@ public final class BaseMod extends Mod {
             return this;
         }
 
-        public MinecraftMod addWorldGetter(MinecraftVersion minecraftVersion) {
-            final MethodRef getWorld = new MethodRef(getDeobfClass(), "getWorld", "()LWorld;");
-
-            if (minecraftVersion.compareTo("12w18a") >= 0) {
-                final FieldRef worldServer = new FieldRef(getDeobfClass(), "worldServer", "LWorldServer;");
-                final FieldRef world = new FieldRef("WorldServer", "world", "LWorld;");
-
-                addMemberMapper(new FieldMapper(worldServer));
-
-                addPatch(new AddMethodPatch(getWorld) {
-                    @Override
-                    public byte[] generateMethod() throws BadBytecode, IOException {
-                        return buildCode(
-                            ALOAD_0,
-                            reference(GETFIELD, worldServer),
-                            reference(GETFIELD, world),
-                            ARETURN
-                        );
-                    }
-                });
-            } else {
-                final FieldRef theWorld = new FieldRef(getDeobfClass(), "theWorld", "LWorld;");
-
-                addMemberMapper(new FieldMapper(theWorld));
-
-                addPatch(new AddMethodPatch(getWorld) {
-                    @Override
-                    public byte[] generateMethod() throws BadBytecode, IOException {
-                        return buildCode(
-                            ALOAD_0,
-                            reference(GETFIELD, theWorld),
-                            ARETURN
-                        );
-                    }
-                });
-            }
+        public MinecraftMod mapWorldClient() {
+            addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "theWorld", "LWorldClient;")));
             return this;
         }
-    }
 
-    /**
-     * Matches TexturePackList class and maps selected and default texture pack fields.
-     */
-    public static class TexturePackListMod extends ClassMod {
-        protected final boolean useITexturePack;
-        protected final String texturePackType;
-        protected final FieldRef selectedTexturePack;
-        protected final FieldRef defaultTexturePack;
-        protected final MethodRef getDefaultTexturePack = new MethodRef(getDeobfClass(), "getDefaultTexturePack", "()LTexturePackBase;");
-        protected final MethodRef getSelectedTexturePack = new MethodRef(getDeobfClass(), "getSelectedTexturePack", "()LTexturePackBase;");
-
-        public TexturePackListMod(MinecraftVersion minecraftVersion) {
-            addClassSignature(new ConstSignature(".zip"));
-            addClassSignature(new ConstSignature("texturepacks"));
-
-            if (minecraftVersion.compareTo("12w15a") >= 0) {
-                useITexturePack = true;
-                texturePackType = "LITexturePack;";
-
-                selectedTexturePack = new FieldRef(getDeobfClass(), "selectedTexturePack", texturePackType);
-                defaultTexturePack = new FieldRef(getDeobfClass(), "defaultTexturePack", texturePackType);
-
-                addMemberMapper(new FieldMapper(selectedTexturePack)
-                    .accessFlag(AccessFlag.PRIVATE, true)
-                    .accessFlag(AccessFlag.STATIC, false)
-                    .accessFlag(AccessFlag.FINAL, false)
-                );
-                addMemberMapper(new FieldMapper(defaultTexturePack)
-                    .accessFlag(AccessFlag.PRIVATE, true)
-                    .accessFlag(AccessFlag.STATIC, true)
-                    .accessFlag(AccessFlag.FINAL, true)
-                );
-
-                addPatch(new AddMethodPatch(getDefaultTexturePack) {
-                    @Override
-                    public byte[] generateMethod() throws BadBytecode, IOException {
-                        return buildCode(
-                            reference(GETSTATIC, defaultTexturePack),
-                            reference(CHECKCAST, new ClassRef("TexturePackBase")),
-                            ARETURN
-                        );
-                    }
-                });
-
-                addPatch(new AddMethodPatch(getSelectedTexturePack) {
-                    @Override
-                    public byte[] generateMethod() throws BadBytecode, IOException {
-                        return buildCode(
-                            ALOAD_0,
-                            reference(GETFIELD, selectedTexturePack),
-                            reference(CHECKCAST, new ClassRef("TexturePackBase")),
-                            ARETURN
-                        );
-                    }
-                });
-            } else {
-                useITexturePack = false;
-                texturePackType = "LTexturePackBase;";
-
-                selectedTexturePack = new FieldRef(getDeobfClass(), "selectedTexturePack", texturePackType);
-                defaultTexturePack = new FieldRef(getDeobfClass(), "defaultTexturePack", texturePackType);
-
-                addMemberMapper(new FieldMapper(selectedTexturePack).accessFlag(AccessFlag.PUBLIC, true));
-                addMemberMapper(new FieldMapper(defaultTexturePack).accessFlag(AccessFlag.PRIVATE, true));
-
-                addPatch(new AddMethodPatch(getDefaultTexturePack) {
-                    @Override
-                    public byte[] generateMethod() throws BadBytecode, IOException {
-                        return buildCode(
-                            ALOAD_0,
-                            reference(GETFIELD, defaultTexturePack),
-                            ARETURN
-                        );
-                    }
-                });
-
-                addPatch(new AddMethodPatch(getSelectedTexturePack) {
-                    @Override
-                    public byte[] generateMethod() throws BadBytecode, IOException {
-                        return buildCode(
-                            ALOAD_0,
-                            reference(GETFIELD, selectedTexturePack),
-                            ARETURN
-                        );
-                    }
-                });
-            }
-        }
-    }
-
-    /**
-     * Matches TexturePackBase class and maps getInputStream method.
-     */
-    public static class TexturePackBaseMod extends ClassMod {
-        protected final boolean useITexturePack;
-
-        public TexturePackBaseMod(MinecraftVersion minecraftVersion) {
-            final MethodRef getResourceAsStream = new MethodRef("java.lang.Class", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
-
-            addClassSignature(new ConstSignature(getResourceAsStream));
-            if (minecraftVersion.compareTo("12w15a") >= 0) {
-                useITexturePack = true;
-                addClassSignature(new ConstSignature("/pack.txt"));
-                interfaces = new String[]{"ITexturePack"};
-            } else {
-                useITexturePack = false;
-                addClassSignature(new ConstSignature("pack.txt").negate(true));
-            }
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_1,
-                        reference(INVOKEVIRTUAL, getResourceAsStream),
-                        ARETURN
-                    );
-                }
-            }.setMethodName("getInputStream"));
-
-            addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "texturePackFileName", "Ljava/lang/String;")));
-
-            addPatch(new MakeMemberPublicPatch(new FieldRef(getDeobfClass(), "texturePackFileName", "Ljava/lang/String;")));
-        }
-    }
-
-    /**
-     * Matches TexturePackDefault class.
-     */
-    public static class TexturePackDefaultMod extends ClassMod {
-        public TexturePackDefaultMod() {
-            parentClass = "TexturePackBase";
-
-            addClassSignature(new ConstSignature("The default look of Minecraft"));
+        public MinecraftMod mapPlayer() {
+            addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "thePlayer", "LEntityClientPlayerMP;")));
+            return this;
         }
     }
 
@@ -457,26 +287,7 @@ public final class BaseMod extends Mod {
         protected final MethodRef setTextureUV = new MethodRef(getDeobfClass(), "setTextureUV", "(DD)V");
         protected final FieldRef instance = new FieldRef(getDeobfClass(), "instance", "LTessellator;");
 
-        public TessellatorMod(MinecraftVersion minecraftVersion) {
-            final MethodRef draw1;
-            if (minecraftVersion.compareTo("Beta 1.9 Prerelease 4") >= 0) {
-                draw1 = draw;
-            } else {
-                draw1 = new MethodRef(getDeobfClass(), "draw1", "()V");
-
-                addPatch(new AddMethodPatch(draw) {
-                    @Override
-                    public byte[] generateMethod() throws BadBytecode, IOException {
-                        return buildCode(
-                            ALOAD_0,
-                            reference(INVOKEVIRTUAL, draw1),
-                            push(0),
-                            IRETURN
-                        );
-                    }
-                });
-            }
-
+        public TessellatorMod() {
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
@@ -484,7 +295,7 @@ public final class BaseMod extends Mod {
                         push("Not tesselating!")
                     );
                 }
-            }.setMethod(draw1));
+            }.setMethod(draw));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -534,27 +345,24 @@ public final class BaseMod extends Mod {
      */
     public static class IBlockAccessMod extends ClassMod {
         public IBlockAccessMod() {
-            addClassSignature(new ClassSignature() {
-                @Override
-                public boolean match(String filename, ClassFile classFile, ClassMap tempClassMap) {
-                    return classFile.isAbstract();
-                }
-            });
-
-            addClassSignature(new ClassSignature() {
-                @Override
-                public boolean match(String filename, ClassFile classFile, ClassMap tempClassMap) {
-                    List list = getClassFile().getMethods();
-                    return list.size() >= 1 && ((MethodInfo) list.get(0)).getDescriptor().equals("(III)I");
-                }
-            });
-
-            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getBlockId", "(III)I"), new MethodRef(getDeobfClass(), "getBlockMetadata", "(III)I")));
-        }
-
-        public IBlockAccessMod mapMaterial() {
-            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getBlockMaterial", "(III)LMaterial;")));
-            return this;
+            addClassSignature(new InterfaceSignature(
+                new InterfaceMethodRef(getDeobfClass(), "getBlockId", "(III)I"),
+                new InterfaceMethodRef(getDeobfClass(), "getBlockTileEntity", "(III)LTileEntity;"),
+                new InterfaceMethodRef(getDeobfClass(), "getLightBrightnessForSkyBlocks", "(IIII)I"),
+                new InterfaceMethodRef(getDeobfClass(), "getBrightness", "(IIII)F"),
+                new InterfaceMethodRef(getDeobfClass(), "getLightBrightness", "(III)F"),
+                new InterfaceMethodRef(getDeobfClass(), "getBlockMetadata", "(III)I"),
+                new InterfaceMethodRef(getDeobfClass(), "getBlockMaterial", "(III)LMaterial;"),
+                new InterfaceMethodRef(getDeobfClass(), "isBlockOpaqueCube", "(III)Z"),
+                new InterfaceMethodRef(getDeobfClass(), "isBlockNormalCube", "(III)Z"),
+                new InterfaceMethodRef(getDeobfClass(), "isAirBlock", "(III)Z"),
+                new InterfaceMethodRef(getDeobfClass(), "getBiomeGenAt", "(II)LBiomeGenBase;"),
+                new InterfaceMethodRef(getDeobfClass(), "getHeight", "()I"),
+                new InterfaceMethodRef(getDeobfClass(), "extendedLevelsInChunkCache", "()Z"),
+                new InterfaceMethodRef(getDeobfClass(), "doesBlockHaveSolidTopSurface", "(III)Z"),
+                new InterfaceMethodRef(getDeobfClass(), "getWorldVec3Pool", "()LVec3Pool;"),
+                new InterfaceMethodRef(getDeobfClass(), "isBlockProvidingPowerTo", "(IIII)I")
+            ).setInterfaceOnly(true));
         }
     }
 
@@ -573,9 +381,9 @@ public final class BaseMod extends Mod {
                 add(new BlockSubclassEntry(5, "Block", "planks", "BlockWood", "wood"));
                 add(new BlockSubclassEntry(6, "Block", "sapling", "BlockSapling", "sapling"));
                 add(new BlockSubclassEntry(7, "Block", "bedrock", "Block", "bedrock"));
-                add(new BlockSubclassEntry(8, "Block", "waterMoving", "BlockFlowing", "water"));
+                add(new BlockSubclassEntry(8, "BlockFluid", "waterMoving", "BlockFlowing", "water"));
                 add(new BlockSubclassEntry(9, "Block", "waterStill", "BlockStationary", "water"));
-                add(new BlockSubclassEntry(10, "Block", "lavaMoving", "BlockFlowing", "lava"));
+                add(new BlockSubclassEntry(10, "BlockFluid", "lavaMoving", "BlockFlowing", "lava"));
                 add(new BlockSubclassEntry(11, "Block", "lavaStill", "BlockStationary", "lava"));
                 add(new BlockSubclassEntry(12, "Block", "sand", "BlockSand", "sand"));
                 add(new BlockSubclassEntry(13, "Block", "gravel", "BlockGravel", "gravel"));
@@ -592,13 +400,13 @@ public final class BaseMod extends Mod {
                 add(new BlockSubclassEntry(24, "Block", "sandStone", "BlockSandStone", "sandStone"));
                 add(new BlockSubclassEntry(25, "Block", "music", "BlockNote", "musicBlock"));
                 add(new BlockSubclassEntry(26, "Block", "bed", "BlockBed", "bed"));
-                add(new BlockSubclassEntry(27, "Block", "railPowered", "BlockRail", "goldenRail"));
+                add(new BlockSubclassEntry(27, "Block", "railPowered", "BlockRailPowered", "goldenRail"));
                 add(new BlockSubclassEntry(28, "Block", "railDetector", "BlockDetectorRail", "detectorRail"));
-                add(new BlockSubclassEntry(29, "Block", "pistonStickyBase", "BlockPistonBase", "pistonStickyBase"));
+                add(new BlockSubclassEntry(29, "BlockPistonBase", "pistonStickyBase", "BlockPistonBase", "pistonStickyBase"));
                 add(new BlockSubclassEntry(30, "Block", "web", "BlockWeb", "web"));
                 add(new BlockSubclassEntry(31, "BlockTallGrass", "tallGrass", "BlockTallGrass", "tallgrass"));
                 add(new BlockSubclassEntry(32, "BlockDeadBush", "deadBush", "BlockDeadBush", "deadbush"));
-                add(new BlockSubclassEntry(33, "Block", "pistonBase", "BlockPistonBase", "pistonBase"));
+                add(new BlockSubclassEntry(33, "BlockPistonBase", "pistonBase", "BlockPistonBase", "pistonBase"));
                 add(new BlockSubclassEntry(34, "BlockPistonExtension", "pistonExtension", "BlockPistonExtension", "unnamedBlock34"));
                 add(new BlockSubclassEntry(35, "Block", "cloth", "BlockCloth", "cloth"));
                 add(new BlockSubclassEntry(36, "BlockPistonMoving", "pistonMoving", "BlockPistonMoving", "unnamedBlock36"));
@@ -619,8 +427,8 @@ public final class BaseMod extends Mod {
                 add(new BlockSubclassEntry(51, "BlockFire", "fire", "BlockFire", "fire"));
                 add(new BlockSubclassEntry(52, "Block", "mobSpawner", "BlockMobSpawner", "mobSpawner"));
                 add(new BlockSubclassEntry(53, "Block", "stairCompactPlanks", "BlockStairs", "stairsWood"));
-                add(new BlockSubclassEntry(54, "Block", "chest", "BlockChest", "chest"));
-                add(new BlockSubclassEntry(55, "Block", "redstoneWire", "BlockRedstoneWire", "redstoneDust"));
+                add(new BlockSubclassEntry(54, "BlockChest", "chest", "BlockChest", "chest"));
+                add(new BlockSubclassEntry(55, "BlockRedstoneWire", "redstoneWire", "BlockRedstoneWire", "redstoneDust"));
                 add(new BlockSubclassEntry(56, "Block", "oreDiamond", "BlockOre", "oreDiamond"));
                 add(new BlockSubclassEntry(57, "Block", "blockDiamond", "BlockOreStorage", "blockDiamond"));
                 add(new BlockSubclassEntry(58, "Block", "workbench", "BlockWorkbench", "workbench"));
@@ -642,7 +450,7 @@ public final class BaseMod extends Mod {
                 add(new BlockSubclassEntry(74, "Block", "oreRedstoneGlowing", "BlockRedstoneOre", "oreRedstone"));
                 add(new BlockSubclassEntry(75, "Block", "torchRedstoneIdle", "BlockRedstoneTorch", "notGate"));
                 add(new BlockSubclassEntry(76, "Block", "torchRedstoneActive", "BlockRedstoneTorch", "notGate"));
-                add(new BlockSubclassEntry(77, "Block", "stoneButton", "BlockButton", "button"));
+                add(new BlockSubclassEntry(77, "Block", "stoneButton", "BlockButtonStone", "button"));
                 add(new BlockSubclassEntry(78, "Block", "snow", "BlockSnow", "snow"));
                 add(new BlockSubclassEntry(79, "Block", "ice", "BlockIce", "ice"));
                 add(new BlockSubclassEntry(80, "Block", "blockSnow", "BlockSnowBlock", "snow"));
@@ -658,8 +466,8 @@ public final class BaseMod extends Mod {
                 add(new BlockSubclassEntry(90, "BlockPortal", "portal", "BlockPortal", "portal"));
                 add(new BlockSubclassEntry(91, "Block", "pumpkinLantern", "BlockPumpkin", "litpumpkin"));
                 add(new BlockSubclassEntry(92, "Block", "cake", "BlockCake", "cake"));
-                add(new BlockSubclassEntry(93, "Block", "redstoneRepeaterIdle", "BlockRedstoneRepeater", "diode"));
-                add(new BlockSubclassEntry(94, "Block", "redstoneRepeaterActive", "BlockRedstoneRepeater", "diode"));
+                add(new BlockSubclassEntry(93, "BlockRedstoneRepeater", "redstoneRepeaterIdle", "BlockRedstoneRepeater", "diode"));
+                add(new BlockSubclassEntry(94, "BlockRedstoneRepeater", "redstoneRepeaterActive", "BlockRedstoneRepeater", "diode"));
                 add(new BlockSubclassEntry(95, "Block", "lockedChest", "BlockLockedChest", "lockedchest"));
                 add(new BlockSubclassEntry(96, "Block", "trapdoor", "BlockTrapDoor", "trapdoor"));
                 add(new BlockSubclassEntry(97, "Block", "silverfish", "BlockSilverfish", "monsterStoneEgg"));
@@ -683,7 +491,7 @@ public final class BaseMod extends Mod {
                 add(new BlockSubclassEntry(115, "Block", "netherStalk", "BlockNetherStalk", "netherStalk"));
                 add(new BlockSubclassEntry(116, "Block", "enchantmentTable", "BlockEnchantmentTable", "enchantmentTable"));
                 add(new BlockSubclassEntry(117, "Block", "brewingStand", "BlockBrewingStand", "brewingStand"));
-                add(new BlockSubclassEntry(118, "Block", "cauldron", "BlockCauldron", "cauldron"));
+                add(new BlockSubclassEntry(118, "BlockCauldron", "cauldron", "BlockCauldron", "cauldron"));
                 add(new BlockSubclassEntry(119, "Block", "endPortal", "BlockEndPortal", "unnamedBlock119"));
                 add(new BlockSubclassEntry(120, "Block", "endPortalFrame", "BlockEndPortalFrame", "endPortalFrame"));
                 add(new BlockSubclassEntry(121, "Block", "whiteStone", "Block", "whiteStone"));
@@ -703,14 +511,26 @@ public final class BaseMod extends Mod {
                 add(new BlockSubclassEntry(135, "Block", "stairsWoodBirch", "BlockStairs", "stairsWoodBirch"));
                 add(new BlockSubclassEntry(136, "Block", "stairsWoodJungle", "BlockStairs", "stairsWoodJungle"));
                 add(new BlockSubclassEntry(137, "Block", "commandBlock", "BlockCommandBlock", "commandBlock"));
-                add(new BlockSubclassEntry(138, "Block", "beacon", "BlockBeacon", "beacon"));
+                add(new BlockSubclassEntry(138, "BlockBeacon", "beacon", "BlockBeacon", "beacon"));
                 add(new BlockSubclassEntry(139, "Block", "cobblestoneWall", "BlockWall", "cobbleWall"));
                 add(new BlockSubclassEntry(140, "Block", "flowerPot", "BlockFlowerPot", "flowerPot"));
                 add(new BlockSubclassEntry(141, "Block", "carrot", "BlockCarrot", "carrots"));
                 add(new BlockSubclassEntry(142, "Block", "potato", "BlockPotato", "potatoes"));
-                add(new BlockSubclassEntry(143, "Block", "woodenButton", "BlockButton", "button"));
+                add(new BlockSubclassEntry(143, "Block", "woodenButton", "BlockButtonWood", "button"));
                 add(new BlockSubclassEntry(144, "Block", "skull", "BlockSkull", "skull"));
                 add(new BlockSubclassEntry(145, "Block", "anvil", "BlockAnvil", "anvil"));
+                add(new BlockSubclassEntry(146, "Block", "chestTrap", "BlockChest", "chestTrap"));
+                add(new BlockSubclassEntry(147, "Block", "weightedPlate_light", "BlockPressurePlateWeighted", "weightedPlate_light"));
+                add(new BlockSubclassEntry(148, "Block", "weightedPlate_heavy", "BlockPressurePlateWeighted", "weightedPlate_heavy"));
+                add(new BlockSubclassEntry(149, "BlockComparator", "comparator1", "BlockComparator", "comparator"));
+                add(new BlockSubclassEntry(150, "BlockComparator", "comparator2", "BlockComparator", "comparator"));
+                add(new BlockSubclassEntry(151, "BlockDaylightDetector", "daylightDetector", "BlockDaylightDetector", "daylightDetector"));
+                add(new BlockSubclassEntry(152, "Block", "blockRedstone", "BlockPoweredOre", "blockRedstone"));
+                add(new BlockSubclassEntry(153, "Block", "netherquartz", "BlockOre", "netherquartz"));
+                add(new BlockSubclassEntry(154, "BlockHopper", "hopper", "BlockHopper", "hopper"));
+                add(new BlockSubclassEntry(155, "Block", "quartzBlock", "BlockQuartz", "quartzBlock"));
+                add(new BlockSubclassEntry(156, "Block", "stairsQuartz", "BlockStairs", "stairsQuartz"));
+                add(new BlockSubclassEntry(157, "Block", "activatorRail", "BlockRailPowered", "activatorRail"));
             }
         };
 
@@ -823,21 +643,14 @@ public final class BaseMod extends Mod {
      * Matches WorldServer class and maps world field.
      */
     public static class WorldServerMod extends ClassMod {
-        public WorldServerMod(MinecraftVersion minecraftVersion) {
-            final FieldRef world = new FieldRef(getDeobfClass(), "world", "LWorld;");
-
-            addClassSignature(new ConstSignature("/particles.png"));
-            addClassSignature(new ConstSignature("/terrain.png"));
-            addClassSignature(new ConstSignature("/gui/items.png"));
-
-            addMemberMapper(new FieldMapper(world));
-
-            addPatch(new MakeMemberPublicPatch(world));
+        public WorldServerMod() {
+            addClassSignature(new ConstSignature("Saving level"));
+            addClassSignature(new ConstSignature("Saving chunks"));
         }
     }
 
-    public static class WorldServerMPMod extends ClassMod {
-        public WorldServerMPMod(MinecraftVersion minecraftVersion) {
+    public static class WorldClientMod extends ClassMod {
+        public WorldClientMod() {
             parentClass = "World";
 
             addClassSignature(new ConstSignature("MpServer"));
@@ -859,16 +672,12 @@ public final class BaseMod extends Mod {
                         ALOAD_0,
                         push(256),
                         NEWARRAY, T_INT,
-                        captureReference(PUTFIELD),
-                        ALOAD_0,
-                        ICONST_0,
                         captureReference(PUTFIELD)
                     );
                 }
             }
                 .matchConstructorOnly(true)
                 .addXref(1, new FieldRef(getDeobfClass(), "charWidth", "[I"))
-                .addXref(2, new FieldRef(getDeobfClass(), "fontTextureName", "I"))
             );
 
             addClassSignature(new OrSignature(
@@ -883,7 +692,48 @@ public final class BaseMod extends Mod {
      * Matches RenderBlocks class.
      */
     public static class RenderBlocksMod extends ClassMod {
+        protected final MethodRef renderStandardBlockWithAmbientOcclusion = new MethodRef(getDeobfClass(), "renderStandardBlockWithAmbientOcclusion", "(LBlock;IIIFFF)Z");
+        protected final FieldRef renderAllFaces = new FieldRef(getDeobfClass(), "renderAllFaces", "Z");
+        protected final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
+        protected final MethodRef shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;IIII)Z");
+
         public RenderBlocksMod() {
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(0x0f000f)
+                    );
+                }
+            }.setMethod(renderStandardBlockWithAmbientOcclusion));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        IFNE, any(2),
+                        ALOAD_1,
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        ILOAD_2,
+                        ILOAD_3,
+                        push(1),
+                        ISUB,
+                        ILOAD, 4,
+                        push(0),
+                        captureReference(INVOKEVIRTUAL),
+                        IFEQ, any(2)
+                    );
+                }
+            }
+                .setMethod(renderStandardBlockWithAmbientOcclusion)
+                .addXref(1, renderAllFaces)
+                .addXref(2, blockAccess)
+                .addXref(3, shouldSideBeRendered)
+            );
+
             addClassSignature(new ConstSignature(0.1875));
             addClassSignature(new ConstSignature(0.01));
         }
@@ -893,12 +743,82 @@ public final class BaseMod extends Mod {
      * Maps RenderEngine class.
      */
     public static class RenderEngineMod extends ClassMod {
-        protected final MethodRef glTexSubImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V");
+        protected final FieldRef terrain = new FieldRef(getDeobfClass(), "terrain", "LTextureMap;");
+        protected final FieldRef items = new FieldRef(getDeobfClass(), "items", "LTextureMap;");
+        protected final MethodRef updateDynamicTextures = new MethodRef(getDeobfClass(), "updateDynamicTextures", "()V");
+        protected final MethodRef refreshTextureMaps = new MethodRef(getDeobfClass(), "refreshTextureMaps", "()V");
+        protected final MethodRef glTexSubImage2DByte = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V");
+        protected final MethodRef glTexSubImage2DInt = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
+        protected final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "()V");
+        protected final FieldRef imageData = new FieldRef(getDeobfClass(), "imageData", "Ljava/nio/IntBuffer;");
+
+        private String updateAnimationsMapped;
 
         public RenderEngineMod() {
             addClassSignature(new ConstSignature("%clamp%"));
             addClassSignature(new ConstSignature("%blur%"));
-            addClassSignature(new ConstSignature(glTexSubImage2D));
+            addClassSignature(new OrSignature(
+                new ConstSignature(glTexSubImage2DByte),
+                new ConstSignature(glTexSubImage2DInt)
+            ));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push("%blur%")
+                    );
+                }
+            }.setMethod(refreshTextures));
+
+            // updateAnimations and refreshTextureMaps are identical up to obfuscation:
+            // public void xxx() {
+            //   this.terrain.yyy();
+            //   this.items.yyy();
+            // }
+            // They're even called from similar methods, runTick() and startGame() in Minecraft.java.
+            // Normal descriptor and bytecode matching is insufficient here, so we rely on the fact
+            // that updateAnimations is defined first.
+            addClassSignature(new VoidSignature(updateDynamicTextures, "updateAnimations") {
+                @Override
+                public boolean afterMatch() {
+                    updateAnimationsMapped = getMethodInfo().getName();
+                    return true;
+                }
+            });
+
+            addClassSignature(new VoidSignature(refreshTextureMaps, "refresh") {
+                @Override
+                public boolean filterMethod() {
+                    return updateAnimationsMapped != null && getMethodInfo().getName().compareTo(updateAnimationsMapped) > 0;
+                }
+            });
+
+            addMemberMapper(new FieldMapper(imageData));
+        }
+
+        private class VoidSignature extends BytecodeSignature {
+            VoidSignature(MethodRef method, String textureMethod) {
+                setMethod(method);
+                addXref(1, terrain);
+                addXref(2, new MethodRef("TextureMap", textureMethod, "()V"));
+                addXref(3, items);
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    begin(),
+                    ALOAD_0,
+                    captureReference(GETFIELD),
+                    captureReference(INVOKEVIRTUAL),
+                    ALOAD_0,
+                    captureReference(GETFIELD),
+                    backReference(2),
+                    RETURN,
+                    end()
+                );
+            }
         }
     }
 
@@ -970,6 +890,213 @@ public final class BaseMod extends Mod {
                 .setMethod(endStartSection)
                 .addXref(1, endSection)
                 .addXref(2, startSection)
+            );
+        }
+    }
+
+    /**
+     * Maps Texture class and various fields and methods.
+     */
+    public static class TextureMod extends ClassMod {
+        protected final FieldRef glTextureTarget = new FieldRef(getDeobfClass(), "glTextureTarget", "I");
+        protected final FieldRef glTexture = new FieldRef(getDeobfClass(), "glTexture", "I");
+        protected final FieldRef loaded = new FieldRef(getDeobfClass(), "loaded", "Z");
+        protected final MethodRef getIndex = new MethodRef(getDeobfClass(), "getIndex", "()I");
+        protected final MethodRef getGLTexture = new MethodRef(getDeobfClass(), "getGLTexture", "()I");
+        protected final MethodRef getWidth = new MethodRef(getDeobfClass(), "getWidth", "()I");
+        protected final MethodRef getHeight = new MethodRef(getDeobfClass(), "getHeight", "()I");
+        protected final MethodRef getByteBuffer = new MethodRef(getDeobfClass(), "getByteBuffer", "()Ljava/nio/ByteBuffer;");
+        protected final MethodRef getName = new MethodRef(getDeobfClass(), "getName", "()Ljava/lang/String;");
+        protected final MethodRef loadGLTexture = new MethodRef(getDeobfClass(), "loadGLTexture", "()V");
+        protected final MethodRef transferFromImage = new MethodRef(getDeobfClass(), "transferFromImage", "(Ljava/awt/image/BufferedImage;)V");
+        protected final MethodRef glBindTexture = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V");
+
+        public TextureMod() {
+            addClassSignature(new ConstSignature("png"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        reference(INVOKESTATIC, glBindTexture)
+                    );
+                }
+            }
+                .matchConstructorOnly(true)
+                .addXref(1, glTextureTarget)
+                .addXref(2, glTexture)
+            );
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        push(1),
+                        captureReference(PUTFIELD),
+                        RETURN,
+                        end()
+                    );
+                }
+            }
+                .setMethod(loadGLTexture)
+                .addXref(1, loaded)
+            );
+
+            addMemberMapper(new MethodMapper(getIndex, getGLTexture, getWidth, getHeight));
+            addMemberMapper(new MethodMapper(getByteBuffer));
+            addMemberMapper(new MethodMapper(getName));
+            addMemberMapper(new MethodMapper(transferFromImage));
+        }
+    }
+
+    public static class IconMod extends ClassMod {
+        public IconMod() {
+            final InterfaceMethodRef getX0 = new InterfaceMethodRef(getDeobfClass(), "getX0", "()I");
+            final InterfaceMethodRef getY0 = new InterfaceMethodRef(getDeobfClass(), "getY0", "()I");
+            final InterfaceMethodRef getNormalizedX0 = new InterfaceMethodRef(getDeobfClass(), "getNormalizedX0", "()F");
+            final InterfaceMethodRef getNormalizedX1 = new InterfaceMethodRef(getDeobfClass(), "getNormalizedX1", "()F");
+            final InterfaceMethodRef interpolateX = new InterfaceMethodRef(getDeobfClass(), "interpolateX", "(D)F");
+            final InterfaceMethodRef getNormalizedY0 = new InterfaceMethodRef(getDeobfClass(), "getNormalizedY0", "()F");
+            final InterfaceMethodRef getNormalizedY1 = new InterfaceMethodRef(getDeobfClass(), "getNormalizedY1", "()F");
+            final InterfaceMethodRef interpolateY = new InterfaceMethodRef(getDeobfClass(), "interpolateY", "(D)F");
+            final InterfaceMethodRef getName = new InterfaceMethodRef(getDeobfClass(), "getName", "()Ljava/lang/String;");
+            final InterfaceMethodRef getWidth = new InterfaceMethodRef(getDeobfClass(), "getTextureWidth", "()I");
+            final InterfaceMethodRef getHeight = new InterfaceMethodRef(getDeobfClass(), "getTextureHeight", "()I");
+
+            addClassSignature(new InterfaceSignature(
+                getX0,
+                getY0,
+                getNormalizedX0,
+                getNormalizedX1,
+                interpolateX,
+                getNormalizedY0,
+                getNormalizedY1,
+                interpolateY,
+                getName,
+                getWidth,
+                getHeight
+            ).setInterfaceOnly(true));
+        }
+    }
+
+    public static class NBTTagCompoundMod extends ClassMod {
+        private final InterfaceMethodRef containsKey = new InterfaceMethodRef("java/util/Map", "containsKey", "(Ljava/lang/Object;)Z");
+        private final InterfaceMethodRef mapRemove = new InterfaceMethodRef("java/util/Map", "remove", "(Ljava/lang/Object;)Ljava/lang/Object;");
+        private final InterfaceMethodRef mapGet = new InterfaceMethodRef("java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
+        private final InterfaceMethodRef mapPut = new InterfaceMethodRef("java/util/Map", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+        private final FieldRef tagMap = new FieldRef(getDeobfClass(), "tagMap", "Ljava/util/Map;");
+
+        public NBTTagCompoundMod() {
+            setParentClass("NBTBase");
+
+            addClassSignature(new ConstSignature(new ClassRef("java.util.HashMap")));
+            addClassSignature(new ConstSignature(":["));
+            addClassSignature(new ConstSignature(":"));
+            addClassSignature(new ConstSignature(","));
+            addClassSignature(new ConstSignature("]"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        ALOAD_1,
+                        reference(INVOKEINTERFACE, containsKey),
+                        IRETURN
+                    );
+                }
+            }
+                .setMethod(new MethodRef(getDeobfClass(), "hasKey", "(Ljava/lang/String;)Z"))
+                .addXref(1, tagMap)
+            );
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        ALOAD_1,
+                        reference(INVOKEINTERFACE, mapRemove)
+                    );
+                }
+            }
+                .setMethod(new MethodRef(getDeobfClass(), "removeTag", "(Ljava/lang/String;)V"))
+                .addXref(1, tagMap)
+            );
+
+            mapNBTMethod("Byte", "B");
+            mapNBTMethod("ByteArray", "[B");
+            mapNBTMethod("Double", "D");
+            mapNBTMethod("Float", "F");
+            mapNBTMethod("IntArray", "[I");
+            mapNBTMethod("Integer", "I");
+            mapNBTMethod("Long", "J");
+            mapNBTMethod("Short", "S");
+            mapNBTMethod("String", "Ljava/lang/String;");
+
+            addMemberMapper(new MethodMapper(null, new MethodRef(getDeobfClass(), "getBoolean", "(Ljava/lang/String;)Z")));
+            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "setBoolean", "(Ljava/lang/String;Z)V")));
+            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getCompoundTag", "(Ljava/lang/String;)L" + getDeobfClass() + ";")));
+            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "setCompoundTag", "(Ljava/lang/String;L" + getDeobfClass() + ";)V")));
+        }
+
+        protected void mapNBTMethod(String type, String desc) {
+            final MethodRef get = new MethodRef(getDeobfClass(), "get" + type, "(Ljava/lang/String;)" + desc);
+            final MethodRef set = new MethodRef(getDeobfClass(), "set" + type, "(Ljava/lang/String;" + desc + ")V");
+            final String nbtTagType = "NBTTag" + type;
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        ALOAD_1,
+                        reference(INVOKEINTERFACE, mapGet),
+                        captureReference(CHECKCAST),
+                        captureReference(GETFIELD)
+                    );
+                }
+
+                @Override
+                public boolean afterMatch() {
+                    getClassMap().addInheritance("NBTBase", nbtTagType);
+                    return true;
+                }
+            }
+                .setMethod(get)
+                .addXref(1, tagMap)
+                .addXref(2, new ClassRef(nbtTagType))
+                .addXref(3, new FieldRef(nbtTagType, "data", desc))
+            );
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        ALOAD_1,
+                        captureReference(NEW),
+                        DUP,
+                        ALOAD_1,
+                        subset(new int[]{ILOAD_2, ALOAD_2, LLOAD_2, FLOAD_2, DLOAD_2}, true),
+                        captureReference(INVOKESPECIAL),
+                        reference(INVOKEINTERFACE, mapPut)
+                    );
+                }
+            }
+                .setMethod(set)
+                .addXref(1, tagMap)
+                .addXref(2, new ClassRef(nbtTagType))
+                .addXref(3, new MethodRef(nbtTagType, "<init>", "(Ljava/lang/String;" + desc + ")V"))
             );
         }
     }

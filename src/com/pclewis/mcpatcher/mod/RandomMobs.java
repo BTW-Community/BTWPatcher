@@ -3,8 +3,6 @@ package com.pclewis.mcpatcher.mod;
 import com.pclewis.mcpatcher.*;
 import javassist.bytecode.AccessFlag;
 
-import java.io.IOException;
-
 import static com.pclewis.mcpatcher.BinaryRegex.*;
 import static com.pclewis.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
@@ -12,7 +10,7 @@ import static javassist.bytecode.Opcode.*;
 public class RandomMobs extends Mod {
     private static final String EXTRA_INFO_CLASS = MCPatcherUtils.RANDOM_MOBS_CLASS + "$ExtraInfo";
 
-    public RandomMobs(MinecraftVersion minecraftVersion) {
+    public RandomMobs() {
         name = MCPatcherUtils.RANDOM_MOBS;
         author = "Balthichou";
         description = "Randomize mob skins if texture pack supports it. Based on Balthichou's mod.";
@@ -23,18 +21,14 @@ public class RandomMobs extends Mod {
 
         addClassMod(new RenderLivingMod());
         addClassMod(new RenderEyesMod("Spider"));
-        if (minecraftVersion.compareTo("Beta 1.8 Prerelease 1") >= 0) {
-            addClassMod(new RenderEyesMod("Enderman"));
-        }
+        addClassMod(new RenderEyesMod("Enderman"));
         addClassMod(new EntityMod());
         addClassMod(new EntityLivingMod());
-        addClassMod(new NBTTagCompoundMod());
-        if (minecraftVersion.compareTo("Beta 1.9") >= 0) {
-            addClassMod(new BaseMod.TessellatorMod(minecraftVersion));
-            addClassMod(new RenderMod());
-            addClassMod(new RenderSnowmanMod());
-            addClassMod(new RenderMooshroomMod());
-        }
+        addClassMod(new BaseMod.NBTTagCompoundMod());
+        addClassMod(new BaseMod.TessellatorMod());
+        addClassMod(new RenderMod());
+        addClassMod(new RenderSnowmanMod());
+        addClassMod(new RenderMooshroomMod());
         addClassMod(new MiscSkinMod("RenderSheep", "/mob/sheep_fur.png"));
         addClassMod(new MiscSkinMod("RenderWolf", "/mob/wolf_collar.png"));
 
@@ -50,7 +44,7 @@ public class RandomMobs extends Mod {
         RenderMod() {
             addClassSignature(new ConstSignature("/terrain.png"));
             addClassSignature(new ConstSignature("%clamp%/misc/shadow.png"));
-            addClassSignature(new ConstSignature(15.99f));
+            addClassSignature(new ConstSignature(0.45f));
 
             final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(Ljava/lang/String;)V");
 
@@ -98,7 +92,7 @@ public class RandomMobs extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         getCaptureGroup(1),
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(LEntityLiving;)Ljava/lang/String;"))
@@ -132,7 +126,7 @@ public class RandomMobs extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         ALOAD_1,
                         push(eyeTexture),
@@ -236,7 +230,7 @@ public class RandomMobs extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // MobRandomizer.ExtraInfo.writeToNBT(this, nbttagcompound);
                         ALOAD_0,
@@ -260,7 +254,7 @@ public class RandomMobs extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // MobRandomizer.ExtraInfo.readFromNBT(this, nbttagcompound);
                         ALOAD_0,
@@ -269,18 +263,6 @@ public class RandomMobs extends Mod {
                     );
                 }
             }.targetMethod(readFromNBT));
-        }
-    }
-
-    private class NBTTagCompoundMod extends ClassMod {
-        NBTTagCompoundMod() {
-            addClassSignature(new ConstSignature(new ClassRef("java.util.HashMap")));
-            addClassSignature(new ConstSignature(" entries"));
-
-            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getLong", "(Ljava/lang/String;)J")));
-            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "setLong", "(Ljava/lang/String;J)V")));
-            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getInteger", "(Ljava/lang/String;)I")));
-            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "setInteger", "(Ljava/lang/String;I)V")));
         }
     }
 
@@ -333,7 +315,7 @@ public class RandomMobs extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // if (setupSnowman(entityLiving)) {
                         ALOAD_1,
@@ -425,7 +407,7 @@ public class RandomMobs extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         ALOAD_1,
                         push("/terrain.png"),
@@ -454,7 +436,7 @@ public class RandomMobs extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // if (!MobOverlay.renderMooshroomOverlay()) {
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "renderMooshroomOverlay", "()Z")),
@@ -469,7 +451,7 @@ public class RandomMobs extends Mod {
                 }
             }.targetMethod(renderEquippedItems));
 
-            addPatch(new BytecodePatch.InsertBefore() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "finish mooshroom overlay";
@@ -483,12 +465,15 @@ public class RandomMobs extends Mod {
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "finishMooshroom", "()V"))
                     );
                 }
-            }.targetMethod(renderEquippedItems));
+            }
+                .setInsertBefore(true)
+                .targetMethod(renderEquippedItems)
+            );
         }
     }
 
@@ -522,7 +507,7 @@ public class RandomMobs extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         ALOAD_1,
                         getMatch(),

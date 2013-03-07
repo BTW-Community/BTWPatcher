@@ -8,20 +8,20 @@ import java.util.ArrayList;
 import static javassist.bytecode.Opcode.*;
 
 class ConstPoolUtils {
-    public static final byte[] CONSTANT_OPCODES = new byte[]{(byte) LDC, (byte) LDC_W, (byte) LDC2_W};
-    public static final byte[] CLASSREF_OPCODES = new byte[]{(byte) NEW, (byte) ANEWARRAY, (byte) CHECKCAST, (byte) INSTANCEOF, (byte) MULTIANEWARRAY};
-    public static final byte[] FIELDREF_OPCODES = new byte[]{(byte) GETFIELD, (byte) GETSTATIC, (byte) PUTFIELD, (byte) PUTSTATIC};
-    public static final byte[] METHODREF_OPCODES = new byte[]{(byte) INVOKEVIRTUAL, (byte) INVOKESTATIC, (byte) INVOKESPECIAL};
-    public static final byte[] INTERFACEMETHODREF_OPCODES = new byte[]{(byte) INVOKEINTERFACE};
+    static final byte[] CONSTANT_OPCODES = new byte[]{(byte) LDC, (byte) LDC_W, (byte) LDC2_W};
+    static final byte[] CLASSREF_OPCODES = new byte[]{(byte) NEW, (byte) ANEWARRAY, (byte) CHECKCAST, (byte) INSTANCEOF, (byte) MULTIANEWARRAY};
+    static final byte[] FIELDREF_OPCODES = new byte[]{(byte) GETFIELD, (byte) GETSTATIC, (byte) PUTFIELD, (byte) PUTSTATIC};
+    static final byte[] METHODREF_OPCODES = new byte[]{(byte) INVOKEVIRTUAL, (byte) INVOKESTATIC, (byte) INVOKESPECIAL};
+    static final byte[] INTERFACEMETHODREF_OPCODES = new byte[]{(byte) INVOKEINTERFACE};
 
-    public static final String DESCRIPTOR_TYPES = "VZBCSIJFD";
-    public static final String DESCRIPTOR_CHARS = DESCRIPTOR_TYPES + "()<>[";
+    static final String DESCRIPTOR_TYPES = "VZBCSIJFD";
+    static final String DESCRIPTOR_CHARS = DESCRIPTOR_TYPES + "()<>[";
 
     private static final byte[] NOT_FOUND = null;
 
     private static final int MAX_LDC_INDEX = 255;
 
-    public static int getTag(Object o) {
+    static int getTag(Object o) {
         if (o instanceof Float) {
             return ConstPool.CONST_Float;
         } else if (o instanceof Double) {
@@ -73,7 +73,7 @@ class ConstPoolUtils {
         throw new IllegalArgumentException("Unhandled type: " + o.getClass().getName());
     }
 
-    public static boolean checkEqual(ConstPool cp, int index, Object o) {
+    static boolean checkEqual(ConstPool cp, int index, Object o) {
         if (o instanceof Float) {
             return cp.getFloatInfo(index) == (Float) o;
         } else if (o instanceof Double) {
@@ -139,7 +139,7 @@ class ConstPoolUtils {
         }
     }
 
-    public static Object push(ConstPool cp, Object value, boolean add) {
+    static Object push(ConstPool cp, Object value, boolean add) {
         if (value instanceof Boolean) {
             if ((Boolean) value) {
                 return new byte[]{ICONST_1};
@@ -212,7 +212,7 @@ class ConstPoolUtils {
         }
     }
 
-    public static byte[] reference(ConstPool cp, Object value, boolean add) {
+    static byte[] reference(ConstPool cp, Object value, boolean add) {
         int index = add ? findOrAdd(cp, value) : find(cp, value);
         if (index < 0) {
             return NOT_FOUND;
@@ -220,7 +220,7 @@ class ConstPoolUtils {
         return Util.marshal16(index);
     }
 
-    public static void matchOpcodeToRefType(int opcode, Object value) {
+    static void matchOpcodeToRefType(int opcode, Object value) {
         opcode &= 0xff;
         if (Util.contains(CONSTANT_OPCODES, opcode)) {
         } else if (Util.contains(FIELDREF_OPCODES, opcode)) {
@@ -242,7 +242,7 @@ class ConstPoolUtils {
         }
     }
 
-    public static void matchConstPoolTagToRefType(int tag, Object value) {
+    static void matchConstPoolTagToRefType(int tag, Object value) {
         switch (tag) {
             case ConstPool.CONST_Fieldref:
                 if (!(value instanceof FieldRef)) {
@@ -273,7 +273,7 @@ class ConstPoolUtils {
         }
     }
 
-    public static JavaRef getRefForIndex(ConstPool constPool, int index) {
+    static JavaRef getRefForIndex(ConstPool constPool, int index) {
         int tag = constPool.getTag(index);
         switch (tag) {
             case ConstPool.CONST_Fieldref:
@@ -307,7 +307,7 @@ class ConstPoolUtils {
         }
     }
 
-    public static byte[] reference(ConstPool cp, int opcode, Object value, boolean add) {
+    static byte[] reference(ConstPool cp, int opcode, Object value, boolean add) {
         int index = add ? findOrAdd(cp, value) : find(cp, value);
         if (index < 0) {
             return NOT_FOUND;
@@ -317,14 +317,17 @@ class ConstPoolUtils {
             return getLoad(opcode, index);
         } else if (Util.contains(INTERFACEMETHODREF_OPCODES, opcode)) {
             if (value instanceof InterfaceMethodRef) {
-                int numArgs = parseDescriptor(((InterfaceMethodRef) value).getType()).size();
+                int numArgs = 0;
+                for (String s : parseDescriptor(((InterfaceMethodRef) value).getType())) {
+                    numArgs += (s.equals("D") || s.equals("J") ? 2 : 1);
+                }
                 return new byte[]{(byte) opcode, Util.b(index, 1), Util.b(index, 0), (byte) numArgs, 0};
             }
         }
         return new byte[]{(byte) opcode, Util.b(index, 1), Util.b(index, 0)};
     }
 
-    public static void checkTypeDescriptorSyntax(String descriptor) {
+    static void checkTypeDescriptorSyntax(String descriptor) {
         for (int i = 0; i < descriptor.length(); i++) {
             char c = descriptor.charAt(i);
             if (DESCRIPTOR_CHARS.indexOf(c) >= 0) {
@@ -340,7 +343,7 @@ class ConstPoolUtils {
         }
     }
 
-    public static ArrayList<String> parseDescriptor(String descriptor) {
+    static ArrayList<String> parseDescriptor(String descriptor) {
         checkTypeDescriptorSyntax(descriptor);
         ArrayList<String> types = new ArrayList<String>();
         descriptor = descriptor.replaceAll("[()]", "");

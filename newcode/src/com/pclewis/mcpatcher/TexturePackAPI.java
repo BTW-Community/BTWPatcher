@@ -5,8 +5,12 @@ import net.minecraft.src.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -15,11 +19,8 @@ public class TexturePackAPI {
     private static final MCLogger logger = MCLogger.getLogger("Texture Pack");
 
     public static TexturePackAPI instance = new TexturePackAPI();
-    public static boolean loadFontFromTexturePack;
 
     private static final ArrayList<Field> textureMapFields = new ArrayList<Field>();
-
-    private static TexturePackBase texturePack;
 
     static {
         try {
@@ -34,11 +35,7 @@ public class TexturePackAPI {
         }
     }
 
-    public static TexturePackBase getTexturePack() {
-        return texturePack;
-    }
-
-    static TexturePackBase getCurrentTexturePack() {
+    public static ITexturePack getTexturePack() {
         Minecraft minecraft = MCPatcherUtils.getMinecraft();
         if (minecraft == null) {
             return null;
@@ -93,6 +90,10 @@ public class TexturePackAPI {
         return getImage(s);
     }
 
+    public static BufferedImage getImage(Object o1, Object o2, String s) {
+        return getImage(s);
+    }
+
     public static Properties getProperties(String s) {
         Properties properties = new Properties();
         if (getProperties(s, properties)) {
@@ -106,38 +107,82 @@ public class TexturePackAPI {
         return instance.getPropertiesImpl(s, properties);
     }
 
+    private static String fixupPath(String path) {
+        if (path == null) {
+            path = "";
+        }
+        return path.replace('\\', '/').replaceFirst("^/", "").replaceFirst("/$", "");
+    }
+
+    private static boolean directlyContains(String parent, String child) {
+        parent = fixupPath(parent);
+        child = fixupPath(child);
+        if (!child.startsWith(parent)) {
+            return false;
+        }
+        child = child.substring(parent.length());
+        return child.matches("/[^/]+/?");
+    }
+
     public static String[] listResources(String directory, String suffix) {
-        if (directory == null) {
-            directory = "";
-        }
-        if (directory.startsWith("/")) {
-            directory = directory.substring(1);
-        }
+        directory = fixupPath(directory);
         if (suffix == null) {
             suffix = "";
         }
 
+        ITexturePack texturePack = getTexturePack();
         ArrayList<String> resources = new ArrayList<String>();
-        if (texturePack instanceof TexturePackDefault) {
-            // nothing
-        } else if (texturePack instanceof TexturePackCustom) {
+        if (texturePack instanceof TexturePackCustom) {
             ZipFile zipFile = ((TexturePackCustom) texturePack).zipFile;
             if (zipFile != null) {
                 for (ZipEntry entry : Collections.list(zipFile.entries())) {
                     final String name = entry.getName();
-                    if (name.startsWith(directory) && name.endsWith(suffix)) {
+                    if (!entry.isDirectory() && directlyContains(directory, name) && name.endsWith(suffix)) {
                         resources.add("/" + name);
                     }
                 }
             }
         } else if (texturePack instanceof TexturePackFolder) {
-            File folder = ((TexturePackFolder) texturePack).getFolder();
+            File folder = ((TexturePackFolder) texturePack).texturePackFile;
             if (folder != null && folder.isDirectory()) {
                 String[] list = new File(folder, directory).list();
                 if (list != null) {
                     for (String s : list) {
                         if (s.endsWith(suffix)) {
-                            resources.add("/" + new File(new File(directory), s).getPath().replace('\\', '/'));
+                            resources.add("/" + directory + "/" + s);
+                        }
+                    }
+                }
+            }
+        }
+
+        Collections.sort(resources);
+        return resources.toArray(new String[resources.size()]);
+    }
+
+    public static String[] listDirectories(String directory) {
+        directory = fixupPath(directory);
+        ITexturePack texturePack = getTexturePack();
+        ArrayList<String> resources = new ArrayList<String>();
+        if (texturePack instanceof TexturePackCustom) {
+            ZipFile zipFile = ((TexturePackCustom) texturePack).zipFile;
+            if (zipFile != null) {
+                for (ZipEntry entry : Collections.list(zipFile.entries())) {
+                    final String name = fixupPath(entry.getName());
+                    if (entry.isDirectory() && directlyContains(directory, name)) {
+                        resources.add("/" + name);
+                    }
+                }
+            }
+        } else if (texturePack instanceof TexturePackFolder) {
+            File folder = ((TexturePackFolder) texturePack).texturePackFile;
+            if (folder != null && folder.isDirectory()) {
+                File subfolder = new File(folder, directory);
+                String[] list = subfolder.list();
+                if (list != null) {
+                    for (String s : list) {
+                        if (new File(subfolder, s).isDirectory()) {
+                            resources.add("/" + directory + "/" + s);
                         }
                     }
                 }
@@ -167,6 +212,14 @@ public class TexturePackAPI {
 
     public static boolean isTextureLoaded(String s) {
         return getTextureIfLoaded(s) >= 0;
+    }
+
+    public static void bindTexture(String s) {
+        MCPatcherUtils.getMinecraft().renderEngine.bindTexture(s);
+    }
+
+    public static void clearBoundTexture() {
+        MCPatcherUtils.getMinecraft().renderEngine.clearBoundTexture();
     }
 
     public static int unloadTexture(String s) {
@@ -209,19 +262,30 @@ public class TexturePackAPI {
         return null;
     }
 
+    public static IntBuffer getIntBuffer(IntBuffer buffer, int[] data) {
+        buffer.clear();
+        final int have = buffer.capacity();
+        final int needed = data.length;
+        if (needed > have) {
+            logger.finest("resizing gl buffer from 0x%x to 0x%x", have, needed);
+            buffer = ByteBuffer.allocateDirect(4 * needed).order(buffer.order()).asIntBuffer();
+        }
+        buffer.put(data);
+        buffer.position(0).limit(needed);
+        return buffer;
+    }
+
     protected InputStream getInputStreamImpl(String s) {
         s = parseTextureName(s)[1];
-        if (!loadFontFromTexturePack && s.startsWith("/font/")) {
+        ITexturePack texturePack = getTexturePack();
+        if (texturePack == null) {
             return TexturePackAPI.class.getResourceAsStream(s);
-        } else if (texturePack == null) {
-            TexturePackBase currentTexturePack = getCurrentTexturePack();
-            if (currentTexturePack == null) {
-                return TexturePackAPI.class.getResourceAsStream(s);
-            } else {
-                return currentTexturePack.getInputStream(s);
-            }
         } else {
-            return texturePack.getInputStream(s);
+            try {
+                return texturePack.getResourceAsStream(s);
+            } catch (Throwable e) {
+                return null;
+            }
         }
     }
 
@@ -232,7 +296,7 @@ public class TexturePackAPI {
             try {
                 image = ImageIO.read(input);
             } catch (IOException e) {
-                logger.severe("could not read %s", s);
+                logger.error("could not read %s", s);
                 e.printStackTrace();
             } finally {
                 MCPatcherUtils.close(input);
@@ -250,184 +314,12 @@ public class TexturePackAPI {
                     return true;
                 }
             } catch (IOException e) {
-                logger.severe("could not read %s");
+                logger.error("could not read %s");
                 e.printStackTrace();
             } finally {
                 MCPatcherUtils.close(input);
             }
         }
         return false;
-    }
-
-    abstract public static class ChangeHandler {
-        private static final ArrayList<ChangeHandler> handlers = new ArrayList<ChangeHandler>();
-        private static boolean changing;
-
-        private static final boolean autoRefreshTextures = MCPatcherUtils.getBoolean("autoRefreshTextures", false);
-        private static long lastCheckTime;
-
-        protected final String name;
-        protected final int order;
-
-        protected ChangeHandler(String name, int order) {
-            this.name = name;
-            this.order = order;
-        }
-
-        abstract protected void onChange();
-
-        public static void register(ChangeHandler handler) {
-            if (handler != null) {
-                if (texturePack != null) {
-                    try {
-                        logger.info("initializing %s...", handler.name);
-                        handler.onChange();
-                    } catch (Throwable e) {
-                        e.printStackTrace();
-                        logger.severe("%s initialization failed", handler.name);
-                    }
-                }
-                handlers.add(handler);
-                logger.fine("registered texture pack handler %s, priority %d", handler.name, handler.order);
-                Collections.sort(handlers, new Comparator<ChangeHandler>() {
-                    public int compare(ChangeHandler o1, ChangeHandler o2) {
-                        return o1.order - o2.order;
-                    }
-                });
-            }
-        }
-
-        public static void checkForTexturePackChange() {
-            Minecraft minecraft = MCPatcherUtils.getMinecraft();
-            if (minecraft == null) {
-                return;
-            }
-            TexturePackList texturePackList = minecraft.texturePackList;
-            if (texturePackList == null) {
-                return;
-            }
-            TexturePackBase currentTexturePack = texturePackList.getSelectedTexturePack();
-            if (currentTexturePack != texturePack) {
-                changeTexturePack(currentTexturePack);
-            } else if (currentTexturePack instanceof TexturePackCustom) {
-                checkFileChange(texturePackList, (TexturePackCustom) currentTexturePack);
-            }
-        }
-
-        private static void changeTexturePack(TexturePackBase newPack) {
-            if (newPack != null && !changing) {
-                changing = true;
-                long timeDiff = -System.currentTimeMillis();
-                Runtime runtime = Runtime.getRuntime();
-                long memDiff = -(runtime.totalMemory() - runtime.freeMemory());
-
-                if (texturePack == null) {
-                    logger.info("\nsetting texture pack to %s", newPack.texturePackFileName);
-                } else if (texturePack == newPack) {
-                    logger.info("\nreloading texture pack %s", newPack.texturePackFileName);
-                } else {
-                    logger.info("\nchanging texture pack from %s to %s", texturePack.texturePackFileName, newPack.texturePackFileName);
-                }
-
-                texturePack = newPack;
-                for (ChangeHandler handler : handlers) {
-                    try {
-                        logger.info("refreshing %s...", handler.name);
-                        handler.onChange();
-                    } catch (Throwable e) {
-                        e.printStackTrace();
-                        logger.severe("%s refresh failed", handler.name);
-                    }
-                }
-
-                System.gc();
-                timeDiff += System.currentTimeMillis();
-                memDiff += runtime.totalMemory() - runtime.freeMemory();
-                logger.info("done (%.3fs elapsed, mem usage %+.1fMB)\n", timeDiff / 1000.0, memDiff / 1048576.0);
-                changing = false;
-            }
-        }
-
-        private static boolean openTexturePackFile(TexturePackCustom pack) {
-            if (pack.zipFile == null) {
-                return false;
-            }
-            if (pack.origZip != null) {
-                return true;
-            }
-            InputStream input = null;
-            OutputStream output = null;
-            ZipFile newZipFile = null;
-            try {
-                pack.lastModified = pack.file.lastModified();
-                pack.tmpFile = File.createTempFile("tmpmc", ".zip");
-                pack.tmpFile.deleteOnExit();
-                MCPatcherUtils.close(pack.zipFile);
-                input = new FileInputStream(pack.file);
-                output = new FileOutputStream(pack.tmpFile);
-                byte[] buffer = new byte[65536];
-                while (true) {
-                    int nread = input.read(buffer);
-                    if (nread <= 0) {
-                        break;
-                    }
-                    output.write(buffer, 0, nread);
-                }
-                MCPatcherUtils.close(input);
-                MCPatcherUtils.close(output);
-                newZipFile = new ZipFile(pack.tmpFile);
-                pack.origZip = pack.zipFile;
-                pack.zipFile = newZipFile;
-                newZipFile = null;
-                logger.fine("copied %s to %s, lastModified = %d", pack.file.getPath(), pack.tmpFile.getPath(), pack.lastModified);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return false;
-            } finally {
-                MCPatcherUtils.close(input);
-                MCPatcherUtils.close(output);
-                MCPatcherUtils.close(newZipFile);
-            }
-            return true;
-        }
-
-        private static void closeTexturePackFile(TexturePackCustom pack) {
-            if (pack.origZip != null) {
-                MCPatcherUtils.close(pack.zipFile);
-                pack.zipFile = pack.origZip;
-                pack.origZip = null;
-                pack.tmpFile.delete();
-                logger.fine("deleted %s", pack.tmpFile.getPath());
-                pack.tmpFile = null;
-            }
-        }
-
-        private static boolean checkFileChange(TexturePackList list, TexturePackCustom pack) {
-            if (!autoRefreshTextures || !openTexturePackFile(pack)) {
-                return false;
-            }
-            long now = System.currentTimeMillis();
-            if (now - lastCheckTime < 1000L) {
-                return false;
-            }
-            lastCheckTime = now;
-            long lastModified = pack.file.lastModified();
-            if (lastModified == pack.lastModified || lastModified == 0 || pack.lastModified == 0) {
-                return false;
-            }
-            logger.finer("%s lastModified changed from %d to %d", pack.file.getName(), pack.lastModified, lastModified);
-            ZipFile tmpZip = null;
-            try {
-                tmpZip = new ZipFile(pack.file);
-            } catch (IOException e) {
-                // file is still being written
-                return false;
-            } finally {
-                MCPatcherUtils.close(tmpZip);
-            }
-            closeTexturePackFile(pack);
-            list.updateAvailableTexturePacks();
-            return true;
-        }
     }
 }

@@ -2,8 +2,6 @@ package com.pclewis.mcpatcher.mod;
 
 import com.pclewis.mcpatcher.*;
 
-import java.io.IOException;
-
 import static com.pclewis.mcpatcher.BinaryRegex.*;
 import static com.pclewis.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
@@ -20,11 +18,11 @@ public class BetterGlass extends Mod {
     private static final MethodRef enableLightmap = new MethodRef("EntityRenderer", "enableLightmap", "(D)V");
     private static final MethodRef disableLightmap = new MethodRef("EntityRenderer", "disableLightmap", "(D)V");
 
-    public BetterGlass(MinecraftVersion minecraftVersion) {
+    public BetterGlass() {
         name = MCPatcherUtils.BETTER_GLASS;
         author = "MCPatcher";
         description = "Enables partial transparency for glass blocks.";
-        version = "1.9";
+        version = "2.0";
 
         addDependency(BaseTexturePackMod.NAME);
         addDependency(MCPatcherUtils.CONNECTED_TEXTURES);
@@ -145,7 +143,7 @@ public class BetterGlass extends Mod {
                 }
             });
 
-            addPatch(new BytecodePatch.InsertAfter() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "pre render pass";
@@ -164,7 +162,7 @@ public class BetterGlass extends Mod {
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     loopRegister = (getCaptureGroup(1)[0] & 0xff) - 1;
                     Logger.log(Logger.LOG_CONST, "loop register %d", loopRegister);
                     return buildCode(
@@ -172,7 +170,10 @@ public class BetterGlass extends Mod {
                         reference(INVOKESTATIC, startPass)
                     );
                 }
-            }.targetMethod(updateRenderer));
+            }
+                .setInsertAfter(true)
+                .targetMethod(updateRenderer)
+            );
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -195,7 +196,7 @@ public class BetterGlass extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                     );
                 }
@@ -234,7 +235,7 @@ public class BetterGlass extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // return RenderPass.skipAllRenderPasses(skipRenderPass);
                         ALOAD_0,
@@ -259,7 +260,7 @@ public class BetterGlass extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "getBlockRenderPass", "(LBlock;)I"))
                     );
@@ -281,7 +282,7 @@ public class BetterGlass extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         DUP2,
                         getMatch(),
@@ -313,7 +314,7 @@ public class BetterGlass extends Mod {
             }
 
             @Override
-            public final byte[] getReplacementBytes() throws IOException {
+            public final byte[] getReplacementBytes() {
                 return buildCode(
                     push(2 + EXTRA_PASSES)
                 );
@@ -383,7 +384,7 @@ public class BetterGlass extends Mod {
                 }
             }.setMethod(renderRainSnow));
 
-            addPatch(new BytecodePatch.InsertBefore() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "set gl shade model";
@@ -402,15 +403,15 @@ public class BetterGlass extends Mod {
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // if (RenderPass.setAmbientOcclusion(...))
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "setAmbientOcclusion", "(Z)Z"))
                     );
                 }
-            });
+            }.setInsertBefore(true));
 
-            addPatch(new BytecodePatch.InsertAfter() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "do extra render pass 2";
@@ -430,7 +431,7 @@ public class BetterGlass extends Mod {
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // RenderPass.doRenderPass(renderGlobal, camera, 2, par1);
                         ALOAD, 5,
@@ -441,9 +442,9 @@ public class BetterGlass extends Mod {
                         reference(INVOKESTATIC, doRenderPass)
                     );
                 }
-            });
+            }.setInsertAfter(true));
 
-            addPatch(new BytecodePatch.InsertBefore() {
+            addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
                     return "do extra render pass 3";
@@ -467,7 +468,7 @@ public class BetterGlass extends Mod {
                 }
 
                 @Override
-                public byte[] getInsertBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // renderRainSnow(par1);
                         ALOAD_0,
@@ -483,7 +484,10 @@ public class BetterGlass extends Mod {
                         reference(INVOKESTATIC, doRenderPass)
                     );
                 }
-            }.targetMethod(renderWorld));
+            }
+                .setInsertBefore(true)
+                .targetMethod(renderWorld)
+            );
         }
     }
 
@@ -587,7 +591,7 @@ public class BetterGlass extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         push(3 + EXTRA_PASSES)
                     );
@@ -608,7 +612,7 @@ public class BetterGlass extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         IINC, getCaptureGroup(1), 3 + EXTRA_PASSES
                     );
@@ -636,7 +640,7 @@ public class BetterGlass extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         ILOAD_1,
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "enableDisableLightmap", "(LEntityRenderer;DI)V"))
@@ -648,47 +652,6 @@ public class BetterGlass extends Mod {
 
     private class RenderBlocksMod extends BaseMod.RenderBlocksMod {
         RenderBlocksMod() {
-            final MethodRef renderStandardBlockWithAmbientOcclusion = new MethodRef(getDeobfClass(), "renderStandardBlockWithAmbientOcclusion", "(LBlock;IIIFFF)Z");
-            final FieldRef renderAllFaces = new FieldRef(getDeobfClass(), "renderAllFaces", "Z");
-            final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
-            final MethodRef shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;IIII)Z");
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push(0x0f000f)
-                    );
-                }
-            }.setMethod(renderStandardBlockWithAmbientOcclusion));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        IFNE, any(2),
-                        ALOAD_1,
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        ILOAD_2,
-                        ILOAD_3,
-                        push(1),
-                        ISUB,
-                        ILOAD, 4,
-                        push(0),
-                        captureReference(INVOKEVIRTUAL),
-                        IFEQ, any(2)
-                    );
-                }
-            }
-                .setMethod(renderStandardBlockWithAmbientOcclusion)
-                .addXref(1, renderAllFaces)
-                .addXref(2, blockAccess)
-                .addXref(3, shouldSideBeRendered)
-            );
-
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
@@ -713,7 +676,7 @@ public class BetterGlass extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         // (flag ? f : 1.0f) * RenderPass.getAOBaseMultiplier(...)
                         IFEQ, branch("A"),
@@ -743,7 +706,7 @@ public class BetterGlass extends Mod {
                 }
 
                 @Override
-                public byte[] getReplacementBytes() throws IOException {
+                public byte[] getReplacementBytes() {
                     return buildCode(
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "shouldSideBeRendered", "(LBlock;LIBlockAccess;IIII)Z"))
                     );

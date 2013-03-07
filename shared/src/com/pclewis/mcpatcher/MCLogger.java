@@ -6,6 +6,8 @@ import java.util.logging.*;
 public class MCLogger {
     private static final HashMap<String, MCLogger> allLoggers = new HashMap<String, MCLogger>();
 
+    public static final Level ERROR = new ErrorLevel();
+
     private final String logPrefix;
     private final Logger logger;
 
@@ -25,7 +27,7 @@ public class MCLogger {
     private MCLogger(String category, String logPrefix) {
         this.logPrefix = logPrefix;
         logger = Logger.getLogger(category);
-        logger.setLevel(MCPatcherUtils.getLogLevel(category));
+        logger.setLevel(Config.getLogLevel(category));
         logger.setUseParentHandlers(false);
         logger.addHandler(new Handler() {
             private final Formatter formatter = new Formatter() {
@@ -75,6 +77,22 @@ public class MCLogger {
         }
     }
 
+    public void severe(String format, Object... params) {
+        log(Level.SEVERE, format, params);
+    }
+
+    public void error(String format, Object... params) {
+        log(ERROR, format, params);
+    }
+
+    public void warning(String format, Object... params) {
+        log(Level.WARNING, format, params);
+    }
+
+    public void info(String format, Object... params) {
+        log(Level.INFO, format, params);
+    }
+
     public void config(String format, Object... params) {
         log(Level.CONFIG, format, params);
     }
@@ -91,15 +109,9 @@ public class MCLogger {
         log(Level.FINEST, format, params);
     }
 
-    public void info(String format, Object... params) {
-        log(Level.INFO, format, params);
-    }
-
-    public void severe(String format, Object... params) {
-        log(Level.SEVERE, format, params);
-    }
-
-    public void warning(String format, Object... params) {
-        log(Level.WARNING, format, params);
+    private static class ErrorLevel extends Level {
+        protected ErrorLevel() {
+            super("ERROR", (Level.WARNING.intValue() + Level.SEVERE.intValue()) / 2);
+        }
     }
 }

@@ -19,6 +19,8 @@ public class Minecraft {
     public GuiScreen currentScreen;
     public Timer timer;
     public Profiler mcProfiler;
+    public EntityClientPlayerMP thePlayer;
+    public WorldClient theWorld;
 
     public static File getMinecraftDir() {
         return null;
@@ -28,11 +30,10 @@ public class Minecraft {
         return null;
     }
 
-    public World getWorld() {
-        return null;
+    public void scheduleTexturePackRefresh() {
     }
 
-    public EntityPlayerSP getPlayer() {
-        return null;
+    public static int getMaxTextureSize() {
+        return 0;
     }
 }

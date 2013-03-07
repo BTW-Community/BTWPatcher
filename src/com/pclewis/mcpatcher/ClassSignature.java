@@ -3,8 +3,6 @@ package com.pclewis.mcpatcher;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.MethodInfo;
 
-import java.io.IOException;
-
 /**
  * Base class of all class file signatures.  Used to select which .class file(s) a ClassMod
  * should target
@@ -27,29 +25,6 @@ abstract public class ClassSignature implements PatchComponent {
 
     abstract public boolean match(String filename, ClassFile classFile, ClassMap tempClassMap);
 
-    /**
-     * Called immediately after a successful match.  Gives an opportunity to extract bytecode
-     * values using getCaptureGroup, for example.
-     *
-     * @param classFile matched class file
-     * @see #afterMatch()
-     * @deprecated
-     */
-    protected void afterMatch(ClassFile classFile) {
-    }
-
-    /**
-     * Called immediately after a successful match.  Gives an opportunity to extract bytecode
-     * values using getCaptureGroup, for example.
-     *
-     * @return false if match should be ignored
-     */
-    @SuppressWarnings("deprecation")
-    protected boolean afterMatch() {
-        afterMatch(getClassFile());
-        return true;
-    }
-
     void setClassMod(ClassMod classMod) {
         this.classMod = classMod;
     }
@@ -68,7 +43,7 @@ abstract public class ClassSignature implements PatchComponent {
         return classMod.buildExpression(objects);
     }
 
-    final public byte[] buildCode(Object... objects) throws IOException {
+    final public byte[] buildCode(Object... objects) {
         return classMod.buildCode(objects);
     }
 

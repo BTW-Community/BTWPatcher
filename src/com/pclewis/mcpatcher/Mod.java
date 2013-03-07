@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Base class for all mods.
@@ -34,32 +36,24 @@ public abstract class Mod {
      */
     protected String description = "";
     /**
+     * Whether mod is checked by default in the UI
+     */
+    protected boolean defaultEnabled = true;
+    /**
      * Optional GUI config screen
      */
     protected ModConfigPanel configPanel = null;
-    /**
-     * List of ClassMod objects for the mod
-     *
-     * @see #addClassMod(ClassMod)
-     */
-    protected ArrayList<ClassMod> classMods = new ArrayList<ClassMod>();
-    /**
-     * List of files to add or replace in the output minecraft.jar
-     *
-     * @see #addFile(String)
-     * @see #addClassFile(String)
-     */
-    protected ArrayList<String> filesToAdd = new ArrayList<String>();
 
-    protected boolean defaultEnabled = true;
-    protected ClassMap classMap = new ClassMap();
-    private ArrayList<String> errors = new ArrayList<String>();
+    final List<ClassMod> classMods = new ArrayList<ClassMod>();
+    final List<String> filesToAdd = new ArrayList<String>();
+    final ClassMap classMap = new ClassMap();
+    private final List<String> errors = new ArrayList<String>();
     private boolean enabled;
     boolean internal;
     boolean experimental;
     File customJar;
-    ArrayList<Dependency> dependencies = new ArrayList<Dependency>();
-    HashMap<String, String> filesAdded = new HashMap<String, String>();
+    final List<Dependency> dependencies = new ArrayList<Dependency>();
+    final Map<String, String> filesAdded = new HashMap<String, String>();
 
     /**
      * Initialize mod.
@@ -171,7 +165,7 @@ public abstract class Mod {
         }
     }
 
-    ArrayList<ClassMod> getClassMods() {
+    List<ClassMod> getClassMods() {
         return classMods;
     }
 

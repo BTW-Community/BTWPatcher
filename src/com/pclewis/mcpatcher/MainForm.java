@@ -37,6 +37,7 @@ class MainForm {
     private static final String MOD_DESC_FORMAT3 =
         "</table>" +
             "</html>";
+    private static final String FORCE_CONTINUE_TEXT = "I WILL NOT COMPLAIN IF THIS DOESN'T WORK.";
 
     private static Image programIcon;
 
@@ -66,6 +67,10 @@ class MainForm {
     private JButton copyPatchResultsButton;
     private JScrollPane modTableScrollPane;
     private JPanel optionsPanel;
+    private JScrollPane optionsScrollPane;
+    private JScrollPane logScrollPane;
+    private JScrollPane classMapScrollPane;
+    private JScrollPane patchSummaryScrollPane;
     JButton upButton;
     JButton addButton;
     JButton downButton;
@@ -343,16 +348,7 @@ class MainForm {
             class PatchThread implements Runnable {
                 public void run() {
                     try {
-                        boolean patchOk = true;
-                        HashMap<String, ArrayList<Mod>> conflicts = MCPatcher.getConflicts();
-                        if (conflicts.size() > 0) {
-                            ConflictDialog dialog = new ConflictDialog(conflicts);
-                            int result = dialog.getResult(mainPanel);
-                            if (result != JOptionPane.YES_OPTION) {
-                                patchOk = false;
-                            }
-                        }
-                        if (patchOk && !MCPatcher.patch()) {
+                        if (!MCPatcher.patch()) {
                             tabbedPane.setSelectedIndex(TAB_LOG);
                             JOptionPane.showMessageDialog(frame,
                                 "There was an error during patching.  " +
@@ -371,6 +367,31 @@ class MainForm {
             }
 
             public void actionPerformed(ActionEvent e) {
+                if (MCPatcher.minecraft.isModded()) {
+                    while (true) {
+                        String answer = JOptionPane.showInputDialog(frame,
+                            getModWarningText(MCPatcher.minecraft.getVersion()) + "\n\n" +
+                                "However, if you understand the risks and wish to continue patching anyway, type\n" +
+                                "    " + FORCE_CONTINUE_TEXT + "\n" +
+                                "in the box below with the exact same capitalization and punctuation.",
+                            "Warning", JOptionPane.WARNING_MESSAGE
+                        );
+                        if (answer == null || answer.equals("")) {
+                            return;
+                        }
+                        if (FORCE_CONTINUE_TEXT.equals(answer)) {
+                            break;
+                        }
+                    }
+                }
+                HashMap<String, ArrayList<Mod>> conflicts = MCPatcher.getConflicts();
+                if (!conflicts.isEmpty()) {
+                    ConflictDialog dialog = new ConflictDialog(conflicts);
+                    int result = dialog.getResult(mainPanel);
+                    if (result != JOptionPane.YES_OPTION) {
+                        return;
+                    }
+                }
                 setBusy(true);
                 setStatusText("Patching %s...", MCPatcher.minecraft.getOutputFile().getName());
                 runWorker(new PatchThread());
@@ -435,8 +456,26 @@ class MainForm {
         ((DefaultCaret) patchResults.getCaret()).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         copyPatchResultsButton.addActionListener(new CopyToClipboardListener(patchResults));
 
+        modTableScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        optionsScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        logScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        classMapScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        patchSummaryScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
         mainMenu = new MainMenu(this);
         frame.setJMenuBar(mainMenu.menuBar);
+    }
+
+    private static String getModWarningText(MinecraftVersion version) {
+        return "Your minecraft.jar appears to be already modded.\n" +
+            "It is highly recommended that you install mods via MCPatcher instead.\n" +
+            " - Close MCPatcher.\n" +
+            " - Delete both minecraft.jar and minecraft-" + version + ".jar.\n" +
+            (version.isPrerelease() ?
+                " - Re-download the snapshot from mojang.com.\n" :
+                " - Re-download the game using the launcher.\n") +
+            " - Run MCPatcher and select mods to add using the Add (+) button in the main window.\n" +
+            "This will prevent most conflicts between MCPatcher and other mods.";
     }
 
     static void setIconImage(Window window) {
@@ -512,6 +551,63 @@ class MainForm {
         }
     }
 
+    void showTexturePackConverter() {
+        JFileChooser fd = new JFileChooser();
+        fd.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fd.setFileHidingEnabled(false);
+        fd.setDialogTitle("Select texture pack");
+        fd.setCurrentDirectory(MCPatcherUtils.getMinecraftPath("texturepacks"));
+        fd.setAcceptAllFileFilterUsed(false);
+        fd.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                String name = f.getName();
+                return name.endsWith(".zip") && !name.startsWith("mcpatcher-converted-");
+            }
+
+            @Override
+            public String getDescription() {
+                return "texture packs (*.zip)";
+            }
+        });
+        if (fd.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
+            final File selectedFile = fd.getSelectedFile();
+            cancelWorker();
+            setBusy(true);
+            runWorker(new Runnable() {
+                public void run() {
+                    final TexturePackConverter converter = new TexturePackConverter(selectedFile);
+                    boolean result = converter.convert(MCPatcher.ui);
+                    StringBuilder sb = new StringBuilder();
+                    for (String s : converter.getMessages()) {
+                        sb.append(s).append('\n');
+                    }
+                    setBusy(false);
+                    if (!result) {
+                        JOptionPane.showMessageDialog(frame, sb.toString(),
+                            "Error converting " + selectedFile.getName(),
+                            JOptionPane.ERROR_MESSAGE
+                        );
+                        tabbedPane.setSelectedIndex(TAB_LOG);
+                    } else if (sb.length() > 0) {
+                        JOptionPane.showMessageDialog(frame, sb.toString(),
+                            "Warnings while converting " + selectedFile.getName(),
+                            JOptionPane.WARNING_MESSAGE
+                        );
+                        tabbedPane.setSelectedIndex(TAB_LOG);
+                    } else {
+                        JOptionPane.showMessageDialog(frame,
+                            "Successfully converted " + selectedFile.getName() + "\n" +
+                                "New texture pack is called " + converter.getOutputFile().getName(),
+                            "Done",
+                            JOptionPane.INFORMATION_MESSAGE
+                        );
+                    }
+                }
+            });
+        }
+    }
+
     private void cancelWorker() {
         if (workerThread != null && workerThread.isAlive()) {
             try {
@@ -560,7 +656,7 @@ class MainForm {
     }
 
     void updateControls() {
-        String currentProfile = MCPatcherUtils.config.getConfigValue(Config.TAG_SELECTED_PROFILE);
+        String currentProfile = Config.instance.getConfigValue(Config.TAG_SELECTED_PROFILE);
         if (currentProfile == null || currentProfile.equals("")) {
             frame.setTitle("MCPatcher " + MCPatcher.VERSION_STRING);
         } else {
@@ -726,14 +822,7 @@ class MainForm {
                     MCPatcher.getApplicableMods();
                     if (MCPatcher.minecraft.isModded()) {
                         JOptionPane.showMessageDialog(frame,
-                            "Your minecraft.jar appears to be an older version or is already modded.\n" +
-                                "If you are using other mods, it is highly recommended that you install them via\n" +
-                                "MCPatcher instead.\n" +
-                                " - Close MCPatcher.\n" +
-                                " - Delete both minecraft.jar and minecraft-" + MCPatcher.minecraft.getVersion() + ".jar.\n" +
-                                " - Re-download the game using the launcher.\n" +
-                                " - Run MCPatcher and select mods to add using the Add (+) button in the main window.\n" +
-                                "Doing this will prevent most conflicts between MCPatcher and other mods.",
+                            getModWarningText(MCPatcher.minecraft.getVersion()),
                             "Warning", JOptionPane.WARNING_MESSAGE
                         );
                     }

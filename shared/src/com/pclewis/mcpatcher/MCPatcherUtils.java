@@ -8,9 +8,9 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.zip.ZipFile;
 
 /**
@@ -20,17 +20,15 @@ import java.util.zip.ZipFile;
 public class MCPatcherUtils {
     private static File minecraftDir = null;
     private static String directoryStr = "";
-    private static boolean debug = false;
     private static boolean isGame;
-    static Config config = null;
 
     private static Minecraft minecraft;
     private static String minecraftVersion;
     private static String patcherVersion;
 
     public static final String HD_TEXTURES = "HD Textures";
+    public static final String EXTENDED_HD = "Extended HD";
     public static final String HD_FONT = "HD Font";
-    public static final String BETTER_GRASS = "Better Grass";
     public static final String RANDOM_MOBS = "Random Mobs";
     public static final String CUSTOM_COLORS = "Custom Colors";
     public static final String CONNECTED_TEXTURES = "Connected Textures";
@@ -38,29 +36,39 @@ public class MCPatcherUtils {
     public static final String BETTER_GLASS = "Better Glass";
     public static final String GLSL_SHADERS = "GLSL Shaders";
 
+    public static final String CUSTOM_ANIMATIONS = "Custom Animations";
+    public static final String MIPMAP = "Mipmap";
+
     public static final String UTILS_CLASS = "com.pclewis.mcpatcher.MCPatcherUtils";
     public static final String LOGGER_CLASS = "com.pclewis.mcpatcher.MCLogger";
     public static final String CONFIG_CLASS = "com.pclewis.mcpatcher.Config";
+    public static final String TILE_MAPPING_CLASS = "com.pclewis.mcpatcher.TileMapping";
     public static final String TEXTURE_PACK_API_CLASS = "com.pclewis.mcpatcher.TexturePackAPI";
+    public static final String TEXTURE_PACK_CHANGE_HANDLER_CLASS = "com.pclewis.mcpatcher.TexturePackChangeHandler";
     public static final String WEIGHTED_INDEX_CLASS = "com.pclewis.mcpatcher.WeightedIndex";
+    public static final String BLEND_METHOD_CLASS = "com.pclewis.mcpatcher.BlendMethod";
     public static final String GL11_CLASS = "org.lwjgl.opengl.GL11";
 
-    public static final String TILE_SIZE_CLASS = "com.pclewis.mcpatcher.mod.TileSize";
-    public static final String TEXTURE_UTILS_CLASS = "com.pclewis.mcpatcher.mod.TextureUtils";
     public static final String CUSTOM_ANIMATION_CLASS = "com.pclewis.mcpatcher.mod.CustomAnimation";
-    public static final String FANCY_COMPASS_CLASS = "com.pclewis.mcpatcher.mod.FancyCompass";
+    public static final String FANCY_DIAL_CLASS = "com.pclewis.mcpatcher.mod.FancyDial";
     public static final String MIPMAP_HELPER_CLASS = "com.pclewis.mcpatcher.mod.MipmapHelper";
     public static final String FONT_UTILS_CLASS = "com.pclewis.mcpatcher.mod.FontUtils";
     public static final String RANDOM_MOBS_CLASS = "com.pclewis.mcpatcher.mod.MobRandomizer";
     public static final String MOB_RULE_LIST_CLASS = "com.pclewis.mcpatcher.mod.MobRuleList";
     public static final String MOB_OVERLAY_CLASS = "com.pclewis.mcpatcher.mod.MobOverlay";
     public static final String COLORIZER_CLASS = "com.pclewis.mcpatcher.mod.Colorizer";
+    public static final String COLORIZE_WORLD_CLASS = "com.pclewis.mcpatcher.mod.ColorizeWorld";
+    public static final String COLORIZE_ITEM_CLASS = "com.pclewis.mcpatcher.mod.ColorizeItem";
+    public static final String COLORIZE_ENTITY_CLASS = "com.pclewis.mcpatcher.mod.ColorizeEntity";
+    public static final String COLORIZE_BLOCK_CLASS = "com.pclewis.mcpatcher.mod.ColorizeBlock";
     public static final String COLOR_MAP_CLASS = "com.pclewis.mcpatcher.mod.ColorMap";
     public static final String BIOME_HELPER_CLASS = "com.pclewis.mcpatcher.mod.BiomeHelper";
     public static final String LIGHTMAP_CLASS = "com.pclewis.mcpatcher.mod.Lightmap";
     public static final String CTM_UTILS_CLASS = "com.pclewis.mcpatcher.mod.CTMUtils";
-    public static final String SUPER_TESSELLATOR_CLASS = "com.pclewis.mcpatcher.mod.SuperTessellator";
+    public static final String TESSELLATOR_UTILS_CLASS = "com.pclewis.mcpatcher.mod.TessellatorUtils";
+    public static final String TILE_OVERRIDE_INTERFACE = "com.pclewis.mcpatcher.mod.ITileOverride";
     public static final String TILE_OVERRIDE_CLASS = "com.pclewis.mcpatcher.mod.TileOverride";
+    public static final String TILE_OVERRIDE_IMPL_CLASS = "com.pclewis.mcpatcher.mod.TileOverrideImpl";
     public static final String GLASS_PANE_RENDERER_CLASS = "com.pclewis.mcpatcher.mod.GlassPaneRenderer";
     public static final String RENDER_PASS_CLASS = "com.pclewis.mcpatcher.mod.RenderPass";
     public static final String RENDER_PASS_API_CLASS = "com.pclewis.mcpatcher.mod.RenderPassAPI";
@@ -84,9 +92,9 @@ public class MCPatcherUtils {
 
         if (isGame) {
             if (setGameDir(new File(".")) || setGameDir(getDefaultGameDir())) {
-                directoryStr = " Directory " + minecraftDir.getPath();
+                directoryStr = String.format("Game directory:    %s", minecraftDir.getPath());
             } else {
-                directoryStr = " Current directory " + new File(".").getAbsolutePath();
+                directoryStr = String.format("Current directory: %s", new File(".").getAbsolutePath());
             }
         }
     }
@@ -115,21 +123,7 @@ public class MCPatcherUtils {
         } else {
             minecraftDir = null;
         }
-        return loadProperties();
-    }
-
-    private static boolean loadProperties() {
-        config = null;
-        if (minecraftDir != null && minecraftDir.exists()) {
-            try {
-                config = new Config(minecraftDir);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            debug = getBoolean(Config.TAG_DEBUG, false);
-            return true;
-        }
-        return false;
+        return Config.load(minecraftDir);
     }
 
     /**
@@ -147,19 +141,6 @@ public class MCPatcherUtils {
     }
 
     /**
-     * Write a debug message to minecraft standard output.
-     *
-     * @param format printf-style format string
-     * @param params printf-style parameters
-     * @see #info(String, Object...)
-     * @see #debug(String, Object...)
-     * @deprecated
-     */
-    public static void log(String format, Object... params) {
-        debug(format, params);
-    }
-
-    /**
      * Returns true if running inside game, false if running inside MCPatcher.  Useful for
      * code shared between mods and runtime classes.
      *
@@ -167,196 +148,6 @@ public class MCPatcherUtils {
      */
     public static boolean isGame() {
         return isGame;
-    }
-
-    /**
-     * Write a warning message to minecraft standard output.
-     *
-     * @param format printf-style format string
-     * @param params printf-style parameters
-     */
-    public static void warn(String format, Object... params) {
-        System.out.printf("WARNING: " + format + "\n", params);
-    }
-
-    /**
-     * Write an error message to minecraft standard output.
-     *
-     * @param format printf-style format string
-     * @param params printf-style parameters
-     */
-    public static void error(String format, Object... params) {
-        System.out.printf("ERROR: " + format + "\n", params);
-    }
-
-    /**
-     * Write an informational message to minecraft standard output.
-     *
-     * @param format printf-style format string
-     * @param params printf-style parameters
-     */
-    public static void info(String format, Object... params) {
-        System.out.printf(format + "\n", params);
-    }
-
-    /**
-     * Write a debug message to minecraft standard output.
-     *
-     * @param format printf-style format string
-     * @param params printf-style parameters
-     */
-    public static void debug(String format, Object... params) {
-        if (debug) {
-            System.out.printf(format + "\n", params);
-        }
-    }
-
-    /**
-     * Gets a value from mcpatcher.xml.
-     *
-     * @param mod          name of mod
-     * @param tag          property name
-     * @param defaultValue default value if not found in profile
-     * @return String value
-     */
-    public static String getString(String mod, String tag, Object defaultValue) {
-        if (config == null) {
-            return defaultValue == null ? null : defaultValue.toString();
-        }
-        String value = config.getModConfigValue(mod, tag);
-        if (value == null && defaultValue != null) {
-            value = defaultValue.toString();
-            config.setModConfigValue(mod, tag, value);
-        }
-        return value;
-    }
-
-    /**
-     * Gets a value from mcpatcher.xml.
-     *
-     * @param tag          property name
-     * @param defaultValue default value if not found in profile
-     * @return String value
-     */
-    public static String getString(String tag, Object defaultValue) {
-        if (config == null) {
-            return defaultValue == null ? null : defaultValue.toString();
-        }
-        String value = config.getConfigValue(tag);
-        if (value == null && defaultValue != null) {
-            value = defaultValue.toString();
-            config.setConfigValue(tag, value);
-        }
-        return value;
-    }
-
-    /**
-     * Gets a value from mcpatcher.xml.
-     *
-     * @param mod          name of mod
-     * @param tag          property name
-     * @param defaultValue default value if not found in profile
-     * @return int value or 0
-     */
-    public static int getInt(String mod, String tag, int defaultValue) {
-        int value;
-        try {
-            value = Integer.parseInt(getString(mod, tag, defaultValue));
-        } catch (NumberFormatException e) {
-            value = defaultValue;
-        }
-        return value;
-    }
-
-    /**
-     * Gets a value from mcpatcher.xml.
-     *
-     * @param tag          property name
-     * @param defaultValue default value if not found in profile
-     * @return int value or 0
-     */
-    public static int getInt(String tag, int defaultValue) {
-        int value;
-        try {
-            value = Integer.parseInt(getString(tag, defaultValue));
-        } catch (NumberFormatException e) {
-            value = defaultValue;
-        }
-        return value;
-    }
-
-    /**
-     * Gets a value from mcpatcher.xml.
-     *
-     * @param mod          name of mod
-     * @param tag          property name
-     * @param defaultValue default value if not found in profile
-     * @return boolean value
-     */
-    public static boolean getBoolean(String mod, String tag, boolean defaultValue) {
-        String value = getString(mod, tag, defaultValue).toLowerCase();
-        if (value.equals("false")) {
-            return false;
-        } else if (value.equals("true")) {
-            return true;
-        } else {
-            return defaultValue;
-        }
-    }
-
-    /**
-     * Gets a value from mcpatcher.xml.
-     *
-     * @param tag          property name
-     * @param defaultValue default value if not found in profile
-     * @return boolean value
-     */
-    public static boolean getBoolean(String tag, boolean defaultValue) {
-        String value = getString(tag, defaultValue).toLowerCase();
-        if (value.equals("false")) {
-            return false;
-        } else if (value.equals("true")) {
-            return true;
-        } else {
-            return defaultValue;
-        }
-    }
-
-    /**
-     * Sets a value in mcpatcher.xml.
-     *
-     * @param mod   name of mod
-     * @param tag   property name
-     * @param value property value (must support toString())
-     */
-    public static void set(String mod, String tag, Object value) {
-        if (config != null) {
-            config.setModConfigValue(mod, tag, value.toString());
-        }
-    }
-
-    /**
-     * Set a global config value in mcpatcher.xml.
-     *
-     * @param tag   property name
-     * @param value property value (must support toString())
-     */
-    static void set(String tag, Object value) {
-        if (config != null) {
-            config.setConfigValue(tag, value.toString());
-        }
-    }
-
-    /**
-     * Remove a value from mcpatcher.xml.
-     *
-     * @param mod name of mod
-     * @param tag property name
-     */
-    public static void remove(String mod, String tag) {
-        if (config != null) {
-            config.remove(config.getModConfig(mod, tag));
-        }
     }
 
     /**
@@ -436,25 +227,6 @@ public class MCPatcherUtils {
     }
 
     /**
-     * Remove a global config value from mcpatcher.xml.
-     *
-     * @param tag property name
-     */
-    static void remove(String tag) {
-        if (config != null) {
-            config.remove(config.getConfig(tag));
-        }
-    }
-
-    static void setLogLevel(String category, Level level) {
-        config.setLogLevel(category, level);
-    }
-
-    static Level getLogLevel(String category) {
-        return config.getLogLevel(category);
-    }
-
-    /**
      * Convenience method to close a stream ignoring exceptions.
      *
      * @param closeable closeable object
@@ -491,7 +263,21 @@ public class MCPatcherUtils {
     public static void setVersions(String minecraftVersion, String patcherVersion) {
         MCPatcherUtils.minecraftVersion = minecraftVersion;
         MCPatcherUtils.patcherVersion = patcherVersion;
-        info("MCPatcherUtils v%s initialized.%s", patcherVersion, directoryStr);
+        System.out.println();
+        System.out.printf("MCPatcherUtils initialized:\n");
+        System.out.printf("Minecraft version: %s\n", minecraftVersion);
+        System.out.printf("MCPatcher version: %s\n", patcherVersion);
+        System.out.println(directoryStr);
+        System.out.printf("Max heap memory:   %.1fMB\n", Runtime.getRuntime().maxMemory() / 1048576.0f);
+        try {
+            Class<?> vm = Class.forName("sun.misc.VM");
+            Method method = vm.getDeclaredMethod("maxDirectMemory");
+            long memory = (Long) method.invoke(null);
+            System.out.printf("Max direct memory: %.1fMB\n", memory / 1048576.0f);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        System.out.println();
     }
 
     /**

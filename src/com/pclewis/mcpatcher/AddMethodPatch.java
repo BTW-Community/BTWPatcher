@@ -205,8 +205,6 @@ abstract public class AddMethodPatch extends ClassPatch {
      * and exceptionTable if the defaults are insufficient.
      *
      * @return bytecode
-     * @throws BadBytecode
-     * @throws IOException
      */
-    abstract public byte[] generateMethod() throws BadBytecode, IOException;
+    abstract public byte[] generateMethod();
 }

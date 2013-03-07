@@ -2,13 +2,15 @@ package com.pclewis.mcpatcher;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Class representing a Minecraft version number, e.g., 1.8.1 or 1.9pre1.
  */
-final public class MinecraftVersion {
+final public class MinecraftVersion implements Comparable<MinecraftVersion> {
     public static final int ALPHA = 1;
     public static final int BETA = 2;
     public static final int RC = 3;
@@ -32,8 +34,9 @@ final public class MinecraftVersion {
     private int preRelease;
     private boolean weeklyBuild;
 
-    static final HashMap<String, String> knownMD5s = new HashMap<String, String>();
-    private static final ArrayList<MinecraftVersion> versionOrdering = new ArrayList<MinecraftVersion>();
+    static final Map<String, String> knownMD5s = new HashMap<String, String>();
+    private static final Map<String, String> alternateMD5s = new HashMap<String, String>();
+    private static final List<MinecraftVersion> versionOrdering = new ArrayList<MinecraftVersion>();
 
     static {
         try {
@@ -156,7 +159,7 @@ final public class MinecraftVersion {
             addKnownVersion("1.4.4", "7aa46c8058cba2f38e9d2ddddcc77c72");
             // First pre-release of 1.4.5 still had the particle bug MC-2497.
             // Mojang reused the version number when they issued a fix.
-            addKnownVersion("1.4.5pre1", "469c9743ba88b7aa498769db75e31b1c");
+            addKnownVersion("1.4.5", "469c9743ba88b7aa498769db75e31b1c");
             addKnownVersion("1.4.5", "b15e2b2b6b4629f0d99a95b6b44412a0");
 
             addKnownVersion("12w49a", "258b8a5922d046e0f93b338dfa79df36");
@@ -171,6 +174,22 @@ final public class MinecraftVersion {
 
             // New texture pack format
             addKnownVersion("13w02a", "1b794176aabd9c0e2be09ee9c8a45d77");
+            addKnownVersion("13w02b", "13891f6610b6739ac79f40147cca31d5");
+            addKnownVersion("13w03a", "1c8698800c60ee72589165914f860554");
+            addKnownVersion("13w03a", "599a59bfd0a1645453b51b343b4c78c8");
+            addKnownVersion("13w04a", "7bfbc543df06f7eb5fe6a2971a085c39");
+            addKnownVersion("13w05a", "e4e99faf111be767a07fab45ca386613");
+            addKnownVersion("13w05a", "e8f17d5e7c54eb38feb3034fb0385ee5");
+            addKnownVersion("13w05b", "496002660846f2eb455cba407cd26818");
+            addKnownVersion("13w06a", "1bdd3df77601b37f127d057ac6d686cd");
+            addKnownVersion("13w06a", "62bbd3e4ed36e7572f45c4e802759a09");
+            addKnownVersion("13w07a", "6c048588e57aee5b02b6bde7978d8f95");
+            addKnownVersion("13w09a", "2821913edf037588e7df890dfa6c0d2a");
+            addKnownVersion("13w09b", "fb5ba640847d430c3b45f6c3a9649ab8");
+            addKnownVersion("13w09c", "d2534381656da5069b96cc89e28158ef");
+            addKnownVersion("13w10a", "825d813c9c3fb9341b04ff0759f028d8");
+            addKnownVersion("13w10b", "12bb0e9aa07c12073458fc8b93e23f0f");
+            addKnownVersion("1.5", "d39baadeeb124a29b2542d778713493f");
 
             for (int i = 0; i < versionOrdering.size(); i++) {
                 MinecraftVersion a = versionOrdering.get(i);
@@ -206,8 +225,10 @@ final public class MinecraftVersion {
             if (md5 != null && !md5.matches("\\p{XDigit}{32}")) {
                 throw new IllegalArgumentException("bad md5 sum for known version " + version);
             }
+            versionOrdering.remove(version);
             versionOrdering.add(version);
             knownMD5s.put(versionString, md5);
+            alternateMD5s.put(md5, versionString);
         } catch (Throwable e) {
             Logger.log(e);
         }
@@ -452,6 +473,11 @@ final public class MinecraftVersion {
         return compareTo(parseVersion(versionString));
     }
 
+    @Override
+    public boolean equals(Object that) {
+        return that instanceof MinecraftVersion && compareTo((MinecraftVersion) that) == 0;
+    }
+
     boolean isNewerThanAnyKnownVersion() {
         if (versionOrdering.isEmpty()) {
             return true;
@@ -461,6 +487,6 @@ final public class MinecraftVersion {
     }
 
     static boolean isKnownMD5(String md5) {
-        return md5 != null && knownMD5s.containsValue(md5);
+        return md5 != null && (knownMD5s.containsValue(md5) || alternateMD5s.containsKey(md5));
     }
 }

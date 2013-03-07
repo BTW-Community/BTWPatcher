@@ -38,6 +38,9 @@ class MainMenu {
     JMenuItem unpatch;
     JMenuItem test;
 
+    JMenu convert;
+    JMenuItem convertItem;
+
     MainMenu(MainForm mainForm1) {
         mainForm = mainForm1;
 
@@ -140,7 +143,7 @@ class MainMenu {
                     if (i > 0) {
                         profileName += " " + i;
                     }
-                    if (MCPatcherUtils.config.findProfileByName(profileName, false) == null) {
+                    if (Config.instance.findProfileByName(profileName, false) == null) {
                         break;
                     }
                 }
@@ -155,11 +158,11 @@ class MainMenu {
                 );
                 if (result != null && result instanceof String && !result.equals("")) {
                     profileName = (String) result;
-                    String currentProfile = MCPatcherUtils.config.getConfigValue(Config.TAG_SELECTED_PROFILE);
+                    String currentProfile = Config.instance.getConfigValue(Config.TAG_SELECTED_PROFILE);
                     if (profileName.equals(currentProfile)) {
                         return;
                     }
-                    if (MCPatcherUtils.config.findProfileByName(profileName, false) != null) {
+                    if (Config.instance.findProfileByName(profileName, false) != null) {
                         int confirm = JOptionPane.showConfirmDialog(
                             mainForm.frame,
                             String.format("Profile \"%s\" exists.  Overwrite?", profileName),
@@ -169,10 +172,10 @@ class MainMenu {
                         if (confirm != JOptionPane.YES_OPTION) {
                             return;
                         }
-                        MCPatcherUtils.config.deleteProfile(profileName);
+                        Config.instance.deleteProfile(profileName);
                     }
                     MCPatcher.modList.updateProperties();
-                    MCPatcherUtils.config.selectProfile(profileName);
+                    Config.instance.selectProfile(profileName);
                     mainForm.updateControls();
                 }
             }
@@ -208,6 +211,20 @@ class MainMenu {
         copyActionListener(test, mainForm.testButton);
         game.add(test);
 
+        convert = new JMenu("Convert Texture Pack");
+        convert.setMnemonic('C');
+        convert.setForeground(Color.RED);
+        menuBar.add(convert);
+
+        convertItem = new JMenuItem("Convert...");
+        convertItem.setMnemonic('v');
+        convertItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                mainForm.showTexturePackConverter();
+            }
+        });
+        convert.add(convertItem);
+
         updateControls(true);
     }
 
@@ -228,6 +245,7 @@ class MainMenu {
         mods.setEnabled(!busy);
         profile.setEnabled(!busy);
         game.setEnabled(!busy);
+        convert.setEnabled(!busy);
 
         origFile.setEnabled(mainForm.origBrowseButton.isEnabled());
         outputFile.setEnabled(mainForm.outputBrowseButton.isEnabled());
@@ -241,8 +259,8 @@ class MainMenu {
 
         load.removeAll();
         delete.removeAll();
-        if (!busy && MCPatcherUtils.config != null) {
-            ArrayList<String> profiles = MCPatcherUtils.config.getProfiles();
+        if (!busy && Config.instance != null) {
+            ArrayList<String> profiles = Config.instance.getProfiles();
             Collections.sort(profiles, new Comparator<String>() {
                 public int compare(String o1, String o2) {
                     MinecraftVersion v1 = null;
@@ -265,7 +283,7 @@ class MainMenu {
                 }
             });
             ButtonGroup buttonGroup = new ButtonGroup();
-            final String currentProfile = MCPatcherUtils.config.getConfigValue(Config.TAG_SELECTED_PROFILE);
+            final String currentProfile = Config.instance.getConfigValue(Config.TAG_SELECTED_PROFILE);
             for (final String profile : profiles) {
                 JRadioButtonMenuItem item = new JRadioButtonMenuItem(profile, profile.equals(currentProfile));
                 item.addActionListener(new ActionListener() {
@@ -274,7 +292,7 @@ class MainMenu {
                             return;
                         }
                         MCPatcher.modList.updateProperties();
-                        MCPatcherUtils.config.selectProfile(profile);
+                        Config.instance.selectProfile(profile);
                         boolean modsOk = false;
                         if (Config.isDefaultProfile(profile)) {
                             String version = profile.replaceFirst("^Minecraft\\s+", "");
@@ -311,7 +329,7 @@ class MainMenu {
                             JOptionPane.YES_NO_OPTION
                         );
                         if (result == JOptionPane.YES_OPTION) {
-                            MCPatcherUtils.config.deleteProfile(profile);
+                            Config.instance.deleteProfile(profile);
                             mainForm.updateControls();
                         }
                     }

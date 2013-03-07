@@ -45,14 +45,13 @@ class ModList {
     private static BuiltInMod[] builtInMods = new BuiltInMod[]{
         new BuiltInMod(BaseMod.NAME, BaseMod.class, true, false),
         new BuiltInMod(BaseTexturePackMod.NAME, BaseTexturePackMod.class, true, false),
-        new BuiltInMod(MCPatcherUtils.HD_TEXTURES, HDTexture.class, false, false),
+        new BuiltInMod(MCPatcherUtils.EXTENDED_HD, ExtendedHD.class, false, false),
         new BuiltInMod(MCPatcherUtils.HD_FONT, HDFont.class, false, false),
-        new BuiltInMod(MCPatcherUtils.BETTER_GRASS, BetterGrass.class, false, false),
         new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, RandomMobs.class, false, false),
         new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, CustomColors.class, false, false),
         new BuiltInMod(MCPatcherUtils.CONNECTED_TEXTURES, ConnectedTextures.class, false, false),
-        new BuiltInMod(MCPatcherUtils.BETTER_SKIES, BetterSkies.class, false, false),
         new BuiltInMod(MCPatcherUtils.BETTER_GLASS, BetterGlass.class, false, false),
+        new BuiltInMod(MCPatcherUtils.BETTER_SKIES, BetterSkies.class, false, false),
         new BuiltInMod(MCPatcherUtils.GLSL_SHADERS, GLSLShader.class, false, true),
     };
 
@@ -460,7 +459,7 @@ class ModList {
     }
 
     void loadSavedMods() {
-        Config config = MCPatcherUtils.config;
+        Config config = Config.instance;
         Element mods = config.getMods();
         if (mods == null) {
             return;
@@ -541,7 +540,7 @@ class ModList {
     }
 
     private void updateModElement(Mod mod, Element element) {
-        Config config = MCPatcherUtils.config;
+        Config config = Config.instance;
         if (mod instanceof ExternalMod) {
             ExternalMod extmod = (ExternalMod) mod;
             config.setText(element, Config.TAG_TYPE, Config.VAL_EXTERNAL_ZIP);
@@ -570,7 +569,7 @@ class ModList {
     }
 
     private Element defaultModElement(Mod mod) {
-        Config config = MCPatcherUtils.config;
+        Config config = Config.instance;
         Element mods = config.getMods();
         if (mods == null) {
             return null;
@@ -582,7 +581,7 @@ class ModList {
     }
 
     void updateProperties() {
-        Config config = MCPatcherUtils.config;
+        Config config = Config.instance;
         Element mods = config.getMods();
         if (mods == null) {
             return;
@@ -618,7 +617,7 @@ class ModList {
     private static Mod newModInstance(Class<? extends Mod> modClass) {
         Mod mod = null;
         try {
-            mod = modClass.getDeclaredConstructor(MinecraftVersion.class).newInstance(MCPatcher.minecraft.getVersion());
+            mod = modClass.getDeclaredConstructor().newInstance();
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -626,11 +625,7 @@ class ModList {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         } catch (NoSuchMethodException e) {
-            try {
-                mod = modClass.getDeclaredConstructor().newInstance();
-            } catch (Exception e1) {
-                e1.printStackTrace();
-            }
+            e.printStackTrace();
         }
         return mod;
     }

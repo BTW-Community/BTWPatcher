@@ -1,7 +1,5 @@
 package net.minecraft.src;
 
-import net.minecraft.client.Minecraft;
-
 import java.awt.image.BufferedImage;
 
 public class RenderEngine {
@@ -9,11 +7,10 @@ public class RenderEngine {
     public boolean clampTexture;
     public boolean blurTexture;
 
-    public int getTexture(String s) {
-        return -1;
+    public void bindTexture(String s) {
     }
 
-    public void bindTexture(int texture) {
+    public void clearBoundTexture() {
     }
 
     public void deleteTexture(int texture) {
@@ -30,9 +27,12 @@ public class RenderEngine {
         return -1;
     }
 
-    public void setupTexture(BufferedImage image, int texture) {
+    public void setupTexture1(BufferedImage image, int texture) {
     }
 
-    public void reloadTextures(Minecraft minecraft) {
+    public void setupTexture2(BufferedImage image, int texture, boolean blurTexture, boolean clampTexture) { // 13w09a+
+    }
+
+    public void refreshTextures() {
     }
 }

@@ -2,8 +2,7 @@ package com.pclewis.mcpatcher;
 
 import javassist.bytecode.*;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
 
 import static javassist.bytecode.Opcode.*;
 
@@ -15,10 +14,13 @@ import static javassist.bytecode.Opcode.*;
  * @see BinaryRegex
  */
 abstract public class BytecodePatch extends ClassPatch {
-    private MethodRef targetMethod;
+    private final Set<MethodRef> targetMethods = new HashSet<MethodRef>();
+    private final Set<MethodRef> skipMethods = new HashSet<MethodRef>();
     boolean constructorOnly;
     boolean staticInitializerOnly;
-    private final ArrayList<BytecodeSignature> preMatchSignatures = new ArrayList<BytecodeSignature>();
+    private final List<BytecodeSignature> preMatchSignatures = new ArrayList<BytecodeSignature>();
+    private boolean insertBefore;
+    private boolean insertAfter;
     int labelOffset;
 
     /**
@@ -29,14 +31,26 @@ abstract public class BytecodePatch extends ClassPatch {
     protected BytecodeMatcher matcher;
 
     /**
-     * Restricts the patch to a single method.
+     * Restricts the patch to ONLY a specific set of methods.
      *
-     * @param targetMethod deobfuscated method to be compared against
+     * @param targetMethods one or more deobfuscated methods
      * @return this
-     * @see #getTargetMethod()
+     * @see #getTargetMethods()
      */
-    public BytecodePatch targetMethod(MethodRef targetMethod) {
-        this.targetMethod = targetMethod;
+    public BytecodePatch targetMethod(MethodRef... targetMethods) {
+        Collections.addAll(this.targetMethods, targetMethods);
+        return this;
+    }
+
+    /**
+     * Adds to a list of methods NOT to be considered for patching.
+     *
+     * @param skipMethods one or more deobfuscated methods to be compared against
+     * @return this
+     * @see #getTargetMethods()
+     */
+    public BytecodePatch skipMethod(MethodRef... skipMethods) {
+        Collections.addAll(this.skipMethods, skipMethods);
         return this;
     }
 
@@ -65,6 +79,36 @@ abstract public class BytecodePatch extends ClassPatch {
     }
 
     /**
+     * Sets whether to insert the replacement bytes before the matching code rather than
+     * replacing it.
+     *
+     * @param insertBefore true to insert before match
+     * @return this
+     */
+    public BytecodePatch setInsertBefore(boolean insertBefore) {
+        this.insertBefore = insertBefore;
+        if (insertBefore) {
+            insertAfter = false;
+        }
+        return this;
+    }
+
+    /**
+     * Sets whether to insert the replacement bytes after the matching code rather than
+     * replacing it.
+     *
+     * @param insertAfter true to insert after match
+     * @return this
+     */
+    public BytecodePatch setInsertAfter(boolean insertAfter) {
+        this.insertAfter = insertAfter;
+        if (insertAfter) {
+            insertBefore = false;
+        }
+        return this;
+    }
+
+    /**
      * Add a bytecode signature that must match the current method before the patch is applied.  It is
      * tested against each method after targetMethod but before getMatchExpression.  This can be used
      * to capture parts of the method (e.g., register numbers) in different locations from the main
@@ -80,10 +124,10 @@ abstract public class BytecodePatch extends ClassPatch {
     /**
      * Can be overridden in lieu of calling targetMethod() to set the target method at patch time.
      *
-     * @return target method ref
+     * @return target method refs
      */
-    public MethodRef getTargetMethod() {
-        return targetMethod;
+    public Collection<MethodRef> getTargetMethods() {
+        return targetMethods;
     }
 
     /**
@@ -109,18 +153,31 @@ abstract public class BytecodePatch extends ClassPatch {
     }
 
     private boolean filterMethod1(MethodInfo methodInfo) {
-        MethodRef targetMethod = getTargetMethod();
-        if (targetMethod != null) {
-            JavaRef ref = map(targetMethod);
-            if (!methodInfo.getDescriptor().equals(ref.getType()) || !methodInfo.getName().equals(ref.getName())) {
-                return false;
-            }
-        }
         if (constructorOnly && !methodInfo.isConstructor()) {
             return false;
         }
         if (staticInitializerOnly && !methodInfo.isStaticInitializer()) {
             return false;
+        }
+        Collection<MethodRef> targetMethods = getTargetMethods();
+        if (targetMethods != null && !targetMethods.isEmpty()) {
+            boolean found = false;
+            for (MethodRef method : targetMethods) {
+                JavaRef mappedMethod = map(method);
+                if (methodInfo.getDescriptor().equals(mappedMethod.getType()) && methodInfo.getName().equals(mappedMethod.getName())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return false;
+            }
+        }
+        for (MethodRef method : skipMethods) {
+            JavaRef mappedMethod = map(method);
+            if (methodInfo.getDescriptor().equals(mappedMethod.getType()) && methodInfo.getName().equals(mappedMethod.getName())) {
+                return false;
+            }
         }
         for (BytecodeSignature signature : preMatchSignatures) {
             if (!signature.match(null, methodInfo, null)) {
@@ -147,9 +204,8 @@ abstract public class BytecodePatch extends ClassPatch {
      * array.
      *
      * @return replacement bytes
-     * @throws IOException
      */
-    abstract public byte[] getReplacementBytes() throws IOException;
+    abstract public byte[] getReplacementBytes();
 
     @Override
     void setClassMod(ClassMod classMod) {
@@ -176,22 +232,29 @@ abstract public class BytecodePatch extends ClassPatch {
             recordPatch(String.format("%s%s@%d", mi.getName(), mi.getDescriptor(), matcher.getStart()));
 
             byte repl[];
-            try {
-                classMod.addToConstPool = true;
-                classMod.resetLabels();
-                labelOffset = 0;
-                repl = getReplacementBytes();
-            } catch (IOException e) {
-                Logger.log(e);
-                repl = null;
-            } finally {
-                classMod.addToConstPool = false;
-            }
+            classMod.addToConstPool = false;
+            classMod.addToConstPool = true;
+            classMod.resetLabels();
+            labelOffset = 0;
+            repl = getReplacementBytes();
             if (repl == null) {
                 while (offset < matcher.getEnd() && ci.hasNext()) {
                     offset = ci.next();
                 }
                 continue;
+            }
+            if ((insertBefore || insertAfter) && matcher.getMatchLength() > 0) {
+                byte[] match = getMatch();
+                byte[] newRepl = new byte[repl.length + match.length];
+                if (insertBefore) {
+                    System.arraycopy(repl, 0, newRepl, 0, repl.length);
+                    System.arraycopy(match, 0, newRepl, repl.length, match.length);
+                } else if (insertAfter) {
+                    labelOffset = matcher.getMatchLength();
+                    System.arraycopy(match, 0, newRepl, 0, match.length);
+                    System.arraycopy(repl, 0, newRepl, match.length, repl.length);
+                }
+                repl = newRepl;
             }
 
             if (Logger.isLogLevel(Logger.LOG_BYTECODE)) {
@@ -418,46 +481,5 @@ abstract public class BytecodePatch extends ClassPatch {
      */
     final protected byte[] getMatch() {
         return matcher.getMatch();
-    }
-
-    /**
-     * BytecodePatch that inserts code after a match.
-     */
-    abstract public static class InsertAfter extends BytecodePatch {
-        @Override
-        final public byte[] getReplacementBytes() throws IOException {
-            byte[] insertBytes = getInsertBytes();
-            if (insertBytes == null) {
-                return null;
-            } else {
-                labelOffset = matcher.getMatchLength();
-                return buildCode(
-                    matcher.getMatch(),
-                    insertBytes
-                );
-            }
-        }
-
-        abstract public byte[] getInsertBytes() throws IOException;
-    }
-
-    /**
-     * BytecodePatch that inserts code before a match.
-     */
-    abstract public static class InsertBefore extends BytecodePatch {
-        @Override
-        final public byte[] getReplacementBytes() throws IOException {
-            byte[] insertBytes = getInsertBytes();
-            if (insertBytes == null) {
-                return null;
-            } else {
-                return buildCode(
-                    insertBytes,
-                    matcher.getMatch()
-                );
-            }
-        }
-
-        abstract public byte[] getInsertBytes() throws IOException;
     }
 }

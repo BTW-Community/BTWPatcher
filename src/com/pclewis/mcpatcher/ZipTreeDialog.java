@@ -11,18 +11,20 @@ import java.util.Collections;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public class ZipTreeDialog extends JDialog {
+class ZipTreeDialog extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
     private JTree tree;
+    private JScrollPane scrollPane;
 
     private String prefix;
 
-    public ZipTreeDialog(final ZipFile zipFile) {
+    ZipTreeDialog(final ZipFile zipFile) {
         prefix = "";
 
         setContentPane(contentPane);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         MainForm.setIconImage(this);
         setTitle("Select folder to add to minecraft.jar");
         setMinimumSize(new Dimension(384, 384));
@@ -122,7 +124,7 @@ public class ZipTreeDialog extends JDialog {
         tree.setSelectionRow(0);
     }
 
-    static class ZipTreeNode {
+    static class ZipTreeNode implements Comparable<ZipTreeNode> {
         String label;
         String path;
 
@@ -131,6 +133,7 @@ public class ZipTreeDialog extends JDialog {
             this.path = path;
         }
 
+        @Override
         public String toString() {
             return label;
         }

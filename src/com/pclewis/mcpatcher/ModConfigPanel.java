@@ -28,7 +28,7 @@ abstract public class ModConfigPanel {
      * Called by MCPatcher whenever the user switches <i>to</i> the Options panel.  Use this
      * to load the current settings into the UI.
      *
-     * @see MCPatcherUtils#getString(String, String, Object)
+     * @see Config#getString(String, String, Object)
      */
     abstract public void load();
 
@@ -36,7 +36,7 @@ abstract public class ModConfigPanel {
      * Called by MCPatcher whenever the user switches <i>away from</i> the Options panel.  Use this
      * to save changes made in the UI.
      *
-     * @see MCPatcherUtils#set(String, String, Object)
+     * @see Config#set(String, String, Object)
      */
     abstract public void save();
 }

@@ -1,5 +1,7 @@
 package net.minecraft.src;
 
+import java.util.Map;
+
 public class Tessellator {
     public static Tessellator instance;
 
@@ -13,7 +15,9 @@ public class Tessellator {
     public int drawMode;
     public boolean isDrawing;
 
-    public int texture; // added by ctm
+    // added by ctm
+    public TextureMap textureMap;
+    public Map<TextureMap, Tessellator> children;
 
     public Tessellator(int bufferSize) {
     }

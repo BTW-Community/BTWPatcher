@@ -2,7 +2,7 @@ package com.pclewis.mcpatcher.mod;
 
 import com.pclewis.mcpatcher.MCLogger;
 import com.pclewis.mcpatcher.MCPatcherUtils;
-import com.pclewis.mcpatcher.TexturePackAPI;
+import com.pclewis.mcpatcher.TexturePackChangeHandler;
 import net.minecraft.src.EntityLiving;
 import net.minecraft.src.NBTTagCompound;
 
@@ -19,10 +19,14 @@ public class MobRandomizer {
     private static final LinkedHashMap<String, String> cache = new LinkedHashMap<String, String>();
 
     static {
-        TexturePackAPI.ChangeHandler.register(new TexturePackAPI.ChangeHandler(MCPatcherUtils.RANDOM_MOBS, 2) {
+        TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.RANDOM_MOBS, 2) {
             @Override
-            protected void onChange() {
+            public void beforeChange() {
                 cache.clear();
+            }
+
+            @Override
+            public void afterChange() {
                 MobRuleList.clear();
                 MobOverlay.reset();
             }
@@ -114,10 +118,7 @@ public class MobRandomizer {
         private void setBiome() {
             if (origBiome == null && getBiomeNameAt != null) {
                 try {
-                    String biome = (String) getBiomeNameAt.invoke(null, origX, origY, origZ);
-                    if (biome != null) {
-                        origBiome = biome.toLowerCase().replace(" ", "");
-                    }
+                    origBiome = (String) getBiomeNameAt.invoke(null, origX, origY, origZ);
                 } catch (Throwable e) {
                     getBiomeNameAt = null;
                     e.printStackTrace();

@@ -453,6 +453,91 @@ public class BytecodeMatcher extends BinaryMatcher {
         return newcode;
     }
 
+    public static int extractRegisterNum(byte[] code) {
+        switch (code[0] & 0xff) {
+            case ALOAD_0:
+            case ASTORE_0:
+            case ILOAD_0:
+            case ISTORE_0:
+            case LLOAD_0:
+            case LSTORE_0:
+            case FLOAD_0:
+            case FSTORE_0:
+            case DLOAD_0:
+            case DSTORE_0:
+                return 0;
+
+            case ALOAD_1:
+            case ASTORE_1:
+            case ILOAD_1:
+            case ISTORE_1:
+            case LLOAD_1:
+            case LSTORE_1:
+            case FLOAD_1:
+            case FSTORE_1:
+            case DLOAD_1:
+            case DSTORE_1:
+                return 1;
+
+            case ALOAD_2:
+            case ASTORE_2:
+            case ILOAD_2:
+            case ISTORE_2:
+            case LLOAD_2:
+            case LSTORE_2:
+            case FLOAD_2:
+            case FSTORE_2:
+            case DLOAD_2:
+            case DSTORE_2:
+                return 2;
+
+            case ALOAD_3:
+            case ASTORE_3:
+            case ILOAD_3:
+            case ISTORE_3:
+            case LLOAD_3:
+            case LSTORE_3:
+            case FLOAD_3:
+            case FSTORE_3:
+            case DLOAD_3:
+            case DSTORE_3:
+                return 3;
+
+            case ALOAD:
+            case ASTORE:
+            case ILOAD:
+            case ISTORE:
+            case LLOAD:
+            case LSTORE:
+            case FLOAD:
+            case FSTORE:
+            case DLOAD:
+            case DSTORE:
+                return code[1] & 0xff;
+
+            case WIDE:
+                switch (code[1] & 0xff) {
+                    case ALOAD:
+                    case ASTORE:
+                    case ILOAD:
+                    case ISTORE:
+                    case LLOAD:
+                    case LSTORE:
+                    case FLOAD:
+                    case FSTORE:
+                    case DLOAD:
+                    case DSTORE:
+                        return ((code[2] & 0xff) << 8) | (code[3] & 0xff);
+
+                    default:
+                        throw new IllegalArgumentException("invalid opcode WIDE " + Mnemonic.OPCODE[code[1]]);
+                }
+
+            default:
+                throw new IllegalArgumentException("invalid opcode " + Mnemonic.OPCODE[code[0]]);
+        }
+    }
+
     /**
      * Construct a new matcher for the given regular expression.
      *

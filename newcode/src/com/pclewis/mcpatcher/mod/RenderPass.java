@@ -1,15 +1,11 @@
 package com.pclewis.mcpatcher.mod;
 
-import com.pclewis.mcpatcher.MCLogger;
-import com.pclewis.mcpatcher.MCPatcherUtils;
-import com.pclewis.mcpatcher.TexturePackAPI;
+import com.pclewis.mcpatcher.*;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class RenderPass {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.BETTER_GLASS);
@@ -19,8 +15,7 @@ public class RenderPass {
     private static final int[] baseRenderPass = new int[Block.blocksList.length];
     private static final int[] extraRenderPass = new int[Block.blocksList.length];
 
-    private static int srcBlend;
-    private static int dstBlend;
+    private static BlendMethod blendMethod;
     private static boolean enableLightmap;
 
     private static int renderPass = -1;
@@ -75,37 +70,24 @@ public class RenderPass {
             }
         };
 
-        TexturePackAPI.ChangeHandler.register(new TexturePackAPI.ChangeHandler(MCPatcherUtils.BETTER_GLASS, 3) {
+        TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.BETTER_GLASS, 3) {
             @Override
-            protected void onChange() {
-                srcBlend = GL11.GL_SRC_ALPHA;
-                dstBlend = GL11.GL_ONE_MINUS_SRC_ALPHA;
+            public void beforeChange() {
+                blendMethod = BlendMethod.ALPHA;
                 enableLightmap = true;
+            }
 
+            @Override
+            public void afterChange() {
                 Properties properties = TexturePackAPI.getProperties(RENDERPASS_PROPERTIES);
                 if (properties != null) {
                     String method = properties.getProperty("blend.3", "alpha").trim().toLowerCase();
-                    Matcher matcher = Pattern.compile("(\\d+)\\s+(\\d+)").matcher(method);
-                    if (method.equals("alpha")) {
-                        // nothing
-                    } else if (method.equals("overlay") || method.equals("color")) {
-                        srcBlend = GL11.GL_DST_COLOR;
-                        dstBlend = GL11.GL_SRC_COLOR;
-                        enableLightmap = false;
-                    } else if (matcher.matches()) {
-                        try {
-                            srcBlend = Integer.parseInt(matcher.group(1));
-                            dstBlend = Integer.parseInt(matcher.group(2));
-                        } catch (NumberFormatException e) {
-                        }
-                    } else {
-                        logger.severe("%s: unknown blend method '%s'", RENDERPASS_PROPERTIES, method);
+                    blendMethod = BlendMethod.parse(method);
+                    if (blendMethod == null) {
+                        logger.error("%s: unknown blend method '%s'", RENDERPASS_PROPERTIES, method);
+                        blendMethod = BlendMethod.ALPHA;
                     }
-
-                    String value = properties.getProperty("enableLightmap.3", "").trim().toLowerCase();
-                    if (!value.equals("")) {
-                        enableLightmap = Boolean.parseBoolean(value);
-                    }
+                    enableLightmap = MCPatcherUtils.getBooleanProperty(properties, "enableLightmap.3", !blendMethod.isColorBased());
                 }
             }
         });
@@ -177,12 +159,11 @@ public class RenderPass {
                 GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
                 GL11.glPolygonOffset(-2.0f, -2.0f);
                 GL11.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
-                GL11.glEnable(GL11.GL_BLEND);
                 GL11.glEnable(GL11.GL_CULL_FACE);
                 if (ambientOcclusion) {
                     GL11.glShadeModel(GL11.GL_SMOOTH);
                 }
-                GL11.glBlendFunc(srcBlend, dstBlend);
+                blendMethod.applyBlending();
 
                 renderer.sortAndRender(camera, pass, partialTick);
 

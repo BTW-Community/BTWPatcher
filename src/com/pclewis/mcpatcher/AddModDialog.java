@@ -44,6 +44,7 @@ class AddModDialog extends JDialog {
 
         MainForm.setIconImage(this);
         setContentPane(contentPane);
+        fileTableScrollPane.getVerticalScrollBar().setUnitIncrement(16);
         setTitle("Add external mod");
         setMinimumSize(new Dimension(512, 512));
         setResizable(true);
@@ -150,7 +151,7 @@ class AddModDialog extends JDialog {
         fd.setDialogTitle("Select mod zip file");
         File defaultModDir = null;
         try {
-            String modDirString = MCPatcherUtils.getString(Config.TAG_LAST_MOD_DIRECTORY, "");
+            String modDirString = Config.getString(Config.TAG_LAST_MOD_DIRECTORY, "");
             File lastModDir = new File(modDirString);
             String version = MCPatcher.minecraft.getVersion().getVersionString();
             defaultModDir = MCPatcherUtils.getMinecraftPath("mods", version);
@@ -181,9 +182,9 @@ class AddModDialog extends JDialog {
             inputField.setText(file.getPath());
             File lastModDir = file.getParentFile();
             if (lastModDir.equals(defaultModDir)) {
-                MCPatcherUtils.set(Config.TAG_LAST_MOD_DIRECTORY, "");
+                Config.set(Config.TAG_LAST_MOD_DIRECTORY, "");
             } else {
-                MCPatcherUtils.set(Config.TAG_LAST_MOD_DIRECTORY, lastModDir.getAbsolutePath());
+                Config.set(Config.TAG_LAST_MOD_DIRECTORY, lastModDir.getAbsolutePath());
             }
             fileMap.clear();
             MCPatcherUtils.close(zipFile);

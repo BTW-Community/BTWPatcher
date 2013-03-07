@@ -30,62 +30,23 @@ import java.util.*;
  * the ClassMod.
  */
 abstract public class ClassMod implements PatchComponent {
-    /**
-     * Gives access to the Mod object containing this ClassMod.
-     */
-    protected Mod mod;
-    /**
-     * List of classes that must be resolved via their ClassMods first.
-     *
-     * @see #addPrerequisiteClass(String)
-     */
-    protected ArrayList<String> prerequisiteClasses = new ArrayList<String>();
-    /**
-     * List of signatures that identifies the class file(s) to which the ClassMod should be applied.
-     *
-     * @see #addClassSignature(ClassSignature)
-     */
-    protected ArrayList<ClassSignature> classSignatures = new ArrayList<ClassSignature>();
-    /**
-     * List of patches to be applied to all matching class files.
-     *
-     * @see #addPatch(ClassPatch)
-     */
-    protected ArrayList<ClassPatch> patches = new ArrayList<ClassPatch>();
-    /**
-     * List of class members to deobfuscate in the target class - not used if global == true.
-     *
-     * @see #addMemberMapper(com.pclewis.mcpatcher.ClassMod.MemberMapper)
-     */
-    protected ArrayList<MemberMapper> memberMappers = new ArrayList<MemberMapper>();
-    /**
-     * By default, a ClassMod should only match a single class. Set this field to true to allow any number of matches.
-     *
-     * @see #setMultipleMatchesAllowed(boolean)
-     */
-    protected boolean global = false;
-    /**
-     * Descriptive name of parent class if any.
-     *
-     * @see #setParentClass(String)
-     */
-    protected String parentClass;
-    /**
-     * Descriptive names of interfaces implemented by the class.
-     *
-     * @see #setInterfaces(String[])
-     */
-    protected String[] interfaces;
-
-    Collection<String> targetClasses = new HashSet<String>();
-    ArrayList<String> errors = new ArrayList<String>();
+    Mod mod;
+    final List<String> prerequisiteClasses = new ArrayList<String>();
+    final List<ClassSignature> classSignatures = new ArrayList<ClassSignature>();
+    final List<ClassPatch> patches = new ArrayList<ClassPatch>();
+    final List<MemberMapper> memberMappers = new ArrayList<MemberMapper>();
+    boolean global = false;
+    String parentClass;
+    String[] interfaces;
+    final Collection<String> targetClasses = new HashSet<String>();
+    final List<String> errors = new ArrayList<String>();
     boolean addToConstPool = false;
     ClassFile classFile;
     MethodInfo methodInfo;
     int bestMatchCount;
     String bestMatch;
-    private ArrayList<Label> labels = new ArrayList<Label>();
-    private HashMap<String, Integer> labelPositions = new HashMap<String, Integer>();
+    final private List<Label> labels = new ArrayList<Label>();
+    private final Map<String, Integer> labelPositions = new HashMap<String, Integer>();
     boolean matchAddedFiles;
 
     boolean matchClassFile(String filename, ClassFile classFile) {
@@ -115,12 +76,6 @@ abstract public class ClassMod implements PatchComponent {
                 bestMatchCount = sigIndex;
             }
             sigIndex++;
-        }
-        for (ClassSignature cs : classSignatures) {
-            addToConstPool = false;
-            if (!cs.afterMatch()) {
-                return false;
-            }
         }
 
         targetClasses.add(classFile.getName());
@@ -169,7 +124,7 @@ abstract public class ClassMod implements PatchComponent {
 
     /**
      * Used to quickly rule out candidate class files based on filename alone.  The default implementation
-     * allows only default minecraft classes in the default package or in net.minecraft.client.
+     * allows only default minecraft classes in the default package or in net.minecraft.
      *
      * @param filename full path of .class file within the .jar
      * @return true if a class file should be considered for patching
@@ -177,30 +132,31 @@ abstract public class ClassMod implements PatchComponent {
     protected boolean filterFile(String filename) {
         String className = ClassMap.filenameToClassName(filename);
         if (global) {
-            return !className.startsWith("com.jcraft.") && !className.startsWith("paulscode.");
+            return !className.startsWith("com.jcraft.") &&
+                !className.startsWith("paulscode.") &&
+                !className.startsWith("com.fasterxml.") &&
+                !className.startsWith("javax.");
         } else {
-            return className.startsWith("net.minecraft.client.") || className.matches("^[a-z]{1,4}$");
+            return className.startsWith("net.minecraft.") || className.matches("^[a-z]{1,4}$");
         }
     }
 
-    /**
-     * Resolves all FieldMapper and MethodMapper objects.
-     *
-     * @param filename  full path of .class file within the .jar
-     * @param classFile current class file
-     * @return true if all required mappings were found
-     * @throws Exception
-     */
-    protected boolean mapClassMembers(String filename, ClassFile classFile) throws Exception {
+    boolean mapClassMembers(String filename, ClassFile classFile) throws Exception {
         boolean ok = true;
 
         for (MemberMapper mapper : memberMappers) {
             String mapperType = mapper.getMapperType();
             mapper.mapDescriptor(mod.getClassMap());
             for (Object o : mapper.getMatchingObjects(classFile)) {
+                if (o instanceof MethodInfo) {
+                    methodInfo = (MethodInfo) o;
+                }
                 if (mapper.match(o)) {
                     mapper.updateClassMap(getClassMap(), classFile, o);
                     mapper.afterMatch();
+                }
+                if (o instanceof MethodInfo) {
+                    methodInfo = null;
                 }
             }
             if (!mapper.allMatched()) {
@@ -331,9 +287,15 @@ abstract public class ClassMod implements PatchComponent {
         return BinaryRegex.build(objects);
     }
 
-    final public byte[] buildCode(Object... objects) throws IOException {
+    final public byte[] buildCode(Object... objects) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        buildCode1(baos, objects);
+        try {
+            buildCode1(baos, objects);
+        } catch (NullPointerException e) {
+            return null;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return baos.toByteArray();
     }
 
@@ -422,33 +384,6 @@ abstract public class ClassMod implements PatchComponent {
                 }
             }
             throw new RuntimeException("refs list has no descriptor");
-        }
-
-        /**
-         * @param names      descriptive field names
-         * @param descriptor Java type descriptor
-         */
-        MemberMapper(String[] names, String descriptor) {
-            refs = new JavaRef[names.length];
-            for (int i = 0; i < names.length; i++) {
-                if (names[i] != null) {
-                    if (this instanceof FieldMapper) {
-                        refs[i] = new FieldRef(null, names[i], descriptor);
-                    } else if (this instanceof MethodMapper) {
-                        refs[i] = new MethodRef(null, names[i], descriptor);
-                    } else {
-                        throw new IllegalArgumentException("invalid type " + getClass().getName());
-                    }
-                }
-            }
-        }
-
-        /**
-         * @param name       descriptive field name
-         * @param descriptor Java type descriptor
-         */
-        MemberMapper(String name, String descriptor) {
-            this(new String[]{name}, descriptor);
         }
 
         /**
@@ -562,26 +497,6 @@ abstract public class ClassMod implements PatchComponent {
             super(refs);
         }
 
-        /**
-         * @param names      field names
-         * @param descriptor field type
-         * @see #FieldMapper(FieldRef...)
-         * @deprecated
-         */
-        public FieldMapper(String[] names, String descriptor) {
-            super(names, descriptor);
-        }
-
-        /**
-         * @param name       field name
-         * @param descriptor field type
-         * @see #FieldMapper(FieldRef...)
-         * @deprecated
-         */
-        public FieldMapper(String name, String descriptor) {
-            super(name, descriptor);
-        }
-
         protected final String getMapperType() {
             return "field";
         }
@@ -601,15 +516,6 @@ abstract public class ClassMod implements PatchComponent {
             return new String[]{fieldInfo.getName(), fieldInfo.getDescriptor()};
         }
 
-        protected void updateClassMap11(ClassMap classMap, ClassFile classFile, Object o) {
-            super.updateClassMap(classMap, classFile, o);
-            JavaRef ref = getRef();
-            if (ref != null) {
-                FieldInfo fieldInfo = (FieldInfo) o;
-                Logger.log(Logger.LOG_FIELD, "field %s matches %s %s", ref.getName(), fieldInfo.getName(), fieldInfo.getDescriptor());
-            }
-        }
-
         protected List getMatchingObjects(ClassFile classFile) {
             return classFile.getFields();
         }
@@ -622,26 +528,6 @@ abstract public class ClassMod implements PatchComponent {
     public class MethodMapper extends MemberMapper {
         public MethodMapper(MethodRef... refs) {
             super(refs);
-        }
-
-        /**
-         * @param names      method names
-         * @param descriptor method type
-         * @see #MethodMapper(MethodRef...)
-         * @deprecated
-         */
-        public MethodMapper(String[] names, String descriptor) {
-            super(names, descriptor);
-        }
-
-        /**
-         * @param name       method name
-         * @param descriptor method type
-         * @see #MethodMapper(MethodRef...)
-         * @deprecated
-         */
-        public MethodMapper(String name, String descriptor) {
-            super(name, descriptor);
         }
 
         public MethodMapper mapToInterface(int mapInterface) {
@@ -666,15 +552,6 @@ abstract public class ClassMod implements PatchComponent {
         protected String[] describeMatch(Object o) {
             MethodInfo methodInfo = (MethodInfo) o;
             return new String[]{methodInfo.getName(), methodInfo.getDescriptor()};
-        }
-
-        protected void updateClassMap11(ClassMap classMap, ClassFile classFile, Object o) {
-            super.updateClassMap(classMap, classFile, o);
-            JavaRef ref = getRef();
-            if (ref != null) {
-                MethodInfo methodInfo = (MethodInfo) o;
-                Logger.log(Logger.LOG_METHOD, "method %s matches %s %s", ref.getName(), methodInfo.getName(), methodInfo.getDescriptor());
-            }
         }
 
         protected List getMatchingObjects(ClassFile classFile) {

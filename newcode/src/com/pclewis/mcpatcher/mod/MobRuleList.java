@@ -133,16 +133,11 @@ class MobRuleList {
                 biomes = null;
             }
 
-            int maxHeight = -1;
-            int minHeight = -1;
-            try {
-                maxHeight = Integer.parseInt(properties.getProperty("maxHeight." + index, "-1").trim());
-                minHeight = Integer.parseInt(properties.getProperty("minHeight." + index, "-1").trim());
-                if (minHeight < 0 || minHeight > maxHeight) {
-                    minHeight = -1;
-                    maxHeight = -1;
-                }
-            } catch (NumberFormatException e) {
+            int minHeight = MCPatcherUtils.getIntProperty(properties, "minHeight." + index, -1);
+            int maxHeight = MCPatcherUtils.getIntProperty(properties, "maxHeight." + index, Integer.MAX_VALUE);
+            if (minHeight < 0 || minHeight > maxHeight) {
+                minHeight = -1;
+                maxHeight = Integer.MAX_VALUE;
             }
 
             return new MobRuleEntry(skins, chooser, biomes, minHeight, maxHeight);
