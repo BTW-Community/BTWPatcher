@@ -724,7 +724,14 @@ class MainForm {
             public void run() {
                 try {
                     MCPatcher.getApplicableMods();
-                    if (MCPatcher.minecraft.isModded()) {
+                    if (MCPatcher.minecraft.getVersion().compareTo("13w02a") >= 0) {
+                        JOptionPane.showMessageDialog(frame,
+                            "This version of MCPatcher does not support Minecraft 1.5 or newer.\n" +
+                                "Please download the latest MCPatcher from\n" +
+                                "http://www.minecraftforum.net/topic/1496369-",
+                            "Warning", JOptionPane.WARNING_MESSAGE
+                        );
+                    } else if (MCPatcher.minecraft.isModded()) {
                         JOptionPane.showMessageDialog(frame,
                             "Your minecraft.jar appears to be an older version or is already modded.\n" +
                                 "If you are using other mods, it is highly recommended that you install them via\n" +

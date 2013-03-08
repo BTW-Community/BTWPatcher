@@ -1,6 +1,6 @@
-MCPatcher version is 2.4.5_02
-OS: Linux 3.6.11-1.fc16.x86_64 amd64
-JVM: Sun Microsystems Inc. 1.6.0_38 (64 bit)
+MCPatcher version is 2.4.5_03
+OS: Linux 3.6.11-4.fc16.x86_64 amd64
+JVM: Sun Microsystems Inc. 1.6.0_43 (64 bit)
 Classpath: out/artifacts/mcpatcher/mcpatcher.jar
 Minecraft version is 1.4.7 (md5 8e80fb01b321c6b3c7efca397a3eea35)
 
@@ -306,7 +306,6 @@ Analyzing /home/prupe/.minecraft/bin/minecraft-1.4.7.jar (methods and fields)
    field currentAngle matches a D
    field targetAngle matches b D
    field instance matches c Lbdf;
-   method updateNeedle matches a (DDDZZ)V
   Fire (bdh.class)
   StillLava (bdj.class)
   FlowLava (bdi.class)
@@ -557,7 +556,6 @@ HD Textures
     class Compass (bdf.class) extends TextureFX
         method bindImage -> a (Lbba;)V
         method onTick -> a ()V
-        method updateNeedle -> a (DDDZZ)V
         field currentAngle -> a D
         field imageData -> d [B
         field instance -> c Lbdf;
@@ -6362,95 +6360,95 @@ Patching...
    method signature (Ljava/util/List;Lnet/minecraft/src/TextureFX;)V -> (Ljava/util/List;Lbdg;)V
    method signature (Lnet/minecraft/src/TextureFX;)Lnet/minecraft/src/TextureFX; -> (Lbdg;)Lbdg;
     method ref com.pclewis.mcpatcher.mod.TextureUtils.refreshTextureFX (Lnet/minecraft/src/TextureFX;)Lnet/minecraft/src/TextureFX; -> com.pclewis.mcpatcher.mod.TextureUtils.refreshTextureFX (Lbdg;)Lbdg; registerTextureFX(Ljava/util/List;Lbdg;)V@1
-     INVOKESTATIC 0x00 0x10    INVOKESTATIC 0x02 0xbf
+     INVOKESTATIC 0x00 0x10    INVOKESTATIC 0x02 0xc2
     method ref com.pclewis.mcpatcher.mod.TextureUtils.refreshTextureFX (Lnet/minecraft/src/TextureFX;)Lnet/minecraft/src/TextureFX; -> com.pclewis.mcpatcher.mod.TextureUtils.refreshTextureFX (Lbdg;)Lbdg; refreshTextureFX(Ljava/util/List;)V@35
-     INVOKESTATIC 0x00 0x10    INVOKESTATIC 0x02 0xbf
+     INVOKESTATIC 0x00 0x10    INVOKESTATIC 0x02 0xc2
     method ref net.minecraft.src.TextureFX.onTick ()V -> bdg.a ()V registerTextureFX(Ljava/util/List;Lbdg;)V@40
-     INVOKEVIRTUAL 0x00 0x17   INVOKEVIRTUAL 0x02 0xc4
+     INVOKEVIRTUAL 0x00 0x17   INVOKEVIRTUAL 0x02 0xc7
     method ref net.minecraft.src.TextureFX.onTick ()V -> bdg.a ()V refreshTextureFX(Ljava/util/List;)V@557
-     INVOKEVIRTUAL 0x00 0x17   INVOKEVIRTUAL 0x02 0xc4
+     INVOKEVIRTUAL 0x00 0x17   INVOKEVIRTUAL 0x02 0xc7
     class ref net.minecraft.src.Compass -> bdf refreshTextureFX(Lbdg;)Lbdg;@1
-     INSTANCEOF 0x00 0x18      INSTANCEOF 0x02 0xc6
+     INSTANCEOF 0x00 0x18      INSTANCEOF 0x02 0xc9
     class ref net.minecraft.src.Compass -> bdf refreshTextureFX(Ljava/util/List;)V@68
-     NEW 0x00 0x18             NEW 0x02 0xc6
+     NEW 0x00 0x18             NEW 0x02 0xc9
     class ref net.minecraft.src.Watch -> bde refreshTextureFX(Lbdg;)Lbdg;@8
-     INSTANCEOF 0x00 0x19      INSTANCEOF 0x02 0xc8
+     INSTANCEOF 0x00 0x19      INSTANCEOF 0x02 0xcb
     class ref net.minecraft.src.Watch -> bde refreshTextureFX(Ljava/util/List;)V@103
-     NEW 0x00 0x19             NEW 0x02 0xc8
+     NEW 0x00 0x19             NEW 0x02 0xcb
     class ref net.minecraft.src.StillLava -> bdj refreshTextureFX(Lbdg;)Lbdg;@15
-     INSTANCEOF 0x00 0x1a      INSTANCEOF 0x02 0xca
+     INSTANCEOF 0x00 0x1a      INSTANCEOF 0x02 0xcd
     class ref net.minecraft.src.StillLava -> bdj refreshTextureFX(Ljava/util/List;)V@170
-     NEW 0x00 0x1a             NEW 0x02 0xca
+     NEW 0x00 0x1a             NEW 0x02 0xcd
     class ref net.minecraft.src.FlowLava -> bdi refreshTextureFX(Lbdg;)Lbdg;@22
-     INSTANCEOF 0x00 0x1b      INSTANCEOF 0x02 0xcc
+     INSTANCEOF 0x00 0x1b      INSTANCEOF 0x02 0xcf
     class ref net.minecraft.src.FlowLava -> bdi refreshTextureFX(Ljava/util/List;)V@184
-     NEW 0x00 0x1b             NEW 0x02 0xcc
+     NEW 0x00 0x1b             NEW 0x02 0xcf
     class ref net.minecraft.src.StillWater -> bdm refreshTextureFX(Lbdg;)Lbdg;@29
-     INSTANCEOF 0x00 0x1c      INSTANCEOF 0x02 0xce
+     INSTANCEOF 0x00 0x1c      INSTANCEOF 0x02 0xd1
     class ref net.minecraft.src.StillWater -> bdm refreshTextureFX(Ljava/util/List;)V@244
-     NEW 0x00 0x1c             NEW 0x02 0xce
+     NEW 0x00 0x1c             NEW 0x02 0xd1
     class ref net.minecraft.src.FlowWater -> bdl refreshTextureFX(Lbdg;)Lbdg;@36
-     INSTANCEOF 0x00 0x1d      INSTANCEOF 0x02 0xd0
+     INSTANCEOF 0x00 0x1d      INSTANCEOF 0x02 0xd3
     class ref net.minecraft.src.FlowWater -> bdl refreshTextureFX(Ljava/util/List;)V@258
-     NEW 0x00 0x1d             NEW 0x02 0xd0
+     NEW 0x00 0x1d             NEW 0x02 0xd3
     class ref net.minecraft.src.Fire -> bdh refreshTextureFX(Lbdg;)Lbdg;@43
-     INSTANCEOF 0x00 0x1e      INSTANCEOF 0x02 0xd2
+     INSTANCEOF 0x00 0x1e      INSTANCEOF 0x02 0xd5
     class ref net.minecraft.src.Fire -> bdh refreshTextureFX(Ljava/util/List;)V@330
-     NEW 0x00 0x1e             NEW 0x02 0xd2
+     NEW 0x00 0x1e             NEW 0x02 0xd5
     class ref net.minecraft.src.Fire -> bdh refreshTextureFX(Ljava/util/List;)V@345
-     NEW 0x00 0x1e             NEW 0x02 0xd2
+     NEW 0x00 0x1e             NEW 0x02 0xd5
     class ref net.minecraft.src.Portal -> bdk refreshTextureFX(Lbdg;)Lbdg;@50
-     INSTANCEOF 0x00 0x1f      INSTANCEOF 0x02 0xd4
+     INSTANCEOF 0x00 0x1f      INSTANCEOF 0x02 0xd7
     class ref net.minecraft.src.Portal -> bdk refreshTextureFX(Ljava/util/List;)V@399
-     NEW 0x00 0x1f             NEW 0x02 0xd4
+     NEW 0x00 0x1f             NEW 0x02 0xd7
     field ref net.minecraft.src.TextureFX.tileNumber I -> bdg.e I refreshTextureFX(Lbdg;)Lbdg;@161
-     GETFIELD 0x00 0x26        GETFIELD 0x02 0xd6
+     GETFIELD 0x00 0x26        GETFIELD 0x02 0xd9
     class ref net.minecraft.src.TextureFX -> bdg refreshTextureFX(Lbdg;)Lbdg;@189
-     CHECKCAST 0x00 0x2a       CHECKCAST 0x02 0xc1
+     CHECKCAST 0x00 0x2a       CHECKCAST 0x02 0xc4
     class ref net.minecraft.src.TextureFX -> bdg refreshTextureFX(Lbdg;)Lbdg;@240
-     CHECKCAST 0x00 0x2a       CHECKCAST 0x02 0xc1
+     CHECKCAST 0x00 0x2a       CHECKCAST 0x02 0xc4
     class ref net.minecraft.src.TextureFX -> bdg refreshTextureFX(Lbdg;)Lbdg;@276
-     CHECKCAST 0x00 0x2a       CHECKCAST 0x02 0xc1
+     CHECKCAST 0x00 0x2a       CHECKCAST 0x02 0xc4
     class ref net.minecraft.src.TextureFX -> bdg refreshTextureFX(Lbdg;)Lbdg;@302
-     CHECKCAST 0x00 0x2a       CHECKCAST 0x02 0xc1
+     CHECKCAST 0x00 0x2a       CHECKCAST 0x02 0xc4
     class ref net.minecraft.src.TextureFX -> bdg refreshTextureFX(Ljava/util/List;)V@30
-     CHECKCAST 0x00 0x2a       CHECKCAST 0x02 0xc1
+     CHECKCAST 0x00 0x2a       CHECKCAST 0x02 0xc4
     class ref net.minecraft.src.TextureFX -> bdg refreshTextureFX(Ljava/util/List;)V@508
-     CHECKCAST 0x00 0x2a       CHECKCAST 0x02 0xc1
+     CHECKCAST 0x00 0x2a       CHECKCAST 0x02 0xc4
     class ref net.minecraft.src.TextureFX -> bdg refreshTextureFX(Ljava/util/List;)V@550
-     CHECKCAST 0x00 0x2a       CHECKCAST 0x02 0xc1
+     CHECKCAST 0x00 0x2a       CHECKCAST 0x02 0xc4
     field ref net.minecraft.src.TextureFX.imageData [B -> bdg.d [B refreshTextureFX(Lbdg;)Lbdg;@336
-     GETFIELD 0x00 0x30        GETFIELD 0x02 0xd9
+     GETFIELD 0x00 0x30        GETFIELD 0x02 0xdc
     field ref net.minecraft.src.TextureFX.imageData [B -> bdg.d [B refreshTextureFX(Lbdg;)Lbdg;@365
-     GETFIELD 0x00 0x30        GETFIELD 0x02 0xd9
+     GETFIELD 0x00 0x30        GETFIELD 0x02 0xdc
     field ref net.minecraft.src.TextureFX.imageData [B -> bdg.d [B refreshTextureFX(Lbdg;)Lbdg;@391
-     PUTFIELD 0x00 0x30        PUTFIELD 0x02 0xd9
+     PUTFIELD 0x00 0x30        PUTFIELD 0x02 0xdc
     method ref net.minecraft.src.Compass.<init> (Lnet/minecraft/client/Minecraft;)V -> bdf.<init> (Lnet/minecraft/client/Minecraft;)V refreshTextureFX(Ljava/util/List;)V@73
-     INVOKESPECIAL 0x00 0x42   INVOKESPECIAL 0x02 0xda
+     INVOKESPECIAL 0x00 0x43   INVOKESPECIAL 0x02 0xdd
     field ref net.minecraft.src.Compass.tileSize I -> bdf.h I refreshTextureFX(Ljava/util/List;)V@99
-     PUTFIELD 0x00 0x45        PUTFIELD 0x02 0xdd
+     PUTFIELD 0x00 0x46        PUTFIELD 0x02 0xe0
     method ref net.minecraft.src.Watch.<init> (Lnet/minecraft/client/Minecraft;)V -> bde.<init> (Lnet/minecraft/client/Minecraft;)V refreshTextureFX(Ljava/util/List;)V@108
-     INVOKESPECIAL 0x00 0x46   INVOKESPECIAL 0x02 0xde
+     INVOKESPECIAL 0x00 0x47   INVOKESPECIAL 0x02 0xe1
     method ref net.minecraft.src.StillLava.<init> ()V -> bdj.<init> ()V refreshTextureFX(Ljava/util/List;)V@174
-     INVOKESPECIAL 0x00 0x4e   INVOKESPECIAL 0x02 0xdf
+     INVOKESPECIAL 0x00 0x4f   INVOKESPECIAL 0x02 0xe2
     method ref net.minecraft.src.FlowLava.<init> ()V -> bdi.<init> ()V refreshTextureFX(Ljava/util/List;)V@188
-     INVOKESPECIAL 0x00 0x4f   INVOKESPECIAL 0x02 0xe0
+     INVOKESPECIAL 0x00 0x50   INVOKESPECIAL 0x02 0xe3
     method ref net.minecraft.src.StillWater.<init> ()V -> bdm.<init> ()V refreshTextureFX(Ljava/util/List;)V@248
-     INVOKESPECIAL 0x00 0x54   INVOKESPECIAL 0x02 0xe1
+     INVOKESPECIAL 0x00 0x55   INVOKESPECIAL 0x02 0xe4
     method ref net.minecraft.src.FlowWater.<init> ()V -> bdl.<init> ()V refreshTextureFX(Ljava/util/List;)V@262
-     INVOKESPECIAL 0x00 0x55   INVOKESPECIAL 0x02 0xe2
+     INVOKESPECIAL 0x00 0x56   INVOKESPECIAL 0x02 0xe5
     method ref net.minecraft.src.Fire.<init> (I)V -> bdh.<init> (I)V refreshTextureFX(Ljava/util/List;)V@335
-     INVOKESPECIAL 0x00 0x5e   INVOKESPECIAL 0x02 0xe3
+     INVOKESPECIAL 0x00 0x5f   INVOKESPECIAL 0x02 0xe6
     method ref net.minecraft.src.Fire.<init> (I)V -> bdh.<init> (I)V refreshTextureFX(Ljava/util/List;)V@350
-     INVOKESPECIAL 0x00 0x5e   INVOKESPECIAL 0x02 0xe3
+     INVOKESPECIAL 0x00 0x5f   INVOKESPECIAL 0x02 0xe6
     method ref net.minecraft.src.Portal.<init> ()V -> bdk.<init> ()V refreshTextureFX(Ljava/util/List;)V@403
-     INVOKESPECIAL 0x00 0x63   INVOKESPECIAL 0x02 0xe4
+     INVOKESPECIAL 0x00 0x64   INVOKESPECIAL 0x02 0xe7
     method ref net.minecraft.src.GLAllocation.createDirectByteBuffer (I)Ljava/nio/ByteBuffer; -> arx.c (I)Ljava/nio/ByteBuffer; getByteBuffer(Ljava/nio/ByteBuffer;[B)Ljava/nio/ByteBuffer;@48
-     INVOKESTATIC 0x00 0x7d    INVOKESTATIC 0x02 0xe9
-   string replace Lnet/minecraft/src/Compass; -> Lbdf; @2996
+     INVOKESTATIC 0x00 0x7e    INVOKESTATIC 0x02 0xec
+   string replace Lnet/minecraft/src/Compass; -> Lbdf; @3018
    string replace Lnet/minecraft/src/TextureFX; -> Lbdg; @762
    string replace Ljava/util/List<Lnet/minecraft/src/TextureFX;>; -> Ljava/util/List<Lbdg;>; @800
-   string replace Ljava/util/ArrayList<Lnet/minecraft/src/TextureFX;>; -> Ljava/util/ArrayList<Lbdg;>; @2968
+   string replace Ljava/util/ArrayList<Lnet/minecraft/src/TextureFX;>; -> Ljava/util/ArrayList<Lbdg;>; @2990
   adding com/pclewis/mcpatcher/mod/TextureUtils$1.class for HD Textures
   adding com/pclewis/mcpatcher/mod/TextureUtils$2.class for HD Textures
     field ref net.minecraft.client.Minecraft.renderEngine Lnet/minecraft/src/RenderEngine; -> net/minecraft/client/Minecraft.o Lbba; onChange()V@18
