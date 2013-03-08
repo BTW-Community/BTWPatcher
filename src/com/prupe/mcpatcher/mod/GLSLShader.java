@@ -6,9 +6,6 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
 import javassist.bytecode.AccessFlag;
-import javassist.bytecode.BadBytecode;
-
-import java.io.IOException;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;

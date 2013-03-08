@@ -448,7 +448,7 @@ public class TexturePackConverter {
         }
         return true;
     }
-    
+
     private boolean convertCompass(ZipEntry entry) {
         String name = entry.getName();
         BufferedImage image = getImage(name);

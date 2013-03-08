@@ -19,7 +19,7 @@ public class BlendMethod {
     private final boolean blend;
     private final boolean fadeRGB;
     private final boolean fadeAlpha;
-    
+
     public static BlendMethod parse(String text) {
         text = text.toLowerCase().trim();
         if (text.equals("alpha")) {
@@ -53,7 +53,7 @@ public class BlendMethod {
         }
         return null;
     }
-    
+
     private BlendMethod(String name, int srcBlend, int dstBlend, boolean blend, boolean fadeRGB, boolean fadeAlpha) {
         this.name = name;
         this.srcBlend = srcBlend;
@@ -62,12 +62,12 @@ public class BlendMethod {
         this.fadeRGB = fadeRGB;
         this.fadeAlpha = fadeAlpha;
     }
-    
+
     @Override
     public String toString() {
         return name;
     }
-    
+
     public void applyFade(float fade) {
         if (fadeRGB && fadeAlpha) {
             GL11.glColor4f(fade, fade, fade, fade);
@@ -85,7 +85,7 @@ public class BlendMethod {
             GL11.glEnable(GL11.GL_ALPHA_TEST);
         }
     }
-    
+
     public void applyBlending() {
         if (blend) {
             GL11.glEnable(GL11.GL_BLEND);

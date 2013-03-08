@@ -3,8 +3,6 @@ package com.prupe.mcpatcher.mod;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
-import com.prupe.mcpatcher.TexturePackChangeHandler;
-import net.minecraft.client.Minecraft;
 import net.minecraft.src.FontRenderer;
 
 import java.awt.image.BufferedImage;

@@ -1,6 +1,9 @@
 package com.prupe.mcpatcher.mod;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.Config;
+import com.prupe.mcpatcher.MCLogger;
+import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
