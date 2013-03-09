@@ -76,12 +76,7 @@ public class ExtendedHD extends BaseTexturePackMod {
     }
 
     private class RenderEngineMod extends BaseMod.RenderEngineMod {
-        private final MethodRef setupTextureWithFlags = new MethodRef(getDeobfClass(), "setupTextureWithFlags", "(Ljava/awt/image/BufferedImage;IZZ)V");
-        private final MethodRef setupTextureMipmaps = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(LRenderEngine;Ljava/awt/image/BufferedImage;IZZLjava/lang/String;)V");
-
         RenderEngineMod() {
-            addMemberMapper(new MethodMapper(setupTextureWithFlags));
-
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
@@ -110,6 +105,15 @@ public class ExtendedHD extends BaseTexturePackMod {
         }
 
         private void addMipmappingPatches() {
+            final MethodRef setupTextureWithFlags = new MethodRef(getDeobfClass(), "setupTextureWithFlags", "(Ljava/awt/image/BufferedImage;IZZ)V");
+            final MethodRef setupTextureMipmaps = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(LRenderEngine;Ljava/awt/image/BufferedImage;IZZLjava/lang/String;)V");
+            final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIII" + imageData.getType() + ")V");
+            final FieldRef currentMipmapLevel = new FieldRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "currentLevel", "I");
+            final MethodRef getImageWidth = new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I");
+            final MethodRef startsWith = new MethodRef("java/lang/String", "startsWith", "(Ljava/lang/String;)Z");
+
+            addMemberMapper(new MethodMapper(setupTextureWithFlags));
+
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
@@ -133,7 +137,7 @@ public class ExtendedHD extends BaseTexturePackMod {
                             or(build(push(5121)), build(push(33639 /* GL_UNSIGNED_INT_8_8_8_8_REV */))),
                             ALOAD_0,
                             reference(GETFIELD, imageData),
-                            reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIII" + imageData.getType() + ")V"))
+                            reference(INVOKESTATIC, glTexImage2D)
                         ), true)
                     );
                 }
@@ -142,7 +146,7 @@ public class ExtendedHD extends BaseTexturePackMod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         // GL11.glTexImage2D(..., MipmapHelper.currentLevel, ...);
-                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "currentLevel", "I"))
+                        reference(GETSTATIC, currentMipmapLevel)
                     );
                 }
             }.targetMethod(setupTextureWithFlags));
@@ -160,7 +164,7 @@ public class ExtendedHD extends BaseTexturePackMod {
                         capture(nonGreedy(any(0, 300))),
                         capture(build(
                             ALOAD_1,
-                            reference(INVOKEVIRTUAL, new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I"))
+                            reference(INVOKEVIRTUAL, getImageWidth)
                         ))
                     );
                 }
@@ -188,7 +192,7 @@ public class ExtendedHD extends BaseTexturePackMod {
                             return buildExpression(
                                 capture(anyALOAD),
                                 push("%blur%"),
-                                reference(INVOKEVIRTUAL, new MethodRef("java/lang/String", "startsWith", "(Ljava/lang/String;)Z"))
+                                reference(INVOKEVIRTUAL, startsWith)
                             );
                         }
 
