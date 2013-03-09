@@ -76,6 +76,7 @@ public class ExtendedHD extends BaseTexturePackMod {
     }
 
     private class RenderEngineMod extends BaseMod.RenderEngineMod {
+        private final FieldRef missingTextureImage = new FieldRef(getDeobfClass(), "missingTextureImage", "Ljava/awt/image/BufferedImage;");
         private final MethodRef readTextureImage = new MethodRef(getDeobfClass(), "readTextureImage", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
         private final MethodRef setupTexture1 = new MethodRef(getDeobfClass(), "setupTexture1", "(Ljava/awt/image/BufferedImage;I)V");
         private final MethodRef setupTexture2 = new MethodRef(getDeobfClass(), "setupTexture2", "(Ljava/awt/image/BufferedImage;IZZ)V");
@@ -83,9 +84,11 @@ public class ExtendedHD extends BaseTexturePackMod {
         private final MethodRef getImageRGB = new MethodRef(getDeobfClass(), "getImageRGB", "(Ljava/awt/image/BufferedImage;[I)[I");
         private final MethodRef readTextureImageData = new MethodRef(getDeobfClass(), "readTextureImageData", "(Ljava/lang/String;)[I");
         private final MethodRef allocateAndSetupTexture = new MethodRef(getDeobfClass(), "allocateAndSetupTexture", "(Ljava/awt/image/BufferedImage;)I");
+        final MethodRef getSelectedTexturePack = new MethodRef("TexturePackList", "getSelectedTexturePack", "()LITexturePack;");
         private final InterfaceMethodRef getResourceAsStream = new InterfaceMethodRef("ITexturePack", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
 
         RenderEngineMod() {
+            addMemberMapper(new FieldMapper(missingTextureImage));
             addMemberMapper(new MethodMapper(readTextureImage));
             addMemberMapper(new MethodMapper(setupTexture1));
             addMemberMapper(new MethodMapper(setupTexture2));
@@ -124,35 +127,59 @@ public class ExtendedHD extends BaseTexturePackMod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        ALOAD_2,
-                        any(0, 6), // some mods have two useless CHECKCASTS here
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        reference(INVOKEVIRTUAL, getSelectedTexturePack),
                         ALOAD_1,
                         reference(INVOKEINTERFACE, getResourceAsStream),
-                        anyASTORE,
-                        anyALOAD,
+                        ASTORE, capture(any()),
+
+                        ALOAD, backReference(1),
                         IFNONNULL, any(2),
+
                         ALOAD_0,
                         ALOAD_0,
-                        GETFIELD, any(2),
-                        anyILOAD,
-                        or(
-                            build(reference(INVOKEVIRTUAL, setupTexture1)),
-                            build(any(0, 6), reference(INVOKEVIRTUAL, setupTexture2))
-                        ),
+                        reference(GETFIELD, missingTextureImage),
+                        capture(build(
+                            anyILOAD,
+                            anyILOAD,
+                            anyILOAD,
+                            reference(INVOKEVIRTUAL, setupTexture2)
+                        )),
                         GOTO, any(2),
+
                         ALOAD_0,
                         ALOAD_0,
-                        anyALOAD,
-                        reference(INVOKESPECIAL, readTextureImage)
+                        ALOAD, backReference(1),
+                        reference(INVOKESPECIAL, readTextureImage),
+                        backReference(2)
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
+                    int reg = getMethodInfo().getCodeAttribute().getMaxLocals();
                     return buildCode(
-                        ALOAD_0,
+                        // BufferedImage image = TexturePackAPI.getImage(var1);
                         ALOAD_1,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(Ljava/lang/String;)Ljava/awt/image/BufferedImage;"))
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(Ljava/lang/String;)Ljava/awt/image/BufferedImage;")),
+                        ASTORE, reg,
+
+                        // if (image == null) {
+                        ALOAD, reg,
+                        IFNONNULL, branch("A"),
+
+                        ALOAD_0,
+                        reference(GETFIELD, missingTextureImage),
+                        ASTORE, reg,
+
+                        // }
+                        label("A"),
+
+                        // this.setupTextureWithFlags(image, ...);
+                        ALOAD_0,
+                        ALOAD, reg,
+                        getCaptureGroup(2)
                     );
                 }
             });
