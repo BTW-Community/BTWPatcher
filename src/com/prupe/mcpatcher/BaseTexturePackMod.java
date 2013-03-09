@@ -147,8 +147,10 @@ public class BaseTexturePackMod extends Mod {
 
     private class RenderEngineMod extends BaseMod.RenderEngineMod {
         RenderEngineMod() {
+            final FieldRef missingTextureImage = new FieldRef(getDeobfClass(), "missingTextureImage", "Ljava/awt/image/BufferedImage;");
             final MethodRef deleteTexture = new MethodRef(getDeobfClass(), "deleteTexture", "(I)V");
             final MethodRef setupTexture = new MethodRef(getDeobfClass(), "setupTexture", "(Ljava/awt/image/BufferedImage;I)V");
+            final MethodRef setupTextureWithFlags = new MethodRef(getDeobfClass(), "setupTextureWithFlags", "(Ljava/awt/image/BufferedImage;IZZ)V");
             final MethodRef getImageContents = new MethodRef(getDeobfClass(), "getImageContents", "(Ljava/awt/image/BufferedImage;[I)[I");
             final MethodRef readTextureImage = new MethodRef(getDeobfClass(), "readTextureImage", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
             final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(Ljava/lang/String;)V");
@@ -158,6 +160,8 @@ public class BaseTexturePackMod extends Mod {
             final MethodRef position = new MethodRef("java/nio/IntBuffer", "position", "(I)Ljava/nio/Buffer;");
             final MethodRef limit = new MethodRef("java/nio/Buffer", "limit", "(I)Ljava/nio/Buffer;");
             final MethodRef getIntBuffer = new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getIntBuffer", "(Ljava/nio/IntBuffer;[I)Ljava/nio/IntBuffer;");
+            final MethodRef getSelectedTexturePack = new MethodRef("TexturePackList", "getSelectedTexturePack", "()LITexturePack;");
+            final InterfaceMethodRef getResourceAsStream = new InterfaceMethodRef("ITexturePack", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -180,7 +184,9 @@ public class BaseTexturePackMod extends Mod {
                 }
             }.setMethod(clearBoundTexture));
 
+            addMemberMapper(new FieldMapper(missingTextureImage));
             addMemberMapper(new MethodMapper(setupTexture));
+            addMemberMapper(new MethodMapper(setupTextureWithFlags));
             addMemberMapper(new MethodMapper(getImageContents));
             addMemberMapper(new MethodMapper(readTextureImage));
             addMemberMapper(new MethodMapper(bindTexture));
@@ -236,6 +242,102 @@ public class BaseTexturePackMod extends Mod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
+                    return "readTextureImage(getResourceAsStream(...)) -> getImage(...)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKEINTERFACE, getResourceAsStream),
+                        reference(INVOKESPECIAL, readTextureImage)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)Ljava/awt/image/BufferedImage;"))
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "getResourceAsStream(...), readTextureImage -> getImage(...)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // InputStream inputStream = this.texturePackList.getSelectedTexturePack().getResourceAsStream(var1);
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        reference(INVOKEVIRTUAL, getSelectedTexturePack),
+                        ALOAD_1,
+                        reference(INVOKEINTERFACE, getResourceAsStream),
+                        ASTORE, capture(any()),
+
+                        // if (inputStream == null) {
+                        ALOAD, backReference(1),
+                        IFNONNULL, any(2),
+
+                        // this.setupTexture(this.missingTextureImage, texture, blur, clamp);
+                        ALOAD_0,
+                        ALOAD_0,
+                        reference(GETFIELD, missingTextureImage),
+                        capture(build(
+                            anyILOAD,
+                            anyILOAD,
+                            anyILOAD,
+                            reference(INVOKEVIRTUAL, setupTextureWithFlags)
+                        )),
+
+                        // } else {
+                        GOTO, any(2),
+
+                        // this.setupTexture(this.readTextureImage(inputStream, texture, blur, clamp);
+                        ALOAD_0,
+                        ALOAD_0,
+                        ALOAD, backReference(1),
+                        reference(INVOKESPECIAL, readTextureImage),
+                        backReference(2)
+
+                        // }
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    int reg = getMethodInfo().getCodeAttribute().getMaxLocals();
+                    return buildCode(
+                        // BufferedImage image = TexturePackAPI.getImage(var1);
+                        ALOAD_1,
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(Ljava/lang/String;)Ljava/awt/image/BufferedImage;")),
+                        ASTORE, reg,
+
+                        // if (image == null) {
+                        ALOAD, reg,
+                        IFNONNULL, branch("A"),
+
+                        ALOAD_0,
+                        reference(GETFIELD, missingTextureImage),
+                        ASTORE, reg,
+
+                        // }
+                        label("A"),
+
+                        // this.setupTextureWithFlags(image, ...);
+                        ALOAD_0,
+                        ALOAD, reg,
+                        getCaptureGroup(2)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
                     return "null check in setupTexture";
                 }
 
@@ -255,12 +357,12 @@ public class BaseTexturePackMod extends Mod {
                         label("A")
                     );
                 }
-            }.targetMethod(setupTexture));
+            }.targetMethod(setupTextureWithFlags));
 
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "null check in getImageRGB";
+                    return "null check in getImageContents";
                 }
 
                 @Override
