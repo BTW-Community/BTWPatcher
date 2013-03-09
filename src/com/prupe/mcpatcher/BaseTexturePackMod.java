@@ -35,7 +35,6 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new TexturePackDefaultMod());
         addClassMod(new TexturePackCustomMod());
         addClassMod(new TexturePackFolderMod());
-        addClassMod(new GetResourceMod());
 
         addClassFile(MCPatcherUtils.TEXTURE_PACK_API_CLASS);
         addClassFile(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS);
@@ -486,56 +485,6 @@ public class BaseTexturePackMod extends Mod {
                         ALOAD_1,
                         push(1),
                         reference(INVOKEVIRTUAL, substring)
-                    );
-                }
-            });
-        }
-    }
-
-    private class GetResourceMod extends ClassMod {
-        GetResourceMod() {
-            global = true;
-
-            final MethodRef getResource = new MethodRef("java.lang.Class", "getResource", "(Ljava/lang/String;)Ljava/net/URL;");
-            final MethodRef readURL = new MethodRef("javax.imageio.ImageIO", "read", "(Ljava/net/URL;)Ljava/awt/image/BufferedImage;");
-            final MethodRef getResourceAsStream = new MethodRef("java.lang.Class", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
-            final MethodRef readStream = new MethodRef("javax.imageio.ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
-
-            addClassSignature(new OrSignature(
-                new ConstSignature(getResource),
-                new ConstSignature(getResourceAsStream)
-            ));
-            addClassSignature(new OrSignature(
-                new ConstSignature(readURL),
-                new ConstSignature(readStream)
-            ));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "ImageIO.read(getResource(...)) -> getImage(...)";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        BinaryRegex.or(
-                            buildExpression(
-                                reference(INVOKEVIRTUAL, getResource),
-                                reference(INVOKESTATIC, readURL)
-                            ),
-                            buildExpression(
-                                reference(INVOKEVIRTUAL, getResourceAsStream),
-                                reference(INVOKESTATIC, readStream)
-                            )
-                        )
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(Ljava/lang/Object;Ljava/lang/String;)Ljava/awt/image/BufferedImage;"))
                     );
                 }
             });
