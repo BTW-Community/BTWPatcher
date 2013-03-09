@@ -78,20 +78,20 @@ public class ExtendedHD extends BaseTexturePackMod {
     private class RenderEngineMod extends BaseMod.RenderEngineMod {
         private final FieldRef missingTextureImage = new FieldRef(getDeobfClass(), "missingTextureImage", "Ljava/awt/image/BufferedImage;");
         private final MethodRef readTextureImage = new MethodRef(getDeobfClass(), "readTextureImage", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
-        private final MethodRef setupTexture1 = new MethodRef(getDeobfClass(), "setupTexture1", "(Ljava/awt/image/BufferedImage;I)V");
-        private final MethodRef setupTexture2 = new MethodRef(getDeobfClass(), "setupTexture2", "(Ljava/awt/image/BufferedImage;IZZ)V");
+        private final MethodRef setupTexture = new MethodRef(getDeobfClass(), "setupTexture", "(Ljava/awt/image/BufferedImage;I)V");
+        private final MethodRef setupTextureWithFlags = new MethodRef(getDeobfClass(), "setupTextureWithFlags", "(Ljava/awt/image/BufferedImage;IZZ)V");
         private final MethodRef setupTextureMipmaps = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(LRenderEngine;Ljava/awt/image/BufferedImage;IZZLjava/lang/String;)V");
         private final MethodRef getImageRGB = new MethodRef(getDeobfClass(), "getImageRGB", "(Ljava/awt/image/BufferedImage;[I)[I");
         private final MethodRef readTextureImageData = new MethodRef(getDeobfClass(), "readTextureImageData", "(Ljava/lang/String;)[I");
         private final MethodRef allocateAndSetupTexture = new MethodRef(getDeobfClass(), "allocateAndSetupTexture", "(Ljava/awt/image/BufferedImage;)I");
-        final MethodRef getSelectedTexturePack = new MethodRef("TexturePackList", "getSelectedTexturePack", "()LITexturePack;");
+        private final MethodRef getSelectedTexturePack = new MethodRef("TexturePackList", "getSelectedTexturePack", "()LITexturePack;");
         private final InterfaceMethodRef getResourceAsStream = new InterfaceMethodRef("ITexturePack", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
 
         RenderEngineMod() {
             addMemberMapper(new FieldMapper(missingTextureImage));
             addMemberMapper(new MethodMapper(readTextureImage));
-            addMemberMapper(new MethodMapper(setupTexture1));
-            addMemberMapper(new MethodMapper(setupTexture2));
+            addMemberMapper(new MethodMapper(setupTexture));
+            addMemberMapper(new MethodMapper(setupTextureWithFlags));
             addMemberMapper(new MethodMapper(getImageRGB));
             addMemberMapper(new MethodMapper(readTextureImageData));
             addMemberMapper(new MethodMapper(allocateAndSetupTexture));
@@ -144,7 +144,7 @@ public class ExtendedHD extends BaseTexturePackMod {
                             anyILOAD,
                             anyILOAD,
                             anyILOAD,
-                            reference(INVOKEVIRTUAL, setupTexture2)
+                            reference(INVOKEVIRTUAL, setupTextureWithFlags)
                         )),
                         GOTO, any(2),
 
@@ -206,7 +206,7 @@ public class ExtendedHD extends BaseTexturePackMod {
                         label("A")
                     );
                 }
-            }.targetMethod(setupTexture2));
+            }.targetMethod(setupTextureWithFlags));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -296,7 +296,7 @@ public class ExtendedHD extends BaseTexturePackMod {
                         reference(GETSTATIC, new FieldRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "currentLevel", "I"))
                     );
                 }
-            }.targetMethod(setupTexture2));
+            }.targetMethod(setupTextureWithFlags));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -326,7 +326,7 @@ public class ExtendedHD extends BaseTexturePackMod {
                         getCaptureGroup(2)
                     );
                 }
-            }.targetMethod(setupTexture2));
+            }.targetMethod(setupTextureWithFlags));
 
             addPatch(new BytecodePatch() {
                 private byte[] pushTextureName;
@@ -360,7 +360,7 @@ public class ExtendedHD extends BaseTexturePackMod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(INVOKEVIRTUAL, setupTexture2)
+                        reference(INVOKEVIRTUAL, setupTextureWithFlags)
                     );
                 }
 

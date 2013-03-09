@@ -163,10 +163,6 @@ public class MipmapHelper {
         }
     }
 
-    public static void setupTexture(RenderEngine renderEngine, BufferedImage image, int texture, String textureName) {
-        setupTexture(renderEngine, image, texture, renderEngine.blurTexture, renderEngine.clampTexture, textureName);
-    }
-
     private static ArrayList<BufferedImage> getMipmapsForTexture(BufferedImage image, String textureName) {
         ArrayList<BufferedImage> mipmapImages = new ArrayList<BufferedImage>();
         mipmapImages.add(image);
@@ -244,7 +240,7 @@ public class MipmapHelper {
                     }
                 }
                 BufferedImage image = mipmapImages.get(currentLevel);
-                renderEngine.setupTexture2(image, texture, blurTexture, clampTexture);
+                renderEngine.setupTextureWithFlags(image, texture, blurTexture, clampTexture);
                 checkGLError("setupTexture %s#%d", textureName, currentLevel);
                 if (currentLevel > 0) {
                     logger.finest("%s mipmap level %d (%dx%d)", textureName, currentLevel, image.getWidth(), image.getHeight());
@@ -363,7 +359,7 @@ public class MipmapHelper {
             logger.finer("force %s -> %d (reloading)", texture, type);
             int id = TexturePackAPI.getTextureIfLoaded(texture);
             if (id >= 0) {
-                setupTexture(MCPatcherUtils.getMinecraft().renderEngine, TexturePackAPI.getImage(texture), id, texture);
+                setupTexture(MCPatcherUtils.getMinecraft().renderEngine, TexturePackAPI.getImage(texture), id, false, false, texture);
             }
         } else {
             logger.finer("force %s -> %d", texture, type);

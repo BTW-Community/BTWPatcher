@@ -4,8 +4,6 @@ import java.awt.image.BufferedImage;
 
 public class RenderEngine {
     public TexturePackList texturePackList;
-    public boolean clampTexture;
-    public boolean blurTexture;
 
     public void bindTexture(String s) {
     }
@@ -27,10 +25,10 @@ public class RenderEngine {
         return -1;
     }
 
-    public void setupTexture1(BufferedImage image, int texture) {
+    public void setupTexture(BufferedImage image, int texture) {
     }
 
-    public void setupTexture2(BufferedImage image, int texture, boolean blurTexture, boolean clampTexture) { // 13w09a+
+    public void setupTextureWithFlags(BufferedImage image, int texture, boolean blurTexture, boolean clampTexture) { // 13w09a+
     }
 
     public void refreshTextures() {
