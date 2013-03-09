@@ -35,6 +35,7 @@ public final class BaseMod extends Mod {
         dependencies.clear();
 
         addClassMod(new XMinecraftMod());
+        addClassMod(new ProfilerMod());
 
         addClassFile(MCPatcherUtils.UTILS_CLASS);
         addClassFile(MCPatcherUtils.LOGGER_CLASS);
@@ -43,6 +44,7 @@ public final class BaseMod extends Mod {
         addClassFile(MCPatcherUtils.LOGGER_CLASS + "$ErrorLevel");
         addClassFile(MCPatcherUtils.CONFIG_CLASS);
         addClassFile(MCPatcherUtils.TILE_MAPPING_CLASS);
+        addClassFile(MCPatcherUtils.PROFILER_API_CLASS);
     }
 
     @Override
@@ -192,6 +194,8 @@ public final class BaseMod extends Mod {
 
     private class XMinecraftMod extends MinecraftMod {
         XMinecraftMod() {
+            addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "mcProfiler", "LProfiler;")));
+
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
@@ -868,6 +872,7 @@ public final class BaseMod extends Mod {
      */
     public static class ProfilerMod extends ClassMod {
         public ProfilerMod() {
+            addClassSignature(new ConstSignature("root"));
             addClassSignature(new ConstSignature("[UNKNOWN]"));
             addClassSignature(new ConstSignature(100.0));
 

@@ -43,6 +43,7 @@ public class MCPatcherUtils {
     public static final String LOGGER_CLASS = "com.prupe.mcpatcher.MCLogger";
     public static final String CONFIG_CLASS = "com.prupe.mcpatcher.Config";
     public static final String TILE_MAPPING_CLASS = "com.prupe.mcpatcher.TileMapping";
+    public static final String PROFILER_API_CLASS = "com.prupe.mcpatcher.ProfilerAPI";
     public static final String TEXTURE_PACK_API_CLASS = "com.prupe.mcpatcher.TexturePackAPI";
     public static final String TEXTURE_PACK_CHANGE_HANDLER_CLASS = "com.prupe.mcpatcher.TexturePackChangeHandler";
     public static final String WEIGHTED_INDEX_CLASS = "com.prupe.mcpatcher.WeightedIndex";
