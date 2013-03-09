@@ -471,7 +471,9 @@ Analyzing /home/prupe/.minecraft/bin/minecraft-1.5.jar (methods and fields)
    field renderEngine matches p Lbfy;
   RenderEngine (bfy.class)
    field imageData matches d Ljava/nio/IntBuffer;
+   field missingTextureImage matches h Ljava/awt/image/BufferedImage;
    method setupTexture matches a (Ljava/awt/image/BufferedImage;I)V
+   method setupTextureWithFlags matches a (Ljava/awt/image/BufferedImage;IZZ)V
    method getImageContents matches a (Ljava/awt/image/BufferedImage;[I)[I
    method readTextureImage matches a (Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;
    method bindTexture matches b (Ljava/lang/String;)V
@@ -491,7 +493,9 @@ Analyzing /home/prupe/.minecraft/bin/minecraft-1.5.jar (methods and fields)
    field renderEngine matches p Lbfy;
   RenderEngine (bfy.class)
    field imageData matches d Ljava/nio/IntBuffer;
+   field missingTextureImage matches h Ljava/awt/image/BufferedImage;
    method setupTexture matches a (Ljava/awt/image/BufferedImage;I)V
+   method setupTextureWithFlags matches a (Ljava/awt/image/BufferedImage;IZZ)V
    method getImageContents matches a (Ljava/awt/image/BufferedImage;[I)[I
    method readTextureImage matches a (Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;
    method bindTexture matches b (Ljava/lang/String;)V
@@ -510,12 +514,7 @@ Analyzing /home/prupe/.minecraft/bin/minecraft-1.5.jar (methods and fields)
    field renderEngine matches p Lbfy;
   RenderEngine (bfy.class)
    field imageData matches d Ljava/nio/IntBuffer;
-   method readTextureImage matches a (Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;
-   method setupTexture1 matches a (Ljava/awt/image/BufferedImage;I)V
-   method setupTexture2 matches a (Ljava/awt/image/BufferedImage;IZZ)V
-   method getImageRGB matches a (Ljava/awt/image/BufferedImage;[I)[I
-   method readTextureImageData matches a (Ljava/lang/String;)[I
-   method allocateAndSetupTexture matches a (Ljava/awt/image/BufferedImage;)I
+   method setupTextureWithFlags matches a (Ljava/awt/image/BufferedImage;IZZ)V
   ColorizerGrass (zu.class)
    field colorBuffer matches a [I
   ColorizerFoliage (zr.class)
@@ -733,9 +732,11 @@ __TexturePackBase
         method refreshTextureMaps -> d ()V
         method refreshTextures -> c ()V
         method setupTexture -> a (Ljava/awt/image/BufferedImage;I)V
+        method setupTextureWithFlags -> a (Ljava/awt/image/BufferedImage;IZZ)V
         method updateDynamicTextures -> b ()V
         field imageData -> d Ljava/nio/IntBuffer;
         field items -> j Lbil;
+        field missingTextureImage -> h Ljava/awt/image/BufferedImage;
         field terrain -> i Lbil;
     class TextureMap (bil.class)
         method refresh -> b ()V
@@ -843,22 +844,19 @@ Extended HD
         field renderEngine -> p Lbfy;
         field texturePackList -> D Lbjo;
     class RenderEngine (bfy.class)
-        method allocateAndSetupTexture -> a (Ljava/awt/image/BufferedImage;)I
         method bindTexture -> b (Ljava/lang/String;)V
         method clearBoundTexture -> a ()V
         method deleteTexture -> a (I)V
         method getImageContents -> a (Ljava/awt/image/BufferedImage;[I)[I
-        method getImageRGB -> a (Ljava/awt/image/BufferedImage;[I)[I
         method readTextureImage -> a (Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;
-        method readTextureImageData -> a (Ljava/lang/String;)[I
         method refreshTextureMaps -> d ()V
         method refreshTextures -> c ()V
         method setupTexture -> a (Ljava/awt/image/BufferedImage;I)V
-        method setupTexture1 -> a (Ljava/awt/image/BufferedImage;I)V
-        method setupTexture2 -> a (Ljava/awt/image/BufferedImage;IZZ)V
+        method setupTextureWithFlags -> a (Ljava/awt/image/BufferedImage;IZZ)V
         method updateDynamicTextures -> b ()V
         field imageData -> d Ljava/nio/IntBuffer;
         field items -> j Lbil;
+        field missingTextureImage -> h Ljava/awt/image/BufferedImage;
         field terrain -> i Lbil;
     class Texture (bii.class)
         method copySubTexture -> a (IILbii;Z)V
@@ -1796,12 +1794,6 @@ Patching...
 [*] Better Glass 2.0 - Enables partial transparency for glass blocks.
 [*] Better Skies 1.3 - Adds support for custom skyboxes.
 
- applying GetResource patch to aur.class for mod __TexturePackBase
-    ImageIO.read(getResource(...)) -> getImage(...) <init>()V@10
-     INVOKEVIRTUAL 0x00 0x14   NOP
-     INVOKESTATIC 0x00 0x15    NOP
-                               NOP
-                               INVOKESTATIC 0x00 0x4b
  applying Minecraft patch to net/minecraft/client/Minecraft.class for mod __Base
     MCPatcherUtils.setMinecraft(this) <init>(Ljava/awt/Canvas;Lnet/minecraft/client/MinecraftApplet;IIZ)V@0
      ALOAD_0                   ALOAD_0
@@ -1830,12 +1822,6 @@ Patching...
     insert field origZip Ljava/util/zip/ZipFile;
     insert field tmpFile Ljava/io/File;
     insert field lastModified J
- applying GetResource patch to awp.class for mod __TexturePackBase
-    ImageIO.read(getResource(...)) -> getImage(...) c(Ljava/lang/String;)V@3
-     INVOKEVIRTUAL 0x00 0x69   NOP
-     INVOKESTATIC 0x00 0x89    NOP
-                               NOP
-                               INVOKESTATIC 0x01 0xaf
  applying FontRenderer patch to awp.class for mod HD Font
     insert field charWidthf [F
     FontUtils.computeCharWidths on init c(Ljava/lang/String;)V@56
@@ -1972,18 +1958,18 @@ Patching...
                                ALOAD 0x05
                                ALOAD_0
                                GETFIELD 0x00 0x31
-                               INVOKESTATIC 0x01 0xb7
-                               PUTFIELD 0x01 0xb9
+                               INVOKESTATIC 0x01 0xaa
+                               PUTFIELD 0x01 0xac
     use charWidthf instead of charWidth a(IZ)F@192
      ALOAD_0                   ALOAD_0
-     GETFIELD 0x00 0x31        GETFIELD 0x01 0xb9
+     GETFIELD 0x00 0x31        GETFIELD 0x01 0xac
      ILOAD_1                   ILOAD_1
      IALOAD                    FALOAD
      I2F                       ALOAD_0
                                GETFIELD 0x00 0x2f
                                I2F
                                FMUL
-                               LDC_W 0x01 0xba
+                               LDC_W 0x01 0xad
                                FDIV
     replace getStringWidth a(Ljava/lang/String;)I@0
      ALOAD_1                   NOP
@@ -2104,14 +2090,19 @@ Patching...
                                NOP
                                ALOAD_0
                                ALOAD_1
-                               INVOKESTATIC 0x01 0xbe
+                               INVOKESTATIC 0x01 0xb1
                                F2I
     4.0f -> charWidthf[32] a(ICZ)F@6
      LDC 0x08                  ALOAD_0
-     FRETURN                   GETFIELD 0x01 0xb9
+     FRETURN                   GETFIELD 0x01 0xac
                                BIPUSH 0x20
                                FALOAD
                                FRETURN
+    ImageIO.read(getResource(...)) -> getImage(...) c(Ljava/lang/String;)V@3
+     INVOKEVIRTUAL 0x00 0x69   NOP
+     INVOKESTATIC 0x00 0x89    NOP
+                               NOP
+                               INVOKESTATIC 0x01 0xbe
  applying FontRenderer patch to awp.class for mod Custom Colors
     override text color b(Ljava/lang/String;IIIZ)I@6
      ILOAD 0x04                ILOAD 0x04
@@ -4546,13 +4537,68 @@ Patching...
                                ALOAD_1
                                INVOKESTATIC 0x01 0x84
                                PUTFIELD 0x00 0x35
-    null check in setupTexture a(Ljava/awt/image/BufferedImage;I)V@0
+    readTextureImage(getResourceAsStream(...)) -> getImage(...) c()V@203
+     INVOKEINTERFACE 0x00 0x80 0x02 0x00  NOP
+     INVOKESPECIAL 0x00 0x4a   NOP
+                               NOP
+                               NOP
+                               NOP
+                               INVOKESTATIC 0x01 0x88
+    readTextureImage(getResourceAsStream(...)) -> getImage(...) c()V@273
+     INVOKEINTERFACE 0x00 0x80 0x02 0x00  NOP
+     INVOKESPECIAL 0x00 0x4a   NOP
+                               NOP
+                               NOP
+                               NOP
+                               INVOKESTATIC 0x01 0x88
+    getResourceAsStream(...), readTextureImage -> getImage(...) f(Ljava/lang/String;)I@129
+     label A -> instruction 169
+     branch offset IFNONNULL A -> +9 @160
+     ALOAD_0                   NOP
+     GETFIELD 0x00 0x38        NOP
+     INVOKEVIRTUAL 0x00 0x57   NOP
+     ALOAD_1                   NOP
+     INVOKEINTERFACE 0x00 0x80 0x02 0x00  NOP
+     ASTORE 0x06               NOP
+     ALOAD 0x06                NOP
+     IFNONNULL 0x00 0x13       NOP
+     ALOAD_0                   NOP
+     ALOAD_0                   NOP
+     GETFIELD 0x00 0x39        NOP
+     ILOAD_3                   NOP
+     ILOAD 0x04                NOP
+     ILOAD 0x05                NOP
+     INVOKEVIRTUAL 0x00 0x48   NOP
+     GOTO 0x00 0x12            NOP
+     ALOAD_0                   NOP
+     ALOAD_0                   NOP
+     ALOAD 0x06                NOP
+     INVOKESPECIAL 0x00 0x4a   NOP
+     ILOAD_3                   NOP
+     ILOAD 0x04                NOP
+     ILOAD 0x05                NOP
+     INVOKEVIRTUAL 0x00 0x48   ALOAD_1
+                               INVOKESTATIC 0x01 0x8b
+                               ASTORE 0x07
+                               ALOAD 0x07
+                               IFNONNULL 0x00 0x09
+                               ALOAD_0
+                               GETFIELD 0x00 0x39
+                               ASTORE 0x07
+                               ALOAD_0
+                               ALOAD 0x07
+                               ILOAD_3
+                               ILOAD 0x04
+                               ILOAD 0x05
+                               INVOKEVIRTUAL 0x00 0x48
+   increasing max locals from 7 to 8
+    null check in setupTexture a(Ljava/awt/image/BufferedImage;IZZ)V@0
      label A -> instruction 5
      branch offset IFNONNULL A -> +4 @1
                                ALOAD_1
                                IFNONNULL 0x00 0x04
                                RETURN
-    null check in getImageRGB a(Ljava/awt/image/BufferedImage;[I)[I@0
+    null check in getImageContents a(Ljava/awt/image/BufferedImage;[I)[I@0
      label A -> instruction 6
      branch offset IFNONNULL A -> +5 @1
                                ALOAD_1
@@ -4567,45 +4613,18 @@ Patching...
                                ACONST_NULL
                                ARETURN
     before texture refresh c()V@0
-                               INVOKESTATIC 0x01 0x89
+                               INVOKESTATIC 0x01 0x90
     after texture refresh c()V@335
-                               INVOKESTATIC 0x01 0x8c
+                               INVOKESTATIC 0x01 0x93
  applying RenderEngine patch to bfy.class for mod Extended HD
-    readTextureImage(getResourceAsStream(...)) -> getImage(...) c()V@206
-     INVOKEINTERFACE 0x00 0x80 0x02 0x00  NOP
-     INVOKESPECIAL 0x00 0x4a   NOP
-                               NOP
-                               NOP
-                               NOP
-                               INVOKESTATIC 0x01 0x90
-    readTextureImage(getResourceAsStream(...)) -> getImage(...) c()V@276
-     INVOKEINTERFACE 0x00 0x80 0x02 0x00  NOP
-     INVOKESPECIAL 0x00 0x4a   NOP
-                               NOP
-                               NOP
-                               NOP
-                               INVOKESTATIC 0x01 0x90
-    null check in setupTexture a(Ljava/awt/image/BufferedImage;IZZ)V@0
-     label A -> instruction 5
-     branch offset IFNONNULL A -> +4 @1
-                               ALOAD_1
-                               IFNONNULL 0x00 0x04
-                               RETURN
-    null check in getImageRGB a(Ljava/awt/image/BufferedImage;[I)[I@0
-     label A -> instruction 6
-     branch offset IFNONNULL A -> +5 @1
-                               ALOAD_1
-                               IFNONNULL 0x00 0x05
-                               ALOAD_2
-                               ARETURN
     update custom animations b()V@14
-                               INVOKESTATIC 0x01 0x95
+                               INVOKESTATIC 0x01 0x98
     override mipmap level in setupTexture a(Ljava/awt/image/BufferedImage;IZZ)V@216
-     ICONST_0                  GETSTATIC 0x01 0x9a
+     ICONST_0                  GETSTATIC 0x01 0x9d
     preserve texture parameters during mipmap creation a(Ljava/awt/image/BufferedImage;IZZ)V@0
      label A -> instruction 124
      branch offset IFNE A -> +121 @3
-     ALOAD_1                   GETSTATIC 0x01 0x9a
+     ALOAD_1                   GETSTATIC 0x01 0x9d
      IFNONNULL 0x00 0x04       IFNE 0x00 0x79
      RETURN                    ALOAD_1
      ALOAD_0                   IFNONNULL 0x00 0x04
@@ -4652,20 +4671,17 @@ Patching...
      INVOKEVIRTUAL 0x00 0x62   INVOKESTATIC 0x00 0x7e
                                ALOAD_1
                                INVOKEVIRTUAL 0x00 0x62
-    generate mipmaps during texture setup f(Ljava/lang/String;)I@159
+    generate mipmaps during texture setup f(Ljava/lang/String;)I@177
      INVOKEVIRTUAL 0x00 0x48   ALOAD_1
-                               INVOKESTATIC 0x01 0x9e
-    generate mipmaps during texture setup f(Ljava/lang/String;)I@178
-     INVOKEVIRTUAL 0x00 0x48   ALOAD_1
-                               INVOKESTATIC 0x01 0x9e
+                               INVOKESTATIC 0x01 0xa1
    increasing stack size from 5 to 6
     generate mipmaps during texture setup c()V@225
      INVOKEVIRTUAL 0x00 0x48   ALOAD_3
-                               INVOKESTATIC 0x01 0x9e
+                               INVOKESTATIC 0x01 0xa1
    increasing stack size from 5 to 6
  applying RenderEngine patch to bfy.class for mod Connected Textures
     update ctm animations b()V@0
-     ALOAD_0                   INVOKESTATIC 0x01 0xa3
+     ALOAD_0                   INVOKESTATIC 0x01 0xa6
      GETFIELD 0x00 0x3a        ALOAD_0
      INVOKEVIRTUAL 0x00 0x54   GETFIELD 0x00 0x3a
                                INVOKEVIRTUAL 0x00 0x54
@@ -5499,71 +5515,64 @@ Patching...
    method signature (IIIIIIIILjava/nio/ByteBuffer;Lnet/minecraft/src/Texture;)V -> (IIIIIIIILjava/nio/ByteBuffer;Lbii;)V
    method signature (Lnet/minecraft/src/Texture;Lnet/minecraft/src/Texture;IIZ)V -> (Lbii;Lbii;IIZ)V
    method signature (Lnet/minecraft/src/RenderEngine;Ljava/awt/image/BufferedImage;IZZLjava/lang/String;)V -> (Lbfy;Ljava/awt/image/BufferedImage;IZZLjava/lang/String;)V
-   method signature (Lnet/minecraft/src/RenderEngine;Ljava/awt/image/BufferedImage;ILjava/lang/String;)V -> (Lbfy;Ljava/awt/image/BufferedImage;ILjava/lang/String;)V
    method signature (Lnet/minecraft/src/RenderEngine;Ljava/util/ArrayList;ILjava/lang/String;ZZ)V -> (Lbfy;Ljava/util/ArrayList;ILjava/lang/String;ZZ)V
    field signature Lnet/minecraft/src/Texture; -> Lbii;
     field ref com.prupe.mcpatcher.mod.MipmapHelper.currentTexture Lnet/minecraft/src/Texture; -> com.prupe.mcpatcher.mod.MipmapHelper.currentTexture Lbii; setupTexture(IIIIIIIILjava/nio/ByteBuffer;Lbii;)V@209
-     PUTSTATIC 0x00 0x07       PUTSTATIC 0x03 0x54
+     PUTSTATIC 0x00 0x07       PUTSTATIC 0x03 0x4c
     field ref com.prupe.mcpatcher.mod.MipmapHelper.currentTexture Lnet/minecraft/src/Texture; -> com.prupe.mcpatcher.mod.MipmapHelper.currentTexture Lbii; setupTexture(IIIIIIIILjava/nio/ByteBuffer;Lbii;)V@236
-     PUTSTATIC 0x00 0x07       PUTSTATIC 0x03 0x54
+     PUTSTATIC 0x00 0x07       PUTSTATIC 0x03 0x4c
     field ref com.prupe.mcpatcher.mod.MipmapHelper.currentTexture Lnet/minecraft/src/Texture; -> com.prupe.mcpatcher.mod.MipmapHelper.currentTexture Lbii; setupTextureMipmaps(Lbfy;Ljava/util/ArrayList;ILjava/lang/String;ZZ)V@61
-     GETSTATIC 0x00 0x07       GETSTATIC 0x03 0x54
+     GETSTATIC 0x00 0x07       GETSTATIC 0x03 0x4c
     field ref com.prupe.mcpatcher.mod.MipmapHelper.currentTexture Lnet/minecraft/src/Texture; -> com.prupe.mcpatcher.mod.MipmapHelper.currentTexture Lbii; setupTextureMipmaps(Lbfy;Ljava/util/ArrayList;ILjava/lang/String;ZZ)V@67
-     GETSTATIC 0x00 0x07       GETSTATIC 0x03 0x54
+     GETSTATIC 0x00 0x07       GETSTATIC 0x03 0x4c
     field ref com.prupe.mcpatcher.mod.MipmapHelper.currentTexture Lnet/minecraft/src/Texture; -> com.prupe.mcpatcher.mod.MipmapHelper.currentTexture Lbii; setupTextureMipmaps(Lbfy;Ljava/util/ArrayList;ILjava/lang/String;ZZ)V@74
-     GETSTATIC 0x00 0x07       GETSTATIC 0x03 0x54
+     GETSTATIC 0x00 0x07       GETSTATIC 0x03 0x4c
     field ref com.prupe.mcpatcher.mod.MipmapHelper.currentTexture Lnet/minecraft/src/Texture; -> com.prupe.mcpatcher.mod.MipmapHelper.currentTexture Lbii; setupTextureMipmaps(Lbfy;Ljava/util/ArrayList;ILjava/lang/String;ZZ)V@83
-     GETSTATIC 0x00 0x07       GETSTATIC 0x03 0x54
+     GETSTATIC 0x00 0x07       GETSTATIC 0x03 0x4c
     field ref net.minecraft.client.Minecraft.renderEngine Lnet/minecraft/src/RenderEngine; -> net/minecraft/client/Minecraft.p Lbfy; setupTexture(IIIIIIIILjava/nio/ByteBuffer;Lbii;)V@215
-     GETFIELD 0x00 0x09        GETFIELD 0x03 0x58
+     GETFIELD 0x00 0x09        GETFIELD 0x03 0x50
     field ref net.minecraft.client.Minecraft.renderEngine Lnet/minecraft/src/RenderEngine; -> net/minecraft/client/Minecraft.p Lbfy; forceMipmapType(Ljava/lang/String;I)V@98
-     GETFIELD 0x00 0x09        GETFIELD 0x03 0x58
+     GETFIELD 0x00 0x09        GETFIELD 0x03 0x50
     method ref net.minecraft.src.Texture.getGLTexture ()I -> bii.c ()I setupTexture(IIIIIIIILjava/nio/ByteBuffer;Lbii;)V@222
-     INVOKEVIRTUAL 0x00 0x0a   INVOKEVIRTUAL 0x03 0x5d
+     INVOKEVIRTUAL 0x00 0x0a   INVOKEVIRTUAL 0x03 0x55
     method ref net.minecraft.src.Texture.getGLTexture ()I -> bii.c ()I copySubTexture(Lbii;Lbii;IIZ)V@100
-     INVOKEVIRTUAL 0x00 0x0a   INVOKEVIRTUAL 0x03 0x5d
+     INVOKEVIRTUAL 0x00 0x0a   INVOKEVIRTUAL 0x03 0x55
     method ref net.minecraft.src.Texture.getName ()Ljava/lang/String; -> bii.f ()Ljava/lang/String; setupTexture(IIIIIIIILjava/nio/ByteBuffer;Lbii;)V@229
-     INVOKEVIRTUAL 0x00 0x0b   INVOKEVIRTUAL 0x03 0x60
+     INVOKEVIRTUAL 0x00 0x0b   INVOKEVIRTUAL 0x03 0x58
     method ref net.minecraft.src.Texture.getName ()Ljava/lang/String; -> bii.f ()Ljava/lang/String; copySubTexture(Lbii;Lbii;IIZ)V@51
-     INVOKEVIRTUAL 0x00 0x0b   INVOKEVIRTUAL 0x03 0x60
+     INVOKEVIRTUAL 0x00 0x0b   INVOKEVIRTUAL 0x03 0x58
     method ref net.minecraft.src.Texture.getName ()Ljava/lang/String; -> bii.f ()Ljava/lang/String; copySubTexture(Lbii;Lbii;IIZ)V@161
-     INVOKEVIRTUAL 0x00 0x0b   INVOKEVIRTUAL 0x03 0x60
+     INVOKEVIRTUAL 0x00 0x0b   INVOKEVIRTUAL 0x03 0x58
     method ref net.minecraft.src.Texture.getName ()Ljava/lang/String; -> bii.f ()Ljava/lang/String; copySubTexture(Lbii;Lbii;IIZ)V@168
-     INVOKEVIRTUAL 0x00 0x0b   INVOKEVIRTUAL 0x03 0x60
+     INVOKEVIRTUAL 0x00 0x0b   INVOKEVIRTUAL 0x03 0x58
     method ref net.minecraft.src.Texture.getName ()Ljava/lang/String; -> bii.f ()Ljava/lang/String; copySubTexture(Lbii;Lbii;IIZ)V@272
-     INVOKEVIRTUAL 0x00 0x0b   INVOKEVIRTUAL 0x03 0x60
+     INVOKEVIRTUAL 0x00 0x0b   INVOKEVIRTUAL 0x03 0x58
     method ref net.minecraft.src.Texture.getName ()Ljava/lang/String; -> bii.f ()Ljava/lang/String; copySubTexture(Lbii;Lbii;IIZ)V@279
-     INVOKEVIRTUAL 0x00 0x0b   INVOKEVIRTUAL 0x03 0x60
+     INVOKEVIRTUAL 0x00 0x0b   INVOKEVIRTUAL 0x03 0x58
     method ref com.prupe.mcpatcher.mod.MipmapHelper.setupTexture (Lnet/minecraft/src/RenderEngine;Ljava/awt/image/BufferedImage;IZZLjava/lang/String;)V -> com.prupe.mcpatcher.mod.MipmapHelper.setupTexture (Lbfy;Ljava/awt/image/BufferedImage;IZZLjava/lang/String;)V setupTexture(IIIIIIIILjava/nio/ByteBuffer;Lbii;)V@232
-     INVOKESTATIC 0x00 0x0c    INVOKESTATIC 0x03 0x62
-    method ref com.prupe.mcpatcher.mod.MipmapHelper.setupTexture (Lnet/minecraft/src/RenderEngine;Ljava/awt/image/BufferedImage;IZZLjava/lang/String;)V -> com.prupe.mcpatcher.mod.MipmapHelper.setupTexture (Lbfy;Ljava/awt/image/BufferedImage;IZZLjava/lang/String;)V setupTexture(Lbfy;Ljava/awt/image/BufferedImage;ILjava/lang/String;)V@12
-     INVOKESTATIC 0x00 0x0c    INVOKESTATIC 0x03 0x62
+     INVOKESTATIC 0x00 0x0c    INVOKESTATIC 0x03 0x5a
+    method ref com.prupe.mcpatcher.mod.MipmapHelper.setupTexture (Lnet/minecraft/src/RenderEngine;Ljava/awt/image/BufferedImage;IZZLjava/lang/String;)V -> com.prupe.mcpatcher.mod.MipmapHelper.setupTexture (Lbfy;Ljava/awt/image/BufferedImage;IZZLjava/lang/String;)V forceMipmapType(Ljava/lang/String;I)V@109
+     INVOKESTATIC 0x00 0x0c    INVOKESTATIC 0x03 0x5a
     method ref net.minecraft.src.Texture.getByteBuffer ()Ljava/nio/ByteBuffer; -> bii.h ()Ljava/nio/ByteBuffer; copySubTexture(Lbii;Lbii;IIZ)V@1
-     INVOKEVIRTUAL 0x00 0x10   INVOKEVIRTUAL 0x03 0x64
+     INVOKEVIRTUAL 0x00 0x10   INVOKEVIRTUAL 0x03 0x5c
     field ref net.minecraft.src.Texture.byteBuffer Ljava/nio/ByteBuffer; -> bii.r Ljava/nio/ByteBuffer; copySubTexture(Lbii;Lbii;IIZ)V@93
-     PUTFIELD 0x00 0x1c        PUTFIELD 0x03 0x67
+     PUTFIELD 0x00 0x1c        PUTFIELD 0x03 0x5f
     field ref net.minecraft.src.Texture.useMipmaps Z -> bii.l Z copySubTexture(Lbii;Lbii;IIZ)V@107
-     GETFIELD 0x00 0x1e        GETFIELD 0x03 0x6a
+     GETFIELD 0x00 0x1e        GETFIELD 0x03 0x62
     field ref net.minecraft.src.Texture.useMipmaps Z -> bii.l Z setupTextureMipmaps(Lbfy;Ljava/util/ArrayList;ILjava/lang/String;ZZ)V@71
-     PUTFIELD 0x00 0x1e        PUTFIELD 0x03 0x6a
+     PUTFIELD 0x00 0x1e        PUTFIELD 0x03 0x62
     method ref net.minecraft.src.Texture.getWidth ()I -> bii.d ()I copySubTexture(Lbii;Lbii;IIZ)V@123
-     INVOKEVIRTUAL 0x00 0x20   INVOKEVIRTUAL 0x03 0x6d
+     INVOKEVIRTUAL 0x00 0x20   INVOKEVIRTUAL 0x03 0x65
     method ref net.minecraft.src.Texture.getHeight ()I -> bii.e ()I copySubTexture(Lbii;Lbii;IIZ)V@129
-     INVOKEVIRTUAL 0x00 0x21   INVOKEVIRTUAL 0x03 0x6f
+     INVOKEVIRTUAL 0x00 0x21   INVOKEVIRTUAL 0x03 0x67
     method ref com.prupe.mcpatcher.mod.MipmapHelper.setupTextureMipmaps (Lnet/minecraft/src/RenderEngine;Ljava/util/ArrayList;ILjava/lang/String;ZZ)V -> com.prupe.mcpatcher.mod.MipmapHelper.setupTextureMipmaps (Lbfy;Ljava/util/ArrayList;ILjava/lang/String;ZZ)V setupTexture(Lbfy;Ljava/awt/image/BufferedImage;IZZLjava/lang/String;)V@36
-     INVOKESTATIC 0x00 0x2e    INVOKESTATIC 0x03 0x71
-    field ref net.minecraft.src.RenderEngine.blurTexture Z -> bfy.blurTexture Z setupTexture(Lbfy;Ljava/awt/image/BufferedImage;ILjava/lang/String;)V@4
-     GETFIELD 0x00 0x32        GETFIELD 0x03 0x74
-    field ref net.minecraft.src.RenderEngine.clampTexture Z -> bfy.clampTexture Z setupTexture(Lbfy;Ljava/awt/image/BufferedImage;ILjava/lang/String;)V@8
-     GETFIELD 0x00 0x33        GETFIELD 0x03 0x75
+     INVOKESTATIC 0x00 0x2e    INVOKESTATIC 0x03 0x69
     field ref net.minecraft.src.Texture.glMinFilter I -> bii.g I setupTextureMipmaps(Lbfy;Ljava/util/ArrayList;ILjava/lang/String;ZZ)V@80
-     PUTFIELD 0x00 0x50        PUTFIELD 0x03 0x78
+     PUTFIELD 0x00 0x4e        PUTFIELD 0x03 0x6c
     field ref net.minecraft.src.Texture.glMagFilter I -> bii.i I setupTextureMipmaps(Lbfy;Ljava/util/ArrayList;ILjava/lang/String;ZZ)V@89
-     PUTFIELD 0x00 0x51        PUTFIELD 0x03 0x7a
-    method ref net.minecraft.src.RenderEngine.setupTexture2 (Ljava/awt/image/BufferedImage;IZZ)V -> bfy.a (Ljava/awt/image/BufferedImage;IZZ)V setupTextureMipmaps(Lbfy;Ljava/util/ArrayList;ILjava/lang/String;ZZ)V@206
-     INVOKEVIRTUAL 0x00 0x5e   INVOKEVIRTUAL 0x03 0x7c
-    method ref com.prupe.mcpatcher.mod.MipmapHelper.setupTexture (Lnet/minecraft/src/RenderEngine;Ljava/awt/image/BufferedImage;ILjava/lang/String;)V -> com.prupe.mcpatcher.mod.MipmapHelper.setupTexture (Lbfy;Ljava/awt/image/BufferedImage;ILjava/lang/String;)V forceMipmapType(Ljava/lang/String;I)V@107
-     INVOKESTATIC 0x00 0xa1    INVOKESTATIC 0x03 0x7e
+     PUTFIELD 0x00 0x4f        PUTFIELD 0x03 0x6e
+    method ref net.minecraft.src.RenderEngine.setupTextureWithFlags (Ljava/awt/image/BufferedImage;IZZ)V -> bfy.a (Ljava/awt/image/BufferedImage;IZZ)V setupTextureMipmaps(Lbfy;Ljava/util/ArrayList;ILjava/lang/String;ZZ)V@206
+     INVOKEVIRTUAL 0x00 0x5c   INVOKEVIRTUAL 0x03 0x72
    string replace Lnet/minecraft/src/RenderEngine; -> Lbfy; @2442
    string replace Lnet/minecraft/src/Texture; -> Lbii; @380
   adding com/prupe/mcpatcher/mod/FancyDial.class for Extended HD
@@ -7025,8 +7034,6 @@ __TexturePackBase
     added com/prupe/mcpatcher/WeightedIndex$1.class
     added com/prupe/mcpatcher/WeightedIndex$2.class
     added com/prupe/mcpatcher/WeightedIndex.class
-    GetResource (multiple matches: aur awp)
-        [2] ImageIO.read(getResource(...)) -> getImage(...)
     ITexturePack (bjn.class)
     Minecraft (net/minecraft/client/Minecraft.class)
         [1] check for texture pack change
@@ -7034,10 +7041,12 @@ __TexturePackBase
     RenderEngine (bfy.class)
         [1] after texture refresh
         [1] before texture refresh
+        [1] getResourceAsStream(...), readTextureImage -> getImage(...)
         [2] imageData.clear(), .put(), .limit() -> imageData = TexturePackAPI.getIntBuffer()
-        [1] null check in getImageRGB
+        [1] null check in getImageContents
         [1] null check in readTextureImage
         [1] null check in setupTexture
+        [2] readTextureImage(getResourceAsStream(...)) -> getImage(...)
     TexturePackCustom (bjl.class)
         [1] insert field lastModified J
         [1] insert field origZip Ljava/util/zip/ZipFile;
@@ -7060,20 +7069,15 @@ Extended HD
         [1] make field colorBuffer public
     ColorizerGrass (zu.class)
         [1] make field colorBuffer public
-    GetResource (multiple matches: aur awp)
     ITexturePack (bjn.class)
     Icon (lx.class)
     Minecraft (net/minecraft/client/Minecraft.class)
     Minecraft (net/minecraft/client/Minecraft.class)
     RenderEngine (bfy.class)
     RenderEngine (bfy.class)
-        [3] generate mipmaps during texture setup
-        [0] getResourceAsStream(...), readTextureImage -> getImage(...)
-        [1] null check in getImageRGB
-        [1] null check in setupTexture
+        [2] generate mipmaps during texture setup
         [1] override mipmap level in setupTexture
         [1] preserve texture parameters during mipmap creation
-        [2] readTextureImage(getResourceAsStream(...)) -> getImage(...)
         [1] update custom animations
     Texture (bii.class)
         [1] generate mipmaps
@@ -7103,6 +7107,7 @@ HD Font
     FontRenderer (awp.class)
         [1] 4.0f -> charWidthf[32]
         [1] FontUtils.computeCharWidths on init
+        [1] ImageIO.read(getResource(...)) -> getImage(...)
         [1] insert field charWidthf [F
         [1] replace getStringWidth
         [1] use charWidthf instead of charWidth
