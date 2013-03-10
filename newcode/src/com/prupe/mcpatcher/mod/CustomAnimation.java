@@ -20,8 +20,6 @@ public class CustomAnimation {
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "animations", true);
     private static final ArrayList<CustomAnimation> animations = new ArrayList<CustomAnimation>();
 
-    private static int boundTexture = -1;
-
     private final String propertiesName;
     private final String dstName;
     private final String srcName;
@@ -96,7 +94,6 @@ public class CustomAnimation {
     }
 
     public static void updateAll() {
-        boundTexture = -1;
         for (CustomAnimation animation : animations) {
             animation.update();
         }
@@ -218,10 +215,7 @@ public class CustomAnimation {
         if (++currentFrame >= numFrames) {
             currentFrame = 0;
         }
-        if (texture != boundTexture) {
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
-            boundTexture = texture;
-        }
+        TexturePackAPI.bindTexture(texture);
         update(texture, 0, 0);
         int glError = GL11.glGetError();
         if (glError != 0) {

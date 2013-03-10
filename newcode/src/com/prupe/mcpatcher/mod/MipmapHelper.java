@@ -116,7 +116,7 @@ public class MipmapHelper {
             newBuffer.put(srcBuffer).flip();
             src.byteBuffer = srcBuffer = newBuffer;
         }
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, dst.getGLTexture());
+        TexturePackAPI.bindTexture(dst.getGLTexture());
         int mipmaps = dst.useMipmaps ? getMipmapLevels() : 0;
         int width = src.getWidth();
         int height = src.getHeight();
