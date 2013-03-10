@@ -215,7 +215,11 @@ public class TexturePackAPI {
     }
 
     public static void bindTexture(String s) {
-        MCPatcherUtils.getMinecraft().renderEngine.bindTexture(s);
+        MCPatcherUtils.getMinecraft().renderEngine.bindTextureByName(s);
+    }
+
+    public static void bindTexture(int texture) {
+        MCPatcherUtils.getMinecraft().renderEngine.bindTexture(texture);
     }
 
     public static void clearBoundTexture() {

@@ -153,7 +153,8 @@ public class BaseTexturePackMod extends Mod {
             final MethodRef setupTextureWithFlags = new MethodRef(getDeobfClass(), "setupTextureWithFlags", "(Ljava/awt/image/BufferedImage;IZZ)V");
             final MethodRef getImageContents = new MethodRef(getDeobfClass(), "getImageContents", "(Ljava/awt/image/BufferedImage;[I)[I");
             final MethodRef readTextureImage = new MethodRef(getDeobfClass(), "readTextureImage", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
-            final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(Ljava/lang/String;)V");
+            final MethodRef bindTextureByName = new MethodRef(getDeobfClass(), "bindTextureByName", "(Ljava/lang/String;)V");
+            final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(I)V");
             final MethodRef clearBoundTexture = new MethodRef(getDeobfClass(), "clearBoundTexture", "()V");
             final MethodRef clear = new MethodRef("java/nio/IntBuffer", "clear", "()Ljava/nio/Buffer;");
             final MethodRef put = new MethodRef("java/nio/IntBuffer", "put", "([I)Ljava/nio/IntBuffer;");
@@ -177,6 +178,15 @@ public class BaseTexturePackMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V"))
+                    );
+                }
+            }.setMethod(bindTexture));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
                         begin(),
                         ALOAD_0,
                         push(-1)
@@ -189,7 +199,9 @@ public class BaseTexturePackMod extends Mod {
             addMemberMapper(new MethodMapper(setupTextureWithFlags));
             addMemberMapper(new MethodMapper(getImageContents));
             addMemberMapper(new MethodMapper(readTextureImage));
-            addMemberMapper(new MethodMapper(bindTexture));
+            addMemberMapper(new MethodMapper(bindTextureByName));
+
+            addPatch(new MakeMemberPublicPatch(bindTexture));
 
             addPatch(new BytecodePatch() {
                 @Override

@@ -5,7 +5,10 @@ import java.awt.image.BufferedImage;
 public class RenderEngine {
     public TexturePackList texturePackList;
 
-    public void bindTexture(String s) {
+    public void bindTextureByName(String s) {
+    }
+
+    public void bindTexture(int texture) {
     }
 
     public void clearBoundTexture() {
