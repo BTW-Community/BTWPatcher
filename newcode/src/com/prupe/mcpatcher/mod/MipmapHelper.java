@@ -136,11 +136,11 @@ public class MipmapHelper {
             checkGLError("%s -> %s: glTexSubImage2D(%d, %d, %d, %d, %d)",
                 src.getName(), dst.getName(), i, x, y, width, height
             );
-            ByteBuffer newBuffer = getPooledBuffer(width * height);
-            scaleHalf(srcBuffer.asIntBuffer(), width, height, newBuffer.asIntBuffer(), 0);
             if (i >= mipmaps) {
                 break;
             }
+            ByteBuffer newBuffer = getPooledBuffer(width * height);
+            scaleHalf(srcBuffer.asIntBuffer(), width, height, newBuffer.asIntBuffer(), 0);
             width >>= 1;
             height >>= 1;
             x >>= 1;
