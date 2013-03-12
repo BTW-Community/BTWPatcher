@@ -9,6 +9,8 @@ public class Texture {
     public boolean useMipmaps;
     public ByteBuffer byteBuffer;
 
+    public int border; // added by Extended HD
+
     public int getGLTexture() {
         return 0;
     }

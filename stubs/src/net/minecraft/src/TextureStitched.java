@@ -21,7 +21,7 @@ public class TextureStitched implements Icon {
         return 0;
     }
 
-    public float interpolateX(double var1) {
+    public float interpolateX(double x) {
         return 0;
     }
 
@@ -33,7 +33,7 @@ public class TextureStitched implements Icon {
         return 0;
     }
 
-    public float interpolateY(double var1) {
+    public float interpolateY(double y) {
         return 0;
     }
 
@@ -51,7 +51,7 @@ public class TextureStitched implements Icon {
     public TextureStitched(String name) {
     }
 
-    public void setup(Texture texture, List subTextures, int x0, int y0, int width, int height, boolean flipped) {
+    public void setup(Texture texture, List<Texture> subTextures, int x0, int y0, int width, int height, boolean flipped) {
     }
 
     public void update() {
