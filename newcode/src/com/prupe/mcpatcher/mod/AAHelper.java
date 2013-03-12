@@ -1,12 +1,12 @@
 package com.prupe.mcpatcher.mod;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 public class AAHelper {
-    private static final int borderSize = 8;
+    private static final int BORDER_COLOR = 0xffff0000;
+    private static final int border = 8;
 
     public static void main(String[] args) {
         try {
@@ -29,36 +29,47 @@ public class AAHelper {
     }
 
     public static BufferedImage addBorder(BufferedImage input) {
-        if (borderSize <= 0) {
+        if (border <= 0) {
             return input;
         }
-        final int width = input.getWidth();
+        int width = input.getWidth();
         int height = input.getHeight();
-        final int numFrames;
+        int numFrames;
         if (height % width == 0) {
             numFrames = height / width;
             height = width;
         } else {
             numFrames = 1;
         }
-        final int newWidth = width + 2 * borderSize;
-        final int newHeight = height + 2 * borderSize;
-        final BufferedImage output = new BufferedImage(newWidth, numFrames * newHeight, BufferedImage.TYPE_INT_ARGB);
+        int newWidth = width + 2 * border;
+        int newHeight = height + 2 * border;
+        BufferedImage output = new BufferedImage(newWidth, numFrames * newHeight, BufferedImage.TYPE_INT_ARGB);
         for (int frame = 0; frame < numFrames; frame++) {
             int sy = frame * height;
             int dy = frame * newHeight;
 
-            copyRegion(input, width - borderSize, sy + height - borderSize, output, 0, dy, borderSize, borderSize, true, true);
-            copyRegion(input, 0, sy + height - borderSize, output, borderSize, dy, width, borderSize, false, true);
-            copyRegion(input, 0, sy + height - borderSize, output, width + borderSize, dy, borderSize, borderSize, true, true);
+            copyRegion(input, 0, sy, output, 0, dy, border, border, true, true);
+            copyRegion(input, 0, sy, output, border, dy, width, border, false, true);
+            copyRegion(input, width - border, sy, output, width + border, dy, border, border, true, true);
 
-            copyRegion(input, width - borderSize, sy, output, 0, dy + borderSize, borderSize, width, true, false);
-            copyRegion(input, 0, sy, output, borderSize, dy + borderSize, width, height, false, false);
-            copyRegion(input, 0, sy, output, width + borderSize, dy + borderSize, borderSize, width, true, false);
+            copyRegion(input, 0, sy, output, 0, dy + border, border, width, true, false);
+            copyRegion(input, 0, sy, output, border, dy + border, width, height, false, false);
+            copyRegion(input, width - border, sy, output, width + border, dy + border, border, width, true, false);
 
-            copyRegion(input, width - borderSize, sy, output, 0, dy + height + borderSize, borderSize, borderSize, true, true);
-            copyRegion(input, 0, sy, output, borderSize, dy + height + borderSize, width, borderSize, false, true);
-            copyRegion(input, 0, sy, output, width + borderSize, dy + height + borderSize, borderSize, borderSize, true, true);
+            copyRegion(input, 0, sy + height - border, output, 0, dy + height + border, border, border, true, true);
+            copyRegion(input, 0, sy + height - border, output, border, dy + height + border, width, border, false, true);
+            copyRegion(input, width - border, sy + height - border, output, width + border, dy + height + border, border, border, true, true);
+
+            if (BORDER_COLOR != 0) {
+                for (int i = 0; i < width; i++) {
+                    output.setRGB(i + border, dy + border, BORDER_COLOR);
+                    output.setRGB(i + border, dy + height + border, BORDER_COLOR);
+                }
+                for (int i = 0; i < height; i++) {
+                    output.setRGB(border, dy + i + border, BORDER_COLOR);
+                    output.setRGB(height + border, dy + i + border, BORDER_COLOR);
+                }
+            }
         }
         return output;
     }
