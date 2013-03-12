@@ -14,7 +14,7 @@ public class ExtendedHD extends BaseTexturePackMod {
         name = MCPatcherUtils.EXTENDED_HD;
         author = "MCPatcher";
         description = "Provides extended support for custom animations, mipmapping, and other graphical features.";
-        version = "2.1";
+        version = "2.2";
 
         configPanel = new HDConfig();
 
@@ -31,6 +31,7 @@ public class ExtendedHD extends BaseTexturePackMod {
         addClassMod(new ColorizerMod("ColorizerFoliage"));
         addClassMod(new BaseMod.IconMod());
         addClassMod(new TextureMod());
+        addClassMod(new TextureManagerMod());
         addClassMod(new TextureStitchedMod());
         addClassMod(new TextureCompassMod());
         addClassMod(new TextureClockMod());
@@ -39,6 +40,7 @@ public class ExtendedHD extends BaseTexturePackMod {
         addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS + "$1");
         addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS + "$1$1");
         addClassFile(MCPatcherUtils.MIPMAP_HELPER_CLASS);
+        addClassFile(MCPatcherUtils.AA_HELPER_CLASS);
         addClassFile(MCPatcherUtils.FANCY_DIAL_CLASS);
         addClassFile(MCPatcherUtils.FANCY_DIAL_CLASS + "$Layer");
     }
@@ -404,6 +406,70 @@ public class ExtendedHD extends BaseTexturePackMod {
             );
 
             return field;
+        }
+    }
+
+    private class TextureManagerMod extends ClassMod {
+        TextureManagerMod() {
+            final MethodRef createTextureFromImage = new MethodRef(getDeobfClass(), "createTextureFromImage", "(Ljava/lang/String;IIIIIIIZLjava/awt/image/BufferedImage;)Lnet/minecraft/src/Texture;");
+            final MethodRef lastIndexOf = new MethodRef("java/lang/String", "lastIndexOf", "(I)I");
+
+            addClassSignature(new ConstSignature("/"));
+            addClassSignature(new ConstSignature(".txt"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(46),
+                        reference(INVOKEVIRTUAL, lastIndexOf)
+                    );
+                }
+            });
+
+            addMemberMapper(new MethodMapper(createTextureFromImage));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "add texture border";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // image = AAHelper.addBorder(image, false);
+                        ALOAD, 10,
+                        push(0),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(Ljava/awt/image/BufferedImage;Z)Ljava/awt/image/BufferedImage;")),
+                        ASTORE, 10,
+
+                        // if (image != null) {
+                        ALOAD, 10,
+                        IFNULL, branch("A"),
+
+                        // width = image.getWidth();
+                        ALOAD, 10,
+                        reference(INVOKEVIRTUAL, new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I")),
+                        ISTORE_3,
+
+                        // height = image.getHeight();
+                        ALOAD, 10,
+                        reference(INVOKEVIRTUAL, new MethodRef("java/awt/image/BufferedImage", "getHeight", "()I")),
+                        ISTORE, 4,
+
+                        // }
+                        label("A")
+                    );
+                }
+            }.targetMethod(createTextureFromImage));
         }
     }
 

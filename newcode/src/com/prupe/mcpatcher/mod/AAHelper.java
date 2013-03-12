@@ -13,7 +13,7 @@ public class AAHelper {
             File inputFile = new File(args[0]);
             BufferedImage input = ImageIO.read(inputFile);
             System.out.printf("Read %s %dx%d\n", inputFile, input.getWidth(), input.getHeight());
-            BufferedImage output = addBorder(input);
+            BufferedImage output = addBorder(input, true);
             File outputFile = new File(args[1]);
             if (output == input) {
                 outputFile.delete();
@@ -28,14 +28,14 @@ public class AAHelper {
         }
     }
 
-    public static BufferedImage addBorder(BufferedImage input) {
-        if (border <= 0) {
+    public static BufferedImage addBorder(BufferedImage input, boolean isAnimation) {
+        if (border <= 0 || input == null) {
             return input;
         }
         int width = input.getWidth();
         int height = input.getHeight();
         int numFrames;
-        if (height % width == 0) {
+        if (isAnimation && height % width == 0) {
             numFrames = height / width;
             height = width;
         } else {

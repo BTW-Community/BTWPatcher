@@ -53,6 +53,7 @@ public class MCPatcherUtils {
     public static final String CUSTOM_ANIMATION_CLASS = "com.prupe.mcpatcher.mod.CustomAnimation";
     public static final String FANCY_DIAL_CLASS = "com.prupe.mcpatcher.mod.FancyDial";
     public static final String MIPMAP_HELPER_CLASS = "com.prupe.mcpatcher.mod.MipmapHelper";
+    public static final String AA_HELPER_CLASS = "com.prupe.mcpatcher.mod.AAHelper";
     public static final String FONT_UTILS_CLASS = "com.prupe.mcpatcher.mod.FontUtils";
     public static final String RANDOM_MOBS_CLASS = "com.prupe.mcpatcher.mod.MobRandomizer";
     public static final String MOB_RULE_LIST_CLASS = "com.prupe.mcpatcher.mod.MobRuleList";
