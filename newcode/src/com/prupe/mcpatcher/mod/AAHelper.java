@@ -8,6 +8,8 @@ public class AAHelper {
     private static final int BORDER_COLOR = 0xffff0000;
     private static final int border = 8;
 
+    public static int lastBorder;
+
     public static void main(String[] args) {
         try {
             File inputFile = new File(args[0]);
@@ -30,6 +32,7 @@ public class AAHelper {
 
     public static BufferedImage addBorder(BufferedImage input, boolean isAnimation) {
         if (border <= 0 || input == null) {
+            lastBorder = 0;
             return input;
         }
         int width = input.getWidth();
@@ -71,6 +74,7 @@ public class AAHelper {
                 }
             }
         }
+        lastBorder = border;
         return output;
     }
 

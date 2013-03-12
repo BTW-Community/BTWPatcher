@@ -8,6 +8,8 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class ExtendedHD extends BaseTexturePackMod {
+    private final FieldRef textureBorder = new FieldRef("Texture", "border", "I");
+
     public ExtendedHD() {
         clearPatches();
 
@@ -41,8 +43,11 @@ public class ExtendedHD extends BaseTexturePackMod {
         addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS + "$1$1");
         addClassFile(MCPatcherUtils.MIPMAP_HELPER_CLASS);
         addClassFile(MCPatcherUtils.AA_HELPER_CLASS);
+        addClassFile(MCPatcherUtils.BORDERED_TEXTURE_CLASS);
         addClassFile(MCPatcherUtils.FANCY_DIAL_CLASS);
         addClassFile(MCPatcherUtils.FANCY_DIAL_CLASS + "$Layer");
+
+        getClassMap().addInheritance("TextureStitched", MCPatcherUtils.BORDERED_TEXTURE_CLASS);
     }
 
     @Override
@@ -307,6 +312,7 @@ public class ExtendedHD extends BaseTexturePackMod {
             });
 
             addPatch(new MakeMemberPublicPatch(byteBuffer));
+            addPatch(new AddFieldPatch(textureBorder));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -438,7 +444,11 @@ public class ExtendedHD extends BaseTexturePackMod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        begin()
+                        reference(NEW, new ClassRef("Texture")),
+                        DUP,
+                        any(0, 30),
+                        anyReference(INVOKESPECIAL),
+                        ASTORE, capture(any())
                     );
                 }
 
@@ -466,7 +476,15 @@ public class ExtendedHD extends BaseTexturePackMod {
                         ISTORE, 4,
 
                         // }
-                        label("A")
+                        label("A"),
+
+                        // ...
+                        getMatch(),
+
+                        // texture.border = AAHelper.lastBorder;
+                        ALOAD, getCaptureGroup(1),
+                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.AA_HELPER_CLASS, "lastBorder", "I")),
+                        reference(PUTFIELD, textureBorder)
                     );
                 }
             }.targetMethod(createTextureFromImage));
@@ -477,13 +495,38 @@ public class ExtendedHD extends BaseTexturePackMod {
         TextureStitchedMod() {
             setInterfaces("Icon");
 
+            final FieldRef texture = new FieldRef(getDeobfClass(), "texture", "LTexture;");
+            final MethodRef setup = new MethodRef(getDeobfClass(), "setup", "(LTexture;Ljava/util/List;IIIIZ)V");
             final MethodRef update = new MethodRef(getDeobfClass(), "update", "()V");
 
             addClassSignature(new ConstSignature("clock"));
             addClassSignature(new ConstSignature("compass"));
             addClassSignature(new ConstSignature(","));
 
+            addMemberMapper(new FieldMapper(texture));
+            addMemberMapper(new MethodMapper(setup));
             addMemberMapper(new MethodMapper(update));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override " + getDeobfClass();
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKESPECIAL, new MethodRef(getDeobfClass(), "<init>", "(Ljava/lang/String;)V"))
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(INVOKESPECIAL, new MethodRef(MCPatcherUtils.BORDERED_TEXTURE_CLASS, "<init>", "(Ljava/lang/String;)V"))
+                    );
+                }
+            });
         }
     }
 
