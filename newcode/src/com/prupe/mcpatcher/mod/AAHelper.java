@@ -48,24 +48,34 @@ public class AAHelper {
             int sy = frame * height;
             int dy = frame * newHeight;
 
-            copyRegion(input, width - borderSize, sy + height - borderSize, output, 0, dy, borderSize, borderSize);
-            copyRegion(input, 0, sy + height - borderSize, output, borderSize, dy, width, borderSize);
-            copyRegion(input, 0, sy + height - borderSize, output, width + borderSize, dy, borderSize, borderSize);
+            copyRegion(input, width - borderSize, sy + height - borderSize, output, 0, dy, borderSize, borderSize, true, true);
+            copyRegion(input, 0, sy + height - borderSize, output, borderSize, dy, width, borderSize, false, true);
+            copyRegion(input, 0, sy + height - borderSize, output, width + borderSize, dy, borderSize, borderSize, true, true);
 
-            copyRegion(input, width - borderSize, sy, output, 0, dy + borderSize, borderSize, width);
-            copyRegion(input, 0, sy, output, borderSize, dy + borderSize, width, height);
-            copyRegion(input, 0, sy, output, width + borderSize, dy + borderSize, borderSize, width);
+            copyRegion(input, width - borderSize, sy, output, 0, dy + borderSize, borderSize, width, true, false);
+            copyRegion(input, 0, sy, output, borderSize, dy + borderSize, width, height, false, false);
+            copyRegion(input, 0, sy, output, width + borderSize, dy + borderSize, borderSize, width, true, false);
 
-            copyRegion(input, width - borderSize, sy, output, 0, dy + height + borderSize, borderSize, borderSize);
-            copyRegion(input, 0, sy, output, borderSize, dy + height + borderSize, width, borderSize);
-            copyRegion(input, 0, sy, output, width + borderSize, dy + height + borderSize, borderSize, borderSize);
+            copyRegion(input, width - borderSize, sy, output, 0, dy + height + borderSize, borderSize, borderSize, true, true);
+            copyRegion(input, 0, sy, output, borderSize, dy + height + borderSize, width, borderSize, false, true);
+            copyRegion(input, 0, sy, output, width + borderSize, dy + height + borderSize, borderSize, borderSize, true, true);
         }
         return output;
     }
 
-    private static void copyRegion(BufferedImage input, int sx, int sy, BufferedImage output, int dx, int dy, int w, int h) {
+    private static void copyRegion(BufferedImage input, int sx, int sy, BufferedImage output, int dx, int dy, int w, int h, boolean flipX, boolean flipY) {
         int[] rgb = new int[w * h];
         input.getRGB(sx, sy, w, h, rgb, 0, w);
-        output.setRGB(dx, dy, w, h, rgb, 0, w);
+        if (flipX || flipY) {
+            int[] rgbFlipped = new int[w * h];
+            for (int i = 0; i < w; i++) {
+                for (int j = 0; j < h; j++) {
+                    rgbFlipped[w * j + i] = rgb[w * (flipY ? h - 1 - j : j) + (flipX ? w - 1 - i : i)];
+                }
+            }
+            output.setRGB(dx, dy, w, h, rgbFlipped, 0, w);
+        } else {
+            output.setRGB(dx, dy, w, h, rgb, 0, w);
+        }
     }
 }
