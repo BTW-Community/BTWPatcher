@@ -516,6 +516,9 @@ public class ExtendedHD extends BaseTexturePackMod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        reference(NEW, new ClassRef(getDeobfClass())),
+                        DUP,
+                        ALOAD_0,
                         reference(INVOKESPECIAL, new MethodRef(getDeobfClass(), "<init>", "(Ljava/lang/String;)V"))
                     );
                 }
@@ -523,6 +526,9 @@ public class ExtendedHD extends BaseTexturePackMod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        reference(NEW, new ClassRef(MCPatcherUtils.BORDERED_TEXTURE_CLASS)),
+                        DUP,
+                        ALOAD_0,
                         reference(INVOKESPECIAL, new MethodRef(MCPatcherUtils.BORDERED_TEXTURE_CLASS, "<init>", "(Ljava/lang/String;)V"))
                     );
                 }
