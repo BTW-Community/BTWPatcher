@@ -3,6 +3,8 @@ package net.minecraft.src;
 import java.util.List;
 
 public class TextureStitched implements Icon {
+    protected Texture texture;
+
     public int getX0() {
         return 0;
     }
@@ -46,12 +48,10 @@ public class TextureStitched implements Icon {
     public int getTextureHeight() {
         return 0;
     }
-
-    public static TextureStitched getTile(String name) {
-        return null;
+    public TextureStitched(String name) {
     }
 
-    public void setup(Stitcher loader, List list, int x0, int y0, int width, int height, boolean flag) {
+    public void setup(Texture texture, List subTextures, int x0, int y0, int width, int height, boolean flipped) {
     }
 
     public void update() {
