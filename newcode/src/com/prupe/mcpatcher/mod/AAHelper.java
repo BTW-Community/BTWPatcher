@@ -6,9 +6,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import org.lwjgl.opengl.PixelFormat;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 
 public class AAHelper {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
@@ -84,6 +82,7 @@ public class AAHelper {
         } else {
             border = 2;
         }
+        border = Math.min(border, Math.min(width, height));
     }
 
     private static void copyRegion(BufferedImage input, int sx, int sy, BufferedImage output, int dx, int dy, int w, int h, boolean flipX, boolean flipY) {
