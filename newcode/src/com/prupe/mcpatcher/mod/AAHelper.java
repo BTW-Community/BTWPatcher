@@ -16,26 +16,6 @@ public class AAHelper {
 
     public static int border;
 
-    public static void main(String[] args) {
-        try {
-            File inputFile = new File(args[0]);
-            BufferedImage input = ImageIO.read(inputFile);
-            System.out.printf("Read %s %dx%d\n", inputFile, input.getWidth(), input.getHeight());
-            BufferedImage output = addBorder(input, true);
-            File outputFile = new File(args[1]);
-            if (output == input) {
-                outputFile.delete();
-                System.out.println("Image is identical");
-            } else {
-                ImageIO.write(output, "png", outputFile);
-                System.out.printf("Wrote %s %dx%d\n", outputFile, output.getWidth(), output.getHeight());
-            }
-        } catch (Throwable e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
-
     public static PixelFormat setupPixelFormat(PixelFormat pixelFormat) {
         if (aaSamples > 1) {
             return pixelFormat.withSamples(aaSamples);
