@@ -229,6 +229,25 @@ class ModList {
         return indexOfVisible(mod);
     }
 
+    int addFirstBuiltin(Mod mod) {
+        String name = mod.getName();
+        Mod oldMod = modsByName.get(name);
+        if (oldMod != null) {
+            remove(oldMod);
+        }
+        int i;
+        for (i = 0; i < modsByIndex.size(); i++) {
+            oldMod = modsByIndex.get(i);
+            if (!(oldMod instanceof ExternalMod) && indexOfVisible(oldMod) >= 0) {
+                break;
+            }
+        }
+        modsByIndex.add(i, mod);
+        modsByName.put(name, mod);
+        mod.setRefs();
+        return indexOfVisible(mod);
+    }
+
     int addLast(Mod mod) {
         String name = mod.getName();
         Mod oldMod = modsByName.get(name);

@@ -300,7 +300,7 @@ class MainForm {
                     addModDialog.setVisible(true);
                     Mod mod = addModDialog.getMod();
                     if (mod != null) {
-                        int row = MCPatcher.modList.addFirst(mod);
+                        int row = MCPatcher.modList.addFirstBuiltin(mod);
                         mod.setEnabled(true);
                         modTable.clearSelection();
                         AbstractTableModel model = (AbstractTableModel) modTable.getModel();
