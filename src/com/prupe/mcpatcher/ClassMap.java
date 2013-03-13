@@ -417,25 +417,25 @@ public class ClassMap {
 
             switch (tag) {
                 case ConstPool.CONST_Class:
-                    oldClass = cp.getClassInfo(i);
+                    oldClass = cp.getClassInfo(i).replace('.', '/');
                     oldName = null;
                     oldType = null;
                     break;
 
                 case ConstPool.CONST_Fieldref:
-                    oldClass = cp.getFieldrefClassName(i);
+                    oldClass = cp.getFieldrefClassName(i).replace('.', '/');
                     oldName = cp.getFieldrefName(i);
                     oldType = cp.getFieldrefType(i);
                     break;
 
                 case ConstPool.CONST_Methodref:
-                    oldClass = cp.getMethodrefClassName(i);
+                    oldClass = cp.getMethodrefClassName(i).replace('.', '/');
                     oldName = cp.getMethodrefName(i);
                     oldType = cp.getMethodrefType(i);
                     break;
 
                 case ConstPool.CONST_InterfaceMethodref:
-                    oldClass = cp.getInterfaceMethodrefClassName(i);
+                    oldClass = cp.getInterfaceMethodrefClassName(i).replace('.', '/');
                     oldName = cp.getInterfaceMethodrefName(i);
                     oldType = cp.getInterfaceMethodrefType(i);
                     break;
