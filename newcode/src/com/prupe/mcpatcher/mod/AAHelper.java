@@ -25,14 +25,8 @@ public class AAHelper {
     }
 
     public static BufferedImage addBorder(BufferedImage input, boolean isAnimation) {
-        if (MipmapHelper.mipmapEnabled && MipmapHelper.maxMipmapLevel > 0) {
-            border = 1 << Math.max(Math.min(MipmapHelper.maxMipmapLevel, 4), 0);
-        } else if (aaSamples > 1 || MipmapHelper.anisoLevel > 1) {
-            border = 2;
-        } else {
+        if (input == null) {
             border = 0;
-        }
-        if (border <= 0 || input == null) {
             return input;
         }
         int width = input.getWidth();
@@ -43,6 +37,10 @@ public class AAHelper {
             height = width;
         } else {
             numFrames = 1;
+        }
+        setupBorder(input, width, height);
+        if (border <= 0) {
+            return input;
         }
         int newWidth = width + 2 * border;
         int newHeight = height + 2 * border;
@@ -63,18 +61,43 @@ public class AAHelper {
             copyRegion(input, 0, sy + height - border, output, border, dy + height + border, width, border, false, true);
             copyRegion(input, width - border, sy + height - border, output, width + border, dy + height + border, border, border, true, true);
 
-            if (BORDER_COLOR != 0) {
-                for (int i = 0; i < width; i++) {
-                    output.setRGB(i + border, dy + border, BORDER_COLOR);
-                    output.setRGB(i + border, dy + height + border, BORDER_COLOR);
-                }
-                for (int i = 0; i < height; i++) {
-                    output.setRGB(border, dy + i + border, BORDER_COLOR);
-                    output.setRGB(height + border, dy + i + border, BORDER_COLOR);
-                }
-            }
+            addDebugOutline(output, dy, width, height);
         }
         return output;
+    }
+
+    private static void setupBorder(BufferedImage input, int width, int height) {
+        if (input == null) {
+            border = 0;
+        } else if (MipmapHelper.mipmapEnabled && MipmapHelper.maxMipmapLevel > 0) {
+            border = 1 << Math.max(Math.min(MipmapHelper.maxMipmapLevel, 4), 0);
+        } else if (aaSamples > 1 || MipmapHelper.anisoLevel > 1) {
+            border = 2;
+        } else {
+            border = 0;
+        }
+        if (border > 0) {
+            int edgeCount = 0;
+            for (int i = 0; i < width; i++) {
+                if ((input.getRGB(i, 0) & 0xff000000) != 0) {
+                    edgeCount++;
+                }
+                if ((input.getRGB(i, height - 1) & 0xff000000) != 0) {
+                    edgeCount++;
+                }
+            }
+            for (int i = 1; i < height - 1; i++) {
+                if ((input.getRGB(0, i) & 0xff000000) != 0) {
+                    edgeCount++;
+                }
+                if ((input.getRGB(width - 1, i) & 0xff000000) != 0) {
+                    edgeCount++;
+                }
+            }
+            if ((float) edgeCount / (float) (2 * (width + height)) < 0.3f) {
+                border = 0;
+            }
+        }
     }
 
     private static void copyRegion(BufferedImage input, int sx, int sy, BufferedImage output, int dx, int dy, int w, int h, boolean flipX, boolean flipY) {
@@ -90,6 +113,19 @@ public class AAHelper {
             output.setRGB(dx, dy, w, h, rgbFlipped, 0, w);
         } else {
             output.setRGB(dx, dy, w, h, rgb, 0, w);
+        }
+    }
+
+    private static void addDebugOutline(BufferedImage output, int dy, int width, int height) {
+        if (BORDER_COLOR != 0) {
+            for (int i = 0; i < width; i++) {
+                output.setRGB(i + border, dy + border, BORDER_COLOR);
+                output.setRGB(i + border, dy + height + border, BORDER_COLOR);
+            }
+            for (int i = 0; i < height; i++) {
+                output.setRGB(border, dy + i + border, BORDER_COLOR);
+                output.setRGB(height + border, dy + i + border, BORDER_COLOR);
+            }
         }
     }
 }
