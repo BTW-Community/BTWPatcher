@@ -18,10 +18,9 @@ public class AAHelper {
     private static final int aaSamples = Config.getInt(MCPatcherUtils.EXTENDED_HD, "antiAliasing", 1);
 
     public static int border;
-    static int maxBorder;
 
     static void reset() {
-        maxBorder = 0;
+        TexturePackAPI.enableTextureBorder = false;
     }
 
     public static PixelFormat setupPixelFormat(PixelFormat pixelFormat) {
@@ -78,36 +77,13 @@ public class AAHelper {
     }
 
     private static void setupBorder(BufferedImage input, int width, int height) {
-        if (MipmapHelper.mipmapEnabled && MipmapHelper.maxMipmapLevel > 0) {
-            border = 1 << Math.max(Math.min(MipmapHelper.maxMipmapLevel, 4), 0);
-        } else if (aaSamples > 1 || MipmapHelper.anisoLevel > 1) {
-            border = 2;
-        } else {
+        if (aaSamples <= 1 && MipmapHelper.anisoLevel <= 1) {
             border = 0;
+        } else if (MipmapHelper.mipmapEnabled && MipmapHelper.maxMipmapLevel > 0) {
+            border = 1 << Math.max(Math.min(MipmapHelper.maxMipmapLevel, 4), 0);
+        } else {
+            border = 2;
         }
-        if (border > 0) {
-            int edgeCount = 0;
-            for (int i = 0; i < width; i++) {
-                if ((input.getRGB(i, 0) & 0xff000000) != 0) {
-                    edgeCount++;
-                }
-                if ((input.getRGB(i, height - 1) & 0xff000000) != 0) {
-                    edgeCount++;
-                }
-            }
-            for (int i = 1; i < height - 1; i++) {
-                if ((input.getRGB(0, i) & 0xff000000) != 0) {
-                    edgeCount++;
-                }
-                if ((input.getRGB(width - 1, i) & 0xff000000) != 0) {
-                    edgeCount++;
-                }
-            }
-            if ((float) edgeCount / (float) (2 * (width + height)) < 0.3f) {
-                border = 0;
-            }
-        }
-        maxBorder = Math.max(border, maxBorder);
     }
 
     private static void copyRegion(BufferedImage input, int sx, int sy, BufferedImage output, int dx, int dy, int w, int h, boolean flipX, boolean flipY) {
