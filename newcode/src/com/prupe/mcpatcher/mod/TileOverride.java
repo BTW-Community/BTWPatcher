@@ -156,7 +156,8 @@ abstract class TileOverride implements ITileOverride {
     private final int minHeight;
     private final int maxHeight;
 
-    private List<String> iconImages;
+    private final List<String> tileNames = new ArrayList<String>();
+    private final Map<String, List<Texture>> tileTextures = new HashMap<String, List<Texture>>();
     private int totalTextureSize;
     protected Icon[] icons;
     private boolean disabled;
@@ -227,8 +228,8 @@ abstract class TileOverride implements ITileOverride {
         directoryName = texturesDirectory.replaceAll(".*/", "");
         propertiesName = propertiesFile.replaceFirst(".*/", "").replaceFirst("\\.properties$", "");
 
-        iconImages = loadIcons(properties);
-        if (iconImages.isEmpty()) {
+        loadIcons(properties);
+        if (tileTextures.isEmpty()) {
             error("no images found in %s/", texturesDirectory);
         }
 
@@ -310,41 +311,52 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    private boolean addIcon(String name, List<String> list, boolean alwaysAdd) {
+    private boolean addIcon(String name, boolean alwaysAdd) {
         if (!name.toLowerCase().endsWith(".png")) {
             name += ".png";
         }
-        BufferedImage image = TexturePackAPI.getImage(name);
-        if (image == null) {
-            if (alwaysAdd) {
-                list.add(name);
+        if (tileTextures.containsKey(name)) {
+            tileNames.add(name);
+            return true;
+        }
+        List<Texture> textures;
+        try {
+            CTMUtils.overrideTextureName = name;
+            if (!debugTextures && TexturePackAPI.hasResource(name)) {
+                textures = TextureManager.getInstance().createTexture(name.replaceFirst("^/", ""));
+                if (textures == null || textures.isEmpty()) {
+                    return false;
+                }
+            } else if (alwaysAdd) {
+                BufferedImage fallbackImage = generateDebugTexture(name, 64, 64, renderPass > 2);
+                Texture texture = TextureManager.getInstance().setupTexture(
+                    name, 2, fallbackImage.getWidth(), fallbackImage.getHeight(), GL11.GL_CLAMP, GL11.GL_RGBA, GL11.GL_NEAREST, GL11.GL_NEAREST, false, fallbackImage
+                );
+                if (texture == null) {
+                    return false;
+                }
+                textures = new ArrayList<Texture>();
+                textures.add(texture);
+            } else {
+                return false;
             }
-            return false;
+        } finally {
+            CTMUtils.overrideTextureName = null;
         }
-        list.add(name);
-        int width = image.getWidth();
-        int height = image.getHeight();
-        if (height > width && height % width == 0) {
-            height = width;
-        }
-        if (maxBorder != null) {
-            try {
-                int border = maxBorder.getInt(null);
-                width += 2 * border;
-                height += 2 * border;
-            } catch (IllegalAccessException e) {
-            }
-        }
-        totalTextureSize += width * height;
+        tileNames.add(name);
+        tileTextures.put(name, textures);
+        Texture texture = textures.get(0);
+        totalTextureSize += texture.getWidth() * texture.getHeight();
         return true;
     }
 
-    private List<String> loadIcons(Properties properties) {
-        List<String> list = new ArrayList<String>();
+    private void loadIcons(Properties properties) {
+        tileNames.clear();
+        tileTextures.clear();
         String tileList = properties.getProperty("tiles", "").trim();
         if (tileList.equals("")) {
             for (int i = 0; ; i++) {
-                if (!addIcon(texturesDirectory + "/" + i + ".png", list, false)) {
+                if (!addIcon(texturesDirectory + "/" + i + ".png", false)) {
                     break;
                 }
             }
@@ -360,7 +372,7 @@ abstract class TileOverride implements ITileOverride {
                         int to = Integer.parseInt(matcher.group(2));
                         for (int i = from; i <= to; i++) {
                             String path = texturesDirectory + "/" + i + ".png";
-                            if (!addIcon(path, list, true)) {
+                            if (!addIcon(path, true)) {
                                 warn("could not find %s", path);
                             }
                         }
@@ -368,17 +380,16 @@ abstract class TileOverride implements ITileOverride {
                         e.printStackTrace();
                     }
                 } else if (token.startsWith("/")) {
-                    if (!addIcon(token, list, true)) {
+                    if (!addIcon(token, true)) {
                         warn("could not find image %s", token);
                     }
                 } else {
-                    if (!addIcon(texturesDirectory + "/" + token, list, true)) {
+                    if (!addIcon(texturesDirectory + "/" + token, true)) {
                         warn("could not find image %s in %s", token, texturesDirectory);
                     }
                 }
             }
         }
-        return list;
     }
 
     private Set<Integer> getIDList(Properties properties, String key, String type, String[] mappings) {
@@ -445,7 +456,7 @@ abstract class TileOverride implements ITileOverride {
     }
 
     protected int getNumberOfTiles() {
-        return iconImages == null ? 0 : iconImages.size();
+        return tileTextures == null ? 0 : tileTextures.size();
     }
 
     String checkTileMap() {
@@ -466,34 +477,12 @@ abstract class TileOverride implements ITileOverride {
     }
 
     public final void registerIcons(TextureMap textureMap, Stitcher stitcher, Map<StitchHolder, List<Texture>> map) {
-        icons = new Icon[iconImages.size()];
-        for (int i = 0; i < iconImages.size(); i++) {
-            String imageName = iconImages.get(i);
-            icons[i] = TessellatorUtils.getIconByName(imageName);
-            if (icons[i] != null) {
+        icons = new Icon[tileNames.size()];
+        for (int i = 0; i < tileNames.size(); i++) {
+            String imageName = tileNames.get(i);
+            List<Texture> textures = tileTextures.get(imageName);
+            if (textures == null) {
                 continue;
-            }
-            List<Texture> textures;
-            try {
-                CTMUtils.overrideTextureName = imageName;
-                if (!debugTextures && TexturePackAPI.hasResource(imageName)) {
-                    textures = TextureManager.getInstance().createTexture(imageName.replaceFirst("^/", ""));
-                    if (textures == null || textures.isEmpty()) {
-                        continue;
-                    }
-                } else {
-                    BufferedImage fallbackImage = generateDebugTexture(imageName, 64, 64, renderPass > 2);
-                    Texture texture = TextureManager.getInstance().setupTexture(
-                        imageName, 2, fallbackImage.getWidth(), fallbackImage.getHeight(), GL11.GL_CLAMP, GL11.GL_RGBA, GL11.GL_NEAREST, GL11.GL_NEAREST, false, fallbackImage
-                    );
-                    if (texture == null) {
-                        continue;
-                    }
-                    textures = new ArrayList<Texture>();
-                    textures.add(texture);
-                }
-            } finally {
-                CTMUtils.overrideTextureName = null;
             }
             Texture texture = textures.get(0);
             StitchHolder holder = new StitchHolder(texture);
@@ -506,7 +495,8 @@ abstract class TileOverride implements ITileOverride {
                 imageName, texture.getWidth(), texture.getHeight(), extra
             );
         }
-        iconImages.clear();
+        tileNames.clear();
+        tileTextures.clear();
     }
 
     static BufferedImage generateDebugTexture(String text, int width, int height, boolean alternate) {
