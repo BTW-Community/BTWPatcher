@@ -1066,6 +1066,11 @@ public class ConnectedTextures extends Mod {
             final MethodRef sbInit1 = new MethodRef("java/lang/StringBuilder", "<init>", "(Ljava/lang/String;)V");
             final MethodRef sbAppend = new MethodRef("java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;");
             final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
+            final MethodRef registerStitchHolder = new MethodRef("Stitcher", "registerStitchHolder", "(LStitchHolder;)V");
+            final MethodRef asList = new MethodRef("java/util/Arrays", "asList", "([Ljava/lang/Object;)Ljava/util/List;");
+            final InterfaceMethodRef mapPut = new InterfaceMethodRef("java/util/Map", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+            final MethodRef hashMapPut = new MethodRef("java/util/HashMap", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+            final MethodRef stitch = new MethodRef("Stitcher", "stitch", "()V");
 
             addClassSignature(new ConstSignature("missingno"));
             addClassSignature(new ConstSignature(".png"));
@@ -1127,10 +1132,12 @@ public class ConnectedTextures extends Mod {
                         @Override
                         public String getMatchExpression() {
                             return buildExpression(
+                                // stitcher.registerStitchHolder(stitchHolder);
                                 capture(anyALOAD),
                                 anyALOAD,
-                                reference(INVOKEVIRTUAL, new MethodRef("Stitcher", "registerStitchHolder", "(LStitchHolder;)V")),
+                                reference(INVOKEVIRTUAL, registerStitchHolder),
 
+                                // map.put(stitchHolder, Arrays.asList(new Texture[]{texture}));
                                 capture(anyALOAD),
                                 anyALOAD,
                                 push(1),
@@ -1139,8 +1146,11 @@ public class ConnectedTextures extends Mod {
                                 push(0),
                                 anyALOAD,
                                 AASTORE,
-                                reference(INVOKESTATIC, new MethodRef("java/util/Arrays", "asList", "([Ljava/lang/Object;)Ljava/util/List;")),
-                                reference(INVOKEINTERFACE, new InterfaceMethodRef("java/util/Map", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;")),
+                                reference(INVOKESTATIC, asList),
+                                or(
+                                    build(reference(INVOKEINTERFACE, mapPut)),
+                                    build(reference(INVOKEVIRTUAL, hashMapPut))
+                                ),
                                 POP
                             );
                         }
@@ -1163,7 +1173,7 @@ public class ConnectedTextures extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         anyALOAD,
-                        reference(INVOKEVIRTUAL, new MethodRef("Stitcher", "stitch", "()V"))
+                        reference(INVOKEVIRTUAL, stitch)
                     );
                 }
 
