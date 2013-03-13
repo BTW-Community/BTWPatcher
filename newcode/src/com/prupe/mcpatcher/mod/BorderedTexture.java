@@ -31,6 +31,8 @@ public class BorderedTexture extends TextureStitched {
         normalizedY1 = (float) (y0 + height) / (float) texture.getHeight();
         normalizedWidth = normalizedX1 - normalizedX0;
         normalizedHeight = normalizedY1 - normalizedY0;
+        normalizedX1 = minusEpsilon(normalizedX1);
+        normalizedY1 = minusEpsilon(normalizedY1);
     }
 
     @Override
@@ -40,12 +42,12 @@ public class BorderedTexture extends TextureStitched {
 
     @Override
     public float getNormalizedX1() {
-        return normalizedX1 - Float.MIN_VALUE;
+        return normalizedX1;
     }
 
     @Override
     public float interpolateX(double x) {
-        return normalizedX0 + ((float) x / 16.0f) * normalizedWidth - Float.MIN_VALUE;
+        return minusEpsilon(normalizedX0 + ((float) x / 16.0f) * normalizedWidth);
     }
 
     @Override
@@ -55,11 +57,19 @@ public class BorderedTexture extends TextureStitched {
 
     @Override
     public float getNormalizedY1() {
-        return normalizedY1 - Float.MIN_VALUE;
+        return normalizedY1;
     }
 
     @Override
     public float interpolateY(double y) {
-        return normalizedY0 + ((float) y / 16.0f) * normalizedHeight - Float.MIN_VALUE;
+        return minusEpsilon(normalizedY0 + ((float) y / 16.0f) * normalizedHeight);
+    }
+
+    private static float minusEpsilon(float f) {
+        if (f > 0.0f) {
+            return Float.intBitsToFloat(Float.floatToRawIntBits(f) - 1);
+        } else {
+            return f;
+        }
     }
 }
