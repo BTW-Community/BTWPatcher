@@ -38,9 +38,9 @@ public class CTMUtils {
 
     static boolean active;
     static TextureMap terrainMap;
-    private static BufferedImage missingTextureImage = TileOverride.generateDebugTexture("missing", 64, 64, false);
+    private static BufferedImage missingTextureImage = TileLoader.generateDebugTexture("missing", 64, 64, false);
     private static List<TextureMap> ctmMaps = new ArrayList<TextureMap>();
-    static String overrideTextureName;
+    private static TileLoader tileLoader;
 
     static ITileOverride lastOverride;
 
@@ -75,6 +75,7 @@ public class CTMUtils {
                 Arrays.fill(blockOverrides, null);
                 tileOverrides.clear();
                 overridesToRegister.clear();
+                tileLoader = new TileLoader();
 
                 if (enableStandard || enableNonStandard) {
                     List<String> fileList = new ArrayList<String>();
@@ -95,7 +96,7 @@ public class CTMUtils {
                         }
                     });
                     for (String s : fileList) {
-                        registerOverride(TileOverride.create(s));
+                        registerOverride(TileOverride.create(s, tileLoader));
                     }
                 }
             }
@@ -115,6 +116,7 @@ public class CTMUtils {
                     }
                 }
                 overridesToRegister.clear();
+                tileLoader.finish();
 
                 for (int i = 0; i < blockOverrides.length; i++) {
                     if (blockOverrides[i] != null && Block.blocksList[i] != null) {
@@ -257,29 +259,6 @@ public class CTMUtils {
         if (warned || (!progress && !mapName.equals("terrain"))) {
             logger.warning("clearing all remaining items");
             overridesToRegister.clear();
-        }
-    }
-
-    public static String getOverridePath(String prefix, String name, String ext) {
-        String path;
-        if (name.startsWith("/")) {
-            path = name.substring(1).replaceFirst("\\.[^.]+$", "") + ext;
-        } else {
-            path = prefix + name + ext;
-        }
-        logger.finer("getOverridePath(%s, %s, %s) -> %s", prefix, name, ext, path);
-        return path;
-    }
-
-    public static String getOverrideTextureName(String name) {
-        if (overrideTextureName == null) {
-            if (name.matches("^\\d+$")) {
-                logger.warning("no override set for %s", name);
-            }
-            return name;
-        } else {
-            logger.finer("getOverrideTextureName(%s) -> %s", name, overrideTextureName);
-            return overrideTextureName;
         }
     }
 

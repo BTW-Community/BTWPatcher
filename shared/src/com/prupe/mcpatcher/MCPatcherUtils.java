@@ -72,6 +72,7 @@ public class MCPatcherUtils {
     public static final String TILE_OVERRIDE_INTERFACE = "com.prupe.mcpatcher.mod.ITileOverride";
     public static final String TILE_OVERRIDE_CLASS = "com.prupe.mcpatcher.mod.TileOverride";
     public static final String TILE_OVERRIDE_IMPL_CLASS = "com.prupe.mcpatcher.mod.TileOverrideImpl";
+    public static final String TILE_LOADER_CLASS = "com.prupe.mcpatcher.mod.TileLoader";
     public static final String GLASS_PANE_RENDERER_CLASS = "com.prupe.mcpatcher.mod.GlassPaneRenderer";
     public static final String RENDER_PASS_CLASS = "com.prupe.mcpatcher.mod.RenderPass";
     public static final String RENDER_PASS_API_CLASS = "com.prupe.mcpatcher.mod.RenderPassAPI";

@@ -1,13 +1,11 @@
 package com.prupe.mcpatcher.mod;
 
-import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -18,8 +16,6 @@ import java.util.regex.Pattern;
 
 abstract class TileOverride implements ITileOverride {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CONNECTED_TEXTURES, "CTM");
-
-    private static final boolean debugTextures = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "debugTextures", false);
 
     static final int BOTTOM_FACE = 0; // 0, -1, 0
     static final int TOP_FACE = 1; // 0, 1, 0
@@ -145,6 +141,7 @@ abstract class TileOverride implements ITileOverride {
     private final String texturesDirectory;
     private final String propertiesName;
     private final String directoryName;
+    private final TileLoader tileLoader;
     private final int renderPass;
     private final Set<Integer> matchBlocks;
     private final Set<String> matchTiles;
@@ -157,8 +154,6 @@ abstract class TileOverride implements ITileOverride {
     private final int maxHeight;
 
     private final List<String> tileNames = new ArrayList<String>();
-    private final Map<String, List<Texture>> tileTextures = new HashMap<String, List<Texture>>();
-    private int totalTextureSize;
     protected Icon[] icons;
     private boolean disabled;
     private int[] reorient;
@@ -182,7 +177,7 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    static TileOverride create(String propertiesFile) {
+    static TileOverride create(String propertiesFile, TileLoader tileLoader) {
         if (propertiesFile == null) {
             return null;
         }
@@ -195,19 +190,19 @@ abstract class TileOverride implements ITileOverride {
         TileOverride override = null;
 
         if (method.equals("default") || method.equals("glass") || method.equals("ctm")) {
-            override = new TileOverrideImpl.CTM(propertiesFile, properties);
+            override = new TileOverrideImpl.CTM(propertiesFile, properties, tileLoader);
         } else if (method.equals("random")) {
-            override = new TileOverrideImpl.Random1(propertiesFile, properties);
+            override = new TileOverrideImpl.Random1(propertiesFile, properties, tileLoader);
         } else if (method.equals("fixed") || method.equals("static")) {
-            override = new TileOverrideImpl.Fixed(propertiesFile, properties);
+            override = new TileOverrideImpl.Fixed(propertiesFile, properties, tileLoader);
         } else if (method.equals("bookshelf") || method.equals("horizontal")) {
-            override = new TileOverrideImpl.Horizontal(propertiesFile, properties);
+            override = new TileOverrideImpl.Horizontal(propertiesFile, properties, tileLoader);
         } else if (method.equals("vertical")) {
-            override = new TileOverrideImpl.Vertical(propertiesFile, properties);
+            override = new TileOverrideImpl.Vertical(propertiesFile, properties, tileLoader);
         } else if (method.equals("sandstone") || method.equals("top")) {
-            override = new TileOverrideImpl.Top(propertiesFile, properties);
+            override = new TileOverrideImpl.Top(propertiesFile, properties, tileLoader);
         } else if (method.equals("repeat") || method.equals("pattern")) {
-            override = new TileOverrideImpl.Repeat(propertiesFile, properties);
+            override = new TileOverrideImpl.Repeat(propertiesFile, properties, tileLoader);
         } else {
             logger.error("%s: unknown method \"%s\"", propertiesFile, method);
         }
@@ -222,16 +217,17 @@ abstract class TileOverride implements ITileOverride {
         return override == null || override.disabled ? null : override;
     }
 
-    protected TileOverride(String propertiesFile, Properties properties) {
+    protected TileOverride(String propertiesFile, Properties properties, TileLoader tileLoader) {
         this.propertiesFile = propertiesFile;
         texturesDirectory = propertiesFile.replaceFirst("/[^/]*$", "");
         directoryName = texturesDirectory.replaceAll(".*/", "");
         propertiesName = propertiesFile.replaceFirst(".*/", "").replaceFirst("\\.properties$", "");
+        this.tileLoader = tileLoader;
 
         try {
             TexturePackAPI.enableTextureBorder = true;
             loadIcons(properties);
-            if (tileTextures.isEmpty()) {
+            if (tileNames.isEmpty()) {
                 error("no images found in %s/", texturesDirectory);
             }
         } finally {
@@ -316,52 +312,20 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    private boolean addIcon(String name, boolean alwaysAdd) {
-        if (!name.toLowerCase().endsWith(".png")) {
-            name += ".png";
-        }
-        if (tileTextures.containsKey(name)) {
-            tileNames.add(name);
-            return true;
-        }
-        List<Texture> textures;
-        try {
-            CTMUtils.overrideTextureName = name;
-            if (!debugTextures && TexturePackAPI.hasResource(name)) {
-                textures = TextureManager.getInstance().createTexture(name.replaceFirst("^/", ""));
-                if (textures == null || textures.isEmpty()) {
-                    return false;
-                }
-            } else if (alwaysAdd) {
-                BufferedImage fallbackImage = generateDebugTexture(name, 64, 64, renderPass > 2);
-                Texture texture = TextureManager.getInstance().setupTexture(
-                    name, 2, fallbackImage.getWidth(), fallbackImage.getHeight(), GL11.GL_CLAMP, GL11.GL_RGBA, GL11.GL_NEAREST, GL11.GL_NEAREST, false, fallbackImage
-                );
-                if (texture == null) {
-                    return false;
-                }
-                textures = new ArrayList<Texture>();
-                textures.add(texture);
-            } else {
-                return false;
-            }
-        } finally {
-            CTMUtils.overrideTextureName = null;
-        }
-        tileNames.add(name);
-        tileTextures.put(name, textures);
-        Texture texture = textures.get(0);
-        totalTextureSize += texture.getWidth() * texture.getHeight();
-        return true;
+    private boolean addIcon(String name) {
+        return tileLoader.preload(name, tileNames, renderPass > 2);
     }
 
     private void loadIcons(Properties properties) {
         tileNames.clear();
-        tileTextures.clear();
         String tileList = properties.getProperty("tiles", "").trim();
         if (tileList.equals("")) {
             for (int i = 0; ; i++) {
-                if (!addIcon(texturesDirectory + "/" + i + ".png", false)) {
+                String name = texturesDirectory + "/" + i + ".png";
+                if (!TexturePackAPI.hasResource(name)) {
+                    break;
+                }
+                if (!addIcon(name)) {
                     break;
                 }
             }
@@ -377,7 +341,7 @@ abstract class TileOverride implements ITileOverride {
                         int to = Integer.parseInt(matcher.group(2));
                         for (int i = from; i <= to; i++) {
                             String path = texturesDirectory + "/" + i + ".png";
-                            if (!addIcon(path, true)) {
+                            if (!addIcon(path)) {
                                 warn("could not find %s", path);
                             }
                         }
@@ -385,11 +349,11 @@ abstract class TileOverride implements ITileOverride {
                         e.printStackTrace();
                     }
                 } else if (token.startsWith("/")) {
-                    if (!addIcon(token, true)) {
+                    if (!addIcon(token)) {
                         warn("could not find image %s", token);
                     }
                 } else {
-                    if (!addIcon(texturesDirectory + "/" + token, true)) {
+                    if (!addIcon(texturesDirectory + "/" + token)) {
                         warn("could not find image %s in %s", token, texturesDirectory);
                     }
                 }
@@ -461,7 +425,7 @@ abstract class TileOverride implements ITileOverride {
     }
 
     protected int getNumberOfTiles() {
-        return tileTextures == null ? 0 : tileTextures.size();
+        return tileNames.size();
     }
 
     String checkTileMap() {
@@ -478,55 +442,11 @@ abstract class TileOverride implements ITileOverride {
     }
 
     public final int getTotalTextureSize() {
-        return totalTextureSize;
+        return tileLoader.getTextureSize(tileNames);
     }
 
     public final void registerIcons(TextureMap textureMap, Stitcher stitcher, Map<StitchHolder, List<Texture>> map) {
-        icons = new Icon[tileNames.size()];
-        for (int i = 0; i < tileNames.size(); i++) {
-            String imageName = tileNames.get(i);
-            List<Texture> textures = tileTextures.get(imageName);
-            if (textures == null) {
-                continue;
-            }
-            Texture texture = textures.get(0);
-            StitchHolder holder = new StitchHolder(texture);
-            stitcher.registerStitchHolder(holder);
-            map.put(holder, textures);
-            icons[i] = textureMap.getIcon(imageName);
-            TessellatorUtils.registerIcon(textureMap, icons[i]);
-            String extra = (textures.size() > 1 ? ", " + textures.size() + " frames" : "");
-            logger.finer("%s -> icon: %dx%d%s",
-                imageName, texture.getWidth(), texture.getHeight(), extra
-            );
-        }
-        tileNames.clear();
-        tileTextures.clear();
-    }
-
-    static BufferedImage generateDebugTexture(String text, int width, int height, boolean alternate) {
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics graphics = image.getGraphics();
-        graphics.setColor(alternate ? new Color(0, 255, 255, 128) : Color.WHITE);
-        graphics.fillRect(0, 0, width, height);
-        graphics.setColor(alternate ? Color.RED : Color.BLACK);
-        int ypos = 10;
-        if (alternate) {
-            ypos += height / 2;
-        }
-        int charsPerRow = width / 8;
-        if (charsPerRow <= 0) {
-            return image;
-        }
-        while (text.length() % charsPerRow != 0) {
-            text += " ";
-        }
-        while (ypos < height && !text.equals("")) {
-            graphics.drawString(text.substring(0, charsPerRow), 1, ypos);
-            ypos += graphics.getFont().getSize();
-            text = text.substring(charsPerRow);
-        }
-        return image;
+        icons = tileLoader.registerIcons(textureMap, stitcher, map, tileNames);
     }
 
     final void error(String format, Object... params) {

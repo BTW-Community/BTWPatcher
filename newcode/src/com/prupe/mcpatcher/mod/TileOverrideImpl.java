@@ -31,8 +31,8 @@ class TileOverrideImpl {
             37, 38, 37, 38, 30, 11, 30, 32, 37, 38, 37, 38, 25, 33, 25, 26,
         };
 
-        CTM(String filePrefix, Properties properties) {
-            super(filePrefix, properties);
+        CTM(String filePrefix, Properties properties, TileLoader tileLoader) {
+            super(filePrefix, properties, tileLoader);
         }
 
         @Override
@@ -79,8 +79,8 @@ class TileOverrideImpl {
             3, 2, 0, 1,
         };
 
-        Horizontal(String filePrefix, Properties properties) {
-            super(filePrefix, properties);
+        Horizontal(String filePrefix, Properties properties, TileLoader tileLoader) {
+            super(filePrefix, properties, tileLoader);
         }
 
         @Override
@@ -130,8 +130,8 @@ class TileOverrideImpl {
             3, 2, 0, 1,
         };
 
-        Vertical(String filePrefix, Properties properties) {
-            super(filePrefix, properties);
+        Vertical(String filePrefix, Properties properties, TileLoader tileLoader) {
+            super(filePrefix, properties, tileLoader);
         }
 
         @Override
@@ -173,8 +173,8 @@ class TileOverrideImpl {
     }
 
     final static class Top extends TileOverride {
-        Top(String filePrefix, Properties properties) {
-            super(filePrefix, properties);
+        Top(String filePrefix, Properties properties, TileLoader tileLoader) {
+            super(filePrefix, properties, tileLoader);
         }
 
         @Override
@@ -222,8 +222,8 @@ class TileOverrideImpl {
         private final int symmetry;
         private final WeightedIndex chooser;
 
-        Random1(String filePrefix, Properties properties) {
-            super(filePrefix, properties);
+        Random1(String filePrefix, Properties properties, TileLoader tileLoader) {
+            super(filePrefix, properties, tileLoader);
 
             String sym = properties.getProperty("symmetry", "none");
             if (sym.equals("all")) {
@@ -271,8 +271,8 @@ class TileOverrideImpl {
         private final int height;
         private final int symmetry;
 
-        Repeat(String filePrefix, Properties properties) {
-            super(filePrefix, properties);
+        Repeat(String filePrefix, Properties properties, TileLoader tileLoader) {
+            super(filePrefix, properties, tileLoader);
             width = MCPatcherUtils.getIntProperty(properties, "width", 0);
             height = MCPatcherUtils.getIntProperty(properties, "height", 0);
             if (width <= 0 || height <= 0) {
@@ -362,8 +362,8 @@ class TileOverrideImpl {
     }
 
     final static class Fixed extends TileOverride {
-        Fixed(String filePrefix, Properties properties) {
-            super(filePrefix, properties);
+        Fixed(String filePrefix, Properties properties, TileLoader tileLoader) {
+            super(filePrefix, properties, tileLoader);
         }
 
         @Override

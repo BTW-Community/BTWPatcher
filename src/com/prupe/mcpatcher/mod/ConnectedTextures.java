@@ -58,6 +58,7 @@ public class ConnectedTextures extends Mod {
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$Top");
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$Repeat");
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$BetterGrass");
+        addClassFile(MCPatcherUtils.TILE_LOADER_CLASS);
         addClassFile(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS);
         addClassFile(MCPatcherUtils.RENDER_PASS_API_CLASS);
 
@@ -1230,12 +1231,12 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // CTMUtils.getOverridePath(this.srcPrefix, name, extension)
+                        // TileLoader.getOverridePath(this.srcPrefix, name, extension)
                         ALOAD_0,
                         reference(GETFIELD, srcPrefix),
                         getCaptureGroup(1),
                         getCaptureGroup(2),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getOverridePath", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"))
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverridePath", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"))
                     );
                 }
             }
@@ -1294,7 +1295,7 @@ public class ConnectedTextures extends Mod {
                     return buildCode(
                         ALOAD_0,
                         ALOAD_1,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getOverrideTextureName", "(Ljava/lang/String;)Ljava/lang/String;")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverrideTextureName", "(Ljava/lang/String;)Ljava/lang/String;")),
                         getCaptureGroup(1)
                     );
                 }
