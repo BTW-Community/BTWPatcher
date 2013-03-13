@@ -137,6 +137,7 @@ public class ExtendedHD extends BaseTexturePackMod {
             final MethodRef setupTextureMipmaps = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(LRenderEngine;Ljava/awt/image/BufferedImage;IZZLjava/lang/String;)V");
             final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIII" + imageData.getType() + ")V");
             final FieldRef currentMipmapLevel = new FieldRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "currentLevel", "I");
+            final FieldRef enableTextureBorder = new FieldRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "enableTextureBorder", "Z");
             final MethodRef getImageWidth = new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I");
             final MethodRef startsWith = new MethodRef("java/lang/String", "startsWith", "(Ljava/lang/String;)Z");
 
@@ -257,6 +258,39 @@ public class ExtendedHD extends BaseTexturePackMod {
                     }
                 }
             });
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "enable texture border on terrain";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.terrain.refresh();
+                        ALOAD_0,
+                        reference(GETFIELD, terrain),
+                        anyReference(INVOKEVIRTUAL)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // TexturePackAPI.enableTextureBorder = true;
+                        push(1),
+                        reference(PUTSTATIC, enableTextureBorder),
+
+                        // ...
+                        getMatch(),
+
+                        // TexturePackAPI.enableTextureBorder = false;
+                        push(0),
+                        reference(PUTSTATIC, enableTextureBorder)
+                    );
+                }
+            }.targetMethod(refreshTextureMaps));
         }
     }
 
