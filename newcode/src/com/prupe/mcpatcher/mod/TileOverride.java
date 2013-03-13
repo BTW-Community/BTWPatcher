@@ -335,6 +335,8 @@ abstract class TileOverride implements ITileOverride {
                 Matcher matcher = range.matcher(token);
                 if (token.equals("")) {
                     // nothing
+                } else if (token.equals("null") || token.equals("none") || token.equals("default")) {
+                    tileNames.add(null);
                 } else if (matcher.matches()) {
                     try {
                         int from = Integer.parseInt(matcher.group(1));

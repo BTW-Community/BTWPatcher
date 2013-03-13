@@ -108,6 +108,9 @@ public class TileLoader {
         Icon[] icons = new Icon[tileNames.size()];
         for (int i = 0; i < tileNames.size(); i++) {
             String imageName = tileNames.get(i);
+            if (imageName == null) {
+                continue;
+            }
             icons[i] = loadedIcons.get(imageName);
             if (icons[i] != null) {
                 continue;
@@ -141,6 +144,9 @@ public class TileLoader {
     }
 
     int getTextureSize(String name) {
+        if (name == null) {
+            return 0;
+        }
         List<Texture> textures = tileTextures.get(name);
         if (textures == null || textures.isEmpty() || loadedIcons.get(name) != null) {
             return 0;
