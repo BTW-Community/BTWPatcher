@@ -19,6 +19,7 @@ public class TexturePackAPI {
     private static final MCLogger logger = MCLogger.getLogger("Texture Pack");
 
     public static TexturePackAPI instance = new TexturePackAPI();
+    public static boolean enableTextureBorder;
 
     private static final ArrayList<Field> textureMapFields = new ArrayList<Field>();
 

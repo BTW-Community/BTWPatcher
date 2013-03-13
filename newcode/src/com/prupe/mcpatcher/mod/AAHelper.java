@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.mod;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.TexturePackAPI;
 import org.lwjgl.opengl.PixelFormat;
 
 import javax.imageio.ImageIO;
@@ -33,7 +34,7 @@ public class AAHelper {
     }
 
     public static BufferedImage addBorder(String name, BufferedImage input, boolean isAnimation) {
-        if (input == null) {
+        if (input == null || !TexturePackAPI.enableTextureBorder) {
             border = 0;
             return input;
         }
@@ -77,9 +78,7 @@ public class AAHelper {
     }
 
     private static void setupBorder(BufferedImage input, int width, int height) {
-        if (input == null) {
-            border = 0;
-        } else if (MipmapHelper.mipmapEnabled && MipmapHelper.maxMipmapLevel > 0) {
+        if (MipmapHelper.mipmapEnabled && MipmapHelper.maxMipmapLevel > 0) {
             border = 1 << Math.max(Math.min(MipmapHelper.maxMipmapLevel, 4), 0);
         } else if (aaSamples > 1 || MipmapHelper.anisoLevel > 1) {
             border = 2;
