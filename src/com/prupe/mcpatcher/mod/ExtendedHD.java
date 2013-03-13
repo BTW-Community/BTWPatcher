@@ -476,10 +476,11 @@ public class ExtendedHD extends BaseTexturePackMod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // image = AAHelper.addBorder(image, false);
+                        // image = AAHelper.addBorder(name, image, false);
+                        ALOAD_1,
                         ALOAD, 10,
                         push(0),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(Ljava/awt/image/BufferedImage;Z)Ljava/awt/image/BufferedImage;")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(Ljava/lang/String;Ljava/awt/image/BufferedImage;Z)Ljava/awt/image/BufferedImage;")),
                         ASTORE, 10,
 
                         // if (image != null) {

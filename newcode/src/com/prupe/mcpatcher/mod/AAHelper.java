@@ -10,6 +10,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 
 public class AAHelper {
+    private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
+
     private static final int BORDER_COLOR = 0;
 
     private static final int aaSamples = Config.getInt(MCPatcherUtils.EXTENDED_HD, "antiAliasing", 1);
@@ -18,13 +20,14 @@ public class AAHelper {
 
     public static PixelFormat setupPixelFormat(PixelFormat pixelFormat) {
         if (aaSamples > 1) {
+            logger.config("setting AA samples to %d", aaSamples);
             return pixelFormat.withSamples(aaSamples);
         } else {
             return pixelFormat;
         }
     }
 
-    public static BufferedImage addBorder(BufferedImage input, boolean isAnimation) {
+    public static BufferedImage addBorder(String name, BufferedImage input, boolean isAnimation) {
         if (input == null) {
             border = 0;
             return input;
@@ -40,8 +43,10 @@ public class AAHelper {
         }
         setupBorder(input, width, height);
         if (border <= 0) {
+            logger.finer("no border around %s", name);
             return input;
         }
+        logger.finer("adding %d pixel border around %s", border, name);
         int newWidth = width + 2 * border;
         int newHeight = height + 2 * border;
         BufferedImage output = new BufferedImage(newWidth, numFrames * newHeight, BufferedImage.TYPE_INT_ARGB);
