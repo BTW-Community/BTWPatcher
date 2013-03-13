@@ -309,10 +309,15 @@ public class BaseTexturePackMod extends Mod {
                         GOTO, any(2),
 
                         // this.setupTexture(this.readTextureImage(inputStream, texture, blur, clamp);
-                        ALOAD_0,
+                        // -or-
+                        // image = this.readTextureImage(inputStream, texture, blur, clamp);
+                        // ...
+                        // this.setupTexture(image, texture, blur, clamp);
+                        optional(build(ALOAD_0)),
                         ALOAD_0,
                         ALOAD, backReference(1),
                         reference(INVOKESPECIAL, readTextureImage),
+                        capture(any(0, 20)),
                         backReference(2)
 
                         // }
@@ -339,7 +344,9 @@ public class BaseTexturePackMod extends Mod {
                         // }
                         label("A"),
 
+                        // ...
                         // this.setupTextureWithFlags(image, ...);
+                        getCaptureGroup(3).length > 0 ? buildCode(ALOAD, reg, getCaptureGroup(3)) : new byte[0],
                         ALOAD_0,
                         ALOAD, reg,
                         getCaptureGroup(2)
