@@ -18,8 +18,8 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipFile;
 
 class ModList {
-    private final Vector<Mod> modsByIndex = new Vector<Mod>();
-    private final HashMap<String, Mod> modsByName = new HashMap<String, Mod>();
+    private final List<Mod> modsByIndex = new ArrayList<Mod>();
+    private final Map<String, Mod> modsByName = new HashMap<String, Mod>();
     private boolean applied;
 
     private class ModDependencyException extends Exception {
@@ -131,12 +131,12 @@ class ModList {
         return null;
     }
 
-    Vector<Mod> getAll() {
+    List<Mod> getAll() {
         return modsByIndex;
     }
 
-    Vector<Mod> getVisible() {
-        Vector<Mod> visibleMods = new Vector<Mod>();
+    List<Mod> getVisible() {
+        List<Mod> visibleMods = new ArrayList<Mod>();
         for (Mod mod : modsByIndex) {
             if (!mod.internal) {
                 visibleMods.add(mod);
@@ -269,7 +269,7 @@ class ModList {
     }
 
     private int move(int index, int direction, boolean allTheWay) {
-        Vector<Mod> visibleMods = getVisible();
+        List<Mod> visibleMods = getVisible();
         int newIndex;
         if (!allTheWay) {
             newIndex = index + direction;
@@ -333,7 +333,7 @@ class ModList {
     }
 
     int indexOfVisible(Mod mod) {
-        Vector<Mod> visible = getVisible();
+        List<Mod> visible = getVisible();
         for (int i = 0; i < visible.size(); i++) {
             if (mod == visible.get(i)) {
                 return i;

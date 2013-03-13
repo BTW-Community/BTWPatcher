@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Vector;
 
 class MainForm {
     private static final int TAB_MODS = 0;
@@ -802,7 +801,7 @@ class MainForm {
                 if (modList == null || rowIndex < 0) {
                     return null;
                 } else {
-                    Vector<Mod> visible = modList.getVisible();
+                    java.util.List<Mod> visible = modList.getVisible();
                     return rowIndex < visible.size() ? visible.get(rowIndex) : null;
                 }
             }

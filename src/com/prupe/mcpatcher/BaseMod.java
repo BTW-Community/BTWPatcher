@@ -8,7 +8,7 @@ import javax.swing.table.TableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Vector;
+import java.util.List;
 import java.util.logging.Level;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -74,8 +74,8 @@ public final class BaseMod extends Mod {
             });
 
             logTable.setModel(new TableModel() {
-                private Vector<String> getCategories() {
-                    Vector<String> allCategories = new Vector<String>();
+                private List<String> getCategories() {
+                    List<String> allCategories = new ArrayList<String>();
                     for (Mod mod : MCPatcher.modList.getAll()) {
                         String[] categories = mod.getLoggingCategories();
                         if (categories != null) {
@@ -90,8 +90,8 @@ public final class BaseMod extends Mod {
                 }
 
                 private String getCategory(int rowIndex) {
-                    Vector<String> categories = getCategories();
-                    return rowIndex >= 0 && rowIndex < categories.size() ? categories.elementAt(rowIndex) : null;
+                    List<String> categories = getCategories();
+                    return rowIndex >= 0 && rowIndex < categories.size() ? categories.get(rowIndex) : null;
                 }
 
                 public int getRowCount() {
