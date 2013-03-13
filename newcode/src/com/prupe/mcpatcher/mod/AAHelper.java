@@ -1,12 +1,17 @@
 package com.prupe.mcpatcher.mod;
 
+import org.lwjgl.LWJGLException;
+import org.lwjgl.opengl.PixelFormat;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 public class AAHelper {
     private static final int BORDER_COLOR = 0xffff0000;
+
     private static final int border = 8;
+    private static final int aaSamples = 4;
 
     public static int lastBorder;
 
@@ -27,6 +32,14 @@ public class AAHelper {
         } catch (Throwable e) {
             e.printStackTrace();
             System.exit(1);
+        }
+    }
+
+    public static PixelFormat setupPixelFormat(PixelFormat pixelFormat) throws LWJGLException {
+        if (aaSamples > 1) {
+            return pixelFormat.withSamples(aaSamples);
+        } else {
+            return pixelFormat;
         }
     }
 

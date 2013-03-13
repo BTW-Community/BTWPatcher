@@ -66,6 +66,27 @@ public class ExtendedHD extends BaseTexturePackMod {
             addColorizerSignature("Foliage");
 
             addMemberMapper(new FieldMapper(renderEngine));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "enable anti-aliasing";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKESTATIC, new MethodRef("org/lwjgl/opengl/Display", "create", "(Lorg/lwjgl/opengl/PixelFormat;)V"))
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "setupPixelFormat", "(Lorg/lwjgl/opengl/PixelFormat;)Lorg/lwjgl/opengl/PixelFormat;"))
+                    );
+                }
+            }.setInsertBefore(true));
         }
 
         private void addColorizerSignature(final String name) {
