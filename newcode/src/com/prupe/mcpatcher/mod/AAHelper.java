@@ -1,6 +1,8 @@
 package com.prupe.mcpatcher.mod;
 
-import org.lwjgl.LWJGLException;
+import com.prupe.mcpatcher.Config;
+import com.prupe.mcpatcher.MCLogger;
+import com.prupe.mcpatcher.MCPatcherUtils;
 import org.lwjgl.opengl.PixelFormat;
 
 import javax.imageio.ImageIO;
@@ -8,12 +10,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 
 public class AAHelper {
-    private static final int BORDER_COLOR = 0xffff0000;
+    private static final int BORDER_COLOR = 0;
 
-    private static final int border = 8;
-    private static final int aaSamples = 4;
+    private static final int aaSamples = Config.getInt(MCPatcherUtils.EXTENDED_HD, "antiAliasing", 1);
 
-    public static int lastBorder;
+    public static int border;
 
     public static void main(String[] args) {
         try {
@@ -35,7 +36,7 @@ public class AAHelper {
         }
     }
 
-    public static PixelFormat setupPixelFormat(PixelFormat pixelFormat) throws LWJGLException {
+    public static PixelFormat setupPixelFormat(PixelFormat pixelFormat) {
         if (aaSamples > 1) {
             return pixelFormat.withSamples(aaSamples);
         } else {
@@ -44,8 +45,14 @@ public class AAHelper {
     }
 
     public static BufferedImage addBorder(BufferedImage input, boolean isAnimation) {
+        if (MipmapHelper.mipmapEnabled && MipmapHelper.maxMipmapLevel > 0) {
+            border = 1 << Math.max(Math.min(MipmapHelper.maxMipmapLevel, 4), 0);
+        } else if (aaSamples > 1 || MipmapHelper.anisoLevel > 1) {
+            border = 2;
+        } else {
+            border = 0;
+        }
         if (border <= 0 || input == null) {
-            lastBorder = 0;
             return input;
         }
         int width = input.getWidth();
@@ -87,7 +94,6 @@ public class AAHelper {
                 }
             }
         }
-        lastBorder = border;
         return output;
     }
 

@@ -502,9 +502,9 @@ public class ExtendedHD extends BaseTexturePackMod {
                         // ...
                         getMatch(),
 
-                        // texture.border = AAHelper.lastBorder;
+                        // texture.border = AAHelper.border;
                         ALOAD, getCaptureGroup(1),
-                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.AA_HELPER_CLASS, "lastBorder", "I")),
+                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.AA_HELPER_CLASS, "border", "I")),
                         reference(PUTFIELD, textureBorder)
                     );
                 }

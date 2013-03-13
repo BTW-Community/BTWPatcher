@@ -28,14 +28,14 @@ public class MipmapHelper {
     private static final String MIPMAP_PROPERTIES = "/mipmap.properties";
 
     private static final boolean mipmapSupported;
-    private static final boolean mipmapEnabled = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "mipmap", false);
-    private static final int maxMipmapLevel = Config.getInt(MCPatcherUtils.EXTENDED_HD, "maxMipmapLevel", 3);
+    static final boolean mipmapEnabled = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "mipmap", false);
+    static final int maxMipmapLevel = Config.getInt(MCPatcherUtils.EXTENDED_HD, "maxMipmapLevel", 3);
     private static final boolean useMipmap;
     private static final int mipmapAlignment = (1 << Config.getInt(MCPatcherUtils.EXTENDED_HD, "mipmapAlignment", 3)) - 1;
     private static final int byteBufferAllocation = Config.getInt(MCPatcherUtils.EXTENDED_HD, "byteBufferAllocation", 1);
 
     private static final boolean anisoSupported;
-    private static final int anisoLevel;
+    static final int anisoLevel;
     private static final int anisoMax;
 
     private static final boolean lodSupported;
