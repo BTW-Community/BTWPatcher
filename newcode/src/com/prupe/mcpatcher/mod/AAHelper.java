@@ -17,6 +17,11 @@ public class AAHelper {
     private static final int aaSamples = Config.getInt(MCPatcherUtils.EXTENDED_HD, "antiAliasing", 1);
 
     public static int border;
+    static int maxBorder;
+
+    static void reset() {
+        maxBorder = 0;
+    }
 
     public static PixelFormat setupPixelFormat(PixelFormat pixelFormat) {
         if (aaSamples > 1) {
@@ -103,6 +108,7 @@ public class AAHelper {
                 border = 0;
             }
         }
+        maxBorder = Math.max(border, maxBorder);
     }
 
     private static void copyRegion(BufferedImage input, int sx, int sy, BufferedImage output, int dx, int dy, int w, int h, boolean flipX, boolean flipY) {

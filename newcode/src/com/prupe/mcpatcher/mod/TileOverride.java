@@ -9,6 +9,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.List;
@@ -138,6 +139,7 @@ abstract class TileOverride implements ITileOverride {
     private static final int CONNECT_BY_MATERIAL = 2;
 
     private static Method getBiomeNameAt;
+    private static Field maxBorder;
 
     private final String propertiesFile;
     private final String texturesDirectory;
@@ -172,6 +174,10 @@ abstract class TileOverride implements ITileOverride {
             logger.warning("biome integration failed");
         } else {
             logger.fine("biome integration active");
+        }
+        try {
+            maxBorder = Class.forName(MCPatcherUtils.AA_HELPER_CLASS).getDeclaredField("maxBorder");
+        } catch (Throwable e) {
         }
     }
 
@@ -319,10 +325,17 @@ abstract class TileOverride implements ITileOverride {
         int width = image.getWidth();
         int height = image.getHeight();
         if (height > width && height % width == 0) {
-            totalTextureSize += width * width;
-        } else {
-            totalTextureSize += width * height;
+            height = width;
         }
+        if (maxBorder != null) {
+            try {
+                int border = maxBorder.getInt(null);
+                width += 2 * border;
+                height += 2 * border;
+            } catch (IllegalAccessException e) {
+            }
+        }
+        totalTextureSize += width * height;
         return true;
     }
 

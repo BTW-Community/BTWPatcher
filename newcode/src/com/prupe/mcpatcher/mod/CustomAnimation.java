@@ -44,6 +44,7 @@ public class CustomAnimation {
             public void beforeChange() {
                 animations.clear();
                 MipmapHelper.reset();
+                AAHelper.reset();
                 FancyDial.refresh();
             }
 
