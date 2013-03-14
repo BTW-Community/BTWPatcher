@@ -439,6 +439,10 @@ public class FancyDial {
         if (textureName.equals("")) {
             return null;
         }
+        boolean filter = MCPatcherUtils.getBooleanProperty(properties, "filter", false);
+        if (filter && !textureName.startsWith("%blur%")) {
+            textureName = "%blur%" + textureName;
+        }
         if (!TexturePackAPI.hasResource(textureName)) {
             logger.error("%s: could not read %s", filename, textureName);
             return null;
