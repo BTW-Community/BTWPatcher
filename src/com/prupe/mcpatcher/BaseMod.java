@@ -762,6 +762,7 @@ public final class BaseMod extends Mod {
         protected final MethodRef glTexSubImage2DByte = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V");
         protected final MethodRef glTexSubImage2DInt = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
         protected final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "()V");
+        protected final MethodRef allocateAndSetupTexture = new MethodRef(getDeobfClass(), "allocateAndSetupTexture", "(Ljava/awt/image/BufferedImage;)I");
         protected final FieldRef imageData = new FieldRef(getDeobfClass(), "imageData", "Ljava/nio/IntBuffer;");
 
         private String updateAnimationsMapped;
@@ -807,6 +808,7 @@ public final class BaseMod extends Mod {
             });
 
             addMemberMapper(new FieldMapper(imageData));
+            addMemberMapper(new MethodMapper(allocateAndSetupTexture));
         }
 
         private class VoidSignature extends BytecodeSignature {
