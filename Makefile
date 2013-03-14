@@ -1,5 +1,5 @@
 MCVER = 1.5
-MCVERSS = 
+MCVERSS = 13w11a
 MCJAR = ../bin/minecraft.jar
 MCJARV = ../bin/minecraft-$(MCVER).jar
 MCJARVSS = ../bin/minecraft-$(MCVERSS).jar
@@ -19,7 +19,7 @@ GOOD_LOG = good.log
 TMPDIR = t.1
 FILTER = ./testfilter.pl
 
-.PHONY: default build release run test testfilter javadoc control profile clean modjar restore restoresnapshot
+.PHONY: default build release run test testfilter javadoc control profile clean modjar restore restore_ss
 
 default:
 
@@ -78,5 +78,5 @@ modjar: $(MCPATCHER)
 restore: $(MCJARV)
 	cp -pf $(MCJARV) $(MCJAR)
 
-restoresnapshot: $(MCJARVSS)
+restore_ss: $(MCJARVSS)
 	cp -pf $(MCJARVSS) $(MCJAR)
