@@ -145,13 +145,19 @@ public class Colorizer {
 
     static int loadIntColor(String key, int color) {
         logger.config("%s=%06x", key, color);
-        return MCPatcherUtils.getIntProperty(properties, key, color);
+        String value = properties.getProperty(key, "");
+        if (!value.equals("")) {
+            try {
+                return Integer.parseInt(value, 16);
+            } catch (NumberFormatException e) {
+            }
+        }
+        return color;
     }
 
     static void loadFloatColor(String key, float[] color) {
         int intColor = float3ToInt(color);
-        logger.config("%s=%06x", key, intColor);
-        intToFloat3(MCPatcherUtils.getIntProperty(properties, key, intColor), color);
+        intToFloat3(loadIntColor(key, intColor), color);
     }
 
     static void intToFloat3(int rgb, float[] f, int offset) {
