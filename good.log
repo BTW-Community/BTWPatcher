@@ -1,4 +1,4 @@
-MCPatcher version is 3.0.2
+MCPatcher version is 3.0.2_01
 OS: Linux 3.6.11-4.fc16.x86_64 amd64
 JVM: Sun Microsystems Inc. 1.6.0_43 (64 bit)
 Classpath: out/artifacts/mcpatcher/mcpatcher.jar
@@ -5007,7 +5007,7 @@ Patching...
                                GETFIELD 0x00 0x2f
                                ALOAD 0x09
                                LDC 0x03
-                               INVOKESTATIC 0x01 0x5c
+                               INVOKESTATIC 0x01 0x5e
  applying TextureStitched patch to bif.class for mod Extended HD
     override TextureStitched a(Ljava/lang/String;)Lbif;@34
      NEW 0x00 0x08             NEW 0x00 0xd2
@@ -5730,116 +5730,116 @@ Patching...
    method signature (Lnet/minecraft/src/Icon;)D -> (Llx;)D
    field signature Lnet/minecraft/src/TextureStitched; -> Lbif;
     class ref net/minecraft/src/TextureCompass -> bin setup(Lbif;)V@8
-     INSTANCEOF 0x00 0x02      INSTANCEOF 0x03 0x25
+     INSTANCEOF 0x00 0x02      INSTANCEOF 0x03 0x2c
     class ref net/minecraft/src/TextureCompass -> bin getAngle(Llx;)D@1
-     INSTANCEOF 0x00 0x02      INSTANCEOF 0x03 0x25
+     INSTANCEOF 0x00 0x02      INSTANCEOF 0x03 0x2c
     class ref net/minecraft/src/TextureCompass -> bin getAngle(Llx;)D@8
-     CHECKCAST 0x00 0x02       CHECKCAST 0x03 0x25
+     CHECKCAST 0x00 0x02       CHECKCAST 0x03 0x2c
     class ref net/minecraft/src/TextureClock -> bim setup(Lbif;)V@22
-     INSTANCEOF 0x00 0x04      INSTANCEOF 0x03 0x27
+     INSTANCEOF 0x00 0x04      INSTANCEOF 0x03 0x2e
     class ref net/minecraft/src/TextureClock -> bim getAngle(Llx;)D@24
-     INSTANCEOF 0x00 0x04      INSTANCEOF 0x03 0x27
+     INSTANCEOF 0x00 0x04      INSTANCEOF 0x03 0x2e
     class ref net/minecraft/src/TextureClock -> bim getAngle(Llx;)D@31
-     CHECKCAST 0x00 0x04       CHECKCAST 0x03 0x27
+     CHECKCAST 0x00 0x04       CHECKCAST 0x03 0x2e
     method ref net/minecraft/src/TextureStitched.getName ()Ljava/lang/String; -> bif.i ()Ljava/lang/String; setup(Lbif;)V@36
-     INVOKEVIRTUAL 0x00 0x06   INVOKEVIRTUAL 0x03 0x2b
+     INVOKEVIRTUAL 0x00 0x06   INVOKEVIRTUAL 0x03 0x32
     method ref net/minecraft/src/TextureStitched.getName ()Ljava/lang/String; -> bif.i ()Ljava/lang/String; update(Lbif;)Z@18
-     INVOKEVIRTUAL 0x00 0x06   INVOKEVIRTUAL 0x03 0x2b
+     INVOKEVIRTUAL 0x00 0x06   INVOKEVIRTUAL 0x03 0x32
     method ref net/minecraft/src/TextureStitched.getName ()Ljava/lang/String; -> bif.i ()Ljava/lang/String; <init>(Lbfy;Lbif;Ljava/util/Properties;)V@27
-     INVOKEVIRTUAL 0x00 0x06   INVOKEVIRTUAL 0x03 0x2b
+     INVOKEVIRTUAL 0x00 0x06   INVOKEVIRTUAL 0x03 0x32
     method ref net/minecraft/src/TextureStitched.getName ()Ljava/lang/String; -> bif.i ()Ljava/lang/String; render(DZ)Z@525
-     INVOKEVIRTUAL 0x00 0x06   INVOKEVIRTUAL 0x03 0x2b
+     INVOKEVIRTUAL 0x00 0x06   INVOKEVIRTUAL 0x03 0x32
     method ref com/prupe/mcpatcher/mod/FancyDial.getInstance (Lnet/minecraft/src/TextureStitched;)Lcom/prupe/mcpatcher/mod/FancyDial; -> com/prupe/mcpatcher/mod/FancyDial.getInstance (Lbif;)Lcom/prupe/mcpatcher/mod/FancyDial; update(Lbif;)Z@45
-     INVOKESTATIC 0x00 0x1a    INVOKESTATIC 0x03 0x2d
+     INVOKESTATIC 0x00 0x1a    INVOKESTATIC 0x03 0x34
     method ref com/prupe/mcpatcher/mod/FancyDial.getInstance (Lnet/minecraft/src/TextureStitched;)Lcom/prupe/mcpatcher/mod/FancyDial; -> com/prupe/mcpatcher/mod/FancyDial.getInstance (Lbif;)Lcom/prupe/mcpatcher/mod/FancyDial; updateAll()V@89
-     INVOKESTATIC 0x00 0x1a    INVOKESTATIC 0x03 0x2d
+     INVOKESTATIC 0x00 0x1a    INVOKESTATIC 0x03 0x34
     class ref net/minecraft/src/TextureStitched -> bif updateAll()V@84
-     CHECKCAST 0x00 0x25       CHECKCAST 0x03 0x29
+     CHECKCAST 0x00 0x25       CHECKCAST 0x03 0x30
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; updateAll()V@141
-     GETFIELD 0x00 0x29        GETFIELD 0x03 0x2f
+     GETFIELD 0x00 0x29        GETFIELD 0x03 0x36
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; <init>(Lbfy;Lbif;Ljava/util/Properties;)V@22
-     PUTFIELD 0x00 0x29        PUTFIELD 0x03 0x2f
+     PUTFIELD 0x00 0x29        PUTFIELD 0x03 0x36
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; render()Z@348
-     GETFIELD 0x00 0x29        GETFIELD 0x03 0x2f
+     GETFIELD 0x00 0x29        GETFIELD 0x03 0x36
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; render()Z@356
-     GETFIELD 0x00 0x29        GETFIELD 0x03 0x2f
+     GETFIELD 0x00 0x29        GETFIELD 0x03 0x36
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; render()Z@520
-     GETFIELD 0x00 0x29        GETFIELD 0x03 0x2f
+     GETFIELD 0x00 0x29        GETFIELD 0x03 0x36
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; render()Z@527
-     GETFIELD 0x00 0x29        GETFIELD 0x03 0x2f
+     GETFIELD 0x00 0x29        GETFIELD 0x03 0x36
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; render()Z@702
-     GETFIELD 0x00 0x29        GETFIELD 0x03 0x2f
+     GETFIELD 0x00 0x29        GETFIELD 0x03 0x36
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; render(DZ)Z@29
-     GETFIELD 0x00 0x29        GETFIELD 0x03 0x2f
+     GETFIELD 0x00 0x29        GETFIELD 0x03 0x36
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; render(DZ)Z@38
-     GETFIELD 0x00 0x29        GETFIELD 0x03 0x2f
+     GETFIELD 0x00 0x29        GETFIELD 0x03 0x36
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; render(DZ)Z@47
-     GETFIELD 0x00 0x29        GETFIELD 0x03 0x2f
+     GETFIELD 0x00 0x29        GETFIELD 0x03 0x36
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; render(DZ)Z@56
-     GETFIELD 0x00 0x29        GETFIELD 0x03 0x2f
+     GETFIELD 0x00 0x29        GETFIELD 0x03 0x36
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; render(DZ)Z@522
-     GETFIELD 0x00 0x29        GETFIELD 0x03 0x2f
+     GETFIELD 0x00 0x29        GETFIELD 0x03 0x36
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; toString()Ljava/lang/String;@16
-     GETFIELD 0x00 0x29        GETFIELD 0x03 0x2f
+     GETFIELD 0x00 0x29        GETFIELD 0x03 0x36
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; toString()Ljava/lang/String;@29
-     GETFIELD 0x00 0x29        GETFIELD 0x03 0x2f
+     GETFIELD 0x00 0x29        GETFIELD 0x03 0x36
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; toString()Ljava/lang/String;@42
-     GETFIELD 0x00 0x29        GETFIELD 0x03 0x2f
+     GETFIELD 0x00 0x29        GETFIELD 0x03 0x36
     field ref com/prupe/mcpatcher/mod/FancyDial.icon Lnet/minecraft/src/TextureStitched; -> com/prupe/mcpatcher/mod/FancyDial.icon Lbif; toString()Ljava/lang/String;@55
-     GETFIELD 0x00 0x29        GETFIELD 0x03 0x2f
+     GETFIELD 0x00 0x29        GETFIELD 0x03 0x36
     method ref net/minecraft/src/TextureStitched.update ()V -> bif.l ()V updateAll()V@144
-     INVOKEVIRTUAL 0x00 0x2a   INVOKEVIRTUAL 0x03 0x32
+     INVOKEVIRTUAL 0x00 0x2a   INVOKEVIRTUAL 0x03 0x39
     field ref net/minecraft/client/Minecraft.renderEngine Lnet/minecraft/src/RenderEngine; -> net/minecraft/client/Minecraft.p Lbfy; getInstance(Lbif;)Lcom/prupe/mcpatcher/mod/FancyDial;@32
-     GETFIELD 0x00 0x31        GETFIELD 0x03 0x36
+     GETFIELD 0x00 0x31        GETFIELD 0x03 0x3d
     method ref com/prupe/mcpatcher/mod/FancyDial.<init> (Lnet/minecraft/src/RenderEngine;Lnet/minecraft/src/TextureStitched;Ljava/util/Properties;)V -> com/prupe/mcpatcher/mod/FancyDial.<init> (Lbfy;Lbif;Ljava/util/Properties;)V getInstance(Lbif;)Lcom/prupe/mcpatcher/mod/FancyDial;@43
-     INVOKESPECIAL 0x00 0x32   INVOKESPECIAL 0x03 0x38
+     INVOKESPECIAL 0x00 0x32   INVOKESPECIAL 0x03 0x3f
     method ref com/prupe/mcpatcher/mod/FancyDial.getIconWidth (Lnet/minecraft/src/Icon;)I -> com/prupe/mcpatcher/mod/FancyDial.getIconWidth (Llx;)I render()Z@351
-     INVOKESTATIC 0x00 0x6b    INVOKESTATIC 0x03 0x3a
+     INVOKESTATIC 0x00 0x6b    INVOKESTATIC 0x03 0x41
     method ref com/prupe/mcpatcher/mod/FancyDial.getIconWidth (Lnet/minecraft/src/Icon;)I -> com/prupe/mcpatcher/mod/FancyDial.getIconWidth (Llx;)I render(DZ)Z@50
-     INVOKESTATIC 0x00 0x6b    INVOKESTATIC 0x03 0x3a
+     INVOKESTATIC 0x00 0x6b    INVOKESTATIC 0x03 0x41
     method ref com/prupe/mcpatcher/mod/FancyDial.getIconWidth (Lnet/minecraft/src/Icon;)I -> com/prupe/mcpatcher/mod/FancyDial.getIconWidth (Llx;)I toString()Ljava/lang/String;@19
-     INVOKESTATIC 0x00 0x6b    INVOKESTATIC 0x03 0x3a
+     INVOKESTATIC 0x00 0x6b    INVOKESTATIC 0x03 0x41
     method ref com/prupe/mcpatcher/mod/FancyDial.getIconHeight (Lnet/minecraft/src/Icon;)I -> com/prupe/mcpatcher/mod/FancyDial.getIconHeight (Llx;)I render()Z@359
-     INVOKESTATIC 0x00 0x6c    INVOKESTATIC 0x03 0x3c
+     INVOKESTATIC 0x00 0x6c    INVOKESTATIC 0x03 0x43
     method ref com/prupe/mcpatcher/mod/FancyDial.getIconHeight (Lnet/minecraft/src/Icon;)I -> com/prupe/mcpatcher/mod/FancyDial.getIconHeight (Llx;)I render(DZ)Z@59
-     INVOKESTATIC 0x00 0x6c    INVOKESTATIC 0x03 0x3c
+     INVOKESTATIC 0x00 0x6c    INVOKESTATIC 0x03 0x43
     method ref com/prupe/mcpatcher/mod/FancyDial.getIconHeight (Lnet/minecraft/src/Icon;)I -> com/prupe/mcpatcher/mod/FancyDial.getIconHeight (Llx;)I toString()Ljava/lang/String;@32
-     INVOKESTATIC 0x00 0x6c    INVOKESTATIC 0x03 0x3c
+     INVOKESTATIC 0x00 0x6c    INVOKESTATIC 0x03 0x43
     method ref net/minecraft/src/TextureStitched.getX0 ()I -> bif.a ()I render()Z@523
-     INVOKEVIRTUAL 0x00 0x7a   INVOKEVIRTUAL 0x03 0x3f
+     INVOKEVIRTUAL 0x00 0x7a   INVOKEVIRTUAL 0x03 0x46
     method ref net/minecraft/src/TextureStitched.getX0 ()I -> bif.a ()I render(DZ)Z@32
-     INVOKEVIRTUAL 0x00 0x7a   INVOKEVIRTUAL 0x03 0x3f
+     INVOKEVIRTUAL 0x00 0x7a   INVOKEVIRTUAL 0x03 0x46
     method ref net/minecraft/src/TextureStitched.getX0 ()I -> bif.a ()I toString()Ljava/lang/String;@45
-     INVOKEVIRTUAL 0x00 0x7a   INVOKEVIRTUAL 0x03 0x3f
+     INVOKEVIRTUAL 0x00 0x7a   INVOKEVIRTUAL 0x03 0x46
     method ref net/minecraft/src/TextureStitched.getY0 ()I -> bif.b ()I render()Z@530
-     INVOKEVIRTUAL 0x00 0x7b   INVOKEVIRTUAL 0x03 0x42
+     INVOKEVIRTUAL 0x00 0x7b   INVOKEVIRTUAL 0x03 0x49
     method ref net/minecraft/src/TextureStitched.getY0 ()I -> bif.b ()I render(DZ)Z@41
-     INVOKEVIRTUAL 0x00 0x7b   INVOKEVIRTUAL 0x03 0x42
+     INVOKEVIRTUAL 0x00 0x7b   INVOKEVIRTUAL 0x03 0x49
     method ref net/minecraft/src/TextureStitched.getY0 ()I -> bif.b ()I toString()Ljava/lang/String;@58
-     INVOKEVIRTUAL 0x00 0x7b   INVOKEVIRTUAL 0x03 0x42
+     INVOKEVIRTUAL 0x00 0x7b   INVOKEVIRTUAL 0x03 0x49
     method ref com/prupe/mcpatcher/mod/FancyDial.getAngle (Lnet/minecraft/src/Icon;)D -> com/prupe/mcpatcher/mod/FancyDial.getAngle (Llx;)D render()Z@705
-     INVOKESTATIC 0x00 0x85    INVOKESTATIC 0x03 0x44
+     INVOKESTATIC 0x00 0x85    INVOKESTATIC 0x03 0x4b
     interface method ref net/minecraft/src/Icon.getTextureWidth ()I -> lx.j ()I getIconWidth(Llx;)I@1
-     INVOKEINTERFACE 0x00 0xbd 0x01 0x00  INVOKEINTERFACE 0x03 0x48 0x01 0x00
+     INVOKEINTERFACE 0x00 0xbd 0x01 0x00  INVOKEINTERFACE 0x03 0x4f 0x01 0x00
     interface method ref net/minecraft/src/Icon.getNormalizedX1 ()F -> lx.f ()F getIconWidth(Llx;)I@8
-     INVOKEINTERFACE 0x00 0xbe 0x01 0x00  INVOKEINTERFACE 0x03 0x4b 0x01 0x00
+     INVOKEINTERFACE 0x00 0xbe 0x01 0x00  INVOKEINTERFACE 0x03 0x52 0x01 0x00
     interface method ref net/minecraft/src/Icon.getNormalizedX0 ()F -> lx.e ()F getIconWidth(Llx;)I@14
-     INVOKEINTERFACE 0x00 0xbf 0x01 0x00  INVOKEINTERFACE 0x03 0x4d 0x01 0x00
+     INVOKEINTERFACE 0x00 0xbf 0x01 0x00  INVOKEINTERFACE 0x03 0x54 0x01 0x00
     interface method ref net/minecraft/src/Icon.getTextureHeight ()I -> lx.k ()I getIconHeight(Llx;)I@1
-     INVOKEINTERFACE 0x00 0xc1 0x01 0x00  INVOKEINTERFACE 0x03 0x50 0x01 0x00
+     INVOKEINTERFACE 0x00 0xc1 0x01 0x00  INVOKEINTERFACE 0x03 0x57 0x01 0x00
     interface method ref net/minecraft/src/Icon.getNormalizedY1 ()F -> lx.h ()F getIconHeight(Llx;)I@8
-     INVOKEINTERFACE 0x00 0xc2 0x01 0x00  INVOKEINTERFACE 0x03 0x53 0x01 0x00
+     INVOKEINTERFACE 0x00 0xc2 0x01 0x00  INVOKEINTERFACE 0x03 0x5a 0x01 0x00
     interface method ref net/minecraft/src/Icon.getNormalizedY0 ()F -> lx.g ()F getIconHeight(Llx;)I@14
-     INVOKEINTERFACE 0x00 0xc3 0x01 0x00  INVOKEINTERFACE 0x03 0x56 0x01 0x00
+     INVOKEINTERFACE 0x00 0xc3 0x01 0x00  INVOKEINTERFACE 0x03 0x5d 0x01 0x00
     field ref net/minecraft/src/TextureCompass.currentAngle D -> bin.i D getAngle(Llx;)D@11
-     GETFIELD 0x00 0xc4        GETFIELD 0x03 0x58
+     GETFIELD 0x00 0xc4        GETFIELD 0x03 0x5f
     field ref net/minecraft/src/TextureClock.currentAngle D -> bim.h D getAngle(Llx;)D@34
-     GETFIELD 0x00 0xc9        GETFIELD 0x03 0x5a
+     GETFIELD 0x00 0xc9        GETFIELD 0x03 0x61
    string replace Lnet/minecraft/src/RenderEngine; -> Lbfy; @2068
    string replace Lnet/minecraft/src/TextureStitched; -> Lbif; @144
    string replace Ljava/util/List<Lnet/minecraft/src/TextureStitched;>; -> Ljava/util/List<Lbif;>; @1374
-   string replace Ljava/util/Map<Lnet/minecraft/src/TextureStitched;Ljava/util/Properties;>; -> Ljava/util/Map<Lbif;Ljava/util/Properties;>; @8295
-   string replace Ljava/util/Map<Lnet/minecraft/src/TextureStitched;Lcom/prupe/mcpatcher/mod/FancyDial;>; -> Ljava/util/Map<Lbif;Lcom/prupe/mcpatcher/mod/FancyDial;>; @8342
+   string replace Ljava/util/Map<Lnet/minecraft/src/TextureStitched;Ljava/util/Properties;>; -> Ljava/util/Map<Lbif;Ljava/util/Properties;>; @8342
+   string replace Ljava/util/Map<Lnet/minecraft/src/TextureStitched;Lcom/prupe/mcpatcher/mod/FancyDial;>; -> Ljava/util/Map<Lbif;Lcom/prupe/mcpatcher/mod/FancyDial;>; @8389
    string replace Lnet/minecraft/src/Icon; -> Llx; @6615
   adding com/prupe/mcpatcher/mod/FancyDial$Layer.class for Extended HD
   adding com/prupe/mcpatcher/mod/FontUtils.class for HD Font
@@ -6039,9 +6039,9 @@ Patching...
   adding com/prupe/mcpatcher/mod/Colorizer.class for Custom Colors
    method signature (Ljava/lang/String;Lnet/minecraft/src/Potion;)V -> (Ljava/lang/String;Lmk;)V
     field ref net/minecraft/src/Potion.color I -> mk.N I loadIntColor(Ljava/lang/String;Lmk;)V@3
-     GETFIELD 0x00 0x1a        GETFIELD 0x01 0x41
+     GETFIELD 0x00 0x1a        GETFIELD 0x01 0x3b
     field ref net/minecraft/src/Potion.color I -> mk.N I loadIntColor(Ljava/lang/String;Lmk;)V@9
-     PUTFIELD 0x00 0x1a        PUTFIELD 0x01 0x41
+     PUTFIELD 0x00 0x1a        PUTFIELD 0x01 0x3b
    string replace Lnet/minecraft/src/Potion; -> Lmk; @1295
   adding com/prupe/mcpatcher/mod/Colorizer$1.class for Custom Colors
   adding com/prupe/mcpatcher/mod/ColorizeWorld.class for Custom Colors
@@ -6271,85 +6271,85 @@ Patching...
    method signature (Lnet/minecraft/src/Block;)Z -> (Laou;)Z
    field signature Lnet/minecraft/src/TextureMap; -> Lbil;
     field ref com/prupe/mcpatcher/mod/CTMUtils.terrainMap Lnet/minecraft/src/TextureMap; -> com/prupe/mcpatcher/mod/CTMUtils.terrainMap Lbil; start()V@4
-     GETSTATIC 0x00 0x10       GETSTATIC 0x02 0x54
+     GETSTATIC 0x00 0x11       GETSTATIC 0x02 0x38
     field ref com/prupe/mcpatcher/mod/CTMUtils.terrainMap Lnet/minecraft/src/TextureMap; -> com/prupe/mcpatcher/mod/CTMUtils.terrainMap Lbil; start()V@31
-     GETSTATIC 0x00 0x10       GETSTATIC 0x02 0x54
+     GETSTATIC 0x00 0x11       GETSTATIC 0x02 0x38
     field ref com/prupe/mcpatcher/mod/CTMUtils.terrainMap Lnet/minecraft/src/TextureMap; -> com/prupe/mcpatcher/mod/CTMUtils.terrainMap Lbil; registerIcons(Lbil;Lbig;Ljava/lang/String;Ljava/util/Map;)V@195
-     PUTSTATIC 0x00 0x10       PUTSTATIC 0x02 0x54
+     PUTSTATIC 0x00 0x11       PUTSTATIC 0x02 0x38
     field ref net/minecraft/src/Tessellator.instance Lnet/minecraft/src/Tessellator; -> bfx.a Lbfx; start()V@14
-     GETSTATIC 0x00 0x12       GETSTATIC 0x02 0x5a
+     GETSTATIC 0x00 0x13       GETSTATIC 0x02 0x3e
     field ref net/minecraft/src/Tessellator.instance Lnet/minecraft/src/Tessellator; -> bfx.a Lbfx; start()V@28
-     GETSTATIC 0x00 0x12       GETSTATIC 0x02 0x5a
+     GETSTATIC 0x00 0x13       GETSTATIC 0x02 0x3e
     field ref net/minecraft/src/Tessellator.instance Lnet/minecraft/src/Tessellator; -> bfx.a Lbfx; getTessellator(Llx;)Lbfx;@0
-     GETSTATIC 0x00 0x12       GETSTATIC 0x02 0x5a
+     GETSTATIC 0x00 0x13       GETSTATIC 0x02 0x3e
     field ref net/minecraft/src/Tessellator.instance Lnet/minecraft/src/Tessellator; -> bfx.a Lbfx; finish()V@9
-     GETSTATIC 0x00 0x12       GETSTATIC 0x02 0x5a
+     GETSTATIC 0x00 0x13       GETSTATIC 0x02 0x3e
     field ref net/minecraft/src/Tessellator.textureMap Lnet/minecraft/src/TextureMap; -> bfx.textureMap Lbil; start()V@18
-     PUTFIELD 0x00 0x13        PUTFIELD 0x02 0x5c
+     PUTFIELD 0x00 0x14        PUTFIELD 0x02 0x40
     field ref net/minecraft/src/Tessellator.textureMap Lnet/minecraft/src/TextureMap; -> bfx.textureMap Lbil; start()V@34
-     PUTFIELD 0x00 0x13        PUTFIELD 0x02 0x5c
+     PUTFIELD 0x00 0x14        PUTFIELD 0x02 0x40
     field ref net/minecraft/src/Tessellator.textureMap Lnet/minecraft/src/TextureMap; -> bfx.textureMap Lbil; finish()V@13
-     PUTFIELD 0x00 0x13        PUTFIELD 0x02 0x5c
+     PUTFIELD 0x00 0x14        PUTFIELD 0x02 0x40
     method ref com/prupe/mcpatcher/mod/CTMUtils.getTile (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;IIIILnet/minecraft/src/Icon;Lnet/minecraft/src/Tessellator;)Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/CTMUtils.getTile (Lbfz;Laou;IIIILlx;Lbfx;)Llx; getTile(Lbfz;Laou;IIILlx;Lbfx;)Llx;@11
-     INVOKESTATIC 0x00 0x14    INVOKESTATIC 0x02 0x5e
+     INVOKESTATIC 0x00 0x15    INVOKESTATIC 0x02 0x42
     method ref com/prupe/mcpatcher/mod/CTMUtils.checkBlock (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;)Z -> com/prupe/mcpatcher/mod/CTMUtils.checkBlock (Lbfz;Laou;)Z getTile(Lbfz;Laou;IIIILlx;Lbfx;)Llx;@14
-     INVOKESTATIC 0x00 0x16    INVOKESTATIC 0x02 0x60
+     INVOKESTATIC 0x00 0x17    INVOKESTATIC 0x02 0x44
     field ref net/minecraft/src/RenderBlocks.blockAccess Lnet/minecraft/src/IBlockAccess; -> bfz.a Laae; getTile(Lbfz;Laou;IIIILlx;Lbfx;)Llx;@21
-     GETFIELD 0x00 0x17        GETFIELD 0x02 0x65
+     GETFIELD 0x00 0x18        GETFIELD 0x02 0x49
     field ref net/minecraft/src/RenderBlocks.blockAccess Lnet/minecraft/src/IBlockAccess; -> bfz.a Laae; checkBlock(Lbfz;Laou;)Z@7
-     GETFIELD 0x00 0x17        GETFIELD 0x02 0x65
+     GETFIELD 0x00 0x18        GETFIELD 0x02 0x49
     method ref com/prupe/mcpatcher/mod/CTMUtils$2.<init> (Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;Lnet/minecraft/src/IBlockAccess;IIII)V -> com/prupe/mcpatcher/mod/CTMUtils$2.<init> (Laou;Llx;Laae;IIII)V getTile(Lbfz;Laou;IIIILlx;Lbfx;)Llx;@41
-     INVOKESPECIAL 0x00 0x19   INVOKESPECIAL 0x02 0x68
+     INVOKESPECIAL 0x00 0x1a   INVOKESPECIAL 0x02 0x4c
     method ref com/prupe/mcpatcher/mod/CTMUtils$TileOverrideIterator.getIcon ()Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/CTMUtils$TileOverrideIterator.getIcon ()Llx; getTile(Lbfz;Laou;IIIILlx;Lbfx;)Llx;@62
-     INVOKEVIRTUAL 0x00 0x1b   INVOKEVIRTUAL 0x02 0x6b
+     INVOKEVIRTUAL 0x00 0x1c   INVOKEVIRTUAL 0x02 0x4f
     method ref com/prupe/mcpatcher/mod/CTMUtils$TileOverrideIterator.getIcon ()Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/CTMUtils$TileOverrideIterator.getIcon ()Llx; getTile(Lbfz;Laou;IILlx;Lbfx;)Llx;@41
-     INVOKEVIRTUAL 0x00 0x1b   INVOKEVIRTUAL 0x02 0x6b
+     INVOKEVIRTUAL 0x00 0x1c   INVOKEVIRTUAL 0x02 0x4f
     method ref com/prupe/mcpatcher/mod/CTMUtils.skipDefaultRendering (Lnet/minecraft/src/Block;)Z -> com/prupe/mcpatcher/mod/CTMUtils.skipDefaultRendering (Laou;)Z getTile(Lbfz;Laou;IIIILlx;Lbfx;)Llx;@74
-     INVOKESTATIC 0x00 0x1c    INVOKESTATIC 0x02 0x6d
+     INVOKESTATIC 0x00 0x1d    INVOKESTATIC 0x02 0x51
     method ref net/minecraft/src/RenderBlocks.getIconBySideAndMetadata (Lnet/minecraft/src/Block;II)Lnet/minecraft/src/Icon; -> bfz.a (Laou;II)Llx; getTile(Lbfz;Laou;IILbfx;)Llx;@8
-     INVOKEVIRTUAL 0x00 0x1d   INVOKEVIRTUAL 0x02 0x70
+     INVOKEVIRTUAL 0x00 0x1e   INVOKEVIRTUAL 0x02 0x54
     method ref com/prupe/mcpatcher/mod/CTMUtils.getTile (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;IILnet/minecraft/src/Icon;Lnet/minecraft/src/Tessellator;)Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/CTMUtils.getTile (Lbfz;Laou;IILlx;Lbfx;)Llx; getTile(Lbfz;Laou;IILbfx;)Llx;@13
-     INVOKESTATIC 0x00 0x1e    INVOKESTATIC 0x02 0x72
+     INVOKESTATIC 0x00 0x1f    INVOKESTATIC 0x02 0x56
     method ref com/prupe/mcpatcher/mod/CTMUtils.getTile (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;IILnet/minecraft/src/Icon;Lnet/minecraft/src/Tessellator;)Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/CTMUtils.getTile (Lbfz;Laou;IILlx;Lbfx;)Llx; getTile(Lbfz;Laou;ILbfx;)Llx;@11
-     INVOKESTATIC 0x00 0x1e    INVOKESTATIC 0x02 0x72
+     INVOKESTATIC 0x00 0x1f    INVOKESTATIC 0x02 0x56
     method ref net/minecraft/src/RenderBlocks.getIconBySide (Lnet/minecraft/src/Block;I)Lnet/minecraft/src/Icon; -> bfz.a (Laou;I)Llx; getTile(Lbfz;Laou;ILbfx;)Llx;@7
-     INVOKEVIRTUAL 0x00 0x1f   INVOKEVIRTUAL 0x02 0x75
+     INVOKEVIRTUAL 0x00 0x20   INVOKEVIRTUAL 0x02 0x59
     method ref com/prupe/mcpatcher/mod/CTMUtils$3.<init> (Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;II)V -> com/prupe/mcpatcher/mod/CTMUtils$3.<init> (Laou;Llx;II)V getTile(Lbfz;Laou;IILlx;Lbfx;)Llx;@20
-     INVOKESPECIAL 0x00 0x21   INVOKESPECIAL 0x02 0x78
+     INVOKESPECIAL 0x00 0x22   INVOKESPECIAL 0x02 0x5c
     method ref com/prupe/mcpatcher/mod/TessellatorUtils.getTessellator (Lnet/minecraft/src/Tessellator;Lnet/minecraft/src/Icon;)Lnet/minecraft/src/Tessellator; -> com/prupe/mcpatcher/mod/TessellatorUtils.getTessellator (Lbfx;Llx;)Lbfx; getTessellator(Llx;)Lbfx;@4
-     INVOKESTATIC 0x00 0x22    INVOKESTATIC 0x02 0x7b
+     INVOKESTATIC 0x00 0x23    INVOKESTATIC 0x02 0x5f
     method ref com/prupe/mcpatcher/mod/TessellatorUtils.registerTextureMap (Lnet/minecraft/src/TextureMap;Ljava/lang/String;)V -> com/prupe/mcpatcher/mod/TessellatorUtils.registerTextureMap (Lbil;Ljava/lang/String;)V registerIcons(Lbil;Lbig;Ljava/lang/String;Ljava/util/Map;)V@2
-     INVOKESTATIC 0x00 0x23    INVOKESTATIC 0x02 0x7e
+     INVOKESTATIC 0x00 0x24    INVOKESTATIC 0x02 0x62
     class ref net/minecraft/src/Texture -> bii registerIcons(Lbil;Lbig;Ljava/lang/String;Ljava/util/Map;)V@117
-     CHECKCAST 0x00 0x34       CHECKCAST 0x02 0x80
+     CHECKCAST 0x00 0x35       CHECKCAST 0x02 0x64
     method ref net/minecraft/src/Texture.getWidth ()I -> bii.d ()I registerIcons(Lbil;Lbig;Ljava/lang/String;Ljava/util/Map;)V@126
-     INVOKEVIRTUAL 0x00 0x35   INVOKEVIRTUAL 0x02 0x83
+     INVOKEVIRTUAL 0x00 0x36   INVOKEVIRTUAL 0x02 0x67
     method ref net/minecraft/src/Texture.getHeight ()I -> bii.e ()I registerIcons(Lbil;Lbig;Ljava/lang/String;Ljava/util/Map;)V@131
-     INVOKEVIRTUAL 0x00 0x36   INVOKEVIRTUAL 0x02 0x85
+     INVOKEVIRTUAL 0x00 0x37   INVOKEVIRTUAL 0x02 0x69
     method ref com/prupe/mcpatcher/mod/TileOverrideImpl$BetterGrass.<init> (Lnet/minecraft/src/TextureMap;ILjava/lang/String;)V -> com/prupe/mcpatcher/mod/TileOverrideImpl$BetterGrass.<init> (Lbil;ILjava/lang/String;)V registerIcons(Lbil;Lbig;Ljava/lang/String;Ljava/util/Map;)V@212
-     INVOKESPECIAL 0x00 0x3f   INVOKESPECIAL 0x02 0x88
+     INVOKESPECIAL 0x00 0x40   INVOKESPECIAL 0x02 0x6c
     method ref com/prupe/mcpatcher/mod/TileOverrideImpl$BetterGrass.<init> (Lnet/minecraft/src/TextureMap;ILjava/lang/String;)V -> com/prupe/mcpatcher/mod/TileOverrideImpl$BetterGrass.<init> (Lbil;ILjava/lang/String;)V registerIcons(Lbil;Lbig;Ljava/lang/String;Ljava/util/Map;)V@227
-     INVOKESPECIAL 0x00 0x3f   INVOKESPECIAL 0x02 0x88
+     INVOKESPECIAL 0x00 0x40   INVOKESPECIAL 0x02 0x6c
     interface method ref com/prupe/mcpatcher/mod/ITileOverride.registerIcons (Lnet/minecraft/src/TextureMap;Lnet/minecraft/src/Stitcher;Ljava/util/Map;)V -> com/prupe/mcpatcher/mod/ITileOverride.registerIcons (Lbil;Lbig;Ljava/util/Map;)V registerIcons(Lbil;Lbig;Ljava/lang/String;Ljava/util/Map;)V@409
-     INVOKEINTERFACE 0x00 0x4a 0x04 0x00  INVOKEINTERFACE 0x02 0x8b 0x04 0x00
+     INVOKEINTERFACE 0x00 0x4b 0x04 0x00  INVOKEINTERFACE 0x02 0x6f 0x04 0x00
     class ref net/minecraft/src/TextureMap -> bil updateAnimations()V@24
-     CHECKCAST 0x00 0x60       CHECKCAST 0x02 0x8d
+     CHECKCAST 0x00 0x51       CHECKCAST 0x02 0x71
     method ref net/minecraft/src/TextureMap.updateAnimations ()V -> bil.c ()V updateAnimations()V@29
-     INVOKEVIRTUAL 0x00 0x61   INVOKEVIRTUAL 0x02 0x90
+     INVOKEVIRTUAL 0x00 0x52   INVOKEVIRTUAL 0x02 0x74
     method ref com/prupe/mcpatcher/mod/RenderPassAPI.skipDefaultRendering (Lnet/minecraft/src/Block;)Z -> com/prupe/mcpatcher/mod/RenderPassAPI.skipDefaultRendering (Laou;)Z skipDefaultRendering(Laou;)Z@4
-     INVOKEVIRTUAL 0x00 0x65   INVOKEVIRTUAL 0x02 0x91
+     INVOKEVIRTUAL 0x00 0x56   INVOKEVIRTUAL 0x02 0x75
     field ref net/minecraft/src/Block.blocksList [Lnet/minecraft/src/Block; -> aou.r [Laou; registerOverride(Lcom/prupe/mcpatcher/mod/ITileOverride;)V@83
-     GETSTATIC 0x00 0x6b       GETSTATIC 0x02 0x97
+     GETSTATIC 0x00 0x5d       GETSTATIC 0x02 0x7b
     field ref net/minecraft/src/Block.blocksList [Lnet/minecraft/src/Block; -> aou.r [Laou; registerOverride(Lcom/prupe/mcpatcher/mod/ITileOverride;)V@90
-     GETSTATIC 0x00 0x6b       GETSTATIC 0x02 0x97
+     GETSTATIC 0x00 0x5d       GETSTATIC 0x02 0x7b
     field ref net/minecraft/src/Block.blocksList [Lnet/minecraft/src/Block; -> aou.r [Laou; registerOverride(Lcom/prupe/mcpatcher/mod/ITileOverride;)V@98
-     GETSTATIC 0x00 0x6b       GETSTATIC 0x02 0x97
+     GETSTATIC 0x00 0x5d       GETSTATIC 0x02 0x7b
     field ref net/minecraft/src/Block.blocksList [Lnet/minecraft/src/Block; -> aou.r [Laou; <clinit>()V@65
-     GETSTATIC 0x00 0x6b       GETSTATIC 0x02 0x97
+     GETSTATIC 0x00 0x5d       GETSTATIC 0x02 0x7b
     method ref net/minecraft/src/Block.getShortName ()Ljava/lang/String; -> aou.B ()Ljava/lang/String; registerOverride(Lcom/prupe/mcpatcher/mod/ITileOverride;)V@103
-     INVOKEVIRTUAL 0x00 0x6c   INVOKEVIRTUAL 0x02 0x9a
+     INVOKEVIRTUAL 0x00 0x5e   INVOKEVIRTUAL 0x02 0x7e
     method ref net/minecraft/client/Minecraft.getMaxTextureSize ()I -> net/minecraft/client/Minecraft.z ()I <clinit>()V@145
-     INVOKESTATIC 0x00 0x91    INVOKESTATIC 0x02 0x9d
+     INVOKESTATIC 0x00 0x87    INVOKESTATIC 0x02 0x81
    string replace Lnet/minecraft/src/Block; -> Laou; @468
    string replace Lnet/minecraft/src/Texture; -> Lbii; @1513
    string replace Ljava/util/List<Lnet/minecraft/src/Texture;>; -> Ljava/util/List<Lbii;>; @1786
@@ -6357,34 +6357,34 @@ Patching...
    string replace Lnet/minecraft/src/Stitcher; -> Lbig; @1643
    string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @634
    string replace Lnet/minecraft/src/TextureMap; -> Lbil; @1572
-   string replace Ljava/util/List<Lnet/minecraft/src/TextureMap;>; -> Ljava/util/List<Lbil;>; @7749
+   string replace Ljava/util/List<Lnet/minecraft/src/TextureMap;>; -> Ljava/util/List<Lbil;>; @7432
    string replace Lnet/minecraft/src/Tessellator; -> Lbfx; @544
    string replace Lnet/minecraft/src/RenderBlocks; -> Lbfz; @425
    string replace Ljava/util/Map<Lnet/minecraft/src/StitchHolder;Ljava/util/List<Lbii;>;>; -> Ljava/util/Map<Lbij;Ljava/util/List<Lbii;>;>; @1748
    string replace Lnet/minecraft/src/Icon; -> Llx; @476
   adding com/prupe/mcpatcher/mod/CTMUtils$1.class for Connected Textures
     class ref net/minecraft/src/TextureMap -> bil beforeChange()V@29
-     CHECKCAST 0x00 0x07       CHECKCAST 0x00 0xff
+     CHECKCAST 0x00 0x07       CHECKCAST 0x01 0x0d
     class ref net/minecraft/src/TextureMap -> bil afterChange()V@36
-     NEW 0x00 0x07             NEW 0x00 0xff
+     NEW 0x00 0x07             NEW 0x01 0x0d
     method ref net/minecraft/src/TextureMap.getTexture ()Lnet/minecraft/src/Texture; -> bil.d ()Lbii; beforeChange()V@34
-     INVOKEVIRTUAL 0x00 0x08   INVOKEVIRTUAL 0x01 0x03
+     INVOKEVIRTUAL 0x00 0x08   INVOKEVIRTUAL 0x01 0x11
     method ref net/minecraft/src/Texture.unloadGLTexture ()V -> bii.unloadGLTexture ()V beforeChange()V@37
-     INVOKEVIRTUAL 0x00 0x09   INVOKEVIRTUAL 0x01 0x06
+     INVOKEVIRTUAL 0x00 0x09   INVOKEVIRTUAL 0x01 0x14
     field ref net/minecraft/src/Tessellator.instance Lnet/minecraft/src/Tessellator; -> bfx.a Lbfx; beforeChange()V@65
-     GETSTATIC 0x00 0x0f       GETSTATIC 0x01 0x0c
+     GETSTATIC 0x00 0x0f       GETSTATIC 0x01 0x1a
     method ref com/prupe/mcpatcher/mod/TessellatorUtils.clear (Lnet/minecraft/src/Tessellator;)V -> com/prupe/mcpatcher/mod/TessellatorUtils.clear (Lbfx;)V beforeChange()V@68
-     INVOKESTATIC 0x00 0x10    INVOKESTATIC 0x01 0x0f
+     INVOKESTATIC 0x00 0x10    INVOKESTATIC 0x01 0x1d
     method ref net/minecraft/src/TextureMap.<init> (ILjava/lang/String;Ljava/lang/String;Ljava/awt/image/BufferedImage;)V -> bil.<init> (ILjava/lang/String;Ljava/lang/String;Ljava/awt/image/BufferedImage;)V afterChange()V@65
-     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x01 0x10
+     INVOKESPECIAL 0x00 0x34   INVOKESPECIAL 0x01 0x1e
     method ref net/minecraft/src/TextureMap.refresh ()V -> bil.b ()V afterChange()V@70
-     INVOKEVIRTUAL 0x00 0x31   INVOKEVIRTUAL 0x01 0x13
-    field ref net/minecraft/src/Block.blocksList [Lnet/minecraft/src/Block; -> aou.r [Laou; afterChange()V@136
-     GETSTATIC 0x00 0x37       GETSTATIC 0x01 0x19
-    field ref net/minecraft/src/Block.blocksList [Lnet/minecraft/src/Block; -> aou.r [Laou; afterChange()V@196
-     GETSTATIC 0x00 0x37       GETSTATIC 0x01 0x19
-    method ref com/prupe/mcpatcher/mod/RenderPassAPI.setRenderPassForBlock (Lnet/minecraft/src/Block;I)V -> com/prupe/mcpatcher/mod/RenderPassAPI.setRenderPassForBlock (Laou;I)V afterChange()V@208
-     INVOKEVIRTUAL 0x00 0x3a   INVOKEVIRTUAL 0x01 0x1c
+     INVOKEVIRTUAL 0x00 0x35   INVOKEVIRTUAL 0x01 0x21
+    field ref net/minecraft/src/Block.blocksList [Lnet/minecraft/src/Block; -> aou.r [Laou; afterChange()V@142
+     GETSTATIC 0x00 0x3c       GETSTATIC 0x01 0x27
+    field ref net/minecraft/src/Block.blocksList [Lnet/minecraft/src/Block; -> aou.r [Laou; afterChange()V@202
+     GETSTATIC 0x00 0x3c       GETSTATIC 0x01 0x27
+    method ref com/prupe/mcpatcher/mod/RenderPassAPI.setRenderPassForBlock (Lnet/minecraft/src/Block;I)V -> com/prupe/mcpatcher/mod/RenderPassAPI.setRenderPassForBlock (Laou;I)V afterChange()V@214
+     INVOKEVIRTUAL 0x00 0x3f   INVOKEVIRTUAL 0x01 0x2a
    string replace Lnet/minecraft/src/TextureMap; -> Lbil; @344
   adding com/prupe/mcpatcher/mod/CTMUtils$1$1.class for Connected Textures
   adding com/prupe/mcpatcher/mod/CTMUtils$2.class for Connected Textures
@@ -6575,190 +6575,152 @@ Patching...
    method signature (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIII)Lnet/minecraft/src/Icon; -> (Laae;Laou;Llx;IIII)Llx;
    method signature (Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;II)Lnet/minecraft/src/Icon; -> (Laou;Llx;II)Llx;
    field signature [Lnet/minecraft/src/Icon; -> [Llx;
-    field ref net/minecraft/src/Block.blocksList [Lnet/minecraft/src/Block; -> aou.r [Laou; <init>(Ljava/lang/String;Ljava/util/Properties;)V@129
-     GETSTATIC 0x00 0x40       GETSTATIC 0x03 0x87
-    field ref net/minecraft/src/Block.blocksList [Lnet/minecraft/src/Block; -> aou.r [Laou; <init>(Ljava/lang/String;Ljava/util/Properties;)V@142
-     GETSTATIC 0x00 0x40       GETSTATIC 0x03 0x87
-    field ref net/minecraft/src/Block.blocksList [Lnet/minecraft/src/Block; -> aou.r [Laou; <init>(Ljava/lang/String;Ljava/util/Properties;)V@149
-     GETSTATIC 0x00 0x40       GETSTATIC 0x03 0x87
+    field ref net/minecraft/src/Block.blocksList [Lnet/minecraft/src/Block; -> aou.r [Laou; <init>(Ljava/lang/String;Ljava/util/Properties;Lcom/prupe/mcpatcher/mod/TileLoader;)V@125
+     GETSTATIC 0x00 0x3e       GETSTATIC 0x02 0xdf
+    field ref net/minecraft/src/Block.blocksList [Lnet/minecraft/src/Block; -> aou.r [Laou; <init>(Ljava/lang/String;Ljava/util/Properties;Lcom/prupe/mcpatcher/mod/TileLoader;)V@139
+     GETSTATIC 0x00 0x3e       GETSTATIC 0x02 0xdf
+    field ref net/minecraft/src/Block.blocksList [Lnet/minecraft/src/Block; -> aou.r [Laou; <init>(Ljava/lang/String;Ljava/util/Properties;Lcom/prupe/mcpatcher/mod/TileLoader;)V@146
+     GETSTATIC 0x00 0x3e       GETSTATIC 0x02 0xdf
     field ref net/minecraft/src/Block.blocksList [Lnet/minecraft/src/Block; -> aou.r [Laou; shouldConnect(Laae;Laou;Llx;IIII[I)Z@75
-     GETSTATIC 0x00 0x40       GETSTATIC 0x03 0x87
-    method ref net/minecraft/src/Block.getShortName ()Ljava/lang/String; -> aou.B ()Ljava/lang/String; <init>(Ljava/lang/String;Ljava/util/Properties;)V@167
-     INVOKEVIRTUAL 0x00 0x42   INVOKEVIRTUAL 0x03 0x8a
-    method ref net/minecraft/src/TextureManager.getInstance ()Lnet/minecraft/src/TextureManager; -> bik.b ()Lbik; addIcon(Ljava/lang/String;Z)Z@75
-     INVOKESTATIC 0x00 0x7f    INVOKESTATIC 0x03 0x8f
-    method ref net/minecraft/src/TextureManager.getInstance ()Lnet/minecraft/src/TextureManager; -> bik.b ()Lbik; addIcon(Ljava/lang/String;Z)Z@140
-     INVOKESTATIC 0x00 0x7f    INVOKESTATIC 0x03 0x8f
-    method ref net/minecraft/src/TextureManager.createTexture (Ljava/lang/String;)Ljava/util/List; -> bik.c (Ljava/lang/String;)Ljava/util/List; addIcon(Ljava/lang/String;Z)Z@86
-     INVOKEVIRTUAL 0x00 0x81   INVOKEVIRTUAL 0x03 0x91
-    method ref net/minecraft/src/TextureManager.setupTexture (Ljava/lang/String;IIIIIIIZLjava/awt/image/BufferedImage;)Lnet/minecraft/src/Texture; -> bik.a (Ljava/lang/String;IIIIIIIZLjava/awt/image/BufferedImage;)Lbii; addIcon(Ljava/lang/String;Z)Z@170
-     INVOKEVIRTUAL 0x00 0x86   INVOKEVIRTUAL 0x03 0x94
-    class ref net/minecraft/src/Texture -> bii addIcon(Ljava/lang/String;Z)Z@266
-     CHECKCAST 0x00 0x89       CHECKCAST 0x03 0x96
-    class ref net/minecraft/src/Texture -> bii registerIcons(Lbil;Lbig;Ljava/util/Map;)V@81
-     CHECKCAST 0x00 0x89       CHECKCAST 0x03 0x96
-    method ref net/minecraft/src/Texture.getWidth ()I -> bii.d ()I addIcon(Ljava/lang/String;Z)Z@278
-     INVOKEVIRTUAL 0x00 0x8b   INVOKEVIRTUAL 0x03 0x99
-    method ref net/minecraft/src/Texture.getWidth ()I -> bii.d ()I registerIcons(Lbil;Lbig;Ljava/util/Map;)V@204
-     INVOKEVIRTUAL 0x00 0x8b   INVOKEVIRTUAL 0x03 0x99
-    method ref net/minecraft/src/Texture.getHeight ()I -> bii.e ()I addIcon(Ljava/lang/String;Z)Z@283
-     INVOKEVIRTUAL 0x00 0x8c   INVOKEVIRTUAL 0x03 0x9b
-    method ref net/minecraft/src/Texture.getHeight ()I -> bii.e ()I registerIcons(Lbil;Lbig;Ljava/util/Map;)V@215
-     INVOKEVIRTUAL 0x00 0x8c   INVOKEVIRTUAL 0x03 0x9b
-    class ref net/minecraft/src/Icon -> lx registerIcons(Lbil;Lbig;Ljava/util/Map;)V@10
-     ANEWARRAY 0x00 0xad       ANEWARRAY 0x03 0x9d
-    field ref com/prupe/mcpatcher/mod/TileOverride.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverride.icons [Llx; registerIcons(Lbil;Lbig;Ljava/util/Map;)V@13
-     PUTFIELD 0x00 0xae        PUTFIELD 0x03 0x9f
-    field ref com/prupe/mcpatcher/mod/TileOverride.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverride.icons [Llx; registerIcons(Lbil;Lbig;Ljava/util/Map;)V@115
-     GETFIELD 0x00 0xae        GETFIELD 0x03 0x9f
-    field ref com/prupe/mcpatcher/mod/TileOverride.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverride.icons [Llx; registerIcons(Lbil;Lbig;Ljava/util/Map;)V@129
-     GETFIELD 0x00 0xae        GETFIELD 0x03 0x9f
+     GETSTATIC 0x00 0x3e       GETSTATIC 0x02 0xdf
+    method ref net/minecraft/src/Block.getShortName ()Ljava/lang/String; -> aou.B ()Ljava/lang/String; <init>(Ljava/lang/String;Ljava/util/Properties;Lcom/prupe/mcpatcher/mod/TileLoader;)V@165
+     INVOKEVIRTUAL 0x00 0x40   INVOKEVIRTUAL 0x02 0xe2
+    method ref com/prupe/mcpatcher/mod/TileLoader.registerIcons (Lnet/minecraft/src/TextureMap;Lnet/minecraft/src/Stitcher;Ljava/util/Map;Ljava/util/List;)[Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileLoader.registerIcons (Lbil;Lbig;Ljava/util/Map;Ljava/util/List;)[Llx; registerIcons(Lbil;Lbig;Ljava/util/Map;)V@12
+     INVOKEVIRTUAL 0x00 0x9b   INVOKEVIRTUAL 0x02 0xe5
+    field ref com/prupe/mcpatcher/mod/TileOverride.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverride.icons [Llx; registerIcons(Lbil;Lbig;Ljava/util/Map;)V@15
+     PUTFIELD 0x00 0x9c        PUTFIELD 0x02 0xe7
     field ref com/prupe/mcpatcher/mod/TileOverride.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverride.icons [Llx; getTile(Laae;Laou;Llx;IIII)Llx;@1
-     GETFIELD 0x00 0xae        GETFIELD 0x03 0x9f
+     GETFIELD 0x00 0x9c        GETFIELD 0x02 0xe7
     field ref com/prupe/mcpatcher/mod/TileOverride.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverride.icons [Llx; getTile(Laou;Llx;II)Llx;@1
-     GETFIELD 0x00 0xae        GETFIELD 0x03 0x9f
-    class ref net/minecraft/src/StitchHolder -> bij registerIcons(Lbil;Lbig;Ljava/util/Map;)V@86
-     NEW 0x00 0xb1             NEW 0x03 0xa1
-    method ref net/minecraft/src/StitchHolder.<init> (Lnet/minecraft/src/Texture;)V -> bij.<init> (Lbii;)V registerIcons(Lbil;Lbig;Ljava/util/Map;)V@92
-     INVOKESPECIAL 0x00 0xb2   INVOKESPECIAL 0x03 0xa4
-    method ref net/minecraft/src/Stitcher.registerStitchHolder (Lnet/minecraft/src/StitchHolder;)V -> big.a (Lbij;)V registerIcons(Lbil;Lbig;Ljava/util/Map;)V@100
-     INVOKEVIRTUAL 0x00 0xb3   INVOKEVIRTUAL 0x03 0xa9
-    method ref net/minecraft/src/TextureMap.getIcon (Ljava/lang/String;)Lnet/minecraft/src/Icon; -> bil.a (Ljava/lang/String;)Llx; registerIcons(Lbil;Lbig;Ljava/util/Map;)V@123
-     INVOKEVIRTUAL 0x00 0xb4   INVOKEVIRTUAL 0x03 0xae
-    method ref com/prupe/mcpatcher/mod/TessellatorUtils.registerIcon (Lnet/minecraft/src/TextureMap;Lnet/minecraft/src/Icon;)V -> com/prupe/mcpatcher/mod/TessellatorUtils.registerIcon (Lbil;Llx;)V registerIcons(Lbil;Lbig;Ljava/util/Map;)V@135
-     INVOKESTATIC 0x00 0xb5    INVOKESTATIC 0x03 0xb1
+     GETFIELD 0x00 0x9c        GETFIELD 0x02 0xe7
     field ref net/minecraft/src/Block.blockID I -> aou.cz I shouldConnect(Laae;Laou;Llx;IIII[I)Z@1
-     GETFIELD 0x00 0xcd        GETFIELD 0x03 0xb4
+     GETFIELD 0x00 0x9f        GETFIELD 0x02 0xea
     field ref net/minecraft/src/Block.blockID I -> aou.cz I exclude(Laou;II)Z@42
-     GETFIELD 0x00 0xcd        GETFIELD 0x03 0xb4
+     GETFIELD 0x00 0x9f        GETFIELD 0x02 0xea
     field ref net/minecraft/src/Block.blockID I -> aou.cz I getTile(Laae;Laou;Llx;IIII)Llx;@86
-     GETFIELD 0x00 0xcd        GETFIELD 0x03 0xb4
+     GETFIELD 0x00 0x9f        GETFIELD 0x02 0xea
     field ref net/minecraft/src/Block.blockID I -> aou.cz I getTile(Laou;Llx;II)Llx;@76
-     GETFIELD 0x00 0xcd        GETFIELD 0x03 0xb4
+     GETFIELD 0x00 0x9f        GETFIELD 0x02 0xea
     interface method ref net/minecraft/src/IBlockAccess.getBlockMetadata (III)I -> aae.h (III)I shouldConnect(Laae;Laou;Llx;IIII[I)Z@13
-     INVOKEINTERFACE 0x00 0xce 0x04 0x00  INVOKEINTERFACE 0x03 0xb9 0x04 0x00
+     INVOKEINTERFACE 0x00 0xa0 0x04 0x00  INVOKEINTERFACE 0x02 0xef 0x04 0x00
     interface method ref net/minecraft/src/IBlockAccess.getBlockMetadata (III)I -> aae.h (III)I shouldConnect(Laae;Laou;Llx;IIII[I)Z@68
-     INVOKEINTERFACE 0x00 0xce 0x04 0x00  INVOKEINTERFACE 0x03 0xb9 0x04 0x00
+     INVOKEINTERFACE 0x00 0xa0 0x04 0x00  INVOKEINTERFACE 0x02 0xef 0x04 0x00
     interface method ref net/minecraft/src/IBlockAccess.getBlockMetadata (III)I -> aae.h (III)I getTile(Laae;Laou;Llx;IIII)Llx;@77
-     INVOKEINTERFACE 0x00 0xce 0x04 0x00  INVOKEINTERFACE 0x03 0xb9 0x04 0x00
+     INVOKEINTERFACE 0x00 0xa0 0x04 0x00  INVOKEINTERFACE 0x02 0xef 0x04 0x00
     interface method ref net/minecraft/src/IBlockAccess.getBlockId (III)I -> aae.a (III)I shouldConnect(Laae;Laou;Llx;IIII[I)Z@54
-     INVOKEINTERFACE 0x00 0xcf 0x04 0x00  INVOKEINTERFACE 0x03 0xbb 0x04 0x00
+     INVOKEINTERFACE 0x00 0xa1 0x04 0x00  INVOKEINTERFACE 0x02 0xf1 0x04 0x00
     method ref com/prupe/mcpatcher/mod/TileOverride.exclude (Lnet/minecraft/src/Block;II)Z -> com/prupe/mcpatcher/mod/TileOverride.exclude (Laou;II)Z shouldConnect(Laae;Laou;Llx;IIII[I)Z@90
-     INVOKEVIRTUAL 0x00 0xd0   INVOKEVIRTUAL 0x03 0xbd
+     INVOKEVIRTUAL 0x00 0xa2   INVOKEVIRTUAL 0x02 0xf3
     method ref com/prupe/mcpatcher/mod/TileOverride.exclude (Lnet/minecraft/src/Block;II)Z -> com/prupe/mcpatcher/mod/TileOverride.exclude (Laou;II)Z getTile(Laae;Laou;Llx;IIII)Llx;@105
-     INVOKEVIRTUAL 0x00 0xd0   INVOKEVIRTUAL 0x03 0xbd
+     INVOKEVIRTUAL 0x00 0xa2   INVOKEVIRTUAL 0x02 0xf3
     method ref com/prupe/mcpatcher/mod/TileOverride.exclude (Lnet/minecraft/src/Block;II)Z -> com/prupe/mcpatcher/mod/TileOverride.exclude (Laou;II)Z getTile(Laou;Llx;II)Llx;@93
-     INVOKEVIRTUAL 0x00 0xd0   INVOKEVIRTUAL 0x03 0xbd
+     INVOKEVIRTUAL 0x00 0xa2   INVOKEVIRTUAL 0x02 0xf3
     method ref net/minecraft/src/Block.shouldSideBeRendered (Lnet/minecraft/src/IBlockAccess;IIII)Z -> aou.a (Laae;IIII)Z shouldConnect(Laae;Laou;Llx;IIII[I)Z@200
-     INVOKEVIRTUAL 0x00 0xd5   INVOKEVIRTUAL 0x03 0xc0
+     INVOKEVIRTUAL 0x00 0xa7   INVOKEVIRTUAL 0x02 0xf6
     method ref net/minecraft/src/Block.getBlockIcon (Lnet/minecraft/src/IBlockAccess;IIII)Lnet/minecraft/src/Icon; -> aou.b_ (Laae;IIII)Llx; shouldConnect(Laae;Laou;Llx;IIII[I)Z@264
-     INVOKEVIRTUAL 0x00 0xd6   INVOKEVIRTUAL 0x03 0xc4
+     INVOKEVIRTUAL 0x00 0xa8   INVOKEVIRTUAL 0x02 0xfa
     field ref net/minecraft/src/Block.blockMaterial Lnet/minecraft/src/Material; -> aou.cO Lahz; shouldConnect(Laae;Laou;Llx;IIII[I)Z@278
-     GETFIELD 0x00 0xd7        GETFIELD 0x03 0xc8
+     GETFIELD 0x00 0xa9        GETFIELD 0x02 0xfe
     field ref net/minecraft/src/Block.blockMaterial Lnet/minecraft/src/Material; -> aou.cO Lahz; shouldConnect(Laae;Laou;Llx;IIII[I)Z@283
-     GETFIELD 0x00 0xd7        GETFIELD 0x03 0xc8
+     GETFIELD 0x00 0xa9        GETFIELD 0x02 0xfe
     method ref com/prupe/mcpatcher/mod/RenderPassAPI.skipThisRenderPass (Lnet/minecraft/src/Block;I)Z -> com/prupe/mcpatcher/mod/RenderPassAPI.skipThisRenderPass (Laou;I)Z getTile(Laae;Laou;Llx;IIII)Llx;@62
-     INVOKEVIRTUAL 0x00 0xe5   INVOKEVIRTUAL 0x03 0xcb
+     INVOKEVIRTUAL 0x00 0xb7   INVOKEVIRTUAL 0x03 0x01
     method ref com/prupe/mcpatcher/mod/TileOverride.getTileImpl (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIII)Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverride.getTileImpl (Laae;Laou;Llx;IIII)Llx; getTile(Laae;Laou;Llx;IIII)Llx;@221
-     INVOKEVIRTUAL 0x00 0xec   INVOKEVIRTUAL 0x03 0xcd
+     INVOKEVIRTUAL 0x00 0xbe   INVOKEVIRTUAL 0x03 0x03
     method ref com/prupe/mcpatcher/mod/TileOverride.getTileImpl (Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;II)Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverride.getTileImpl (Laou;Llx;II)Llx; getTile(Laou;Llx;II)Llx;@107
-     INVOKEVIRTUAL 0x00 0xed   INVOKEVIRTUAL 0x03 0xcf
-   string replace Lnet/minecraft/src/Block; -> Laou; @1650
-   string replace Lnet/minecraft/src/Texture; -> Lbii; @3742
-   string replace Ljava/util/List<Lnet/minecraft/src/Texture;>; -> Ljava/util/List<Lbii;>; @3769
-   string replace Ljava/util/Map<Lnet/minecraft/src/StitchHolder;Ljava/util/List<Lnet/minecraft/src/Texture;>;>; -> Ljava/util/Map<Lnet/minecraft/src/StitchHolder;Ljava/util/List<Lbii;>;>; @6298
-   string replace Ljava/util/Map<Ljava/lang/String;Ljava/util/List<Lnet/minecraft/src/Texture;>;>; -> Ljava/util/Map<Ljava/lang/String;Ljava/util/List<Lbii;>;>; @10234
-   string replace Lnet/minecraft/src/Stitcher; -> Lbig; @6261
-   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @7721
-   string replace Lnet/minecraft/src/TextureMap; -> Lbil; @6217
-   string replace Lnet/minecraft/src/StitchHolder; -> Lbij; @6161
-   string replace Ljava/util/Map<Lnet/minecraft/src/StitchHolder;Ljava/util/List<Lbii;>;>; -> Ljava/util/Map<Lbij;Ljava/util/List<Lbii;>;>; @6223
-   string replace Lnet/minecraft/src/Icon; -> Llx; @7657
+     INVOKEVIRTUAL 0x00 0xbf   INVOKEVIRTUAL 0x03 0x05
+   string replace Lnet/minecraft/src/Block; -> Laou; @1774
+   string replace Ljava/util/Map<Lnet/minecraft/src/StitchHolder;Ljava/util/List<Lnet/minecraft/src/Texture;>;>; -> Ljava/util/Map<Lnet/minecraft/src/StitchHolder;Ljava/util/List<Lbii;>;>; @5669
+   string replace Lnet/minecraft/src/Stitcher; -> Lbig; @5614
+   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @6259
+   string replace Lnet/minecraft/src/TextureMap; -> Lbil; @5570
+   string replace Ljava/util/Map<Lnet/minecraft/src/StitchHolder;Ljava/util/List<Lbii;>;>; -> Ljava/util/Map<Lbij;Ljava/util/List<Lbii;>;>; @5621
+   string replace Lnet/minecraft/src/Icon; -> Llx; @6222
   adding com/prupe/mcpatcher/mod/TileOverrideImpl.class for Connected Textures
   adding com/prupe/mcpatcher/mod/TileOverrideImpl$CTM.class for Connected Textures
    method signature (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIII)Lnet/minecraft/src/Icon; -> (Laae;Laou;Llx;IIII)Llx;
    method signature (Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;II)Lnet/minecraft/src/Icon; -> (Laou;Llx;II)Llx;
     method ref com/prupe/mcpatcher/mod/TileOverrideImpl$CTM.shouldConnect (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIII[I)Z -> com/prupe/mcpatcher/mod/TileOverrideImpl$CTM.shouldConnect (Laae;Laou;Llx;IIII[I)Z getTileImpl(Laae;Laou;Llx;IIII)Llx;@38
-     INVOKEVIRTUAL 0x00 0x06   INVOKEVIRTUAL 0x00 0x4e
+     INVOKEVIRTUAL 0x00 0x06   INVOKEVIRTUAL 0x00 0x50
     field ref com/prupe/mcpatcher/mod/TileOverrideImpl$CTM.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverrideImpl$CTM.icons [Llx; getTileImpl(Laae;Laou;Llx;IIII)Llx;@60
-     GETFIELD 0x00 0x07        GETFIELD 0x00 0x51
+     GETFIELD 0x00 0x07        GETFIELD 0x00 0x53
     field ref com/prupe/mcpatcher/mod/TileOverrideImpl$CTM.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverrideImpl$CTM.icons [Llx; getTileImpl(Laou;Llx;II)Llx;@1
-     GETFIELD 0x00 0x07        GETFIELD 0x00 0x51
-   string replace Lnet/minecraft/src/Block; -> Laou; @597
-   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @554
-   string replace Lnet/minecraft/src/Icon; -> Llx; @589
+     GETFIELD 0x00 0x07        GETFIELD 0x00 0x53
+   string replace Lnet/minecraft/src/Block; -> Laou; @685
+   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @642
+   string replace Lnet/minecraft/src/Icon; -> Llx; @677
   adding com/prupe/mcpatcher/mod/TileOverrideImpl$Random1.class for Connected Textures
    method signature (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIII)Lnet/minecraft/src/Icon; -> (Laae;Laou;Llx;IIII)Llx;
    method signature (Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;II)Lnet/minecraft/src/Icon; -> (Laou;Llx;II)Llx;
     field ref com/prupe/mcpatcher/mod/TileOverrideImpl$Random1.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverrideImpl$Random1.icons [Llx; getTileImpl(Laae;Laou;Llx;IIII)Llx;@9
-     GETFIELD 0x00 0x12        GETFIELD 0x00 0x82
+     GETFIELD 0x00 0x12        GETFIELD 0x00 0x84
     field ref com/prupe/mcpatcher/mod/TileOverrideImpl$Random1.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverrideImpl$Random1.icons [Llx; getTileImpl(Laae;Laou;Llx;IIII)Llx;@141
-     GETFIELD 0x00 0x12        GETFIELD 0x00 0x82
+     GETFIELD 0x00 0x12        GETFIELD 0x00 0x84
     field ref com/prupe/mcpatcher/mod/TileOverrideImpl$Random1.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverrideImpl$Random1.icons [Llx; getTileImpl(Laou;Llx;II)Llx;@1
-     GETFIELD 0x00 0x12        GETFIELD 0x00 0x82
-   string replace Lnet/minecraft/src/Block; -> Laou; @1069
-   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @1026
-   string replace Lnet/minecraft/src/Icon; -> Llx; @1061
+     GETFIELD 0x00 0x12        GETFIELD 0x00 0x84
+   string replace Lnet/minecraft/src/Block; -> Laou; @1157
+   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @1114
+   string replace Lnet/minecraft/src/Icon; -> Llx; @1149
   adding com/prupe/mcpatcher/mod/TileOverrideImpl$Fixed.class for Connected Textures
    method signature (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIII)Lnet/minecraft/src/Icon; -> (Laae;Laou;Llx;IIII)Llx;
    method signature (Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;II)Lnet/minecraft/src/Icon; -> (Laou;Llx;II)Llx;
     field ref com/prupe/mcpatcher/mod/TileOverrideImpl$Fixed.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverrideImpl$Fixed.icons [Llx; getTileImpl(Laae;Laou;Llx;IIII)Llx;@1
-     GETFIELD 0x00 0x05        GETFIELD 0x00 0x3a
+     GETFIELD 0x00 0x05        GETFIELD 0x00 0x3c
     field ref com/prupe/mcpatcher/mod/TileOverrideImpl$Fixed.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverrideImpl$Fixed.icons [Llx; getTileImpl(Laou;Llx;II)Llx;@1
-     GETFIELD 0x00 0x05        GETFIELD 0x00 0x3a
-   string replace Lnet/minecraft/src/Block; -> Laou; @569
-   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @526
-   string replace Lnet/minecraft/src/Icon; -> Llx; @561
+     GETFIELD 0x00 0x05        GETFIELD 0x00 0x3c
+   string replace Lnet/minecraft/src/Block; -> Laou; @657
+   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @614
+   string replace Lnet/minecraft/src/Icon; -> Llx; @649
   adding com/prupe/mcpatcher/mod/TileOverrideImpl$Horizontal.class for Connected Textures
    method signature (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIII)Lnet/minecraft/src/Icon; -> (Laae;Laou;Llx;IIII)Llx;
    method signature (Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;II)Lnet/minecraft/src/Icon; -> (Laou;Llx;II)Llx;
     method ref com/prupe/mcpatcher/mod/TileOverrideImpl$Horizontal.shouldConnect (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIII[I)Z -> com/prupe/mcpatcher/mod/TileOverrideImpl$Horizontal.shouldConnect (Laae;Laou;Llx;IIII[I)Z getTileImpl(Laae;Laou;Llx;IIII)Llx;@54
-     INVOKEVIRTUAL 0x00 0x08   INVOKEVIRTUAL 0x00 0x52
+     INVOKEVIRTUAL 0x00 0x08   INVOKEVIRTUAL 0x00 0x54
     method ref com/prupe/mcpatcher/mod/TileOverrideImpl$Horizontal.shouldConnect (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIII[I)Z -> com/prupe/mcpatcher/mod/TileOverrideImpl$Horizontal.shouldConnect (Laae;Laou;Llx;IIII[I)Z getTileImpl(Laae;Laou;Llx;IIII)Llx;@86
-     INVOKEVIRTUAL 0x00 0x08   INVOKEVIRTUAL 0x00 0x52
+     INVOKEVIRTUAL 0x00 0x08   INVOKEVIRTUAL 0x00 0x54
     field ref com/prupe/mcpatcher/mod/TileOverrideImpl$Horizontal.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverrideImpl$Horizontal.icons [Llx; getTileImpl(Laae;Laou;Llx;IIII)Llx;@99
-     GETFIELD 0x00 0x09        GETFIELD 0x00 0x55
+     GETFIELD 0x00 0x09        GETFIELD 0x00 0x57
     field ref com/prupe/mcpatcher/mod/TileOverrideImpl$Horizontal.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverrideImpl$Horizontal.icons [Llx; getTileImpl(Laou;Llx;II)Llx;@1
-     GETFIELD 0x00 0x09        GETFIELD 0x00 0x55
-   string replace Lnet/minecraft/src/Block; -> Laou; @585
-   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @542
-   string replace Lnet/minecraft/src/Icon; -> Llx; @577
+     GETFIELD 0x00 0x09        GETFIELD 0x00 0x57
+   string replace Lnet/minecraft/src/Block; -> Laou; @673
+   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @630
+   string replace Lnet/minecraft/src/Icon; -> Llx; @665
   adding com/prupe/mcpatcher/mod/TileOverrideImpl$Vertical.class for Connected Textures
    method signature (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIII)Lnet/minecraft/src/Icon; -> (Laae;Laou;Llx;IIII)Llx;
    method signature (Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;II)Lnet/minecraft/src/Icon; -> (Laou;Llx;II)Llx;
     method ref com/prupe/mcpatcher/mod/TileOverrideImpl$Vertical.shouldConnect (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIII[I)Z -> com/prupe/mcpatcher/mod/TileOverrideImpl$Vertical.shouldConnect (Laae;Laou;Llx;IIII[I)Z getTileImpl(Laae;Laou;Llx;IIII)Llx;@54
-     INVOKEVIRTUAL 0x00 0x08   INVOKEVIRTUAL 0x00 0x52
+     INVOKEVIRTUAL 0x00 0x08   INVOKEVIRTUAL 0x00 0x54
     method ref com/prupe/mcpatcher/mod/TileOverrideImpl$Vertical.shouldConnect (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIII[I)Z -> com/prupe/mcpatcher/mod/TileOverrideImpl$Vertical.shouldConnect (Laae;Laou;Llx;IIII[I)Z getTileImpl(Laae;Laou;Llx;IIII)Llx;@87
-     INVOKEVIRTUAL 0x00 0x08   INVOKEVIRTUAL 0x00 0x52
+     INVOKEVIRTUAL 0x00 0x08   INVOKEVIRTUAL 0x00 0x54
     field ref com/prupe/mcpatcher/mod/TileOverrideImpl$Vertical.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverrideImpl$Vertical.icons [Llx; getTileImpl(Laae;Laou;Llx;IIII)Llx;@100
-     GETFIELD 0x00 0x09        GETFIELD 0x00 0x55
+     GETFIELD 0x00 0x09        GETFIELD 0x00 0x57
     field ref com/prupe/mcpatcher/mod/TileOverrideImpl$Vertical.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverrideImpl$Vertical.icons [Llx; getTileImpl(Laou;Llx;II)Llx;@1
-     GETFIELD 0x00 0x09        GETFIELD 0x00 0x55
-   string replace Lnet/minecraft/src/Block; -> Laou; @579
-   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @536
-   string replace Lnet/minecraft/src/Icon; -> Llx; @571
+     GETFIELD 0x00 0x09        GETFIELD 0x00 0x57
+   string replace Lnet/minecraft/src/Block; -> Laou; @667
+   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @624
+   string replace Lnet/minecraft/src/Icon; -> Llx; @659
   adding com/prupe/mcpatcher/mod/TileOverrideImpl$Top.class for Connected Textures
    method signature (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIII)Lnet/minecraft/src/Icon; -> (Laae;Laou;Llx;IIII)Llx;
    method signature (Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;II)Lnet/minecraft/src/Icon; -> (Laou;Llx;II)Llx;
     method ref com/prupe/mcpatcher/mod/TileOverrideImpl$Top.shouldConnect (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIII[I)Z -> com/prupe/mcpatcher/mod/TileOverrideImpl$Top.shouldConnect (Laae;Laou;Llx;IIII[I)Z getTileImpl(Laae;Laou;Llx;IIII)Llx;@52
-     INVOKEVIRTUAL 0x00 0x08   INVOKEVIRTUAL 0x00 0x4b
+     INVOKEVIRTUAL 0x00 0x08   INVOKEVIRTUAL 0x00 0x4d
     field ref com/prupe/mcpatcher/mod/TileOverrideImpl$Top.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverrideImpl$Top.icons [Llx; getTileImpl(Laae;Laou;Llx;IIII)Llx;@59
-     GETFIELD 0x00 0x09        GETFIELD 0x00 0x4e
+     GETFIELD 0x00 0x09        GETFIELD 0x00 0x50
     field ref com/prupe/mcpatcher/mod/TileOverrideImpl$Top.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverrideImpl$Top.icons [Llx; getTileImpl(Laou;Llx;II)Llx;@1
-     GETFIELD 0x00 0x09        GETFIELD 0x00 0x4e
-   string replace Lnet/minecraft/src/Block; -> Laou; @563
-   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @520
-   string replace Lnet/minecraft/src/Icon; -> Llx; @555
+     GETFIELD 0x00 0x09        GETFIELD 0x00 0x50
+   string replace Lnet/minecraft/src/Block; -> Laou; @651
+   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @608
+   string replace Lnet/minecraft/src/Icon; -> Llx; @643
   adding com/prupe/mcpatcher/mod/TileOverrideImpl$Repeat.class for Connected Textures
    method signature (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIII)Lnet/minecraft/src/Icon; -> (Laae;Laou;Llx;IIII)Llx;
    method signature (Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;II)Lnet/minecraft/src/Icon; -> (Laou;Llx;II)Llx;
     field ref com/prupe/mcpatcher/mod/TileOverrideImpl$Repeat.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverrideImpl$Repeat.icons [Llx; getTileImpl(Laae;Laou;Llx;IIII)Llx;@188
-     GETFIELD 0x00 0x16        GETFIELD 0x00 0x75
+     GETFIELD 0x00 0x16        GETFIELD 0x00 0x77
     field ref com/prupe/mcpatcher/mod/TileOverrideImpl$Repeat.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mod/TileOverrideImpl$Repeat.icons [Llx; getTileImpl(Laou;Llx;II)Llx;@1
-     GETFIELD 0x00 0x16        GETFIELD 0x00 0x75
-   string replace Lnet/minecraft/src/Block; -> Laou; @1242
-   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @1199
-   string replace Lnet/minecraft/src/Icon; -> Llx; @1234
+     GETFIELD 0x00 0x16        GETFIELD 0x00 0x77
+   string replace Lnet/minecraft/src/Block; -> Laou; @1330
+   string replace Lnet/minecraft/src/IBlockAccess; -> Laae; @1287
+   string replace Lnet/minecraft/src/Icon; -> Llx; @1322
   adding com/prupe/mcpatcher/mod/TileOverrideImpl$BetterGrass.class for Connected Textures
    method signature (Lnet/minecraft/src/TextureMap;ILjava/lang/String;)V -> (Lbil;ILjava/lang/String;)V
    method signature (Lnet/minecraft/src/TextureMap;Lnet/minecraft/src/Stitcher;Ljava/util/Map;)V -> (Lbil;Lbig;Ljava/util/Map;)V
@@ -6789,6 +6751,54 @@ Patching...
    string replace Lnet/minecraft/src/TextureMap; -> Lbil; @296
    string replace Ljava/util/Map<Lnet/minecraft/src/StitchHolder;Ljava/util/List<Lbii;>;>; -> Ljava/util/Map<Lbij;Ljava/util/List<Lbii;>;>; @854
    string replace Lnet/minecraft/src/Icon; -> Llx; @1548
+  adding com/prupe/mcpatcher/mod/TileLoader.class for Connected Textures
+   method signature (Lnet/minecraft/src/TextureMap;Lnet/minecraft/src/Stitcher;Ljava/util/Map;Ljava/util/List;)[Lnet/minecraft/src/Icon; -> (Lbil;Lbig;Ljava/util/Map;Ljava/util/List;)[Llx;
+    method ref net/minecraft/src/TextureManager.getInstance ()Lnet/minecraft/src/TextureManager; -> bik.b ()Lbik; preload(Ljava/lang/String;Ljava/util/List;Z)Z@83
+     INVOKESTATIC 0x00 0x33    INVOKESTATIC 0x01 0x78
+    method ref net/minecraft/src/TextureManager.getInstance ()Lnet/minecraft/src/TextureManager; -> bik.b ()Lbik; preload(Ljava/lang/String;Ljava/util/List;Z)Z@155
+     INVOKESTATIC 0x00 0x33    INVOKESTATIC 0x01 0x78
+    method ref net/minecraft/src/TextureManager.setupTexture (Ljava/lang/String;IIIIIIIZLjava/awt/image/BufferedImage;)Lnet/minecraft/src/Texture; -> bik.a (Ljava/lang/String;IIIIIIIZLjava/awt/image/BufferedImage;)Lbii; preload(Ljava/lang/String;Ljava/util/List;Z)Z@113
+     INVOKEVIRTUAL 0x00 0x36   INVOKEVIRTUAL 0x01 0x7c
+    method ref net/minecraft/src/TextureManager.createTexture (Ljava/lang/String;)Ljava/util/List; -> bik.c (Ljava/lang/String;)Ljava/util/List; preload(Ljava/lang/String;Ljava/util/List;Z)Z@166
+     INVOKEVIRTUAL 0x00 0x3a   INVOKEVIRTUAL 0x01 0x7f
+    class ref net/minecraft/src/Icon -> lx registerIcons(Lbil;Lbig;Ljava/util/Map;Ljava/util/List;)[Llx;@7
+     ANEWARRAY 0x00 0x3e       ANEWARRAY 0x01 0x81
+    class ref net/minecraft/src/Icon -> lx registerIcons(Lbil;Lbig;Ljava/util/Map;Ljava/util/List;)[Llx;@64
+     CHECKCAST 0x00 0x3e       CHECKCAST 0x01 0x81
+    class ref net/minecraft/src/Texture -> bii registerIcons(Lbil;Lbig;Ljava/util/Map;Ljava/util/List;)[Llx;@138
+     CHECKCAST 0x00 0x45       CHECKCAST 0x01 0x83
+    class ref net/minecraft/src/Texture -> bii getTextureSize(Ljava/lang/String;)I@55
+     CHECKCAST 0x00 0x45       CHECKCAST 0x01 0x83
+    class ref net/minecraft/src/Texture -> bii getTextureSize(Ljava/lang/String;)I@68
+     CHECKCAST 0x00 0x45       CHECKCAST 0x01 0x83
+    class ref net/minecraft/src/StitchHolder -> bij registerIcons(Lbil;Lbig;Ljava/util/Map;Ljava/util/List;)[Llx;@143
+     NEW 0x00 0x46             NEW 0x01 0x85
+    method ref net/minecraft/src/StitchHolder.<init> (Lnet/minecraft/src/Texture;)V -> bij.<init> (Lbii;)V registerIcons(Lbil;Lbig;Ljava/util/Map;Ljava/util/List;)[Llx;@149
+     INVOKESPECIAL 0x00 0x47   INVOKESPECIAL 0x01 0x88
+    method ref net/minecraft/src/Stitcher.registerStitchHolder (Lnet/minecraft/src/StitchHolder;)V -> big.a (Lbij;)V registerIcons(Lbil;Lbig;Ljava/util/Map;Ljava/util/List;)[Llx;@157
+     INVOKEVIRTUAL 0x00 0x48   INVOKEVIRTUAL 0x01 0x8d
+    method ref net/minecraft/src/TextureMap.getIcon (Ljava/lang/String;)Lnet/minecraft/src/Icon; -> bil.a (Ljava/lang/String;)Llx; registerIcons(Lbil;Lbig;Ljava/util/Map;Ljava/util/List;)[Llx;@178
+     INVOKEVIRTUAL 0x00 0x49   INVOKEVIRTUAL 0x01 0x92
+    method ref com/prupe/mcpatcher/mod/TessellatorUtils.registerIcon (Lnet/minecraft/src/TextureMap;Lnet/minecraft/src/Icon;)V -> com/prupe/mcpatcher/mod/TessellatorUtils.registerIcon (Lbil;Llx;)V registerIcons(Lbil;Lbig;Ljava/util/Map;Ljava/util/List;)[Llx;@188
+     INVOKESTATIC 0x00 0x4a    INVOKESTATIC 0x01 0x95
+    method ref net/minecraft/src/Texture.getWidth ()I -> bii.d ()I registerIcons(Lbil;Lbig;Ljava/util/Map;Ljava/util/List;)[Llx;@274
+     INVOKEVIRTUAL 0x00 0x4f   INVOKEVIRTUAL 0x01 0x98
+    method ref net/minecraft/src/Texture.getWidth ()I -> bii.d ()I getTextureSize(Ljava/lang/String;)I@58
+     INVOKEVIRTUAL 0x00 0x4f   INVOKEVIRTUAL 0x01 0x98
+    method ref net/minecraft/src/Texture.getHeight ()I -> bii.e ()I registerIcons(Lbil;Lbig;Ljava/util/Map;Ljava/util/List;)[Llx;@285
+     INVOKEVIRTUAL 0x00 0x51   INVOKEVIRTUAL 0x01 0x9b
+    method ref net/minecraft/src/Texture.getHeight ()I -> bii.e ()I getTextureSize(Ljava/lang/String;)I@71
+     INVOKEVIRTUAL 0x00 0x51   INVOKEVIRTUAL 0x01 0x9b
+   string replace Lnet/minecraft/src/Texture; -> Lbii; @2034
+   string replace Ljava/util/List<Lnet/minecraft/src/Texture;>; -> Ljava/util/List<Lbii;>; @2109
+   string replace Ljava/util/Map<Lnet/minecraft/src/StitchHolder;Ljava/util/List<Lnet/minecraft/src/Texture;>;>; -> Ljava/util/Map<Lnet/minecraft/src/StitchHolder;Ljava/util/List<Lbii;>;>; @3094
+   string replace Ljava/util/Map<Ljava/lang/String;Ljava/util/List<Lnet/minecraft/src/Texture;>;>; -> Ljava/util/Map<Ljava/lang/String;Ljava/util/List<Lbii;>;>; @4639
+   string replace Lnet/minecraft/src/Stitcher; -> Lbig; @3021
+   string replace Lnet/minecraft/src/TextureMap; -> Lbil; @2977
+   string replace Lnet/minecraft/src/StitchHolder; -> Lbij; @2917
+   string replace Ljava/util/Map<Lnet/minecraft/src/StitchHolder;Ljava/util/List<Lbii;>;>; -> Ljava/util/Map<Lbij;Ljava/util/List<Lbii;>;>; @3019
+   string replace [Lnet/minecraft/src/Icon; -> [Llx; @2991
+   string replace Ljava/util/Map<Ljava/lang/String;Lnet/minecraft/src/Icon;>; -> Ljava/util/Map<Ljava/lang/String;Llx;>; @4578
   adding com/prupe/mcpatcher/mod/GlassPaneRenderer.class for Connected Textures
    method signature (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIIZZZZ)V -> (Lbfz;Laou;Llx;IIIZZZZ)V
    field signature [Lnet/minecraft/src/Icon; -> [Llx;
@@ -7431,6 +7441,7 @@ Connected Textures
     added com/prupe/mcpatcher/mod/ITileOverride.class
     added com/prupe/mcpatcher/mod/RenderPassAPI.class
     added com/prupe/mcpatcher/mod/TessellatorUtils.class
+    added com/prupe/mcpatcher/mod/TileLoader.class
     added com/prupe/mcpatcher/mod/TileOverride.class
     added com/prupe/mcpatcher/mod/TileOverrideImpl$BetterGrass.class
     added com/prupe/mcpatcher/mod/TileOverrideImpl$CTM.class
