@@ -525,10 +525,14 @@ public class ConnectedTextures extends Mod {
         private final MethodRef hasOverrideTexture = new MethodRef(getDeobfClass(), "hasOverrideTexture", "()Z");
         private final MethodRef drawCrossedSquares = new MethodRef(getDeobfClass(), "drawCrossedSquares", "(LBlock;IDDDF)V");
         private final MethodRef renderBlockPane = new MethodRef(getDeobfClass(), "renderBlockPane", "(LBlockPane;III)Z");
+        private final MethodRef renderBlockBrewingStand = new MethodRef(getDeobfClass(), "renderBlockBrewingStand", "(LBlockBrewingStand;III)Z");
         private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
         private final MethodRef renderBlockAsItem = new MethodRef(getDeobfClass(), "renderBlockAsItem", "(LBlock;IF)V");
         private final MethodRef getIconBySideAndMetadata = new MethodRef(getDeobfClass(), "getIconBySideAndMetadata", "(LBlock;II)LIcon;");
         private final MethodRef getIconBySide = new MethodRef(getDeobfClass(), "getIconBySide", "(LBlock;I)LIcon;");
+        private final InterfaceMethodRef getNormalizedX0 = new InterfaceMethodRef("Icon", "getNormalizedX0", "()F");
+        private final InterfaceMethodRef getNormalizedY0 = new InterfaceMethodRef("Icon", "getNormalizedY0", "()F");
+        private final InterfaceMethodRef interpolateX = new InterfaceMethodRef("Icon", "interpolateX", "(D)F");
         private final MethodRef getTile = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIIILIcon;LTessellator;)LIcon;");
         private final MethodRef getTileNoFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIILIcon;LTessellator;)LIcon;");
         private final MethodRef getTileBySideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IILTessellator;)LIcon;");
@@ -669,7 +673,7 @@ public class ConnectedTextures extends Mod {
                         ILOAD_2,
                         ILOAD_3,
                         ILOAD, 4,
-                        captureReference(INVOKEVIRTUAL)
+                        capture(build(subset(new int[]{INVOKEVIRTUAL, INVOKESPECIAL}, true), any(2)))
                     );
                 }
             }
@@ -720,6 +724,7 @@ public class ConnectedTextures extends Mod {
 
         private void setupNonStandardBlocks() {
             addMemberMapper(new MethodMapper(drawCrossedSquares));
+            mapRenderTypeMethod(25, renderBlockBrewingStand);
 
             addPatch(new RenderBlocksPatch() {
                 {
@@ -739,9 +744,15 @@ public class ConnectedTextures extends Mod {
 
                 @Override
                 public String getMatchExpression() {
+                    final InterfaceMethodRef method;
+                    if (getMethodInfo().getDescriptor().equals(map(renderBlockBrewingStand).getType())) {
+                        method = getNormalizedY0;
+                    } else {
+                        method = getNormalizedX0;
+                    }
                     return buildExpression(
                         capture(anyALOAD),
-                        reference(INVOKEINTERFACE, new InterfaceMethodRef("Icon", "getNormalizedX0", "()F")),
+                        reference(INVOKEINTERFACE, method),
                         F2D,
                         anyDSTORE
                     );
@@ -799,7 +810,7 @@ public class ConnectedTextures extends Mod {
                         public String getMatchExpression() {
                             return buildExpression(
                                 ALOAD, capture(any()),
-                                reference(INVOKEINTERFACE, new InterfaceMethodRef("Icon", "getNormalizedX0", "()F"))
+                                reference(INVOKEINTERFACE, getNormalizedX0)
                             );
                         }
 
@@ -871,7 +882,7 @@ public class ConnectedTextures extends Mod {
                                 // var28 = (double) var65.interpolateX(7.0);
                                 ALOAD, any(),
                                 push(7.0),
-                                reference(INVOKEINTERFACE, new InterfaceMethodRef("Icon", "interpolateX", "(D)F")),
+                                reference(INVOKEINTERFACE, interpolateX),
                                 F2D,
                                 DSTORE, capture(any())
                             );
