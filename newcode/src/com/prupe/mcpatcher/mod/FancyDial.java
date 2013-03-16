@@ -31,6 +31,7 @@ public class FancyDial {
     private static final boolean useScratchTexture = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "useScratchTexture", true);
     private static final int glAttributes;
     private static boolean initialized;
+    private static boolean inUpdateAll;
     private static final int drawList = GL11.glGenLists(1);
 
     private static final Field subTexturesField;
@@ -140,11 +141,13 @@ public class FancyDial {
                 getInstance(icon);
             }
         }
+        inUpdateAll = true;
         for (FancyDial instance : instances.values()) {
             if (instance != null && instance.needExtraUpdate) {
                 instance.icon.update();
             }
         }
+        inUpdateAll = false;
     }
 
     static void postUpdateAll() {
@@ -310,9 +313,7 @@ public class FancyDial {
                 logger.info("generating %d %s frames", outputFrames, name);
                 for (int i = 0; i < outputFrames; i++) {
                     render(i * (360.0 / outputFrames), false);
-                    if (scratchTexture >= 0) {
-                        postRender();
-                    } else {
+                    if (scratchTexture < 0) {
                         byteBuffer.position(0);
                         GL11.glReadPixels(x0, y0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, byteBuffer);
                     }
@@ -430,6 +431,8 @@ public class FancyDial {
         if (glError != 0) {
             logger.severe("%s during %s update", GLU.gluErrorString(glError), icon.getName());
             ok = false;
+        } else if (!inUpdateAll) {
+            postRender();
         }
         return ok;
     }
