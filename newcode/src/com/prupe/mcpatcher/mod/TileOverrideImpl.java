@@ -458,6 +458,10 @@ class TileOverrideImpl {
             return null;
         }
 
+        boolean isBetterGrass(IBlockAccess blockAccess, Block block, int i, int j, int k, int face) {
+            return block.blockID == blockID && getTile(blockAccess, block, null, i, j, k, face) == fullTile;
+        }
+
         public Icon getTile(Block block, Icon origIcon, int face, int metadata) {
             return null;
         }

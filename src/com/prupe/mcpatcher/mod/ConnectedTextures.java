@@ -522,11 +522,13 @@ public class ConnectedTextures extends Mod {
         private final FieldRef instance = new FieldRef("Tessellator", "instance", "LTessellator;");
         private final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;III)Z");
         private final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;III)Z");
+        private final MethodRef renderStandardBlockWithColorMultiplier = new MethodRef(getDeobfClass(), "renderStandardBlockWithColorMultiplier", "(LBlock;IIIFFF)Z");
         private final MethodRef hasOverrideTexture = new MethodRef(getDeobfClass(), "hasOverrideTexture", "()Z");
         private final MethodRef drawCrossedSquares = new MethodRef(getDeobfClass(), "drawCrossedSquares", "(LBlock;IDDDF)V");
         private final MethodRef renderBlockPane = new MethodRef(getDeobfClass(), "renderBlockPane", "(LBlockPane;III)Z");
         private final MethodRef renderBlockBrewingStand = new MethodRef(getDeobfClass(), "renderBlockBrewingStand", "(LBlockBrewingStand;III)Z");
         private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
+        private final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
         private final MethodRef renderBlockAsItem = new MethodRef(getDeobfClass(), "renderBlockAsItem", "(LBlock;IF)V");
         private final MethodRef getIconBySideAndMetadata = new MethodRef(getDeobfClass(), "getIconBySideAndMetadata", "(LBlock;II)LIcon;");
         private final MethodRef getIconBySide = new MethodRef(getDeobfClass(), "getIconBySide", "(LBlock;I)LIcon;");
@@ -563,6 +565,7 @@ public class ConnectedTextures extends Mod {
             addMemberMapper(new FieldMapper(overrideBlockTexture));
             addMemberMapper(new FieldMapper(blockAccess));
 
+            setupFastGrass();
             setupStandardBlocks();
             setupNonStandardBlocks();
             setupGlassPanes();
@@ -680,6 +683,170 @@ public class ConnectedTextures extends Mod {
                 .setMethod(renderBlockByRenderType)
                 .addXref(1, renderMethod)
             );
+        }
+
+        private void setupFastGrass() {
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(0.5f),
+                        anyFSTORE,
+                        push(1.0f),
+                        anyFSTORE,
+                        push(0.8f),
+                        anyFSTORE,
+                        push(0.6f),
+                        anyFSTORE
+                    );
+                }
+            }.setMethod(renderStandardBlockWithColorMultiplier));
+
+            addPatch(new BytecodePatch() {
+                private int face;
+
+                @Override
+                public String getDescription() {
+                    return "apply color multiplier to side grass texture (non-AO, fast graphics)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // tessellator.setColorOpaque_F(r, g, b);
+                        ALOAD, capture(any()),
+                        FLOAD, capture(any()),
+                        FLOAD, capture(any()),
+                        FLOAD, capture(any()),
+                        reference(INVOKEVIRTUAL, setColorOpaque_F)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    if (face++ < 2) {
+                        return null;
+                    }
+                    return buildCode(
+                        // if (CTMUtils.isBetterGrass(this.blockAccess, block, i, j, k, face)) {
+                        ALOAD_0,
+                        reference(GETFIELD, blockAccess),
+                        ALOAD_1,
+                        ILOAD_2,
+                        ILOAD_3,
+                        ILOAD, 4,
+                        push(face - 1),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "isBetterGrass", "(LIBlockAccess;LBlock;IIII)Z")),
+                        IFEQ, branch("A"),
+
+                        // tessellator.setColorOpaque_F(r * par5, g * par6, b * par7);
+                        ALOAD, getCaptureGroup(1),
+                        FLOAD, getCaptureGroup(2),
+                        FLOAD, 5,
+                        FMUL,
+                        FLOAD, getCaptureGroup(3),
+                        FLOAD, 6,
+                        FMUL,
+                        FLOAD, getCaptureGroup(4),
+                        FLOAD, 7,
+                        FMUL,
+                        reference(INVOKEVIRTUAL, setColorOpaque_F),
+                        GOTO, branch("B"),
+
+                        // } else {
+                        label("A"),
+
+                        // tessellator.setColorOpaque_F(r, g, b);
+                        getMatch(),
+
+                        // }
+                        label("B")
+                    );
+                }
+            }.targetMethod(renderStandardBlockWithColorMultiplier));
+
+            addPatch(new BytecodePatch() {
+                private final int[] faces = new int[6];
+                private boolean matched;
+
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                push(1),
+                                capture(anyISTORE),
+                                push(1),
+                                capture(anyISTORE),
+                                push(1),
+                                capture(anyISTORE),
+                                push(1),
+                                capture(anyISTORE),
+                                push(1),
+                                capture(anyISTORE),
+                                push(1),
+                                capture(anyISTORE)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            for (int i = 0; i < faces.length; i++) {
+                                faces[i] = extractRegisterNum(getCaptureGroup(i + 1));
+                            }
+                            return true;
+                        }
+                    });
+                }
+
+                @Override
+                public String getDescription() {
+                    return "apply color multiplier to side grass texture (AO, fast graphics)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    if (matched) {
+                        return null;
+                    }
+                    String istore = build(ISTORE, subset(faces, true));
+                    return buildExpression(or(
+                        repeat(build(push(0), istore), 5),
+                        build(
+                            push(0),
+                            repeat(build(DUP, istore), 4),
+                            istore
+                        )
+                    ));
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    matched = true;
+                    return buildCode(
+                        getCodeForFace(5),
+                        getCodeForFace(4),
+                        getCodeForFace(3),
+                        getCodeForFace(2),
+                        push(0),
+                        ISTORE, faces[0]
+                    );
+                }
+
+                private byte[] getCodeForFace(int face) {
+                    return buildCode(
+                        ALOAD_0,
+                        reference(GETFIELD, blockAccess),
+                        ALOAD_1,
+                        ILOAD_2,
+                        ILOAD_3,
+                        ILOAD, 4,
+                        push(face),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "isBetterGrass", "(LIBlockAccess;LBlock;IIII)Z")),
+                        ISTORE, faces[face]
+                    );
+                }
+            }.targetMethod(renderStandardBlockWithAmbientOcclusion));
         }
 
         private void setupStandardBlocks() {

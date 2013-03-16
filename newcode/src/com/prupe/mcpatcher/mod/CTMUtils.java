@@ -32,6 +32,7 @@ public class CTMUtils {
     private static final ITileOverride blockOverrides[][] = new ITileOverride[Block.blocksList.length][];
     private static final Map<String, ITileOverride[]> tileOverrides = new HashMap<String, ITileOverride[]>();
     private static final List<ITileOverride> overridesToRegister = new ArrayList<ITileOverride>();
+    private static TileOverrideImpl.BetterGrass betterGrass;
     private static final TexturePackChangeHandler changeHandler;
     private static boolean changeHandlerCalled;
     private static boolean registerIconsCalled;
@@ -76,6 +77,7 @@ public class CTMUtils {
                 tileOverrides.clear();
                 overridesToRegister.clear();
                 tileLoader = new TileLoader();
+                betterGrass = null;
 
                 if (enableStandard || enableNonStandard) {
                     List<String> fileList = new ArrayList<String>();
@@ -221,7 +223,8 @@ public class CTMUtils {
         if (mapName.equals("terrain")) {
             terrainMap = textureMap;
             if (enableGrass) {
-                registerOverride(new TileOverrideImpl.BetterGrass(textureMap, BLOCK_ID_GRASS, "grass"));
+                betterGrass = new TileOverrideImpl.BetterGrass(textureMap, BLOCK_ID_GRASS, "grass");
+                registerOverride(betterGrass);
                 registerOverride(new TileOverrideImpl.BetterGrass(textureMap, BLOCK_ID_MYCELIUM, "mycel"));
             }
             if (splitTextures > 1) {
@@ -277,6 +280,10 @@ public class CTMUtils {
         Tessellator.instance.textureMap = null;
         lastOverride = null;
         active = false;
+    }
+
+    public static boolean isBetterGrass(IBlockAccess blockAccess, Block block, int i, int j, int k, int face) {
+        return betterGrass != null && betterGrass.isBetterGrass(blockAccess, block, i, j, k, face);
     }
 
     private static boolean checkBlock(RenderBlocks renderBlocks, Block block) {
