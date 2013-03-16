@@ -95,10 +95,11 @@ public class CustomAnimation {
     }
 
     public static void updateAll() {
+        FancyDial.updateAll();
         for (CustomAnimation animation : animations) {
             animation.update();
         }
-        FancyDial.updateAll();
+        FancyDial.postUpdateAll();
     }
 
     static void addStrip(String name) {
