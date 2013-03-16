@@ -80,6 +80,10 @@ public class MipmapHelper {
     }
 
     public static void setupTexture(int target, int level, int internalFormat, int width, int height, int border, int format, int dataType, ByteBuffer buffer, Texture texture) {
+        if (!useMipmap) {
+            GL11.glTexImage2D(target, level, internalFormat, width, height, border, format, dataType, buffer);
+            return;
+        }
         int[] byteOrder = (format == GL11.GL_RGBA ? new int[]{3, 0, 1, 2} : new int[]{3, 2, 1, 0});
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         byte[] rgba = new byte[4 * width * height];
