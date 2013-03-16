@@ -297,6 +297,7 @@ public final class BaseMod extends Mod {
         protected final MethodRef addVertexWithUV = new MethodRef(getDeobfClass(), "addVertexWithUV", "(DDDDD)V");
         protected final MethodRef addVertex = new MethodRef(getDeobfClass(), "addVertex", "(DDD)V");
         protected final MethodRef setTextureUV = new MethodRef(getDeobfClass(), "setTextureUV", "(DD)V");
+        protected final MethodRef setColorOpaque_F = new MethodRef(getDeobfClass(), "setColorOpaque_F", "(FFF)V");
         protected final FieldRef instance = new FieldRef(getDeobfClass(), "instance", "LTessellator;");
 
         public TessellatorMod() {
@@ -349,6 +350,7 @@ public final class BaseMod extends Mod {
             );
 
             addMemberMapper(new FieldMapper(instance).accessFlag(AccessFlag.STATIC, true));
+            addMemberMapper(new MethodMapper(setColorOpaque_F));
         }
     }
 
