@@ -519,6 +519,7 @@ public class ConnectedTextures extends Mod {
         private final MethodRef[] faceMethods = new MethodRef[6];
         private final FieldRef overrideBlockTexture = new FieldRef(getDeobfClass(), "overrideBlockTexture", "LIcon;");
         private final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
+        private final FieldRef fancyGrass = new FieldRef(getDeobfClass(), "fancyGrass", "Z");
         private final FieldRef instance = new FieldRef("Tessellator", "instance", "LTessellator;");
         private final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;III)Z");
         private final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;III)Z");
@@ -702,6 +703,8 @@ public class ConnectedTextures extends Mod {
                 }
             }.setMethod(renderStandardBlockWithColorMultiplier));
 
+            addMemberMapper(new FieldMapper(fancyGrass).accessFlag(AccessFlag.STATIC, true));
+
             addPatch(new BytecodePatch() {
                 private int face;
 
@@ -806,9 +809,6 @@ public class ConnectedTextures extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    if (matched) {
-                        return null;
-                    }
                     String istore = build(ISTORE, subset(faces, true));
                     return buildExpression(or(
                         repeat(build(push(0), istore), 5),
@@ -822,14 +822,30 @@ public class ConnectedTextures extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
+                    if (matched) {
+                        return null;
+                    }
                     matched = true;
                     return buildCode(
+                        // if (RenderBlocks.fancyGrass) {
+                        reference(GETSTATIC, fancyGrass),
+                        IFEQ, branch("A"),
+
+                        // ...
+                        getMatch(),
+                        GOTO, branch("B"),
+
+                        // } else {
+                        label("A"),
                         getCodeForFace(5),
                         getCodeForFace(4),
                         getCodeForFace(3),
                         getCodeForFace(2),
                         push(0),
-                        ISTORE, faces[0]
+                        ISTORE, faces[0],
+
+                        // }
+                        label("B")
                     );
                 }
 
