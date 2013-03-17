@@ -7,7 +7,7 @@ import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
-public class ExtendedHD extends BaseTexturePackMod {
+public class ExtendedHD extends Mod {
     private final FieldRef textureBorder = new FieldRef("Texture", "border", "I");
 
     public ExtendedHD() {
