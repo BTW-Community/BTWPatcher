@@ -802,7 +802,7 @@ public final class BaseMod extends Mod {
                 }
             });
 
-            addClassSignature(new VoidSignature(refreshTextureMaps, "refresh") {
+            addClassSignature(new VoidSignature(refreshTextureMaps, "refreshTextures") {
                 @Override
                 public boolean filterMethod() {
                     return updateAnimationsMapped != null && getMethodInfo().getName().compareTo(updateAnimationsMapped) > 0;

@@ -410,7 +410,7 @@ public class BetterSkies extends Mod {
             final MethodRef renderParticles = new MethodRef(getDeobfClass(), "renderParticles", "(LEntity;F)V");
             final MethodRef addEffect = new MethodRef(getDeobfClass(), "addEffect", "(LEntityFX;)V");
             final MethodRef getFXLayer = new MethodRef("EntityFX", "getFXLayer", "()I");
-            final MethodRef bindTexture = new MethodRef("RenderEngine", "bindTexture", "(Ljava/lang/String;)V");
+            final MethodRef bindTextureByName = new MethodRef("RenderEngine", "bindTextureByName", "(Ljava/lang/String;)V");
             final MethodRef glBlendFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBlendFunc", "(II)V");
 
             addClassSignature(new ConstSignature("/particles.png"));
@@ -444,7 +444,7 @@ public class BetterSkies extends Mod {
             }
                 .setMethod(renderParticles)
                 .addXref(1, renderer)
-                .addXref(2, bindTexture)
+                .addXref(2, bindTextureByName)
             );
 
             addClassSignature(new BytecodeSignature() {

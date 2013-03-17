@@ -1285,7 +1285,7 @@ public class ConnectedTextures extends Mod {
             }
                 .setMethod(refreshTextures)
                 .addXref(1, new MethodRef("TextureManager", "getInstance", "()LTextureManager;"))
-                .addXref(2, new MethodRef("TextureManager", "newStitcher", "(Ljava/lang/String;)Lnet/minecraft/src/Stitcher;"))
+                .addXref(2, new MethodRef("TextureManager", "createStitcher", "(Ljava/lang/String;)Lnet/minecraft/src/Stitcher;"))
             );
 
             addClassSignature(new BytecodeSignature() {

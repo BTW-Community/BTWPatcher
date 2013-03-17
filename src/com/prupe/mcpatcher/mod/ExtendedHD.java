@@ -751,7 +751,7 @@ public class ExtendedHD extends BaseTexturePackMod {
 
         @Override
         protected MethodRef getUpdateMethod() {
-            return new MethodRef(getDeobfClass(), "update", "()V");
+            return new MethodRef(getDeobfClass(), "updateAnimation", "()V");
         }
     }
 }
