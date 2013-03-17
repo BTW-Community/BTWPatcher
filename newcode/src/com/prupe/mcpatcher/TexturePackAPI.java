@@ -246,6 +246,12 @@ public class TexturePackAPI {
         return texture;
     }
 
+    public static void deleteTexture(int texture) {
+        if (texture >= 0) {
+            MCPatcherUtils.getMinecraft().renderEngine.deleteTexture(texture);
+        }
+    }
+
     public static String getTextureName(int texture) {
         if (texture >= 0) {
             RenderEngine renderEngine = MCPatcherUtils.getMinecraft().renderEngine;

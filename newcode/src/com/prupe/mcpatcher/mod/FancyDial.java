@@ -467,7 +467,7 @@ public class FancyDial {
             frameBuffer = -1;
         }
         if (scratchTexture >= 0) {
-            MCPatcherUtils.getMinecraft().renderEngine.deleteTexture(scratchTexture);
+            TexturePackAPI.deleteTexture(scratchTexture);
             scratchTexture = -1;
         }
         layers.clear();
