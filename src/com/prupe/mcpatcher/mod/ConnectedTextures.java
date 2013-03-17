@@ -128,6 +128,8 @@ public class ConnectedTextures extends Mod {
             grassCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "grass", false));
             debugCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "debugTextures", false));
 
+            showAdvancedOption(debugCheckBox);
+
             switch (Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "splitTextures", 1)) {
                 case 0:
                     splitComboBox.setSelectedIndex(0);

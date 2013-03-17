@@ -11,8 +11,7 @@ import java.awt.image.BufferedImage;
 public class AAHelper {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
 
-    private static final int BORDER_COLOR = 0;
-
+    private static final int debugColor = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "debugBorder", false) ? 0xff0000ff : 0;
     private static final int aaSamples = Config.getInt(MCPatcherUtils.EXTENDED_HD, "antiAliasing", 1);
 
     public static int border;
@@ -102,14 +101,14 @@ public class AAHelper {
     }
 
     private static void addDebugOutline(BufferedImage output, int dy, int width, int height) {
-        if (BORDER_COLOR != 0) {
+        if (debugColor != 0) {
             for (int i = 0; i < width; i++) {
-                output.setRGB(i + border, dy + border, BORDER_COLOR);
-                output.setRGB(i + border, dy + height + border, BORDER_COLOR);
+                output.setRGB(i + border, dy + border, debugColor);
+                output.setRGB(i + border, dy + height + border, debugColor);
             }
             for (int i = 0; i < height; i++) {
-                output.setRGB(border, dy + i + border, BORDER_COLOR);
-                output.setRGB(height + border, dy + i + border, BORDER_COLOR);
+                output.setRGB(border, dy + i + border, debugColor);
+                output.setRGB(height + border, dy + i + border, debugColor);
             }
         }
     }

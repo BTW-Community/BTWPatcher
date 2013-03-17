@@ -19,6 +19,10 @@ public class HDConfig extends ModConfigPanel {
     private static final String TAG_LOD_BIAS = "lodBias";
     private static final String TAG_ANISOTROPIC_FILTERING = "anisotropicFiltering";
     private static final String TAG_ANTI_ALIASING = "antiAliasing";
+    private static final String TAG_GL13 = "useGL13";
+    private static final String TAG_SCRATCH_TEXTURE = "useScratchTexture";
+    private static final String TAG_DEBUG_BORDER = "debugBorder";
+    private static final String TAG_BYTE_BUFFER = "byteBufferAllocation";
 
     private JPanel panel;
     private JCheckBox animationCheckBox;
@@ -29,6 +33,11 @@ public class HDConfig extends ModConfigPanel {
     private JSpinner lodBiasSpinner;
     private JSpinner anisoSpinner;
     private JSpinner aaSpinner;
+    private JCheckBox gl13CheckBox;
+    private JCheckBox scratchTextureCheckBox;
+    private JCheckBox debugBorderCheckBox;
+    private JSpinner byteBufferSpinner;
+    private JLabel byteBufferLabel;
 
     HDConfig() {
         animationCheckBox.addActionListener(new ActionListener() {
@@ -52,6 +61,24 @@ public class HDConfig extends ModConfigPanel {
         mipmapCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Config.set(MCPatcherUtils.EXTENDED_HD, TAG_MIPMAP, mipmapCheckBox.isSelected());
+            }
+        });
+
+        gl13CheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Config.set(MCPatcherUtils.EXTENDED_HD, TAG_GL13, gl13CheckBox.isSelected());
+            }
+        });
+
+        scratchTextureCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Config.set(MCPatcherUtils.EXTENDED_HD, TAG_SCRATCH_TEXTURE, scratchTextureCheckBox.isSelected());
+            }
+        });
+
+        debugBorderCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Config.set(MCPatcherUtils.EXTENDED_HD, TAG_DEBUG_BORDER, debugBorderCheckBox.isSelected());
             }
         });
 
@@ -132,6 +159,19 @@ public class HDConfig extends ModConfigPanel {
                 lastValue = value;
             }
         });
+
+        byteBufferSpinner.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                int value = 1;
+                try {
+                    value = Integer.parseInt(byteBufferSpinner.getValue().toString());
+                    value = Math.min(Math.max(value, 0), 2);
+                } catch (NumberFormatException e1) {
+                }
+                Config.set(MCPatcherUtils.EXTENDED_HD, TAG_BYTE_BUFFER, value);
+                byteBufferSpinner.setValue(value);
+            }
+        });
     }
 
     @Override
@@ -149,6 +189,16 @@ public class HDConfig extends ModConfigPanel {
         lodBiasSpinner.setValue(Config.getInt(MCPatcherUtils.EXTENDED_HD, TAG_LOD_BIAS, 0));
         anisoSpinner.setValue(Config.getInt(MCPatcherUtils.EXTENDED_HD, TAG_ANISOTROPIC_FILTERING, 1));
         aaSpinner.setValue(Config.getInt(MCPatcherUtils.EXTENDED_HD, TAG_ANTI_ALIASING, 0));
+        gl13CheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_GL13, true));
+        scratchTextureCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_SCRATCH_TEXTURE, true));
+        debugBorderCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_DEBUG_BORDER, false));
+        byteBufferSpinner.setValue(Config.getInt(MCPatcherUtils.EXTENDED_HD, TAG_BYTE_BUFFER, 1));
+
+        showAdvancedOption(gl13CheckBox);
+        showAdvancedOption(scratchTextureCheckBox);
+        showAdvancedOption(debugBorderCheckBox);
+        showAdvancedOption(byteBufferLabel);
+        showAdvancedOption(byteBufferSpinner);
     }
 
     @Override

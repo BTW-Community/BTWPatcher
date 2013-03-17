@@ -170,6 +170,8 @@ public final class BaseMod extends Mod {
             loadIntConfig(Config.TAG_DIRECT_MEMORY_SIZE, directSizeText, 0);
             autoRefreshTexturesCheckBox.setSelected(Config.getBoolean("autoRefreshTextures", false));
             profilingCheckBox.setSelected(Config.getBoolean("extraProfiling", false));
+
+            showAdvancedOption(profilingCheckBox);
         }
 
         @Override
