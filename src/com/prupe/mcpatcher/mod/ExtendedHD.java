@@ -133,7 +133,7 @@ public class ExtendedHD extends BaseTexturePackMod {
         }
 
         private void addMipmappingPatches() {
-            final MethodRef setupTextureWithFlags = new MethodRef(getDeobfClass(), "setupTextureWithFlags", "(Ljava/awt/image/BufferedImage;IZZ)V");
+            final MethodRef setupTextureExt = new MethodRef(getDeobfClass(), "setupTextureExt", "(Ljava/awt/image/BufferedImage;IZZ)V");
             final MethodRef setupTextureMipmaps = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(LRenderEngine;Ljava/awt/image/BufferedImage;IZZLjava/lang/String;)V");
             final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIII" + imageData.getType() + ")V");
             final FieldRef currentMipmapLevel = new FieldRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "currentLevel", "I");
@@ -141,7 +141,7 @@ public class ExtendedHD extends BaseTexturePackMod {
             final MethodRef getImageWidth = new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I");
             final MethodRef startsWith = new MethodRef("java/lang/String", "startsWith", "(Ljava/lang/String;)Z");
 
-            addMemberMapper(new MethodMapper(setupTextureWithFlags));
+            addMemberMapper(new MethodMapper(setupTextureExt));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -178,7 +178,7 @@ public class ExtendedHD extends BaseTexturePackMod {
                         reference(GETSTATIC, currentMipmapLevel)
                     );
                 }
-            }.targetMethod(setupTextureWithFlags));
+            }.targetMethod(setupTextureExt));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -208,7 +208,7 @@ public class ExtendedHD extends BaseTexturePackMod {
                         getCaptureGroup(2)
                     );
                 }
-            }.targetMethod(setupTextureWithFlags));
+            }.targetMethod(setupTextureExt));
 
             addPatch(new BytecodePatch() {
                 private byte[] pushTextureName;
@@ -242,7 +242,7 @@ public class ExtendedHD extends BaseTexturePackMod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(INVOKEVIRTUAL, setupTextureWithFlags)
+                        reference(INVOKEVIRTUAL, setupTextureExt)
                     );
                 }
 
@@ -270,7 +270,7 @@ public class ExtendedHD extends BaseTexturePackMod {
                     return buildExpression(
                         // this.terrain.refresh();
                         ALOAD_0,
-                        reference(GETFIELD, terrain),
+                        reference(GETFIELD, textureMapBlocks),
                         anyReference(INVOKEVIRTUAL)
                     );
                 }
@@ -552,16 +552,16 @@ public class ExtendedHD extends BaseTexturePackMod {
             setInterfaces("Icon");
 
             final FieldRef texture = new FieldRef(getDeobfClass(), "texture", "LTexture;");
-            final MethodRef setup = new MethodRef(getDeobfClass(), "setup", "(LTexture;Ljava/util/List;IIIIZ)V");
-            final MethodRef update = new MethodRef(getDeobfClass(), "update", "()V");
+            final MethodRef init = new MethodRef(getDeobfClass(), "init", "(LTexture;Ljava/util/List;IIIIZ)V");
+            final MethodRef updateAnimation = new MethodRef(getDeobfClass(), "updateAnimation", "()V");
 
             addClassSignature(new ConstSignature("clock"));
             addClassSignature(new ConstSignature("compass"));
             addClassSignature(new ConstSignature(","));
 
             addMemberMapper(new FieldMapper(texture));
-            addMemberMapper(new MethodMapper(setup));
-            addMemberMapper(new MethodMapper(update));
+            addMemberMapper(new MethodMapper(init));
+            addMemberMapper(new MethodMapper(updateAnimation));
 
             addPatch(new BytecodePatch() {
                 @Override

@@ -11,7 +11,7 @@ public class RenderEngine {
     public void bindTexture(int texture) {
     }
 
-    public void clearBoundTexture() {
+    public void resetBoundTexture() {
     }
 
     public void deleteTexture(int texture) {
@@ -31,7 +31,7 @@ public class RenderEngine {
     public void setupTexture(BufferedImage image, int texture) {
     }
 
-    public void setupTextureWithFlags(BufferedImage image, int texture, boolean blurTexture, boolean clampTexture) { // 13w09a+
+    public void setupTextureExt(BufferedImage image, int texture, boolean blurTexture, boolean clampTexture) { // 13w09a+
     }
 
     public void refreshTextures() {

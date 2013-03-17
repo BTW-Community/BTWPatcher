@@ -138,10 +138,10 @@ public class GlassPaneRenderer {
     private static void setupTileCoords(int face) {
         Icon icon = icons[face];
         tessellator = CTMUtils.getTessellator(icons[face]);
-        u0 = icon.getNormalizedX0();
-        uM = icon.interpolateX(8.0);
-        u1 = icon.getNormalizedX1();
-        v0 = icon.getNormalizedY0();
-        v1 = icon.getNormalizedY1();
+        u0 = icon.getMinU();
+        uM = icon.getInterpolatedU(8.0);
+        u1 = icon.getMaxU();
+        v0 = icon.getMinV();
+        v1 = icon.getMaxV();
     }
 }

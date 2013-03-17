@@ -168,7 +168,7 @@ public class ConnectedTextures extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         ALOAD_0,
-                        reference(GETFIELD, terrain),
+                        reference(GETFIELD, textureMapBlocks),
                         reference(INVOKEVIRTUAL, new MethodRef("TextureMap", "updateAnimations", "()V"))
                     );
                 }
@@ -533,9 +533,9 @@ public class ConnectedTextures extends Mod {
         private final MethodRef renderBlockAsItem = new MethodRef(getDeobfClass(), "renderBlockAsItem", "(LBlock;IF)V");
         private final MethodRef getIconBySideAndMetadata = new MethodRef(getDeobfClass(), "getIconBySideAndMetadata", "(LBlock;II)LIcon;");
         private final MethodRef getIconBySide = new MethodRef(getDeobfClass(), "getIconBySide", "(LBlock;I)LIcon;");
-        private final InterfaceMethodRef getNormalizedX0 = new InterfaceMethodRef("Icon", "getNormalizedX0", "()F");
-        private final InterfaceMethodRef getNormalizedY0 = new InterfaceMethodRef("Icon", "getNormalizedY0", "()F");
-        private final InterfaceMethodRef interpolateX = new InterfaceMethodRef("Icon", "interpolateX", "(D)F");
+        private final InterfaceMethodRef getMinU = new InterfaceMethodRef("Icon", "getMinU", "()F");
+        private final InterfaceMethodRef getMinV = new InterfaceMethodRef("Icon", "getMinV", "()F");
+        private final InterfaceMethodRef getInterpolatedU = new InterfaceMethodRef("Icon", "getInterpolatedU", "(D)F");
         private final MethodRef getTile = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIIILIcon;LTessellator;)LIcon;");
         private final MethodRef getTileNoFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIILIcon;LTessellator;)LIcon;");
         private final MethodRef getTileBySideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IILTessellator;)LIcon;");
@@ -929,9 +929,9 @@ public class ConnectedTextures extends Mod {
                 public String getMatchExpression() {
                     final InterfaceMethodRef method;
                     if (getMethodInfo().getDescriptor().equals(map(renderBlockBrewingStand).getType())) {
-                        method = getNormalizedY0;
+                        method = getMinV;
                     } else {
-                        method = getNormalizedX0;
+                        method = getMinU;
                     }
                     return buildExpression(
                         capture(anyALOAD),
@@ -993,7 +993,7 @@ public class ConnectedTextures extends Mod {
                         public String getMatchExpression() {
                             return buildExpression(
                                 ALOAD, capture(any()),
-                                reference(INVOKEINTERFACE, getNormalizedX0)
+                                reference(INVOKEINTERFACE, getMinU)
                             );
                         }
 
@@ -1065,7 +1065,7 @@ public class ConnectedTextures extends Mod {
                                 // var28 = (double) var65.interpolateX(7.0);
                                 ALOAD, any(),
                                 push(7.0),
-                                reference(INVOKEINTERFACE, interpolateX),
+                                reference(INVOKEINTERFACE, getInterpolatedU),
                                 F2D,
                                 DSTORE, capture(any())
                             );

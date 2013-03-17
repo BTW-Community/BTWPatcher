@@ -244,7 +244,7 @@ public class MipmapHelper {
                     }
                 }
                 BufferedImage image = mipmapImages.get(currentLevel);
-                renderEngine.setupTextureWithFlags(image, texture, blurTexture, clampTexture);
+                renderEngine.setupTextureExt(image, texture, blurTexture, clampTexture);
                 checkGLError("setupTexture %s#%d", textureName, currentLevel);
                 if (currentLevel > 0) {
                     logger.finest("%s mipmap level %d (%dx%d)", textureName, currentLevel, image.getWidth(), image.getHeight());

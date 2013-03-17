@@ -150,12 +150,12 @@ public class BaseTexturePackMod extends Mod {
             final FieldRef missingTextureImage = new FieldRef(getDeobfClass(), "missingTextureImage", "Ljava/awt/image/BufferedImage;");
             final MethodRef deleteTexture = new MethodRef(getDeobfClass(), "deleteTexture", "(I)V");
             final MethodRef setupTexture = new MethodRef(getDeobfClass(), "setupTexture", "(Ljava/awt/image/BufferedImage;I)V");
-            final MethodRef setupTextureWithFlags = new MethodRef(getDeobfClass(), "setupTextureWithFlags", "(Ljava/awt/image/BufferedImage;IZZ)V");
+            final MethodRef setupTextureExt = new MethodRef(getDeobfClass(), "setupTextureExt", "(Ljava/awt/image/BufferedImage;IZZ)V");
             final MethodRef getImageContents = new MethodRef(getDeobfClass(), "getImageContents", "(Ljava/awt/image/BufferedImage;[I)[I");
             final MethodRef readTextureImage = new MethodRef(getDeobfClass(), "readTextureImage", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
             final MethodRef bindTextureByName = new MethodRef(getDeobfClass(), "bindTextureByName", "(Ljava/lang/String;)V");
             final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(I)V");
-            final MethodRef clearBoundTexture = new MethodRef(getDeobfClass(), "clearBoundTexture", "()V");
+            final MethodRef resetBoundTexture = new MethodRef(getDeobfClass(), "resetBoundTexture", "()V");
             final MethodRef clear = new MethodRef("java/nio/IntBuffer", "clear", "()Ljava/nio/Buffer;");
             final MethodRef put = new MethodRef("java/nio/IntBuffer", "put", "([I)Ljava/nio/IntBuffer;");
             final MethodRef position = new MethodRef("java/nio/IntBuffer", "position", "(I)Ljava/nio/Buffer;");
@@ -192,11 +192,11 @@ public class BaseTexturePackMod extends Mod {
                         push(-1)
                     );
                 }
-            }.setMethod(clearBoundTexture));
+            }.setMethod(resetBoundTexture));
 
             addMemberMapper(new FieldMapper(missingTextureImage));
             addMemberMapper(new MethodMapper(setupTexture));
-            addMemberMapper(new MethodMapper(setupTextureWithFlags));
+            addMemberMapper(new MethodMapper(setupTextureExt));
             addMemberMapper(new MethodMapper(getImageContents));
             addMemberMapper(new MethodMapper(readTextureImage));
             addMemberMapper(new MethodMapper(bindTextureByName));
@@ -302,7 +302,7 @@ public class BaseTexturePackMod extends Mod {
                             anyILOAD,
                             anyILOAD,
                             anyILOAD,
-                            reference(INVOKEVIRTUAL, setupTextureWithFlags)
+                            reference(INVOKEVIRTUAL, setupTextureExt)
                         )),
 
                         // } else {
@@ -345,7 +345,7 @@ public class BaseTexturePackMod extends Mod {
                         label("A"),
 
                         // ...
-                        // this.setupTextureWithFlags(image, ...);
+                        // this.setupTextureExt(image, ...);
                         getCaptureGroup(3).length > 0 ? buildCode(ALOAD, reg, getCaptureGroup(3)) : new byte[0],
                         ALOAD_0,
                         ALOAD, reg,
@@ -376,7 +376,7 @@ public class BaseTexturePackMod extends Mod {
                         label("A")
                     );
                 }
-            }.targetMethod(setupTextureWithFlags));
+            }.targetMethod(setupTextureExt));
 
             addPatch(new BytecodePatch() {
                 @Override

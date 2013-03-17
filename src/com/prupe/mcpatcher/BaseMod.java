@@ -757,8 +757,8 @@ public final class BaseMod extends Mod {
      * Maps RenderEngine class.
      */
     public static class RenderEngineMod extends ClassMod {
-        protected final FieldRef terrain = new FieldRef(getDeobfClass(), "terrain", "LTextureMap;");
-        protected final FieldRef items = new FieldRef(getDeobfClass(), "items", "LTextureMap;");
+        protected final FieldRef textureMapBlocks = new FieldRef(getDeobfClass(), "textureMapBlocks", "LTextureMap;");
+        protected final FieldRef textureMapItems = new FieldRef(getDeobfClass(), "textureMapItems", "LTextureMap;");
         protected final MethodRef updateDynamicTextures = new MethodRef(getDeobfClass(), "updateDynamicTextures", "()V");
         protected final MethodRef refreshTextureMaps = new MethodRef(getDeobfClass(), "refreshTextureMaps", "()V");
         protected final MethodRef glTexSubImage2DByte = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V");
@@ -816,9 +816,9 @@ public final class BaseMod extends Mod {
         private class VoidSignature extends BytecodeSignature {
             VoidSignature(MethodRef method, String textureMethod) {
                 setMethod(method);
-                addXref(1, terrain);
+                addXref(1, textureMapBlocks);
                 addXref(2, new MethodRef("TextureMap", textureMethod, "()V"));
-                addXref(3, items);
+                addXref(3, textureMapItems);
             }
 
             @Override
@@ -973,30 +973,30 @@ public final class BaseMod extends Mod {
 
     public static class IconMod extends ClassMod {
         public IconMod() {
-            final InterfaceMethodRef getX0 = new InterfaceMethodRef(getDeobfClass(), "getX0", "()I");
-            final InterfaceMethodRef getY0 = new InterfaceMethodRef(getDeobfClass(), "getY0", "()I");
-            final InterfaceMethodRef getNormalizedX0 = new InterfaceMethodRef(getDeobfClass(), "getNormalizedX0", "()F");
-            final InterfaceMethodRef getNormalizedX1 = new InterfaceMethodRef(getDeobfClass(), "getNormalizedX1", "()F");
-            final InterfaceMethodRef interpolateX = new InterfaceMethodRef(getDeobfClass(), "interpolateX", "(D)F");
-            final InterfaceMethodRef getNormalizedY0 = new InterfaceMethodRef(getDeobfClass(), "getNormalizedY0", "()F");
-            final InterfaceMethodRef getNormalizedY1 = new InterfaceMethodRef(getDeobfClass(), "getNormalizedY1", "()F");
-            final InterfaceMethodRef interpolateY = new InterfaceMethodRef(getDeobfClass(), "interpolateY", "(D)F");
-            final InterfaceMethodRef getName = new InterfaceMethodRef(getDeobfClass(), "getName", "()Ljava/lang/String;");
-            final InterfaceMethodRef getWidth = new InterfaceMethodRef(getDeobfClass(), "getTextureWidth", "()I");
-            final InterfaceMethodRef getHeight = new InterfaceMethodRef(getDeobfClass(), "getTextureHeight", "()I");
+            final InterfaceMethodRef getOriginX = new InterfaceMethodRef(getDeobfClass(), "getOriginX", "()I");
+            final InterfaceMethodRef getOriginY = new InterfaceMethodRef(getDeobfClass(), "getOriginY", "()I");
+            final InterfaceMethodRef getMinU = new InterfaceMethodRef(getDeobfClass(), "getMinU", "()F");
+            final InterfaceMethodRef getMaxU = new InterfaceMethodRef(getDeobfClass(), "getMaxU", "()F");
+            final InterfaceMethodRef getInterpolatedU = new InterfaceMethodRef(getDeobfClass(), "getInterpolatedU", "(D)F");
+            final InterfaceMethodRef getMinV = new InterfaceMethodRef(getDeobfClass(), "getMinV", "()F");
+            final InterfaceMethodRef getMaxV = new InterfaceMethodRef(getDeobfClass(), "getMaxV", "()F");
+            final InterfaceMethodRef getInterpolatedV = new InterfaceMethodRef(getDeobfClass(), "getInterpolatedV", "(D)F");
+            final InterfaceMethodRef getIconName = new InterfaceMethodRef(getDeobfClass(), "getIconName", "()Ljava/lang/String;");
+            final InterfaceMethodRef getSheetWidth = new InterfaceMethodRef(getDeobfClass(), "getSheetWidth", "()I");
+            final InterfaceMethodRef getSheetHeight = new InterfaceMethodRef(getDeobfClass(), "getSheetHeight", "()I");
 
             addClassSignature(new InterfaceSignature(
-                getX0,
-                getY0,
-                getNormalizedX0,
-                getNormalizedX1,
-                interpolateX,
-                getNormalizedY0,
-                getNormalizedY1,
-                interpolateY,
-                getName,
-                getWidth,
-                getHeight
+                getOriginX,
+                getOriginY,
+                getMinU,
+                getMaxU,
+                getInterpolatedU,
+                getMinV,
+                getMaxV,
+                getInterpolatedV,
+                getIconName,
+                getSheetWidth,
+                getSheetHeight
             ).setInterfaceOnly(true));
         }
     }

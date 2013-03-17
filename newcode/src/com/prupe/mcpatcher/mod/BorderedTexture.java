@@ -19,8 +19,8 @@ public class BorderedTexture extends TextureStitched {
     }
 
     @Override
-    public void setup(Texture texture, List<Texture> subTextures, int x0, int y0, int width, int height, boolean flipped) {
-        super.setup(texture, subTextures, x0, y0, width, height, flipped);
+    public void init(Texture texture, List<Texture> subTextures, int x0, int y0, int width, int height, boolean flipped) {
+        super.init(texture, subTextures, x0, y0, width, height, flipped);
         border = subTextures == null || subTextures.isEmpty() ? 0 : subTextures.get(0).border;
         if (border > 0) {
             x0 += border;
@@ -32,42 +32,42 @@ public class BorderedTexture extends TextureStitched {
             normalizedY0 = (float) y0 / (float) texture.getHeight();
             normalizedY1 = (float) (y0 + height) / (float) texture.getHeight();
         } else {
-            normalizedX0 = super.getNormalizedX0();
-            normalizedX1 = super.getNormalizedX1();
-            normalizedY0 = super.getNormalizedY0();
-            normalizedY1 = super.getNormalizedY1();
+            normalizedX0 = super.getMinU();
+            normalizedX1 = super.getMaxU();
+            normalizedY0 = super.getMinV();
+            normalizedY1 = super.getMaxV();
         }
         scaledWidth = (normalizedX1 - normalizedX0) / 16.0f;
         scaledHeight = (normalizedY1 - normalizedY0) / 16.0f;
     }
 
     @Override
-    public float getNormalizedX0() {
+    public float getMinU() {
         return normalizedX0;
     }
 
     @Override
-    public float getNormalizedX1() {
+    public float getMaxU() {
         return normalizedX1;
     }
 
     @Override
-    public float interpolateX(double x) {
-        return border > 0 ? normalizedX0 + (float) x * scaledWidth : super.interpolateX(x);
+    public float getInterpolatedU(double x) {
+        return border > 0 ? normalizedX0 + (float) x * scaledWidth : super.getInterpolatedU(x);
     }
 
     @Override
-    public float getNormalizedY0() {
+    public float getMinV() {
         return normalizedY0;
     }
 
     @Override
-    public float getNormalizedY1() {
+    public float getMaxV() {
         return normalizedY1;
     }
 
     @Override
-    public float interpolateY(double y) {
-        return border > 0 ? normalizedY0 + (float) y * scaledHeight : super.interpolateY(y);
+    public float getInterpolatedV(double y) {
+        return border > 0 ? normalizedY0 + (float) y * scaledHeight : super.getInterpolatedV(y);
     }
 }

@@ -355,12 +355,12 @@ public class CTMUtils {
             this.block = block;
             currentIcon = icon;
             blockOverrides = CTMUtils.blockOverrides[block.blockID];
-            iconOverrides = CTMUtils.tileOverrides.get(this.currentIcon.getName());
+            iconOverrides = CTMUtils.tileOverrides.get(this.currentIcon.getIconName());
         }
 
         private void resetForNextPass() {
             blockOverrides = null;
-            iconOverrides = CTMUtils.tileOverrides.get(currentIcon.getName());
+            iconOverrides = CTMUtils.tileOverrides.get(currentIcon.getIconName());
             blockPos = 0;
             iconPos = 0;
             foundNext = false;

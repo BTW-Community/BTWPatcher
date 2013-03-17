@@ -1,25 +1,25 @@
 package net.minecraft.src;
 
 public interface Icon {
-    int getX0();
+    int getOriginX();
 
-    int getY0();
+    int getOriginY();
 
-    float getNormalizedX0();
+    float getMinU();
 
-    float getNormalizedX1();
+    float getMaxU();
 
-    float interpolateX(double var1);
+    float getInterpolatedU(double var1);
 
-    float getNormalizedY0();
+    float getMinV();
 
-    float getNormalizedY1();
+    float getMaxV();
 
-    float interpolateY(double var1);
+    float getInterpolatedV(double var1);
 
-    String getName();
+    String getIconName();
 
-    int getTextureWidth();
+    int getSheetWidth();
 
-    int getTextureHeight();
+    int getSheetHeight();
 }

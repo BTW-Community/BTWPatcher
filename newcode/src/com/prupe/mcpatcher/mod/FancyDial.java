@@ -106,7 +106,7 @@ public class FancyDial {
         if (icon instanceof TextureClock && !enableClock) {
             return;
         }
-        String name = icon.getName();
+        String name = icon.getIconName();
         Properties properties = TexturePackAPI.getProperties("/misc/" + name + ".properties");
         if (properties != null) {
             logger.fine("found custom %s", name);
@@ -116,7 +116,7 @@ public class FancyDial {
 
     public static boolean update(TextureStitched icon) {
         if (!initialized) {
-            logger.finer("deferring %s update until initialization finishes", icon.getName());
+            logger.finer("deferring %s update until initialization finishes", icon.getIconName());
             return false;
         }
         FancyDial instance = instances.get(icon);
@@ -144,7 +144,7 @@ public class FancyDial {
         inUpdateAll = true;
         for (FancyDial instance : instances.values()) {
             if (instance != null && instance.needExtraUpdate) {
-                instance.icon.update();
+                instance.icon.updateAnimation();
             }
         }
         inUpdateAll = false;
@@ -194,14 +194,14 @@ public class FancyDial {
 
     private FancyDial(RenderEngine renderEngine, TextureStitched icon, Properties properties) {
         this.icon = icon;
-        name = icon.getName();
-        x0 = icon.getX0();
-        y0 = icon.getY0();
+        name = icon.getIconName();
+        x0 = icon.getOriginX();
+        y0 = icon.getOriginY();
         width = getIconWidth(icon);
         height = getIconHeight(icon);
         needExtraUpdate = !hasAnimation(icon);
         if (needExtraUpdate) {
-            logger.fine("%s needs direct .update() call", icon.getName());
+            logger.fine("%s needs direct .update() call", icon.getIconName());
         }
 
         TexturePackAPI.bindTexture(ITEMS_PNG);
@@ -429,7 +429,7 @@ public class FancyDial {
 
         int glError = GL11.glGetError();
         if (glError != 0) {
-            logger.severe("%s during %s update", GLU.gluErrorString(glError), icon.getName());
+            logger.severe("%s during %s update", GLU.gluErrorString(glError), icon.getIconName());
             ok = false;
         } else if (!inUpdateAll) {
             postRender();
@@ -486,11 +486,11 @@ public class FancyDial {
     }
 
     private static int getIconWidth(Icon icon) {
-        return Math.round(icon.getTextureWidth() * (icon.getNormalizedX1() - icon.getNormalizedX0()));
+        return Math.round(icon.getSheetWidth() * (icon.getMaxU() - icon.getMinU()));
     }
 
     private static int getIconHeight(Icon icon) {
-        return Math.round(icon.getTextureHeight() * (icon.getNormalizedY1() - icon.getNormalizedY0()));
+        return Math.round(icon.getSheetHeight() * (icon.getMaxV() - icon.getMinV()));
     }
 
     private static boolean hasAnimation(Icon icon) {

@@ -224,7 +224,7 @@ public class TexturePackAPI {
     }
 
     public static void clearBoundTexture() {
-        MCPatcherUtils.getMinecraft().renderEngine.clearBoundTexture();
+        MCPatcherUtils.getMinecraft().renderEngine.resetBoundTexture();
     }
 
     public static int unloadTexture(String s) {

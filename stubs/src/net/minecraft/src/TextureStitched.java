@@ -5,55 +5,55 @@ import java.util.List;
 public class TextureStitched implements Icon {
     protected Texture texture;
 
-    public int getX0() {
+    public int getOriginX() {
         return 0;
     }
 
-    public int getY0() {
+    public int getOriginY() {
         return 0;
     }
 
-    public float getNormalizedX0() {
+    public float getMinU() {
         return 0;
     }
 
-    public float getNormalizedX1() {
+    public float getMaxU() {
         return 0;
     }
 
-    public float interpolateX(double x) {
+    public float getInterpolatedU(double x) {
         return 0;
     }
 
-    public float getNormalizedY0() {
+    public float getMinV() {
         return 0;
     }
 
-    public float getNormalizedY1() {
+    public float getMaxV() {
         return 0;
     }
 
-    public float interpolateY(double y) {
+    public float getInterpolatedV(double y) {
         return 0;
     }
 
-    public String getName() {
+    public String getIconName() {
         return null;
     }
 
-    public int getTextureWidth() {
+    public int getSheetWidth() {
         return 0;
     }
 
-    public int getTextureHeight() {
+    public int getSheetHeight() {
         return 0;
     }
     public TextureStitched(String name) {
     }
 
-    public void setup(Texture texture, List<Texture> subTextures, int x0, int y0, int width, int height, boolean flipped) {
+    public void init(Texture texture, List<Texture> subTextures, int x0, int y0, int width, int height, boolean flipped) {
     }
 
-    public void update() {
+    public void updateAnimation() {
     }
 }
