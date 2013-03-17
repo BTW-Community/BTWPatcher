@@ -421,12 +421,12 @@ public class ConnectedTextures extends Mod {
                         reference(GETFIELD, textureMap),
                         IFNULL, branch("A"),
 
-                        // GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureMap.getTexture().getGLTexture());
+                        // GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureMap.getTexture().getGlTextureId());
                         push(3553), // GL11.GL_TEXTURE_2D
                         ALOAD_0,
                         reference(GETFIELD, textureMap),
                         reference(INVOKEVIRTUAL, new MethodRef("TextureMap", "getTexture", "()LTexture;")),
-                        reference(INVOKEVIRTUAL, new MethodRef("Texture", "getGLTexture", "()I")),
+                        reference(INVOKEVIRTUAL, new MethodRef("Texture", "getGlTextureId", "()I")),
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V")),
 
                         // }
@@ -1239,10 +1239,10 @@ public class ConnectedTextures extends Mod {
 
     private class IconRegisterMod extends ClassMod {
         IconRegisterMod() {
-            final InterfaceMethodRef getIcon = new InterfaceMethodRef(getDeobfClass(), "getIcon", "(Ljava/lang/String;)LIcon;");
+            final InterfaceMethodRef registerIcon = new InterfaceMethodRef(getDeobfClass(), "registerIcon", "(Ljava/lang/String;)LIcon;");
 
             addClassSignature(new InterfaceSignature(
-                getIcon
+                registerIcon
             ).setInterfaceOnly(true));
         }
     }
@@ -1251,9 +1251,9 @@ public class ConnectedTextures extends Mod {
         TextureMapMod() {
             setInterfaces("IconRegister");
 
-            final FieldRef dstPrefix = new FieldRef(getDeobfClass(), "dstPrefix", "Ljava/lang/String;");
-            final FieldRef srcPrefix = new FieldRef(getDeobfClass(), "srcPrefix", "Ljava/lang/String;");
-            final MethodRef refresh = new MethodRef(getDeobfClass(), "refresh", "()V");
+            final FieldRef basePath = new FieldRef(getDeobfClass(), "basePath", "Ljava/lang/String;");
+            final FieldRef textureExt = new FieldRef(getDeobfClass(), "textureExt", "Ljava/lang/String;");
+            final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "()V");
             final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "()LTexture;");
             final ClassRef sbClass = new ClassRef("java/lang/StringBuilder");
             final MethodRef strValueOf = new MethodRef("java/lang/String", "valueOf", "(Ljava/lang/Object;)Ljava/lang/String;");
@@ -1261,11 +1261,11 @@ public class ConnectedTextures extends Mod {
             final MethodRef sbInit1 = new MethodRef("java/lang/StringBuilder", "<init>", "(Ljava/lang/String;)V");
             final MethodRef sbAppend = new MethodRef("java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;");
             final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
-            final MethodRef registerStitchHolder = new MethodRef("Stitcher", "registerStitchHolder", "(LStitchHolder;)V");
+            final MethodRef addStitchHolder = new MethodRef("Stitcher", "addStitchHolder", "(LStitchHolder;)V");
             final MethodRef asList = new MethodRef("java/util/Arrays", "asList", "([Ljava/lang/Object;)Ljava/util/List;");
             final InterfaceMethodRef mapPut = new InterfaceMethodRef("java/util/Map", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
             final MethodRef hashMapPut = new MethodRef("java/util/HashMap", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
-            final MethodRef stitch = new MethodRef("Stitcher", "stitch", "()V");
+            final MethodRef doStitch = new MethodRef("Stitcher", "doStitch", "()V");
 
             addClassSignature(new ConstSignature("missingno"));
             addClassSignature(new ConstSignature(".png"));
@@ -1283,7 +1283,7 @@ public class ConnectedTextures extends Mod {
                     );
                 }
             }
-                .setMethod(refresh)
+                .setMethod(refreshTextures)
                 .addXref(1, new MethodRef("TextureManager", "getInstance", "()LTextureManager;"))
                 .addXref(2, new MethodRef("TextureManager", "newStitcher", "(Ljava/lang/String;)Lnet/minecraft/src/Stitcher;"))
             );
@@ -1299,7 +1299,7 @@ public class ConnectedTextures extends Mod {
                 }
             }
                 .matchConstructorOnly(true)
-                .addXref(1, dstPrefix)
+                .addXref(1, basePath)
             );
 
             addClassSignature(new BytecodeSignature() {
@@ -1313,7 +1313,7 @@ public class ConnectedTextures extends Mod {
                 }
             }
                 .matchConstructorOnly(true)
-                .addXref(1, srcPrefix)
+                .addXref(1, textureExt)
             );
 
             addMemberMapper(new MethodMapper(getTexture));
@@ -1327,10 +1327,10 @@ public class ConnectedTextures extends Mod {
                         @Override
                         public String getMatchExpression() {
                             return buildExpression(
-                                // stitcher.registerStitchHolder(stitchHolder);
+                                // stitcher.addStitchHolder(stitchHolder);
                                 capture(anyALOAD),
                                 anyALOAD,
-                                reference(INVOKEVIRTUAL, registerStitchHolder),
+                                reference(INVOKEVIRTUAL, addStitchHolder),
 
                                 // map.put(stitchHolder, Arrays.asList(new Texture[]{texture}));
                                 capture(anyALOAD),
@@ -1368,7 +1368,7 @@ public class ConnectedTextures extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         anyALOAD,
-                        reference(INVOKEVIRTUAL, stitch)
+                        reference(INVOKEVIRTUAL, doStitch)
                     );
                 }
 
@@ -1378,14 +1378,14 @@ public class ConnectedTextures extends Mod {
                         ALOAD_0,
                         ALOAD, stitcherRegister,
                         ALOAD_0,
-                        reference(GETFIELD, dstPrefix),
+                        reference(GETFIELD, basePath),
                         ALOAD, nameRegister,
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "registerIcons", "(LTextureMap;LStitcher;Ljava/lang/String;Ljava/util/Map;)V"))
                     );
                 }
             }
                 .setInsertBefore(true)
-                .targetMethod(refresh)
+                .targetMethod(refreshTextures)
             );
 
             addPatch(new BytecodePatch() {
@@ -1397,19 +1397,19 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // this.srcPrefix + name + extension
+                        // this.textureExt + name + extension
                         reference(NEW, sbClass),
                         DUP,
                         or(
                             build( // vanilla mc
                                 reference(INVOKESPECIAL, sbInit0),
                                 ALOAD_0,
-                                reference(GETFIELD, srcPrefix),
+                                reference(GETFIELD, textureExt),
                                 reference(INVOKEVIRTUAL, sbAppend)
                             ),
                             build( // mcp
                                 ALOAD_0,
-                                reference(GETFIELD, srcPrefix),
+                                reference(GETFIELD, textureExt),
                                 optional(build(reference(INVOKESTATIC, strValueOf))), // useless, but added by mcp
                                 reference(INVOKESPECIAL, sbInit1)
                             )
@@ -1425,16 +1425,16 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // TileLoader.getOverridePath(this.srcPrefix, name, extension)
+                        // TileLoader.getOverridePath(this.textureExt, name, extension)
                         ALOAD_0,
-                        reference(GETFIELD, srcPrefix),
+                        reference(GETFIELD, textureExt),
                         getCaptureGroup(1),
                         getCaptureGroup(2),
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverridePath", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"))
                     );
                 }
             }
-                .targetMethod(refresh)
+                .targetMethod(refreshTextures)
             );
         }
     }
@@ -1449,18 +1449,18 @@ public class ConnectedTextures extends Mod {
                     return buildCode(
                         // if (this.glTexture >= 0) {
                         ALOAD_0,
-                        reference(GETFIELD, glTexture),
+                        reference(GETFIELD, glTextureId),
                         IFLT, branch("A"),
 
                         // GL11.glDeleteTextures(this.glTexture);
                         ALOAD_0,
-                        reference(GETFIELD, glTexture),
+                        reference(GETFIELD, glTextureId),
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(I)V")),
 
                         // this.glTexture = -1;
                         ALOAD_0,
                         push(-1),
-                        reference(PUTFIELD, glTexture),
+                        reference(PUTFIELD, glTextureId),
 
                         // }
                         label("A"),
@@ -1500,8 +1500,8 @@ public class ConnectedTextures extends Mod {
     private class TextureManagerMod extends ClassMod {
         TextureManagerMod() {
             final MethodRef getInstance = new MethodRef(getDeobfClass(), "getInstance", "()LTextureManager;");
-            final MethodRef setupTexture = new MethodRef(getDeobfClass(), "setupTexture", "(Ljava/lang/String;IIIIIIIZLjava/awt/image/BufferedImage;)LTexture;");
-            final MethodRef createTexture = new MethodRef(getDeobfClass(), "createTexture", "(Ljava/lang/String;)Ljava/util/List;");
+            final MethodRef createTextureFromImage = new MethodRef(getDeobfClass(), "createTextureFromImage", "(Ljava/lang/String;IIIIIIIZLjava/awt/image/BufferedImage;)LTexture;");
+            final MethodRef createTextureFromFile = new MethodRef(getDeobfClass(), "createTextureFromFile", "(Ljava/lang/String;)Ljava/util/List;");
 
             addClassSignature(new ConstSignature("/"));
             addClassSignature(new ConstSignature(".txt"));
@@ -1529,7 +1529,7 @@ public class ConnectedTextures extends Mod {
                     );
                 }
             }
-                .setMethod(new MethodRef(getDeobfClass(), "newStitcher", "(Ljava/lang/String;)LStitcher;"))
+                .setMethod(new MethodRef(getDeobfClass(), "createStitcher", "(Ljava/lang/String;)LStitcher;"))
                 .addXref(1, new MethodRef("Minecraft", "getMaxTextureSize", "()I"))
                 .addXref(2, new ClassRef("Stitcher"))
             );
@@ -1538,17 +1538,17 @@ public class ConnectedTextures extends Mod {
                 .accessFlag(AccessFlag.PUBLIC, true)
                 .accessFlag(AccessFlag.STATIC, true)
             );
-            addMemberMapper(new MethodMapper(setupTexture));
-            addMemberMapper(new MethodMapper(createTexture));
+            addMemberMapper(new MethodMapper(createTextureFromImage));
+            addMemberMapper(new MethodMapper(createTextureFromFile));
         }
     }
 
     private class StitcherMod extends ClassMod {
         StitcherMod() {
             final MethodRef ceilPowerOf2 = new MethodRef(getDeobfClass(), "ceilPowerOf2", "(I)I");
-            final MethodRef registerStitchHolder = new MethodRef(getDeobfClass(), "registerStitchHolder", "(LStitchHolder;)V");
+            final MethodRef addStitchHolder = new MethodRef(getDeobfClass(), "addStitchHolder", "(LStitchHolder;)V");
             final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "()LTexture;");
-            final MethodRef stitch = new MethodRef(getDeobfClass(), "stitch", "()V");
+            final MethodRef doStitch = new MethodRef(getDeobfClass(), "doStitch", "()V");
             final MethodRef arraySort = new MethodRef("java/util/Arrays", "sort", "([Ljava/lang/Object;)V");
 
             addClassSignature(new BytecodeSignature() {
@@ -1576,9 +1576,9 @@ public class ConnectedTextures extends Mod {
                         reference(INVOKESTATIC, arraySort)
                     );
                 }
-            }.setMethod(stitch));
+            }.setMethod(doStitch));
 
-            addMemberMapper(new MethodMapper(registerStitchHolder));
+            addMemberMapper(new MethodMapper(addStitchHolder));
             addMemberMapper(new MethodMapper(getTexture));
         }
     }
@@ -1605,7 +1605,7 @@ public class ConnectedTextures extends Mod {
                         FDIV
                     );
                 }
-            }.setMethod(new MethodRef(getDeobfClass(), "rescale", "(I)V")));
+            }.setMethod(new MethodRef(getDeobfClass(), "setNewDimension", "(I)V")));
         }
     }
 }

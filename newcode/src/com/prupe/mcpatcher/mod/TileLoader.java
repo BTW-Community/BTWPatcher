@@ -82,7 +82,7 @@ public class TileLoader {
             overrideTextureName = name;
             if (debugTextures || !TexturePackAPI.hasResource(name)) {
                 BufferedImage fallbackImage = generateDebugTexture(name, 64, 64, alternate);
-                Texture texture = TextureManager.getInstance().setupTexture(
+                Texture texture = TextureManager.getInstance().createTextureFromImage(
                     name, 2, fallbackImage.getWidth(), fallbackImage.getHeight(), GL11.GL_CLAMP, GL11.GL_RGBA, GL11.GL_NEAREST, GL11.GL_NEAREST, false, fallbackImage
                 );
                 if (texture == null) {
@@ -91,7 +91,7 @@ public class TileLoader {
                 textures = new ArrayList<Texture>();
                 textures.add(texture);
             } else {
-                textures = TextureManager.getInstance().createTexture(name.replaceFirst("^/", ""));
+                textures = TextureManager.getInstance().createTextureFromFile(name.replaceFirst("^/", ""));
                 if (textures == null || textures.isEmpty()) {
                     return false;
                 }
@@ -122,9 +122,9 @@ public class TileLoader {
             }
             Texture texture = textures.get(0);
             StitchHolder holder = new StitchHolder(texture);
-            stitcher.registerStitchHolder(holder);
+            stitcher.addStitchHolder(holder);
             map.put(holder, textures);
-            icons[i] = textureMap.getIcon(imageName);
+            icons[i] = textureMap.registerIcon(imageName);
             TessellatorUtils.registerIcon(textureMap, icons[i]);
             loadedIcons.put(imageName, icons[i]);
             String extra = (textures.size() > 1 ? ", " + textures.size() + " frames" : "");

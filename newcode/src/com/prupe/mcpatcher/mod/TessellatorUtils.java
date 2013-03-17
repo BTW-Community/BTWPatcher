@@ -36,7 +36,7 @@ public class TessellatorUtils {
             if (mapName == null) {
                 mapName = textureMap.toString();
             }
-            logger.fine("new Tessellator for texture map %s gl texture %d", mapName, textureMap.getTexture().getGLTexture());
+            logger.fine("new Tessellator for texture map %s gl texture %d", mapName, textureMap.getTexture().getGlTextureId());
             newTessellator = new Tessellator(0x200000);
             copyFields(tessellator, newTessellator, true);
             newTessellator.textureMap = textureMap;

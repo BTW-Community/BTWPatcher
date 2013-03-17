@@ -408,8 +408,8 @@ class TileOverrideImpl {
         BetterGrass(TextureMap terrainMap, int blockID, String tileName) {
             this.blockID = blockID;
             this.tileName = tileName;
-            fullSnowTile = terrainMap.getIcon("snow");
-            fullTile = terrainMap.getIcon(tileName + "_top");
+            fullSnowTile = terrainMap.registerIcon("snow");
+            fullTile = terrainMap.registerIcon(tileName + "_top");
         }
 
         @Override

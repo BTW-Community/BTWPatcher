@@ -1,7 +1,7 @@
 package net.minecraft.src;
 
 public class Stitcher {
-    public void registerStitchHolder(StitchHolder holder) {
+    public void addStitchHolder(StitchHolder holder) {
     }
 
     public Texture getTexture() {

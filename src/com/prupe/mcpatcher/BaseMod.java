@@ -915,16 +915,16 @@ public final class BaseMod extends Mod {
      * Maps Texture class and various fields and methods.
      */
     public static class TextureMod extends ClassMod {
-        protected final FieldRef glTextureTarget = new FieldRef(getDeobfClass(), "glTextureTarget", "I");
-        protected final FieldRef glTexture = new FieldRef(getDeobfClass(), "glTexture", "I");
-        protected final FieldRef loaded = new FieldRef(getDeobfClass(), "loaded", "Z");
-        protected final MethodRef getIndex = new MethodRef(getDeobfClass(), "getIndex", "()I");
-        protected final MethodRef getGLTexture = new MethodRef(getDeobfClass(), "getGLTexture", "()I");
+        protected final FieldRef textureTarget = new FieldRef(getDeobfClass(), "textureTarget", "I");
+        protected final FieldRef glTextureId = new FieldRef(getDeobfClass(), "glTextureId", "I");
+        protected final FieldRef textureCreated = new FieldRef(getDeobfClass(), "textureCreated", "Z");
+        protected final MethodRef getTextureId = new MethodRef(getDeobfClass(), "getTextureId", "()I");
+        protected final MethodRef getGlTextureId = new MethodRef(getDeobfClass(), "getGlTextureId", "()I");
         protected final MethodRef getWidth = new MethodRef(getDeobfClass(), "getWidth", "()I");
         protected final MethodRef getHeight = new MethodRef(getDeobfClass(), "getHeight", "()I");
-        protected final MethodRef getByteBuffer = new MethodRef(getDeobfClass(), "getByteBuffer", "()Ljava/nio/ByteBuffer;");
-        protected final MethodRef getName = new MethodRef(getDeobfClass(), "getName", "()Ljava/lang/String;");
-        protected final MethodRef loadGLTexture = new MethodRef(getDeobfClass(), "loadGLTexture", "()V");
+        protected final MethodRef getTextureData = new MethodRef(getDeobfClass(), "getTextureData", "()Ljava/nio/ByteBuffer;");
+        protected final MethodRef getTextureName = new MethodRef(getDeobfClass(), "getTextureName", "()Ljava/lang/String;");
+        protected final MethodRef createTexture = new MethodRef(getDeobfClass(), "createTexture", "()V");
         protected final MethodRef transferFromImage = new MethodRef(getDeobfClass(), "transferFromImage", "(Ljava/awt/image/BufferedImage;)V");
         protected final MethodRef glBindTexture = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V");
 
@@ -944,8 +944,8 @@ public final class BaseMod extends Mod {
                 }
             }
                 .matchConstructorOnly(true)
-                .addXref(1, glTextureTarget)
-                .addXref(2, glTexture)
+                .addXref(1, textureTarget)
+                .addXref(2, glTextureId)
             );
 
             addClassSignature(new BytecodeSignature() {
@@ -960,13 +960,13 @@ public final class BaseMod extends Mod {
                     );
                 }
             }
-                .setMethod(loadGLTexture)
-                .addXref(1, loaded)
+                .setMethod(createTexture)
+                .addXref(1, textureCreated)
             );
 
-            addMemberMapper(new MethodMapper(getIndex, getGLTexture, getWidth, getHeight));
-            addMemberMapper(new MethodMapper(getByteBuffer));
-            addMemberMapper(new MethodMapper(getName));
+            addMemberMapper(new MethodMapper(getTextureId, getGlTextureId, getWidth, getHeight));
+            addMemberMapper(new MethodMapper(getTextureData));
+            addMemberMapper(new MethodMapper(getTextureName));
             addMemberMapper(new MethodMapper(transferFromImage));
         }
     }

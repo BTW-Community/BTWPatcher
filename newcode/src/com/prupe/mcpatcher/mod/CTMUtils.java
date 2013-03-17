@@ -109,7 +109,7 @@ public class CTMUtils {
                     for (int index = 0; !overridesToRegister.isEmpty(); index++) {
                         registerIconsCalled = false;
                         TextureMap ctmMap = new TextureMap(CTM_TEXTURE_MAP_INDEX, "ctm" + index, "not_used", missingTextureImage);
-                        ctmMap.refresh();
+                        ctmMap.refreshTextures();
                         if (!registerIconsCalled) {
                             logger.severe("CTMUtils.registerIcons was never called!  Possible conflict in TextureMap.class");
                             break;

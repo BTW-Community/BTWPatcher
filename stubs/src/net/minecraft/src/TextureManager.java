@@ -8,11 +8,11 @@ public class TextureManager {
         return null;
     }
 
-    public Texture setupTexture(String name, int slot, int width, int height, int wrapST, int pixelFormat, int minFilter, int magFilter, boolean flag, BufferedImage image) {
+    public Texture createTextureFromImage(String name, int slot, int width, int height, int wrapST, int pixelFormat, int minFilter, int magFilter, boolean flag, BufferedImage image) {
         return null;
     }
 
-    public List<Texture> createTexture(String filename) {
+    public List<Texture> createTextureFromFile(String filename) {
         return null;
     }
 }

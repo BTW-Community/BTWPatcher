@@ -4,14 +4,14 @@ import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
 public class Texture {
-    public int glMinFilter;
-    public int glMagFilter;
-    public boolean useMipmaps;
-    public ByteBuffer byteBuffer;
+    public int textureMinFilter;
+    public int textureMagFilter;
+    public boolean mipmapActive;
+    public ByteBuffer textureData;
 
     public int border; // added by Extended HD
 
-    public int getGLTexture() {
+    public int getGlTextureId() {
         return 0;
     }
 
@@ -23,11 +23,11 @@ public class Texture {
         return 0;
     }
 
-    public String getName() {
+    public String getTextureName() {
         return "";
     }
 
-    public ByteBuffer getByteBuffer() {
+    public ByteBuffer getTextureData() {
         return null;
     }
 

@@ -99,7 +99,7 @@ public class MipmapHelper {
         image.setRGB(0, 0, width, height, argb, 0, width);
 
         currentTexture = texture;
-        setupTexture(MCPatcherUtils.getMinecraft().renderEngine, image, texture.getGLTexture(), false, false, texture.getName());
+        setupTexture(MCPatcherUtils.getMinecraft().renderEngine, image, texture.getGlTextureId(), false, false, texture.getTextureName());
         currentTexture = null;
     }
 
@@ -112,22 +112,22 @@ public class MipmapHelper {
     }
 
     public static void copySubTexture(Texture dst, Texture src, int x, int y, boolean flipped) {
-        ByteBuffer srcBuffer = src.getByteBuffer();
+        ByteBuffer srcBuffer = src.getTextureData();
         srcBuffer.position(0);
         if (byteBufferAllocation == 1 && !srcBuffer.isDirect()) {
-            logger.finer("creating %d direct byte buffer for texture %s", srcBuffer.capacity(), src.getName());
+            logger.finer("creating %d direct byte buffer for texture %s", srcBuffer.capacity(), src.getTextureName());
             ByteBuffer newBuffer = ByteBuffer.allocateDirect(srcBuffer.capacity()).order(srcBuffer.order());
             newBuffer.put(srcBuffer).flip();
-            src.byteBuffer = srcBuffer = newBuffer;
+            src.textureData = srcBuffer = newBuffer;
         }
-        TexturePackAPI.bindTexture(dst.getGLTexture());
-        int mipmaps = dst.useMipmaps ? getMipmapLevels() : 0;
+        TexturePackAPI.bindTexture(dst.getGlTextureId());
+        int mipmaps = dst.mipmapActive ? getMipmapLevels() : 0;
         int width = src.getWidth();
         int height = src.getHeight();
         if (flipped && !flippedTextureLogged) {
             flippedTextureLogged = true;
             logger.warning("copySubTexture(%s, %s, %d, %d, %s): flipped texture not yet supported",
-                dst.getName(), src.getName(), x, y, flipped
+                dst.getTextureName(), src.getTextureName(), x, y, flipped
             );
         }
         for (int i = 0; ; i++) {
@@ -138,7 +138,7 @@ public class MipmapHelper {
             }
             GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, i, x, y, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, srcBuffer);
             checkGLError("%s -> %s: glTexSubImage2D(%d, %d, %d, %d, %d)",
-                src.getName(), dst.getName(), i, x, y, width, height
+                src.getTextureName(), dst.getTextureName(), i, x, y, width, height
             );
             if (i >= mipmaps) {
                 break;
@@ -229,9 +229,9 @@ public class MipmapHelper {
                     GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
                     GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL, mipmaps);
                     if (currentTexture != null) {
-                        currentTexture.useMipmaps = true;
-                        currentTexture.glMinFilter = GL11.GL_NEAREST_MIPMAP_LINEAR;
-                        currentTexture.glMagFilter = GL11.GL_NEAREST;
+                        currentTexture.mipmapActive = true;
+                        currentTexture.textureMinFilter = GL11.GL_NEAREST_MIPMAP_LINEAR;
+                        currentTexture.textureMagFilter = GL11.GL_NEAREST;
                     }
                     checkGLError("set GL_TEXTURE_MAX_LEVEL = %d", mipmaps);
                     if (anisoSupported && anisoLevel > 1) {

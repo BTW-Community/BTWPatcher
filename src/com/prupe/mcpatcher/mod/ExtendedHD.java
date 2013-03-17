@@ -317,13 +317,13 @@ public class ExtendedHD extends BaseTexturePackMod {
 
     private class TextureMod extends BaseMod.TextureMod {
         TextureMod() {
-            final FieldRef glMinFilter = mapIntField(7, "glMinFilter");
-            final FieldRef glMagFilter = mapIntField(8, "glMagFilter");
-            final FieldRef useMipmaps = new FieldRef(getDeobfClass(), "useMipmaps", "Z");
-            final MethodRef copySubTexture = new MethodRef(getDeobfClass(), "copySubTexture", "(IILTexture;Z)V");
-            final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V");
-            final FieldRef byteBuffer = new FieldRef(getDeobfClass(), "byteBuffer", "Ljava/nio/ByteBuffer;");
+            final FieldRef textureMinFilter = mapIntField(7, "textureMinFilter");
+            final FieldRef textureMagFilter = mapIntField(8, "textureMagFilter");
+            final FieldRef mipmapActive = new FieldRef(getDeobfClass(), "mipmapActive", "Z");
+            final MethodRef copyFrom = new MethodRef(getDeobfClass(), "copyFrom", "(IILTexture;Z)V");
+            final FieldRef textureData = new FieldRef(getDeobfClass(), "textureData", "Ljava/nio/ByteBuffer;");
             final MethodRef allocateDirect = new MethodRef("java/nio/ByteBuffer", "allocateDirect", "(I)Ljava/nio/ByteBuffer;");
+            final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V");
             final MethodRef allocateByteBuffer = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "allocateByteBuffer", "(I)Ljava/nio/ByteBuffer;");
 
             addClassSignature(new BytecodeSignature() {
@@ -339,34 +339,34 @@ public class ExtendedHD extends BaseTexturePackMod {
                 }
             }
                 .matchConstructorOnly(true)
-                .addXref(1, useMipmaps)
+                .addXref(1, mipmapActive)
             );
 
-            addMemberMapper(new MethodMapper(copySubTexture));
-            addMemberMapper(new FieldMapper(byteBuffer));
+            addMemberMapper(new MethodMapper(copyFrom));
+            addMemberMapper(new FieldMapper(textureData));
 
-            addPatch(new MakeMemberPublicPatch(glMinFilter) {
+            addPatch(new MakeMemberPublicPatch(textureMinFilter) {
                 @Override
                 public int getNewFlags(int oldFlags) {
                     return super.getNewFlags(oldFlags) & ~AccessFlag.FINAL;
                 }
             });
 
-            addPatch(new MakeMemberPublicPatch(glMagFilter) {
+            addPatch(new MakeMemberPublicPatch(textureMagFilter) {
                 @Override
                 public int getNewFlags(int oldFlags) {
                     return super.getNewFlags(oldFlags) & ~AccessFlag.FINAL;
                 }
             });
 
-            addPatch(new MakeMemberPublicPatch(useMipmaps) {
+            addPatch(new MakeMemberPublicPatch(mipmapActive) {
                 @Override
                 public int getNewFlags(int oldFlags) {
                     return super.getNewFlags(oldFlags) & ~AccessFlag.FINAL;
                 }
             });
 
-            addPatch(new MakeMemberPublicPatch(byteBuffer));
+            addPatch(new MakeMemberPublicPatch(textureData));
             addPatch(new AddFieldPatch(textureBorder));
 
             addPatch(new BytecodePatch() {
@@ -415,7 +415,7 @@ public class ExtendedHD extends BaseTexturePackMod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "replace copySubTexture";
+                    return "replace copyFrom";
                 }
 
                 @Override
@@ -430,7 +430,7 @@ public class ExtendedHD extends BaseTexturePackMod {
                     return buildCode(
                         // if (this.loaded) {
                         ALOAD_0,
-                        reference(GETFIELD, loaded),
+                        reference(GETFIELD, textureCreated),
                         IFEQ, branch("A"),
 
                         // MipmapHelper.copySubTexture(this, src, x, y, flipped);
@@ -446,7 +446,7 @@ public class ExtendedHD extends BaseTexturePackMod {
                         label("A")
                     );
                 }
-            }.targetMethod(copySubTexture));
+            }.targetMethod(copyFrom));
         }
 
         private FieldRef mapIntField(final int register, String name) {
@@ -472,7 +472,7 @@ public class ExtendedHD extends BaseTexturePackMod {
 
     private class TextureManagerMod extends ClassMod {
         TextureManagerMod() {
-            final MethodRef createTextureFromImage = new MethodRef(getDeobfClass(), "createTextureFromImage", "(Ljava/lang/String;IIIIIIIZLjava/awt/image/BufferedImage;)Lnet/minecraft/src/Texture;");
+            final MethodRef createTextureFromImage = new MethodRef(getDeobfClass(), "createTextureFromImage", "(Ljava/lang/String;IIIIIIIZLjava/awt/image/BufferedImage;)LTexture;");
             final MethodRef lastIndexOf = new MethodRef("java/lang/String", "lastIndexOf", "(I)I");
 
             addClassSignature(new ConstSignature("/"));
