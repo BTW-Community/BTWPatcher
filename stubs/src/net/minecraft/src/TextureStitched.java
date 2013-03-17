@@ -21,7 +21,7 @@ public class TextureStitched implements Icon {
         return 0;
     }
 
-    public float getInterpolatedU(double x) {
+    public float getInterpolatedU(double u) {
         return 0;
     }
 
@@ -33,7 +33,7 @@ public class TextureStitched implements Icon {
         return 0;
     }
 
-    public float getInterpolatedV(double y) {
+    public float getInterpolatedV(double v) {
         return 0;
     }
 

@@ -9,13 +9,13 @@ public interface Icon {
 
     float getMaxU();
 
-    float getInterpolatedU(double var1);
+    float getInterpolatedU(double u);
 
     float getMinV();
 
     float getMaxV();
 
-    float getInterpolatedV(double var1);
+    float getInterpolatedV(double v);
 
     String getIconName();
 

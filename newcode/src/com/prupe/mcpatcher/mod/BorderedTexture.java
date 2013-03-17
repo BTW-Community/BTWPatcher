@@ -6,10 +6,10 @@ import net.minecraft.src.TextureStitched;
 import java.util.List;
 
 public class BorderedTexture extends TextureStitched {
-    private float normalizedX0;
-    private float normalizedX1;
-    private float normalizedY0;
-    private float normalizedY1;
+    private float minU;
+    private float maxU;
+    private float minV;
+    private float maxV;
     private float scaledWidth;
     private float scaledHeight;
     private int border;
@@ -27,47 +27,47 @@ public class BorderedTexture extends TextureStitched {
             y0 += border;
             width -= 2 * border;
             height -= 2 * border;
-            normalizedX0 = (float) x0 / (float) texture.getWidth();
-            normalizedX1 = (float) (x0 + width) / (float) texture.getWidth();
-            normalizedY0 = (float) y0 / (float) texture.getHeight();
-            normalizedY1 = (float) (y0 + height) / (float) texture.getHeight();
+            minU = (float) x0 / (float) texture.getWidth();
+            maxU = (float) (x0 + width) / (float) texture.getWidth();
+            minV = (float) y0 / (float) texture.getHeight();
+            maxV = (float) (y0 + height) / (float) texture.getHeight();
         } else {
-            normalizedX0 = super.getMinU();
-            normalizedX1 = super.getMaxU();
-            normalizedY0 = super.getMinV();
-            normalizedY1 = super.getMaxV();
+            minU = super.getMinU();
+            maxU = super.getMaxU();
+            minV = super.getMinV();
+            maxV = super.getMaxV();
         }
-        scaledWidth = (normalizedX1 - normalizedX0) / 16.0f;
-        scaledHeight = (normalizedY1 - normalizedY0) / 16.0f;
+        scaledWidth = (maxU - minU) / 16.0f;
+        scaledHeight = (maxV - minV) / 16.0f;
     }
 
     @Override
     public float getMinU() {
-        return normalizedX0;
+        return minU;
     }
 
     @Override
     public float getMaxU() {
-        return normalizedX1;
+        return maxU;
     }
 
     @Override
-    public float getInterpolatedU(double x) {
-        return border > 0 ? normalizedX0 + (float) x * scaledWidth : super.getInterpolatedU(x);
+    public float getInterpolatedU(double u) {
+        return border > 0 ? minU + (float) u * scaledWidth : super.getInterpolatedU(u);
     }
 
     @Override
     public float getMinV() {
-        return normalizedY0;
+        return minV;
     }
 
     @Override
     public float getMaxV() {
-        return normalizedY1;
+        return maxV;
     }
 
     @Override
-    public float getInterpolatedV(double y) {
-        return border > 0 ? normalizedY0 + (float) y * scaledHeight : super.getInterpolatedV(y);
+    public float getInterpolatedV(double v) {
+        return border > 0 ? minV + (float) v * scaledHeight : super.getInterpolatedV(v);
     }
 }
