@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher;
 
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * Class that defines a GUI configuration screen for the mod.
@@ -39,4 +40,33 @@ abstract public class ModConfigPanel {
      * @see Config#set(String, String, Object)
      */
     abstract public void save();
+
+    /**
+     * Call during #load() to determine whether advanced options normally hidden should be made visible.
+     * Triggered by holding down shift when clicking the Options tab.
+     *
+     * @return true if extra options should be shown
+     */
+    protected boolean showAdvancedOptions() {
+        return MainForm.shift;
+    }
+
+    /**
+     * Convenience method to automatically show or hide an advanced option.  If shown, it will be highlighted in
+     * a different color.
+     * <p/>
+     * Example,
+     * <pre>
+     *     public void load() {
+     *         showAdvancedOption(myDebugCheckbox);
+     *     }
+     * </pre>
+     *
+     * @param component "advanced" gui option
+     */
+    protected void showAdvancedOption(JComponent component) {
+        component.setVisible(showAdvancedOptions());
+        component.setBackground(Color.WHITE);
+        component.setForeground(Color.RED);
+    }
 }

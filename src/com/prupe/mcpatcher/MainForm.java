@@ -77,7 +77,7 @@ class MainForm {
 
     private AddModDialog addModDialog;
 
-    private boolean shift;
+    static boolean shift;
 
     private boolean busy = true;
     private Thread workerThread = null;
