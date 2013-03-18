@@ -229,9 +229,9 @@ public class MipmapHelper {
         return mipmapImages;
     }
 
-    static void fixTransparency(String name, BufferedImage image) {
+    static BufferedImage fixTransparency(String name, BufferedImage image) {
         if (image == null) {
-            return;
+            return image;
         }
         long s1 = System.currentTimeMillis();
         image = convertToARGB(image);
@@ -244,7 +244,7 @@ public class MipmapHelper {
             for (int i = 0; i < scaledBuffer.limit(); i++) {
                 if (scaledBuffer.get(i) >>> 24 == 0) {
                     IntBuffer newBuffer = getPooledBuffer(width * height).asIntBuffer();
-                    scaleHalf(scaledBuffer, width, height, newBuffer, 0);
+                    scaleHalf(scaledBuffer, width, height, newBuffer, 8);
                     scaledBuffer = newBuffer;
                     width >>= 1;
                     height >>= 1;
@@ -255,14 +255,11 @@ public class MipmapHelper {
         }
         long s2 = System.currentTimeMillis();
         if (scaledBuffer != buffer) {
-            BufferedImage scaledImage = getPooledImage(width, height, 0);
-            int[] argb = new int[width * height];
-            scaledBuffer.get(argb);
-            scaledImage.setRGB(0, 0, width, height, argb, 0, width);
-            setBackgroundColor(image, scaledImage);
+            setBackgroundColor(buffer, image.getWidth(), image.getHeight(), scaledBuffer, image.getWidth() / width);
         }
         long s3 = System.currentTimeMillis();
         logger.finer("bg fix (tile %s): scaling %dms, setbg %dms", name, s2 - s1, s3 - s2);
+        return image;
     }
 
     private static void setupTextureMipmaps(RenderEngine renderEngine, ArrayList<BufferedImage> mipmapImages, int texture, String textureName, boolean blurTexture, boolean clampTexture) {
@@ -495,6 +492,10 @@ public class MipmapHelper {
         int scale = width / scaledImage.getWidth();
         IntBuffer buffer = getARGBAsIntBuffer(image);
         IntBuffer scaledBuffer = getARGBAsIntBuffer(scaledImage);
+        setBackgroundColor(buffer, width, height, scaledBuffer, scale);
+    }
+
+    private static void setBackgroundColor(IntBuffer buffer, int width, int height, IntBuffer scaledBuffer, int scale) {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 int k = width * j + i;
