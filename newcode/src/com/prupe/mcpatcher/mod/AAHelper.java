@@ -30,7 +30,7 @@ public class AAHelper {
     }
 
     public static BufferedImage addBorder(String name, BufferedImage input, boolean isAnimation) {
-        MipmapHelper.fixTransparency(input);
+        MipmapHelper.fixTransparency(name, input);
         if (input == null || !TexturePackAPI.enableTextureBorder) {
             border = 0;
             return input;

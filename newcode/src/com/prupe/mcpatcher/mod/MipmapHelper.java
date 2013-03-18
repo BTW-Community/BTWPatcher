@@ -229,10 +229,11 @@ public class MipmapHelper {
         return mipmapImages;
     }
 
-    static void fixTransparency(BufferedImage image) {
+    static void fixTransparency(String name, BufferedImage image) {
         if (image == null) {
             return;
         }
+        long s1 = System.currentTimeMillis();
         image = convertToARGB(image);
         int width = image.getWidth();
         int height = image.getHeight();
@@ -252,6 +253,7 @@ public class MipmapHelper {
             }
             break;
         }
+        long s2 = System.currentTimeMillis();
         if (scaledBuffer != buffer) {
             BufferedImage scaledImage = getPooledImage(width, height, 0);
             int[] argb = new int[width * height];
@@ -259,6 +261,8 @@ public class MipmapHelper {
             scaledImage.setRGB(0, 0, width, height, argb, 0, width);
             setBackgroundColor(image, scaledImage);
         }
+        long s3 = System.currentTimeMillis();
+        logger.finer("bg fix (tile %s): scaling %dms, setbg %dms", name, s2 - s1, s3 - s2);
     }
 
     private static void setupTextureMipmaps(RenderEngine renderEngine, ArrayList<BufferedImage> mipmapImages, int texture, String textureName, boolean blurTexture, boolean clampTexture) {
