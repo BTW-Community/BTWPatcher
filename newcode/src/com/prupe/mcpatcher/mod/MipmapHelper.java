@@ -51,10 +51,7 @@ public class MipmapHelper {
 
     public static int currentLevel;
 
-    private static final HashMap<String, Integer> mipmapType = new HashMap<String, Integer>();
-    private static final int MIPMAP_NONE = 0;
-    private static final int MIPMAP_BASIC = 1;
-    private static final int MIPMAP_ALPHA = 2;
+    private static final Map<String, Boolean> mipmapType = new HashMap<String, Boolean>();
 
     private static Texture currentTexture;
     private static boolean enableTransparencyFix = true;
@@ -179,8 +176,7 @@ public class MipmapHelper {
     private static ArrayList<BufferedImage> getMipmapsForTexture(BufferedImage image, String textureName) {
         ArrayList<BufferedImage> mipmapImages = new ArrayList<BufferedImage>();
         mipmapImages.add(image);
-        int type = getMipmapType(textureName, mipmapImages);
-        if (type < MIPMAP_BASIC) {
+        if (!useMipmapsForTexture(textureName)) {
             return mipmapImages;
         }
         int width = image.getWidth();
@@ -192,13 +188,9 @@ public class MipmapHelper {
         int mipmaps = getMipmapLevels(image.getWidth(), image.getHeight(), 2);
         if (mipmaps <= 0) {
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL, mipmaps);
-            type = MIPMAP_NONE;
-            if (textureName != null) {
-                mipmapType.put(textureName, type);
-            }
             return mipmapImages;
         }
-        logger.fine("generating %d mipmaps for %s, alpha=%s", mipmaps, textureName, type >= MIPMAP_ALPHA);
+        logger.fine("generating %d mipmaps for %s", mipmaps, textureName);
         image = convertToARGB(image);
         mipmapImages.set(0, image);
         int scale = 1 << bgColorFix;
@@ -214,16 +206,8 @@ public class MipmapHelper {
             long s3 = System.currentTimeMillis();
             logger.finer("bg fix: scaling %dms, setbg %dms", s2 - s1, s3 - s2);
         }
-        BufferedImage origImage = image;
         for (int i = 0; i < mipmaps; i++) {
-            origImage = scaleHalf(origImage);
-            if (type >= MIPMAP_ALPHA) {
-                image = origImage;
-            } else {
-                image = getPooledImage(origImage.getWidth(), origImage.getHeight(), 1);
-                origImage.copyData(image.getRaster());
-                resetOnOffTransparency(image);
-            }
+            image = scaleHalf(image);
             mipmapImages.add(image);
         }
         return mipmapImages;
@@ -302,25 +286,17 @@ public class MipmapHelper {
     static void reset() {
         bgColorFix = 4;
         mipmapType.clear();
-        forceMipmapType("terrain", MIPMAP_BASIC);
-        forceMipmapType("items", MIPMAP_NONE);
+        mipmapType.put("terrain", true);
+        mipmapType.put("items", false);
         Properties properties = TexturePackAPI.getProperties(MIPMAP_PROPERTIES);
         if (properties != null) {
             bgColorFix = MCPatcherUtils.getIntProperty(properties, "bgColorFix", 4);
             for (Map.Entry entry : properties.entrySet()) {
                 if (entry.getKey() instanceof String && entry.getValue() instanceof String) {
                     String key = ((String) entry.getKey()).trim();
-                    String value = ((String) entry.getValue()).trim().toLowerCase();
+                    boolean value = Boolean.parseBoolean(((String) entry.getValue()).trim().toLowerCase());
                     if (key.startsWith("/")) {
-                        if (value.equals("none")) {
-                            mipmapType.put(key, MIPMAP_NONE);
-                        } else if (value.equals("basic") || value.equals("opaque")) {
-                            mipmapType.put(key, MIPMAP_BASIC);
-                        } else if (value.equals("alpha")) {
-                            mipmapType.put(key, MIPMAP_ALPHA);
-                        } else {
-                            logger.error("%s: unknown value '%s' for %s", MIPMAP_PROPERTIES, value, key);
-                        }
+                        mipmapType.put(key, value);
                     }
                 }
             }
@@ -352,10 +328,9 @@ public class MipmapHelper {
         return added;
     }
 
-    private static int getMipmapType(String texture, ArrayList<BufferedImage> mipmapImages) {
-        BufferedImage image = mipmapImages == null ? null : mipmapImages.get(0);
+    private static boolean useMipmapsForTexture(String texture) {
         if (!useMipmap || texture == null) {
-            return MIPMAP_NONE;
+            return false;
         } else if (mipmapType.containsKey(texture)) {
             return mipmapType.get(texture);
         } else if (texture.startsWith("%") ||
@@ -368,47 +343,9 @@ public class MipmapHelper {
             texture.startsWith("/terrain/") ||
             texture.startsWith("/title/") ||
             texture.contains("item")) {
-            return MIPMAP_NONE;
-        } else if (image == null) {
-            return MIPMAP_BASIC;
+            return false;
         } else {
-            image = convertToARGB(image);
-            mipmapImages.set(0, image);
-            IntBuffer buffer = getARGBAsIntBuffer(image);
-            for (int i = 0; i < buffer.limit(); i++) {
-                int alpha = buffer.get(i) >>> 24;
-                if (alpha > MIN_ALPHA && alpha < MAX_ALPHA) {
-                    logger.finer("%s alpha transparency? yes, by pixel search", texture);
-                    mipmapType.put(texture, MIPMAP_ALPHA);
-                    return MIPMAP_ALPHA;
-                }
-            }
-            logger.finer("%s alpha transparency? no, by pixel search", texture);
-            mipmapType.put(texture, MIPMAP_BASIC);
-            return MIPMAP_BASIC;
-        }
-    }
-
-    static void forceMipmapType(String texture, int type) {
-        if (!useMipmap) {
-            return;
-        }
-        boolean reload = false;
-        if (mipmapType.containsKey(texture)) {
-            reload = mipmapType.get(texture) != type;
-            if (!reload) {
-                return;
-            }
-        }
-        mipmapType.put(texture, type);
-        if (reload) {
-            logger.finer("force %s -> %d (reloading)", texture, type);
-            int id = TexturePackAPI.getTextureIfLoaded(texture);
-            if (id >= 0) {
-                setupTexture(MCPatcherUtils.getMinecraft().renderEngine, TexturePackAPI.getImage(texture), id, false, false, texture);
-            }
-        } else {
-            logger.finer("force %s -> %d", texture, type);
+            return true;
         }
     }
 
@@ -504,18 +441,6 @@ public class MipmapHelper {
                     pixel = scaledBuffer.get((j / scale) * (width / scale) + i / scale);
                     buffer.put(k, pixel & 0x00ffffff);
                 }
-            }
-        }
-    }
-
-    private static void resetOnOffTransparency(BufferedImage image) {
-        IntBuffer rgb = getARGBAsIntBuffer(image);
-        for (int i = 0; i < rgb.limit(); i++) {
-            int pixel = rgb.get(i);
-            if (pixel >>> 24 < 0x7f) {
-                rgb.put(i, pixel & 0x00ffffff);
-            } else {
-                rgb.put(i, pixel | 0xff000000);
             }
         }
     }
