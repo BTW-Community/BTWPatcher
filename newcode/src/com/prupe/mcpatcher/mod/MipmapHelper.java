@@ -81,8 +81,8 @@ public class MipmapHelper {
     }
 
     public static void setupTexture(int target, int level, int internalFormat, int width, int height, int border, int format, int dataType, ByteBuffer buffer, Texture texture) {
-        if (!useMipmap) {
-            GL11.glTexImage2D(target, level, internalFormat, width, height, border, format, dataType, buffer);
+        if (!useMipmapsForTexture(texture.getTextureName())) {
+            GL11.glTexImage2D(target, level, internalFormat, width, height, border, format, dataType, getDirectByteBuffer(buffer, true));
             return;
         }
         int[] byteOrder = (format == GL11.GL_RGBA ? new int[]{3, 0, 1, 2} : new int[]{3, 2, 1, 0});
@@ -122,9 +122,7 @@ public class MipmapHelper {
         srcBuffer.position(0);
         if (byteBufferAllocation == 1 && !srcBuffer.isDirect()) {
             logger.finer("creating %d direct byte buffer for texture %s", srcBuffer.capacity(), src.getTextureName());
-            ByteBuffer newBuffer = ByteBuffer.allocateDirect(srcBuffer.capacity()).order(srcBuffer.order());
-            newBuffer.put(srcBuffer).flip();
-            src.textureData = srcBuffer = newBuffer;
+            src.textureData = srcBuffer = getDirectByteBuffer(srcBuffer, false);
         }
         TexturePackAPI.bindTexture(dst.getGlTextureId());
         int mipmaps = dst.mipmapActive ? getMipmapLevels() : 0;
@@ -387,8 +385,21 @@ public class MipmapHelper {
             buffer = ByteBuffer.allocateDirect(size);
             bufferPool.put(size, new SoftReference<ByteBuffer>(buffer));
         }
+        buffer.order(ByteOrder.BIG_ENDIAN);
         buffer.position(0);
         return buffer;
+    }
+
+    private static ByteBuffer getDirectByteBuffer(ByteBuffer buffer, boolean pooled) {
+        if (buffer.isDirect()) {
+            return buffer;
+        } else {
+            ByteBuffer newBuffer = pooled ? getPooledBuffer(buffer.capacity()) : ByteBuffer.allocateDirect(buffer.capacity());
+            newBuffer.order(buffer.order());
+            newBuffer.put(buffer);
+            newBuffer.flip();
+            return newBuffer;
+        }
     }
 
     private static BufferedImage convertToARGB(BufferedImage image) {
