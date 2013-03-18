@@ -27,6 +27,9 @@ public class MipmapHelper {
 
     private static final String MIPMAP_PROPERTIES = "/mipmap.properties";
 
+    private static final int MIN_ALPHA = 0x1a;
+    private static final int MAX_ALPHA = 0xe5;
+
     private static final boolean mipmapSupported;
     static final boolean mipmapEnabled = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "mipmap", false);
     static final int maxMipmapLevel = Config.getInt(MCPatcherUtils.EXTENDED_HD, "maxMipmapLevel", 3);
@@ -54,6 +57,7 @@ public class MipmapHelper {
     private static final int MIPMAP_ALPHA = 2;
 
     private static Texture currentTexture;
+    private static boolean enableTransparencyFix = true;
     private static boolean flippedTextureLogged;
 
     static {
@@ -98,9 +102,14 @@ public class MipmapHelper {
         }
         image.setRGB(0, 0, width, height, argb, 0, width);
 
-        currentTexture = texture;
-        setupTexture(MCPatcherUtils.getMinecraft().renderEngine, image, texture.getGlTextureId(), false, false, texture.getTextureName());
-        currentTexture = null;
+        try {
+            currentTexture = texture;
+            enableTransparencyFix = false;
+            setupTexture(MCPatcherUtils.getMinecraft().renderEngine, image, texture.getGlTextureId(), false, false, texture.getTextureName());
+        } finally {
+            enableTransparencyFix = true;
+            currentTexture = null;
+        }
     }
 
     public static ByteBuffer allocateByteBuffer(int capacity) {
@@ -194,7 +203,7 @@ public class MipmapHelper {
         mipmapImages.set(0, image);
         int scale = 1 << bgColorFix;
         int gcd = gcd(width, height);
-        if (bgColorFix > 0 && gcd % scale == 0 && ((gcd / scale) & (gcd / scale - 1)) == 0) {
+        if (enableTransparencyFix && bgColorFix > 0 && gcd % scale == 0 && ((gcd / scale) & (gcd / scale - 1)) == 0) {
             long s1 = System.currentTimeMillis();
             BufferedImage scaledImage = mipmapImages.get(mipmapImages.size() - 1);
             while (gcd(scaledImage.getWidth(), scaledImage.getHeight()) > scale) {
@@ -218,6 +227,38 @@ public class MipmapHelper {
             mipmapImages.add(image);
         }
         return mipmapImages;
+    }
+
+    static void fixTransparency(BufferedImage image) {
+        if (image == null) {
+            return;
+        }
+        image = convertToARGB(image);
+        int width = image.getWidth();
+        int height = image.getHeight();
+        IntBuffer buffer = getARGBAsIntBuffer(image);
+        IntBuffer scaledBuffer = buffer;
+        outer:
+        while (width % 2 == 0 && height % 2 == 0) {
+            for (int i = 0; i < scaledBuffer.limit(); i++) {
+                if (scaledBuffer.get(i) >>> 24 == 0) {
+                    IntBuffer newBuffer = getPooledBuffer(width * height).asIntBuffer();
+                    scaleHalf(scaledBuffer, width, height, newBuffer, 0);
+                    scaledBuffer = newBuffer;
+                    width >>= 1;
+                    height >>= 1;
+                    continue outer;
+                }
+            }
+            break;
+        }
+        if (scaledBuffer != buffer) {
+            BufferedImage scaledImage = getPooledImage(width, height, 0);
+            int[] argb = new int[width * height];
+            scaledBuffer.get(argb);
+            scaledImage.setRGB(0, 0, width, height, argb, 0, width);
+            setBackgroundColor(image, scaledImage);
+        }
     }
 
     private static void setupTextureMipmaps(RenderEngine renderEngine, ArrayList<BufferedImage> mipmapImages, int texture, String textureName, boolean blurTexture, boolean clampTexture) {
@@ -335,7 +376,7 @@ public class MipmapHelper {
             IntBuffer buffer = getARGBAsIntBuffer(image);
             for (int i = 0; i < buffer.limit(); i++) {
                 int alpha = buffer.get(i) >>> 24;
-                if (alpha > 0x1a && alpha < 0xe5) {
+                if (alpha > MIN_ALPHA && alpha < MAX_ALPHA) {
                     logger.finer("%s alpha transparency? yes, by pixel search", texture);
                     mipmapType.put(texture, MIPMAP_ALPHA);
                     return MIPMAP_ALPHA;
