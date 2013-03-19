@@ -660,37 +660,23 @@ public class BetterGlass extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    return buildExpression(
-                        // (flag ? f : 1.0f) * ...
-                        IFEQ, any(2),
-                        capture(anyFLOAD),
-                        GOTO, any(2),
-                        push(1.0f),
-                        capture(or(
-                            build(push(0.5f)),
-                            build(push(0.6f)),
-                            build(push(0.8f))
-                        )),
-                        FMUL
-                    );
+                    return buildExpression(or(
+                        build(push(0.5f)),
+                        build(push(0.6f)),
+                        build(push(0.8f))
+                    ));
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // (flag ? f : 1.0f) * RenderPass.getAOBaseMultiplier(...)
-                        IFEQ, branch("A"),
-                        getCaptureGroup(1),
-                        GOTO, branch("B"),
-                        label("A"),
-                        push(1.0f),
-                        label("B"),
-                        getCaptureGroup(2),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "getAOBaseMultiplier", "(F)F")),
-                        FMUL
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "getAOBaseMultiplier", "(F)F"))
                     );
                 }
-            }.targetMethod(renderStandardBlockWithAmbientOcclusion));
+            }
+                .setInsertAfter(true)
+                .targetMethod(renderStandardBlockWithAmbientOcclusion)
+            );
 
             addPatch(new BytecodePatch() {
                 @Override
