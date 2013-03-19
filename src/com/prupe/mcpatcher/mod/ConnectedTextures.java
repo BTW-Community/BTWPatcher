@@ -770,6 +770,14 @@ public class ConnectedTextures extends Mod {
                 }
             }.targetMethod(renderStandardBlockWithColorMultiplier));
 
+            if (getMinecraftVersion().compareTo("1.5.1") >= 0) {
+                setupFastGrassPost151();
+            } else {
+                setupFastGrassPre151();
+            }
+        }
+
+        private void setupFastGrassPre151() {
             addPatch(new BytecodePatch() {
                 private final int[] faces = new int[6];
                 private boolean matched;
@@ -865,6 +873,100 @@ public class ConnectedTextures extends Mod {
                     );
                 }
             }.targetMethod(renderStandardBlockWithAmbientOcclusion));
+        }
+
+        private void setupFastGrassPost151() {
+            addPatch(new BytecodePatch() {
+                private int flagRegister;
+                private int face;
+
+                {
+                    final MethodRef stringEquals = new MethodRef("java/lang/String", "equals", "(Ljava/lang/Object;)Z");
+
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                push("grass_top"),
+                                reference(INVOKEVIRTUAL, stringEquals),
+                                IFEQ_or_IFNE, any(2),
+                                nonGreedy(any(0, 8)),
+                                push(0),
+                                capture(anyISTORE)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            flagRegister = extractRegisterNum(getCaptureGroup(1));
+                            return true;
+                        }
+                    });
+                }
+
+                @Override
+                public String getDescription() {
+                    return "apply color multiplier to side grass texture (AO, fast graphics, post-1.5.1)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ILOAD, flagRegister
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    switch (face) {
+                        case 0:
+                            face++;
+                            return null;
+
+                        case 1:
+                            // NOTE: Mojang's code does not check flag for bottom face
+                            face++;
+
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                            break;
+
+                        default:
+                            return null;
+                    }
+                    return buildCode(
+                        // flag || (!RenderBlocks.fancyGrass && CTMUtils.isBetterGrass(...))
+                        IFNE, branch("A"),
+
+                        reference(GETSTATIC, fancyGrass),
+                        IFNE, branch("B"),
+
+                        ALOAD_0,
+                        reference(GETFIELD, blockAccess),
+                        ALOAD_1,
+                        ILOAD_2,
+                        ILOAD_3,
+                        ILOAD, 4,
+                        push(face++),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "isBetterGrass", "(LIBlockAccess;LBlock;IIII)Z")),
+                        GOTO, branch("C"),
+
+                        label("A"),
+                        push(1),
+                        GOTO, branch("C"),
+
+                        label("B"),
+                        push(0),
+
+                        label("C")
+                    );
+                }
+            }
+                .setInsertAfter(true)
+                .targetMethod(renderStandardBlockWithAmbientOcclusion)
+            );
         }
 
         private void setupStandardBlocks() {
