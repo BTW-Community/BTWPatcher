@@ -111,6 +111,14 @@ public class TexturePackConverter {
                             if (name.equals("terrain.png")) {
                                 convertTilesheet(entry, TileMapping.BLOCKS, skipBlockTiles, "blocks");
                                 removeEntry(name);
+                                for (int i = 0; i <= 2; i++) {
+                                    String carrot = getEntryName("/textures/blocks/carrots_" + i + ".png");
+                                    String potato = getEntryName("/textures/blocks/potatoes_" + i + ".png");
+                                    if (outData.containsKey(carrot) && !outData.containsKey(potato)) {
+                                        addMessage(0, "copy %s -> %s", carrot, potato);
+                                        outData.put(potato, outData.get(carrot));
+                                    }
+                                }
                             }
                             if (name.equals("gui/items.png")) {
                                 convertTilesheet(entry, TileMapping.ITEMS, skipItemTiles, "items");
