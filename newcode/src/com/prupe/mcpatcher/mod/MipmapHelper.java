@@ -44,8 +44,8 @@ public class MipmapHelper {
     private static final boolean lodSupported;
     private static int lodBias;
 
-    private static final HashMap<String, Reference<BufferedImage>> imagePool = new HashMap<String, Reference<BufferedImage>>();
-    private static final HashMap<Integer, Reference<ByteBuffer>> bufferPool = new HashMap<Integer, Reference<ByteBuffer>>();
+    private static final Map<String, Reference<BufferedImage>> imagePool = new HashMap<String, Reference<BufferedImage>>();
+    private static final Map<Integer, Reference<ByteBuffer>> bufferPool = new HashMap<Integer, Reference<ByteBuffer>>();
 
     private static int bgColorFix = 4;
 
@@ -86,7 +86,7 @@ public class MipmapHelper {
             return;
         }
         int[] byteOrder = (format == GL11.GL_RGBA ? new int[]{3, 0, 1, 2} : new int[]{3, 2, 1, 0});
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage image = getPooledImage(width, height, 0);
         byte[] rgba = new byte[4 * width * height];
         int[] argb = new int[width * height];
         buffer.position(0);
