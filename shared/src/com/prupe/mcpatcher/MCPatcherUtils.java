@@ -166,7 +166,7 @@ public class MCPatcherUtils {
         if (properties == null) {
             return defaultValue;
         } else {
-            return properties.getProperty(key, defaultValue);
+            return properties.getProperty(key, defaultValue).trim();
         }
     }
 
