@@ -1,5 +1,5 @@
 MCVER = 1.5
-MCVERSS = 13w11a
+MCVERSS = 1.5.1
 MCJAR = ../bin/minecraft.jar
 MCJARV = ../bin/minecraft-$(MCVER).jar
 MCJARVSS = ../bin/minecraft-$(MCVERSS).jar
