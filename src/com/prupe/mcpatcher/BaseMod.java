@@ -637,9 +637,29 @@ public final class BaseMod extends Mod {
      * Matches Item class.
      */
     public static class ItemMod extends ClassMod {
+        protected final FieldRef itemsList = new FieldRef(getDeobfClass(), "itemsList", "[LItem;");
+        protected final FieldRef itemID = new FieldRef(getDeobfClass(), "itemID", "I");
+        protected final MethodRef getItemName = new MethodRef(getDeobfClass(), "getItemName", "()Ljava/lang/String;");
+
         public ItemMod() {
             addClassSignature(new ConstSignature("CONFLICT @ "));
             addClassSignature(new ConstSignature("coal"));
+
+            addMemberMapper(new FieldMapper(itemsList)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, true)
+            );
+
+            addMemberMapper(new FieldMapper(itemID)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, false)
+                .accessFlag(AccessFlag.FINAL, true)
+            );
+
+            addMemberMapper(new MethodMapper(getItemName)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, false)
+            );
         }
     }
 
