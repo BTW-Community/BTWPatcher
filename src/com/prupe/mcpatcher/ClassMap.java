@@ -238,6 +238,11 @@ public class ClassMap {
         if (parentEntry == null) {
             parentEntry = new ClassMapEntry(parent);
             putEntry(parentEntry);
+            if (parent.equals("Minecraft") || parent.equals("MinecraftApplet")) {
+                putEntry(new ClassMapEntry("net.minecraft.client." + parent, parentEntry));
+            } else if (!parent.contains(".")) {
+                putEntry(new ClassMapEntry("net.minecraft.src." + parent, parentEntry));
+            }
         }
         ClassMapEntry childEntry = getEntry(child);
         if (childEntry == null) {
