@@ -1064,6 +1064,13 @@ public final class BaseMod extends Mod {
             addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "setBoolean", "(Ljava/lang/String;Z)V")));
             addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getCompoundTag", "(Ljava/lang/String;)L" + getDeobfClass() + ";")));
             addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "setCompoundTag", "(Ljava/lang/String;L" + getDeobfClass() + ";)V")));
+            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getTag", "(Ljava/lang/String;)LNBTBase;")));
+            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getTags", "()Ljava/util/Collection;")));
+        }
+
+        public NBTTagCompoundMod mapGetTagList() {
+            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getTagList", "(Ljava/lang/String;)LNBTTagList;")));
+            return this;
         }
 
         protected void mapNBTMethod(String type, String desc) {
@@ -1082,12 +1089,6 @@ public final class BaseMod extends Mod {
                         captureReference(CHECKCAST),
                         captureReference(GETFIELD)
                     );
-                }
-
-                @Override
-                public boolean afterMatch() {
-                    getClassMap().addInheritance("NBTBase", nbtTagType);
-                    return true;
                 }
             }
                 .setMethod(get)
@@ -1117,6 +1118,48 @@ public final class BaseMod extends Mod {
                 .addXref(2, new ClassRef(nbtTagType))
                 .addXref(3, new MethodRef(nbtTagType, "<init>", "(Ljava/lang/String;" + desc + ")V"))
             );
+        }
+    }
+
+    public static class NBTTagListMod extends ClassMod {
+        public NBTTagListMod() {
+            setParentClass("NBTBase");
+
+            final MethodRef tagCount = new MethodRef(getDeobfClass(), "tagCount", "()I");
+            final MethodRef removeTag = new MethodRef(getDeobfClass(), "removeTag", "(I)LNBTBase;");
+            final MethodRef tagAt = new MethodRef(getDeobfClass(), "tagAt", "(I)LNBTBase;");
+            final InterfaceMethodRef listSize = new InterfaceMethodRef("java/util/List", "size", "()I");
+            final InterfaceMethodRef listRemove = new InterfaceMethodRef("java/util/List", "remove", "(I)Ljava/lang/Object;");
+            final InterfaceMethodRef listGet = new InterfaceMethodRef("java/util/List", "get", "(I)Ljava/lang/Object;");
+
+            addClassSignature(new ConstSignature(" entries of type "));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKEINTERFACE, listSize)
+                    );
+                }
+            }.setMethod(tagCount));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKEINTERFACE, listRemove)
+                    );
+                }
+            }.setMethod(removeTag));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKEINTERFACE, listGet)
+                    );
+                }
+            }.setMethod(tagAt));
         }
     }
 }

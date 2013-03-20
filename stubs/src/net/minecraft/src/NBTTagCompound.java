@@ -1,11 +1,17 @@
 package net.minecraft.src;
 
+import java.util.Collection;
+
 public class NBTTagCompound extends NBTBase {
     public boolean hasKey(String tag) {
         return false;
     }
 
     public void removeTag(String tag) {
+    }
+
+    public Collection<NBTBase> getTags() {
+        return null;
     }
 
     public boolean getBoolean(String tag) {
@@ -21,6 +27,10 @@ public class NBTTagCompound extends NBTBase {
     }
 
     public NBTTagCompound getCompoundTag(String tag) {
+        return null;
+    }
+
+    public NBTTagList getTagList(String tag) {
         return null;
     }
 
@@ -49,6 +59,10 @@ public class NBTTagCompound extends NBTBase {
     }
 
     public String getString(String tag) {
+        return null;
+    }
+
+    public NBTBase getTag(String tag) {
         return null;
     }
 
