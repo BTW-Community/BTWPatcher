@@ -18,6 +18,7 @@ public class TileLoader {
     private static final boolean debugTextures = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "debugTextures", false);
     private static String overrideTextureName;
 
+    private final MCLogger subLogger;
     private final Map<String, List<Texture>> tileTextures = new HashMap<String, List<Texture>>();
     private final Map<String, Icon> loadedIcons = new HashMap<String, Icon>();
 
@@ -42,6 +43,10 @@ public class TileLoader {
             logger.finer("getOverrideTextureName(%s) -> %s", name, overrideTextureName);
             return overrideTextureName;
         }
+    }
+
+    TileLoader(MCLogger subLogger) {
+        this.subLogger = subLogger;
     }
 
     static BufferedImage generateDebugTexture(String text, int width, int height, boolean alternate) {
@@ -117,7 +122,7 @@ public class TileLoader {
             }
             List<Texture> textures = tileTextures.get(imageName);
             if (textures == null || textures.isEmpty()) {
-                logger.error("tile for %s unexpectedly missing", imageName);
+                subLogger.error("tile for %s unexpectedly missing", imageName);
                 continue;
             }
             Texture texture = textures.get(0);
@@ -128,7 +133,7 @@ public class TileLoader {
             TessellatorUtils.registerIcon(textureMap, icons[i]);
             loadedIcons.put(imageName, icons[i]);
             String extra = (textures.size() > 1 ? ", " + textures.size() + " frames" : "");
-            logger.finer("%s -> icon: %dx%d%s", imageName, texture.getWidth(), texture.getHeight(), extra);
+            subLogger.finer("%s -> icon: %dx%d%s", imageName, texture.getWidth(), texture.getHeight(), extra);
         }
         return icons;
     }

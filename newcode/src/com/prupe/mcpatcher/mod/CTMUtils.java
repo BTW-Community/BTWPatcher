@@ -76,8 +76,9 @@ public class CTMUtils {
                 Arrays.fill(blockOverrides, null);
                 tileOverrides.clear();
                 overridesToRegister.clear();
-                tileLoader = new TileLoader();
+                tileLoader = new TileLoader(logger);
                 betterGrass = null;
+                CITUtils.refresh();
 
                 if (enableStandard || enableNonStandard) {
                     List<String> fileList = new ArrayList<String>();
@@ -199,6 +200,7 @@ public class CTMUtils {
 
     public static void registerIcons(TextureMap textureMap, Stitcher stitcher, String mapName, Map<StitchHolder, List<Texture>> map) {
         TessellatorUtils.registerTextureMap(textureMap, mapName);
+        CITUtils.registerIcons(textureMap, stitcher, mapName, map);
         if (mapName == null || (!mapName.equals("terrain") && !mapName.matches("ctm\\d+"))) {
             return;
         }

@@ -34,6 +34,7 @@ public class MCPatcherUtils {
     public static final String CONNECTED_TEXTURES = "Connected Textures";
     public static final String BETTER_SKIES = "Better Skies";
     public static final String BETTER_GLASS = "Better Glass";
+    public static final String CUSTOM_ITEM_TEXTURES = "Custom Item Textures";
     public static final String GLSL_SHADERS = "GLSL Shaders";
 
     public static final String CUSTOM_ANIMATIONS = "Custom Animations";
@@ -78,6 +79,7 @@ public class MCPatcherUtils {
     public static final String RENDER_PASS_API_CLASS = "com.prupe.mcpatcher.mod.RenderPassAPI";
     public static final String SKY_RENDERER_CLASS = "com.prupe.mcpatcher.mod.SkyRenderer";
     public static final String FIREWORKS_HELPER_CLASS = "com.prupe.mcpatcher.mod.FireworksHelper";
+    public static final String CIT_UTILS_CLASS = "com.prupe.mcpatcher.mod.CITUtils";
     public static final String SHADERS_CLASS = "com.prupe.mcpatcher.mod.Shaders";
 
     private MCPatcherUtils() {

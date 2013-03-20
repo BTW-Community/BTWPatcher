@@ -18,8 +18,8 @@ public class ConnectedTextures extends Mod {
     public ConnectedTextures() {
         name = MCPatcherUtils.CONNECTED_TEXTURES;
         author = "MCPatcher";
-        description = "Connects adjacent blocks of the same type.";
-        version = "2.1";
+        description = "Enables support for custom block and item textures.";
+        version = "2.2";
 
         addDependency(BaseTexturePackMod.NAME);
 
@@ -39,6 +39,10 @@ public class ConnectedTextures extends Mod {
         addClassMod(new TextureManagerMod());
         addClassMod(new StitcherMod());
         addClassMod(new StitchHolderMod());
+        addClassMod(new ItemMod());
+        addClassMod(new ItemStackMod());
+        addClassMod(new BaseMod.NBTTagCompoundMod().mapGetTagList());
+        addClassMod(new BaseMod.NBTTagListMod());
 
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS);
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$1");
@@ -61,8 +65,18 @@ public class ConnectedTextures extends Mod {
         addClassFile(MCPatcherUtils.TILE_LOADER_CLASS);
         addClassFile(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS);
         addClassFile(MCPatcherUtils.RENDER_PASS_API_CLASS);
+        addClassFile(MCPatcherUtils.CIT_UTILS_CLASS);
+        addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$ItemOverride");
 
         BaseTexturePackMod.earlyInitialize(MCPatcherUtils.CTM_UTILS_CLASS, "reset");
+    }
+
+    @Override
+    public String[] getLoggingCategories() {
+        return new String[] {
+            MCPatcherUtils.CONNECTED_TEXTURES,
+            MCPatcherUtils.CUSTOM_ITEM_TEXTURES,
+        };
     }
 
     private class ConfigPanel extends ModConfigPanel {
@@ -1710,6 +1724,95 @@ public class ConnectedTextures extends Mod {
                     );
                 }
             }.setMethod(new MethodRef(getDeobfClass(), "setNewDimension", "(I)V")));
+        }
+    }
+
+    private class ItemMod extends BaseMod.ItemMod {
+        ItemMod() {
+            final MethodRef getIconIndex = new MethodRef(getDeobfClass(), "getIconIndex", "(LItemStack;)LIcon;");
+
+            addMemberMapper(new MethodMapper(getIconIndex));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override item texture";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ARETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_0,
+                        ALOAD_1,
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getIcon", "(LIcon;LItem;LItemStack;)LIcon;"))
+                    );
+                }
+            }
+                .setInsertBefore(true)
+                .targetMethod(getIconIndex)
+            );
+        }
+    }
+
+    private class ItemStackMod extends ClassMod {
+        ItemStackMod() {
+            final FieldRef stackSize = new FieldRef(getDeobfClass(), "stackSize", "I");
+            final FieldRef itemID = new FieldRef(getDeobfClass(), "itemID", "I");
+            final FieldRef itemDamage = new FieldRef(getDeobfClass(), "itemDamage", "I");
+            final FieldRef stackTagCompound = new FieldRef(getDeobfClass(), "stackTagCompound", "LNBTTagCompound;");
+            final MethodRef getItemDamage = new MethodRef(getDeobfClass(), "getItemDamage", "()I");
+
+            addClassSignature(new ConstSignature("id"));
+            addClassSignature(new ConstSignature("Count"));
+            addClassSignature(new ConstSignature("Damage"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        ILOAD_1,
+                        captureReference(PUTFIELD),
+                        ALOAD_0,
+                        ILOAD_2,
+                        captureReference(PUTFIELD),
+                        ALOAD_0,
+                        ILOAD_3,
+                        captureReference(PUTFIELD)
+                    );
+                }
+            }
+                .matchConstructorOnly(true)
+                .setMethod(new MethodRef(getDeobfClass(), "<init>", "(III)V"))
+                .addXref(1, itemID)
+                .addXref(2, stackSize)
+                .addXref(3, itemDamage)
+            );
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin(),
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        IRETURN,
+                        end()
+                    );
+                }
+            }
+                .setMethod(getItemDamage)
+                .addXref(1, itemDamage)
+            );
+
+            addMemberMapper(new FieldMapper(stackTagCompound));
         }
     }
 }
