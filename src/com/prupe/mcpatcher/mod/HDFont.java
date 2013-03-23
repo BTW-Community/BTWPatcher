@@ -69,6 +69,34 @@ public class HDFont extends Mod {
             addPatch(new AddFieldPatch(charWidthf));
 
             addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override font name";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        ALOAD_2,
+                        anyReference(PUTFIELD)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_2,
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getFontName", "(Ljava/lang/String;)Ljava/lang/String;")),
+                        ASTORE_2
+                    );
+                }
+            }
+                .setInsertBefore(true)
+                .matchConstructorOnly(true)
+            );
+
+            addPatch(new BytecodePatch() {
                 private int imageRegister;
                 private int rgbRegister;
 

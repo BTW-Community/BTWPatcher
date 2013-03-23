@@ -20,6 +20,11 @@ public class FontUtils {
 
     private static final boolean showLines = false;
 
+    public static String getFontName(String font) {
+        String newFont = font.replaceFirst("\\.png$", "X.png");
+        return TexturePackAPI.hasResource(newFont) ? newFont : font;
+    }
+
     public static float[] computeCharWidths(FontRenderer fontRenderer, String filename, BufferedImage image, int[] rgb, int[] charWidth) {
         float[] charWidthf = new float[charWidth.length];
         int width = image.getWidth();
