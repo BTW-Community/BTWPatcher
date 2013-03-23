@@ -179,7 +179,7 @@ public abstract class Mod {
      *
      * @param error descriptive error message
      */
-    protected final void addError(String error) {
+    public final void addError(String error) {
         errors.add(error);
     }
 
@@ -189,7 +189,7 @@ public abstract class Mod {
      *
      * @return this
      */
-    protected Mod clearPatches() {
+    public Mod clearPatches() {
         for (ClassMod classMod : classMods) {
             classMod.patches.clear();
         }
@@ -197,16 +197,32 @@ public abstract class Mod {
         return this;
     }
 
-    protected void addClassMod(ClassMod classMod) {
+    /**
+     * Add a class mod.
+     *
+     * @param classMod class mod
+     */
+    public void addClassMod(ClassMod classMod) {
         classMod.mod = this;
         classMods.add(classMod);
     }
 
-    protected void addFile(String filename) {
+    /**
+     * Add a file to be injected into minecraft.jar.
+     *
+     * @param filename name of file
+     */
+    public void addFile(String filename) {
         filesToAdd.add(filename);
     }
 
-    protected void addClassFile(String className) {
+    /**
+     * Add a class file to be injected into minecraft.jar.  The class map will be applied to reobfuscate the class
+     * as it is injected
+     *
+     * @param className name of class (fully qualified using . notation)
+     */
+    public void addClassFile(String className) {
         addFile(ClassMap.classNameToFilename(className));
     }
 
@@ -279,7 +295,7 @@ public abstract class Mod {
      *
      * @param name name of required mod
      */
-    final protected void addDependency(String name) {
+    public void addDependency(String name) {
         dependencies.add(new Dependency(name, true));
     }
 
@@ -296,7 +312,7 @@ public abstract class Mod {
      *
      * @param name name of conflicting mod
      */
-    final protected void addConflict(String name) {
+    public void addConflict(String name) {
         dependencies.add(new Dependency(name, false));
     }
 
