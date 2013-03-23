@@ -1,5 +1,5 @@
-MCVER = 1.5
-MCVERSS = 1.5.1
+MCVER = 1.5.1
+MCVERSS =
 MCJAR = ../bin/minecraft.jar
 MCJARV = ../bin/minecraft-$(MCVER).jar
 MCJARVSS = ../bin/minecraft-$(MCVERSS).jar
