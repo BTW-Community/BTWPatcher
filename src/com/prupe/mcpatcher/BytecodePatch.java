@@ -482,4 +482,12 @@ abstract public class BytecodePatch extends ClassPatch {
     final protected byte[] getMatch() {
         return matcher.getMatch();
     }
+
+    final protected ClassMod.Label label(String key) {
+        return new ClassMod.Label(key, true);
+    }
+
+    final protected ClassMod.Label branch(String key) {
+        return new ClassMod.Label(key, false);
+    }
 }
