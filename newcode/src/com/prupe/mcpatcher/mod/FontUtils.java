@@ -105,10 +105,10 @@ public class FontUtils {
                     c = s.charAt(i);
                     if (c == 'l' || c == 'L') {
                         isLink = true;
-                    } else if (c == 'r' || c == 'R' || (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
+                    } else if (c == 'r' || c == 'R') {
                         isLink = false;
                     }
-                    cWidth = getCharWidthf(fontRenderer, c);
+                    cWidth = 0.0f;
                 }
                 totalWidth += cWidth;
                 if (isLink) {
