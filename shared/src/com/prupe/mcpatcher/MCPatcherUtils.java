@@ -80,6 +80,7 @@ public class MCPatcherUtils {
     public static final String SKY_RENDERER_CLASS = "com.prupe.mcpatcher.mod.SkyRenderer";
     public static final String FIREWORKS_HELPER_CLASS = "com.prupe.mcpatcher.mod.FireworksHelper";
     public static final String CIT_UTILS_CLASS = "com.prupe.mcpatcher.mod.CITUtils";
+    public static final String ITEM_OVERLAY_CLASS = "com.prupe.mcpatcher.mod.ItemOverlay";
     public static final String SHADERS_CLASS = "com.prupe.mcpatcher.mod.Shaders";
 
     private MCPatcherUtils() {

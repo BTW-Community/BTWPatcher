@@ -24,6 +24,7 @@ abstract class CustomItemTextures {
 
         mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS);
         mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$ItemOverride");
+        mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_CLASS);
     }
     
     private static class ItemMod extends BaseMod.ItemMod {
