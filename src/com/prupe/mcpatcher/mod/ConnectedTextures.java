@@ -552,6 +552,7 @@ public class ConnectedTextures extends Mod {
         private final InterfaceMethodRef getMinU = new InterfaceMethodRef("Icon", "getMinU", "()F");
         private final InterfaceMethodRef getMinV = new InterfaceMethodRef("Icon", "getMinV", "()F");
         private final InterfaceMethodRef getInterpolatedU = new InterfaceMethodRef("Icon", "getInterpolatedU", "(D)F");
+        private final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
         private final MethodRef getTile = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIIILIcon;LTessellator;)LIcon;");
         private final MethodRef getTileNoFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIILIcon;LTessellator;)LIcon;");
         private final MethodRef getTileBySideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IILTessellator;)LIcon;");
@@ -577,6 +578,20 @@ public class ConnectedTextures extends Mod {
             }
                 .setMethod(hasOverrideTexture)
                 .addXref(1, overrideBlockTexture)
+            );
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_1,
+                        captureReference(INVOKEVIRTUAL),
+                        ISTORE, 5
+                    );
+                }
+            }
+                .setMethod(renderBlockByRenderType)
+                .addXref(1, getRenderType)
             );
 
             addMemberMapper(new FieldMapper(overrideBlockTexture));

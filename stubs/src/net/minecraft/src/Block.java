@@ -34,4 +34,8 @@ public class Block {
     public String getShortName() {
         return null;
     }
+
+    public int getRenderType() {
+        return 0;
+    }
 }
