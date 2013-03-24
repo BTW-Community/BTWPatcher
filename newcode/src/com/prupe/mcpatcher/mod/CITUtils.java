@@ -25,6 +25,18 @@ public class CITUtils {
         return icon;
     }
 
+    public static boolean renderOverlayHeld(ItemStack itemStack) {
+        return false;
+    }
+
+    public static boolean renderOverlayDropped(ItemStack itemStack) {
+        return false;
+    }
+
+    public static boolean renderOverlayGUI(ItemStack itemStack, float zLevel) {
+        return false;
+    }
+
     static void refresh() {
         tileLoader = new TileLoader(logger);
         Arrays.fill(overrides, null);
