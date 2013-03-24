@@ -297,11 +297,13 @@ abstract class CustomItemTextures {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (!CITUtils.renderOverlayGUI(itemStack, this.zLevel)) {
+                        // if (!CITUtils.renderOverlayGUI(itemStack, x, y, this.zLevel)) {
                         ALOAD_3,
+                        ILOAD, 4,
+                        ILOAD, 5,
                         ALOAD_0,
                         reference(GETFIELD, zLevel),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "renderOverlayGUI", "(LItemStack;F)Z")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "renderOverlayGUI", "(LItemStack;IIF)Z")),
                         IFNE, branch("A"),
 
                         // ...

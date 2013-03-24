@@ -1,9 +1,6 @@
 package com.prupe.mcpatcher.mod;
 
-import com.prupe.mcpatcher.Config;
-import com.prupe.mcpatcher.MCLogger;
-import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.*;
 import net.minecraft.src.*;
 
 import java.util.*;
@@ -15,6 +12,7 @@ public class CITUtils {
 
     private static TileLoader tileLoader;
     private static ItemOverride[][] overrides = new ItemOverride[Item.itemsList.length][];
+    private static final ItemOverlay testOverlay = new ItemOverlay("/cit/overlay.properties", "%blur%/cit/overlay.png", BlendMethod.DODGE, 33.0f, 1.0f);
 
     public static Icon getIcon(Icon icon, Item item, ItemStack itemStack) {
         if (enable) {
@@ -30,25 +28,38 @@ public class CITUtils {
         return icon;
     }
 
+    private static float getFade() {
+        return (float) Math.sin((System.currentTimeMillis() % 1000L) / 1000.0 * 2.0 * Math.PI);
+    }
+
     public static boolean renderOverlayHeld(ItemStack itemStack) {
         if (!enable || itemStack == null) {
             return false;
         }
-        return false;
+        ItemOverlay.beginOuter3D();
+        testOverlay.render3D(Tessellator.instance, getFade(), 256, 256);
+        ItemOverlay.endOuter3D();
+        return true;
     }
 
     public static boolean renderOverlayDropped(ItemStack itemStack) {
         if (!enable || itemStack == null) {
             return false;
         }
-        return false;
+        ItemOverlay.beginOuter3D();
+        testOverlay.render3D(Tessellator.instance, getFade(), 256, 256);
+        ItemOverlay.endOuter3D();
+        return true;
     }
 
-    public static boolean renderOverlayGUI(ItemStack itemStack, float zLevel) {
+    public static boolean renderOverlayGUI(ItemStack itemStack, int x, int y, float z) {
         if (!enable || itemStack == null) {
             return false;
         }
-        return false;
+        ItemOverlay.beginOuter2D();
+        testOverlay.render2D(Tessellator.instance, getFade(), x - 2, y - 2, x + 18, y + 18, z - 50.0f);
+        ItemOverlay.endOuter2D();
+        return true;
     }
 
     static void refresh() {
