@@ -81,6 +81,7 @@ public class ConnectedTextures extends Mod {
         private JCheckBox grassCheckBox;
         private JCheckBox standardCheckBox;
         private JCheckBox nonStandardCheckBox;
+        private JCheckBox itemsCheckBox;
         private JCheckBox debugCheckBox;
         private JComboBox splitComboBox;
 
@@ -106,6 +107,12 @@ public class ConnectedTextures extends Mod {
             grassCheckBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     Config.set(MCPatcherUtils.CONNECTED_TEXTURES, "grass", grassCheckBox.isSelected());
+                }
+            });
+
+            itemsCheckBox.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    Config.set(MCPatcherUtils.CONNECTED_TEXTURES, "items", itemsCheckBox.isSelected());
                 }
             });
 
@@ -136,6 +143,7 @@ public class ConnectedTextures extends Mod {
             nonStandardCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "nonStandard", true));
             glassPaneCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "glassPane", true));
             grassCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "grass", false));
+            itemsCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "items", true));
             debugCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "debugTextures", false));
 
             showAdvancedOption(debugCheckBox);

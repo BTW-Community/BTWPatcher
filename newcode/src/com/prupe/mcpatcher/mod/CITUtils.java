@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher.mod;
 
+import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
@@ -10,15 +11,19 @@ import java.util.*;
 public class CITUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
+    private static final boolean enable = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "items", true);
+
     private static TileLoader tileLoader;
     private static ItemOverride[][] overrides = new ItemOverride[Item.itemsList.length][];
 
     public static Icon getIcon(Icon icon, Item item, ItemStack itemStack) {
-        int itemID = item.itemID;
-        if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
-            for (ItemOverride override : overrides[itemID]) {
-                if (override.match(icon, itemID, itemStack)) {
-                    return override.icon;
+        if (enable) {
+            int itemID = item.itemID;
+            if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
+                for (ItemOverride override : overrides[itemID]) {
+                    if (override.match(icon, itemID, itemStack)) {
+                        return override.icon;
+                    }
                 }
             }
         }
@@ -26,26 +31,37 @@ public class CITUtils {
     }
 
     public static boolean renderOverlayHeld(ItemStack itemStack) {
+        if (!enable || itemStack == null) {
+            return false;
+        }
         return false;
     }
 
     public static boolean renderOverlayDropped(ItemStack itemStack) {
+        if (!enable || itemStack == null) {
+            return false;
+        }
         return false;
     }
 
     public static boolean renderOverlayGUI(ItemStack itemStack, float zLevel) {
+        if (!enable || itemStack == null) {
+            return false;
+        }
         return false;
     }
 
     static void refresh() {
         tileLoader = new TileLoader(logger);
         Arrays.fill(overrides, null);
-        for (String s : TexturePackAPI.listResources("/cit", ".properties")) {
-            ItemOverride override = ItemOverride.create(s);
-            if (override != null) {
-                for (int i : override.itemsIDs) {
-                    overrides[i] = registerOverride(overrides[i], override);
-                    logger.fine("registered %s to item %d (%s)", override, i, getItemName(i));
+        if (enable) {
+            for (String s : TexturePackAPI.listResources("/cit", ".properties")) {
+                ItemOverride override = ItemOverride.create(s);
+                if (override != null) {
+                    for (int i : override.itemsIDs) {
+                        overrides[i] = registerOverride(overrides[i], override);
+                        logger.fine("registered %s to item %d (%s)", override, i, getItemName(i));
+                    }
                 }
             }
         }
