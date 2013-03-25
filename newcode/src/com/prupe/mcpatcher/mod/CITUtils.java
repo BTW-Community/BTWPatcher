@@ -8,10 +8,14 @@ import java.util.*;
 public class CITUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
+    private static final int MAX_ENCHANTMENTS = 256;
+    private static final int ITEM_ID_POTION = 373;
+
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "items", true);
 
     private static TileLoader tileLoader;
-    private static ItemOverride[][] overrides = new ItemOverride[Item.itemsList.length][];
+    private static final ItemOverride[][] overrides = new ItemOverride[Item.itemsList.length][];
+    private static final ItemOverlay[][] enchantmentOverlays = new ItemOverlay[MAX_ENCHANTMENTS][];
     private static final ItemOverlay testOverlay = new ItemOverlay("/cit/overlay.properties", "%blur%/cit/overlay.png", BlendMethod.DODGE, 33.0f, 1.0f);
 
     public static Icon getIcon(Icon icon, Item item, ItemStack itemStack) {
@@ -65,6 +69,7 @@ public class CITUtils {
     static void refresh() {
         tileLoader = new TileLoader(logger);
         Arrays.fill(overrides, null);
+        Arrays.fill(enchantmentOverlays, null);
         if (enable) {
             for (String s : TexturePackAPI.listResources("/cit", ".properties")) {
                 ItemOverride override = ItemOverride.create(s);
@@ -103,6 +108,32 @@ public class CITUtils {
             }
         }
         return "unknown item " + itemID;
+    }
+
+    private static float getEnchantmentLevels(NBTTagCompound nbt, float[] levels) {
+        float total = 0.0f;
+        if (nbt != null) {
+            Arrays.fill(levels, 0.0f);
+            NBTBase base = nbt.getTag("ench");
+            if (base == null) {
+                base = nbt.getTag("StoredEnchantments");
+            }
+            if (base instanceof NBTTagList) {
+                NBTTagList list = (NBTTagList) base;
+                for (int i = 0; i < list.tagCount(); i++) {
+                    base = list.tagAt(i);
+                    if (base instanceof NBTTagCompound) {
+                        short id = ((NBTTagCompound) base).getShort("id");
+                        short level = ((NBTTagCompound) base).getShort("lvl");
+                        if (id >= 0 && id < MAX_ENCHANTMENTS && level > 0) {
+                            levels[id] += level;
+                            total += level;
+                        }
+                    }
+                }
+            }
+        }
+        return total;
     }
 
     static void registerIcons(TextureMap textureMap, Stitcher stitcher, String mapName, Map<StitchHolder, List<Texture>> map) {
