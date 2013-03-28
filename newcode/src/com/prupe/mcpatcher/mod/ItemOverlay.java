@@ -72,6 +72,28 @@ class ItemOverlay {
         end();
     }
 
+    void beginArmor(float fade) {
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glDepthFunc(GL11.GL_EQUAL);
+        GL11.glDepthMask(false);
+        GL11.glDisable(GL11.GL_LIGHTING);
+        GL11.glMatrixMode(GL11.GL_TEXTURE);
+        begin(fade);
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
+    }
+
+    void endArmor() {
+        GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+        GL11.glDisable(GL11.GL_BLEND);
+        GL11.glDepthFunc(GL11.GL_LEQUAL);
+        GL11.glDepthMask(true);
+        GL11.glEnable(GL11.GL_LIGHTING);
+        GL11.glMatrixMode(GL11.GL_TEXTURE);
+        end();
+        GL11.glLoadIdentity();
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
+    }
+
     private void begin(float fade) {
         TexturePackAPI.bindTexture(texture);
         blendMethod.applyBlending();

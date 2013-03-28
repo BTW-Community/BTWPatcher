@@ -18,6 +18,8 @@ public class CITUtils {
     private static final ItemOverlay[][] enchantmentOverlays = new ItemOverlay[MAX_ENCHANTMENTS][];
     private static final ItemOverlay testOverlay = new ItemOverlay("/cit/overlay.properties", "%blur%/cit/overlay.png", BlendMethod.DODGE, 33.0f, 1.0f);
 
+    private static ItemOverlay armorOverlay;
+
     public static Icon getIcon(Icon icon, Item item, ItemStack itemStack) {
         if (enable) {
             int itemID = item.itemID;
@@ -64,6 +66,27 @@ public class CITUtils {
         testOverlay.render2D(Tessellator.instance, getFade(), x - 2, y - 2, x + 18, y + 18, z - 50.0f);
         ItemOverlay.endOuter2D();
         return true;
+    }
+
+    public static boolean preRenderArmor(EntityLiving entity, int pass) {
+        armorOverlay = null;
+        if (!enable) {
+            return false;
+        }
+        ItemStack itemStack = entity.getCurrentArmor(3 - pass);
+        if (itemStack == null) {
+            return false;
+        }
+        testOverlay.beginArmor(getFade());
+        armorOverlay = testOverlay;
+        return true;
+    }
+
+    public static void postRenderArmor() {
+        if (armorOverlay != null) {
+            armorOverlay.endArmor();
+            armorOverlay = null;
+        }
     }
 
     static void refresh() {

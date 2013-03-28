@@ -18,4 +18,8 @@ public class EntityLiving extends Entity {
     @Override
     public void writeEntityToNBT(NBTTagCompound var1) {
     }
+
+    public ItemStack getCurrentArmor(int slot) {
+        return null;
+    }
 }

@@ -21,6 +21,8 @@ abstract class CustomItemTextures {
         mod.addClassMod(new EntityItemMod());
         mod.addClassMod(new ItemRendererMod());
         mod.addClassMod(new RenderItemMod());
+        mod.addClassMod(new RenderLivingMod());
+        mod.addClassMod(new RenderBipedMod());
 
         mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS);
         mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$ItemOverride");
@@ -314,6 +316,146 @@ abstract class CustomItemTextures {
                     );
                 }
             }.targetMethod(renderItemAndEffectIntoGUI));
+        }
+    }
+
+    private static class RenderLivingMod extends ClassMod {
+        RenderLivingMod() {
+            final MethodRef doRenderLiving = new MethodRef(getDeobfClass(), "doRenderLiving", "(LEntityLiving;DDDFF)V");
+
+            addClassSignature(new GlintSignature(doRenderLiving));
+            addClassSignature(new ConstSignature("deadmau5"));
+
+            addPatch(new BytecodePatch() {
+                private int passRegister;
+                private byte[] renderModelCode;
+
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                // flags = this.shouldRenderPass(entityLiving, pass, partialTick);
+                                ALOAD_0,
+                                ALOAD_1,
+                                capture(anyILOAD),
+                                anyFLOAD,
+                                anyReference(INVOKEVIRTUAL),
+                                anyISTORE
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            passRegister = extractRegisterNum(getCaptureGroup(1));
+                            return true;
+                        }
+                    });
+
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                // this.renderPassModel.render(entityLiving, swing, prevSwing, rotation, yawHead - yawOffset, pitch, oneSixteenth);
+                                ALOAD_0,
+                                anyReference(GETFIELD),
+                                ALOAD_1,
+                                anyFLOAD,
+                                anyFLOAD,
+                                anyFLOAD,
+                                anyFLOAD,
+                                anyFLOAD,
+                                FSUB,
+                                anyFLOAD,
+                                anyFLOAD,
+                                anyReference(INVOKEVIRTUAL)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            renderModelCode = getMatch();
+                            return true;
+                        }
+                    });
+                }
+
+                @Override
+                public String getDescription() {
+                    return "render item overlay (armor)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // tick = (float) entityLiving.ticksExisted + partialTick
+                        ALOAD_1,
+                        anyReference(GETFIELD),
+                        I2F,
+                        FLOAD, 9,
+                        FADD,
+                        anyFSTORE,
+
+                        nonGreedy(any(0, 400)),
+
+                        push(515), // GL11.GL_LEQUAL
+                        reference(INVOKESTATIC, glDepthFunc)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // if (CITUtils.preRenderArmor(entityLiving, pass)) {
+                        ALOAD_1,
+                        ILOAD, passRegister,
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "preRenderArmor", "(LEntityLiving;I)Z")),
+                        IFEQ, branch("A"),
+
+                        // this.renderPassModel.render(...);
+                        // CITUtils.postRenderArmor();
+                        renderModelCode,
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "postRenderArmor", "()V")),
+                        GOTO, branch("B"),
+
+                        // } else {
+                        label("A"),
+
+                        // ...
+                        getMatch(),
+
+                        // }
+                        label("B")
+                    );
+                }
+            }.targetMethod(doRenderLiving));
+        }
+    }
+
+    private static class RenderBipedMod extends ClassMod {
+        RenderBipedMod() {
+            final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(LEntityLiving;IF)V");
+            final MethodRef getCurrentArmor = new MethodRef("EntityLiving", "getCurrentArmor", "(I)LItemStack;");
+
+            addClassSignature(new ConstSignature("/armor/"));
+            addClassSignature(new ConstSignature("_"));
+            addClassSignature(new ConstSignature("_b.png"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_1,
+                        push(3),
+                        ILOAD_2,
+                        ISUB,
+                        captureReference(INVOKEVIRTUAL)
+                    );
+                }
+            }
+                .setMethod(loadTextureForPass)
+                .addXref(1, getCurrentArmor)
+            );
         }
     }
 }
