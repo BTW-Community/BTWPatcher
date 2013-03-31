@@ -76,7 +76,7 @@ public class CustomAnimation {
                 } else if (image.getWidth() == 256 && image.getHeight() == 256) {
                     image.getRGB(0, 0, 256, 256, colorBuffer, 0, 256);
                 } else {
-                    logger.error("%s has wrong dimensions %dx%d", image.getWidth(), image.getHeight());
+                    logger.error("%s has wrong dimensions %dx%d", resource, image.getWidth(), image.getHeight());
                 }
             }
 
