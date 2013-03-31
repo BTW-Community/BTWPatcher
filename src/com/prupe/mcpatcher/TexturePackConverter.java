@@ -567,7 +567,7 @@ public class TexturePackConverter {
         if (tileList.equals("")) {
             String method = properties.getProperty("method", "ctm").trim().toLowerCase();
             if (method.equals("default") || method.equals("glass") || method.equals("ctm")) {
-                tileList = "0-11,16-27,32-43,48-58";
+                tileList = "0-11 16-27 32-43 48-58";
             } else if (method.equals("random")) {
                 // no default
             } else if (method.equals("fixed") || method.equals("static")) {
@@ -584,6 +584,7 @@ public class TexturePackConverter {
                 addMessage(1, "WARNING: %s has invalid method %s", name, method);
                 return false;
             }
+            properties.setProperty("tiles", tileList);
         }
         int[] tiles = MCPatcherUtils.parseIntegerList(tileList, 0, 255);
         if (tiles.length == 0) {
