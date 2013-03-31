@@ -388,16 +388,17 @@ abstract class CustomItemTextures {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // tick = (float) entityLiving.ticksExisted + partialTick
-                        ALOAD_1,
-                        anyReference(GETFIELD),
-                        I2F,
-                        FLOAD, 9,
-                        FADD,
-                        anyFSTORE,
+                        // if ((flags & 15) == 15) {
+                        anyILOAD,
+                        push(15),
+                        IAND,
+                        push(15),
+                        IF_ICMPNE, any(2),
 
+                        // ...
                         nonGreedy(any(0, 400)),
 
+                        // }
                         push(515), // GL11.GL_LEQUAL
                         reference(INVOKESTATIC, glDepthFunc)
                     );
