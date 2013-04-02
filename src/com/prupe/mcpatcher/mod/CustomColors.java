@@ -3440,6 +3440,7 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature("black"));
             addClassSignature(new ConstSignature("purple"));
             addClassSignature(new ConstSignature("cyan"));
+            addClassSignature(new ConstSignature("dyePowder_black"));
 
             addMemberMapper(new FieldMapper(dyeColorNames)
                 .accessFlag(AccessFlag.PUBLIC, true)
