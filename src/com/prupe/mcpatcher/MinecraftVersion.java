@@ -196,6 +196,11 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             addKnownVersion("1.5.1", "dcee28c1b1cea2b36816a60e8adafea4");
             addKnownVersion("1.5.1", "5c1219d869b87d233de3033688ec7567");
 
+            // April 1, 2013
+            addKnownVersion("2.0_blue", "b16c06933f2aa43594ea7a150a126a07");
+            addKnownVersion("2.0_purple", "6023b7c3626d987d9c85c8e2617d3705");
+            addKnownVersion("2.0_red", "ee00fb8745c03af3fabe8a92cd52ebaf");
+
             for (int i = 0; i < versionOrdering.size(); i++) {
                 MinecraftVersion a = versionOrdering.get(i);
                 for (int j = 0; j < versionOrdering.size(); j++) {
@@ -361,6 +366,9 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             } else {
                 parsedVersion = new int[]{FINAL, 1, 0, 0, 1};
             }
+        }
+        if (parsedVersion.length == 3 && parsedVersion[0] == FINAL && parsedVersion[1] == 2 && parsedVersion[2] == 0) {
+            parsedVersion = new int[]{FINAL, 1, 5, 1, 2, 0}; // map 2.0 -> 1.5.1.2.0 to fix ordering
         }
     }
 
