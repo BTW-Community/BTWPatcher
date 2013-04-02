@@ -799,7 +799,7 @@ public class ConnectedTextures extends Mod {
                 }
             }.targetMethod(renderStandardBlockWithColorMultiplier));
 
-            if (getMinecraftVersion().compareTo("1.5.1") >= 0) {
+            if (getMinecraftVersion().compareTo("1.5.1") >= 0 && !getMinecraftVersion().getVersionString().matches("2\\.0_(blue|purple)")) {
                 setupFastGrassPost151();
             } else {
                 setupFastGrassPre151();
