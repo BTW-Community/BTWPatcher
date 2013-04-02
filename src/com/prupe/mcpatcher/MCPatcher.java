@@ -643,6 +643,7 @@ final public class MCPatcher {
             }
 
             applyMods();
+            writeProperties();
             minecraft.checkOutput();
             minecraft.closeStreams();
 
@@ -846,5 +847,12 @@ final public class MCPatcher {
             }
         }
         return patched;
+    }
+
+    private static void writeProperties() throws IOException {
+        Properties properties = new Properties();
+        properties.setProperty("minecraftVersion", minecraft.getVersion().getVersionString());
+        properties.setProperty("patcherVersion", MCPatcher.VERSION_STRING);
+        minecraft.writeProperties(properties);
     }
 }
