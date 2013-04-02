@@ -502,4 +502,15 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
     static boolean isKnownMD5(String md5) {
         return md5 != null && (knownMD5s.containsValue(md5) || alternateMD5s.containsKey(md5));
     }
+
+    MinecraftVersion getOverrideVersion(String md5) {
+        String versionString = alternateMD5s.get(md5);
+        if (versionString != null) {
+            MinecraftVersion newVersion = parseShortVersion(versionString);
+            if (newVersion != null && !equals(newVersion)) {
+                return newVersion;
+            }
+        }
+        return this;
+    }
 }

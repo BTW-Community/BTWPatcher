@@ -403,11 +403,7 @@ class MinecraftJar {
                         String value = constPool.getStringInfo(i);
                         version = MinecraftVersion.parseVersion(value);
                         if (version != null) {
-                            if (version.getVersionString().equals("rc1") && md5.equals("e8e264bcff34aecbc7ef7f850858c1d6")) {
-                                version = MinecraftVersion.parseVersion("Minecraft RC2 Prerelease 1");
-                            } else if (version.getVersionString().equals("11w49a") && md5.equals("8763eb2747d57e2958295bbd06e764b1")) {
-                                version = MinecraftVersion.parseVersion("Minecraft 11w50a");
-                            }
+                            version = version.getOverrideVersion(md5);
                             break;
                         }
                     }
