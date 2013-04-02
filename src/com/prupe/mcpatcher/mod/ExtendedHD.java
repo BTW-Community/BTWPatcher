@@ -158,7 +158,7 @@ public class ExtendedHD extends Mod {
                         ), true),
                         push(0),
                         lookAhead(build(
-                            push(6408),
+                            any(0, 24),
                             anyILOAD,
                             anyILOAD,
                             push(0),
