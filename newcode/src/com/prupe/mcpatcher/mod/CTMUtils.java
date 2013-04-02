@@ -179,7 +179,7 @@ public class CTMUtils {
 
     private static Icon getTile(RenderBlocks renderBlocks, Block block, final int face, final int metadata, Icon icon, Tessellator tessellator) {
         lastOverride = null;
-        if (checkFace(face)) {
+        if (checkFace(face) && checkRenderType(block)) {
             TileOverrideIterator iterator = new TileOverrideIterator(block, icon) {
                 @Override
                 Icon getTile(ITileOverride override, Block block, Icon currentIcon) {
@@ -294,6 +294,17 @@ public class CTMUtils {
 
     private static boolean checkFace(int face) {
         return active && (face < 0 ? enableNonStandard : enableStandard);
+    }
+
+    private static boolean checkRenderType(Block block) {
+        switch (block.getRenderType()) {
+            case 11: // fence
+            case 21: // fence gate
+                return false;
+
+            default:
+                return true;
+        }
     }
 
     private static boolean skipDefaultRendering(Block block) {

@@ -189,6 +189,17 @@ class MinecraftJar {
         return outputFile;
     }
 
+    void writeProperties(Properties properties) throws IOException {
+        try {
+            outputJar.putNextEntry(new ZipEntry("mcpatcher.properties"));
+            properties.store(outputJar, null);
+        } catch (IOException e) {
+            if (!e.toString().contains("duplicate entry")) {
+                throw e;
+            }
+        }
+    }
+
     void checkOutput() throws Exception {
         closeStreams();
         JarFile jar = null;
@@ -318,6 +329,7 @@ class MinecraftJar {
             }
 
             boolean haveMetaInf = false;
+            boolean havePatcherProperties = false;
             JarFile jar = null;
             try {
                 HashSet<String> entries = new HashSet<String>();
@@ -330,6 +342,8 @@ class MinecraftJar {
                     }
                     if (name.startsWith("META-INF")) {
                         haveMetaInf = true;
+                    } else if (name.equals("mcpatcher.properties")) {
+                        havePatcherProperties = true;
                     }
                     entries.add(name);
                 }
@@ -349,7 +363,7 @@ class MinecraftJar {
                 return CORRUPT_JAR;
             }
             origMD5 = getOrigMD5(minecraftJar.getParentFile(), version);
-            if (!haveMetaInf) {
+            if (!haveMetaInf || havePatcherProperties) {
                 return MODDED_JAR;
             }
             if (origMD5 == null) {
@@ -388,7 +402,10 @@ class MinecraftJar {
         }
 
         private static MinecraftVersion extractVersion(JarFile jar, String md5) {
-            MinecraftVersion version = null;
+            MinecraftVersion version = extractVersion(jar);
+            if (version != null) {
+                return version;
+            }
             InputStream inputStream = null;
             try {
                 ZipEntry entry = jar.getEntry("net/minecraft/client/Minecraft.class");
@@ -403,13 +420,31 @@ class MinecraftJar {
                         String value = constPool.getStringInfo(i);
                         version = MinecraftVersion.parseVersion(value);
                         if (version != null) {
-                            if (version.getVersionString().equals("rc1") && md5.equals("e8e264bcff34aecbc7ef7f850858c1d6")) {
-                                version = MinecraftVersion.parseVersion("Minecraft RC2 Prerelease 1");
-                            } else if (version.getVersionString().equals("11w49a") && md5.equals("8763eb2747d57e2958295bbd06e764b1")) {
-                                version = MinecraftVersion.parseVersion("Minecraft 11w50a");
-                            }
+                            version = version.getOverrideVersion(md5);
                             break;
                         }
+                    }
+                }
+            } catch (IOException e) {
+                Logger.log(e);
+            } finally {
+                MCPatcherUtils.close(inputStream);
+            }
+            return version;
+        }
+
+        private static MinecraftVersion extractVersion(JarFile jar) {
+            MinecraftVersion version = null;
+            InputStream inputStream = null;
+            try {
+                ZipEntry entry = jar.getEntry("mcpatcher.properties");
+                if (entry != null) {
+                    inputStream = jar.getInputStream(entry);
+                    Properties properties = new Properties();
+                    properties.load(inputStream);
+                    String value = properties.getProperty("minecraftVersion", "");
+                    if (!value.equals("")) {
+                        return MinecraftVersion.parseShortVersion(value);
                     }
                 }
             } catch (IOException e) {

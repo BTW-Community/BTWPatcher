@@ -21,7 +21,7 @@ public class FontUtils {
     private static final boolean showLines = false;
 
     public static String getFontName(String font) {
-        String newFont = font.replaceFirst("\\.png$", "X.png");
+        String newFont = font.replaceFirst("\\.png$", "_hd.png");
         return TexturePackAPI.hasResource(newFont) ? newFont : font;
     }
 
