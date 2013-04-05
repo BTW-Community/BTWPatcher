@@ -46,6 +46,7 @@ final public class MCPatcher {
     static ModList modList;
     private static final Set<String> modifiedClasses = new HashSet<String>();
     private static final Set<String> addedClasses = new HashSet<String>();
+    private static final Set<String> conflictClasses = new HashSet<String>();
 
     private static boolean ignoreSavedMods = false;
     private static boolean ignoreBuiltInMods = false;
@@ -596,6 +597,7 @@ final public class MCPatcher {
     static HashMap<String, ArrayList<Mod>> getConflicts() {
         HashMap<String, ArrayList<Mod>> conflicts = new HashMap<String, ArrayList<Mod>>();
         ArrayList<Mod> mods = modList.getSelected();
+        conflictClasses.clear();
         for (Mod mod : mods) {
             for (String filename : mod.filesToAdd) {
                 ArrayList<Mod> modArray = conflicts.get(filename);
@@ -612,6 +614,7 @@ final public class MCPatcher {
                         for (ClassMod classMod : conflictMod.classMods) {
                             if (classMod.targetClasses.contains(className)) {
                                 modArray.add(conflictMod);
+                                conflictClasses.add(className);
                             }
                         }
                     }
@@ -865,6 +868,7 @@ final public class MCPatcher {
         Properties properties = new Properties();
         properties.setProperty(Config.TAG_MINECRAFT_VERSION, minecraft.getVersion().getVersionString());
         properties.setProperty(Config.TAG_PATCHER_VERSION, MCPatcher.VERSION_STRING);
+        modifiedClasses.addAll(conflictClasses);
         writeList(properties, Config.TAG_MODIFIED_CLASSES, modifiedClasses);
         writeList(properties, Config.TAG_ADDED_CLASSES, addedClasses);
         minecraft.writeProperties(properties);
