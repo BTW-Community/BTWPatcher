@@ -21,8 +21,14 @@ public class FontUtils {
     private static final boolean showLines = false;
 
     public static String getFontName(String font) {
+        font = font.replaceFirst("_hd\\.png$", ".png");
         String newFont = font.replaceFirst("\\.png$", "_hd.png");
-        return TexturePackAPI.hasResource(newFont) ? newFont : font;
+        if (TexturePackAPI.hasResource(newFont)) {
+            logger.fine("using %s instead of %s", newFont, font);
+            return newFont;
+        } else {
+            return font;
+        }
     }
 
     public static float[] computeCharWidths(FontRenderer fontRenderer, String filename, BufferedImage image, int[] rgb, int[] charWidth) {
@@ -86,7 +92,7 @@ public class FontUtils {
 
     private static float getCharWidthf(FontRenderer fontRenderer, char ch) {
         float width = fontRenderer.getCharWidth(ch);
-        if (width < 0 || ch >= fontRenderer.charWidthf.length || ch < 0) {
+        if (width < 0 || fontRenderer.charWidthf == null || ch >= fontRenderer.charWidthf.length || ch < 0) {
             return width;
         } else {
             return fontRenderer.charWidthf[ch];

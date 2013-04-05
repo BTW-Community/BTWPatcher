@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
+import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -22,9 +23,11 @@ public class HDFont extends Mod {
 
     private class FontRendererMod extends BaseMod.FontRendererMod {
         FontRendererMod() {
+            final FieldRef fontTextureName = new FieldRef(getDeobfClass(), "fontTextureName", "Ljava/lang/String;");
             final FieldRef charWidth = new FieldRef(getDeobfClass(), "charWidth", "[I");
             final FieldRef fontHeight = new FieldRef(getDeobfClass(), "fontHeight", "I");
             final FieldRef charWidthf = new FieldRef(getDeobfClass(), "charWidthf", "[F");
+            final MethodRef readFontData = new MethodRef(getDeobfClass(), "readFontData", "()V");
             final MethodRef getStringWidth = new MethodRef(getDeobfClass(), "getStringWidth", "(Ljava/lang/String;)I");
             final MethodRef getCharWidth = new MethodRef(getDeobfClass(), "getCharWidth", "(C)I");
             final MethodRef computeCharWidths = new MethodRef(getDeobfClass(), "computeCharWidths", "(Ljava/lang/String;)V");
@@ -51,22 +54,29 @@ public class HDFont extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        capture(anyILOAD),
-                        push(16),
-                        IREM,
-                        anyISTORE,
-                        backReference(1),
-                        push(16),
-                        IDIV,
-                        anyISTORE
+                        ALOAD_0,
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        captureReference(INVOKESPECIAL)
                     );
                 }
-            }.setMethod(computeCharWidths));
+            }
+                .setMethod(readFontData)
+                .addXref(1, fontTextureName)
+                .addXref(2, computeCharWidths)
+            );
 
             addMemberMapper(new MethodMapper(getStringWidth));
             addMemberMapper(new MethodMapper(getCharWidth));
 
             addPatch(new AddFieldPatch(charWidthf));
+
+            addPatch(new MakeMemberPublicPatch(fontTextureName) {
+                @Override
+                public int getNewFlags(int oldFlags) {
+                    return oldFlags & ~AccessFlag.FINAL;
+                }
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -77,24 +87,21 @@ public class HDFont extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        ALOAD_0,
-                        ALOAD_2,
-                        anyReference(PUTFIELD)
+                        begin()
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        ALOAD_2,
+                        ALOAD_0,
+                        ALOAD_0,
+                        reference(GETFIELD, fontTextureName),
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getFontName", "(Ljava/lang/String;)Ljava/lang/String;")),
-                        ASTORE_2
+                        reference(PUTFIELD, fontTextureName)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .matchConstructorOnly(true)
-            );
+            }.targetMethod(readFontData));
 
             addPatch(new BytecodePatch() {
                 private int imageRegister;
@@ -133,14 +140,7 @@ public class HDFont extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        ICONST_0,
-                        ISTORE, capture(any()),
-                        ILOAD, backReference(1),
-                        push(256),
-                        IF_ICMPGE, any(2),
-                        any(1, 180),
-                        IINC, backReference(1), 1,
-                        GOTO, any(2)
+                        RETURN
                     );
                 }
 
@@ -158,7 +158,10 @@ public class HDFont extends Mod {
                         reference(PUTFIELD, charWidthf)
                     );
                 }
-            }.targetMethod(computeCharWidths));
+            }
+                .setInsertBefore(true)
+                .targetMethod(computeCharWidths)
+            );
 
             addPatch(new BytecodePatch() {
                 @Override
