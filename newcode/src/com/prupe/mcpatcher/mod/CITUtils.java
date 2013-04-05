@@ -207,7 +207,10 @@ public class CITUtils {
                 value = MCPatcherUtils.getStringProperty(properties, "tile", "");
             }
             if (value.equals("")) {
-                error("no source texture name specified");
+                value = propertiesName.replaceFirst("\\.properties$", ".png");
+                if (!TexturePackAPI.hasResource(value)) {
+                    error("no source texture name specified");
+                }
             }
             textureName = value.startsWith("/") ? value : directory + "/" + value;
 
