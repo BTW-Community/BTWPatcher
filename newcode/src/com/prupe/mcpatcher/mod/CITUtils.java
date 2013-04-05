@@ -94,8 +94,17 @@ public class CITUtils {
         Arrays.fill(overrides, null);
         Arrays.fill(enchantmentOverlays, null);
         if (enable) {
-            for (String s : TexturePackAPI.listResources("/cit", ".properties")) {
-                ItemOverride override = ItemOverride.create(s);
+            List<String> paths = new ArrayList<String>();
+            loadOverridesFromPath("/cit", paths);
+            Collections.sort(paths, new Comparator<String>() {
+                public int compare(String o1, String o2) {
+                    o1 = o1.replaceAll(".*/", "").replaceFirst("\\.properties$", "");
+                    o2 = o2.replaceAll(".*/", "").replaceFirst("\\.properties$", "");
+                    return o1.compareTo(o2);
+                }
+            });
+            for (String path : paths) {
+                ItemOverride override = ItemOverride.create(path);
                 if (override != null) {
                     for (int i : override.itemsIDs) {
                         overrides[i] = registerOverride(overrides[i], override);
@@ -103,6 +112,13 @@ public class CITUtils {
                     }
                 }
             }
+        }
+    }
+
+    private static void loadOverridesFromPath(String directory, List<String> paths) {
+        Collections.addAll(paths, TexturePackAPI.listResources(directory, ".properties"));
+        for (String subdir : TexturePackAPI.listDirectories(directory)) {
+            loadOverridesFromPath(subdir, paths);
         }
     }
 

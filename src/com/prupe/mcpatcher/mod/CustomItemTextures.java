@@ -25,6 +25,7 @@ abstract class CustomItemTextures {
         mod.addClassMod(new RenderBipedMod());
 
         mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS);
+        mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$1");
         mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$ItemOverride");
         mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_CLASS);
     }
