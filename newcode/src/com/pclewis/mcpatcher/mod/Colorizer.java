@@ -6,6 +6,7 @@ import com.pclewis.mcpatcher.TexturePackAPI;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
+import java.lang.reflect.Method;
 import java.util.*;
 
 public class Colorizer {
@@ -114,8 +115,13 @@ public class Colorizer {
     private static final boolean[] textCodeColorSet = new boolean[32];
     private static int signTextColor; // text.sign
 
-    private static final int[] origDyeColors = ItemDye.dyeColors.clone(); // dye.*
+    private static final int[] origDyeColors = new int[]{
+        0x1e1b1b, 0xb3312c, 0x3b511a, 0x51301a, 0x253192, 0x7b2fbe, 0x287697, 0xababab,
+        0x434343, 0xd88198, 0x41cd34, 0xdecf2a, 0x6689d3, 0xc354cd, 0xeb8844, 0xf0f0f0,
+    }; // dye.*
     private static final float[][] origFleeceColors = new float[EntitySheep.fleeceColorTable.length][]; // sheep.*
+
+    private static Method findLoadedClass;
 
     public static final float[][] armorColors = new float[EntitySheep.fleeceColorTable.length][]; // armor.*
     public static int undyedLeatherColor; // armor.default
@@ -123,6 +129,12 @@ public class Colorizer {
     public static final float[][] collarColors = new float[EntitySheep.fleeceColorTable.length][]; // collar.*
 
     static {
+        try {
+            findLoadedClass = ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
+            findLoadedClass.setAccessible(true);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
         try {
             for (int i = 0; i < EntitySheep.fleeceColorTable.length; i++) {
                 origFleeceColors[i] = EntitySheep.fleeceColorTable[i].clone();
@@ -525,7 +537,20 @@ public class Colorizer {
                 mapColor.colorValue = mapColor.origColorValue;
             }
         }
-        System.arraycopy(origDyeColors, 0, ItemDye.dyeColors, 0, origDyeColors.length);
+        if (findLoadedClass == null) {
+            logger.warning("ClassLoader.findLoadedClass not available");
+        } else {
+            try {
+                if (findLoadedClass.invoke(ClassLoader.getSystemClassLoader(), "ItemDye") == null) {
+                    logger.warning("ItemDye (%s.class) not yet loaded, deferring initialization of custom sheep colors", "ItemDye");
+                } else {
+                    System.arraycopy(origDyeColors, 0, ItemDye.dyeColors, 0, origDyeColors.length);
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
+                findLoadedClass = null;
+            }
+        }
         for (int i = 0; i < origFleeceColors.length; i++) {
             EntitySheep.fleeceColorTable[i] = origFleeceColors[i].clone();
             armorColors[i] = origFleeceColors[i].clone();
