@@ -601,6 +601,19 @@ final public class MCPatcher {
                     modArray = new ArrayList<Mod>();
                     conflicts.put(filename, modArray);
                 }
+                if (MinecraftJar.isClassFile(filename)) {
+                    String className = ClassMap.filenameToClassName(filename);
+                    for (Mod conflictMod : mods) {
+                        if (conflictMod == mod) {
+                            break;
+                        }
+                        for (ClassMod classMod : conflictMod.classMods) {
+                            if (classMod.targetClasses.contains(className)) {
+                                modArray.add(conflictMod);
+                            }
+                        }
+                    }
+                }
                 modArray.add(mod);
             }
         }
