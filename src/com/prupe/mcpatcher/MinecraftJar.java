@@ -152,18 +152,18 @@ class MinecraftJar {
     void writeProperties(Properties properties) throws IOException {
         switch (info.result) {
             case Info.UNMODDED_JAR:
-                properties.setProperty("prePatchState", "unmodded");
+                properties.setProperty(Config.TAG_PRE_PATCH_STATE, "unmodded");
                 break;
 
             case Info.MODDED_JAR:
-                properties.setProperty("prePatchState", "modded");
+                properties.setProperty(Config.TAG_PRE_PATCH_STATE, "modded");
                 break;
 
             default:
                 break;
         }
         try {
-            outputJar.putNextEntry(new ZipEntry("mcpatcher.properties"));
+            outputJar.putNextEntry(new ZipEntry(Config.MCPATCHER_PROPERTIES));
             properties.store(outputJar, null);
         } catch (IOException e) {
             if (!e.toString().contains("duplicate entry")) {
