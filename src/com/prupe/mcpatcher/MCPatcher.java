@@ -135,13 +135,6 @@ final public class MCPatcher {
             Config.set(Config.TAG_LAST_VERSION, VERSION_STRING);
             Config.set(Config.TAG_BETA_WARNING_SHOWN, false);
             Config.set(Config.TAG_DEBUG, BETA_VERSION > 0);
-            if (lastVersion.startsWith("2.4.4")) {
-                Config.set(MCPatcherUtils.HD_TEXTURES, "mipmap", false);
-                Config.set(MCPatcherUtils.HD_TEXTURES, "maxMipmapLevel", 3);
-            }
-            if (lastVersion.compareTo("2.3") < 0) {
-                MinecraftJar.fixJarNames();
-            }
         }
         if (BETA_VERSION > 0 && !Config.getBoolean(Config.TAG_BETA_WARNING_SHOWN, false)) {
             ui.showBetaWarning();

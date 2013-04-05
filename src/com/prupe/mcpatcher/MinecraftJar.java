@@ -68,46 +68,6 @@ class MinecraftJar {
         }
     }
 
-    static void fixJarNames() {
-        File binDir = MCPatcherUtils.getMinecraftPath("bin");
-        for (String filename : binDir.list(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.matches("^minecraft-(rc)?[0-9][-_.0-9a-zA-Z]*(pre\\d+)?\\.jar$");
-            }
-        })) {
-            try {
-                File oldFile = new File(binDir, filename);
-                MinecraftVersion version = Info.extractVersion(oldFile);
-                if (version != null) {
-                    String oldVersion = version.getOldVersionString();
-                    String newVersion = version.getVersionString();
-                    File newFile = new File(binDir, "minecraft-" + newVersion + ".jar");
-                    boolean renameProfile = false;
-                    if (!newFile.exists()) {
-                        Logger.log(Logger.LOG_JAR, "Renaming %s to %s", oldFile.getName(), newFile.getName());
-                        oldFile.renameTo(newFile);
-                        renameProfile = true;
-                    } else if (oldVersion.startsWith("rc")) {
-                        renameProfile = true;
-                    }
-                    if (renameProfile) {
-                        Config config = Config.instance;
-                        String oldProfile = "Minecraft " + oldVersion;
-                        String newProfile = "Minecraft " + version.getProfileString();
-                        config.renameProfile(oldProfile, newProfile);
-                        File oldModDir = MCPatcherUtils.getMinecraftPath("mods", oldVersion);
-                        File newModDir = MCPatcherUtils.getMinecraftPath("mods", newVersion);
-                        if (oldModDir.isDirectory() && !newModDir.exists()) {
-                            oldModDir.renameTo(newModDir);
-                            config.rewriteModPaths(oldModDir, newModDir);
-                        }
-                    }
-                }
-            } catch (Throwable e) {
-            }
-        }
-    }
-
     static boolean isGarbageFile(String filename) {
         return filename.startsWith("META-INF") || filename.startsWith("__MACOSX") || filename.endsWith(".DS_Store") || filename.equals("mod.properties");
     }
