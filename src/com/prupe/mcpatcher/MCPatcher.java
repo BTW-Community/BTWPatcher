@@ -44,6 +44,7 @@ final public class MCPatcher {
 
     static MinecraftJar minecraft = null;
     static ModList modList;
+    static final Set<String> modifiedClasses = new HashSet<String>();
 
     private static boolean ignoreSavedMods = false;
     private static boolean ignoreBuiltInMods = false;
@@ -632,6 +633,7 @@ final public class MCPatcher {
     static boolean patch() {
         modList.refreshInternalMods();
         modList.setApplied(true);
+        modifiedClasses.clear();
         boolean patchOk = false;
         try {
             Logger.log(Logger.LOG_MAIN);
@@ -729,6 +731,7 @@ final public class MCPatcher {
                 patched = applyPatches(name, classFile, classMods);
                 if (patched) {
                     outputJar.putNextEntry(new ZipEntry(name));
+                    modifiedClasses.add(ClassMap.filenameToClassName(name));
                     classFile.compact();
                     classFile.write(new DataOutputStream(outputJar));
                     outputJar.closeEntry();
@@ -859,6 +862,14 @@ final public class MCPatcher {
         Properties properties = new Properties();
         properties.setProperty("minecraftVersion", minecraft.getVersion().getVersionString());
         properties.setProperty("patcherVersion", MCPatcher.VERSION_STRING);
+        StringBuilder sb = new StringBuilder();
+        List<String> sortedList = new ArrayList<String>();
+        sortedList.addAll(modifiedClasses);
+        Collections.sort(sortedList);
+        for (String s : sortedList) {
+            sb.append(' ').append(ClassMap.filenameToClassName(s));
+        }
+        properties.setProperty("modifiedClasses", sb.toString().trim());
         minecraft.writeProperties(properties);
     }
 }
