@@ -150,6 +150,18 @@ class MinecraftJar {
     }
 
     void writeProperties(Properties properties) throws IOException {
+        switch (info.result) {
+            case Info.UNMODDED_JAR:
+                properties.setProperty("prePatchState", "unmodded");
+                break;
+
+            case Info.MODDED_JAR:
+                properties.setProperty("prePatchState", "modded");
+                break;
+
+            default:
+                break;
+        }
         try {
             outputJar.putNextEntry(new ZipEntry("mcpatcher.properties"));
             properties.store(outputJar, null);
