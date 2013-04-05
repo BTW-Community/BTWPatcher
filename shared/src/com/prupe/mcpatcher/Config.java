@@ -283,11 +283,13 @@ public class Config {
     }
 
     static void setLogLevel(String category, Level level) {
-        instance.setLogLevel1(category, level);
+        if (instance != null) {
+            instance.setLogLevel1(category, level);
+        }
     }
 
     static Level getLogLevel(String category) {
-        return instance.getLogLevel1(category);
+        return instance == null ? Level.INFO : instance.getLogLevel1(category);
     }
 
     static boolean load(File minecraftDir) {
