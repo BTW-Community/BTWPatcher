@@ -44,7 +44,8 @@ final public class MCPatcher {
 
     static MinecraftJar minecraft = null;
     static ModList modList;
-    static final Set<String> modifiedClasses = new HashSet<String>();
+    private static final Set<String> modifiedClasses = new HashSet<String>();
+    private static final Set<String> addedClasses = new HashSet<String>();
 
     private static boolean ignoreSavedMods = false;
     private static boolean ignoreBuiltInMods = false;
@@ -634,6 +635,7 @@ final public class MCPatcher {
         modList.refreshInternalMods();
         modList.setApplied(true);
         modifiedClasses.clear();
+        addedClasses.clear();
         boolean patchOk = false;
         try {
             Logger.log(Logger.LOG_MAIN);
@@ -816,6 +818,7 @@ final public class MCPatcher {
                     classFile.compact();
                     classMap.stringReplace(classFile, outputJar);
                 }
+                addedClasses.add(ClassMap.filenameToClassName(filename));
             }
             if (directCopy) {
                 Util.copyStream(inputStream, outputJar);
@@ -862,14 +865,19 @@ final public class MCPatcher {
         Properties properties = new Properties();
         properties.setProperty("minecraftVersion", minecraft.getVersion().getVersionString());
         properties.setProperty("patcherVersion", MCPatcher.VERSION_STRING);
+        writeList(properties, "modifiedClasses", modifiedClasses);
+        writeList(properties, "addedClasses", addedClasses);
+        minecraft.writeProperties(properties);
+    }
+
+    private static void writeList(Properties properties, String propertyName, Collection<String> data) {
         StringBuilder sb = new StringBuilder();
         List<String> sortedList = new ArrayList<String>();
-        sortedList.addAll(modifiedClasses);
+        sortedList.addAll(data);
         Collections.sort(sortedList);
         for (String s : sortedList) {
             sb.append(' ').append(ClassMap.filenameToClassName(s));
         }
-        properties.setProperty("modifiedClasses", sb.toString().trim());
-        minecraft.writeProperties(properties);
+        properties.setProperty(propertyName, sb.toString().trim());
     }
 }
