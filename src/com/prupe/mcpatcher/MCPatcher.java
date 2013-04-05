@@ -863,10 +863,10 @@ final public class MCPatcher {
 
     private static void writeProperties() throws IOException {
         Properties properties = new Properties();
-        properties.setProperty("minecraftVersion", minecraft.getVersion().getVersionString());
-        properties.setProperty("patcherVersion", MCPatcher.VERSION_STRING);
-        writeList(properties, "modifiedClasses", modifiedClasses);
-        writeList(properties, "addedClasses", addedClasses);
+        properties.setProperty(Config.TAG_MINECRAFT_VERSION, minecraft.getVersion().getVersionString());
+        properties.setProperty(Config.TAG_PATCHER_VERSION, MCPatcher.VERSION_STRING);
+        writeList(properties, Config.TAG_MODIFIED_CLASSES, modifiedClasses);
+        writeList(properties, Config.TAG_ADDED_CLASSES, addedClasses);
         minecraft.writeProperties(properties);
     }
 
