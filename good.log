@@ -1,5 +1,5 @@
-MCPatcher version is 2.4.5_03
-OS: Linux 3.6.11-4.fc16.x86_64 amd64
+MCPatcher version is 2.4.5_04
+OS: Linux 3.8.4-202.fc18.x86_64 amd64
 JVM: Sun Microsystems Inc. 1.6.0_43 (64 bit)
 Classpath: out/artifacts/mcpatcher/mcpatcher.jar
 Minecraft version is 1.4.7 (md5 8e80fb01b321c6b3c7efca397a3eea35)
@@ -6777,153 +6777,152 @@ Patching...
    method signature (Ljava/lang/String;Lnet/minecraft/src/Potion;)V -> (Ljava/lang/String;Lll;)V
    field signature Lnet/minecraft/src/Entity; -> Llq;
     field ref net.minecraft.src.Block.blockID I -> amq.cm I colorizeBlock(Lamq;IIII)I@16
-     GETFIELD 0x00 0x26        GETFIELD 0x04 0x4d
+     GETFIELD 0x00 0x26        GETFIELD 0x04 0x7e
     field ref net.minecraft.src.Block.blockID I -> amq.cm I colorizeBlock(Lamq;IIII)I@41
-     GETFIELD 0x00 0x26        GETFIELD 0x04 0x4d
+     GETFIELD 0x00 0x26        GETFIELD 0x04 0x7e
     field ref net.minecraft.src.Block.blockID I -> amq.cm I colorizeBlock(Lamq;IIII)I@48
-     GETFIELD 0x00 0x26        GETFIELD 0x04 0x4d
+     GETFIELD 0x00 0x26        GETFIELD 0x04 0x7e
     field ref net.minecraft.src.Block.blockID I -> amq.cm I colorizeBlock(Lamq;IIII)I@62
-     GETFIELD 0x00 0x26        GETFIELD 0x04 0x4d
+     GETFIELD 0x00 0x26        GETFIELD 0x04 0x7e
     field ref net.minecraft.src.Block.blockID I -> amq.cm I colorizeBlock(Lamq;)I@4
-     GETFIELD 0x00 0x26        GETFIELD 0x04 0x4d
+     GETFIELD 0x00 0x26        GETFIELD 0x04 0x7e
     interface method ref net.minecraft.src.IBlockAccess.getBlockMetadata (III)I -> ym.h (III)I colorizeRedstoneWire(Lym;IIII)I@13
-     INVOKEINTERFACE 0x00 0x58 0x04 0x00  INVOKEINTERFACE 0x04 0x52 0x04 0x00
+     INVOKEINTERFACE 0x00 0x58 0x04 0x00  INVOKEINTERFACE 0x04 0x83 0x04 0x00
     method ref com.pclewis.mcpatcher.mod.BiomeHelper$New.<init> (Lnet/minecraft/src/IBlockAccess;)V -> com.pclewis.mcpatcher.mod.BiomeHelper$New.<init> (Lym;)V setupBlockAccess(Lym;Z)V@26
-     INVOKESPECIAL 0x00 0x62   INVOKESPECIAL 0x04 0x55
+     INVOKESPECIAL 0x00 0x62   INVOKESPECIAL 0x04 0x86
     method ref com.pclewis.mcpatcher.mod.BiomeHelper$Old.<init> (Lnet/minecraft/src/IBlockAccess;)V -> com.pclewis.mcpatcher.mod.BiomeHelper$Old.<init> (Lym;)V setupBlockAccess(Lym;Z)V@40
-     INVOKESPECIAL 0x00 0x64   INVOKESPECIAL 0x04 0x56
+     INVOKESPECIAL 0x00 0x64   INVOKESPECIAL 0x04 0x87
     field ref com.pclewis.mcpatcher.mod.Colorizer.fogCamera Lnet/minecraft/src/Entity; -> com.pclewis.mcpatcher.mod.Colorizer.fogCamera Llq; setupForFog(Llq;)V@1
-     PUTSTATIC 0x00 0x65       PUTSTATIC 0x04 0x58
+     PUTSTATIC 0x00 0x65       PUTSTATIC 0x04 0x89
     field ref com.pclewis.mcpatcher.mod.Colorizer.fogCamera Lnet/minecraft/src/Entity; -> com.pclewis.mcpatcher.mod.Colorizer.fogCamera Llq; computeFogColor(I)Z@12
-     GETSTATIC 0x00 0x65       GETSTATIC 0x04 0x58
+     GETSTATIC 0x00 0x65       GETSTATIC 0x04 0x89
     field ref com.pclewis.mcpatcher.mod.Colorizer.fogCamera Lnet/minecraft/src/Entity; -> com.pclewis.mcpatcher.mod.Colorizer.fogCamera Llq; computeFogColor(I)Z@35
-     GETSTATIC 0x00 0x65       GETSTATIC 0x04 0x58
+     GETSTATIC 0x00 0x65       GETSTATIC 0x04 0x89
     field ref com.pclewis.mcpatcher.mod.Colorizer.fogCamera Lnet/minecraft/src/Entity; -> com.pclewis.mcpatcher.mod.Colorizer.fogCamera Llq; computeFogColor(I)Z@43
-     GETSTATIC 0x00 0x65       GETSTATIC 0x04 0x58
+     GETSTATIC 0x00 0x65       GETSTATIC 0x04 0x89
     field ref com.pclewis.mcpatcher.mod.Colorizer.fogCamera Lnet/minecraft/src/Entity; -> com.pclewis.mcpatcher.mod.Colorizer.fogCamera Llq; computeFogColor(I)Z@51
-     GETSTATIC 0x00 0x65       GETSTATIC 0x04 0x58
+     GETSTATIC 0x00 0x65       GETSTATIC 0x04 0x89
     class ref net.minecraft.src.BiomeGenBase -> yy setupForFog(Llq;)V@36
-     CHECKCAST 0x00 0x6b       CHECKCAST 0x04 0x5a
+     CHECKCAST 0x00 0x6b       CHECKCAST 0x04 0x8b
     field ref net.minecraft.src.BiomeGenBase.temperature F -> yy.F F setupForFog(Llq;)V@41
-     GETFIELD 0x00 0x6c        GETFIELD 0x04 0x5c
+     GETFIELD 0x00 0x6c        GETFIELD 0x04 0x8d
     field ref net.minecraft.src.BiomeGenBase.temperature F -> yy.F F setupForFog(Llq;)V@55
-     GETFIELD 0x00 0x6c        GETFIELD 0x04 0x5c
+     GETFIELD 0x00 0x6c        GETFIELD 0x04 0x8d
     field ref net.minecraft.src.BiomeGenBase.rainfall F -> yy.G F setupForFog(Llq;)V@46
-     GETFIELD 0x00 0x6d        GETFIELD 0x04 0x5f
+     GETFIELD 0x00 0x6d        GETFIELD 0x04 0x90
     field ref net.minecraft.src.BiomeGenBase.rainfall F -> yy.G F setupForFog(Llq;)V@60
-     GETFIELD 0x00 0x6d        GETFIELD 0x04 0x5f
+     GETFIELD 0x00 0x6d        GETFIELD 0x04 0x90
     field ref net.minecraft.src.BiomeGenBase.biomeID I -> yy.N I setupForFog(Llq;)V@81
-     GETFIELD 0x00 0x73        GETFIELD 0x04 0x62
+     GETFIELD 0x00 0x73        GETFIELD 0x04 0x93
     field ref net.minecraft.src.BiomeGenBase.biomeName Ljava/lang/String; -> yy.y Ljava/lang/String; setupForFog(Llq;)V@91
-     GETFIELD 0x00 0x74        GETFIELD 0x04 0x64
+     GETFIELD 0x00 0x74        GETFIELD 0x04 0x95
     field ref net.minecraft.src.BiomeGenBase.waterColorMultiplier I -> yy.H I setupForFog(Llq;)V@98
-     GETFIELD 0x00 0x75        GETFIELD 0x04 0x67
+     GETFIELD 0x00 0x75        GETFIELD 0x04 0x98
     field ref net.minecraft.src.Entity.posX D -> lq.t D computeFogColor(I)Z@38
-     GETFIELD 0x00 0x77        GETFIELD 0x04 0x6c
+     GETFIELD 0x00 0x77        GETFIELD 0x04 0x9d
     field ref net.minecraft.src.Entity.posY D -> lq.u D computeFogColor(I)Z@46
-     GETFIELD 0x00 0x78        GETFIELD 0x04 0x6f
+     GETFIELD 0x00 0x78        GETFIELD 0x04 0xa0
     field ref net.minecraft.src.Entity.posZ D -> lq.v D computeFogColor(I)Z@54
-     GETFIELD 0x00 0x79        GETFIELD 0x04 0x72
+     GETFIELD 0x00 0x79        GETFIELD 0x04 0xa3
     field ref net.minecraft.src.World.worldProvider Lnet/minecraft/src/WorldProvider; -> yc.u Laaq; computeFogColor(Lyc;F)Z@1
-     GETFIELD 0x00 0x7c        GETFIELD 0x04 0x77
+     GETFIELD 0x00 0x7c        GETFIELD 0x04 0xa8
     field ref net.minecraft.src.World.worldProvider Lnet/minecraft/src/WorldProvider; -> yc.u Laaq; computeSkyColor(Lyc;F)Z@1
-     GETFIELD 0x00 0x7c        GETFIELD 0x04 0x77
+     GETFIELD 0x00 0x7c        GETFIELD 0x04 0xa8
     field ref net.minecraft.src.WorldProvider.worldType I -> aaq.h I computeFogColor(Lyc;F)Z@4
-     GETFIELD 0x00 0x7d        GETFIELD 0x04 0x7b
+     GETFIELD 0x00 0x7d        GETFIELD 0x04 0xac
     field ref net.minecraft.src.WorldProvider.worldType I -> aaq.h I computeSkyColor(Lyc;F)Z@4
-     GETFIELD 0x00 0x7d        GETFIELD 0x04 0x7b
+     GETFIELD 0x00 0x7d        GETFIELD 0x04 0xac
     method ref com.pclewis.mcpatcher.mod.Colorizer.computeLightningFlash (Lnet/minecraft/src/World;F)V -> com.pclewis.mcpatcher.mod.Colorizer.computeLightningFlash (Lyc;F)V computeFogColor(Lyc;F)Z@20
-     INVOKESTATIC 0x00 0x7f    INVOKESTATIC 0x04 0x7d
+     INVOKESTATIC 0x00 0x7f    INVOKESTATIC 0x04 0xae
     method ref com.pclewis.mcpatcher.mod.Colorizer.computeLightningFlash (Lnet/minecraft/src/World;F)V -> com.pclewis.mcpatcher.mod.Colorizer.computeLightningFlash (Lyc;F)V computeSkyColor(Lyc;F)Z@20
-     INVOKESTATIC 0x00 0x7f    INVOKESTATIC 0x04 0x7d
+     INVOKESTATIC 0x00 0x7f    INVOKESTATIC 0x04 0xae
     field ref net.minecraft.src.World.lightningFlash I -> yc.q I computeLightningFlash(Lyc;F)V@1
-     GETFIELD 0x00 0x80        GETFIELD 0x04 0x80
+     GETFIELD 0x00 0x80        GETFIELD 0x04 0xb1
     field ref net.minecraft.src.World.lightningFlash I -> yc.q I computeLightningFlash(Lyc;F)V@10
-     GETFIELD 0x00 0x80        GETFIELD 0x04 0x80
+     GETFIELD 0x00 0x80        GETFIELD 0x04 0xb1
     field ref net.minecraft.src.Potion.color I -> ll.N I setupPotion(Lll;)V@2
-     GETFIELD 0x00 0x89        GETFIELD 0x04 0x83
+     GETFIELD 0x00 0x89        GETFIELD 0x04 0xb4
     field ref net.minecraft.src.Potion.color I -> ll.N I reset()V@337
-     PUTFIELD 0x00 0x89        PUTFIELD 0x04 0x83
+     PUTFIELD 0x00 0x89        PUTFIELD 0x04 0xb4
     field ref net.minecraft.src.Potion.color I -> ll.N I loadIntColor(Ljava/lang/String;Lll;)V@17
-     GETFIELD 0x00 0x89        GETFIELD 0x04 0x83
+     GETFIELD 0x00 0x89        GETFIELD 0x04 0xb4
     field ref net.minecraft.src.Potion.color I -> ll.N I loadIntColor(Ljava/lang/String;Lll;)V@53
-     PUTFIELD 0x00 0x89        PUTFIELD 0x04 0x83
+     PUTFIELD 0x00 0x89        PUTFIELD 0x04 0xb4
     field ref net.minecraft.src.Potion.origColor I -> ll.origColor I setupPotion(Lll;)V@5
-     PUTFIELD 0x00 0x8a        PUTFIELD 0x04 0x84
+     PUTFIELD 0x00 0x8a        PUTFIELD 0x04 0xb5
     field ref net.minecraft.src.Potion.origColor I -> ll.origColor I reset()V@334
-     GETFIELD 0x00 0x8a        GETFIELD 0x04 0x84
+     GETFIELD 0x00 0x8a        GETFIELD 0x04 0xb5
     field ref net.minecraft.src.Block.blocksList [Lnet/minecraft/src/Block; -> amq.p [Lamq; reset()V@186
-     GETSTATIC 0x00 0xa2       GETSTATIC 0x04 0x88
+     GETSTATIC 0x00 0xa2       GETSTATIC 0x04 0xb9
     class ref net.minecraft.src.Potion -> ll reset()V@328
-     CHECKCAST 0x00 0xab       CHECKCAST 0x04 0x82
+     CHECKCAST 0x00 0xab       CHECKCAST 0x04 0xb3
     class ref net.minecraft.src.Potion -> ll reloadPotionColors()V@22
-     CHECKCAST 0x00 0xab       CHECKCAST 0x04 0x82
+     CHECKCAST 0x00 0xab       CHECKCAST 0x04 0xb3
     field ref net.minecraft.src.MapColor.mapColorArray [Lnet/minecraft/src/MapColor; -> agk.a [Lagk; reset()V@343
-     GETSTATIC 0x00 0xac       GETSTATIC 0x04 0x8e
+     GETSTATIC 0x00 0xac       GETSTATIC 0x04 0xbf
     field ref net.minecraft.src.MapColor.mapColorArray [Lnet/minecraft/src/MapColor; -> agk.a [Lagk; reloadMapColors()V@3
-     GETSTATIC 0x00 0xac       GETSTATIC 0x04 0x8e
+     GETSTATIC 0x00 0xac       GETSTATIC 0x04 0xbf
     field ref net.minecraft.src.MapColor.mapColorArray [Lnet/minecraft/src/MapColor; -> agk.a [Lagk; reloadMapColors()V@10
-     GETSTATIC 0x00 0xac       GETSTATIC 0x04 0x8e
+     GETSTATIC 0x00 0xac       GETSTATIC 0x04 0xbf
     field ref net.minecraft.src.MapColor.mapColorArray [Lnet/minecraft/src/MapColor; -> agk.a [Lagk; reloadMapColors()V@23
-     GETSTATIC 0x00 0xac       GETSTATIC 0x04 0x8e
+     GETSTATIC 0x00 0xac       GETSTATIC 0x04 0xbf
     field ref net.minecraft.src.MapColor.mapColorArray [Lnet/minecraft/src/MapColor; -> agk.a [Lagk; reloadMapColors()V@64
-     GETSTATIC 0x00 0xac       GETSTATIC 0x04 0x8e
+     GETSTATIC 0x00 0xac       GETSTATIC 0x04 0xbf
     field ref net.minecraft.src.MapColor.origColorValue I -> agk.origColorValue I reset()V@367
-     GETFIELD 0x00 0xad        GETFIELD 0x04 0x8f
+     GETFIELD 0x00 0xad        GETFIELD 0x04 0xc0
     field ref net.minecraft.src.MapColor.origColorValue I -> agk.origColorValue I reloadMapColors()V@28
-     GETFIELD 0x00 0xad        GETFIELD 0x04 0x8f
+     GETFIELD 0x00 0xad        GETFIELD 0x04 0xc0
     field ref net.minecraft.src.MapColor.colorValue I -> agk.p I reset()V@370
-     PUTFIELD 0x00 0xae        PUTFIELD 0x04 0x91
+     PUTFIELD 0x00 0xae        PUTFIELD 0x04 0xc2
     field ref net.minecraft.src.MapColor.colorValue I -> agk.p I reloadMapColors()V@72
-     PUTFIELD 0x00 0xae        PUTFIELD 0x04 0x91
-    field ref net.minecraft.src.ItemDye.dyeColors [I -> ty.b [I reset()V@383
-     GETSTATIC 0x00 0xb0       GETSTATIC 0x04 0x96
+     PUTFIELD 0x00 0xae        PUTFIELD 0x04 0xc2
+    field ref net.minecraft.src.ItemDye.dyeColors [I -> ty.b [I reset()V@445
+     GETSTATIC 0x00 0xb7       GETSTATIC 0x04 0xc7
     field ref net.minecraft.src.ItemDye.dyeColors [I -> ty.b [I reloadDyeColors()V@3
-     GETSTATIC 0x00 0xb0       GETSTATIC 0x04 0x96
-    field ref net.minecraft.src.ItemDye.dyeColors [I -> ty.b [I reloadDyeColors()V@35
-     GETSTATIC 0x00 0xb0       GETSTATIC 0x04 0x96
-    field ref net.minecraft.src.ItemDye.dyeColors [I -> ty.b [I <clinit>()V@480
-     GETSTATIC 0x00 0xb0       GETSTATIC 0x04 0x96
-    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F reset()V@404
-     GETSTATIC 0x00 0xb2       GETSTATIC 0x04 0x9a
-    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F reloadDyeColors()V@52
-     GETSTATIC 0x00 0xb2       GETSTATIC 0x04 0x9a
-    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F reloadDyeColors()V@62
-     GETSTATIC 0x00 0xb2       GETSTATIC 0x04 0x9a
-    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F reloadDyeColors()V@93
-     GETSTATIC 0x00 0xb2       GETSTATIC 0x04 0x9a
-    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F <clinit>()V@492
-     GETSTATIC 0x00 0xb2       GETSTATIC 0x04 0x9a
-    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F <clinit>()V@502
-     GETSTATIC 0x00 0xb2       GETSTATIC 0x04 0x9a
-    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F <clinit>()V@512
-     GETSTATIC 0x00 0xb2       GETSTATIC 0x04 0x9a
-    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F <clinit>()V@525
-     GETSTATIC 0x00 0xb2       GETSTATIC 0x04 0x9a
-    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F <clinit>()V@536
-     GETSTATIC 0x00 0xb2       GETSTATIC 0x04 0x9a
-    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F <clinit>()V@552
-     GETSTATIC 0x00 0xb2       GETSTATIC 0x04 0x9a
-    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F <clinit>()V@568
-     GETSTATIC 0x00 0xb2       GETSTATIC 0x04 0x9a
+     GETSTATIC 0x00 0xb7       GETSTATIC 0x04 0xc7
+    field ref net.minecraft.src.ItemDye.dyeColors [I -> ty.b [I reloadDyeColors()V@36
+     GETSTATIC 0x00 0xb7       GETSTATIC 0x04 0xc7
+    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F reset()V@478
+     GETSTATIC 0x00 0xbb       GETSTATIC 0x04 0xcb
+    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F reloadDyeColors()V@53
+     GETSTATIC 0x00 0xbb       GETSTATIC 0x04 0xcb
+    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F reloadDyeColors()V@63
+     GETSTATIC 0x00 0xbb       GETSTATIC 0x04 0xcb
+    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F reloadDyeColors()V@95
+     GETSTATIC 0x00 0xbb       GETSTATIC 0x04 0xcb
+    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F <clinit>()V@593
+     GETSTATIC 0x00 0xbb       GETSTATIC 0x04 0xcb
+    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F <clinit>()V@603
+     GETSTATIC 0x00 0xbb       GETSTATIC 0x04 0xcb
+    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F <clinit>()V@613
+     GETSTATIC 0x00 0xbb       GETSTATIC 0x04 0xcb
+    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F <clinit>()V@663
+     GETSTATIC 0x00 0xbb       GETSTATIC 0x04 0xcb
+    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F <clinit>()V@674
+     GETSTATIC 0x00 0xbb       GETSTATIC 0x04 0xcb
+    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F <clinit>()V@690
+     GETSTATIC 0x00 0xbb       GETSTATIC 0x04 0xcb
+    field ref net.minecraft.src.EntitySheep.fleeceColorTable [[F -> pe.d [[F <clinit>()V@706
+     GETSTATIC 0x00 0xbb       GETSTATIC 0x04 0xcb
     field ref net.minecraft.src.Potion.name Ljava/lang/String; -> ll.I Ljava/lang/String; reloadPotionColors()V@27
-     GETFIELD 0x00 0xd0        GETFIELD 0x04 0x9c
+     GETFIELD 0x00 0xd9        GETFIELD 0x04 0xcd
     method ref com.pclewis.mcpatcher.mod.Colorizer.loadIntColor (Ljava/lang/String;Lnet/minecraft/src/Potion;)V -> com.pclewis.mcpatcher.mod.Colorizer.loadIntColor (Ljava/lang/String;Lll;)V reloadPotionColors()V@31
-     INVOKESTATIC 0x00 0xd1    INVOKESTATIC 0x04 0x9e
-    field ref net.minecraft.src.ItemDye.dyeColorNames [Ljava/lang/String; -> ty.a [Ljava/lang/String; reloadDyeColors()V@22
-     GETSTATIC 0x00 0xfa       GETSTATIC 0x04 0xa0
-    field ref net.minecraft.src.ItemDye.dyeColorNames [Ljava/lang/String; -> ty.a [Ljava/lang/String; reloadDyeColors()V@59
-     GETSTATIC 0x00 0xfa       GETSTATIC 0x04 0xa0
-   string replace Lnet/minecraft/src/MapColor; -> Lagk; @5193
-   string replace [Lnet/minecraft/src/MapColor; -> [Lagk; @5208
+     INVOKESTATIC 0x00 0xda    INVOKESTATIC 0x04 0xcf
+    field ref net.minecraft.src.ItemDye.dyeColorNames [Ljava/lang/String; -> ty.a [Ljava/lang/String; reloadDyeColors()V@23
+     GETSTATIC 0x01 0x03       GETSTATIC 0x04 0xd1
+    field ref net.minecraft.src.ItemDye.dyeColorNames [Ljava/lang/String; -> ty.a [Ljava/lang/String; reloadDyeColors()V@60
+     GETSTATIC 0x01 0x03       GETSTATIC 0x04 0xd1
+   string replace Lnet/minecraft/src/MapColor; -> Lagk; @5218
+   string replace [Lnet/minecraft/src/MapColor; -> [Lagk; @5233
+   string replace ItemDye -> ty @5910
    string replace Lnet/minecraft/src/IBlockAccess; -> Lym; @3031
    string replace Lnet/minecraft/src/BiomeGenBase; -> Lyy; @3614
-   string replace Ljava/util/ArrayList<Lnet/minecraft/src/BiomeGenBase;>; -> Ljava/util/ArrayList<Lyy;>; @10941
+   string replace Ljava/util/ArrayList<Lnet/minecraft/src/BiomeGenBase;>; -> Ljava/util/ArrayList<Lyy;>; @11584
    string replace Lnet/minecraft/src/Block; -> Lamq; @847
    string replace Lnet/minecraft/src/World; -> Lyc; @4364
    string replace Lnet/minecraft/src/Entity; -> Llq; @3638
    string replace Lnet/minecraft/src/Potion; -> Lll; @4758
-   string replace Ljava/util/ArrayList<Lnet/minecraft/src/Potion;>; -> Ljava/util/ArrayList<Lll;>; @10697
+   string replace Ljava/util/ArrayList<Lnet/minecraft/src/Potion;>; -> Ljava/util/ArrayList<Lll;>; @11340
   adding com/pclewis/mcpatcher/mod/Colorizer$1.class for Custom Colors
   adding com/pclewis/mcpatcher/mod/ColorMap.class for Custom Colors
   adding com/pclewis/mcpatcher/mod/Lightmap.class for Custom Colors
