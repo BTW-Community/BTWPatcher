@@ -24,14 +24,17 @@ public class CITUtils {
     private static Matches armorMatches;
     private static int armorMatchIndex;
 
+    private static Icon lastIcon;
+
     public static Icon getIcon(Icon icon, Item item, ItemStack itemStack) {
+        lastIcon = icon;
         if (enableItems) {
             ItemOverride override = findMatch(items, itemStack);
             if (override != null) {
-                return override.icon;
+                lastIcon = override.icon;
             }
         }
-        return icon;
+        return lastIcon;
     }
 
     public static String getArmorTexture(String texture, ItemStack itemStack) {
@@ -102,9 +105,17 @@ public class CITUtils {
         if (matches.isEmpty()) {
             return false;
         }
+        int width;
+        int height;
+        if (lastIcon == null) {
+            width = height = 256;
+        } else {
+            width = Math.round(lastIcon.getSheetWidth() * (lastIcon.getMaxU() - lastIcon.getMinU()));
+            height = Math.round(lastIcon.getSheetHeight() * (lastIcon.getMaxV() - lastIcon.getMinV()));
+        }
         ItemOverlay.beginOuter3D();
         for (int i = 0; i < matches.size(); i++) {
-            matches.getOverlay(i).render3D(Tessellator.instance, matches.getFade(i), 256, 256);
+            matches.getOverlay(i).render3D(Tessellator.instance, matches.getFade(i), width, height);
         }
         ItemOverlay.endOuter3D();
         return true;
