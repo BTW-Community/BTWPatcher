@@ -25,9 +25,9 @@ public class CITUtils {
 
     public static Icon getIcon(Icon icon, Item item, ItemStack itemStack) {
         if (enableItems) {
-            int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
             int itemID = item.itemID;
             if (itemID >= 0 && itemID < items.length && items[itemID] != null) {
+                int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
                 for (ItemOverride override : items[itemID]) {
                     if (override.match(itemID, itemStack, enchantmentLevels)) {
                         return override.icon;
@@ -36,6 +36,21 @@ public class CITUtils {
             }
         }
         return icon;
+    }
+
+    public static String getArmorTexture(String texture, ItemStack itemStack) {
+        if (enableArmor) {
+            int itemID = itemStack.itemID;
+            if (itemID >= 0 && itemID < armors.length && armors[itemID] != null) {
+                int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
+                for (ItemOverride override : armors[itemID]) {
+                    if (override.match(itemID, itemStack, enchantmentLevels)) {
+                        return override.textureName;
+                    }
+                }
+            }
+        }
+        return texture;
     }
 
     private static class Matches {
