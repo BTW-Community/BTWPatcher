@@ -10,9 +10,8 @@ import java.util.*;
 class ItemOverride {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
-    private static final int NBITS = 65535;
-
-    private static int maxEnchantmentID;
+    private static final int MAX_DAMAGE = 65535;
+    private static final int MAX_STACK_SIZE = 65535;
 
     static final int ITEM = 0;
     static final int OVERLAY = 1;
@@ -102,15 +101,10 @@ class ItemOverride {
             error("no matching items specified");
         }
 
-        damage = parseBitSet(properties, "damage", NBITS);
-        stackSize = parseBitSet(properties, "stackSize", NBITS);
+        damage = parseBitSet(properties, "damage", MAX_DAMAGE);
+        stackSize = parseBitSet(properties, "stackSize", MAX_STACK_SIZE);
         enchantmentIDs = parseBitSet(properties, "enchantmentIDs", CITUtils.MAX_ENCHANTMENTS - 1);
         enchantmentLevels = parseBitSet(properties, "enchantmentLevels", CITUtils.MAX_ENCHANTMENTS - 1);
-        if (enchantmentIDs != null) {
-            for (int id = 0; id >= 0; id = enchantmentIDs.nextSetBit(id)) {
-                maxEnchantmentID = Math.max(maxEnchantmentID, id);
-            }
-        }
 
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             String name = (String) entry.getKey();
