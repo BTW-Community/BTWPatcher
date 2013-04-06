@@ -12,6 +12,8 @@ class ItemOverride {
 
     private static final int NBITS = 65535;
 
+    private static int maxEnchantmentID;
+
     static final int ITEM = 0;
     static final int OVERLAY = 1;
     static final int ARMOR = 2;
@@ -94,6 +96,11 @@ class ItemOverride {
         stackSize = parseBitSet(properties, "stackSize");
         enchantmentIDs = parseBitSet(properties, "enchantmentIDs");
         enchantmentLevels = parseBitSet(properties, "enchantmentLevels");
+        if (enchantmentIDs != null) {
+            for (int id = 0; id >= 0; id = enchantmentIDs.nextSetBit(id)) {
+                maxEnchantmentID = Math.max(maxEnchantmentID, id);
+            }
+        }
 
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             String name = (String) entry.getKey();
@@ -129,6 +136,36 @@ class ItemOverride {
         if (stackSize != null && !stackSize.get(itemStack.stackSize)) {
             return false;
         }
+        if (enchantmentIDs != null || enchantmentLevels != null) {
+            int[] levels = getEnchantmentLevels(itemStack.stackTagCompound);
+            if (enchantmentIDs == null) {
+                int sum = 0;
+                for (int level : levels) {
+                    sum += level;
+                }
+                if (!enchantmentLevels.get(sum)) {
+                    return false;
+                }
+            } else {
+                boolean found = false;
+                for (int id = 0; id >= 0; id = enchantmentIDs.nextSetBit(id)) {
+                    if (enchantmentLevels == null) {
+                        if (levels[id] > 0) {
+                            found = true;
+                            break;
+                        }
+                    } else {
+                        if (enchantmentLevels.get(levels[id])) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (!found) {
+                    return false;
+                }
+            }
+        }
         for (String[] rule : nbtRules) {
             if (!matchNBTTagCompound(rule, 1, rule[0], itemStack.stackTagCompound)) {
                 return false;
@@ -157,6 +194,30 @@ class ItemOverride {
             bits.set(i);
         }
         return bits;
+    }
+
+    private static int[] getEnchantmentLevels(NBTTagCompound nbt) {
+        int[] levels = new int[maxEnchantmentID + 1];
+        if (nbt != null) {
+            NBTBase base = nbt.getTag("ench");
+            if (base == null) {
+                base = nbt.getTag("StoredEnchantments");
+            }
+            if (base instanceof NBTTagList) {
+                NBTTagList list = (NBTTagList) base;
+                for (int i = 0; i < list.tagCount(); i++) {
+                    base = list.tagAt(i);
+                    if (base instanceof NBTTagCompound) {
+                        short id = ((NBTTagCompound) base).getShort("id");
+                        short level = ((NBTTagCompound) base).getShort("lvl");
+                        if (id >= 0 && id <= maxEnchantmentID && level > 0) {
+                            levels[id] += level;
+                        }
+                    }
+                }
+            }
+        }
+        return levels;
     }
 
     private static boolean matchNBT(String[] rule, int index, String value, NBTBase nbt) {
