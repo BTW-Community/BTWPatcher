@@ -92,10 +92,10 @@ class ItemOverride {
             error("no matching items specified");
         }
 
-        damage = parseBitSet(properties, "damage");
-        stackSize = parseBitSet(properties, "stackSize");
-        enchantmentIDs = parseBitSet(properties, "enchantmentIDs");
-        enchantmentLevels = parseBitSet(properties, "enchantmentLevels");
+        damage = parseBitSet(properties, "damage", NBITS);
+        stackSize = parseBitSet(properties, "stackSize", NBITS);
+        enchantmentIDs = parseBitSet(properties, "enchantmentIDs", CITUtils.MAX_ENCHANTMENTS - 1);
+        enchantmentLevels = parseBitSet(properties, "enchantmentLevels", CITUtils.MAX_ENCHANTMENTS - 1);
         if (enchantmentIDs != null) {
             for (int id = 0; id >= 0; id = enchantmentIDs.nextSetBit(id)) {
                 maxEnchantmentID = Math.max(maxEnchantmentID, id);
@@ -129,18 +129,17 @@ class ItemOverride {
         icon = icons[0];
     }
 
-    boolean match(Icon icon, int itemID, ItemStack itemStack) {
+    boolean match(Icon icon, int itemID, ItemStack itemStack, int[] itemEnchantmentLevels) {
         if (damage != null && !damage.get(itemStack.getItemDamage())) {
             return false;
         }
         if (stackSize != null && !stackSize.get(itemStack.stackSize)) {
             return false;
         }
-        if (enchantmentIDs != null || enchantmentLevels != null) {
-            int[] levels = getEnchantmentLevels(itemStack.stackTagCompound);
+        if (itemEnchantmentLevels != null && (enchantmentIDs != null || enchantmentLevels != null)) {
             if (enchantmentIDs == null) {
                 int sum = 0;
-                for (int level : levels) {
+                for (int level : itemEnchantmentLevels) {
                     sum += level;
                 }
                 if (!enchantmentLevels.get(sum)) {
@@ -150,12 +149,12 @@ class ItemOverride {
                 boolean found = false;
                 for (int id = 0; id >= 0; id = enchantmentIDs.nextSetBit(id)) {
                     if (enchantmentLevels == null) {
-                        if (levels[id] > 0) {
+                        if (itemEnchantmentLevels[id] > 0) {
                             found = true;
                             break;
                         }
                     } else {
-                        if (enchantmentLevels.get(levels[id])) {
+                        if (enchantmentLevels.get(itemEnchantmentLevels[id])) {
                             found = true;
                             break;
                         }
@@ -184,40 +183,16 @@ class ItemOverride {
         logger.error(propertiesName + ": " + format, o);
     }
 
-    private static BitSet parseBitSet(Properties properties, String tag) {
+    private static BitSet parseBitSet(Properties properties, String tag, int max) {
         String value = MCPatcherUtils.getStringProperty(properties, tag, "");
         if (value.equals("")) {
             return null;
         }
         BitSet bits = new BitSet();
-        for (int i : MCPatcherUtils.parseIntegerList(value, 0, NBITS)) {
+        for (int i : MCPatcherUtils.parseIntegerList(value, 0, max)) {
             bits.set(i);
         }
         return bits;
-    }
-
-    private static int[] getEnchantmentLevels(NBTTagCompound nbt) {
-        int[] levels = new int[maxEnchantmentID + 1];
-        if (nbt != null) {
-            NBTBase base = nbt.getTag("ench");
-            if (base == null) {
-                base = nbt.getTag("StoredEnchantments");
-            }
-            if (base instanceof NBTTagList) {
-                NBTTagList list = (NBTTagList) base;
-                for (int i = 0; i < list.tagCount(); i++) {
-                    base = list.tagAt(i);
-                    if (base instanceof NBTTagCompound) {
-                        short id = ((NBTTagCompound) base).getShort("id");
-                        short level = ((NBTTagCompound) base).getShort("lvl");
-                        if (id >= 0 && id <= maxEnchantmentID && level > 0) {
-                            levels[id] += level;
-                        }
-                    }
-                }
-            }
-        }
-        return levels;
     }
 
     private static boolean matchNBT(String[] rule, int index, String value, NBTBase nbt) {

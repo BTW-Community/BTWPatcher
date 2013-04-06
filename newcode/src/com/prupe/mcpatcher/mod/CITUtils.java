@@ -8,7 +8,7 @@ import java.util.*;
 public class CITUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
-    private static final int MAX_ENCHANTMENTS = 256;
+    static final int MAX_ENCHANTMENTS = 256;
     private static final int ITEM_ID_POTION = 373;
 
     private static final boolean enableItems = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "items", true);
@@ -24,10 +24,11 @@ public class CITUtils {
 
     public static Icon getIcon(Icon icon, Item item, ItemStack itemStack) {
         if (enableItems) {
+            int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
             int itemID = item.itemID;
             if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
                 for (ItemOverride override : overrides[itemID]) {
-                    if (override.match(icon, itemID, itemStack)) {
+                    if (override.match(icon, itemID, itemStack, enchantmentLevels)) {
                         return override.icon;
                     }
                 }
@@ -151,10 +152,9 @@ public class CITUtils {
         return "unknown item " + itemID;
     }
 
-    private static float getEnchantmentLevels(NBTTagCompound nbt, float[] levels) {
-        float total = 0.0f;
+    private static int[] getEnchantmentLevels(NBTTagCompound nbt) {
+        int[] levels = null;
         if (nbt != null) {
-            Arrays.fill(levels, 0.0f);
             NBTBase base = nbt.getTag("ench");
             if (base == null) {
                 base = nbt.getTag("StoredEnchantments");
@@ -167,14 +167,16 @@ public class CITUtils {
                         short id = ((NBTTagCompound) base).getShort("id");
                         short level = ((NBTTagCompound) base).getShort("lvl");
                         if (id >= 0 && id < MAX_ENCHANTMENTS && level > 0) {
+                            if (levels == null) {
+                                levels = new int[MAX_ENCHANTMENTS];
+                            }
                             levels[id] += level;
-                            total += level;
                         }
                     }
                 }
             }
         }
-        return total;
+        return levels;
     }
 
     static void registerIcons(TextureMap textureMap, Stitcher stitcher, String mapName, Map<StitchHolder, List<Texture>> map) {
