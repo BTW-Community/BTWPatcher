@@ -71,7 +71,7 @@ class ItemOverride {
                 error("no source texture name specified");
             }
         }
-        textureName = value.startsWith("/") ? value : directory + "/" + value;
+        textureName = value.startsWith("/") || value.startsWith("%") ? value : directory + "/" + value;
 
         if (type == OVERLAY) {
             overlay = ItemOverlay.create(this, properties);
