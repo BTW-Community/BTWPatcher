@@ -12,14 +12,21 @@ class ItemOverride {
 
     private static final int NBITS = 65535;
 
+    static final int ITEM = 0;
+    static final int OVERLAY = 1;
+    static final int ARMOR = 2;
+
     private final String propertiesName;
+    final int type;
     Icon icon;
+    private final String textureName;
     private final List<String> textureNames = new ArrayList<String>();
     final List<Integer> itemsIDs = new ArrayList<Integer>();
     private final BitSet damage;
     private final BitSet stackSize;
+    private final BitSet enchantmentIDs;
+    private final BitSet enchantmentLevels;
     private final List<String[]> nbtRules = new ArrayList<String[]>();
-    private final String textureName;
     private boolean error;
 
     static ItemOverride create(String filename) {
@@ -35,7 +42,19 @@ class ItemOverride {
         this.propertiesName = propertiesName;
         String directory = propertiesName.replaceFirst("/[^/]*$", "");
 
-        String value = MCPatcherUtils.getStringProperty(properties, "source", "");
+        String value = MCPatcherUtils.getStringProperty(properties, "type", "item").toLowerCase();
+        if (value.equals("item")) {
+            type = ITEM;
+        } else if (value.equals("overlay")) {
+            type = OVERLAY;
+        } else if (value.equals("armor")) {
+            type = ARMOR;
+        } else {
+            error("unknown type %s", value);
+            type = ITEM;
+        }
+
+        value = MCPatcherUtils.getStringProperty(properties, "source", "");
         if (value.equals("")) {
             value = MCPatcherUtils.getStringProperty(properties, "texture", "");
         }
@@ -71,25 +90,10 @@ class ItemOverride {
             error("no matching items specified");
         }
 
-        value = MCPatcherUtils.getStringProperty(properties, "damage", "");
-        if (value.equals("")) {
-            damage = null;
-        } else {
-            damage = new BitSet();
-            for (int i : MCPatcherUtils.parseIntegerList(value, 0, NBITS)) {
-                damage.set(i);
-            }
-        }
-
-        value = MCPatcherUtils.getStringProperty(properties, "stackSize", "");
-        if (value.equals("")) {
-            stackSize = null;
-        } else {
-            stackSize = new BitSet();
-            for (int i : MCPatcherUtils.parseIntegerList(value, 0, NBITS)) {
-                stackSize.set(i);
-            }
-        }
+        damage = parseBitSet(properties, "damage");
+        stackSize = parseBitSet(properties, "stackSize");
+        enchantmentIDs = parseBitSet(properties, "enchantmentIDs");
+        enchantmentLevels = parseBitSet(properties, "enchantmentLevels");
 
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             String name = (String) entry.getKey();
@@ -141,6 +145,18 @@ class ItemOverride {
     private void error(String format, Object... o) {
         error = true;
         logger.error(propertiesName + ": " + format, o);
+    }
+
+    private static BitSet parseBitSet(Properties properties, String tag) {
+        String value = MCPatcherUtils.getStringProperty(properties, tag, "");
+        if (value.equals("")) {
+            return null;
+        }
+        BitSet bits = new BitSet();
+        for (int i : MCPatcherUtils.parseIntegerList(value, 0, NBITS)) {
+            bits.set(i);
+        }
+        return bits;
     }
 
     private static boolean matchNBT(String[] rule, int index, String value, NBTBase nbt) {
