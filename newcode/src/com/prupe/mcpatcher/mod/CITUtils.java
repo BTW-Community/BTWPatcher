@@ -26,14 +26,9 @@ public class CITUtils {
 
     public static Icon getIcon(Icon icon, Item item, ItemStack itemStack) {
         if (enableItems) {
-            int itemID = item.itemID;
-            if (itemID >= 0 && itemID < items.length && items[itemID] != null) {
-                int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
-                for (ItemOverride override : items[itemID]) {
-                    if (override.match(itemID, itemStack, enchantmentLevels)) {
-                        return override.icon;
-                    }
-                }
+            ItemOverride override = findMatch(items, itemStack);
+            if (override != null) {
+                return override.icon;
             }
         }
         return icon;
@@ -41,17 +36,25 @@ public class CITUtils {
 
     public static String getArmorTexture(String texture, ItemStack itemStack) {
         if (enableArmor) {
-            int itemID = itemStack.itemID;
-            if (itemID >= 0 && itemID < armors.length && armors[itemID] != null) {
-                int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
-                for (ItemOverride override : armors[itemID]) {
-                    if (override.match(itemID, itemStack, enchantmentLevels)) {
-                        return override.textureName;
-                    }
-                }
+            ItemOverride override = findMatch(armors, itemStack);
+            if (override != null) {
+                return override.textureName;
             }
         }
         return texture;
+    }
+
+    private static ItemOverride findMatch(ItemOverride[][] overrides, ItemStack itemStack) {
+        int itemID = itemStack.itemID;
+        if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
+            int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
+            for (ItemOverride override : overrides[itemID]) {
+                if (override.match(itemID, itemStack, enchantmentLevels)) {
+                    return override;
+                }
+            }
+        }
+        return null;
     }
 
     private static class Matches {
