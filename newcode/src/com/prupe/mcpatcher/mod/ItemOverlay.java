@@ -69,6 +69,12 @@ class ItemOverlay {
     }
 
     void render2D(Tessellator tessellator, float fade, float x0, float y0, float x1, float y1, float z) {
+        if (fade <= 0.0f) {
+            return;
+        }
+        if (fade > 1.0f) {
+            fade = 1.0f;
+        }
         begin(fade);
         tessellator.startDrawingQuads();
         tessellator.addVertexWithUV(x0, y0, z, 0.0f, 0.0f);
@@ -80,6 +86,12 @@ class ItemOverlay {
     }
 
     void render3D(Tessellator tessellator, float fade, int width, int height) {
+        if (fade <= 0.0f) {
+            return;
+        }
+        if (fade > 1.0f) {
+            fade = 1.0f;
+        }
         begin(fade);
         ItemRenderer.renderItemIn2D(tessellator, 0.0f, 0.0f, 1.0f, 1.0f, width, height, ITEM_2D_THICKNESS);
         end();
