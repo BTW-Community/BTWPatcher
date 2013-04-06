@@ -156,7 +156,7 @@ class ItemOverride {
                 }
                 lastEnchantmentLevel = sum;
             } else {
-                for (int id = 0; id >= 0; id = enchantmentIDs.nextSetBit(id)) {
+                for (int id = enchantmentIDs.nextSetBit(0); id >= 0; id = enchantmentIDs.nextSetBit(id + 1)) {
                     if (enchantmentLevels == null) {
                         if (itemEnchantmentLevels[id] > 0) {
                             lastEnchantmentLevel = Math.max(lastEnchantmentLevel, itemEnchantmentLevels[id]);
@@ -167,9 +167,9 @@ class ItemOverride {
                         }
                     }
                 }
-                if (lastEnchantmentLevel <= 0) {
-                    return false;
-                }
+            }
+            if (lastEnchantmentLevel <= 0) {
+                return false;
             }
         }
         for (String[] rule : nbtRules) {
