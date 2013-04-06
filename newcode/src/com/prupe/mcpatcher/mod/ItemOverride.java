@@ -128,9 +128,11 @@ class ItemOverride {
                 }
             }
         }
+    }
 
-        if (!error) {
-            CITUtils.tileLoader.preload(textureName, textureNames, false);
+    void preload(TileLoader tileLoader) {
+        if (type == ITEM) {
+            tileLoader.preload(textureName, textureNames, false);
         }
     }
 
@@ -185,7 +187,8 @@ class ItemOverride {
 
     @Override
     public String toString() {
-        return String.format("ItemOverride{%s, %s}", propertiesName, textureName);
+        String typeString = type == ITEM ? "item" : type == OVERLAY ? "overlay" : type == ARMOR ? "armor" : "unknown type " + type;
+        return String.format("ItemOverride{%s, %s, %s}", typeString, propertiesName, textureName);
     }
 
     void error(String format, Object... o) {

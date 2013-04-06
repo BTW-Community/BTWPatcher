@@ -8,6 +8,7 @@ import java.util.*;
 public class CITUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
+    static final int MAX_ITEMS = Item.itemsList.length;
     static final int MAX_ENCHANTMENTS = 256;
     private static final int ITEM_ID_POTION = 373;
 
@@ -16,8 +17,9 @@ public class CITUtils {
     private static final boolean enableArmor = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "armor", true);
 
     static TileLoader tileLoader;
-    private static final ItemOverride[][] overrides = new ItemOverride[Item.itemsList.length][];
-    private static final ItemOverlay[][] enchantmentOverlays = new ItemOverlay[MAX_ENCHANTMENTS][];
+    private static final ItemOverride[][] items = new ItemOverride[MAX_ITEMS][];
+    private static final ItemOverride[][] overlays = new ItemOverride[MAX_ITEMS][];
+    private static final ItemOverride[][] armors = new ItemOverride[MAX_ITEMS][];
 
     private static ItemOverlay armorOverlay;
 
@@ -25,8 +27,8 @@ public class CITUtils {
         if (enableItems) {
             int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
             int itemID = item.itemID;
-            if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
-                for (ItemOverride override : overrides[itemID]) {
+            if (itemID >= 0 && itemID < items.length && items[itemID] != null) {
+                for (ItemOverride override : items[itemID]) {
                     if (override.match(icon, itemID, itemStack, enchantmentLevels)) {
                         return override.icon;
                     }
@@ -51,13 +53,7 @@ public class CITUtils {
     }
 
     public static boolean renderOverlayDropped(ItemStack itemStack) {
-        if (!enableOverlays || itemStack == null) {
-            return false;
-        }
-        ItemOverlay.beginOuter3D();
-        //testOverlay.render3D(Tessellator.instance, getFade(), 256, 256);
-        ItemOverlay.endOuter3D();
-        return true;
+        return renderOverlayHeld(itemStack);
     }
 
     public static boolean renderOverlayGUI(ItemStack itemStack, int x, int y, float z) {
@@ -93,8 +89,9 @@ public class CITUtils {
 
     static void refresh() {
         tileLoader = new TileLoader(logger);
-        Arrays.fill(overrides, null);
-        Arrays.fill(enchantmentOverlays, null);
+        Arrays.fill(items, null);
+        Arrays.fill(overlays, null);
+        Arrays.fill(armors, null);
         if (enableItems || enableOverlays || enableArmor) {
             List<String> paths = new ArrayList<String>();
             loadOverridesFromPath("/cit", paths);
@@ -108,8 +105,26 @@ public class CITUtils {
             for (String path : paths) {
                 ItemOverride override = ItemOverride.create(path);
                 if (override != null) {
+                    ItemOverride[][] list;
+                    switch (override.type) {
+                        case ItemOverride.ITEM:
+                            list = items;
+                            break;
+
+                        case ItemOverride.OVERLAY:
+                            list = overlays;
+                            break;
+
+                        case ItemOverride.ARMOR:
+                            list = armors;
+                            break;
+
+                        default:
+                            logger.severe("unknown ItemOverride type %d", override.type);
+                            continue;
+                    }
                     for (int i : override.itemsIDs) {
-                        overrides[i] = registerOverride(overrides[i], override);
+                        list[i] = registerOverride(list[i], override);
                         logger.fine("registered %s to item %d (%s)", override, i, getItemName(i));
                     }
                 }
@@ -182,7 +197,7 @@ public class CITUtils {
         if (!mapName.equals("items")) {
             return;
         }
-        for (ItemOverride[] overrides1 : overrides) {
+        for (ItemOverride[] overrides1 : items) {
             if (overrides1 != null) {
                 for (ItemOverride override : overrides1) {
                     override.registerIcon(textureMap, stitcher, map);
