@@ -11,7 +11,9 @@ public class CITUtils {
     private static final int MAX_ENCHANTMENTS = 256;
     private static final int ITEM_ID_POTION = 373;
 
-    private static final boolean enable = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "items", true);
+    private static final boolean enableItems = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "items", true);
+    private static final boolean enableOverlays = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "itemOverlays", true);
+    private static final boolean enableArmor = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "armor", true);
 
     private static TileLoader tileLoader;
     private static final ItemOverride[][] overrides = new ItemOverride[Item.itemsList.length][];
@@ -21,7 +23,7 @@ public class CITUtils {
     private static ItemOverlay armorOverlay;
 
     public static Icon getIcon(Icon icon, Item item, ItemStack itemStack) {
-        if (enable) {
+        if (enableItems) {
             int itemID = item.itemID;
             if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
                 for (ItemOverride override : overrides[itemID]) {
@@ -39,7 +41,7 @@ public class CITUtils {
     }
 
     public static boolean renderOverlayHeld(ItemStack itemStack) {
-        if (!enable || itemStack == null) {
+        if (!enableOverlays || itemStack == null) {
             return false;
         }
         ItemOverlay.beginOuter3D();
@@ -49,7 +51,7 @@ public class CITUtils {
     }
 
     public static boolean renderOverlayDropped(ItemStack itemStack) {
-        if (!enable || itemStack == null) {
+        if (!enableOverlays || itemStack == null) {
             return false;
         }
         ItemOverlay.beginOuter3D();
@@ -59,7 +61,7 @@ public class CITUtils {
     }
 
     public static boolean renderOverlayGUI(ItemStack itemStack, int x, int y, float z) {
-        if (!enable || itemStack == null) {
+        if (!enableOverlays || itemStack == null) {
             return false;
         }
         ItemOverlay.beginOuter2D();
@@ -70,7 +72,7 @@ public class CITUtils {
 
     public static boolean preRenderArmor(EntityLiving entity, int pass) {
         armorOverlay = null;
-        if (!enable) {
+        if (!enableOverlays) {
             return false;
         }
         ItemStack itemStack = entity.getCurrentArmor(3 - pass);
@@ -93,7 +95,7 @@ public class CITUtils {
         tileLoader = new TileLoader(logger);
         Arrays.fill(overrides, null);
         Arrays.fill(enchantmentOverlays, null);
-        if (enable) {
+        if (enableItems || enableOverlays || enableArmor) {
             List<String> paths = new ArrayList<String>();
             loadOverridesFromPath("/cit", paths);
             Collections.sort(paths, new Comparator<String>() {

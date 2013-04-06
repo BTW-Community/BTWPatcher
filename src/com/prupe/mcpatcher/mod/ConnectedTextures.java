@@ -82,6 +82,8 @@ public class ConnectedTextures extends Mod {
         private JCheckBox standardCheckBox;
         private JCheckBox nonStandardCheckBox;
         private JCheckBox itemsCheckBox;
+        private JCheckBox overlayCheckBox;
+        private JCheckBox armorCheckBox;
         private JCheckBox debugCheckBox;
         private JComboBox splitComboBox;
 
@@ -116,6 +118,18 @@ public class ConnectedTextures extends Mod {
                 }
             });
 
+            overlayCheckBox.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    Config.set(MCPatcherUtils.CONNECTED_TEXTURES, "itemOverlays", overlayCheckBox.isSelected());
+                }
+            });
+
+            armorCheckBox.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    Config.set(MCPatcherUtils.CONNECTED_TEXTURES, "armor", armorCheckBox.isSelected());
+                }
+            });
+
             debugCheckBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     Config.set(MCPatcherUtils.CONNECTED_TEXTURES, "debugTextures", debugCheckBox.isSelected());
@@ -144,6 +158,8 @@ public class ConnectedTextures extends Mod {
             glassPaneCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "glassPane", true));
             grassCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "grass", false));
             itemsCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "items", true));
+            overlayCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "itemOverlays", true));
+            armorCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "armor", true));
             debugCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "debugTextures", false));
 
             showAdvancedOption(debugCheckBox);
