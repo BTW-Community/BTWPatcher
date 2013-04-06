@@ -22,7 +22,7 @@ class ItemOverride {
     Icon icon;
     final String textureName;
     private final List<String> textureNames = new ArrayList<String>();
-    private final ItemOverlay overlay;
+    final ItemOverlay overlay;
     final List<Integer> itemsIDs = new ArrayList<Integer>();
     private final BitSet damage;
     private final BitSet stackSize;
@@ -30,6 +30,8 @@ class ItemOverride {
     private final BitSet enchantmentLevels;
     private final List<String[]> nbtRules = new ArrayList<String[]>();
     private boolean error;
+
+    int lastEnchantmentLevel;
 
     static ItemOverride create(String filename) {
         Properties properties = TexturePackAPI.getProperties(filename);
@@ -135,7 +137,7 @@ class ItemOverride {
         icon = icons[0];
     }
 
-    boolean match(Icon icon, int itemID, ItemStack itemStack, int[] itemEnchantmentLevels) {
+    boolean match(int itemID, ItemStack itemStack, int[] itemEnchantmentLevels) {
         if (damage != null && !damage.get(itemStack.getItemDamage())) {
             return false;
         }
@@ -143,6 +145,7 @@ class ItemOverride {
             return false;
         }
         if (itemEnchantmentLevels != null && (enchantmentIDs != null || enchantmentLevels != null)) {
+            lastEnchantmentLevel = 0;
             if (enchantmentIDs == null) {
                 int sum = 0;
                 for (int level : itemEnchantmentLevels) {
@@ -151,22 +154,20 @@ class ItemOverride {
                 if (!enchantmentLevels.get(sum)) {
                     return false;
                 }
+                lastEnchantmentLevel = sum;
             } else {
-                boolean found = false;
                 for (int id = 0; id >= 0; id = enchantmentIDs.nextSetBit(id)) {
                     if (enchantmentLevels == null) {
                         if (itemEnchantmentLevels[id] > 0) {
-                            found = true;
-                            break;
+                            lastEnchantmentLevel = Math.max(lastEnchantmentLevel, itemEnchantmentLevels[id]);
                         }
                     } else {
                         if (enchantmentLevels.get(itemEnchantmentLevels[id])) {
-                            found = true;
-                            break;
+                            lastEnchantmentLevel = Math.max(lastEnchantmentLevel, itemEnchantmentLevels[id]);
                         }
                     }
                 }
-                if (!found) {
+                if (lastEnchantmentLevel <= 0) {
                     return false;
                 }
             }

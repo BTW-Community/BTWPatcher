@@ -29,7 +29,7 @@ public class CITUtils {
             int itemID = item.itemID;
             if (itemID >= 0 && itemID < items.length && items[itemID] != null) {
                 for (ItemOverride override : items[itemID]) {
-                    if (override.match(icon, itemID, itemStack, enchantmentLevels)) {
+                    if (override.match(itemID, itemStack, enchantmentLevels)) {
                         return override.icon;
                     }
                 }
@@ -46,8 +46,29 @@ public class CITUtils {
         if (!enableOverlays || itemStack == null) {
             return false;
         }
+        int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
+        int itemID = itemStack.itemID;
+        List<ItemOverride> matches = new ArrayList<ItemOverride>();
+        List<Integer> levels = new ArrayList<Integer>();
+        int total = 0;
+        if (itemID >= 0 && itemID < items.length && items[itemID] != null) {
+            for (ItemOverride override : overlays[itemID]) {
+                if (override.match(itemID, itemStack, enchantmentLevels)) {
+                    matches.add(override);
+                    int level = Math.max(override.lastEnchantmentLevel, 1);
+                    levels.add(level);
+                    total += level;
+                }
+            }
+        }
+        if (matches.isEmpty() || total <= 0) {
+            return false;
+        }
         ItemOverlay.beginOuter3D();
-        //testOverlay.render3D(Tessellator.instance, getFade(), 256, 256);
+        for (int i = 0; i < matches.size(); i++) {
+            ItemOverride override = matches.get(i);
+            override.overlay.render3D(Tessellator.instance, (float) levels.get(i) / (float) total, 256, 256);
+        }
         ItemOverlay.endOuter3D();
         return true;
     }
