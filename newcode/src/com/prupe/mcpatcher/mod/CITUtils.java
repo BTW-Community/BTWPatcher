@@ -38,36 +38,54 @@ public class CITUtils {
         return icon;
     }
 
-    private static float getFade() {
-        return (float) Math.sin((System.currentTimeMillis() % 1000L) / 1000.0 * 2.0 * Math.PI);
+    private static class Matches {
+        private final List<ItemOverride> matches = new ArrayList<ItemOverride>();
+        private final List<Integer> levels = new ArrayList<Integer>();
+        private int total;
+
+        Matches(ItemStack itemStack) {
+            int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
+            int itemID = itemStack.itemID;
+            if (itemID >= 0 && itemID < items.length && items[itemID] != null) {
+                for (ItemOverride override : overlays[itemID]) {
+                    if (override.match(itemID, itemStack, enchantmentLevels)) {
+                        matches.add(override);
+                        int level = Math.max(override.lastEnchantmentLevel, 1);
+                        levels.add(level);
+                        total += level;
+                    }
+                }
+            }
+        }
+
+        boolean isEmpty() {
+            return size() == 0 || total <= 0;
+        }
+
+        int size() {
+            return matches.size();
+        }
+
+        ItemOverride getOverride(int index) {
+            return matches.get(index);
+        }
+
+        float getFade(int index) {
+            return (float) levels.get(index) / (float) total;
+        }
     }
 
     public static boolean renderOverlayHeld(ItemStack itemStack) {
         if (!enableOverlays || itemStack == null) {
             return false;
         }
-        int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
-        int itemID = itemStack.itemID;
-        List<ItemOverride> matches = new ArrayList<ItemOverride>();
-        List<Integer> levels = new ArrayList<Integer>();
-        int total = 0;
-        if (itemID >= 0 && itemID < items.length && items[itemID] != null) {
-            for (ItemOverride override : overlays[itemID]) {
-                if (override.match(itemID, itemStack, enchantmentLevels)) {
-                    matches.add(override);
-                    int level = Math.max(override.lastEnchantmentLevel, 1);
-                    levels.add(level);
-                    total += level;
-                }
-            }
-        }
-        if (matches.isEmpty() || total <= 0) {
+        Matches matches = new Matches(itemStack);
+        if (matches.isEmpty()) {
             return false;
         }
         ItemOverlay.beginOuter3D();
         for (int i = 0; i < matches.size(); i++) {
-            ItemOverride override = matches.get(i);
-            override.overlay.render3D(Tessellator.instance, (float) levels.get(i) / (float) total, 256, 256);
+            matches.getOverride(i).overlay.render3D(Tessellator.instance, matches.getFade(i), 256, 256);
         }
         ItemOverlay.endOuter3D();
         return true;
@@ -81,8 +99,14 @@ public class CITUtils {
         if (!enableOverlays || itemStack == null) {
             return false;
         }
+        Matches matches = new Matches(itemStack);
+        if (matches.isEmpty()) {
+            return false;
+        }
         ItemOverlay.beginOuter2D();
-        //testOverlay.render2D(Tessellator.instance, getFade(), x - 2, y - 2, x + 18, y + 18, z - 50.0f);
+        for (int i = 0; i < matches.size(); i++) {
+            matches.getOverride(i).overlay.render2D(Tessellator.instance, matches.getFade(i), x - 2, y - 2, x + 18, y + 18, z - 50.0f);
+        }
         ItemOverlay.endOuter2D();
         return true;
     }
