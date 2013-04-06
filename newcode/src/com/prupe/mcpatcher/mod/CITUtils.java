@@ -111,7 +111,7 @@ public class CITUtils {
         return true;
     }
 
-    public static boolean preRenderArmor(EntityLiving entity, int pass) {
+    public static boolean preRenderArmorOverlay(EntityLiving entity, int pass) {
         armorOverlay = null;
         if (!enableOverlays) {
             return false;
@@ -125,7 +125,7 @@ public class CITUtils {
         return true;
     }
 
-    public static void postRenderArmor() {
+    public static void postRenderArmorOverlay() {
         if (armorOverlay != null) {
             armorOverlay.endArmor();
             armorOverlay = null;

@@ -409,16 +409,16 @@ abstract class CustomItemTextures {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (CITUtils.preRenderArmor(entityLiving, pass)) {
+                        // if (CITUtils.preRenderArmorOverlay(entityLiving, pass)) {
                         ALOAD_1,
                         ILOAD, passRegister,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "preRenderArmor", "(LEntityLiving;I)Z")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "preRenderArmorOverlay", "(LEntityLiving;I)Z")),
                         IFEQ, branch("A"),
 
                         // this.renderPassModel.render(...);
-                        // CITUtils.postRenderArmor();
+                        // CITUtils.postRenderArmorOverlay();
                         renderModelCode,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "postRenderArmor", "()V")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "postRenderArmorOverlay", "()V")),
                         GOTO, branch("B"),
 
                         // } else {
