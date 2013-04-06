@@ -62,7 +62,7 @@ public class CITUtils {
         Matches(ItemStack itemStack) {
             int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
             int itemID = itemStack.itemID;
-            if (itemID >= 0 && itemID < items.length && items[itemID] != null) {
+            if (itemID >= 0 && itemID < overlays.length && overlays[itemID] != null) {
                 for (ItemOverride override : overlays[itemID]) {
                     if (override.match(itemID, itemStack, enchantmentLevels)) {
                         matches.add(override);
@@ -178,6 +178,7 @@ public class CITUtils {
                     ItemOverride[][] list;
                     switch (override.type) {
                         case ItemOverride.ITEM:
+                            override.preload(tileLoader);
                             list = items;
                             break;
 
