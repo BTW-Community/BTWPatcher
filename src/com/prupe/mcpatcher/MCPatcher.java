@@ -44,6 +44,9 @@ final public class MCPatcher {
 
     static MinecraftJar minecraft = null;
     static ModList modList;
+    private static final Set<String> modifiedClasses = new HashSet<String>();
+    private static final Set<String> addedClasses = new HashSet<String>();
+    private static final Set<String> conflictClasses = new HashSet<String>();
 
     private static boolean ignoreSavedMods = false;
     private static boolean ignoreBuiltInMods = false;
@@ -135,13 +138,6 @@ final public class MCPatcher {
             Config.set(Config.TAG_LAST_VERSION, VERSION_STRING);
             Config.set(Config.TAG_BETA_WARNING_SHOWN, false);
             Config.set(Config.TAG_DEBUG, BETA_VERSION > 0);
-            if (lastVersion.startsWith("2.4.4")) {
-                Config.set(MCPatcherUtils.HD_TEXTURES, "mipmap", false);
-                Config.set(MCPatcherUtils.HD_TEXTURES, "maxMipmapLevel", 3);
-            }
-            if (lastVersion.compareTo("2.3") < 0) {
-                MinecraftJar.fixJarNames();
-            }
         }
         if (BETA_VERSION > 0 && !Config.getBoolean(Config.TAG_BETA_WARNING_SHOWN, false)) {
             ui.showBetaWarning();
@@ -601,12 +597,27 @@ final public class MCPatcher {
     static HashMap<String, ArrayList<Mod>> getConflicts() {
         HashMap<String, ArrayList<Mod>> conflicts = new HashMap<String, ArrayList<Mod>>();
         ArrayList<Mod> mods = modList.getSelected();
+        conflictClasses.clear();
         for (Mod mod : mods) {
             for (String filename : mod.filesToAdd) {
                 ArrayList<Mod> modArray = conflicts.get(filename);
                 if (modArray == null) {
                     modArray = new ArrayList<Mod>();
                     conflicts.put(filename, modArray);
+                }
+                if (MinecraftJar.isClassFile(filename)) {
+                    String className = ClassMap.filenameToClassName(filename);
+                    for (Mod conflictMod : mods) {
+                        if (conflictMod == mod) {
+                            break;
+                        }
+                        for (ClassMod classMod : conflictMod.classMods) {
+                            if (classMod.targetClasses.contains(className)) {
+                                modArray.add(conflictMod);
+                                conflictClasses.add(className);
+                            }
+                        }
+                    }
                 }
                 modArray.add(mod);
             }
@@ -626,6 +637,8 @@ final public class MCPatcher {
     static boolean patch() {
         modList.refreshInternalMods();
         modList.setApplied(true);
+        modifiedClasses.clear();
+        addedClasses.clear();
         boolean patchOk = false;
         try {
             Logger.log(Logger.LOG_MAIN);
@@ -723,6 +736,7 @@ final public class MCPatcher {
                 patched = applyPatches(name, classFile, classMods);
                 if (patched) {
                     outputJar.putNextEntry(new ZipEntry(name));
+                    modifiedClasses.add(ClassMap.filenameToClassName(name));
                     classFile.compact();
                     classFile.write(new DataOutputStream(outputJar));
                     outputJar.closeEntry();
@@ -807,6 +821,7 @@ final public class MCPatcher {
                     classFile.compact();
                     classMap.stringReplace(classFile, outputJar);
                 }
+                addedClasses.add(ClassMap.filenameToClassName(filename));
             }
             if (directCopy) {
                 Util.copyStream(inputStream, outputJar);
@@ -851,8 +866,22 @@ final public class MCPatcher {
 
     private static void writeProperties() throws IOException {
         Properties properties = new Properties();
-        properties.setProperty("minecraftVersion", minecraft.getVersion().getVersionString());
-        properties.setProperty("patcherVersion", MCPatcher.VERSION_STRING);
+        properties.setProperty(Config.TAG_MINECRAFT_VERSION, minecraft.getVersion().getVersionString());
+        properties.setProperty(Config.TAG_PATCHER_VERSION, MCPatcher.VERSION_STRING);
+        modifiedClasses.addAll(conflictClasses);
+        writeList(properties, Config.TAG_MODIFIED_CLASSES, modifiedClasses);
+        writeList(properties, Config.TAG_ADDED_CLASSES, addedClasses);
         minecraft.writeProperties(properties);
+    }
+
+    private static void writeList(Properties properties, String propertyName, Collection<String> data) {
+        StringBuilder sb = new StringBuilder();
+        List<String> sortedList = new ArrayList<String>();
+        sortedList.addAll(data);
+        Collections.sort(sortedList);
+        for (String s : sortedList) {
+            sb.append(' ').append(ClassMap.filenameToClassName(s));
+        }
+        properties.setProperty(propertyName, sb.toString().trim());
     }
 }

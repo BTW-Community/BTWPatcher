@@ -88,6 +88,13 @@ public class Config {
     static final String VAL_EXTERNAL_ZIP = "externalZip";
     static final String VAL_EXTERNAL_JAR = "externalJar";
 
+    static final String MCPATCHER_PROPERTIES = "mcpatcher.properties";
+    static final String TAG_MINECRAFT_VERSION = "minecraftVersion";
+    static final String TAG_PATCHER_VERSION = "patcherVersion";
+    static final String TAG_PRE_PATCH_STATE = "prePatchState";
+    static final String TAG_MODIFIED_CLASSES = "modifiedClasses";
+    static final String TAG_ADDED_CLASSES = "addedClasses";
+
     private static final int XML_INDENT_AMOUNT = 2;
     private static final String XSLT_REFORMAT =
         "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">" +
@@ -283,11 +290,13 @@ public class Config {
     }
 
     static void setLogLevel(String category, Level level) {
-        instance.setLogLevel1(category, level);
+        if (instance != null) {
+            instance.setLogLevel1(category, level);
+        }
     }
 
     static Level getLogLevel(String category) {
-        return instance.getLogLevel1(category);
+        return instance == null ? Level.INFO : instance.getLogLevel1(category);
     }
 
     static boolean load(File minecraftDir) {
