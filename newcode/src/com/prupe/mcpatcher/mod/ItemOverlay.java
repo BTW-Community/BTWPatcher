@@ -1,15 +1,17 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.BlendMethod;
+import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.ItemRenderer;
 import net.minecraft.src.Tessellator;
 import org.lwjgl.opengl.GL11;
 
+import java.util.Properties;
+
 class ItemOverlay {
     private static final float ITEM_2D_THICKNESS = 0.0625f;
 
-    private final String propertiesName;
     private final String texture;
     private final BlendMethod blendMethod;
     private final float rotate;
@@ -47,8 +49,19 @@ class ItemOverlay {
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
     }
 
-    ItemOverlay(String propertiesName, String texture, BlendMethod blendMethod, float rotate, float speed) {
-        this.propertiesName = propertiesName;
+    static ItemOverlay create(ItemOverride override, Properties properties) {
+        String value = MCPatcherUtils.getStringProperty(properties, "blend", "add");
+        BlendMethod blendMethod = BlendMethod.parse(value);
+        if (blendMethod == null) {
+            override.error("unknown blend type %s", value);
+            return null;
+        }
+        float rotate = MCPatcherUtils.getFloatProperty(properties, "rotate", 0.0f);
+        float speed = MCPatcherUtils.getFloatProperty(properties, "speed", 0.0f);
+        return new ItemOverlay(override.textureName, blendMethod, rotate, speed);
+    }
+
+    ItemOverlay(String texture, BlendMethod blendMethod, float rotate, float speed) {
         this.texture = texture;
         this.blendMethod = blendMethod;
         this.rotate = rotate;
@@ -108,10 +121,5 @@ class ItemOverlay {
 
     private void end() {
         GL11.glPopMatrix();
-    }
-
-    @Override
-    public String toString() {
-        return "ItemOverlay{" + propertiesName + ", " + texture + "}";
     }
 }

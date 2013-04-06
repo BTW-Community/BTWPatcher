@@ -21,8 +21,9 @@ class ItemOverride {
     private final String propertiesName;
     final int type;
     Icon icon;
-    private final String textureName;
+    final String textureName;
     private final List<String> textureNames = new ArrayList<String>();
+    private final ItemOverlay overlay;
     final List<Integer> itemsIDs = new ArrayList<Integer>();
     private final BitSet damage;
     private final BitSet stackSize;
@@ -70,6 +71,15 @@ class ItemOverride {
             }
         }
         textureName = value.startsWith("/") ? value : directory + "/" + value;
+
+        if (type == OVERLAY) {
+            overlay = ItemOverlay.create(this, properties);
+            if (overlay == null) {
+                error = true;
+            }
+        } else {
+            overlay = null;
+        }
 
         value = MCPatcherUtils.getStringProperty(properties, "matchItems", "");
         for (String token : value.split("\\s+")) {
@@ -178,7 +188,7 @@ class ItemOverride {
         return String.format("ItemOverride{%s, %s}", propertiesName, textureName);
     }
 
-    private void error(String format, Object... o) {
+    void error(String format, Object... o) {
         error = true;
         logger.error(propertiesName + ": " + format, o);
     }
