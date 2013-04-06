@@ -21,7 +21,8 @@ public class CITUtils {
     private static final ItemOverride[][] overlays = new ItemOverride[MAX_ITEMS][];
     private static final ItemOverride[][] armors = new ItemOverride[MAX_ITEMS][];
 
-    private static ItemOverlay armorOverlay;
+    private static Matches armorMatches;
+    private static int armorMatchIndex;
 
     public static Icon getIcon(Icon icon, Item item, ItemStack itemStack) {
         if (enableItems) {
@@ -126,25 +127,34 @@ public class CITUtils {
         return true;
     }
 
-    public static boolean preRenderArmorOverlay(EntityLiving entity, int pass) {
-        armorOverlay = null;
-        if (!enableOverlays) {
+    public static boolean setupArmorOverlays(EntityLiving entity, int pass) {
+        if (!enableOverlays || entity == null) {
             return false;
         }
         ItemStack itemStack = entity.getCurrentArmor(3 - pass);
         if (itemStack == null) {
             return false;
         }
-        //testOverlay.beginArmor(getFade());
-        //armorOverlay = testOverlay;
-        return true;
+        armorMatches = new Matches(itemStack);
+        armorMatchIndex = 0;
+        return !armorMatches.isEmpty();
+    }
+
+    public static boolean preRenderArmorOverlay() {
+        if (armorMatchIndex < armorMatches.size()) {
+            ItemOverlay overlay = armorMatches.getOverride(armorMatchIndex).overlay;
+            overlay.beginArmor(armorMatches.getFade(armorMatchIndex));
+            return true;
+        } else {
+            armorMatches = null;
+            armorMatchIndex = 0;
+            return false;
+        }
     }
 
     public static void postRenderArmorOverlay() {
-        if (armorOverlay != null) {
-            armorOverlay.endArmor();
-            armorOverlay = null;
-        }
+        armorMatches.getOverride(armorMatchIndex).overlay.endArmor();
+        armorMatchIndex++;
     }
 
     static void refresh() {

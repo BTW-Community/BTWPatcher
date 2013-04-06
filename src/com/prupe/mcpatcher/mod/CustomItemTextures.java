@@ -409,17 +409,24 @@ abstract class CustomItemTextures {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (CITUtils.preRenderArmorOverlay(entityLiving, pass)) {
+                        // if (CITUtils.setupArmorOverlays(entityLiving, pass)) {
                         ALOAD_1,
                         ILOAD, passRegister,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "preRenderArmorOverlay", "(LEntityLiving;I)Z")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "setupArmorOverlays", "(LEntityLiving;I)Z")),
                         IFEQ, branch("A"),
+
+                        // while (CITUtils.preRenderArmorOverlay()) {
+                        label("B"),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "preRenderArmorOverlay", "()Z")),
+                        IFEQ, branch("C"),
 
                         // this.renderPassModel.render(...);
                         // CITUtils.postRenderArmorOverlay();
                         renderModelCode,
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "postRenderArmorOverlay", "()V")),
                         GOTO, branch("B"),
+
+                        // }
 
                         // } else {
                         label("A"),
@@ -428,7 +435,7 @@ abstract class CustomItemTextures {
                         getMatch(),
 
                         // }
-                        label("B")
+                        label("C")
                     );
                 }
             }.targetMethod(doRenderLiving));
