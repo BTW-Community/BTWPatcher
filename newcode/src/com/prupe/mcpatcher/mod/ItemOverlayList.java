@@ -73,6 +73,12 @@ class ItemOverlayList {
             return entry;
         }
 
+        void resetIntensities() {
+            for (Entry entry : entries) {
+                entry.intensity = 0.0f;
+            }
+        }
+
         abstract void computeIntensities();
     }
 
@@ -136,6 +142,10 @@ class ItemOverlayList {
                 return;
             }
             float timestamp = (System.currentTimeMillis() / 1000.0f) % total;
+            int i = 0;
+            while (i < entries.size() && timestamp >= 0.0f) {
+                timestamp -= entries.get(i).overlay.duration;
+            }
         }
     }
 
