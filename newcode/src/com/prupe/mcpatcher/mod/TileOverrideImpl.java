@@ -443,7 +443,7 @@ class TileOverrideImpl {
         }
 
         public Icon getTile(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int face) {
-            if (face < 2) {
+            if (face < 2 || face > 5) {
                 return null;
             }
             int[] offset = OFFSET_MATRIX[face - 2];
