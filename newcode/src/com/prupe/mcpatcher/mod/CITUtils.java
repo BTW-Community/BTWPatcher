@@ -1,6 +1,9 @@
 package com.prupe.mcpatcher.mod;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.Config;
+import com.prupe.mcpatcher.MCLogger;
+import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.*;
 
 import java.util.*;
@@ -21,7 +24,7 @@ public class CITUtils {
     private static final ItemOverride[][] overlays = new ItemOverride[MAX_ITEMS][];
     private static final ItemOverride[][] armors = new ItemOverride[MAX_ITEMS][];
 
-    private static Matches armorMatches;
+    private static ItemOverlayList armorMatches;
     private static int armorMatchIndex;
 
     private static Icon lastIcon;
@@ -60,48 +63,11 @@ public class CITUtils {
         return null;
     }
 
-    private static class Matches {
-        private final List<ItemOverride> matches = new ArrayList<ItemOverride>();
-        private final List<Integer> levels = new ArrayList<Integer>();
-        private int total;
-
-        Matches(ItemStack itemStack) {
-            int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
-            int itemID = itemStack.itemID;
-            if (itemID >= 0 && itemID < overlays.length && overlays[itemID] != null) {
-                for (ItemOverride override : overlays[itemID]) {
-                    if (override.match(itemID, itemStack, enchantmentLevels)) {
-                        matches.add(override);
-                        int level = Math.max(override.lastEnchantmentLevel, 1);
-                        levels.add(level);
-                        total += level;
-                    }
-                }
-            }
-        }
-
-        boolean isEmpty() {
-            return size() == 0 || total <= 0;
-        }
-
-        int size() {
-            return matches.size();
-        }
-
-        ItemOverlay getOverlay(int index) {
-            return matches.get(index).overlay;
-        }
-
-        float getFade(int index) {
-            return (float) levels.get(index) / (float) total;
-        }
-    }
-
     public static boolean renderOverlayHeld(ItemStack itemStack) {
         if (!enableOverlays || itemStack == null) {
             return false;
         }
-        Matches matches = new Matches(itemStack);
+        ItemOverlayList matches = new ItemOverlayList(overlays, itemStack);
         if (matches.isEmpty()) {
             return false;
         }
@@ -129,7 +95,7 @@ public class CITUtils {
         if (!enableOverlays || itemStack == null) {
             return false;
         }
-        Matches matches = new Matches(itemStack);
+        ItemOverlayList matches = new ItemOverlayList(overlays, itemStack);
         if (matches.isEmpty()) {
             return false;
         }
@@ -149,7 +115,7 @@ public class CITUtils {
         if (itemStack == null) {
             return false;
         }
-        armorMatches = new Matches(itemStack);
+        armorMatches = new ItemOverlayList(overlays, itemStack);
         armorMatchIndex = 0;
         return !armorMatches.isEmpty();
     }
@@ -251,7 +217,7 @@ public class CITUtils {
         return "unknown item " + itemID;
     }
 
-    private static int[] getEnchantmentLevels(NBTTagCompound nbt) {
+    static int[] getEnchantmentLevels(NBTTagCompound nbt) {
         int[] levels = null;
         if (nbt != null) {
             NBTBase base = nbt.getTag("ench");
