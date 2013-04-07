@@ -30,7 +30,9 @@ abstract class CustomItemTextures {
         mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_CLASS);
         mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS);
         mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$Group");
-        mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$Group$1");
+        mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$AverageGroup");
+        mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$AverageGroup$1");
+        mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$CycleGroup");
         mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$Entry");
     }
     

@@ -42,68 +42,108 @@ class ItemOverlayList {
     private Group getGroup(ItemOverlay overlay) {
         Group group = groups.get(overlay.groupID);
         if (group == null) {
-            group = new Group(overlay);
+            switch (overlay.applyMethod) {
+                case ItemOverlay.AVERAGE:
+                case ItemOverlay.TOP:
+                    group = new AverageGroup(overlay);
+                    break;
+
+                case ItemOverlay.CYCLE:
+                    group = new CycleGroup(overlay);
+                    break;
+            }
             groups.put(overlay.groupID, group);
         }
         return group;
     }
 
-    private static class Group {
+    abstract private static class Group {
         final List<Entry> entries = new ArrayList<Entry>();
         final int method;
         final int limit;
-        int total;
 
         Group(ItemOverlay overlay) {
             method = overlay.applyMethod;
             limit = overlay.limit;
         }
 
-        void add(ItemOverlay overlay, int level) {
-            entries.add(new Entry(overlay, level));
-            total += level;
+        Entry add(ItemOverlay overlay, int level) {
+            Entry entry = new Entry(overlay, level);
+            entries.add(entry);
+            return entry;
         }
 
+        abstract void computeIntensities();
+    }
+
+    private static class AverageGroup extends Group {
+        int total;
+
+        AverageGroup(ItemOverlay overlay) {
+            super(overlay);
+        }
+
+        @Override
         void computeIntensities() {
-            switch (method) {
-                case ItemOverlay.AVERAGE:
-                case ItemOverlay.TOP:
-                    Collections.sort(entries, new Comparator<Entry>() {
-                        public int compare(Entry o1, Entry o2) {
-                            int diff = o1.overlay.weight - o2.overlay.weight;
-                            if (diff != 0) {
-                                return diff;
-                            }
-                            return o1.level - o2.level;
-                        }
-                    });
-                    if (limit > 0) {
-                        while (entries.size() > limit) {
-                            entries.remove(limit);
-                        }
+            Collections.sort(entries, new Comparator<Entry>() {
+                public int compare(Entry o1, Entry o2) {
+                    int diff = o1.overlay.weight - o2.overlay.weight;
+                    if (diff != 0) {
+                        return diff;
                     }
-                    total = 0;
-                    for (Entry entry : entries) {
-                        total += entry.level;
-                    }
-                    break;
-
-                case ItemOverlay.CYCLE:
-                    break;
-
-                default:
-                    break;
+                    return o1.level - o2.level;
+                }
+            });
+            if (limit > 0) {
+                while (entries.size() > limit) {
+                    entries.remove(limit);
+                }
+            }
+            total = 0;
+            for (Entry entry : entries) {
+                if (method == ItemOverlay.AVERAGE) {
+                    total += entry.level;
+                } else {
+                    total = Math.max(total, entry.level);
+                }
+            }
+            if (total > 0) {
+                for (Entry entry : entries) {
+                    entry.intensity = (float) entry.level / (float) total;
+                }
             }
         }
+    }
 
-        float getIntensity(int index) {
-            return (float) entries.get(index).level / (float) total;
+    private static class CycleGroup extends Group {
+        float total;
+
+        CycleGroup(ItemOverlay overlay) {
+            super(overlay);
+        }
+
+        @Override
+        Entry add(ItemOverlay overlay, int level) {
+            Entry entry = super.add(overlay, level);
+            entry.start = total;
+            total += overlay.duration;
+            return entry;
+        }
+
+        @Override
+        void computeIntensities() {
+            if (total < 0.0f) {
+                return;
+            }
+            float timestamp = (System.currentTimeMillis() / 1000.0f) % total;
         }
     }
 
     private static class Entry {
         final ItemOverlay overlay;
         final int level;
+        float start;
+        float intensity;
 
         Entry(ItemOverlay overlay, int level) {
             this.overlay = overlay;
