@@ -82,6 +82,7 @@ public class MCPatcherUtils {
     public static final String CIT_UTILS_CLASS = "com.prupe.mcpatcher.mod.CITUtils";
     public static final String ITEM_OVERRIDE_CLASS = "com.prupe.mcpatcher.mod.ItemOverride";
     public static final String ITEM_OVERLAY_CLASS = "com.prupe.mcpatcher.mod.ItemOverlay";
+    public static final String ITEM_OVERLAY_LIST_CLASS = "com.prupe.mcpatcher.mod.ItemOverlayList";
     public static final String SHADERS_CLASS = "com.prupe.mcpatcher.mod.Shaders";
 
     private MCPatcherUtils() {

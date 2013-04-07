@@ -24,7 +24,7 @@ class ItemOverlay {
     final int weight;
     final int applyMethod;
     final int limit;
-    final int group;
+    final int groupID;
 
     static void beginOuter2D() {
         GL11.glEnable(GL11.GL_BLEND);
@@ -101,7 +101,7 @@ class ItemOverlay {
         this.weight = weight;
         this.applyMethod = applyMethod;
         this.limit = limit;
-        group = (limit << 2) | applyMethod;
+        groupID = (limit << 2) | applyMethod;
     }
 
     void render2D(Tessellator tessellator, float fade, float x0, float y0, float x1, float y1, float z) {
