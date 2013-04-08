@@ -5,6 +5,8 @@ import net.minecraft.src.ItemStack;
 import java.util.*;
 
 class ItemOverlayList {
+    private static final float PI = (float) Math.PI;
+
     private final List<ItemOverride> matches = new ArrayList<ItemOverride>();
     private final List<Integer> levels = new ArrayList<Integer>();
     private final Map<Integer, Group> groups = new HashMap<Integer, Group>();
@@ -73,13 +75,11 @@ class ItemOverlayList {
             return entry;
         }
 
-        void resetIntensities() {
+        void computeIntensities() {
             for (Entry entry : entries) {
                 entry.intensity = 0.0f;
             }
         }
-
-        abstract void computeIntensities();
     }
 
     private static class AverageGroup extends Group {
@@ -141,10 +141,16 @@ class ItemOverlayList {
             if (total < 0.0f) {
                 return;
             }
-            float timestamp = (System.currentTimeMillis() / 1000.0f) % total;
-            int i = 0;
-            while (i < entries.size() && timestamp >= 0.0f) {
-                timestamp -= entries.get(i).overlay.duration;
+            float timestamp = (float) (System.currentTimeMillis() / 1000.0) % total;
+            for (Entry entry : entries) {
+                if (timestamp <= 0.0f) {
+                    break;
+                }
+                float duration = entry.overlay.duration;
+                if (timestamp < duration) {
+                    entry.intensity = (float) Math.sin(PI * timestamp / duration);
+                }
+                timestamp -= duration;
             }
         }
     }
