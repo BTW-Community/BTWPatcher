@@ -7,10 +7,8 @@ import java.util.*;
 class ItemOverlayList {
     private static final float PI = (float) Math.PI;
 
-    private final List<ItemOverride> matches = new ArrayList<ItemOverride>();
-    private final List<Integer> levels = new ArrayList<Integer>();
     private final Map<Integer, Group> groups = new HashMap<Integer, Group>();
-    private int total;
+    private final List<Entry> entries = new ArrayList<Entry>();
 
     ItemOverlayList(ItemOverride[][] overlays, ItemStack itemStack) {
         int[] enchantmentLevels = CITUtils.getEnchantmentLevels(itemStack.stackTagCompound);
@@ -19,9 +17,13 @@ class ItemOverlayList {
             for (ItemOverride override : overlays[itemID]) {
                 if (override.match(itemID, itemStack, enchantmentLevels)) {
                     int level = Math.max(override.lastEnchantmentLevel, 1);
-                    getGroup(override.overlay).add(override.overlay, level);
+                    Entry entry = getGroup(override.overlay).add(override.overlay, level);
+                    entries.add(entry);
                 }
             }
+        }
+        for (Group group : groups.values()) {
+            group.computeIntensities();
         }
     }
 
@@ -30,15 +32,15 @@ class ItemOverlayList {
     }
 
     int size() {
-        return matches.size();
+        return entries.size();
     }
 
     ItemOverlay getOverlay(int index) {
-        return matches.get(index).overlay;
+        return entries.get(index).overlay;
     }
 
     float getIntensity(int index) {
-        return (float) levels.get(index) / (float) total;
+        return entries.get(index).intensity;
     }
 
     private Group getGroup(ItemOverlay overlay) {
@@ -138,10 +140,10 @@ class ItemOverlayList {
 
         @Override
         void computeIntensities() {
-            if (total < 0.0f) {
+            if (total <= 0.0f) {
                 return;
             }
-            float timestamp = (float) (System.currentTimeMillis() / 1000.0) % total;
+            float timestamp = (float) ((System.currentTimeMillis() / 1000.0) % total);
             for (Entry entry : entries) {
                 if (timestamp <= 0.0f) {
                     break;
