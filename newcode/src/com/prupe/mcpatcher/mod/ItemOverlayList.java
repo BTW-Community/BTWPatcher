@@ -37,7 +37,7 @@ class ItemOverlayList {
         return matches.get(index).overlay;
     }
 
-    float getFade(int index) {
+    float getIntensity(int index) {
         return (float) levels.get(index) / (float) total;
     }
 

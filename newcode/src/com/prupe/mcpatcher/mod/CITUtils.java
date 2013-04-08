@@ -139,7 +139,7 @@ public class CITUtils {
         }
         ItemOverlay.beginOuter3D();
         for (int i = 0; i < matches.size(); i++) {
-            matches.getOverlay(i).render3D(Tessellator.instance, matches.getFade(i), width, height);
+            matches.getOverlay(i).render3D(Tessellator.instance, matches.getIntensity(i), width, height);
         }
         ItemOverlay.endOuter3D();
         return true;
@@ -159,7 +159,7 @@ public class CITUtils {
         }
         ItemOverlay.beginOuter2D();
         for (int i = 0; i < matches.size(); i++) {
-            matches.getOverlay(i).render2D(Tessellator.instance, matches.getFade(i), x - 2, y - 2, x + 18, y + 18, z - 50.0f);
+            matches.getOverlay(i).render2D(Tessellator.instance, matches.getIntensity(i), x - 2, y - 2, x + 18, y + 18, z - 50.0f);
         }
         ItemOverlay.endOuter2D();
         return true;
@@ -181,7 +181,7 @@ public class CITUtils {
     public static boolean preRenderArmorOverlay() {
         if (armorMatchIndex < armorMatches.size()) {
             ItemOverlay overlay = armorMatches.getOverlay(armorMatchIndex);
-            overlay.beginArmor(armorMatches.getFade(armorMatchIndex));
+            overlay.beginArmor(armorMatches.getIntensity(armorMatchIndex));
             return true;
         } else {
             armorMatches = null;

@@ -65,18 +65,18 @@ class ItemOverlay {
             override.error("unknown blend type %s", value);
             return null;
         }
-        float rotate = MCPatcherUtils.getFloatProperty(properties, "rotation", 0.0f);
+        float rotation = MCPatcherUtils.getFloatProperty(properties, "rotation", 0.0f);
         float speed = MCPatcherUtils.getFloatProperty(properties, "speed", 0.0f);
         float duration = MCPatcherUtils.getFloatProperty(properties, "duration", 1.0f);
         int weight = MCPatcherUtils.getIntProperty(properties, "weight", 1);
-        int method;
+        int applyMethod;
         String[] tokens = MCPatcherUtils.getStringProperty(properties, "apply", "average").toLowerCase().split("\\s+");
         if (tokens[0].equals("average")) {
-            method = AVERAGE;
+            applyMethod = AVERAGE;
         } else if (tokens[0].equals("top")) {
-            method = TOP;
+            applyMethod = TOP;
         } else if (tokens[0].equals("cycle")) {
-            method = CYCLE;
+            applyMethod = CYCLE;
         } else {
             override.error("unknown apply type %s", tokens[0]);
             return null;
@@ -89,7 +89,7 @@ class ItemOverlay {
             }
         }
         limit = Math.max(Math.min(limit, CITUtils.MAX_ENCHANTMENTS - 1), 0);
-        return new ItemOverlay(override.textureName, blendMethod, rotate, speed, duration, weight, method, limit);
+        return new ItemOverlay(override.textureName, blendMethod, rotation, speed, duration, weight, applyMethod, limit);
     }
 
     ItemOverlay(String texture, BlendMethod blendMethod, float rotation, float speed, float duration, int weight, int applyMethod, int limit) {
@@ -104,14 +104,14 @@ class ItemOverlay {
         groupID = (limit << 2) | applyMethod;
     }
 
-    void render2D(Tessellator tessellator, float fade, float x0, float y0, float x1, float y1, float z) {
-        if (fade <= 0.0f) {
+    void render2D(Tessellator tessellator, float intensity, float x0, float y0, float x1, float y1, float z) {
+        if (intensity <= 0.0f) {
             return;
         }
-        if (fade > 1.0f) {
-            fade = 1.0f;
+        if (intensity > 1.0f) {
+            intensity = 1.0f;
         }
-        begin(fade);
+        begin(intensity);
         tessellator.startDrawingQuads();
         tessellator.addVertexWithUV(x0, y0, z, 0.0f, 0.0f);
         tessellator.addVertexWithUV(x0, y1, z, 0.0f, 1.0f);
@@ -121,25 +121,25 @@ class ItemOverlay {
         end();
     }
 
-    void render3D(Tessellator tessellator, float fade, int width, int height) {
-        if (fade <= 0.0f) {
+    void render3D(Tessellator tessellator, float intensity, int width, int height) {
+        if (intensity <= 0.0f) {
             return;
         }
-        if (fade > 1.0f) {
-            fade = 1.0f;
+        if (intensity > 1.0f) {
+            intensity = 1.0f;
         }
-        begin(fade);
+        begin(intensity);
         ItemRenderer.renderItemIn2D(tessellator, 0.0f, 0.0f, 1.0f, 1.0f, width, height, ITEM_2D_THICKNESS);
         end();
     }
 
-    void beginArmor(float fade) {
+    void beginArmor(float intensity) {
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glDepthFunc(GL11.GL_EQUAL);
         GL11.glDepthMask(false);
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glMatrixMode(GL11.GL_TEXTURE);
-        begin(fade);
+        begin(intensity);
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
     }
 
@@ -155,10 +155,10 @@ class ItemOverlay {
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
     }
 
-    private void begin(float fade) {
+    private void begin(float intensity) {
         TexturePackAPI.bindTexture(texture);
         blendMethod.applyBlending();
-        blendMethod.applyFade(fade);
+        blendMethod.applyFade(intensity);
         GL11.glPushMatrix();
         if (speed != 0.0f) {
             float offset = (float) (System.currentTimeMillis() % 3000L) / 3000.0f * 8.0f;
