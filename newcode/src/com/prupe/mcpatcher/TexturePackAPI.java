@@ -115,83 +115,96 @@ public class TexturePackAPI {
         return path.replace('\\', '/').replaceFirst("^/", "").replaceFirst("/$", "");
     }
 
-    private static boolean directlyContains(String parent, String child) {
-        parent = fixupPath(parent);
-        child = fixupPath(child);
-        if (!child.startsWith(parent)) {
-            return false;
-        }
-        child = child.substring(parent.length());
-        return child.matches("/[^/]+/?");
-    }
-
     public static String[] listResources(String directory, String suffix) {
-        directory = fixupPath(directory);
-        if (suffix == null) {
-            suffix = "";
-        }
-
-        ITexturePack texturePack = getTexturePack();
-        ArrayList<String> resources = new ArrayList<String>();
-        if (texturePack instanceof TexturePackCustom) {
-            ZipFile zipFile = ((TexturePackCustom) texturePack).zipFile;
-            if (zipFile != null) {
-                for (ZipEntry entry : Collections.list(zipFile.entries())) {
-                    final String name = entry.getName();
-                    if (!entry.isDirectory() && directlyContains(directory, name) && name.endsWith(suffix)) {
-                        resources.add("/" + name);
-                    }
-                }
-            }
-        } else if (texturePack instanceof TexturePackFolder) {
-            File folder = ((TexturePackFolder) texturePack).texturePackFile;
-            if (folder != null && folder.isDirectory()) {
-                String[] list = new File(folder, directory).list();
-                if (list != null) {
-                    for (String s : list) {
-                        if (s.endsWith(suffix)) {
-                            resources.add("/" + directory + "/" + s);
-                        }
-                    }
-                }
-            }
-        }
-
-        Collections.sort(resources);
+        List<String> resources = listResources(directory, suffix, false, false, false);
         return resources.toArray(new String[resources.size()]);
     }
 
     public static String[] listDirectories(String directory) {
+        List<String> resources = listResources(directory, "", false, true, false);
+        return resources.toArray(new String[resources.size()]);
+    }
+
+    public static List<String> listResources(String directory, String suffix, boolean recursive, boolean directories, boolean sortByFilename) {
         directory = fixupPath(directory);
+        if (suffix == null) {
+            suffix = "";
+        }
+        List<String> resources = new ArrayList<String>();
+        findResources(directory, suffix, recursive, directories, resources);
+        if (sortByFilename) {
+            Collections.sort(resources, new Comparator<String>() {
+                public int compare(String o1, String o2) {
+                    String f1 = o1.replaceAll(".*/", "").replaceFirst("\\.properties", "");
+                    String f2 = o2.replaceAll(".*/", "").replaceFirst("\\.properties", "");
+                    int result = f1.compareTo(f2);
+                    if (result != 0) {
+                        return result;
+                    }
+                    return o1.compareTo(o2);
+                }
+            });
+        } else {
+            Collections.sort(resources);
+        }
+        return resources;
+    }
+
+    private static void findResources(String directory, String suffix, boolean recursive, boolean directories, Collection<String> resources) {
         ITexturePack texturePack = getTexturePack();
-        ArrayList<String> resources = new ArrayList<String>();
         if (texturePack instanceof TexturePackCustom) {
             ZipFile zipFile = ((TexturePackCustom) texturePack).zipFile;
             if (zipFile != null) {
                 for (ZipEntry entry : Collections.list(zipFile.entries())) {
-                    final String name = fixupPath(entry.getName());
-                    if (entry.isDirectory() && directlyContains(directory, name)) {
-                        resources.add("/" + name);
+                    if (entry.isDirectory() != directories) {
+                        continue;
                     }
-                }
-            }
-        } else if (texturePack instanceof TexturePackFolder) {
-            File folder = ((TexturePackFolder) texturePack).texturePackFile;
-            if (folder != null && folder.isDirectory()) {
-                File subfolder = new File(folder, directory);
-                String[] list = subfolder.list();
-                if (list != null) {
-                    for (String s : list) {
-                        if (new File(subfolder, s).isDirectory()) {
-                            resources.add("/" + directory + "/" + s);
+                    String name = fixupPath(entry.getName());
+                    if (!name.startsWith(directory) || !name.endsWith(suffix)) {
+                        continue;
+                    }
+                    if (directory.equals("")) {
+                        if (recursive || !name.contains("/")) {
+                            resources.add("/" + name);
+                        }
+                    } else {
+                        String subpath = name.substring(directory.length());
+                        if (subpath.equals("") || subpath.startsWith("/")) {
+                            if (recursive || !subpath.substring(1).contains("/")) {
+                                resources.add("/" + name);
+                            }
                         }
                     }
                 }
             }
+        } else if (texturePack instanceof TexturePackFolder) {
+            File base = ((TexturePackFolder) texturePack).texturePackFile;
+            if (base != null && base.isDirectory()) {
+                findResources(base, directory, suffix, recursive, directories, resources);
+            }
         }
+    }
 
-        Collections.sort(resources);
-        return resources.toArray(new String[resources.size()]);
+    private static void findResources(File base, String directory, String suffix, boolean recursive, boolean directories, Collection<String> resources) {
+        File subdirectory = new File(base, directory);
+        String[] list = subdirectory.list();
+        if (list != null) {
+            String pathComponent = directory.equals("") ? "" : directory + "/";
+            for (String s : list) {
+                File entry = new File(subdirectory, s);
+                String resourceName = "/" + pathComponent + s;
+                if (entry.isDirectory()) {
+                    if (directories && s.endsWith(suffix)) {
+                        resources.add(resourceName);
+                    }
+                    if (recursive) {
+                        findResources(base, pathComponent + s, suffix, recursive, directories, resources);
+                    }
+                } else if (s.endsWith(suffix) && !directories) {
+                    resources.add(resourceName);
+                }
+            }
+        }
     }
 
     public static int getTextureIfLoaded(String s) {
