@@ -81,7 +81,7 @@ class ItemOverlay {
             override.error("unknown apply type %s", tokens[0]);
             return null;
         }
-        int limit = 0;
+        int limit = CITUtils.MAX_ENCHANTMENTS - 1;
         if (tokens.length > 1) {
             try {
                 limit = Integer.parseInt(tokens[1]);

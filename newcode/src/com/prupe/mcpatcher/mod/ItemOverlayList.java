@@ -93,16 +93,16 @@ class ItemOverlayList {
 
         @Override
         void computeIntensities() {
-            Collections.sort(entries, new Comparator<Entry>() {
-                public int compare(Entry o1, Entry o2) {
-                    int diff = o1.overlay.weight - o2.overlay.weight;
-                    if (diff != 0) {
-                        return diff;
+            if (limit < entries.size()) {
+                Collections.sort(entries, new Comparator<Entry>() {
+                    public int compare(Entry o1, Entry o2) {
+                        int diff = o2.overlay.weight - o1.overlay.weight;
+                        if (diff != 0) {
+                            return diff;
+                        }
+                        return o2.level - o1.level;
                     }
-                    return o1.level - o2.level;
-                }
-            });
-            if (limit > 0) {
+                });
                 while (entries.size() > limit) {
                     entries.remove(limit);
                 }
