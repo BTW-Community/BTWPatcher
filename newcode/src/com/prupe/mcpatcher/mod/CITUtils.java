@@ -1,9 +1,6 @@
 package com.prupe.mcpatcher.mod;
 
-import com.prupe.mcpatcher.Config;
-import com.prupe.mcpatcher.MCLogger;
-import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.*;
 import net.minecraft.src.*;
 
 import java.util.*;
@@ -28,6 +25,66 @@ public class CITUtils {
     private static int armorMatchIndex;
 
     private static Icon lastIcon;
+
+    static {
+        TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, 2) {
+            @Override
+            public void beforeChange() {
+                tileLoader = new TileLoader(logger);
+                Arrays.fill(items, null);
+                Arrays.fill(overlays, null);
+                Arrays.fill(armors, null);
+                lastIcon = null;
+                if (enableItems || enableOverlays || enableArmor) {
+                    List<String> paths = new ArrayList<String>();
+                    loadOverridesFromPath("/cit", paths);
+                    Collections.sort(paths, new Comparator<String>() {
+                        public int compare(String o1, String o2) {
+                            String f1 = o1.replaceAll(".*/", "").replaceFirst("\\.properties", "");
+                            String f2 = o2.replaceAll(".*/", "").replaceFirst("\\.properties", "");
+                            int result = f1.compareTo(f2);
+                            if (result != 0) {
+                                return result;
+                            }
+                            return o1.compareTo(o2);
+                        }
+                    });
+                    for (String path : paths) {
+                        ItemOverride override = ItemOverride.create(path);
+                        if (override != null) {
+                            ItemOverride[][] list;
+                            switch (override.type) {
+                                case ItemOverride.ITEM:
+                                    override.preload(tileLoader);
+                                    list = items;
+                                    break;
+
+                                case ItemOverride.OVERLAY:
+                                    list = overlays;
+                                    break;
+
+                                case ItemOverride.ARMOR:
+                                    list = armors;
+                                    break;
+
+                                default:
+                                    logger.severe("unknown ItemOverride type %d", override.type);
+                                    continue;
+                            }
+                            for (int i : override.itemsIDs) {
+                                list[i] = registerOverride(list[i], override);
+                                logger.fine("registered %s to item %d (%s)", override, i, getItemName(i));
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void afterChange() {
+            }
+        });
+    }
 
     public static Icon getIcon(Icon icon, Item item, ItemStack itemStack) {
         lastIcon = icon;
@@ -135,52 +192,6 @@ public class CITUtils {
     public static void postRenderArmorOverlay() {
         armorMatches.getOverlay(armorMatchIndex).endArmor();
         armorMatchIndex++;
-    }
-
-    static void refresh() {
-        tileLoader = new TileLoader(logger);
-        Arrays.fill(items, null);
-        Arrays.fill(overlays, null);
-        Arrays.fill(armors, null);
-        if (enableItems || enableOverlays || enableArmor) {
-            List<String> paths = new ArrayList<String>();
-            loadOverridesFromPath("/cit", paths);
-            Collections.sort(paths, new Comparator<String>() {
-                public int compare(String o1, String o2) {
-                    o1 = o1.replaceAll(".*/", "").replaceFirst("\\.properties$", "");
-                    o2 = o2.replaceAll(".*/", "").replaceFirst("\\.properties$", "");
-                    return o1.compareTo(o2);
-                }
-            });
-            for (String path : paths) {
-                ItemOverride override = ItemOverride.create(path);
-                if (override != null) {
-                    ItemOverride[][] list;
-                    switch (override.type) {
-                        case ItemOverride.ITEM:
-                            override.preload(tileLoader);
-                            list = items;
-                            break;
-
-                        case ItemOverride.OVERLAY:
-                            list = overlays;
-                            break;
-
-                        case ItemOverride.ARMOR:
-                            list = armors;
-                            break;
-
-                        default:
-                            logger.severe("unknown ItemOverride type %d", override.type);
-                            continue;
-                    }
-                    for (int i : override.itemsIDs) {
-                        list[i] = registerOverride(list[i], override);
-                        logger.fine("registered %s to item %d (%s)", override, i, getItemName(i));
-                    }
-                }
-            }
-        }
     }
 
     private static void loadOverridesFromPath(String directory, List<String> paths) {

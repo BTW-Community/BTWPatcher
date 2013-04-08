@@ -78,7 +78,6 @@ public class CTMUtils {
                 overridesToRegister.clear();
                 tileLoader = new TileLoader(logger);
                 betterGrass = null;
-                CITUtils.refresh();
 
                 if (enableStandard || enableNonStandard) {
                     List<String> fileList = new ArrayList<String>();
