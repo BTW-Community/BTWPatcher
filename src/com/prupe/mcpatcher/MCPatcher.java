@@ -435,6 +435,11 @@ final public class MCPatcher {
                         checkInterrupt();
                         if (dep.required && (dmod == null || !dmod.okToApply())) {
                             mod.addError(String.format("requires %s, which cannot be applied", dep.name));
+                            if (dmod != null) {
+                                for (String err : dmod.getErrors()) {
+                                    mod.addError(err);
+                                }
+                            }
                             didSomething = true;
                             break;
                         }
