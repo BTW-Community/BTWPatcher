@@ -42,7 +42,6 @@ public class ConnectedTextures extends Mod {
 
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS);
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$1");
-        addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$1$1");
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$2");
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$3");
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$TileOverrideIterator");

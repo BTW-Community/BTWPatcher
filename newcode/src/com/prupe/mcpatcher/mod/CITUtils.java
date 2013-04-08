@@ -36,20 +36,7 @@ public class CITUtils {
                 Arrays.fill(armors, null);
                 lastIcon = null;
                 if (enableItems || enableOverlays || enableArmor) {
-                    List<String> paths = new ArrayList<String>();
-                    loadOverridesFromPath("/cit", paths);
-                    Collections.sort(paths, new Comparator<String>() {
-                        public int compare(String o1, String o2) {
-                            String f1 = o1.replaceAll(".*/", "").replaceFirst("\\.properties", "");
-                            String f2 = o2.replaceAll(".*/", "").replaceFirst("\\.properties", "");
-                            int result = f1.compareTo(f2);
-                            if (result != 0) {
-                                return result;
-                            }
-                            return o1.compareTo(o2);
-                        }
-                    });
-                    for (String path : paths) {
+                    for (String path : TexturePackAPI.listResources("/cit", ".properties", true, false, true)) {
                         ItemOverride override = ItemOverride.create(path);
                         if (override != null) {
                             ItemOverride[][] list;
@@ -82,6 +69,20 @@ public class CITUtils {
 
             @Override
             public void afterChange() {
+            }
+
+            private ItemOverride[] registerOverride(ItemOverride[] list, ItemOverride override) {
+                if (override != null) {
+                    if (list == null) {
+                        list = new ItemOverride[]{override};
+                    } else {
+                        ItemOverride[] newList = new ItemOverride[list.length + 1];
+                        System.arraycopy(list, 0, newList, 0, list.length);
+                        newList[list.length] = override;
+                        list = newList;
+                    }
+                }
+                return list;
             }
         });
     }
@@ -192,27 +193,6 @@ public class CITUtils {
     public static void postRenderArmorOverlay() {
         armorMatches.getOverlay(armorMatchIndex).endArmor();
         armorMatchIndex++;
-    }
-
-    private static void loadOverridesFromPath(String directory, List<String> paths) {
-        Collections.addAll(paths, TexturePackAPI.listResources(directory, ".properties"));
-        for (String subdir : TexturePackAPI.listDirectories(directory)) {
-            loadOverridesFromPath(subdir, paths);
-        }
-    }
-
-    private static ItemOverride[] registerOverride(ItemOverride[] list, ItemOverride override) {
-        if (override != null) {
-            if (list == null) {
-                list = new ItemOverride[]{override};
-            } else {
-                ItemOverride[] newList = new ItemOverride[list.length + 1];
-                System.arraycopy(list, 0, newList, 0, list.length);
-                newList[list.length] = override;
-                list = newList;
-            }
-        }
-        return list;
     }
 
     static String getItemName(int itemID) {

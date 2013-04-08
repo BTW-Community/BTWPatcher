@@ -26,7 +26,6 @@ abstract class CustomItemTextures {
 
         mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS);
         mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$1");
-        mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$1$1");
         mod.addClassFile(MCPatcherUtils.ITEM_OVERRIDE_CLASS);
         mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_CLASS);
         mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS);

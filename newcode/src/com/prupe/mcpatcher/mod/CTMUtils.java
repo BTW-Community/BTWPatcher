@@ -80,24 +80,7 @@ public class CTMUtils {
                 betterGrass = null;
 
                 if (enableStandard || enableNonStandard) {
-                    List<String> fileList = new ArrayList<String>();
-                    for (String dir : TexturePackAPI.listDirectories("/ctm")) {
-                        for (String s : TexturePackAPI.listResources(dir, ".properties")) {
-                            fileList.add(s);
-                        }
-                    }
-                    Collections.sort(fileList, new Comparator<String>() {
-                        public int compare(String o1, String o2) {
-                            String f1 = o1.replaceAll(".*/", "").replaceFirst("\\.properties", "");
-                            String f2 = o2.replaceAll(".*/", "").replaceFirst("\\.properties", "");
-                            int result = f1.compareTo(f2);
-                            if (result != 0) {
-                                return result;
-                            }
-                            return o1.compareTo(o2);
-                        }
-                    });
-                    for (String s : fileList) {
+                    for (String s : TexturePackAPI.listResources("/ctm", ".properties", true, false, true)) {
                         registerOverride(TileOverride.create(s, tileLoader));
                     }
                 }
