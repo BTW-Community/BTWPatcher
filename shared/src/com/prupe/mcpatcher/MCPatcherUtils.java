@@ -399,11 +399,10 @@ public class MCPatcherUtils {
      */
     public static int[] parseIntegerList(String list, int minValue, int maxValue) {
         ArrayList<Integer> tmpList = new ArrayList<Integer>();
-        Pattern p = Pattern.compile("\\d*-\\d*");
+        Pattern p = Pattern.compile("(\\d*)-(\\d*)");
         for (String token : list.replace(',', ' ').split("\\s+")) {
-            token = token.trim();
             try {
-                if (token.matches("^\\d+$")) {
+                if (token.matches("\\d+")) {
                     tmpList.add(Integer.parseInt(token));
                 } else {
                     Matcher m = p.matcher(token);
