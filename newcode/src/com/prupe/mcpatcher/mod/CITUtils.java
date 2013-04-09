@@ -98,8 +98,8 @@ public class CITUtils {
         return lastIcon;
     }
 
-    public static String getArmorTexture(String texture, ItemStack itemStack) {
-        if (enableArmor) {
+    public static String getArmorTexture(String texture, EntityLiving entity, ItemStack itemStack) {
+        if (enableArmor && !texture.endsWith("_b.png")) {
             ItemOverride override = findMatch(armors, itemStack);
             if (override != null) {
                 return override.textureName;

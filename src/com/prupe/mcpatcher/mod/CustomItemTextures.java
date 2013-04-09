@@ -23,6 +23,7 @@ abstract class CustomItemTextures {
         mod.addClassMod(new RenderItemMod());
         mod.addClassMod(new RenderLivingMod());
         mod.addClassMod(new RenderBipedMod());
+        mod.addClassMod(new RenderArmorMod());
 
         mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS);
         mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$1");
@@ -35,7 +36,7 @@ abstract class CustomItemTextures {
         mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$CycleGroup");
         mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$Entry");
     }
-    
+
     private static class ItemMod extends BaseMod.ItemMod {
         ItemMod() {
             final MethodRef getIconIndex = new MethodRef(getDeobfClass(), "getIconIndex", "(LItemStack;)LIcon;");
@@ -471,6 +472,95 @@ abstract class CustomItemTextures {
                 .setMethod(loadTextureForPass)
                 .addXref(1, getCurrentArmor)
             );
+        }
+    }
+
+    private static class RenderArmorMod extends ClassMod {
+        RenderArmorMod() {
+            setParentClass("RenderLiving");
+            setMultipleMatchesAllowed(true);
+
+            final MethodRef getArmorTexture = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getArmorTexture", "(Ljava/lang/String;LEntityLiving;LItemStack;)Ljava/lang/String;");
+            final ClassRef sbClass = new ClassRef("java/lang/StringBuilder");
+            final MethodRef sbInit0 = new MethodRef("java/lang/StringBuilder", "<init>", "()V");
+            final MethodRef sbInit1 = new MethodRef("java/lang/StringBuilder", "<init>", "(Ljava/lang/String;)V");
+            final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
+
+            addClassSignature(new ConstSignature("/armor/"));
+            addClassSignature(new ConstSignature("_"));
+            addClassSignature(new ConstSignature("_b.png"));
+
+            addPatch(new BytecodePatch() {
+                private int armorRegister;
+
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                begin(),
+                                // itemStack = entityLiving.getCurrentArmor(3 - slot);
+                                // - or -
+                                // itemStack = entityPlayer.inventory.armorItemInSlot(3 - slot);
+                                ALOAD_1,
+                                optional(build(anyReference(GETFIELD))),
+                                push(3),
+                                ILOAD_2,
+                                ISUB,
+                                anyReference(INVOKEVIRTUAL),
+                                capture(anyASTORE)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            armorRegister = extractRegisterNum(getCaptureGroup(1));
+                            return true;
+                        }
+                    });
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override armor texture";
+                }
+
+                @Override
+                public boolean filterMethod() {
+                    return getMethodInfo().getDescriptor().matches("\\(L[a-z]+;IF\\)[IV]");
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(NEW, sbClass),
+                        DUP,
+                        or(
+                            build(
+                                // new StringBuilder("/armor/")
+                                push("/armor/"),
+                                reference(INVOKESPECIAL, sbInit1)
+                            ),
+                            build(
+                                // new StringBuilder().append("/armor/")
+                                reference(INVOKESPECIAL, sbInit0),
+                                push("/armor/")
+                            )
+                        ),
+                        nonGreedy(any(0, 100)),
+                        reference(INVOKEVIRTUAL, sbToString)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_1,
+                        ALOAD, armorRegister,
+                        reference(INVOKESTATIC, getArmorTexture)
+                    );
+                }
+            }.setInsertAfter(true));
         }
     }
 }
