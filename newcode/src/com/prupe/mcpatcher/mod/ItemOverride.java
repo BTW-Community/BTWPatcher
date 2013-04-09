@@ -151,7 +151,10 @@ class ItemOverride {
         if (stackSize != null && !stackSize.get(itemStack.stackSize)) {
             return false;
         }
-        if (itemEnchantmentLevels != null && (enchantmentIDs != null || enchantmentLevels != null)) {
+        if (enchantmentIDs != null || enchantmentLevels != null) {
+            if (itemEnchantmentLevels == null) {
+                return false;
+            }
             lastEnchantmentLevel = 0;
             if (enchantmentIDs == null) {
                 int sum = 0;
