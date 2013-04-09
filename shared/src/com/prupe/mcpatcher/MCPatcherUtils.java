@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipFile;
 
 /**
@@ -393,24 +395,29 @@ public class MCPatcherUtils {
     /**
      * Parse a comma-separated list of integers/ranges.
      *
-     * @param list     comma-separated list, e.g., 2-4,5,8,12-20
+     * @param list     comma- or space-separated list, e.g., 2-4,5,8,12-20
      * @param minValue smallest value allowed in the list
      * @param maxValue largest value allowed in the list
      * @return possibly empty integer array
      */
     public static int[] parseIntegerList(String list, int minValue, int maxValue) {
         ArrayList<Integer> tmpList = new ArrayList<Integer>();
+        Pattern p = Pattern.compile("\\d*-\\d*");
         for (String token : list.replace(',', ' ').split("\\s+")) {
             token = token.trim();
             try {
                 if (token.matches("^\\d+$")) {
                     tmpList.add(Integer.parseInt(token));
-                } else if (token.matches("^\\d+-\\d+$")) {
-                    String[] t = token.split("-");
-                    int min = Integer.parseInt(t[0]);
-                    int max = Integer.parseInt(t[1]);
-                    for (int i = min; i <= max; i++) {
-                        tmpList.add(i);
+                } else {
+                    Matcher m = p.matcher(token);
+                    if (m.matches()) {
+                        String a = m.group(1);
+                        String b = m.group(2);
+                        int min = a.equals("") ? minValue : Integer.parseInt(a);
+                        int max = b.equals("") ? maxValue : Integer.parseInt(b);
+                        for (int i = min; i <= max; i++) {
+                            tmpList.add(i);
+                        }
                     }
                 }
             } catch (NumberFormatException e) {
