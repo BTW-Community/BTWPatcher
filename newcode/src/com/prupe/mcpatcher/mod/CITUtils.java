@@ -99,8 +99,9 @@ public class CITUtils {
     }
 
     public static String getArmorTexture(String texture, EntityLiving entity, ItemStack itemStack) {
-        if (enableArmor && !texture.endsWith("_b.png")) {
-            ItemOverride override = findMatch(armors, itemStack);
+        if (enableArmor) {
+            int layer = texture.endsWith("_b.png") ? 1 : 0;
+            ItemOverride override = findMatch(armors, itemStack, layer);
             if (override != null) {
                 return override.textureName;
             }
@@ -114,6 +115,19 @@ public class CITUtils {
             int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
             for (ItemOverride override : overrides[itemID]) {
                 if (override.match(itemID, itemStack, enchantmentLevels)) {
+                    return override;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static ItemOverride findMatch(ItemOverride[][] overrides, ItemStack itemStack, int layer) {
+        int itemID = itemStack.itemID;
+        if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
+            int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
+            for (ItemOverride override : overrides[itemID]) {
+                if (override.armorLayer == layer && override.match(itemID, itemStack, enchantmentLevels)) {
                     return override;
                 }
             }

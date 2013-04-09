@@ -23,6 +23,7 @@ class ItemOverride {
     final String textureName;
     private final List<String> textureNames = new ArrayList<String>();
     final ItemOverlay overlay;
+    final int armorLayer;
     final List<Integer> itemsIDs = new ArrayList<Integer>();
     private final BitSet damage;
     private final BitSet stackSize;
@@ -80,6 +81,12 @@ class ItemOverride {
             }
         } else {
             overlay = null;
+        }
+
+        if (type == ARMOR) {
+            armorLayer = MCPatcherUtils.getIntProperty(properties, "layer", 0);
+        } else {
+            armorLayer = 0;
         }
 
         value = MCPatcherUtils.getStringProperty(properties, "matchItems", "");
