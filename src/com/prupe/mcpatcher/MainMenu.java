@@ -294,16 +294,14 @@ class MainMenu {
                         MCPatcher.modList.updateProperties();
                         Config.instance.selectProfile(profile);
                         boolean modsOk = false;
-                        if (Config.isDefaultProfile(profile)) {
-                            String version = profile.replaceFirst("^Minecraft\\s+", "");
-                            if (!version.equals(MCPatcher.minecraft.getVersion().getProfileString())) {
-                                File jar = MCPatcherUtils.getMinecraftPath("bin", "minecraft-" + MinecraftVersion.profileStringToVersionString(version) + ".jar");
-                                if (jar.exists()) {
-                                    try {
-                                        modsOk = MCPatcher.setMinecraft(jar, false);
-                                    } catch (Exception e1) {
-                                        e1.printStackTrace();
-                                    }
+                        String version = Config.getVersionForDefaultProfile(profile);
+                        if (version != null && !version.equals(MCPatcher.minecraft.getVersion().getProfileString())) {
+                            File jar = MinecraftJarBase.getJarPathForVersion(version);
+                            if (jar.exists()) {
+                                try {
+                                    modsOk = MCPatcher.setMinecraft(jar, false);
+                                } catch (Exception e1) {
+                                    e1.printStackTrace();
                                 }
                             }
                         }

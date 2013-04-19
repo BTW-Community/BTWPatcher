@@ -418,6 +418,10 @@ public class Config {
         return profileName.startsWith("Minecraft ");
     }
 
+    static String getVersionForDefaultProfile(String profileName) {
+        return isDefaultProfile(profileName) ? profileName.replaceFirst("Minecraft\\s+", "") : null;
+    }
+
     void setDefaultProfileName(String profileName) {
         Element root = getRoot();
         NodeList list = root.getElementsByTagName(TAG_MODS);

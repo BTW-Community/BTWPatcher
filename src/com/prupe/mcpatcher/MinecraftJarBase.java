@@ -88,6 +88,19 @@ abstract class MinecraftJarBase {
         }
     }
 
+    static File getJarPathForVersion(String versionString) {
+        MinecraftVersion version = MinecraftVersion.parseVersion(versionString);
+        if (version == null) {
+            version = MinecraftVersion.parseShortVersion(versionString);
+        }
+        if (version != null && version.compareTo("13w16a") >= 0) {
+            versionString = version.getVersionString();
+            return MCPatcherUtils.getMinecraftPath("versions", versionString, versionString + ".jar");
+        } else {
+            return MCPatcherUtils.getMinecraftPath("bin", "minecraft.jar");
+        }
+    }
+
     static boolean isGarbageFile(String filename) {
         return filename.startsWith("META-INF") || filename.startsWith("__MACOSX") || filename.endsWith(".DS_Store") || filename.equals("mod.properties");
     }
