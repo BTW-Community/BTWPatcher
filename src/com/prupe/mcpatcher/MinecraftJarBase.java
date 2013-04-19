@@ -21,28 +21,6 @@ abstract class MinecraftJarBase {
     protected JarOutputStream outputJar;
 
     protected MinecraftJarBase(File file) throws IOException {
-        info = new Info(file);
-        if (!info.isOk()) {
-            throw info.exception;
-        }
-
-        if (file.getName().equals("minecraft.jar")) {
-            origFile = new File(file.getParent(), "minecraft-" + info.version.getVersionString() + ".jar");
-            outputFile = file;
-            Info origInfo = new Info(origFile);
-            if (origInfo.result == Info.MODDED_JAR && info.result == Info.UNMODDED_JAR) {
-                Logger.log(Logger.LOG_JAR, "copying unmodded %s over %s", outputFile.getName(), origFile.getName());
-                origFile.delete();
-            }
-            if (!origFile.exists()) {
-                createBackup();
-            } else if (origInfo.isOk()) {
-                info = origInfo;
-            }
-        } else {
-            origFile = file;
-            outputFile = new File(file.getParent(), "minecraft.jar");
-        }
     }
 
     @Override
@@ -267,7 +245,7 @@ abstract class MinecraftJarBase {
         }
     }
 
-    private static class Info {
+    static class Info {
         static final int MISSING_JAR = 0;
         static final int IO_ERROR = 1;
         static final int CORRUPT_JAR = 2;
@@ -281,11 +259,16 @@ abstract class MinecraftJarBase {
         int result;
         IOException exception;
 
-        Info(File minecraftJar) {
+        Info(File minecraftJar, MinecraftVersion version) {
+            this.version = version;
             result = initialize(minecraftJar);
             if (!isOk() && exception == null) {
                 exception = new IOException("unexpected error opening " + minecraftJar.getPath());
             }
+        }
+
+        Info(File minecraftJar) {
+            this(minecraftJar, null);
         }
 
         private int initialize(File minecraftJar) {
@@ -319,7 +302,9 @@ abstract class MinecraftJarBase {
                     }
                     entries.add(name);
                 }
-                version = extractVersion(jar, md5);
+                if (version == null) {
+                    version = extractVersion(jar, md5);
+                }
             } catch (ZipException e) {
                 exception = e;
                 return CORRUPT_JAR;
