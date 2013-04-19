@@ -2279,24 +2279,30 @@ public class CustomColors extends Mod {
                         // fogColorRed = 0.02f;
                         ALOAD_0,
                         push(0.02f),
+                        capture(optional(build( // 13w16a+
+                            anyFLOAD,
+                            FADD
+                        ))),
                         captureReference(PUTFIELD),
 
                         // fogColorGreen = 0.02f;
                         ALOAD_0,
                         push(0.02f),
+                        backReference(1),
                         captureReference(PUTFIELD),
 
                         // fogColorBlue = 0.2f;
                         ALOAD_0,
                         push(0.2f),
+                        backReference(1),
                         captureReference(PUTFIELD)
                     );
                 }
             }
                 .setMethod(updateFogColor)
-                .addXref(1, fogColorRed)
-                .addXref(2, fogColorGreen)
-                .addXref(3, fogColorBlue)
+                .addXref(2, fogColorRed)
+                .addXref(3, fogColorGreen)
+                .addXref(4, fogColorBlue)
             );
 
             addClassSignature(new BytecodeSignature() {
@@ -2483,16 +2489,22 @@ public class CustomColors extends Mod {
                         // fogColorRed = 0.02f;
                         ALOAD_0,
                         push(0.02f),
+                        capture(optional(build( // 13w16a+
+                            anyFLOAD,
+                            FADD
+                        ))),
                         reference(PUTFIELD, fogColorRed),
 
                         // fogColorGreen = 0.02f;
                         ALOAD_0,
                         push(0.02f),
+                        backReference(1),
                         reference(PUTFIELD, fogColorGreen),
 
                         // fogColorBlue = 0.2f;
                         ALOAD_0,
                         push(0.2f),
+                        backReference(1),
                         reference(PUTFIELD, fogColorBlue)
                     );
                 }
