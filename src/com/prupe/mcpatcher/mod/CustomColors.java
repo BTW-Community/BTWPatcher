@@ -2520,22 +2520,25 @@ public class CustomColors extends Mod {
                         // fogColorRed = Colorizer.setColor[0];
                         ALOAD_0,
                         reference(GETSTATIC, setColor),
-                        ICONST_0,
+                        push(0),
                         FALOAD,
+                        getCaptureGroup(1),
                         reference(PUTFIELD, fogColorRed),
 
                         // fogColorGreen = Colorizer.setColor[1];
                         ALOAD_0,
                         reference(GETSTATIC, setColor),
-                        ICONST_1,
+                        push(1),
                         FALOAD,
+                        getCaptureGroup(1),
                         reference(PUTFIELD, fogColorGreen),
 
                         // fogColorBlue = Colorizer.setColor[2];
                         ALOAD_0,
                         reference(GETSTATIC, setColor),
-                        ICONST_2,
+                        push(2),
                         FALOAD,
+                        getCaptureGroup(1),
                         reference(PUTFIELD, fogColorBlue),
 
                         // }
