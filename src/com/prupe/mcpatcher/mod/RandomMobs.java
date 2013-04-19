@@ -10,12 +10,16 @@ import static javassist.bytecode.Opcode.*;
 public class RandomMobs extends Mod {
     private static final String EXTRA_INFO_CLASS = MCPatcherUtils.RANDOM_MOBS_CLASS + "$ExtraInfo";
 
+    private final boolean haveRenderLivingSub;
+
     public RandomMobs() {
         name = MCPatcherUtils.RANDOM_MOBS;
         author = "Balthichou";
         description = "Randomize mob skins if texture pack supports it. Based on Balthichou's mod.";
         website = "http://www.minecraftforum.net/topic/244172-";
         version = "1.4";
+
+        haveRenderLivingSub = getMinecraftVersion().compareTo("13w16a") >= 0;
 
         addDependency(BaseTexturePackMod.NAME);
 
@@ -27,6 +31,9 @@ public class RandomMobs extends Mod {
         addClassMod(new BaseMod.NBTTagCompoundMod());
         addClassMod(new BaseMod.TessellatorMod());
         addClassMod(new RenderMod());
+        if (haveRenderLivingSub) {
+            addClassMod(new RenderLivingSubMod());
+        }
         addClassMod(new RenderSnowmanMod());
         addClassMod(new RenderMooshroomMod());
         addClassMod(new MiscSkinMod("RenderSheep", "/mob/sheep_fur.png"));
@@ -266,9 +273,20 @@ public class RandomMobs extends Mod {
         }
     }
 
+    private class RenderLivingSubMod extends ClassMod {
+        RenderLivingSubMod() {
+            setParentClass("RenderLiving");
+
+            addClassSignature(new ConstSignature(1.6));
+            addClassSignature(new ConstSignature(0.5));
+            addClassSignature(new ConstSignature(0.7));
+            addClassSignature(new ConstSignature(0.25));
+        }
+    }
+
     private class RenderSnowmanMod extends ClassMod {
         RenderSnowmanMod() {
-            setParentClass("RenderLiving");
+            setParentClass(haveRenderLivingSub ? "RenderLivingSub" : "RenderLiving");
 
             final MethodRef renderEquippedItems = new MethodRef(getDeobfClass(), "renderEquippedItems1", "(LEntitySnowman;F)V");
             final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(Ljava/lang/String;)V");
@@ -347,7 +365,7 @@ public class RandomMobs extends Mod {
 
     private class RenderMooshroomMod extends ClassMod {
         RenderMooshroomMod() {
-            setParentClass("RenderLiving");
+            setParentClass(haveRenderLivingSub ? "RenderLivingSub" : "RenderLiving");
 
             final FieldRef renderBlocks = new FieldRef(getDeobfClass(), "renderBlocks", "LRenderBlocks;");
             final FieldRef mushroomRed = new FieldRef("Block", "mushroomRed", "LBlockFlower;");
