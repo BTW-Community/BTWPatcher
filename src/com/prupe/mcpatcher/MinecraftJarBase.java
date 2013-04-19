@@ -59,6 +59,12 @@ abstract class MinecraftJarBase {
 
     abstract File getOutputJarPath(MinecraftVersion version);
 
+    abstract File getNativesDir();
+
+    abstract void addToClassPath(List<File> classPath);
+
+    abstract String getMainClass();
+
     @Override
     protected void finalize() throws Throwable {
         closeStreams();
@@ -205,20 +211,19 @@ abstract class MinecraftJarBase {
 
     void run() {
         File file = getOutputFile();
-        File directory = file.getParentFile();
-        StringBuilder cp = new StringBuilder();
-        for (String p : new String[]{file.getName(), "lwjgl.jar", "lwjgl_util.jar", "jinput.jar"}) {
-            cp.append(directory.getPath());
-            cp.append("/");
-            cp.append(p);
-            cp.append(File.pathSeparatorChar);
+        StringBuilder sb = new StringBuilder();
+        List<File> classPath = new ArrayList<File>();
+        addToClassPath(classPath);
+        classPath.add(outputFile);
+        for (File f : classPath) {
+            sb.append(f.getPath()).append(File.pathSeparatorChar);
         }
 
         List<String> params = new ArrayList<String>();
         params.add("java");
         params.add("-cp");
-        params.add(cp.toString());
-        params.add("-Djava.library.path=" + new File(directory, "natives").getPath());
+        params.add(sb.toString());
+        params.add("-Djava.library.path=" + getNativesDir().getPath());
         int heapSize = Config.getInt(Config.TAG_JAVA_HEAP_SIZE, 1024);
         if (heapSize > 0) {
             params.add("-Xmx" + heapSize + "M");
@@ -228,7 +233,7 @@ abstract class MinecraftJarBase {
         if (directSize > 0) {
             params.add("-XX:MaxDirectMemorySize=" + directSize + "M");
         }
-        params.add("net.minecraft.client.Minecraft");
+        params.add(getMainClass());
 
         ProcessBuilder pb = new ProcessBuilder(params.toArray(new String[params.size()]));
         pb.redirectErrorStream(true);
@@ -236,7 +241,7 @@ abstract class MinecraftJarBase {
 
         Logger.log(Logger.LOG_MAIN);
         Logger.log(Logger.LOG_MAIN, "Launching %s", file.getPath());
-        StringBuilder sb = new StringBuilder();
+        sb = new StringBuilder();
         for (String s : pb.command()) {
             if (sb.length() > 0) {
                 sb.append(' ');
@@ -301,10 +306,6 @@ abstract class MinecraftJarBase {
             if (!isOk() && exception == null) {
                 exception = new IOException("unexpected error opening " + minecraftJar.getPath());
             }
-        }
-
-        Info(File minecraftJar) {
-            this(minecraftJar, null);
         }
 
         private int initialize(File minecraftJar) {
