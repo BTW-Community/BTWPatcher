@@ -2160,16 +2160,7 @@ public class CustomColors extends Mod {
 
     private class EntityRendererMod extends ClassMod {
         EntityRendererMod() {
-            final boolean updateLightmapTakesFloat = getMinecraftVersion().compareTo("12w32a") >= 0;
-            final MethodRef updateLightmap;
-            final int updateLightmapOffset;
-            if (updateLightmapTakesFloat) {
-                updateLightmap = new MethodRef(getDeobfClass(), "updateLightmap", "(F)V");
-                updateLightmapOffset = 1;
-            } else {
-                updateLightmap = new MethodRef(getDeobfClass(), "updateLightmap", "()V");
-                updateLightmapOffset = 0;
-            }
+            final MethodRef updateLightmap = new MethodRef(getDeobfClass(), "updateLightmap", "(F)V");
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final MethodRef updateFogColor = new MethodRef(getDeobfClass(), "updateFogColor", "(F)V");
             final FieldRef fogColorRed = new FieldRef(getDeobfClass(), "fogColorRed", "F");
@@ -2189,30 +2180,30 @@ public class CustomColors extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         // sun = world.func_35464_b(1.0F) * 0.95F + 0.05F;
-                        registerLoadStore(ALOAD, 1 + updateLightmapOffset),
-                        FCONST_1,
+                        ALOAD_2,
+                        push(1.0f),
                         captureReference(INVOKEVIRTUAL),
                         push(0.95f),
                         FMUL,
                         push(0.05f),
                         FADD,
-                        registerLoadStore(FSTORE, 3 + updateLightmapOffset),
+                        FSTORE, 4,
 
                         // lightsun = world.worldProvider.lightBrightnessTable[i / 16] * sun;
-                        registerLoadStore(ALOAD, 1 + updateLightmapOffset),
+                        ALOAD_2,
                         captureReference(GETFIELD),
                         captureReference(GETFIELD),
-                        registerLoadStore(ILOAD, 2 + updateLightmapOffset),
+                        ILOAD_3,
                         BIPUSH, 16,
                         IDIV,
                         FALOAD,
-                        registerLoadStore(FLOAD, 3 + updateLightmapOffset),
+                        FLOAD, 4,
                         FMUL,
-                        registerLoadStore(FSTORE, 4 + updateLightmapOffset),
+                        FSTORE, 5,
 
                         // lighttorch = world.worldProvider.lightBrightnessTable[i % 16] * (torchFlickerX * 0.1F + 1.5F);
                         any(0, 20),
-                        registerLoadStore(ILOAD, 2 + updateLightmapOffset),
+                        ILOAD_3,
                         BIPUSH, 16,
                         IREM,
                         FALOAD,
@@ -2223,7 +2214,7 @@ public class CustomColors extends Mod {
                         any(0, 200),
 
                         // if (world.lightningFlash > 0)
-                        registerLoadStore(ALOAD, 1 + updateLightmapOffset),
+                        ALOAD_2,
                         captureReference(GETFIELD),
                         IFLE, any(2),
 
@@ -2231,7 +2222,7 @@ public class CustomColors extends Mod {
                         any(0, 300),
 
                         // if (world.worldProvider.worldType == 1) {
-                        registerLoadStore(ALOAD, 1 + updateLightmapOffset),
+                        ALOAD_2,
                         backReference(2),
                         captureReference(GETFIELD),
                         ICONST_1,
@@ -2245,7 +2236,7 @@ public class CustomColors extends Mod {
                         captureReference(GETFIELD),
                         captureReference(GETFIELD),
                         captureReference(GETFIELD),
-                        registerLoadStore(FSTORE, 15 + updateLightmapOffset),
+                        FSTORE, 16,
 
                         // ...
                         any(0, 300),
@@ -2380,7 +2371,7 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        registerLoadStore(ASTORE, 1 + updateLightmapOffset)
+                        ASTORE_2
                     );
                 }
 
@@ -2389,8 +2380,8 @@ public class CustomColors extends Mod {
                     return buildCode(
                         // if (Lightmap.computeLightmap(this, world, partialTick)) {
                         ALOAD_0,
-                        registerLoadStore(ALOAD, 1 + updateLightmapOffset),
-                        updateLightmapTakesFloat ? buildCode(FLOAD_1) : push(0.0f),
+                        ALOAD_2,
+                        FLOAD_1,
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.LIGHTMAP_CLASS, "computeLightmap", "(LEntityRenderer;LWorld;F)Z")),
                         IFEQ, branch("A"),
 
