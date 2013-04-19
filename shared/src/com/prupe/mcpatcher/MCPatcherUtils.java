@@ -124,7 +124,7 @@ public class MCPatcherUtils {
         if (dir != null &&
             dir.isDirectory() &&
             new File(dir, "bin/lwjgl.jar").exists() &&
-            new File(dir, "resources").isDirectory()) {
+            (new File(dir, "resources").isDirectory() || new File(dir, "versions").isDirectory())) {
             minecraftDir = dir.getAbsoluteFile();
         } else {
             minecraftDir = null;
