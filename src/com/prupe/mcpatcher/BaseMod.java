@@ -248,7 +248,11 @@ public final class BaseMod extends Mod {
      */
     public static class MinecraftMod extends ClassMod {
         public MinecraftMod() {
-            addClassSignature(new FilenameSignature("net/minecraft/client/Minecraft.class"));
+            if (getMinecraftVersion().compareTo("13w16a") < 0) {
+                addClassSignature(new FilenameSignature("net/minecraft/client/Minecraft.class"));
+            } else {
+                addClassSignature(new ConstSignature("Minecraft-Client"));
+            }
         }
 
         public MinecraftMod mapTexturePackList() {
