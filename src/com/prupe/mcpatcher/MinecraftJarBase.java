@@ -13,14 +13,14 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 
-class MinecraftJar {
-    private File origFile;
-    private File outputFile;
-    private Info info;
-    private JarFile origJar;
-    private JarOutputStream outputJar;
+abstract class MinecraftJarBase {
+    protected File origFile;
+    protected File outputFile;
+    protected Info info;
+    protected JarFile origJar;
+    protected JarOutputStream outputJar;
 
-    MinecraftJar(File file) throws IOException {
+    protected MinecraftJarBase(File file) throws IOException {
         info = new Info(file);
         if (!info.isOk()) {
             throw info.exception;

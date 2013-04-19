@@ -402,7 +402,7 @@ class MainForm {
                 setStatusText("");
                 try {
                     MCPatcher.minecraft.restoreBackup();
-                    MinecraftJar.setDefaultTexturePack();
+                    MinecraftJarBase.setDefaultTexturePack();
                     JOptionPane.showMessageDialog(frame, "Restored original minecraft jar and reset texture pack to default.", "", JOptionPane.INFORMATION_MESSAGE);
                 } catch (IOException e1) {
                     Logger.log(e1);
