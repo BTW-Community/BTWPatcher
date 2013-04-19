@@ -169,8 +169,9 @@ public class TexturePackAPI {
                         }
                     } else {
                         String subpath = name.substring(directory.length());
+                        System.out.printf("name [%s], directory [%s], subpath [%s]\n", name, directory, subpath);
                         if (subpath.equals("") || subpath.startsWith("/")) {
-                            if (recursive || !subpath.substring(1).contains("/")) {
+                            if (recursive || subpath.equals("") || !subpath.substring(1).contains("/")) {
                                 resources.add("/" + name);
                             }
                         }
