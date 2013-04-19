@@ -17,11 +17,47 @@ abstract class MinecraftJarBase {
     protected File origFile;
     protected File outputFile;
     protected Info info;
-    protected JarFile origJar;
-    protected JarOutputStream outputJar;
+    private JarFile origJar;
+    private JarOutputStream outputJar;
 
     protected MinecraftJarBase(File file) throws IOException {
+        MinecraftVersion version = getVersionFromFilename(file);
+        Info tmpInfo = new Info(file, version);
+        if (!tmpInfo.isOk()) {
+            throw tmpInfo.exception;
+        }
+        version = tmpInfo.version;
+
+        outputFile = getOutputJarPath(version);
+        origFile = getInputJarPath(version);
+
+        if (!origFile.exists()) {
+            createBackup();
+        }
+
+        info = file.equals(origFile) ? tmpInfo : new Info(origFile, version);
+        if (!info.isOk()) {
+            throw info.exception;
+        }
+
+        Info outputInfo = file.equals(outputFile) ? tmpInfo : new Info(outputFile, version);
+        if (!outputInfo.isOk()) {
+            throw outputInfo.exception;
+        }
+
+        if (info.result == Info.MODDED_JAR && outputInfo.result == Info.UNMODDED_JAR) {
+            Logger.log(Logger.LOG_JAR, "copying unmodded %s over %s", outputFile.getName(), origFile.getName());
+            origFile.delete();
+            createBackup();
+            info = outputInfo;
+        }
     }
+
+    abstract MinecraftVersion getVersionFromFilename(File file);
+
+    abstract File getInputJarPath(MinecraftVersion version);
+
+    abstract File getOutputJarPath(MinecraftVersion version);
 
     @Override
     protected void finalize() throws Throwable {

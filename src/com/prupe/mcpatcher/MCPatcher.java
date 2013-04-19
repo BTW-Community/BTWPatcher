@@ -174,7 +174,13 @@ final public class MCPatcher {
             return false;
         }
         try {
-            minecraft = new MinecraftJarV1(file);
+            minecraft = MinecraftJarV1.create(file);
+            if (minecraft == null) {
+                minecraft = MinecraftJarV2.create(file);
+                if (minecraft == null) {
+                    return false;
+                }
+            }
             if (createBackup) {
                 minecraft.createBackup();
             }
