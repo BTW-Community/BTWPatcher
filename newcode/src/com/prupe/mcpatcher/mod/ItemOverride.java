@@ -24,7 +24,7 @@ class ItemOverride {
     private final List<String> textureNames = new ArrayList<String>();
     final ItemOverlay overlay;
     final int armorLayer;
-    final List<Integer> itemsIDs;
+    final BitSet itemsIDs;
     private final BitSet damage;
     private final BitSet stackSize;
     private final BitSet enchantmentIDs;
@@ -90,36 +90,27 @@ class ItemOverride {
         }
 
         value = MCPatcherUtils.getStringProperty(properties, "matchItems", "");
-        if (type != OVERLAY && value.equals("")) {
-            error("no matching items specified");
-        }
-        BitSet ids = new BitSet();
-        for (String token : value.split("\\s+")) {
-            if (token.equals("")) {
-                // nothing
-            } else if (token.matches("\\d+") || token.matches("\\d+-\\d+")) {
-                for (int i : MCPatcherUtils.parseIntegerList(token, CITUtils.LOWEST_ITEM_ID, CITUtils.HIGHEST_ITEM_ID)) {
-                    ids.set(i);
-                }
-            } else if (CITUtils.itemNameMap.containsKey(token)) {
-                ids.set(CITUtils.itemNameMap.get(token));
-            } else {
-                logger.warning("%s: unknown item %s", propertiesName, token);
+        if (value.equals("")) {
+            if (type != OVERLAY) {
+                error("no matching items specified");
             }
-        }
-        if (ids.isEmpty() || ids.nextClearBit(CITUtils.LOWEST_ITEM_ID) < 0) {
             itemsIDs = null;
         } else {
-            itemsIDs = new ArrayList<Integer>();
-            for (int bit = ids.nextSetBit(0); bit >= 0; bit = ids.nextSetBit(bit + 1)) {
-                itemsIDs.add(bit);
+            BitSet ids = parseBitSet(properties, "matchItems", CITUtils.LOWEST_ITEM_ID, CITUtils.HIGHEST_ITEM_ID);
+            boolean all = true;
+            for (int i = CITUtils.LOWEST_ITEM_ID; i <= CITUtils.HIGHEST_ITEM_ID; i++) {
+                if (Item.itemsList[i] != null && !ids.get(i)) {
+                    all = false;
+                    break;
+                }
             }
+            itemsIDs = all ? null : ids;
         }
 
-        damage = parseBitSet(properties, "damage", MAX_DAMAGE);
-        stackSize = parseBitSet(properties, "stackSize", MAX_STACK_SIZE);
-        enchantmentIDs = parseBitSet(properties, "enchantmentIDs", CITUtils.MAX_ENCHANTMENTS - 1);
-        enchantmentLevels = parseBitSet(properties, "enchantmentLevels", CITUtils.MAX_ENCHANTMENTS - 1);
+        damage = parseBitSet(properties, "damage", 0, MAX_DAMAGE);
+        stackSize = parseBitSet(properties, "stackSize", 0, MAX_STACK_SIZE);
+        enchantmentIDs = parseBitSet(properties, "enchantmentIDs", 0, CITUtils.MAX_ENCHANTMENTS - 1);
+        enchantmentLevels = parseBitSet(properties, "enchantmentLevels", 0, CITUtils.MAX_ENCHANTMENTS - 1);
 
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             String name = (String) entry.getKey();
@@ -207,13 +198,13 @@ class ItemOverride {
         logger.error(propertiesName + ": " + format, o);
     }
 
-    private static BitSet parseBitSet(Properties properties, String tag, int max) {
+    private static BitSet parseBitSet(Properties properties, String tag, int min, int max) {
         String value = MCPatcherUtils.getStringProperty(properties, tag, "");
         if (value.equals("")) {
             return null;
         }
         BitSet bits = new BitSet();
-        for (int i : MCPatcherUtils.parseIntegerList(value, 0, max)) {
+        for (int i : MCPatcherUtils.parseIntegerList(value, min, max)) {
             bits.set(i);
         }
         return bits;

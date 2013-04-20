@@ -39,7 +39,7 @@ public class CITUtils {
                 Arrays.fill(armors, null);
                 lastIcon = null;
                 itemNameMap.clear();
-                for (LOWEST_ITEM_ID = 0; LOWEST_ITEM_ID < MAX_ITEMS; LOWEST_ITEM_ID++) {
+                for (LOWEST_ITEM_ID = 256; LOWEST_ITEM_ID < MAX_ITEMS; LOWEST_ITEM_ID++) {
                     if (Item.itemsList[LOWEST_ITEM_ID] != null) {
                         break;
                     }
@@ -55,7 +55,6 @@ public class CITUtils {
                         if (item != null) {
                             String name = item.getItemName();
                             if (name != null) {
-                                name = name.replaceFirst("^item\\.", "");
                                 itemNameMap.put(name, i);
                             }
                         }
@@ -95,7 +94,7 @@ public class CITUtils {
                                     registerOverride(list, i, override);
                                 }
                             } else {
-                                for (int i : override.itemsIDs) {
+                                for (int i = override.itemsIDs.nextSetBit(0); i >= 0; i = override.itemsIDs.nextSetBit(i + 1)) {
                                     registerOverride(list, i, override);
                                     logger.fine("registered %s to item %d (%s)", override, i, getItemName(i));
                                 }
@@ -259,7 +258,7 @@ public class CITUtils {
             if (item != null) {
                 String name = item.getItemName();
                 if (name != null) {
-                    return name.replaceFirst("^item\\.", "");
+                    return name;
                 }
             }
         }
