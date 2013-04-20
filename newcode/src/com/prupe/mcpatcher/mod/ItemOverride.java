@@ -24,7 +24,7 @@ class ItemOverride {
     private final List<String> textureNames = new ArrayList<String>();
     final ItemOverlay overlay;
     final int armorLayer;
-    final List<Integer> itemsIDs = new ArrayList<Integer>();
+    final List<Integer> itemsIDs;
     private final BitSet damage;
     private final BitSet stackSize;
     private final BitSet enchantmentIDs;
@@ -90,24 +90,30 @@ class ItemOverride {
         }
 
         value = MCPatcherUtils.getStringProperty(properties, "matchItems", "");
+        if (type != OVERLAY && value.equals("")) {
+            error("no matching items specified");
+        }
+        BitSet ids = new BitSet();
         for (String token : value.split("\\s+")) {
             if (token.equals("")) {
                 // nothing
             } else if (token.matches("\\d+") || token.matches("\\d+-\\d+")) {
-                for (int i : MCPatcherUtils.parseIntegerList(token, 0, Item.itemsList.length - 1)) {
-                    itemsIDs.add(i);
+                for (int i : MCPatcherUtils.parseIntegerList(token, CITUtils.LOWEST_ITEM_ID, CITUtils.HIGHEST_ITEM_ID)) {
+                    ids.set(i);
                 }
+            } else if (CITUtils.itemNameMap.containsKey(token)) {
+                ids.set(CITUtils.itemNameMap.get(token));
             } else {
-                for (int i = 0; i < Item.itemsList.length; i++) {
-                    if (token.equals(CITUtils.getItemName(i))) {
-                        itemsIDs.add(i);
-                        break;
-                    }
-                }
+                logger.warning("%s: unknown item %s", propertiesName, token);
             }
         }
-        if (itemsIDs.isEmpty()) {
-            error("no matching items specified");
+        if (ids.isEmpty() || ids.nextClearBit(CITUtils.LOWEST_ITEM_ID) < 0) {
+            itemsIDs = null;
+        } else {
+            itemsIDs = new ArrayList<Integer>();
+            for (int bit = ids.nextSetBit(0); bit >= 0; bit = ids.nextSetBit(bit + 1)) {
+                itemsIDs.add(bit);
+            }
         }
 
         damage = parseBitSet(properties, "damage", MAX_DAMAGE);

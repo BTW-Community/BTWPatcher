@@ -10,6 +10,9 @@ public class CITUtils {
 
     static final int MAX_ITEMS = Item.itemsList.length;
     static final int MAX_ENCHANTMENTS = 256;
+    static int LOWEST_ITEM_ID;
+    static int HIGHEST_ITEM_ID;
+    static final Map<String, Integer> itemNameMap = new HashMap<String, Integer>();
     private static final int ITEM_ID_POTION = 373;
 
     private static final boolean enableItems = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "items", true);
@@ -35,6 +38,34 @@ public class CITUtils {
                 Arrays.fill(overlays, null);
                 Arrays.fill(armors, null);
                 lastIcon = null;
+                itemNameMap.clear();
+                for (LOWEST_ITEM_ID = 0; LOWEST_ITEM_ID < MAX_ITEMS; LOWEST_ITEM_ID++) {
+                    if (Item.itemsList[LOWEST_ITEM_ID] != null) {
+                        break;
+                    }
+                }
+                for (HIGHEST_ITEM_ID = MAX_ITEMS - 1; HIGHEST_ITEM_ID >= 0; HIGHEST_ITEM_ID--) {
+                    if (Item.itemsList[HIGHEST_ITEM_ID] != null) {
+                        break;
+                    }
+                }
+                if (LOWEST_ITEM_ID <= HIGHEST_ITEM_ID) {
+                    for (int i = LOWEST_ITEM_ID; i <= HIGHEST_ITEM_ID; i++) {
+                        Item item = Item.itemsList[i];
+                        if (item != null) {
+                            String name = item.getItemName();
+                            if (name != null) {
+                                name = name.replaceFirst("^item\\.", "");
+                                itemNameMap.put(name, i);
+                            }
+                        }
+                    }
+                    logger.fine("%d items, lowest used item id is %d (%s), highest is %d (%s)",
+                        itemNameMap.size(),
+                        LOWEST_ITEM_ID, getItemName(LOWEST_ITEM_ID),
+                        HIGHEST_ITEM_ID, getItemName(HIGHEST_ITEM_ID)
+                    );
+                }
                 if (enableItems || enableOverlays || enableArmor) {
                     for (String path : TexturePackAPI.listResources("/cit", ".properties", true, false, true)) {
                         ItemOverride override = ItemOverride.create(path);
@@ -58,9 +89,16 @@ public class CITUtils {
                                     logger.severe("unknown ItemOverride type %d", override.type);
                                     continue;
                             }
-                            for (int i : override.itemsIDs) {
-                                list[i] = registerOverride(list[i], override);
-                                logger.fine("registered %s to item %d (%s)", override, i, getItemName(i));
+                            if (override.itemsIDs == null) {
+                                logger.fine("registered %s to all items", override);
+                                for (int i = LOWEST_ITEM_ID; i <= HIGHEST_ITEM_ID; i++) {
+                                    registerOverride(list, i, override);
+                                }
+                            } else {
+                                for (int i : override.itemsIDs) {
+                                    registerOverride(list, i, override);
+                                    logger.fine("registered %s to item %d (%s)", override, i, getItemName(i));
+                                }
                             }
                         }
                     }
@@ -69,6 +107,12 @@ public class CITUtils {
 
             @Override
             public void afterChange() {
+            }
+
+            private void registerOverride(ItemOverride[][] list, int itemID, ItemOverride override) {
+                if (Item.itemsList[itemID] != null) {
+                    list[itemID] = registerOverride(list[itemID], override);
+                }
             }
 
             private ItemOverride[] registerOverride(ItemOverride[] list, ItemOverride override) {
@@ -215,7 +259,7 @@ public class CITUtils {
             if (item != null) {
                 String name = item.getItemName();
                 if (name != null) {
-                    return name;
+                    return name.replaceFirst("^item\\.", "");
                 }
             }
         }
