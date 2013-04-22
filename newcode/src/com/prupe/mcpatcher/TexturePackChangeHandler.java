@@ -45,6 +45,9 @@ abstract public class TexturePackChangeHandler {
 
     abstract public void afterChange();
 
+    public void afterChange2() {
+    }
+
     protected void setUpdateNeeded(boolean updateNeeded) {
         this.updateNeeded = updateNeeded;
     }
@@ -130,6 +133,16 @@ abstract public class TexturePackChangeHandler {
             } catch (Throwable e) {
                 e.printStackTrace();
                 logger.severe("%s.afterChange failed", handler.name);
+            }
+        }
+
+        for (int i = handlers.size() - 1; i >= 0; i--) {
+            TexturePackChangeHandler handler = handlers.get(i);
+            try {
+                handler.afterChange2();
+            } catch (Throwable e) {
+                e.printStackTrace();
+                logger.severe("%s.afterChange2 failed", handler.name);
             }
         }
 

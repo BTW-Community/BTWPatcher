@@ -93,10 +93,14 @@ public class TileLoader {
                     }
                     break;
                 }
+                changeHandlerCalled = false;
+            }
+
+            @Override
+            public void afterChange2() {
                 for (TileLoader loader : loaders) {
                     loader.finish();
                 }
-                changeHandlerCalled = false;
             }
         };
         TexturePackChangeHandler.register(changeHandler);
