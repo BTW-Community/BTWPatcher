@@ -72,7 +72,7 @@ public class CTMUtils {
                 }
                 ctmMaps.clear();
                 RenderPassAPI.instance.clear();
-                TessellatorUtils.clear(Tessellator.instance);
+                //TessellatorUtils.clear(Tessellator.instance);
                 Arrays.fill(blockOverrides, null);
                 tileOverrides.clear();
                 overridesToRegister.clear();
@@ -177,11 +177,11 @@ public class CTMUtils {
     }
 
     public static Tessellator getTessellator(Icon icon) {
-        return TessellatorUtils.getTessellator(Tessellator.instance, icon);
+        return null; //TessellatorUtils.getTessellator(Tessellator.instance, icon);
     }
 
     public static void registerIcons(TextureMap textureMap, Stitcher stitcher, String mapName, Map<StitchHolder, List<Texture>> map) {
-        TessellatorUtils.registerTextureMap(textureMap, mapName);
+        //TessellatorUtils.registerTextureMap(textureMap, mapName);
         CITUtils.registerIcons(textureMap, stitcher, mapName, map);
         if (mapName == null || (!mapName.equals("terrain") && !mapName.matches("ctm\\d+"))) {
             return;

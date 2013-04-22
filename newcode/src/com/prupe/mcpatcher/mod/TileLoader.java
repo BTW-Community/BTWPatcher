@@ -1,9 +1,6 @@
 package com.prupe.mcpatcher.mod;
 
-import com.prupe.mcpatcher.Config;
-import com.prupe.mcpatcher.MCLogger;
-import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.*;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
@@ -130,7 +127,7 @@ public class TileLoader {
             stitcher.addStitchHolder(holder);
             map.put(holder, textures);
             icons[i] = textureMap.registerIcon(imageName);
-            TessellatorUtils.registerIcon(textureMap, icons[i]);
+            //TessellatorUtils.registerIcon(textureMap, icons[i]);
             loadedIcons.put(imageName, icons[i]);
             String extra = (textures.size() > 1 ? ", " + textures.size() + " frames" : "");
             subLogger.finer("%s -> icon: %dx%d%s", imageName, texture.getWidth(), texture.getHeight(), extra);

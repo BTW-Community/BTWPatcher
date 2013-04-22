@@ -1,6 +1,5 @@
 package com.prupe.mcpatcher;
 
-import com.prupe.mcpatcher.mod.TessellatorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
@@ -66,8 +65,13 @@ abstract public class TileLoader {
                     for (TileLoader loader : loaders) {
                         if (!loader.tilesToRegister.isEmpty()) {
                             if (loader.allowOverflow && splitTextures > 0) {
+                                registerIconsCalled = false;
                                 String mapName = loader.mapName + "_overflow" + ++loader.overflowIndex;
                                 TextureMap map = new TextureMap(OVERFLOW_TEXTURE_MAP_INDEX, mapName, "not_used", missingTextureImage);
+                                if (!registerIconsCalled) {
+                                    logger.severe("TileLoader.registerIcons was never called!  Possible conflict in TextureMap.class");
+                                    break;
+                                }
                                 map.refreshTextures();
                             } else {
                                 loader.subLogger.warning("could not load all %s tiles (%d remaining)", loader.mapName, loader.tilesToRegister.size());
@@ -78,6 +82,9 @@ abstract public class TileLoader {
                     }
                     break;
                 }
+                for (TileLoader loader : loaders) {
+                    loader.finish();
+                }
                 changeHandlerCalled = false;
             }
         };
@@ -85,9 +92,15 @@ abstract public class TileLoader {
     }
 
     public static void registerIcons(TextureMap textureMap, Stitcher stitcher, String mapName, Map<StitchHolder, List<Texture>> map) {
+        registerIconsCalled = true;
+        if (!changeHandlerCalled) {
+            logger.severe("beforeChange was not called, invoking directly");
+            changeHandler.beforeChange();
+        }
+        TessellatorUtils.registerTextureMap(textureMap, mapName);
         for (TileLoader loader : loaders) {
             if (loader.isForThisMap(mapName)) {
-                while (!loader.tilesToRegister.isEmpty() && loader.registerOneIcon(textureMap, stitcher, map)) {
+                while (!loader.tilesToRegister.isEmpty() && loader.registerOneIcon(textureMap, stitcher, mapName, map)) {
                     loader.overflowMaps.add(textureMap);
                 }
             }
@@ -218,7 +231,7 @@ abstract public class TileLoader {
         }
     }
 
-    private boolean registerOneIcon(TextureMap textureMap, Stitcher stitcher, Map<StitchHolder, List<Texture>> map) {
+    private boolean registerOneIcon(TextureMap textureMap, Stitcher stitcher, String mapName, Map<StitchHolder, List<Texture>> map) {
         String name = tilesToRegister.iterator().next();
         List<Texture> textures = tileTextures.get(name);
         if (textures == null || textures.isEmpty()) {
@@ -242,7 +255,9 @@ abstract public class TileLoader {
         stitcher.addStitchHolder(holder);
         map.put(holder, textures);
         Icon icon = textureMap.registerIcon(name);
-        TessellatorUtils.registerIcon(textureMap, icon);
+        if (mapName.contains("_overflow")) {
+            TessellatorUtils.registerIcon(textureMap, icon);
+        }
         iconMap.put(name, icon);
         String extra = (textures.size() > 1 ? ", " + textures.size() + " frames" : "");
         subLogger.finer("%s -> icon: %dx%d%s", name, texture.getWidth(), texture.getHeight(), extra);

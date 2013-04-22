@@ -1,7 +1,5 @@
-package com.prupe.mcpatcher.mod;
+package com.prupe.mcpatcher;
 
-import com.prupe.mcpatcher.MCLogger;
-import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.Icon;
 import net.minecraft.src.Tessellator;
 import net.minecraft.src.TextureMap;
@@ -27,7 +25,7 @@ public class TessellatorUtils {
 
     static Tessellator getTessellator(Tessellator tessellator, Icon icon) {
         TextureMap textureMap = iconMap.get(icon);
-        if (textureMap == null || textureMap == CTMUtils.terrainMap) {
+        if (textureMap == null) {
             return tessellator;
         }
         Tessellator newTessellator = tessellator.children.get(textureMap);
@@ -51,7 +49,7 @@ public class TessellatorUtils {
         textureMapNames.put(textureMap, name);
     }
 
-    public static void registerIcon(TextureMap textureMap, Icon icon) {
+    static void registerIcon(TextureMap textureMap, Icon icon) {
         iconMap.put(icon, textureMap);
         iconsByName.put(icon.getIconName(), icon);
     }
@@ -122,7 +120,7 @@ public class TessellatorUtils {
         }
     }
 
-    public static void clear(Tessellator tessellator) {
+    static void clear(Tessellator tessellator) {
         for (Tessellator child : tessellator.children.values()) {
             clear(child);
         }
