@@ -30,6 +30,7 @@ abstract class CustomItemTextures extends Mod {
         mod.addClassMod(new RenderLivingMod());
         mod.addClassMod(new RenderBipedMod());
         mod.addClassMod(new RenderArmorMod());
+        mod.addClassMod(new EntityPlayerMod());
         if (haveEntityLivingSubclass) {
             mod.addClassMod(new EntityLivingSubMod());
         }
@@ -570,6 +571,32 @@ abstract class CustomItemTextures extends Mod {
                     );
                 }
             }.setInsertAfter(true));
+        }
+    }
+
+    private static class EntityPlayerMod extends ClassMod {
+        EntityPlayerMod() {
+            final MethodRef getCurrentArmor = new MethodRef(getDeobfClass(), "getCurrentArmor", "(I)LItemStack;");
+
+            setParentClass("EntityLiving");
+
+            addClassSignature(new ConstSignature("/mob/char.png"));
+            addClassSignature(new ConstSignature("random.eat"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin(),
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        ILOAD_1,
+                        anyReference(INVOKEVIRTUAL),
+                        ARETURN,
+                        end()
+                    );
+                }
+            }.setMethod(getCurrentArmor));
         }
     }
 

@@ -226,7 +226,15 @@ public class CITUtils {
         if (!enableOverlays || entity == null) {
             return false;
         }
-        ItemStack itemStack = entity instanceof EntityLivingSub ? ((EntityLivingSub) entity).getCurrentArmor(3 - pass) : entity.getCurrentArmor(3 - pass);
+        ItemStack itemStack = null;
+        // 13w16 eliminated EntityLiving.getCurrentArmor, so this nonsense is required.
+        // For 1.5, EntityLivingSub is simply mapped to EntityLiving so that the first
+        // if branch will always be used.
+        if (entity instanceof EntityLivingSub) {
+            itemStack = ((EntityLivingSub) entity).getCurrentArmor(3 - pass);
+        } else if (entity instanceof EntityPlayer) {
+            itemStack = ((EntityPlayer) entity).getCurrentArmor(3 - pass);
+        }
         if (itemStack == null) {
             return false;
         }
