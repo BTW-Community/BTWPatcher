@@ -16,27 +16,79 @@ abstract public class TileLoader {
     private static final List<TileLoader> loaders = new ArrayList<TileLoader>();
 
     private static final boolean debugTextures = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "debugTextures", false);
+    private static final int splitTextures = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "splitTextures", 1);
     private static String overrideTextureName;
 
-    private static final int MAX_CTM_TEXTURE_SIZE;
+    private static final TexturePackChangeHandler changeHandler;
+    private static boolean changeHandlerCalled;
+    private static boolean registerIconsCalled;
 
+    private static final int OVERFLOW_TEXTURE_MAP_INDEX = 2;
+    private static final int MAX_TILESHEET_SIZE;
+    private static final BufferedImage missingTextureImage = generateDebugTexture("missing", 64, 64, false);
+
+    protected final String mapName;
+    protected final boolean allowOverflow;
     protected final MCLogger subLogger;
-    private final List<String> tileNames = new ArrayList<String>();
+
+    private int overflowIndex;
     private final Set<String> tilesToRegister = new HashSet<String>();
     private final Map<String, List<Texture>> tileTextures = new HashMap<String, List<Texture>>();
     private final Map<String, Icon> iconMap = new HashMap<String, Icon>();
+    private final Set<TextureMap> overflowMaps = new HashSet<TextureMap>();
 
     static {
-        int maxSize = Minecraft.getMaxTextureSize();
+        int maxSize = 4096;
+        try {
+            maxSize = Minecraft.getMaxTextureSize();
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
         logger.config("max texture size is %dx%d", maxSize, maxSize);
-        MAX_CTM_TEXTURE_SIZE = (maxSize * maxSize) * 7 / 8;
+        MAX_TILESHEET_SIZE = (maxSize * maxSize) * 7 / 8;
+
+        changeHandler = new TexturePackChangeHandler("Tilesheet API", 2) {
+            @Override
+            public void initialize() {
+            }
+
+            @Override
+            public void beforeChange() {
+                changeHandlerCalled = true;
+                TessellatorUtils.clear(Tessellator.instance);
+                loaders.clear();
+            }
+
+            @Override
+            public void afterChange() {
+                loop:
+                while (true) {
+                    for (TileLoader loader : loaders) {
+                        if (!loader.tilesToRegister.isEmpty()) {
+                            if (loader.allowOverflow && splitTextures > 0) {
+                                String mapName = loader.mapName + "_overflow" + ++loader.overflowIndex;
+                                TextureMap map = new TextureMap(OVERFLOW_TEXTURE_MAP_INDEX, mapName, "not_used", missingTextureImage);
+                                map.refreshTextures();
+                            } else {
+                                loader.subLogger.warning("could not load all %s tiles (%d remaining)", loader.mapName, loader.tilesToRegister.size());
+                                loader.tilesToRegister.clear();
+                            }
+                            continue loop;
+                        }
+                    }
+                    break;
+                }
+                changeHandlerCalled = false;
+            }
+        };
+        TexturePackChangeHandler.register(changeHandler);
     }
 
     public static void registerIcons(TextureMap textureMap, Stitcher stitcher, String mapName, Map<StitchHolder, List<Texture>> map) {
         for (TileLoader loader : loaders) {
             if (loader.isForThisMap(mapName)) {
                 while (!loader.tilesToRegister.isEmpty() && loader.registerOneIcon(textureMap, stitcher, map)) {
-                    // nothing
+                    loader.overflowMaps.add(textureMap);
                 }
             }
         }
@@ -65,7 +117,7 @@ abstract public class TileLoader {
         }
     }
 
-    static BufferedImage generateDebugTexture(String text, int width, int height, boolean alternate) {
+    public static BufferedImage generateDebugTexture(String text, int width, int height, boolean alternate) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics graphics = image.getGraphics();
         graphics.setColor(alternate ? new Color(0, 255, 255, 128) : Color.WHITE);
@@ -90,7 +142,9 @@ abstract public class TileLoader {
         return image;
     }
 
-    public TileLoader(MCLogger logger) {
+    public TileLoader(String mapName, boolean allowOverflow, MCLogger logger) {
+        this.mapName = mapName;
+        this.allowOverflow = allowOverflow;
         subLogger = logger;
     }
 
@@ -127,7 +181,6 @@ abstract public class TileLoader {
 
     protected boolean preloadTile(String path, boolean alternate) {
         if (tileTextures.containsKey(path)) {
-            tileNames.add(path);
             return true;
         }
         List<Texture> textures;
@@ -152,18 +205,17 @@ abstract public class TileLoader {
         } finally {
             overrideTextureName = null;
         }
-        tileNames.add(path);
         tilesToRegister.add(path);
         tileTextures.put(path, textures);
         return true;
     }
 
-    protected String getNextTilesheetName() {
-        return null;
-    }
-
     protected boolean isForThisMap(String mapName) {
-        return false;
+        if (allowOverflow && splitTextures > 1) {
+            return mapName.startsWith(this.mapName + "_overflow");
+        } else {
+            return mapName.startsWith(this.mapName);
+        }
     }
 
     private boolean registerOneIcon(TextureMap textureMap, Stitcher stitcher, Map<StitchHolder, List<Texture>> map) {
@@ -176,8 +228,14 @@ abstract public class TileLoader {
         }
         int currentSize = getTextureSize(map.values());
         int newSize = getTextureSize(textures);
-        if (newSize + currentSize > MAX_CTM_TEXTURE_SIZE) {
-            return false;
+        if (newSize + currentSize > MAX_TILESHEET_SIZE) {
+            if (currentSize <= 0) {
+                subLogger.error("%s too big for any tilesheet (%.1fMB), dropping", name, (float) newSize / 1048576.0f);
+                tilesToRegister.remove(name);
+                return true;
+            } else {
+                return false;
+            }
         }
         Texture texture = textures.get(0);
         StitchHolder holder = new StitchHolder(texture);
@@ -189,7 +247,12 @@ abstract public class TileLoader {
         String extra = (textures.size() > 1 ? ", " + textures.size() + " frames" : "");
         subLogger.finer("%s -> icon: %dx%d%s", name, texture.getWidth(), texture.getHeight(), extra);
         tilesToRegister.remove(name);
-        return false;
+        return true;
+    }
+
+    public void finish() {
+        tilesToRegister.clear();
+        tileTextures.clear();
     }
 
     public Icon getIcon(String path) {

@@ -122,7 +122,7 @@ public class TessellatorUtils {
         }
     }
 
-    static void clear(Tessellator tessellator) {
+    public static void clear(Tessellator tessellator) {
         for (Tessellator child : tessellator.children.values()) {
             clear(child);
         }
