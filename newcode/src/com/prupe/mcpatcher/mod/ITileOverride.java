@@ -9,9 +9,7 @@ import java.util.Set;
 interface ITileOverride {
     boolean isDisabled();
 
-    int getTotalTextureSize();
-
-    void registerIcons(TextureMap textureMap, Stitcher stitcher, Map<StitchHolder, List<Texture>> map);
+    void registerIcons();
 
     Set<Integer> getMatchingBlocks();
 

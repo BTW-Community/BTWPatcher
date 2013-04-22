@@ -26,20 +26,12 @@ public class CTMUtils {
     static final int BLOCK_ID_SNOW = 78;
     static final int BLOCK_ID_CRAFTED_SNOW = 80;
 
-    private static final int CTM_TEXTURE_MAP_INDEX = 2;
-    private static final int MAX_CTM_TEXTURE_SIZE;
-
     private static final ITileOverride blockOverrides[][] = new ITileOverride[Block.blocksList.length][];
     private static final Map<String, ITileOverride[]> tileOverrides = new HashMap<String, ITileOverride[]>();
-    private static final List<ITileOverride> overridesToRegister = new ArrayList<ITileOverride>();
     private static TileOverrideImpl.BetterGrass betterGrass;
-    private static final TexturePackChangeHandler changeHandler;
-    private static boolean changeHandlerCalled;
-    private static boolean registerIconsCalled;
 
     static boolean active;
     static TextureMap terrainMap;
-    private static BufferedImage missingTextureImage = TileLoader.generateDebugTexture("missing", 64, 64, false);
     private static List<TextureMap> ctmMaps = new ArrayList<TextureMap>();
     private static TileLoader tileLoader;
 
@@ -51,32 +43,17 @@ public class CTMUtils {
         } catch (Throwable e) {
         }
 
-        int maxSize = Minecraft.getMaxTextureSize();
-        logger.config("max texture size is %dx%d", maxSize, maxSize);
-        MAX_CTM_TEXTURE_SIZE = (maxSize * maxSize) * 7 / 8;
-
-        changeHandler = new TexturePackChangeHandler(MCPatcherUtils.CONNECTED_TEXTURES, 2) {
+        TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.CONNECTED_TEXTURES, 3) {
             @Override
             public void initialize() {
             }
 
             @Override
             public void beforeChange() {
-                changeHandlerCalled = true;
-                try {
-                    for (TextureMap textureMap : ctmMaps) {
-                        textureMap.getTexture().unloadGLTexture();
-                    }
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
-                ctmMaps.clear();
                 RenderPassAPI.instance.clear();
-                //TessellatorUtils.clear(Tessellator.instance);
                 Arrays.fill(blockOverrides, null);
                 tileOverrides.clear();
-                overridesToRegister.clear();
-                tileLoader = new TileLoader(logger);
+                tileLoader = new TileLoader("terrain", true, logger);
                 betterGrass = null;
 
                 if (enableStandard || enableNonStandard) {
@@ -88,21 +65,10 @@ public class CTMUtils {
 
             @Override
             public void afterChange() {
-                if (splitTextures > 0 && (enableStandard || enableNonStandard)) {
-                    for (int index = 0; !overridesToRegister.isEmpty(); index++) {
-                        registerIconsCalled = false;
-                        TextureMap ctmMap = new TextureMap(CTM_TEXTURE_MAP_INDEX, "ctm" + index, "not_used", missingTextureImage);
-                        ctmMap.refreshTextures();
-                        if (!registerIconsCalled) {
-                            logger.severe("CTMUtils.registerIcons was never called!  Possible conflict in TextureMap.class");
-                            break;
-                        }
-                        ctmMaps.add(ctmMap);
-                    }
+                if (enableGrass) {
+                    betterGrass = new TileOverrideImpl.BetterGrass(TileLoader.terrainMap, BLOCK_ID_GRASS, "grass");
+                    new TileOverrideImpl.BetterGrass(TileLoader.itemsMap, BLOCK_ID_MYCELIUM, "mycel");
                 }
-                overridesToRegister.clear();
-                tileLoader.finish();
-
                 for (int i = 0; i < blockOverrides.length; i++) {
                     if (blockOverrides[i] != null && Block.blocksList[i] != null) {
                         for (ITileOverride override : blockOverrides[i]) {
@@ -112,10 +78,8 @@ public class CTMUtils {
                         }
                     }
                 }
-                changeHandlerCalled = false;
             }
-        };
-        TexturePackChangeHandler.register(changeHandler);
+        });
     }
 
     public static void start() {
@@ -176,79 +140,6 @@ public class CTMUtils {
         return icon;
     }
 
-    public static Tessellator getTessellator(Icon icon) {
-        return null; //TessellatorUtils.getTessellator(Tessellator.instance, icon);
-    }
-
-    public static void registerIcons(TextureMap textureMap, Stitcher stitcher, String mapName, Map<StitchHolder, List<Texture>> map) {
-        //TessellatorUtils.registerTextureMap(textureMap, mapName);
-        CITUtils.registerIcons(textureMap, stitcher, mapName, map);
-        if (mapName == null || (!mapName.equals("terrain") && !mapName.matches("ctm\\d+"))) {
-            return;
-        }
-        registerIconsCalled = true;
-        if (!changeHandlerCalled) {
-            logger.severe("beforeChange was not called, invoking directly");
-            changeHandler.beforeChange();
-        }
-
-        int totalSize = 0;
-        for (List<Texture> list : map.values()) {
-            if (list != null && list.size() > 0) {
-                Texture texture = list.get(0);
-                totalSize += texture.getWidth() * texture.getHeight();
-            }
-        }
-
-        logger.fine("begin registerIcons(%s): %.1fMB used, %d items to go",
-            mapName, 4 * totalSize / 1048576.0f, overridesToRegister.size()
-        );
-
-        if (mapName.equals("terrain")) {
-            terrainMap = textureMap;
-            if (enableGrass) {
-                betterGrass = new TileOverrideImpl.BetterGrass(textureMap, BLOCK_ID_GRASS, "grass");
-                registerOverride(betterGrass);
-                registerOverride(new TileOverrideImpl.BetterGrass(textureMap, BLOCK_ID_MYCELIUM, "mycel"));
-            }
-            if (splitTextures > 1) {
-                return;
-            }
-        }
-
-        boolean warned = false;
-        boolean progress = false;
-        for (Iterator<ITileOverride> iterator = overridesToRegister.iterator(); iterator.hasNext(); ) {
-            ITileOverride override = iterator.next();
-            if (override == null || override.isDisabled()) {
-                continue;
-            }
-            totalSize += override.getTotalTextureSize();
-            if (totalSize > MAX_CTM_TEXTURE_SIZE) {
-                float sizeMB = 4 * totalSize / 1048576.0f;
-                if (splitTextures > 0) {
-                    logger.info("%s map is nearly full (%.1fMB), starting a new one", mapName, sizeMB);
-                    totalSize -= override.getTotalTextureSize();
-                    break;
-                } else if (!warned) {
-                    logger.warning("%s map is nearly full (%.1fMB), crash may be imminent", mapName, sizeMB);
-                    warned = true;
-                }
-            }
-            override.registerIcons(textureMap, stitcher, map);
-            iterator.remove();
-            progress = true;
-        }
-
-        logger.fine("end registerIcons(%s): %.1fMB used, %d items to go",
-            mapName, 4 * totalSize / 1048576.0f, overridesToRegister.size()
-        );
-        if (warned || (!progress && !mapName.equals("terrain"))) {
-            logger.warning("clearing all remaining items");
-            overridesToRegister.clear();
-        }
-    }
-
     public static void updateAnimations() {
         for (TextureMap textureMap : ctmMaps) {
             textureMap.updateAnimations();
@@ -295,9 +186,6 @@ public class CTMUtils {
 
     private static void registerOverride(ITileOverride override) {
         if (override != null && !override.isDisabled()) {
-            if (override.getTotalTextureSize() > 0) {
-                overridesToRegister.add(override);
-            }
             if (override.getMatchingBlocks() != null) {
                 for (int index : override.getMatchingBlocks()) {
                     String blockName = "";

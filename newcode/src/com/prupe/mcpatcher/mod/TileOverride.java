@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.mod;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.TileLoader;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
@@ -135,7 +136,6 @@ abstract class TileOverride implements ITileOverride {
     private static final int CONNECT_BY_MATERIAL = 2;
 
     private static Method getBiomeNameAt;
-    private static Field maxBorder;
 
     private final String propertiesFile;
     private final String texturesDirectory;
@@ -170,10 +170,6 @@ abstract class TileOverride implements ITileOverride {
             logger.warning("biome integration failed");
         } else {
             logger.fine("biome integration active");
-        }
-        try {
-            maxBorder = Class.forName(MCPatcherUtils.AA_HELPER_CLASS).getDeclaredField("maxBorder");
-        } catch (Throwable e) {
         }
     }
 
@@ -313,7 +309,7 @@ abstract class TileOverride implements ITileOverride {
     }
 
     private boolean addIcon(String name) {
-        return tileLoader.preload(name, tileNames, renderPass > 2);
+        return tileLoader.preloadTile(TileLoader.expandTileName(texturesDirectory, name), renderPass > 2);
     }
 
     private void loadIcons(Properties properties) {
@@ -443,12 +439,11 @@ abstract class TileOverride implements ITileOverride {
         return String.format("%s[%s]", getMethod(), propertiesFile);
     }
 
-    public final int getTotalTextureSize() {
-        return tileLoader.getTextureSize(tileNames);
-    }
-
-    public final void registerIcons(TextureMap textureMap, Stitcher stitcher, Map<StitchHolder, List<Texture>> map) {
-        icons = tileLoader.registerIcons(textureMap, stitcher, map, tileNames);
+    public final void registerIcons() {
+        icons = new Icon[tileNames.size()];
+        for (int i = 0; i < icons.length; i++) {
+            icons[i] = tileLoader.getIcon(tileNames.get(i));
+        }
     }
 
     final void error(String format, Object... params) {

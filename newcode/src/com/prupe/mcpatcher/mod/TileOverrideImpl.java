@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.TileLoader;
 import com.prupe.mcpatcher.WeightedIndex;
 import net.minecraft.src.*;
 
@@ -421,11 +422,7 @@ class TileOverrideImpl {
             return false;
         }
 
-        public int getTotalTextureSize() {
-            return 0;
-        }
-
-        public void registerIcons(TextureMap textureMap, Stitcher stitcher, Map<StitchHolder, List<Texture>> map) {
+        public void registerIcons() {
         }
 
         public Set<Integer> getMatchingBlocks() {

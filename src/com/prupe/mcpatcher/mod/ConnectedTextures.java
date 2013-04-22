@@ -57,7 +57,6 @@ public class ConnectedTextures extends Mod {
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$Top");
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$Repeat");
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$BetterGrass");
-        addClassFile(MCPatcherUtils.TILE_LOADER_CLASS);
         addClassFile(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS);
         addClassFile(MCPatcherUtils.RENDER_PASS_API_CLASS);
 

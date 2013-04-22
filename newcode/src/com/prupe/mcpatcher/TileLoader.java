@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 
-abstract public class TileLoader {
+public class TileLoader {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CONNECTED_TEXTURES, "CTM");
 
     private static final List<TileLoader> loaders = new ArrayList<TileLoader>();
@@ -25,6 +25,9 @@ abstract public class TileLoader {
     private static final int OVERFLOW_TEXTURE_MAP_INDEX = 2;
     private static final int MAX_TILESHEET_SIZE;
     private static final BufferedImage missingTextureImage = generateDebugTexture("missing", 64, 64, false);
+
+    public static TextureMap terrainMap;
+    public static TextureMap itemsMap;
 
     protected final String mapName;
     protected final boolean allowOverflow;
@@ -54,7 +57,18 @@ abstract public class TileLoader {
             @Override
             public void beforeChange() {
                 changeHandlerCalled = true;
+                terrainMap = null;
+                itemsMap = null;
                 TessellatorUtils.clear(Tessellator.instance);
+                for (TileLoader loader : loaders) {
+                    try {
+                        for (TextureMap textureMap : loader.overflowMaps) {
+                            textureMap.getTexture().unloadGLTexture();
+                        }
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                    }
+                }
                 loaders.clear();
             }
 
@@ -98,6 +112,11 @@ abstract public class TileLoader {
             changeHandler.beforeChange();
         }
         TessellatorUtils.registerTextureMap(textureMap, mapName);
+        if (mapName.equals("terrain")) {
+            terrainMap = textureMap;
+        } else if (mapName.equals("items")) {
+            itemsMap = textureMap;
+        }
         for (TileLoader loader : loaders) {
             if (loader.isForThisMap(mapName)) {
                 while (!loader.tilesToRegister.isEmpty() && loader.registerOneIcon(textureMap, stitcher, mapName, map)) {
@@ -161,7 +180,7 @@ abstract public class TileLoader {
         subLogger = logger;
     }
 
-    protected static String expandTileName(String defaultDirectory, String name) {
+    public static String expandTileName(String defaultDirectory, String name) {
         if (!name.toLowerCase().endsWith(".png")) {
             name += ".png";
         }
@@ -192,7 +211,7 @@ abstract public class TileLoader {
         return size;
     }
 
-    protected boolean preloadTile(String path, boolean alternate) {
+    public boolean preloadTile(String path, boolean alternate) {
         if (tileTextures.containsKey(path)) {
             return true;
         }
