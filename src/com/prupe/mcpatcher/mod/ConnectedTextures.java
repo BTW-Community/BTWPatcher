@@ -21,6 +21,7 @@ public class ConnectedTextures extends Mod {
         description = "Enables support for custom block textures.";
         version = "2.2";
 
+        addDependency(BaseTexturePackMod.NAME);
         addDependency(BaseTilesheetMod.NAME);
 
         configPanel = new ConfigPanel();
@@ -51,15 +52,7 @@ public class ConnectedTextures extends Mod {
         addClassFile(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS);
         addClassFile(MCPatcherUtils.RENDER_PASS_API_CLASS);
 
-        BaseTexturePackMod.earlyInitialize(MCPatcherUtils.CTM_UTILS_CLASS, "reset");
-    }
-
-    @Override
-    public String[] getLoggingCategories() {
-        return new String[] {
-            MCPatcherUtils.CONNECTED_TEXTURES,
-            MCPatcherUtils.CUSTOM_ITEM_TEXTURES,
-        };
+        BaseTexturePackMod.earlyInitialize(2, MCPatcherUtils.CTM_UTILS_CLASS, "reset");
     }
 
     private class ConfigPanel extends ModConfigPanel {

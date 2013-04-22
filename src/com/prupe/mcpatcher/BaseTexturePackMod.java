@@ -2,8 +2,7 @@ package com.prupe.mcpatcher;
 
 import javassist.bytecode.AccessFlag;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -12,7 +11,7 @@ import static javassist.bytecode.Opcode.*;
 public class BaseTexturePackMod extends Mod {
     public static final String NAME = "__TexturePackBase";
 
-    private static final Map<String, String> earlyInitMethods = new HashMap<String, String>();
+    private static final List<EarlyInitEntry> earlyInitMethods = new ArrayList<EarlyInitEntry>();
 
     protected final MethodRef earlyInitialize = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "earlyInitialize", "(Ljava/lang/String;Ljava/lang/String;)V");
     protected final MethodRef checkForTexturePackChange = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "checkForTexturePackChange", "()V");
@@ -48,15 +47,27 @@ public class BaseTexturePackMod extends Mod {
 
     @Override
     public String[] getLoggingCategories() {
-        if (name.equals(NAME)) {
-            return new String[]{"Texture Pack"};
-        } else {
-            return super.getLoggingCategories();
-        }
+        return new String[]{"Texture Pack"};
     }
 
-    public static void earlyInitialize(String className, String methodName) {
-        earlyInitMethods.put(className, methodName);
+    public static void earlyInitialize(int order, String className, String methodName) {
+        earlyInitMethods.add(new EarlyInitEntry(order, className, methodName));
+    }
+
+    private static class EarlyInitEntry implements Comparable<EarlyInitEntry> {
+        private final int order;
+        private final String className;
+        private final String methodName;
+
+        EarlyInitEntry(int order, String className, String methodName) {
+            this.order = order;
+            this.className = className;
+            this.methodName = methodName;
+        }
+
+        public int compareTo(EarlyInitEntry o) {
+            return order - o.order;
+        }
     }
 
     private class MinecraftMod extends BaseMod.MinecraftMod {
@@ -106,11 +117,12 @@ public class BaseTexturePackMod extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     byte[] earlyInitCode = new byte[0];
-                    for (Map.Entry<String, String> entry : earlyInitMethods.entrySet()) {
+                    Collections.sort(earlyInitMethods);
+                    for (EarlyInitEntry entry : earlyInitMethods) {
                         earlyInitCode = buildCode(
                             earlyInitCode,
-                            push(entry.getKey()),
-                            push(entry.getValue()),
+                            push(entry.className),
+                            push(entry.methodName),
                             reference(INVOKESTATIC, earlyInitialize)
                         );
                     }

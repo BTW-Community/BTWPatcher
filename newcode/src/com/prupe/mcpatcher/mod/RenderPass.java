@@ -70,7 +70,7 @@ public class RenderPass {
             }
         };
 
-        TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.BETTER_GLASS, 3) {
+        TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.BETTER_GLASS, 4) {
             @Override
             public void beforeChange() {
                 blendMethod = BlendMethod.ALPHA;

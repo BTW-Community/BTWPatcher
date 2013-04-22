@@ -31,7 +31,12 @@ public class BaseTilesheetMod extends Mod {
         addClassFile(MCPatcherUtils.TILE_LOADER_CLASS + "$1");
         addClassFile(MCPatcherUtils.TESSELLATOR_UTILS_CLASS);
 
-        BaseTexturePackMod.earlyInitialize(MCPatcherUtils.TILE_LOADER_CLASS, "init");
+        BaseTexturePackMod.earlyInitialize(1, MCPatcherUtils.TILE_LOADER_CLASS, "init");
+    }
+
+    @Override
+    public String[] getLoggingCategories() {
+        return new String[]{"Tilesheet"};
     }
 
     private class RenderEngineMod extends BaseMod.RenderEngineMod {
@@ -472,6 +477,7 @@ public class BaseTilesheetMod extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // TileLoader.registerIcons(this, stitcher, mapName, map);
                         ALOAD_0,
                         ALOAD, stitcherRegister,
                         ALOAD_0,

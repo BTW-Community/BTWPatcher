@@ -24,6 +24,7 @@ public class CustomItemTextures extends Mod {
 
         haveEntityLivingSubclass = getMinecraftVersion().compareTo("13w16a") >= 0;
 
+        addDependency(BaseTexturePackMod.NAME);
         addDependency(BaseTilesheetMod.NAME);
 
         addClassMod(new BaseMod.TessellatorMod());
@@ -38,7 +39,7 @@ public class CustomItemTextures extends Mod {
         addClassMod(new RenderLivingMod());
         addClassMod(new RenderBipedMod());
         addClassMod(new RenderArmorMod());
-        addClassMod(new EntityLivingMod());
+        addClassMod(new EntityLivingMod()); // in 1.5 these two will resolve to the same class
         addClassMod(new EntityLivingSubMod());
         addClassMod(new EntityPlayerMod());
 

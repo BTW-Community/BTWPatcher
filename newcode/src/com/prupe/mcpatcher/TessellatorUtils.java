@@ -12,13 +12,12 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 public class TessellatorUtils {
-    private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CONNECTED_TEXTURES, "CTM");
+    private static final MCLogger logger = MCLogger.getLogger("Tilesheet");
 
     private static final Integer MAGIC_VALUE = 0x12345678;
 
     private static final Map<TextureMap, String> textureMapNames = new WeakHashMap<TextureMap, String>();
     private static final Map<Icon, TextureMap> iconMap = new HashMap<Icon, TextureMap>();
-    private static final Map<String, Icon> iconsByName = new HashMap<String, Icon>();
     private static Field[] fieldsToCopy;
 
     public static boolean haveBufferSize;
@@ -55,11 +54,6 @@ public class TessellatorUtils {
 
     static void registerIcon(TextureMap textureMap, Icon icon) {
         iconMap.put(icon, textureMap);
-        iconsByName.put(icon.getIconName(), icon);
-    }
-
-    static Icon getIconByName(String name) {
-        return iconsByName.get(name);
     }
 
     private static Field[] getFieldsToCopy(Tessellator tessellator) {
@@ -131,7 +125,6 @@ public class TessellatorUtils {
         tessellator.children.clear();
         textureMapNames.clear();
         iconMap.clear();
-        iconsByName.clear();
     }
 
     public static void resetChildren(Tessellator tessellator) {
