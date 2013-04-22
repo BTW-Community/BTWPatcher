@@ -3,6 +3,11 @@ package com.prupe.mcpatcher.mod;
 import com.prupe.mcpatcher.*;
 import javassist.bytecode.AccessFlag;
 
+import javax.swing.*;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
@@ -26,6 +31,8 @@ public class CustomItemTextures extends Mod {
 
         addDependency(BaseTexturePackMod.NAME);
         addDependency(BaseTilesheetMod.NAME);
+
+        configPanel = new ConfigPanel();
 
         addClassMod(new BaseMod.TessellatorMod());
         addClassMod(new BaseMod.NBTTagCompoundMod().mapGetTagList());
@@ -55,6 +62,46 @@ public class CustomItemTextures extends Mod {
         addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$Entry");
     }
 
+    private class ConfigPanel extends ModConfigPanel {
+        private JPanel panel;
+        private JCheckBox itemsCheckBox;
+        private JCheckBox overlayCheckBox;
+        private JCheckBox armorCheckBox;
+
+        @Override
+        public JPanel getPanel() {
+            return panel;
+        }
+
+        @Override
+        public void load() {
+            itemsCheckBox.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    Config.set(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "items", itemsCheckBox.isSelected());
+                }
+            });
+
+            overlayCheckBox.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    Config.set(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "overlays", overlayCheckBox.isSelected());
+                }
+            });
+
+            armorCheckBox.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    Config.set(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "armor", armorCheckBox.isSelected());
+                }
+            });
+        }
+
+        @Override
+        public void save() {
+            itemsCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "items", true));
+            overlayCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "overlays", true));
+            armorCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "armor", true));
+        }
+    }
+    
     private class ItemMod extends BaseMod.ItemMod {
         ItemMod() {
             final MethodRef getIconIndex = new MethodRef(getDeobfClass(), "getIconIndex", "(LItemStack;)LIcon;");

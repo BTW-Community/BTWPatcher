@@ -17,9 +17,9 @@ public class CITUtils {
     static final Map<String, Integer> itemNameMap = new HashMap<String, Integer>();
     private static final int ITEM_ID_POTION = 373;
 
-    private static final boolean enableItems = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "items", true);
-    private static final boolean enableOverlays = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "itemOverlays", true);
-    private static final boolean enableArmor = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "armor", true);
+    private static final boolean enableItems = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "items", true);
+    private static final boolean enableOverlays = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "overlays", true);
+    private static final boolean enableArmor = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "armor", true);
 
     static TileLoader tileLoader;
     private static final ItemOverride[][] items = new ItemOverride[MAX_ITEMS][];
