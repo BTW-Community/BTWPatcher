@@ -43,8 +43,8 @@ abstract class UserInterface {
     }
 
     boolean go() {
-        File defaultMinecraft = MCPatcherUtils.getMinecraftPath("bin", "minecraft.jar");
-        if (!defaultMinecraft.exists()) {
+        File defaultMinecraft = MinecraftJarBase.getJarPathForVersion(Config.instance.getConfigValue(Config.TAG_SELECTED_PROFILE));
+        if (!defaultMinecraft.isFile()) {
             showCorruptJarError(defaultMinecraft);
             setBusy(false);
             return false;

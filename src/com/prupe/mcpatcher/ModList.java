@@ -46,7 +46,6 @@ class ModList {
         new BuiltInMod(BaseMod.NAME, BaseMod.class, true, false),
         new BuiltInMod(BaseTexturePackMod.NAME, BaseTexturePackMod.class, true, false),
         new BuiltInMod(MCPatcherUtils.EXTENDED_HD, ExtendedHD.class, false, false),
-        new BuiltInMod(MCPatcherUtils.HD_FONT, HDFont.class, false, false),
         new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, RandomMobs.class, false, false),
         new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, CustomColors.class, false, false),
         new BuiltInMod(MCPatcherUtils.CONNECTED_TEXTURES, ConnectedTextures.class, false, false),
@@ -95,7 +94,7 @@ class ModList {
         final JarFile jar = new JarFile(file);
         URLClassLoader loader = new URLClassLoader(new URL[]{file.toURI().toURL()}, getClass().getClassLoader());
         for (JarEntry entry : Collections.list(jar.entries())) {
-            if (!entry.isDirectory() && MinecraftJar.isClassFile(entry.getName())) {
+            if (!entry.isDirectory() && MinecraftJarBase.isClassFile(entry.getName())) {
                 Mod mod = loadCustomMod(loader, ClassMap.filenameToClassName(entry.getName()));
                 if (addNoReplace(mod)) {
                     Logger.log(Logger.LOG_MOD, "new %s()", mod.getClass().getName());

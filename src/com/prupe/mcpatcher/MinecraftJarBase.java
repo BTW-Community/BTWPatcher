@@ -13,37 +13,57 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 
-class MinecraftJar {
-    private File origFile;
-    private File outputFile;
-    private Info info;
+abstract class MinecraftJarBase {
+    protected File origFile;
+    protected File outputFile;
+    protected Info info;
     private JarFile origJar;
     private JarOutputStream outputJar;
 
-    MinecraftJar(File file) throws IOException {
-        info = new Info(file);
+    protected MinecraftJarBase(File file) throws IOException {
+        MinecraftVersion version = getVersionFromFilename(file);
+        Info tmpInfo = new Info(file, version);
+        if (!tmpInfo.isOk()) {
+            throw tmpInfo.exception;
+        }
+        version = tmpInfo.version;
+
+        outputFile = getOutputJarPath(version);
+        origFile = getInputJarPath(version);
+
+        if (!origFile.exists()) {
+            createBackup();
+        }
+
+        info = file.equals(origFile) ? tmpInfo : new Info(origFile, version);
         if (!info.isOk()) {
             throw info.exception;
         }
 
-        if (file.getName().equals("minecraft.jar")) {
-            origFile = new File(file.getParent(), "minecraft-" + info.version.getVersionString() + ".jar");
-            outputFile = file;
-            Info origInfo = new Info(origFile);
-            if (origInfo.result == Info.MODDED_JAR && info.result == Info.UNMODDED_JAR) {
-                Logger.log(Logger.LOG_JAR, "copying unmodded %s over %s", outputFile.getName(), origFile.getName());
-                origFile.delete();
-            }
-            if (!origFile.exists()) {
-                createBackup();
-            } else if (origInfo.isOk()) {
-                info = origInfo;
-            }
-        } else {
-            origFile = file;
-            outputFile = new File(file.getParent(), "minecraft.jar");
+        Info outputInfo = file.equals(outputFile) ? tmpInfo : new Info(outputFile, version);
+        if (!outputInfo.isOk()) {
+            throw outputInfo.exception;
+        }
+
+        if (info.result == Info.MODDED_JAR && outputInfo.result == Info.UNMODDED_JAR) {
+            Logger.log(Logger.LOG_JAR, "copying unmodded %s over %s", outputFile.getName(), origFile.getName());
+            origFile.delete();
+            createBackup();
+            info = outputInfo;
         }
     }
+
+    abstract MinecraftVersion getVersionFromFilename(File file);
+
+    abstract File getInputJarPath(MinecraftVersion version);
+
+    abstract File getOutputJarPath(MinecraftVersion version);
+
+    abstract File getNativesDir();
+
+    abstract void addToClassPath(List<File> classPath);
+
+    abstract String getMainClass();
 
     @Override
     protected void finalize() throws Throwable {
@@ -65,6 +85,19 @@ class MinecraftJar {
             Logger.log(Logger.LOG_MAIN, "WARNING: could not determine original md5 sum");
         } else if (info.result == Info.MODDED_JAR) {
             Logger.log(Logger.LOG_MAIN, "WARNING: possibly modded minecraft.jar (orig md5 %s)", info.origMD5);
+        }
+    }
+
+    static File getJarPathForVersion(String versionString) {
+        MinecraftVersion version = MinecraftVersion.parseVersion(versionString);
+        if (version == null) {
+            version = MinecraftVersion.parseShortVersion(versionString);
+        }
+        if (version != null && version.compareTo("13w16a") >= 0) {
+            versionString = version.getVersionString();
+            return MCPatcherUtils.getMinecraftPath("versions", versionString, versionString + ".jar");
+        } else {
+            return MCPatcherUtils.getMinecraftPath("bin", "minecraft.jar");
         }
     }
 
@@ -191,20 +224,19 @@ class MinecraftJar {
 
     void run() {
         File file = getOutputFile();
-        File directory = file.getParentFile();
-        StringBuilder cp = new StringBuilder();
-        for (String p : new String[]{file.getName(), "lwjgl.jar", "lwjgl_util.jar", "jinput.jar"}) {
-            cp.append(directory.getPath());
-            cp.append("/");
-            cp.append(p);
-            cp.append(File.pathSeparatorChar);
+        StringBuilder sb = new StringBuilder();
+        List<File> classPath = new ArrayList<File>();
+        addToClassPath(classPath);
+        classPath.add(outputFile);
+        for (File f : classPath) {
+            sb.append(f.getPath()).append(File.pathSeparatorChar);
         }
 
         List<String> params = new ArrayList<String>();
         params.add("java");
         params.add("-cp");
-        params.add(cp.toString());
-        params.add("-Djava.library.path=" + new File(directory, "natives").getPath());
+        params.add(sb.toString());
+        params.add("-Djava.library.path=" + getNativesDir().getPath());
         int heapSize = Config.getInt(Config.TAG_JAVA_HEAP_SIZE, 1024);
         if (heapSize > 0) {
             params.add("-Xmx" + heapSize + "M");
@@ -214,7 +246,7 @@ class MinecraftJar {
         if (directSize > 0) {
             params.add("-XX:MaxDirectMemorySize=" + directSize + "M");
         }
-        params.add("net.minecraft.client.Minecraft");
+        params.add(getMainClass());
 
         ProcessBuilder pb = new ProcessBuilder(params.toArray(new String[params.size()]));
         pb.redirectErrorStream(true);
@@ -222,7 +254,7 @@ class MinecraftJar {
 
         Logger.log(Logger.LOG_MAIN);
         Logger.log(Logger.LOG_MAIN, "Launching %s", file.getPath());
-        StringBuilder sb = new StringBuilder();
+        sb = new StringBuilder();
         for (String s : pb.command()) {
             if (sb.length() > 0) {
                 sb.append(' ');
@@ -267,7 +299,7 @@ class MinecraftJar {
         }
     }
 
-    private static class Info {
+    static class Info {
         static final int MISSING_JAR = 0;
         static final int IO_ERROR = 1;
         static final int CORRUPT_JAR = 2;
@@ -281,7 +313,8 @@ class MinecraftJar {
         int result;
         IOException exception;
 
-        Info(File minecraftJar) {
+        Info(File minecraftJar, MinecraftVersion version) {
+            this.version = version;
             result = initialize(minecraftJar);
             if (!isOk() && exception == null) {
                 exception = new IOException("unexpected error opening " + minecraftJar.getPath());
@@ -319,7 +352,9 @@ class MinecraftJar {
                     }
                     entries.add(name);
                 }
-                version = extractVersion(jar, md5);
+                if (version == null) {
+                    version = extractVersion(jar, md5);
+                }
             } catch (ZipException e) {
                 exception = e;
                 return CORRUPT_JAR;
