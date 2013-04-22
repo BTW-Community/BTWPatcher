@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class HDConfig extends ModConfigPanel {
+    private static final String TAG_FONT = "hdFont";
     private static final String TAG_ANIMATIONS = "animations";
     private static final String TAG_COMPASS = "fancyCompass";
     private static final String TAG_CLOCK = "fancyClock";
@@ -25,6 +26,7 @@ public class HDConfig extends ModConfigPanel {
     private static final String TAG_BYTE_BUFFER = "byteBufferAllocation";
 
     private JPanel panel;
+    private JCheckBox fontCheckBox;
     private JCheckBox animationCheckBox;
     private JCheckBox compassCheckBox;
     private JCheckBox clockCheckBox;
@@ -40,6 +42,12 @@ public class HDConfig extends ModConfigPanel {
     private JLabel byteBufferLabel;
 
     HDConfig() {
+        fontCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Config.set(MCPatcherUtils.EXTENDED_HD, TAG_FONT, fontCheckBox.isSelected());
+            }
+        });
+
         animationCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Config.set(MCPatcherUtils.EXTENDED_HD, TAG_ANIMATIONS, animationCheckBox.isSelected());
@@ -181,6 +189,7 @@ public class HDConfig extends ModConfigPanel {
 
     @Override
     public void load() {
+        fontCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_FONT, true));
         animationCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_ANIMATIONS, true));
         compassCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_COMPASS, true));
         clockCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_CLOCK, true));

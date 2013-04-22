@@ -46,7 +46,6 @@ class ModList {
         new BuiltInMod(BaseMod.NAME, BaseMod.class, true, false),
         new BuiltInMod(BaseTexturePackMod.NAME, BaseTexturePackMod.class, true, false),
         new BuiltInMod(MCPatcherUtils.EXTENDED_HD, ExtendedHD.class, false, false),
-        new BuiltInMod(MCPatcherUtils.HD_FONT, HDFont.class, false, false),
         new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, RandomMobs.class, false, false),
         new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, CustomColors.class, false, false),
         new BuiltInMod(MCPatcherUtils.CONNECTED_TEXTURES, ConnectedTextures.class, false, false),
