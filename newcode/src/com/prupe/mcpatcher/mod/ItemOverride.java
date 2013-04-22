@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.mod;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.TileLoader;
 import net.minecraft.src.*;
 
 import java.util.*;
@@ -21,7 +22,6 @@ class ItemOverride {
     final int type;
     Icon icon;
     final String textureName;
-    private final List<String> textureNames = new ArrayList<String>();
     final ItemOverlay overlay;
     final int armorLayer;
     final BitSet itemsIDs;
@@ -132,13 +132,12 @@ class ItemOverride {
 
     void preload(TileLoader tileLoader) {
         if (type == ITEM) {
-            tileLoader.preload(textureName, textureNames, false);
+            tileLoader.preloadTile(textureName, false);
         }
     }
 
-    void registerIcon(TextureMap textureMap, Stitcher stitcher, Map<StitchHolder, List<Texture>> map) {
-        Icon[] icons = CITUtils.tileLoader.registerIcons(textureMap, stitcher, map, textureNames);
-        icon = icons[0];
+    void registerIcon(TileLoader tileLoader) {
+        icon = tileLoader.getIcon(textureName);
     }
 
     boolean match(int itemID, ItemStack itemStack, int[] itemEnchantmentLevels) {

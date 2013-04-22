@@ -23,7 +23,7 @@ public class TessellatorUtils {
 
     public static boolean haveBufferSize;
 
-    static Tessellator getTessellator(Tessellator tessellator, Icon icon) {
+    public static Tessellator getTessellator(Tessellator tessellator, Icon icon) {
         TextureMap textureMap = iconMap.get(icon);
         if (textureMap == null) {
             return tessellator;

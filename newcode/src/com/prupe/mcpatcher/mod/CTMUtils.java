@@ -13,7 +13,6 @@ public class CTMUtils {
     private static final boolean enableStandard = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "standard", true);
     private static final boolean enableNonStandard = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "nonStandard", true);
     private static final boolean enableGrass = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "grass", false);
-    private static final int splitTextures = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "splitTextures", 1);
     private static final int maxRecursion = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "maxRecursion", 4);
 
     static final int BLOCK_ID_LOG = 17;
@@ -28,13 +27,10 @@ public class CTMUtils {
 
     private static final ITileOverride blockOverrides[][] = new ITileOverride[Block.blocksList.length][];
     private static final Map<String, ITileOverride[]> tileOverrides = new HashMap<String, ITileOverride[]>();
+    private static TileLoader tileLoader;
     private static TileOverrideImpl.BetterGrass betterGrass;
 
     static boolean active;
-    static TextureMap terrainMap;
-    private static List<TextureMap> ctmMaps = new ArrayList<TextureMap>();
-    private static TileLoader tileLoader;
-
     static ITileOverride lastOverride;
 
     static {
@@ -84,12 +80,12 @@ public class CTMUtils {
 
     public static void start() {
         lastOverride = null;
-        if (terrainMap == null) {
+        if (TileLoader.terrainMap == null) {
             active = false;
             Tessellator.instance.textureMap = null;
         } else {
             active = true;
-            Tessellator.instance.textureMap = terrainMap;
+            Tessellator.instance.textureMap = TileLoader.terrainMap;
         }
     }
 
@@ -138,12 +134,6 @@ public class CTMUtils {
             }
         }
         return icon;
-    }
-
-    public static void updateAnimations() {
-        for (TextureMap textureMap : ctmMaps) {
-            textureMap.updateAnimations();
-        }
     }
 
     public static void reset() {
@@ -209,7 +199,7 @@ public class CTMUtils {
     }
 
     private static ITileOverride[] registerOverride(ITileOverride[] overrides, ITileOverride override, String description) {
-        logger.fine("using %s for %s", override.toString(), description);
+        logger.fine("using %s for %s", override, description);
         if (overrides == null) {
             return new ITileOverride[]{override};
         } else {

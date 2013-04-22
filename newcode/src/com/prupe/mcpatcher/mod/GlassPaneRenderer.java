@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.TessellatorUtils;
 import net.minecraft.src.Block;
 import net.minecraft.src.Icon;
 import net.minecraft.src.RenderBlocks;
@@ -137,7 +138,7 @@ public class GlassPaneRenderer {
 
     private static void setupTileCoords(int face) {
         Icon icon = icons[face];
-        tessellator = CTMUtils.getTessellator(icons[face]);
+        tessellator = TessellatorUtils.getTessellator(Tessellator.instance, icons[face]);
         u0 = icon.getMinU();
         uM = icon.getInterpolatedU(8.0);
         u1 = icon.getMaxU();

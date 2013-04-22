@@ -3,7 +3,9 @@ package com.prupe.mcpatcher.mod;
 import com.prupe.mcpatcher.*;
 import net.minecraft.src.*;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CITUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
@@ -30,10 +32,10 @@ public class CITUtils {
     private static Icon lastIcon;
 
     static {
-        TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, 2) {
+        TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, 3) {
             @Override
             public void beforeChange() {
-                tileLoader = new TileLoader(logger);
+                tileLoader = new TileLoader("items", false, logger);
                 Arrays.fill(items, null);
                 Arrays.fill(overlays, null);
                 Arrays.fill(armors, null);
@@ -106,6 +108,13 @@ public class CITUtils {
 
             @Override
             public void afterChange() {
+                for (ItemOverride[] overrides1 : items) {
+                    if (overrides1 != null) {
+                        for (ItemOverride override : overrides1) {
+                            override.registerIcon(tileLoader);
+                        }
+                    }
+                }
             }
 
             private void registerOverride(ItemOverride[][] list, int itemID, ItemOverride override) {
@@ -298,19 +307,5 @@ public class CITUtils {
             }
         }
         return levels;
-    }
-
-    static void registerIcons(TextureMap textureMap, Stitcher stitcher, String mapName, Map<StitchHolder, List<Texture>> map) {
-        if (!mapName.equals("items")) {
-            return;
-        }
-        for (ItemOverride[] overrides1 : items) {
-            if (overrides1 != null) {
-                for (ItemOverride override : overrides1) {
-                    override.registerIcon(textureMap, stitcher, map);
-                }
-            }
-        }
-        tileLoader.finish();
     }
 }

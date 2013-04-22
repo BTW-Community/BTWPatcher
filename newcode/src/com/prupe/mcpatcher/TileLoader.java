@@ -149,6 +149,14 @@ public class TileLoader {
         }
     }
 
+    public static void updateAnimations() {
+        for (TileLoader loader : loaders) {
+            for (TextureMap textureMap : loader.overflowMaps) {
+                textureMap.updateAnimations();
+            }
+        }
+    }
+
     public static BufferedImage generateDebugTexture(String text, int width, int height, boolean alternate) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics graphics = image.getGraphics();
