@@ -26,7 +26,6 @@ public class MCPatcherUtils {
     private static String minecraftVersion;
     private static String patcherVersion;
 
-    public static final String HD_TEXTURES = "HD Textures";
     public static final String EXTENDED_HD = "Extended HD";
     public static final String HD_FONT = "HD Font";
     public static final String RANDOM_MOBS = "Random Mobs";

@@ -1,16 +1,22 @@
 package com.prupe.mcpatcher.mod;
 
+import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.FontRenderer;
+import net.minecraft.src.RenderEngine;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
 public class FontUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.HD_FONT);
+
+    public static final boolean enable = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "hdFont", true);
 
     private static final int ROWS = 16;
     private static final int COLS = 16;
@@ -23,7 +29,7 @@ public class FontUtils {
     public static String getFontName(String font) {
         font = font.replaceFirst("_hd\\.png$", ".png");
         String newFont = font.replaceFirst("\\.png$", "_hd.png");
-        if (TexturePackAPI.hasResource(newFont)) {
+        if (enable && TexturePackAPI.hasResource(newFont)) {
             logger.fine("using %s instead of %s", newFont, font);
             return newFont;
         } else {
@@ -31,8 +37,18 @@ public class FontUtils {
         }
     }
 
-    public static float[] computeCharWidths(FontRenderer fontRenderer, String filename, BufferedImage image, int[] rgb, int[] charWidth) {
+    public static BufferedImage getImage(Object o, String name) throws IOException {
+        return enable ? TexturePackAPI.getImage(name) : ImageIO.read(RenderEngine.class.getResourceAsStream(name));
+    }
+
+    public static float[] computeCharWidthsf(FontRenderer fontRenderer, String filename, BufferedImage image, int[] rgb, int[] charWidth) {
         float[] charWidthf = new float[charWidth.length];
+        if (!enable) {
+            for (int i = 0; i < charWidth.length; i++) {
+                charWidthf[i] = charWidth[i];
+            }
+            return charWidthf;
+        }
         int width = image.getWidth();
         int height = image.getHeight();
         int colWidth = width / COLS;
@@ -97,6 +113,10 @@ public class FontUtils {
         } else {
             return fontRenderer.charWidthf[ch];
         }
+    }
+
+    public static float getCharWidthf(FontRenderer fontRenderer, int[] charWidth, int ch) {
+        return enable ? fontRenderer.charWidthf[ch] * fontRenderer.fontHeight / 8.0f : (float) charWidth[ch];
     }
 
     public static float getStringWidthf(FontRenderer fontRenderer, String s) {
