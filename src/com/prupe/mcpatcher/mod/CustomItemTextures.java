@@ -7,13 +7,19 @@ import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
-abstract class CustomItemTextures {
+abstract class CustomItemTextures extends Mod {
     private static final String GLINT_PNG = "%blur%/misc/glint.png";
     private static final MethodRef glDepthFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthFunc", "(I)V");
     private static final MethodRef getEntityItem = new MethodRef("EntityItem", "getEntityItem", "()LItemStack;");
     private static final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffect", "()Z");
 
-    static void setup(Mod mod) {
+    private static boolean haveEntityLivingSubclass;
+    private static String entityLivingSubclass;
+
+    static void setupMod(Mod mod) {
+        haveEntityLivingSubclass = getMinecraftVersion().compareTo("13w16a") >= 0;
+        entityLivingSubclass = haveEntityLivingSubclass ? "EntityLivingSub" : "EntityLiving";
+
         mod.addClassMod(new BaseMod.NBTTagCompoundMod().mapGetTagList());
         mod.addClassMod(new BaseMod.NBTTagListMod());
         mod.addClassMod(new ItemMod());
@@ -24,6 +30,9 @@ abstract class CustomItemTextures {
         mod.addClassMod(new RenderLivingMod());
         mod.addClassMod(new RenderBipedMod());
         mod.addClassMod(new RenderArmorMod());
+        if (haveEntityLivingSubclass) {
+            mod.addClassMod(new EntityLivingSubMod());
+        }
 
         mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS);
         mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$1");
@@ -450,7 +459,7 @@ abstract class CustomItemTextures {
 
     private static class RenderBipedMod extends ClassMod {
         RenderBipedMod() {
-            final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(LEntityLiving;IF)V");
+            final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(L" + entityLivingSubclass + ";IF)V");
             final MethodRef getCurrentArmor = new MethodRef("EntityLiving", "getCurrentArmor", "(I)LItemStack;");
 
             addClassSignature(new ConstSignature("/armor/"));
@@ -561,6 +570,17 @@ abstract class CustomItemTextures {
                     );
                 }
             }.setInsertAfter(true));
+        }
+    }
+
+    private static class EntityLivingSubMod extends ClassMod {
+        EntityLivingSubMod() {
+            setParentClass("EntityLiving");
+
+            addClassSignature(new ConstSignature("explode"));
+            addClassSignature(new ConstSignature("CanPickUpLoot"));
+            addClassSignature(new ConstSignature("PersistenceRequired"));
+            addClassSignature(new ConstSignature("Equipment"));
         }
     }
 }

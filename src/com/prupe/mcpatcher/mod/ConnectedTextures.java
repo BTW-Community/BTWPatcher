@@ -63,7 +63,7 @@ public class ConnectedTextures extends Mod {
 
         BaseTexturePackMod.earlyInitialize(MCPatcherUtils.CTM_UTILS_CLASS, "reset");
 
-        CustomItemTextures.setup(this);
+        CustomItemTextures.setupMod(this);
     }
 
     @Override
