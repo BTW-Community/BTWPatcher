@@ -460,7 +460,7 @@ abstract class CustomItemTextures extends Mod {
     private static class RenderBipedMod extends ClassMod {
         RenderBipedMod() {
             final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(L" + entityLivingSubclass + ";IF)V");
-            final MethodRef getCurrentArmor = new MethodRef("EntityLiving", "getCurrentArmor", "(I)LItemStack;");
+            final MethodRef getCurrentArmor = new MethodRef(entityLivingSubclass, "getCurrentArmor", "(I)LItemStack;");
 
             addClassSignature(new ConstSignature("/armor/"));
             addClassSignature(new ConstSignature("_"));

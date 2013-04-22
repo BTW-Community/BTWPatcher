@@ -226,7 +226,7 @@ public class CITUtils {
         if (!enableOverlays || entity == null) {
             return false;
         }
-        ItemStack itemStack = entity.getCurrentArmor(3 - pass);
+        ItemStack itemStack = entity instanceof EntityLivingSub ? ((EntityLivingSub) entity).getCurrentArmor(3 - pass) : entity.getCurrentArmor(3 - pass);
         if (itemStack == null) {
             return false;
         }
