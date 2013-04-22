@@ -35,7 +35,12 @@ public class HDFont extends Mod {
             final MethodRef getStringWidth = new MethodRef(getDeobfClass(), "getStringWidth", "(Ljava/lang/String;)I");
             final MethodRef getCharWidth = new MethodRef(getDeobfClass(), "getCharWidth", "(C)I");
             final MethodRef computeCharWidths = new MethodRef(getDeobfClass(), "computeCharWidths", "(Ljava/lang/String;)V");
+            final MethodRef getImageWidth = new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I");
+            final MethodRef getFontName = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getFontName", "(Ljava/lang/String;)Ljava/lang/String;");
+            final MethodRef computeCharWidthsf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "computeCharWidthsf", "(LFontRenderer;Ljava/lang/String;Ljava/awt/image/BufferedImage;[I[I)[F");
+            final MethodRef getCharWidthf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getCharWidthf", "(LFontRenderer;[II)F");
             final MethodRef getStringWidthf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getStringWidthf", "(LFontRenderer;Ljava/lang/String;)F");
+            final FieldRef enableFont = new FieldRef(MCPatcherUtils.FONT_UTILS_CLASS, "enable", "Z");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -101,7 +106,7 @@ public class HDFont extends Mod {
                         ALOAD_0,
                         ALOAD_0,
                         reference(GETFIELD, fontTextureName),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getFontName", "(Ljava/lang/String;)Ljava/lang/String;")),
+                        reference(INVOKESTATIC, getFontName),
                         reference(PUTFIELD, fontTextureName)
                     );
                 }
@@ -117,7 +122,7 @@ public class HDFont extends Mod {
                         public String getMatchExpression() {
                             return buildExpression(
                                 capture(anyALOAD),
-                                reference(INVOKEVIRTUAL, new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I")),
+                                reference(INVOKEVIRTUAL, getImageWidth),
                                 any(0, 10),
                                 anyILOAD,
                                 anyILOAD,
@@ -138,7 +143,7 @@ public class HDFont extends Mod {
 
                 @Override
                 public String getDescription() {
-                    return "FontUtils.computeCharWidths on init";
+                    return "FontUtils.computeCharWidthsf on init";
                 }
 
                 @Override
@@ -151,6 +156,7 @@ public class HDFont extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // this.charWidthf = FontUtils.computeCharWidthsf(this, filename, image, rgb, this.charWidth);
                         ALOAD_0,
                         ALOAD_0,
                         ALOAD_1,
@@ -158,7 +164,7 @@ public class HDFont extends Mod {
                         ALOAD, rgbRegister,
                         ALOAD_0,
                         reference(GETFIELD, charWidth),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "computeCharWidths", "(LFontRenderer;Ljava/lang/String;Ljava/awt/image/BufferedImage;[I[I)[F")),
+                        reference(INVOKESTATIC, computeCharWidthsf),
                         reference(PUTFIELD, charWidthf)
                     );
                 }
@@ -176,6 +182,7 @@ public class HDFont extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // return (float) this.charWidth[...];
                         ALOAD_0,
                         reference(GETFIELD, charWidth),
                         capture(any(1, 4)),
@@ -188,16 +195,12 @@ public class HDFont extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // return FontUtils.getCharWidthf(this, this.charWidth, ...);
                         ALOAD_0,
-                        reference(GETFIELD, charWidthf),
+                        ALOAD_0,
+                        reference(GETFIELD, charWidth),
                         getCaptureGroup(1),
-                        FALOAD,
-                        ALOAD_0,
-                        reference(GETFIELD, fontHeight),
-                        I2F,
-                        FMUL,
-                        push(8.0f),
-                        FDIV,
+                        reference(INVOKESTATIC, getCharWidthf),
                         FRETURN
                     );
                 }
@@ -206,26 +209,32 @@ public class HDFont extends Mod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "replace getStringWidth";
+                    return "override getStringWidth";
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        begin(),
-                        any(0, 1000),
-                        end()
+                        begin()
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // if (FontUtils.enable) {
+                        reference(GETSTATIC, enableFont),
+                        IFEQ, branch("A"),
+
+                        // return FontUtils.getStringWidthf(this, string);
                         ALOAD_0,
                         ALOAD_1,
                         reference(INVOKESTATIC, getStringWidthf),
                         F2I,
-                        IRETURN
+                        IRETURN,
+
+                        // }
+                        label("A")
                     );
                 }
             }.targetMethod(getStringWidth));
@@ -264,6 +273,7 @@ public class HDFont extends Mod {
             final MethodRef readURL = new MethodRef("javax.imageio.ImageIO", "read", "(Ljava/net/URL;)Ljava/awt/image/BufferedImage;");
             final MethodRef getResourceAsStream = new MethodRef("java.lang.Class", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
             final MethodRef readStream = new MethodRef("javax.imageio.ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
+            final MethodRef getImage = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getImage", "(Ljava/lang/Object;Ljava/lang/String;)Ljava/awt/image/BufferedImage;");
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -290,7 +300,7 @@ public class HDFont extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(Ljava/lang/Object;Ljava/lang/String;)Ljava/awt/image/BufferedImage;"))
+                        reference(INVOKESTATIC, getImage)
                     );
                 }
             });
