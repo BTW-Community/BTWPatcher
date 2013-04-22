@@ -18,7 +18,7 @@ public class ConnectedTextures extends Mod {
     public ConnectedTextures() {
         name = MCPatcherUtils.CONNECTED_TEXTURES;
         author = "MCPatcher";
-        description = "Enables support for custom block and item textures.";
+        description = "Enables support for custom block textures.";
         version = "2.2";
 
         addDependency(BaseTexturePackMod.NAME);
@@ -62,8 +62,6 @@ public class ConnectedTextures extends Mod {
         addClassFile(MCPatcherUtils.RENDER_PASS_API_CLASS);
 
         BaseTexturePackMod.earlyInitialize(MCPatcherUtils.CTM_UTILS_CLASS, "reset");
-
-        CustomItemTextures.setupMod(this);
     }
 
     @Override

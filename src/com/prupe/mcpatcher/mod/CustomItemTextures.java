@@ -7,7 +7,7 @@ import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
-abstract class CustomItemTextures extends Mod {
+public class CustomItemTextures extends Mod {
     private static final String GLINT_PNG = "%blur%/misc/glint.png";
     private static final MethodRef glDepthFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthFunc", "(I)V");
     private static final MethodRef getEntityItem = new MethodRef("EntityItem", "getEntityItem", "()LItemStack;");
@@ -15,6 +15,19 @@ abstract class CustomItemTextures extends Mod {
 
     private static boolean haveEntityLivingSubclass;
     private static final String entityLivingSubclass = "EntityLivingSub";
+
+    public CustomItemTextures() {
+        name = MCPatcherUtils.CUSTOM_ITEM_TEXTURES;
+        author = "MCPatcher";
+        description = "Enables support for custom item textures, enchantments, and armor.";
+        version = "0.2";
+
+        addDependency(BaseTexturePackMod.NAME);
+
+        addClassMod(new BaseMod.TessellatorMod());
+
+        setupMod(this);
+    }
 
     static void setupMod(Mod mod) {
         haveEntityLivingSubclass = getMinecraftVersion().compareTo("13w16a") >= 0;

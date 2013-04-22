@@ -51,6 +51,7 @@ class ModList {
         new BuiltInMod(MCPatcherUtils.CONNECTED_TEXTURES, ConnectedTextures.class, false, false),
         new BuiltInMod(MCPatcherUtils.BETTER_GLASS, BetterGlass.class, false, false),
         new BuiltInMod(MCPatcherUtils.BETTER_SKIES, BetterSkies.class, false, false),
+        new BuiltInMod(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, CustomItemTextures.class, false, false),
         new BuiltInMod(MCPatcherUtils.GLSL_SHADERS, GLSLShader.class, false, true),
     };
 
