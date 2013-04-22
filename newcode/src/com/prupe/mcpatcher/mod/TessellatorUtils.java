@@ -51,7 +51,7 @@ public class TessellatorUtils {
         textureMapNames.put(textureMap, name);
     }
 
-    static void registerIcon(TextureMap textureMap, Icon icon) {
+    public static void registerIcon(TextureMap textureMap, Icon icon) {
         iconMap.put(icon, textureMap);
         iconsByName.put(icon.getIconName(), icon);
     }
