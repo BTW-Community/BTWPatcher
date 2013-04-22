@@ -14,11 +14,10 @@ abstract class CustomItemTextures extends Mod {
     private static final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffect", "()Z");
 
     private static boolean haveEntityLivingSubclass;
-    private static String entityLivingSubclass;
+    private static final String entityLivingSubclass = "EntityLivingSub";
 
     static void setupMod(Mod mod) {
         haveEntityLivingSubclass = getMinecraftVersion().compareTo("13w16a") >= 0;
-        entityLivingSubclass = haveEntityLivingSubclass ? "EntityLivingSub" : "EntityLiving";
 
         mod.addClassMod(new BaseMod.NBTTagCompoundMod().mapGetTagList());
         mod.addClassMod(new BaseMod.NBTTagListMod());
@@ -30,10 +29,9 @@ abstract class CustomItemTextures extends Mod {
         mod.addClassMod(new RenderLivingMod());
         mod.addClassMod(new RenderBipedMod());
         mod.addClassMod(new RenderArmorMod());
+        mod.addClassMod(new EntityLivingMod());
+        mod.addClassMod(new EntityLivingSubMod());
         mod.addClassMod(new EntityPlayerMod());
-        if (haveEntityLivingSubclass) {
-            mod.addClassMod(new EntityLivingSubMod());
-        }
 
         mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS);
         mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$1");
@@ -574,6 +572,27 @@ abstract class CustomItemTextures extends Mod {
         }
     }
 
+    private static class EntityLivingMod extends ClassMod {
+        EntityLivingMod() {
+            setParentClass("Entity");
+
+            addClassSignature(new ConstSignature("/mob/char.png"));
+            addClassSignature(new ConstSignature("Health"));
+            addClassSignature(new ConstSignature("HurtTime"));
+        }
+    }
+
+    private static class EntityLivingSubMod extends ClassMod {
+        EntityLivingSubMod() {
+            setParentClass(haveEntityLivingSubclass ? "EntityLiving" : "Entity");
+
+            addClassSignature(new ConstSignature("explode"));
+            addClassSignature(new ConstSignature("CanPickUpLoot"));
+            addClassSignature(new ConstSignature("PersistenceRequired"));
+            addClassSignature(new ConstSignature("Equipment"));
+        }
+    }
+
     private static class EntityPlayerMod extends ClassMod {
         EntityPlayerMod() {
             final MethodRef getCurrentArmor = new MethodRef(getDeobfClass(), "getCurrentArmor", "(I)LItemStack;");
@@ -597,17 +616,6 @@ abstract class CustomItemTextures extends Mod {
                     );
                 }
             }.setMethod(getCurrentArmor));
-        }
-    }
-
-    private static class EntityLivingSubMod extends ClassMod {
-        EntityLivingSubMod() {
-            setParentClass("EntityLiving");
-
-            addClassSignature(new ConstSignature("explode"));
-            addClassSignature(new ConstSignature("CanPickUpLoot"));
-            addClassSignature(new ConstSignature("PersistenceRequired"));
-            addClassSignature(new ConstSignature("Equipment"));
         }
     }
 }
