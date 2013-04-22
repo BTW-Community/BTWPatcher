@@ -16,12 +16,16 @@ public class HDFont extends Mod {
 
         addDependency(BaseTexturePackMod.NAME);
 
-        addClassMod(new FontRendererMod());
-
-        addClassFile(MCPatcherUtils.FONT_UTILS_CLASS);
+        setupMod(this);
     }
 
-    private class FontRendererMod extends BaseMod.FontRendererMod {
+    static void setupMod(Mod mod) {
+        mod.addClassMod(new FontRendererMod());
+
+        mod.addClassFile(MCPatcherUtils.FONT_UTILS_CLASS);
+    }
+
+    private static class FontRendererMod extends BaseMod.FontRendererMod {
         FontRendererMod() {
             final FieldRef fontTextureName = new FieldRef(getDeobfClass(), "fontTextureName", "Ljava/lang/String;");
             final FieldRef charWidth = new FieldRef(getDeobfClass(), "charWidth", "[I");
