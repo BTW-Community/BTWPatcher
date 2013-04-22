@@ -308,8 +308,12 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    private boolean addIcon(String name) {
-        return tileLoader.preloadTile(TileLoader.expandTileName(texturesDirectory, name), renderPass > 2);
+    private boolean addIcon(String path) {
+        if (!path.endsWith(".png")) {
+            path += ".png";
+        }
+        tileNames.add(path);
+        return tileLoader.preloadTile(path, renderPass > 2);
     }
 
     private void loadIcons(Properties properties) {
@@ -442,7 +446,10 @@ abstract class TileOverride implements ITileOverride {
     public final void registerIcons() {
         icons = new Icon[tileNames.size()];
         for (int i = 0; i < icons.length; i++) {
-            icons[i] = tileLoader.getIcon(tileNames.get(i));
+            String name = tileNames.get(i);
+            if (name != null) {
+                icons[i] = tileLoader.getIcon(name);
+            }
         }
     }
 

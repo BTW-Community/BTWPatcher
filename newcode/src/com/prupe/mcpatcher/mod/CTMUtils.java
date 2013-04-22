@@ -25,6 +25,7 @@ public class CTMUtils {
     static final int BLOCK_ID_SNOW = 78;
     static final int BLOCK_ID_CRAFTED_SNOW = 80;
 
+    private static final List<ITileOverride> allOverrides = new ArrayList<ITileOverride>();
     private static final ITileOverride blockOverrides[][] = new ITileOverride[Block.blocksList.length][];
     private static final Map<String, ITileOverride[]> tileOverrides = new HashMap<String, ITileOverride[]>();
     private static TileLoader tileLoader;
@@ -47,6 +48,7 @@ public class CTMUtils {
             @Override
             public void beforeChange() {
                 RenderPassAPI.instance.clear();
+                allOverrides.clear();
                 Arrays.fill(blockOverrides, null);
                 tileOverrides.clear();
                 tileLoader = new TileLoader("terrain", true, logger);
@@ -62,8 +64,11 @@ public class CTMUtils {
             @Override
             public void afterChange() {
                 if (enableGrass) {
-                    betterGrass = new TileOverrideImpl.BetterGrass(TileLoader.terrainMap, BLOCK_ID_GRASS, "grass");
-                    new TileOverrideImpl.BetterGrass(TileLoader.itemsMap, BLOCK_ID_MYCELIUM, "mycel");
+                    betterGrass = new TileOverrideImpl.BetterGrass(tileLoader, BLOCK_ID_GRASS, "grass");
+                    new TileOverrideImpl.BetterGrass(tileLoader, BLOCK_ID_MYCELIUM, "mycel");
+                }
+                for (ITileOverride override : allOverrides) {
+                    override.registerIcons();
                 }
                 for (int i = 0; i < blockOverrides.length; i++) {
                     if (blockOverrides[i] != null && Block.blocksList[i] != null) {
@@ -80,13 +85,7 @@ public class CTMUtils {
 
     public static void start() {
         lastOverride = null;
-        if (TileLoader.terrainMap == null) {
-            active = false;
-            Tessellator.instance.textureMap = null;
-        } else {
-            active = true;
-            Tessellator.instance.textureMap = TileLoader.terrainMap;
-        }
+        active = tileLoader.setDefaultTextureMap(Tessellator.instance);
     }
 
     public static Icon getTile(RenderBlocks renderBlocks, Block block, int i, int j, int k, Icon origIcon, Tessellator tessellator) {
@@ -142,7 +141,7 @@ public class CTMUtils {
     public static void finish() {
         reset();
         RenderPassAPI.instance.finish();
-        Tessellator.instance.textureMap = null;
+        TessellatorUtils.clearDefaultTextureMap(Tessellator.instance);
         lastOverride = null;
         active = false;
     }
@@ -176,6 +175,7 @@ public class CTMUtils {
 
     private static void registerOverride(ITileOverride override) {
         if (override != null && !override.isDisabled()) {
+            boolean registered = false;
             if (override.getMatchingBlocks() != null) {
                 for (int index : override.getMatchingBlocks()) {
                     String blockName = "";
@@ -188,12 +188,17 @@ public class CTMUtils {
                         }
                     }
                     blockOverrides[index] = registerOverride(blockOverrides[index], override, "block " + index + blockName);
+                    registered = true;
                 }
             }
             if (override.getMatchingTiles() != null) {
                 for (String name : override.getMatchingTiles()) {
                     tileOverrides.put(name, registerOverride(tileOverrides.get(name), override, "tile " + name));
+                    registered = true;
                 }
+            }
+            if (registered) {
+                allOverrides.add(override);
             }
         }
     }

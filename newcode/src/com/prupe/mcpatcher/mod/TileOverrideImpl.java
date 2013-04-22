@@ -406,11 +406,11 @@ class TileOverrideImpl {
         private final Icon fullTile;
         private final Icon fullSnowTile;
 
-        BetterGrass(TextureMap terrainMap, int blockID, String tileName) {
+        BetterGrass(TileLoader tileLoader, int blockID, String tileName) {
             this.blockID = blockID;
             this.tileName = tileName;
-            fullSnowTile = terrainMap.registerIcon("snow");
-            fullTile = terrainMap.registerIcon(tileName + "_top");
+            fullSnowTile = tileLoader.registerIcon("snow");
+            fullTile = tileLoader.registerIcon(tileName + "_top");
         }
 
         @Override

@@ -13,8 +13,8 @@ public class CustomItemTextures extends Mod {
     private static final MethodRef getEntityItem = new MethodRef("EntityItem", "getEntityItem", "()LItemStack;");
     private static final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffect", "()Z");
 
-    private static boolean haveEntityLivingSubclass;
-    private static final String entityLivingSubclass = "EntityLivingSub";
+    private final boolean haveEntityLivingSubclass;
+    private final String entityLivingSubclass = "EntityLivingSub";
 
     public CustomItemTextures() {
         name = MCPatcherUtils.CUSTOM_ITEM_TEXTURES;
@@ -22,43 +22,39 @@ public class CustomItemTextures extends Mod {
         description = "Enables support for custom item textures, enchantments, and armor.";
         version = "0.2";
 
-        addDependency(BaseTexturePackMod.NAME);
-
-        addClassMod(new BaseMod.TessellatorMod());
-
-        setupMod(this);
-    }
-
-    static void setupMod(Mod mod) {
         haveEntityLivingSubclass = getMinecraftVersion().compareTo("13w16a") >= 0;
 
-        mod.addClassMod(new BaseMod.NBTTagCompoundMod().mapGetTagList());
-        mod.addClassMod(new BaseMod.NBTTagListMod());
-        mod.addClassMod(new ItemMod());
-        mod.addClassMod(new ItemStackMod());
-        mod.addClassMod(new EntityItemMod());
-        mod.addClassMod(new ItemRendererMod());
-        mod.addClassMod(new RenderItemMod());
-        mod.addClassMod(new RenderLivingMod());
-        mod.addClassMod(new RenderBipedMod());
-        mod.addClassMod(new RenderArmorMod());
-        mod.addClassMod(new EntityLivingMod());
-        mod.addClassMod(new EntityLivingSubMod());
-        mod.addClassMod(new EntityPlayerMod());
+        addDependency(BaseTilesheetMod.NAME);
 
-        mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS);
-        mod.addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$1");
-        mod.addClassFile(MCPatcherUtils.ITEM_OVERRIDE_CLASS);
-        mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_CLASS);
-        mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS);
-        mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$Group");
-        mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$AverageGroup");
-        mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$AverageGroup$1");
-        mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$CycleGroup");
-        mod.addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$Entry");
+        addClassMod(new BaseMod.TessellatorMod());
+        addClassMod(new BaseMod.NBTTagCompoundMod().mapGetTagList());
+        addClassMod(new BaseMod.NBTTagListMod());
+        addClassMod(new BaseMod.IconMod());
+        addClassMod(new ItemMod());
+        addClassMod(new ItemStackMod());
+        addClassMod(new EntityItemMod());
+        addClassMod(new ItemRendererMod());
+        addClassMod(new RenderItemMod());
+        addClassMod(new RenderLivingMod());
+        addClassMod(new RenderBipedMod());
+        addClassMod(new RenderArmorMod());
+        addClassMod(new EntityLivingMod());
+        addClassMod(new EntityLivingSubMod());
+        addClassMod(new EntityPlayerMod());
+
+        addClassFile(MCPatcherUtils.CIT_UTILS_CLASS);
+        addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$1");
+        addClassFile(MCPatcherUtils.ITEM_OVERRIDE_CLASS);
+        addClassFile(MCPatcherUtils.ITEM_OVERLAY_CLASS);
+        addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS);
+        addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$Group");
+        addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$AverageGroup");
+        addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$AverageGroup$1");
+        addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$CycleGroup");
+        addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$Entry");
     }
 
-    private static class ItemMod extends BaseMod.ItemMod {
+    private class ItemMod extends BaseMod.ItemMod {
         ItemMod() {
             final MethodRef getIconIndex = new MethodRef(getDeobfClass(), "getIconIndex", "(LItemStack;)LIcon;");
 
@@ -92,7 +88,7 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private static class ItemStackMod extends ClassMod {
+    private class ItemStackMod extends ClassMod {
         ItemStackMod() {
             final FieldRef stackSize = new FieldRef(getDeobfClass(), "stackSize", "I");
             final FieldRef itemID = new FieldRef(getDeobfClass(), "itemID", "I");
@@ -147,7 +143,7 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private static class EntityItemMod extends ClassMod {
+    private class EntityItemMod extends ClassMod {
         EntityItemMod() {
             addClassSignature(new ConstSignature("Health"));
             addClassSignature(new ConstSignature("Age"));
@@ -157,7 +153,7 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private static class GlintSignature extends BytecodeSignature {
+    private class GlintSignature extends BytecodeSignature {
         GlintSignature(MethodRef method) {
             setMethod(method);
         }
@@ -170,7 +166,7 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private static class ItemRendererMod extends ClassMod {
+    private class ItemRendererMod extends ClassMod {
         ItemRendererMod() {
             final MethodRef renderItem = new MethodRef(getDeobfClass(), "renderItem", "(LEntityLiving;LItemStack;I)V");
             final MethodRef renderItemIn2D = new MethodRef(getDeobfClass(), "renderItemIn2D", "(LTessellator;FFFFIIF)V");
@@ -236,7 +232,7 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private static class RenderItemMod extends ClassMod {
+    private class RenderItemMod extends ClassMod {
         RenderItemMod() {
             final FieldRef zLevel = new FieldRef(getDeobfClass(), "zLevel", "F");
             final MethodRef renderDroppedItem = new MethodRef(getDeobfClass(), "renderDroppedItem", "(LEntityItem;LIcon;IFFFF)V");
@@ -348,7 +344,7 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private static class RenderLivingMod extends ClassMod {
+    private class RenderLivingMod extends ClassMod {
         RenderLivingMod() {
             final MethodRef doRenderLiving = new MethodRef(getDeobfClass(), "doRenderLiving", "(LEntityLiving;DDDFF)V");
 
@@ -469,7 +465,7 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private static class RenderBipedMod extends ClassMod {
+    private class RenderBipedMod extends ClassMod {
         RenderBipedMod() {
             final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(L" + entityLivingSubclass + ";IF)V");
             final MethodRef getCurrentArmor = new MethodRef(entityLivingSubclass, "getCurrentArmor", "(I)LItemStack;");
@@ -496,7 +492,7 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private static class RenderArmorMod extends ClassMod {
+    private class RenderArmorMod extends ClassMod {
         RenderArmorMod() {
             setParentClass("RenderLiving");
             setMultipleMatchesAllowed(true);
@@ -585,7 +581,7 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private static class EntityLivingMod extends ClassMod {
+    private class EntityLivingMod extends ClassMod {
         EntityLivingMod() {
             setParentClass("Entity");
 
@@ -595,7 +591,7 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private static class EntityLivingSubMod extends ClassMod {
+    private class EntityLivingSubMod extends ClassMod {
         EntityLivingSubMod() {
             setParentClass(haveEntityLivingSubclass ? "EntityLiving" : "Entity");
 
@@ -606,7 +602,7 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private static class EntityPlayerMod extends ClassMod {
+    private class EntityPlayerMod extends ClassMod {
         EntityPlayerMod() {
             final MethodRef getCurrentArmor = new MethodRef(getDeobfClass(), "getCurrentArmor", "(I)LItemStack;");
 

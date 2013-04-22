@@ -26,14 +26,12 @@ public class TileLoader {
     private static final int MAX_TILESHEET_SIZE;
     private static final BufferedImage missingTextureImage = generateDebugTexture("missing", 64, 64, false);
 
-    public static TextureMap terrainMap;
-    public static TextureMap itemsMap;
-
     protected final String mapName;
     protected final boolean allowOverflow;
     protected final MCLogger subLogger;
 
     private int overflowIndex;
+    private TextureMap textureMap;
     private final Set<String> tilesToRegister = new HashSet<String>();
     private final Map<String, List<Texture>> tileTextures = new HashMap<String, List<Texture>>();
     private final Map<String, Icon> iconMap = new HashMap<String, Icon>();
@@ -57,8 +55,6 @@ public class TileLoader {
             @Override
             public void beforeChange() {
                 changeHandlerCalled = true;
-                terrainMap = null;
-                itemsMap = null;
                 TessellatorUtils.clear(Tessellator.instance);
                 for (TileLoader loader : loaders) {
                     try {
@@ -112,12 +108,10 @@ public class TileLoader {
             changeHandler.beforeChange();
         }
         TessellatorUtils.registerTextureMap(textureMap, mapName);
-        if (mapName.equals("terrain")) {
-            terrainMap = textureMap;
-        } else if (mapName.equals("items")) {
-            itemsMap = textureMap;
-        }
         for (TileLoader loader : loaders) {
+            if (loader.textureMap == null && mapName.equals(loader.mapName)) {
+                loader.textureMap = textureMap;
+            }
             if (loader.isForThisMap(mapName)) {
                 while (!loader.tilesToRegister.isEmpty() && loader.registerOneIcon(textureMap, stitcher, mapName, map)) {
                     loader.overflowMaps.add(textureMap);
@@ -182,21 +176,14 @@ public class TileLoader {
         return image;
     }
 
+    static void init() {
+    }
+
     public TileLoader(String mapName, boolean allowOverflow, MCLogger logger) {
         this.mapName = mapName;
         this.allowOverflow = allowOverflow;
         subLogger = logger;
-    }
-
-    public static String expandTileName(String defaultDirectory, String name) {
-        if (!name.toLowerCase().endsWith(".png")) {
-            name += ".png";
-        }
-        defaultDirectory = defaultDirectory.replaceFirst("/$", "");
-        if (!name.startsWith("/") && !defaultDirectory.equals("")) {
-            name = defaultDirectory + "/" + name;
-        }
-        return name;
+        loaders.add(this);
     }
 
     private static int getTextureSize(List<Texture> textures) {
@@ -299,5 +286,14 @@ public class TileLoader {
 
     public Icon getIcon(String path) {
         return iconMap.get(path);
+    }
+
+    public boolean setDefaultTextureMap(Tessellator tessellator) {
+        tessellator.textureMap = textureMap;
+        return textureMap != null;
+    }
+
+    public Icon registerIcon(String name) {
+        return textureMap.registerIcon(name);
     }
 }
