@@ -18,7 +18,7 @@ public class ConnectedTextures extends Mod {
     public ConnectedTextures() {
         name = MCPatcherUtils.CONNECTED_TEXTURES;
         author = "MCPatcher";
-        description = "Enables support for custom block textures.";
+        description = "Enables support for connected, randomized, and other custom terrain textures.";
         version = "2.2";
 
         addDependency(BaseTexturePackMod.NAME);

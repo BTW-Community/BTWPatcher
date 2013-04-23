@@ -15,7 +15,7 @@ public class ExtendedHD extends Mod {
 
         name = MCPatcherUtils.EXTENDED_HD;
         author = "MCPatcher";
-        description = "Provides extended support for custom animations, mipmapping, and other graphical features.";
+        description = "Provides support for custom animations, HD fonts, mipmapping, and other graphical features.";
         version = "2.2";
 
         configPanel = new HDConfig();
