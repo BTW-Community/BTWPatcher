@@ -505,10 +505,13 @@ class MainForm {
 
     File chooseMinecraftDir(File minecraftDir) {
         JOptionPane.showMessageDialog(null,
-            "Minecraft not found in\n" +
-                minecraftDir.getPath() + "\n\n" +
-                "If the game is installed somewhere else, please select the game\n" +
-                "folder (the one containing bin, resources, saves, etc., subfolders).",
+            "Minecraft installation not found in\n" +
+                minecraftDir.getPath() + "\n" +
+                "You must run the Minecraft launcher at least once before starting MCPatcher.\n\n" +
+                "If the game is installed somewhere else, please select the game folder now.\n" +
+                "The game folder is the one containing the following subfolders:\n" +
+                "- (for 1.5.1 and earlier) bin, resources, and saves\n" +
+                "- (for 1.6 and newer) assets, libraries, and versions.",
             "Minecraft not found", JOptionPane.ERROR_MESSAGE
         );
         JFileChooser fd = new JFileChooser();

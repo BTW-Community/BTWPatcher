@@ -266,6 +266,9 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
      * @return MinecraftVersion object or null
      */
     public static MinecraftVersion parseVersion(String versionString) {
+        if (versionString == null) {
+            return null;
+        }
         Matcher matcher = LONG_PATTERN.matcher(versionString);
         if (matcher.find()) {
             return new MinecraftVersion(matcher);
@@ -275,6 +278,9 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
     }
 
     public static MinecraftVersion parseShortVersion(String versionString) {
+        if (versionString == null) {
+            return null;
+        }
         Matcher matcher = SHORT_PATTERN.matcher(versionString);
         if (matcher.find()) {
             return new MinecraftVersion(matcher);

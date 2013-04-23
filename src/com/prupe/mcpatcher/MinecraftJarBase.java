@@ -95,7 +95,27 @@ abstract class MinecraftJarBase {
         if (version == null) {
             version = MinecraftVersion.parseShortVersion(versionString);
         }
-        if (version != null && version.compareTo("13w16a") >= 0) {
+        if (version == null) {
+            File[] versions = MCPatcherUtils.getMinecraftPath("versions").listFiles();
+            if (versions != null) {
+                List<File> availableVersions = new ArrayList<File>();
+                for (File d : versions) {
+                    File f = new File(d, d.getName() + ".jar");
+                    if (f.isFile()) {
+                        availableVersions.add(f);
+                    }
+                }
+                if (!availableVersions.isEmpty()) {
+                    Collections.sort(availableVersions, new Comparator<File>() {
+                        public int compare(File o1, File o2) {
+                            return (int) (o2.lastModified() - o1.lastModified());
+                        }
+                    });
+                    return availableVersions.get(0);
+                }
+            }
+            return MCPatcherUtils.getMinecraftPath("bin", "minecraft.jar");
+        } else if (version.compareTo("13w16a") >= 0) {
             versionString = version.getVersionString();
             return MCPatcherUtils.getMinecraftPath("versions", versionString, versionString + ".jar");
         } else {
