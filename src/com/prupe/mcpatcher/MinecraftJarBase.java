@@ -55,11 +55,13 @@ abstract class MinecraftJarBase {
 
     abstract MinecraftVersion getVersionFromFilename(File file);
 
+    abstract File getJarDirectory();
+
     abstract File getInputJarPath(MinecraftVersion version);
 
     abstract File getOutputJarPath(MinecraftVersion version);
 
-    abstract File getNativesDir();
+    abstract File getNativesDirectory();
 
     abstract void addToClassPath(List<File> classPath);
 
@@ -98,6 +100,21 @@ abstract class MinecraftJarBase {
             return MCPatcherUtils.getMinecraftPath("versions", versionString, versionString + ".jar");
         } else {
             return MCPatcherUtils.getMinecraftPath("bin", "minecraft.jar");
+        }
+    }
+
+    static File getDefaultJarDirectory(MinecraftJarBase minecraft) {
+        if (minecraft == null) {
+            File dir = MCPatcherUtils.getMinecraftPath("versions");
+            if (!dir.isDirectory()) {
+                dir = MCPatcherUtils.getMinecraftPath("bin");
+                if (!dir.isDirectory()) {
+                    dir = MCPatcherUtils.getMinecraftPath();
+                }
+            }
+            return dir;
+        } else {
+            return minecraft.getJarDirectory();
         }
     }
 
@@ -236,7 +253,7 @@ abstract class MinecraftJarBase {
         params.add("java");
         params.add("-cp");
         params.add(sb.toString());
-        params.add("-Djava.library.path=" + getNativesDir().getPath());
+        params.add("-Djava.library.path=" + getNativesDirectory().getPath());
         int heapSize = Config.getInt(Config.TAG_JAVA_HEAP_SIZE, 1024);
         if (heapSize > 0) {
             params.add("-Xmx" + heapSize + "M");

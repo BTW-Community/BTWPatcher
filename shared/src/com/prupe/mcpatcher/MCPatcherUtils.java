@@ -126,10 +126,9 @@ public class MCPatcherUtils {
     }
 
     static boolean setGameDir(File dir) {
-        if (dir != null &&
-            dir.isDirectory() &&
-            new File(dir, "bin/lwjgl.jar").exists() &&
-            (new File(dir, "resources").isDirectory() || new File(dir, "versions").isDirectory())) {
+        if (dir != null && dir.isDirectory() &&
+            ((new File(dir, "bin/lwjgl.jar").exists() && new File(dir, "resources").isDirectory()) || // 1.5
+                (new File(dir, "libraries").isDirectory() && new File(dir, "versions").isDirectory()))) { // 13w16a
             minecraftDir = dir.getAbsoluteFile();
         } else {
             minecraftDir = null;

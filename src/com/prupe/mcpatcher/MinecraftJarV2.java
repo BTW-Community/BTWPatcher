@@ -30,6 +30,12 @@ class MinecraftJarV2 extends MinecraftJarBase {
     }
 
     @Override
+    File getJarDirectory() {
+        String v = getVersion().getVersionString();
+        return MCPatcherUtils.getMinecraftPath("versions", v);
+    }
+
+    @Override
     File getOutputJarPath(MinecraftVersion version) {
         String v = version.getVersionString();
         return MCPatcherUtils.getMinecraftPath("versions", v, v + ".jar");
@@ -42,9 +48,8 @@ class MinecraftJarV2 extends MinecraftJarBase {
     }
 
     @Override
-    File getNativesDir() {
-        String v = getVersion().getVersionString();
-        return MCPatcherUtils.getMinecraftPath("versions", v, v + "-natives");
+    File getNativesDirectory() {
+        return new File(getJarDirectory(), getVersion().getVersionString() + "-natives");
     }
 
     @Override
@@ -60,8 +65,7 @@ class MinecraftJarV2 extends MinecraftJarBase {
     private boolean getClassPathFromJSON(List<File> classPath) {
         BufferedReader reader = null;
         try {
-            String v = getVersion().getVersionString();
-            File json = MCPatcherUtils.getMinecraftPath("versions", v, v + ".json");
+            File json = new File(getJarDirectory(), getVersion().getVersionString() + ".json");
             if (!json.isFile()) {
                 Logger.log(Logger.LOG_JAR, "WARNING: %s not found", json);
                 return false;

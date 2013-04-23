@@ -171,7 +171,13 @@ class MainForm {
                 fd.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 fd.setFileHidingEnabled(false);
                 fd.setDialogTitle("Select input file");
-                fd.setCurrentDirectory(MCPatcherUtils.getMinecraftPath("bin"));
+                MinecraftJarBase minecraft = MCPatcher.minecraft;
+                if (minecraft == null || minecraft.getInputFile() == null) {
+                    fd.setCurrentDirectory(MinecraftJarBase.getDefaultJarDirectory(minecraft));
+                } else {
+                    fd.setCurrentDirectory(minecraft.getInputFile().getParentFile());
+                    fd.setSelectedFile(minecraft.getInputFile());
+                }
                 fd.setAcceptAllFileFilterUsed(false);
                 fd.setFileFilter(new FileFilter() {
                     @Override
@@ -203,8 +209,13 @@ class MainForm {
                 fd.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 fd.setFileHidingEnabled(false);
                 fd.setDialogTitle("Select output file");
-                fd.setCurrentDirectory(MCPatcherUtils.getMinecraftPath("bin"));
-                fd.setSelectedFile(MCPatcherUtils.getMinecraftPath("bin", "minecraft.jar"));
+                MinecraftJarBase minecraft = MCPatcher.minecraft;
+                if (minecraft.getOutputFile() == null) {
+                    fd.setCurrentDirectory(MinecraftJarBase.getDefaultJarDirectory(minecraft));
+                } else {
+                    fd.setCurrentDirectory(minecraft.getOutputFile().getParentFile());
+                    fd.setSelectedFile(minecraft.getOutputFile());
+                }
                 fd.setAcceptAllFileFilterUsed(false);
                 fd.setFileFilter(new FileFilter() {
                     @Override
@@ -218,7 +229,7 @@ class MainForm {
                     }
                 });
                 if (fd.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
-                    MCPatcher.minecraft.setOutputFile(fd.getSelectedFile());
+                    minecraft.setOutputFile(fd.getSelectedFile());
                 }
                 updateControls();
             }
@@ -673,10 +684,10 @@ class MainForm {
         boolean outputSet = !outputField.getText().equals("");
         File orig = new File(origField.getText());
         File output = new File(outputField.getText());
-        boolean origOk = orig.exists();
-        boolean outputOk = output.exists();
+        boolean origOk = orig.isFile();
+        boolean outputOk = output.isFile();
         origBrowseButton.setEnabled(!busy);
-        outputBrowseButton.setEnabled(!busy);
+        outputBrowseButton.setEnabled(!busy && origOk);
         modTable.setEnabled(!busy && origOk && outputSet);
         upButton.setEnabled(!busy && origOk);
         downButton.setEnabled(!busy && origOk);

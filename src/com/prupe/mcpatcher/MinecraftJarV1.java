@@ -27,25 +27,30 @@ class MinecraftJarV1 extends MinecraftJarBase {
     }
 
     @Override
+    File getJarDirectory() {
+        return MCPatcherUtils.getMinecraftPath("bin");
+    }
+
+    @Override
     File getOutputJarPath(MinecraftVersion version) {
-        return MCPatcherUtils.getMinecraftPath("bin", "minecraft.jar");
+        return new File(getJarDirectory(), "minecraft.jar");
     }
 
     @Override
     File getInputJarPath(MinecraftVersion version) {
-        return MCPatcherUtils.getMinecraftPath("bin", "minecraft-" + version.getVersionString() + ".jar");
+        return new File(getJarDirectory(), "minecraft-" + version.getVersionString() + ".jar");
     }
 
     @Override
-    File getNativesDir() {
-        return MCPatcherUtils.getMinecraftPath("bin", "natives");
+    File getNativesDirectory() {
+        return new File(getJarDirectory(), "natives");
     }
 
     @Override
     void addToClassPath(List<File> classPath) {
-        classPath.add(MCPatcherUtils.getMinecraftPath("bin", "lwjgl.jar"));
-        classPath.add(MCPatcherUtils.getMinecraftPath("bin", "lwjgl_util.jar"));
-        classPath.add(MCPatcherUtils.getMinecraftPath("bin", "jinput.jar"));
+        classPath.add(new File(getJarDirectory(), "lwjgl.jar"));
+        classPath.add(new File(getJarDirectory(), "lwjgl_util.jar"));
+        classPath.add(new File(getJarDirectory(), "jinput.jar"));
     }
 
     @Override
