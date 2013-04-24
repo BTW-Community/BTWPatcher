@@ -60,6 +60,8 @@ public class CustomItemTextures extends Mod {
         addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$AverageGroup$1");
         addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$CycleGroup");
         addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$Entry");
+
+        BaseTexturePackMod.earlyInitialize(2, MCPatcherUtils.CIT_UTILS_CLASS, "init");
     }
 
     private class ConfigPanel extends ModConfigPanel {

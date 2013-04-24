@@ -139,6 +139,9 @@ public class CITUtils {
         });
     }
 
+    public static void init() {
+    }
+
     public static Icon getIcon(Icon icon, Item item, ItemStack itemStack) {
         lastIcon = icon;
         if (enableItems) {
