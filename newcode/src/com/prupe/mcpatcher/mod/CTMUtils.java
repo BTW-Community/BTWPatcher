@@ -64,8 +64,8 @@ public class CTMUtils {
             @Override
             public void afterChange() {
                 if (enableGrass) {
-                    betterGrass = new TileOverrideImpl.BetterGrass(tileLoader, BLOCK_ID_GRASS, "grass");
-                    new TileOverrideImpl.BetterGrass(tileLoader, BLOCK_ID_MYCELIUM, "mycel");
+                    registerOverride(betterGrass = new TileOverrideImpl.BetterGrass(tileLoader, BLOCK_ID_GRASS, "grass"));
+                    registerOverride(new TileOverrideImpl.BetterGrass(tileLoader, BLOCK_ID_MYCELIUM, "mycel"));
                 }
                 for (ITileOverride override : allOverrides) {
                     override.registerIcons();
