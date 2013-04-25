@@ -321,9 +321,11 @@ public class ExtendedHD extends Mod {
             final FieldRef textureMagFilter = mapIntField(8, "textureMagFilter");
             final FieldRef mipmapActive = new FieldRef(getDeobfClass(), "mipmapActive", "Z");
             final MethodRef copyFrom = new MethodRef(getDeobfClass(), "copyFrom", "(IILTexture;Z)V");
+            final MethodRef copyFromSub = new MethodRef(getDeobfClass(), "copyFromSub", "(IILTexture;)V");
             final FieldRef textureData = new FieldRef(getDeobfClass(), "textureData", "Ljava/nio/ByteBuffer;");
             final MethodRef allocateDirect = new MethodRef("java/nio/ByteBuffer", "allocateDirect", "(I)Ljava/nio/ByteBuffer;");
             final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V");
+            final MethodRef glTexSubImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V");
             final MethodRef allocateByteBuffer = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "allocateByteBuffer", "(I)Ljava/nio/ByteBuffer;");
 
             addClassSignature(new BytecodeSignature() {
@@ -447,6 +449,55 @@ public class ExtendedHD extends Mod {
                     );
                 }
             }.targetMethod(copyFrom));
+
+            // 1.5.2 (.3, .4, ...) or 13w17a+
+            if ((getMinecraftVersion().compareTo("1.5.2") >= 0 && getMinecraftVersion().compareTo("13w16a") < 0) ||
+                getMinecraftVersion().compareTo("13w17a") >= 0) {
+                addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            reference(INVOKESTATIC, glTexSubImage2D)
+                        );
+                    }
+                }.setMethod(copyFromSub));
+
+                addPatch(new BytecodePatch() {
+                    @Override
+                    public String getDescription() {
+                        return "replace copyFromSub";
+                    }
+
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            begin()
+                        );
+                    }
+
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            // if (this.loaded) {
+                            ALOAD_0,
+                            reference(GETFIELD, textureCreated),
+                            IFEQ, branch("A"),
+
+                            // MipmapHelper.copySubTexture(this, src, x, y, false);
+                            ALOAD_0,
+                            ALOAD_3,
+                            ILOAD_1,
+                            ILOAD_2,
+                            push(0),
+                            reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "(LTexture;LTexture;IIZ)V")),
+                            RETURN,
+
+                            // }
+                            label("A")
+                        );
+                    }
+                }.targetMethod(copyFromSub));
+            }
         }
 
         private FieldRef mapIntField(final int register, String name) {
