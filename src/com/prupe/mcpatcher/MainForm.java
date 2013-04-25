@@ -37,6 +37,7 @@ class MainForm {
         "</table>" +
             "</html>";
     private static final String FORCE_CONTINUE_TEXT = "I WILL NOT COMPLAIN IF THIS DOESN'T WORK.";
+    private static final String PADDING = "                                                                  ";
 
     private static Image programIcon;
 
@@ -167,35 +168,52 @@ class MainForm {
         origBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setStatusText("");
-                JFileChooser fd = new JFileChooser();
-                fd.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                fd.setFileHidingEnabled(false);
-                fd.setDialogTitle("Select input file");
-                MinecraftJarBase minecraft = MCPatcher.minecraft;
-                if (minecraft == null || minecraft.getInputFile() == null) {
-                    fd.setCurrentDirectory(MinecraftJarBase.getDefaultJarDirectory(minecraft));
+                File selectedFile = null;
+                if (shift) {
+                    String text = (String) JOptionPane.showInputDialog(
+                        frame, "Enter path to new input file:" + PADDING, "Input file", JOptionPane.QUESTION_MESSAGE,
+                        null, null, origField.getText()
+                    );
+                    if (text != null && !text.equals("")) {
+                        selectedFile = new File(text);
+                        if (!selectedFile.isFile()) {
+                            selectedFile = null;
+                        }
+                    }
                 } else {
-                    fd.setCurrentDirectory(minecraft.getInputFile().getParentFile());
-                    fd.setSelectedFile(minecraft.getInputFile());
-                }
-                fd.setAcceptAllFileFilterUsed(false);
-                fd.setFileFilter(new FileFilter() {
-                    @Override
-                    public boolean accept(File f) {
-                        return f.isDirectory() || f.getName().toLowerCase().endsWith(".jar");
+                    JFileChooser fd = new JFileChooser();
+                    fd.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    fd.setFileHidingEnabled(false);
+                    fd.setDialogTitle("Select input file");
+                    MinecraftJarBase minecraft = MCPatcher.minecraft;
+                    if (minecraft == null || minecraft.getInputFile() == null) {
+                        fd.setCurrentDirectory(MinecraftJarBase.getDefaultJarDirectory(minecraft));
+                    } else {
+                        fd.setCurrentDirectory(minecraft.getInputFile().getParentFile());
+                        fd.setSelectedFile(minecraft.getInputFile());
                     }
+                    fd.setAcceptAllFileFilterUsed(false);
+                    fd.setFileFilter(new FileFilter() {
+                        @Override
+                        public boolean accept(File f) {
+                            return f.isDirectory() || f.getName().toLowerCase().endsWith(".jar");
+                        }
 
-                    @Override
-                    public String getDescription() {
-                        return "*.jar";
+                        @Override
+                        public String getDescription() {
+                            return "*.jar";
+                        }
+                    });
+                    if (fd.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
+                        selectedFile = fd.getSelectedFile();
                     }
-                });
-                if (fd.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
-                    if (MCPatcher.setMinecraft(fd.getSelectedFile(), false)) {
+                }
+                if (selectedFile != null) {
+                    if (MCPatcher.setMinecraft(selectedFile, false)) {
                         MCPatcher.saveProperties();
                         updateModList();
                     } else {
-                        showCorruptJarError(fd.getSelectedFile());
+                        showCorruptJarError(selectedFile);
                     }
                 }
                 updateControls();
@@ -205,31 +223,48 @@ class MainForm {
         outputBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setStatusText("");
-                JFileChooser fd = new JFileChooser();
-                fd.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                fd.setFileHidingEnabled(false);
-                fd.setDialogTitle("Select output file");
                 MinecraftJarBase minecraft = MCPatcher.minecraft;
-                if (minecraft.getOutputFile() == null) {
-                    fd.setCurrentDirectory(MinecraftJarBase.getDefaultJarDirectory(minecraft));
+                File selectedFile = null;
+                if (shift) {
+                    String text = (String) JOptionPane.showInputDialog(
+                        frame, "Enter path to new output file:" + PADDING, "Output file", JOptionPane.QUESTION_MESSAGE,
+                        null, null, outputField.getText()
+                    );
+                    if (text != null && !text.equals("")) {
+                        selectedFile = new File(text);
+                        if (selectedFile.getParentFile() == null || !selectedFile.getParentFile().isDirectory()) {
+                            selectedFile = null;
+                        }
+                    }
                 } else {
-                    fd.setCurrentDirectory(minecraft.getOutputFile().getParentFile());
-                    fd.setSelectedFile(minecraft.getOutputFile());
-                }
-                fd.setAcceptAllFileFilterUsed(false);
-                fd.setFileFilter(new FileFilter() {
-                    @Override
-                    public boolean accept(File f) {
-                        return f.isDirectory() || f.getName().toLowerCase().endsWith(".jar");
+                    JFileChooser fd = new JFileChooser();
+                    fd.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    fd.setFileHidingEnabled(false);
+                    fd.setDialogTitle("Select output file");
+                    if (minecraft.getOutputFile() == null) {
+                        fd.setCurrentDirectory(MinecraftJarBase.getDefaultJarDirectory(minecraft));
+                    } else {
+                        fd.setCurrentDirectory(minecraft.getOutputFile().getParentFile());
+                        fd.setSelectedFile(minecraft.getOutputFile());
                     }
+                    fd.setAcceptAllFileFilterUsed(false);
+                    fd.setFileFilter(new FileFilter() {
+                        @Override
+                        public boolean accept(File f) {
+                            return f.isDirectory() || f.getName().toLowerCase().endsWith(".jar");
+                        }
 
-                    @Override
-                    public String getDescription() {
-                        return "*.jar";
+                        @Override
+                        public String getDescription() {
+                            return "*.jar";
+                        }
+                    });
+                    if (fd.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
+                        selectedFile = fd.getSelectedFile();
                     }
-                });
-                if (fd.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
-                    minecraft.setOutputFile(fd.getSelectedFile());
+                }
+                if (selectedFile != null) {
+                    minecraft.setOutputFile(selectedFile);
                 }
                 updateControls();
             }
