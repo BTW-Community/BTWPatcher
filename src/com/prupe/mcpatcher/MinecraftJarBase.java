@@ -34,8 +34,6 @@ abstract class MinecraftJarBase {
 
     abstract void addToClassPath(List<File> classPath);
 
-    abstract String getMainClass();
-
     @Override
     protected void finalize() throws Throwable {
         closeStreams();
@@ -59,31 +57,18 @@ abstract class MinecraftJarBase {
         }
     }
 
+    String getMainClass() {
+        return getVersion().compareTo("13w16a") < 0 ? "net.minecraft.client.Minecraft" : "net.minecraft.client.main.Main";
+    }
+
     static File getJarPathForVersion(String versionString) {
         MinecraftVersion version = MinecraftVersion.parseVersion(versionString);
         if (version == null) {
             version = MinecraftVersion.parseShortVersion(versionString);
         }
         if (version == null) {
-            File[] versions = MCPatcherUtils.getMinecraftPath("versions").listFiles();
-            if (versions != null) {
-                List<File> availableVersions = new ArrayList<File>();
-                for (File d : versions) {
-                    File f = new File(d, d.getName() + ".jar");
-                    if (f.isFile()) {
-                        availableVersions.add(f);
-                    }
-                }
-                if (!availableVersions.isEmpty()) {
-                    Collections.sort(availableVersions, new Comparator<File>() {
-                        public int compare(File o1, File o2) {
-                            return (int) (o2.lastModified() - o1.lastModified());
-                        }
-                    });
-                    return availableVersions.get(0);
-                }
-            }
-            return MCPatcherUtils.getMinecraftPath("bin", "minecraft.jar");
+            File f = MinecraftJarV2.getLatestVersion();
+            return f == null ? MCPatcherUtils.getMinecraftPath("bin", "minecraft.jar") : f;
         }
         versionString = version.getVersionString();
         File jar = MCPatcherUtils.getMinecraftPath("versions", versionString, versionString + ".jar");
@@ -151,16 +136,10 @@ abstract class MinecraftJarBase {
 
     void createBackup() throws IOException {
         closeStreams();
-        if (outputFile.exists() && !origFile.exists()) {
-            Util.copyFile(outputFile, origFile);
-        }
     }
 
     void restoreBackup() throws IOException {
         closeStreams();
-        if (origFile.exists()) {
-            Util.copyFile(origFile, outputFile);
-        }
     }
 
     void setOutputFile(File file) {
@@ -394,10 +373,6 @@ abstract class MinecraftJarBase {
                 return UNMODDED_JAR;
             }
             return MODDED_JAR;
-        }
-
-        static MinecraftVersion extractVersion(File file) {
-            return extractVersion(file, Util.computeMD5(file));
         }
 
         static MinecraftVersion extractVersion(File file, String md5) {

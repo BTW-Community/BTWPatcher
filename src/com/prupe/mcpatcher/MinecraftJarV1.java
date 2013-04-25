@@ -88,7 +88,18 @@ class MinecraftJarV1 extends MinecraftJarBase {
     }
 
     @Override
-    String getMainClass() {
-        return "net.minecraft.client.Minecraft";
+    void createBackup() throws IOException {
+        super.createBackup();
+        if (outputFile.exists() && !origFile.exists()) {
+            Util.copyFile(outputFile, origFile);
+        }
+    }
+
+    @Override
+    void restoreBackup() throws IOException {
+        super.restoreBackup();
+        if (origFile.exists()) {
+            Util.copyFile(origFile, outputFile);
+        }
     }
 }

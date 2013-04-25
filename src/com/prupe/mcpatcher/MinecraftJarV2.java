@@ -1,6 +1,9 @@
 package com.prupe.mcpatcher;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 class MinecraftJarV2 extends MinecraftJarBase {
@@ -16,6 +19,34 @@ class MinecraftJarV2 extends MinecraftJarBase {
         } catch (Throwable e) {
             return false;
         }
+    }
+
+    static File getLatestVersion() {
+        File[] versions = MCPatcherUtils.getMinecraftPath("versions").listFiles();
+        if (versions != null) {
+            List<MinecraftVersion> availableVersions = new ArrayList<MinecraftVersion>();
+            for (File d : versions) {
+                if (!d.getName().endsWith(MCPATCHER_VERSION)) {
+                    MinecraftVersion version = MinecraftVersion.parseShortVersion(d.getName());
+                    if (version != null) {
+                        File f = new File(d, d.getName() + ".jar");
+                        if (f.isFile()) {
+                            availableVersions.add(version);
+                        }
+                    }
+                }
+            }
+            if (!availableVersions.isEmpty()) {
+                Collections.sort(availableVersions, new Comparator<MinecraftVersion>() {
+                    public int compare(MinecraftVersion o1, MinecraftVersion o2) {
+                        return o2.compareTo(o1);
+                    }
+                });
+                String v = availableVersions.get(0).getVersionString();
+                return MCPatcherUtils.getMinecraftPath("versions", v, v + ".jar");
+            }
+        }
+        return null;
     }
 
     private MinecraftJarV2(File file) throws IOException {
@@ -87,11 +118,6 @@ class MinecraftJarV2 extends MinecraftJarBase {
                 addToClassPath(libDir, classPath);
             }
         }
-    }
-
-    @Override
-    String getMainClass() {
-        return getVersion().compareTo("13w16a") < 0 ? "net.minecraft.client.Minecraft" : "net.minecraft.client.main.Main";
     }
 
     private boolean getClassPathFromJSON(List<File> classPath) {
