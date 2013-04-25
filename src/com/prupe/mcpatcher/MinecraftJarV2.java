@@ -1,12 +1,11 @@
 package com.prupe.mcpatcher;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 
 class MinecraftJarV2 extends MinecraftJarBase {
+    private static final String MCPATCHER_VERSION = "-mcpatcher";
+
     static MinecraftJarBase create(File file) throws IOException {
         return isThisVersion(file) ? new MinecraftJarV2(file) : null;
     }
@@ -20,36 +19,64 @@ class MinecraftJarV2 extends MinecraftJarBase {
     }
 
     private MinecraftJarV2(File file) throws IOException {
-        super(file);
+        MinecraftVersion version = getVersionFromFilename(file);
+
+        outputFile = getOutputJarPath(version);
+        origFile = getInputJarPath(version);
+        info = new Info(origFile, version);
+        if (!info.isOk()) {
+            throw info.exception;
+        }
+        if (info.result == Info.MODDED_JAR) {
+            File tmp = new File(origFile.getParent(), version + "-original.jar");
+            if (tmp.isFile()) {
+                Util.copyFile(tmp, origFile);
+                info = new Info(origFile, version);
+                if (!info.isOk()) {
+                    throw info.exception;
+                }
+                tmp.delete();
+            }
+        }
+
+        if (!outputFile.getParentFile().isDirectory()) {
+            createVersionDirectory(origFile.getParentFile(), outputFile.getParentFile(), version.getVersionString());
+        }
     }
 
     @Override
     MinecraftVersion getVersionFromFilename(File file) {
-        String versionString = file.getName().replaceFirst("(-original)?\\.jar$", "");
+        String versionString = file.getName().replaceFirst("(" + MCPATCHER_VERSION + "|-original)*\\.jar$", "");
         return MinecraftVersion.parseShortVersion(versionString);
     }
 
     @Override
-    File getJarDirectory() {
+    File getInputJarDirectory() {
         String v = getVersion().getVersionString();
         return MCPatcherUtils.getMinecraftPath("versions", v);
     }
 
     @Override
-    File getOutputJarPath(MinecraftVersion version) {
-        String v = version.getVersionString();
-        return MCPatcherUtils.getMinecraftPath("versions", v, v + ".jar");
+    File getOutputJarDirectory() {
+        String v = getVersion().getVersionString() + MCPATCHER_VERSION;
+        return MCPatcherUtils.getMinecraftPath("versions", v);
     }
 
     @Override
     File getInputJarPath(MinecraftVersion version) {
         String v = version.getVersionString();
-        return MCPatcherUtils.getMinecraftPath("versions", v, v + "-original.jar");
+        return MCPatcherUtils.getMinecraftPath("versions", v, v + ".jar");
+    }
+
+    @Override
+    File getOutputJarPath(MinecraftVersion version) {
+        String v = version.getVersionString() + MCPATCHER_VERSION;
+        return MCPatcherUtils.getMinecraftPath("versions", v, v + ".jar");
     }
 
     @Override
     File getNativesDirectory() {
-        return new File(getJarDirectory(), getVersion().getVersionString() + "-natives");
+        return new File(getOutputJarDirectory(), getVersion().getVersionString() + MCPATCHER_VERSION + "-natives");
     }
 
     @Override
@@ -62,10 +89,15 @@ class MinecraftJarV2 extends MinecraftJarBase {
         }
     }
 
+    @Override
+    String getMainClass() {
+        return getVersion().compareTo("13w16a") < 0 ? "net.minecraft.client.Minecraft" : "net.minecraft.client.main.Main";
+    }
+
     private boolean getClassPathFromJSON(List<File> classPath) {
         BufferedReader reader = null;
         try {
-            File json = new File(getJarDirectory(), getVersion().getVersionString() + ".json");
+            File json = new File(getOutputJarDirectory(), getVersion().getVersionString() + MCPATCHER_VERSION + ".json");
             if (!json.isFile()) {
                 Logger.log(Logger.LOG_JAR, "WARNING: %s not found", json);
                 return false;
@@ -99,17 +131,44 @@ class MinecraftJarV2 extends MinecraftJarBase {
     }
 
     private static void addToClassPath(File dir, List<File> classPath) {
-        for (File f : dir.listFiles()) {
-            if (f.isFile() && f.getName().endsWith(".jar")) {
-                classPath.add(f);
-            } else if (f.isDirectory()) {
-                addToClassPath(f, classPath);
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                if (f.isFile() && f.getName().endsWith(".jar")) {
+                    classPath.add(f);
+                } else if (f.isDirectory()) {
+                    addToClassPath(f, classPath);
+                }
             }
         }
     }
 
-    @Override
-    String getMainClass() {
-        return getVersion().compareTo("13w16a") < 0 ? "net.minecraft.client.Minecraft" : "net.minecraft.client.main.Main";
+    private void createVersionDirectory(File fromDir, File toDir, String version) throws IOException {
+        toDir.mkdirs();
+        BufferedReader reader = null;
+        PrintWriter writer = null;
+        try {
+            reader = new BufferedReader(new FileReader(new File(fromDir, version + ".json")));
+            writer = new PrintWriter(new FileWriter(new File(toDir, version + MCPATCHER_VERSION + ".json")));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.contains("\"id\":")) {
+                    line = line.replace(version, version + MCPATCHER_VERSION);
+                }
+                writer.println(line);
+            }
+        } finally {
+            MCPatcherUtils.close(reader);
+            MCPatcherUtils.close(writer);
+        }
+        fromDir = new File(fromDir, version + "-natives");
+        toDir = new File(toDir, version + MCPATCHER_VERSION + "-natives");
+        File[] natives = fromDir.listFiles();
+        if (natives != null) {
+            toDir.mkdirs();
+            for (File f : natives) {
+                Util.copyFile(f, new File(toDir, f.getName()));
+            }
+        }
     }
 }

@@ -18,7 +18,36 @@ class MinecraftJarV1 extends MinecraftJarBase {
     }
 
     private MinecraftJarV1(File file) throws IOException {
-        super(file);
+        MinecraftVersion version = getVersionFromFilename(file);
+        Info tmpInfo = new Info(file, version);
+        if (!tmpInfo.isOk()) {
+            throw tmpInfo.exception;
+        }
+        version = tmpInfo.version;
+
+        outputFile = getOutputJarPath(version);
+        origFile = getInputJarPath(version);
+
+        if (!origFile.exists()) {
+            createBackup();
+        }
+
+        info = file.equals(origFile) ? tmpInfo : new Info(origFile, version);
+        if (!info.isOk()) {
+            throw info.exception;
+        }
+
+        Info outputInfo = file.equals(outputFile) ? tmpInfo : new Info(outputFile, version);
+        if (!outputInfo.isOk()) {
+            throw outputInfo.exception;
+        }
+
+        if (info.result == Info.MODDED_JAR && outputInfo.result == Info.UNMODDED_JAR) {
+            Logger.log(Logger.LOG_JAR, "copying unmodded %s over %s", outputFile.getName(), origFile.getName());
+            origFile.delete();
+            createBackup();
+            info = outputInfo;
+        }
     }
 
     @Override
@@ -27,30 +56,35 @@ class MinecraftJarV1 extends MinecraftJarBase {
     }
 
     @Override
-    File getJarDirectory() {
+    File getInputJarDirectory() {
         return MCPatcherUtils.getMinecraftPath("bin");
     }
 
     @Override
-    File getOutputJarPath(MinecraftVersion version) {
-        return new File(getJarDirectory(), "minecraft.jar");
+    File getOutputJarDirectory() {
+        return MCPatcherUtils.getMinecraftPath("bin");
     }
 
     @Override
     File getInputJarPath(MinecraftVersion version) {
-        return new File(getJarDirectory(), "minecraft-" + version.getVersionString() + ".jar");
+        return new File(getInputJarDirectory(), "minecraft-" + version.getVersionString() + ".jar");
+    }
+
+    @Override
+    File getOutputJarPath(MinecraftVersion version) {
+        return new File(getOutputJarDirectory(), "minecraft.jar");
     }
 
     @Override
     File getNativesDirectory() {
-        return new File(getJarDirectory(), "natives");
+        return new File(getOutputJarDirectory(), "natives");
     }
 
     @Override
     void addToClassPath(List<File> classPath) {
-        classPath.add(new File(getJarDirectory(), "lwjgl.jar"));
-        classPath.add(new File(getJarDirectory(), "lwjgl_util.jar"));
-        classPath.add(new File(getJarDirectory(), "jinput.jar"));
+        classPath.add(new File(getInputJarDirectory(), "lwjgl.jar"));
+        classPath.add(new File(getInputJarDirectory(), "lwjgl_util.jar"));
+        classPath.add(new File(getInputJarDirectory(), "jinput.jar"));
     }
 
     @Override
