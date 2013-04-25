@@ -115,9 +115,11 @@ abstract class MinecraftJarBase {
                 }
             }
             return MCPatcherUtils.getMinecraftPath("bin", "minecraft.jar");
-        } else if (version.compareTo("13w16a") >= 0) {
-            versionString = version.getVersionString();
-            return MCPatcherUtils.getMinecraftPath("versions", versionString, versionString + ".jar");
+        }
+        versionString = version.getVersionString();
+        File jar = MCPatcherUtils.getMinecraftPath("versions", versionString, versionString + ".jar");
+        if (jar.isFile()) {
+            return jar;
         } else {
             return MCPatcherUtils.getMinecraftPath("bin", "minecraft.jar");
         }
