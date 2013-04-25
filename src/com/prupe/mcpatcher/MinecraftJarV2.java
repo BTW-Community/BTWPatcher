@@ -7,7 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 
 class MinecraftJarV2 extends MinecraftJarBase {
-    private static final String MCPATCHER_VERSION = "-mcpatcher";
+    static final String MCPATCHER_VERSION = "-mcpatcher";
 
     static MinecraftJarBase create(File file) throws IOException {
         return isThisVersion(file) ? new MinecraftJarV2(file) : null;

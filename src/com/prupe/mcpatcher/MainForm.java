@@ -196,7 +196,7 @@ class MainForm {
                     fd.setFileFilter(new FileFilter() {
                         @Override
                         public boolean accept(File f) {
-                            return f.isDirectory() || f.getName().toLowerCase().endsWith(".jar");
+                            return (f.isDirectory() && !f.getName().endsWith(MinecraftJarV2.MCPATCHER_VERSION)) || f.getName().toLowerCase().endsWith(".jar");
                         }
 
                         @Override
@@ -251,7 +251,7 @@ class MainForm {
                     fd.setFileFilter(new FileFilter() {
                         @Override
                         public boolean accept(File f) {
-                            return f.isDirectory() || f.getName().toLowerCase().endsWith(".jar");
+                            return (f.isDirectory() && !f.getName().endsWith(MinecraftJarV2.MCPATCHER_VERSION)) || f.getName().toLowerCase().endsWith(".jar");
                         }
 
                         @Override
