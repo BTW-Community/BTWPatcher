@@ -369,7 +369,7 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
                 parsedVersion = new int[]{FINAL, 1, 0, 0, 1};
             }
         }
-        if (parsedVersion.length == 3 && parsedVersion[0] == FINAL && parsedVersion[1] == 2 && parsedVersion[2] == 0) {
+        if (versionNumberOnly.matches("2\\.0_(blue|purple|red)")) {
             parsedVersion = new int[]{FINAL, 1, 5, 1, 2, 0}; // map 2.0 -> 1.5.1.2.0 to fix ordering
         }
     }
