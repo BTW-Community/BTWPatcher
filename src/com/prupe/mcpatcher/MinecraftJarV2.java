@@ -110,6 +110,6 @@ class MinecraftJarV2 extends MinecraftJarBase {
 
     @Override
     String getMainClass() {
-        return "net.minecraft.client.main.Main";
+        return getVersion().compareTo("13w16a") < 0 ? "net.minecraft.client.Minecraft" : "net.minecraft.client.main.Main";
     }
 }
