@@ -72,6 +72,7 @@ public class CustomColors extends Mod {
 
         addClassMod(new BaseMod.MinecraftMod().mapWorldClient());
         addClassMod(new BaseMod.IBlockAccessMod());
+        addClassMod(new BaseMod.TessellatorMod());
         addClassMod(new BlockMod());
 
         addClassMod(new BiomeGenBaseMod());
@@ -2694,9 +2695,10 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature(0.01));
 
             final MethodRef renderBlockFallingSand = new MethodRef(getDeobfClass(), "renderBlockFallingSand", "(LBlock;LWorld;IIII)V");
-            final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
             final MethodRef renderBlockFluids = new MethodRef(getDeobfClass(), "renderBlockFluids", "(LBlock;III)Z");
             final MethodRef renderBlockCauldron = new MethodRef(getDeobfClass(), "renderBlockCauldron", "(LBlockCauldron;III)Z");
+            final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
+            final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -2867,9 +2869,26 @@ public class CustomColors extends Mod {
             }.targetMethod(renderBlockFallingSand));
 
             addPatch(new BytecodePatch() {
+                private int tessellatorRegister;
                 private int[] waterRegisters;
 
                 {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                reference(GETSTATIC, tessellator),
+                                capture(anyASTORE)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            tessellatorRegister = extractRegisterNum(getCaptureGroup(1));
+                            return true;
+                        }
+                    });
+
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
                         public String getMatchExpression() {
@@ -2931,7 +2950,7 @@ public class CustomColors extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         // tessellator.setColorOpaque_F(f3 * f7, f3 * f7, f3 * f7);
-                        ALOAD, 5,
+                        ALOAD, tessellatorRegister,
                         FLOAD, capture(any()),
                         FLOAD, capture(any()),
                         FMUL,
@@ -2949,7 +2968,7 @@ public class CustomColors extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         // tessellator.setColorOpaque_F(f3 * f7 * f, f3 * f7 * f1, f3 * f7 * f2);
-                        ALOAD, 5,
+                        ALOAD, tessellatorRegister,
                         FLOAD, getCaptureGroup(1),
                         FLOAD, getCaptureGroup(2),
                         FMUL,
