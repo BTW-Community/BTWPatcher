@@ -320,14 +320,16 @@ class MainMenu {
                         if (profile.equals(currentProfile)) {
                             return;
                         }
+                        DeleteProfileDialog dialog = new DeleteProfileDialog(profile);
                         int result = JOptionPane.showConfirmDialog(
                             mainForm.frame,
-                            String.format("Delete saved profile \"%s\"?", profile),
+                            dialog.getPanel(),
                             "Confirm profile delete",
                             JOptionPane.YES_NO_OPTION
                         );
                         if (result == JOptionPane.YES_OPTION) {
                             Config.instance.deleteProfile(profile);
+                            dialog.deleteInstallations();
                             mainForm.updateControls();
                         }
                     }
