@@ -22,6 +22,7 @@ class AddModDialog extends JDialog {
     private JButton removeButton;
     private JScrollPane fileTableScrollPane;
 
+    private final JPanel parent;
     private ZipFile zipFile;
     private ZipTreeDialog zipDialog;
     private HashMap<String, String> fileMap;
@@ -33,6 +34,7 @@ class AddModDialog extends JDialog {
     }
 
     AddModDialog(final JPanel parent, ExternalMod mod) {
+        this.parent = parent;
         this.fileMap = new HashMap<String, String>();
         if (mod != null) {
             this.mod = mod;
@@ -203,7 +205,7 @@ class AddModDialog extends JDialog {
             zipFile = new ZipFile(inputFile);
             zipDialog = new ZipTreeDialog(zipFile);
             if (addMode || zipDialog.hasSubfolders()) {
-                zipDialog.setLocationRelativeTo(this);
+                zipDialog.setLocationRelativeTo(parent);
                 zipDialog.setVisible(true);
             }
             String newPrefix = zipDialog.getPrefix();
