@@ -2688,6 +2688,8 @@ public class CustomColors extends Mod {
     }
 
     private class RenderBlocksMod extends RedstoneWireClassMod {
+        private final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
+
         RenderBlocksMod() {
             super("override redstone wire color", new MethodRef("RenderBlocks", "renderBlockRedstoneWire", "(LBlock;III)Z"));
 
@@ -2697,7 +2699,6 @@ public class CustomColors extends Mod {
             final MethodRef renderBlockFallingSand = new MethodRef(getDeobfClass(), "renderBlockFallingSand", "(LBlock;LWorld;IIII)V");
             final MethodRef renderBlockFluids = new MethodRef(getDeobfClass(), "renderBlockFluids", "(LBlock;III)Z");
             final MethodRef renderBlockCauldron = new MethodRef(getDeobfClass(), "renderBlockCauldron", "(LBlockCauldron;III)Z");
-            final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
             final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
 
             addClassSignature(new BytecodeSignature() {
@@ -2724,25 +2725,6 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        ALOAD, 5,
-                        FLOAD, 6,
-                        FLOAD, 8,
-                        FMUL,
-                        FLOAD, 6,
-                        FLOAD, 9,
-                        FMUL,
-                        FLOAD, 6,
-                        FLOAD, 10,
-                        FMUL,
-                        captureReference(INVOKEVIRTUAL)
-                    );
-                }
-            }.addXref(1, setColorOpaque_F));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
                         begin(),
                         push(0.5f),
                         FSTORE, 7,
@@ -2758,7 +2740,7 @@ public class CustomColors extends Mod {
 
             addMemberMapper(new MethodMapper(renderBlockCauldron));
 
-            addPatch(new BytecodePatch() {
+            addPatch(new TessellatorPatch() {
                 @Override
                 public String getDescription() {
                     return "colorize cauldron water";
@@ -2781,15 +2763,15 @@ public class CustomColors extends Mod {
                         reference(INVOKESTATIC, computeWaterColor2),
 
                         // tessellator.setColorOpaque(Colorizer.waterColor[0], Colorizer.waterColor[1], Colorizer.waterColor[2]);
-                        ALOAD, 5,
+                        ALOAD, tessellatorRegister,
                         reference(GETSTATIC, waterColor),
-                        ICONST_0,
+                        push(0),
                         FALOAD,
                         reference(GETSTATIC, waterColor),
-                        ICONST_1,
+                        push(1),
                         FALOAD,
                         reference(GETSTATIC, waterColor),
-                        ICONST_2,
+                        push(2),
                         FALOAD,
                         reference(INVOKEVIRTUAL, setColorOpaque_F)
                     );
@@ -2799,7 +2781,7 @@ public class CustomColors extends Mod {
                 .targetMethod(renderBlockCauldron)
             );
 
-            addPatch(new BytecodePatch() {
+            addPatch(new TessellatorPatch() {
                 private boolean done;
 
                 @Override
@@ -2811,15 +2793,15 @@ public class CustomColors extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         // tessellator.setColorOpaque_F($1 * f5, $1 * f5, $1 * f5);
-                        ALOAD, 11,
+                        ALOAD, tessellatorRegister,
                         capture(anyFLOAD),
-                        FLOAD, 13,
+                        capture(anyFLOAD),
                         FMUL,
                         backReference(1),
-                        FLOAD, 13,
+                        backReference(2),
                         FMUL,
                         backReference(1),
-                        FLOAD, 13,
+                        backReference(2),
                         FMUL,
                         reference(INVOKEVIRTUAL, setColorOpaque_F)
                     );
@@ -2847,48 +2829,31 @@ public class CustomColors extends Mod {
                         extraCode,
 
                         // tessellator.setColorOpaque_F(Colorizer.setColor[0] * f5, Colorizer.setColor[1] * f5, Colorizer.setColor[2] * f5);
-                        ALOAD, 11,
+                        ALOAD, tessellatorRegister,
                         reference(GETSTATIC, setColor),
-                        ICONST_0,
+                        push(0),
                         FALOAD,
-                        FLOAD, 13,
+                        getCaptureGroup(2),
                         FMUL,
                         reference(GETSTATIC, setColor),
-                        ICONST_1,
+                        push(1),
                         FALOAD,
-                        FLOAD, 13,
+                        getCaptureGroup(2),
                         FMUL,
                         reference(GETSTATIC, setColor),
-                        ICONST_2,
+                        push(2),
                         FALOAD,
-                        FLOAD, 13,
+                        getCaptureGroup(2),
                         FMUL,
                         reference(INVOKEVIRTUAL, setColorOpaque_F)
                     );
                 }
             }.targetMethod(renderBlockFallingSand));
 
-            addPatch(new BytecodePatch() {
-                private int tessellatorRegister;
+            addPatch(new TessellatorPatch() {
                 private int[] waterRegisters;
 
                 {
-                    addPreMatchSignature(new BytecodeSignature() {
-                        @Override
-                        public String getMatchExpression() {
-                            return buildExpression(
-                                reference(GETSTATIC, tessellator),
-                                capture(anyASTORE)
-                            );
-                        }
-
-                        @Override
-                        public boolean afterMatch() {
-                            tessellatorRegister = extractRegisterNum(getCaptureGroup(1));
-                            return true;
-                        }
-                    });
-
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
                         public String getMatchExpression() {
@@ -2988,6 +2953,28 @@ public class CustomColors extends Mod {
                     );
                 }
             }.targetMethod(renderBlockFluids));
+        }
+
+        abstract private class TessellatorPatch extends BytecodePatch {
+            protected int tessellatorRegister;
+
+            {
+                addPreMatchSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            reference(GETSTATIC, tessellator),
+                            capture(anyASTORE)
+                        );
+                    }
+
+                    @Override
+                    public boolean afterMatch() {
+                        tessellatorRegister = extractRegisterNum(getCaptureGroup(1));
+                        return true;
+                    }
+                });
+            }
         }
     }
 
