@@ -17,6 +17,19 @@ class MinecraftJarV1 extends MinecraftJarBase {
         }
     }
 
+    static File getInstallation(MinecraftVersion version) {
+        if (version == null) {
+            return null;
+        }
+        File jar = MCPatcherUtils.getMinecraftPath("bin", "minecraft-" + version.getVersionString() + ".jar");
+        return jar.isFile() ? jar : null;
+    }
+
+    static boolean deleteInstallation(MinecraftVersion version) {
+        File jar = getInstallation(version);
+        return jar != null && jar.delete();
+    }
+
     private MinecraftJarV1(File file) throws IOException {
         MinecraftVersion version = getVersionFromFilename(file);
         Info tmpInfo = new Info(file, version);

@@ -21,6 +21,35 @@ class MinecraftJarV2 extends MinecraftJarBase {
         }
     }
 
+    static File getInstallation(MinecraftVersion version) {
+        if (version == null) {
+            return null;
+        }
+        File dir = MCPatcherUtils.getMinecraftPath("versions", version.getVersionString() + MCPATCHER_VERSION);
+        return dir.isDirectory() ? dir : null;
+    }
+
+    static boolean deleteInstallation(MinecraftVersion version) {
+        File dir = getInstallation(version);
+        if (dir == null) {
+            return false;
+        }
+        String versionString = version.getVersionString() + MCPATCHER_VERSION;
+        File natives = new File(dir, versionString + "-natives");
+        File[] files = natives.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                if (f.isFile()) {
+                    f.delete();
+                }
+            }
+        }
+        natives.delete();
+        new File(dir, versionString + ".jar").delete();
+        new File(dir, versionString + ".json").delete();
+        return dir.delete();
+    }
+
     static File getLatestVersion() {
         File[] versions = MCPatcherUtils.getMinecraftPath("versions").listFiles();
         if (versions != null) {
