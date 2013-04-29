@@ -296,8 +296,8 @@ class MainMenu {
                         boolean modsOk = false;
                         String version = Config.getVersionForDefaultProfile(profile);
                         if (version != null && !version.equals(MCPatcher.minecraft.getVersion().getProfileString())) {
-                            File jar = MinecraftJarBase.getJarPathForVersion(version);
-                            if (jar.exists()) {
+                            File jar = MinecraftInstallation.getJarPathForVersion(version);
+                            if (jar != null && jar.isFile()) {
                                 try {
                                     modsOk = MCPatcher.setMinecraft(jar, false);
                                 } catch (Exception e1) {

@@ -16,8 +16,8 @@ class DeleteProfileDialog {
     DeleteProfileDialog(final String profile) {
         if (Config.isDefaultProfile(profile)) {
             version = MinecraftVersion.parseVersion(profile);
-            v1File = MinecraftJarV1.getInstallation(version);
-            v2File = MinecraftJarV2.getInstallation(version);
+            v1File = MinecraftInstallation.v1.getPatchedInstallation(version);
+            v2File = MinecraftInstallation.v2.getPatchedInstallation(version);
         } else {
             version = null;
             v1File = null;
@@ -26,14 +26,14 @@ class DeleteProfileDialog {
 
         textLabel.setText("Delete saved profile \"" + profile + "\"?");
 
-        if (v1File == null) {
+        if (v1File == null || !v1File.isFile()) {
             v1CheckBox.setVisible(false);
         } else {
             v1CheckBox.setText("Also delete file " + v1File);
             v1CheckBox.setSelected(MainForm.shift);
         }
 
-        if (v2File == null) {
+        if (v2File == null || !v2File.isDirectory()) {
             v2CheckBox.setVisible(false);
         } else {
             v2CheckBox.setText("Also delete folder " + v2File);
@@ -47,10 +47,10 @@ class DeleteProfileDialog {
 
     void deleteInstallations() {
         if (v1CheckBox.isSelected() && v1File != null) {
-            MinecraftJarV1.deleteInstallation(version);
+            MinecraftInstallation.v1.deletePatchedInstallation(version);
         }
         if (v2CheckBox.isSelected() && v2File != null) {
-            MinecraftJarV2.deleteInstallation(version);
+            MinecraftInstallation.v2.deletePatchedInstallation(version);
         }
     }
 }

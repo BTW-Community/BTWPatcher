@@ -241,7 +241,7 @@ class AddModDialog extends JDialog {
             String name = entry.getName();
             if (!entry.isDirectory() && name.startsWith(prefix)) {
                 String suffix = name.substring(prefix.length());
-                if (!MinecraftJarBase.isGarbageFile(suffix)) {
+                if (!MinecraftInstallation.isGarbageFile(suffix)) {
                     fileMap.put(suffix, name);
                     changed = true;
                 }

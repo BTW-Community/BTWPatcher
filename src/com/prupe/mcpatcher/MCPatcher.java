@@ -42,7 +42,7 @@ final public class MCPatcher {
             (PATCH_VERSION > 0 ? String.format("_%02d", PATCH_VERSION) : "") +
             (BETA_VERSION > 0 ? "-beta" + BETA_VERSION : "");
 
-    static MinecraftJarBase minecraft = null;
+    static MinecraftInstallation.MinecraftJar minecraft = null;
     static ModList modList;
     private static final Set<String> modifiedClasses = new HashSet<String>();
     private static final Set<String> addedClasses = new HashSet<String>();
@@ -129,6 +129,7 @@ final public class MCPatcher {
             System.exit(exitStatus);
         }
 
+        MinecraftInstallation.setBaseDir(MCPatcherUtils.getMinecraftPath());
         ui.show();
 
         Util.logOSInfo();
@@ -174,12 +175,9 @@ final public class MCPatcher {
             return false;
         }
         try {
-            minecraft = MinecraftJarV1.create(file);
+            minecraft = MinecraftInstallation.openMinecraftJar(file);
             if (minecraft == null) {
-                minecraft = MinecraftJarV2.create(file);
-                if (minecraft == null) {
-                    return false;
-                }
+                return false;
             }
             if (createBackup) {
                 minecraft.createBackup();
@@ -248,7 +246,7 @@ final public class MCPatcher {
             ui.updateProgress(++procFiles, origJar.size());
             String name = entry.getName();
 
-            if (MinecraftJarBase.isClassFile(name)) {
+            if (MinecraftInstallation.isClassFile(name)) {
                 ClassFile classFile = new ClassFile(new DataInputStream(origJar.getInputStream(entry)));
 
                 for (Mod mod : modList.getAll()) {
@@ -340,7 +338,7 @@ final public class MCPatcher {
                 candidateEntries.add(entry);
             }
             for (JarEntry entry : candidateEntries) {
-                if (!MinecraftJarBase.isClassFile(entry.getName())) {
+                if (!MinecraftInstallation.isClassFile(entry.getName())) {
                     continue;
                 }
                 ClassFile classFile = new ClassFile(new DataInputStream(origJar.getInputStream(entry)));
@@ -616,7 +614,7 @@ final public class MCPatcher {
                     modArray = new ArrayList<Mod>();
                     conflicts.put(filename, modArray);
                 }
-                if (MinecraftJarBase.isClassFile(filename)) {
+                if (MinecraftInstallation.isClassFile(filename)) {
                     String className = ClassMap.filenameToClassName(filename);
                     for (Mod conflictMod : mods) {
                         if (conflictMod == mod) {
@@ -698,7 +696,7 @@ final public class MCPatcher {
             String name = entry.getName();
             boolean patched = false;
 
-            if (MinecraftJarBase.isGarbageFile(name)) {
+            if (MinecraftInstallation.isGarbageFile(name)) {
                 continue;
             }
             if (entry.isDirectory()) {
@@ -726,7 +724,7 @@ final public class MCPatcher {
                 fromMod.filesAdded.put(name, "replaced");
             }
 
-            if (MinecraftJarBase.isClassFile(name)) {
+            if (MinecraftInstallation.isClassFile(name)) {
                 ArrayList<ClassMod> classMods = new ArrayList<ClassMod>();
                 ClassFile classFile = new ClassFile(new DataInputStream(inputStream));
                 String className = ClassMap.filenameToClassName(name);
@@ -803,7 +801,7 @@ final public class MCPatcher {
             outputJar.putNextEntry(new ZipEntry(filename));
             ClassMap classMap = mod.classMap;
             boolean directCopy = true;
-            if (MinecraftJarBase.isClassFile(filename)) {
+            if (MinecraftInstallation.isClassFile(filename)) {
                 ClassFile classFile = new ClassFile(new DataInputStream(inputStream));
                 for (Mod mod1 : modList.getSelected()) {
                     for (ClassMod classMod : mod1.getClassMods()) {

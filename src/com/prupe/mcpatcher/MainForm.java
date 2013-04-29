@@ -185,9 +185,9 @@ class MainForm {
                     fd.setFileSelectionMode(JFileChooser.FILES_ONLY);
                     fd.setFileHidingEnabled(false);
                     fd.setDialogTitle("Select input file");
-                    MinecraftJarBase minecraft = MCPatcher.minecraft;
+                    MinecraftInstallation.MinecraftJar minecraft = MCPatcher.minecraft;
                     if (minecraft == null || minecraft.getInputFile() == null) {
-                        fd.setCurrentDirectory(MinecraftJarBase.getDefaultJarDirectory(minecraft));
+                        fd.setCurrentDirectory(MinecraftInstallation.getDefaultJarDirectory());
                     } else {
                         fd.setCurrentDirectory(minecraft.getInputFile().getParentFile());
                         fd.setSelectedFile(minecraft.getInputFile());
@@ -196,7 +196,7 @@ class MainForm {
                     fd.setFileFilter(new FileFilter() {
                         @Override
                         public boolean accept(File f) {
-                            return (f.isDirectory() && !f.getName().endsWith(MinecraftJarV2.MCPATCHER_VERSION)) || f.getName().toLowerCase().endsWith(".jar");
+                            return (f.isDirectory() && !f.getName().endsWith(MinecraftInstallationV2.MCPATCHER_SUFFIX)) || f.getName().toLowerCase().endsWith(".jar");
                         }
 
                         @Override
@@ -223,7 +223,7 @@ class MainForm {
         outputBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setStatusText("");
-                MinecraftJarBase minecraft = MCPatcher.minecraft;
+                MinecraftInstallation.MinecraftJar minecraft = MCPatcher.minecraft;
                 File selectedFile = null;
                 if (shift) {
                     String text = (String) JOptionPane.showInputDialog(
@@ -242,7 +242,7 @@ class MainForm {
                     fd.setFileHidingEnabled(false);
                     fd.setDialogTitle("Select output file");
                     if (minecraft.getOutputFile() == null) {
-                        fd.setCurrentDirectory(MinecraftJarBase.getDefaultJarDirectory(minecraft));
+                        fd.setCurrentDirectory(MinecraftInstallation.getDefaultJarDirectory());
                     } else {
                         fd.setCurrentDirectory(minecraft.getOutputFile().getParentFile());
                         fd.setSelectedFile(minecraft.getOutputFile());
@@ -251,7 +251,7 @@ class MainForm {
                     fd.setFileFilter(new FileFilter() {
                         @Override
                         public boolean accept(File f) {
-                            return (f.isDirectory() && !f.getName().endsWith(MinecraftJarV2.MCPATCHER_VERSION)) || f.getName().toLowerCase().endsWith(".jar");
+                            return (f.isDirectory() && !f.getName().endsWith(MinecraftInstallationV2.MCPATCHER_SUFFIX)) || f.getName().toLowerCase().endsWith(".jar");
                         }
 
                         @Override
@@ -448,7 +448,7 @@ class MainForm {
                 setStatusText("");
                 try {
                     MCPatcher.minecraft.restoreBackup();
-                    MinecraftJarBase.setDefaultTexturePack();
+                    MinecraftInstallation.setDefaultTexturePack();
                     JOptionPane.showMessageDialog(frame, "Restored original minecraft jar and reset texture pack to default.", "", JOptionPane.INFORMATION_MESSAGE);
                 } catch (IOException e1) {
                     Logger.log(e1);

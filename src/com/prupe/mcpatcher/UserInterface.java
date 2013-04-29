@@ -43,8 +43,11 @@ abstract class UserInterface {
     }
 
     boolean go() {
-        File defaultMinecraft = MinecraftJarBase.getJarPathForVersion(Config.instance.getConfigValue(Config.TAG_SELECTED_PROFILE));
-        if (!defaultMinecraft.isFile()) {
+        File defaultMinecraft = MinecraftInstallation.getJarPathForVersion(Config.instance.getConfigValue(Config.TAG_SELECTED_PROFILE));
+        if (defaultMinecraft == null || !defaultMinecraft.isFile()) {
+            defaultMinecraft = MinecraftInstallation.getDefaultJarPath();
+        }
+        if (defaultMinecraft == null || !defaultMinecraft.isFile()) {
             showCorruptJarError(defaultMinecraft);
             setBusy(false);
             return false;
