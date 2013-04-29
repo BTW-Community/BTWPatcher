@@ -216,6 +216,7 @@ public class ConnectedTextures extends Mod {
         private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
         private final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
         private final MethodRef renderBlockAsItem = new MethodRef(getDeobfClass(), "renderBlockAsItem", "(LBlock;IF)V");
+        private final MethodRef renderBlockAsItemVanilla = new MethodRef(getDeobfClass(), "renderBlockAsItemVanilla", "(LBlock;IF)V"); // added by BTW 4.68
         private final MethodRef getIconBySideAndMetadata = new MethodRef(getDeobfClass(), "getIconBySideAndMetadata", "(LBlock;II)LIcon;");
         private final MethodRef getIconBySide = new MethodRef(getDeobfClass(), "getIconBySide", "(LBlock;I)LIcon;");
         private final InterfaceMethodRef getMinU = new InterfaceMethodRef("Icon", "getMinU", "()F");
@@ -945,7 +946,7 @@ public class ConnectedTextures extends Mod {
                 }
             }
                 .setInsertBefore(true)
-                .targetMethod(renderBlockAsItem)
+                .targetMethod(renderBlockAsItem, renderBlockAsItemVanilla)
             );
 
             setupHeldBlocks(getIconBySide, getTileBySide, "held blocks");
@@ -974,7 +975,7 @@ public class ConnectedTextures extends Mod {
                         reference(INVOKESTATIC, to)
                     );
                 }
-            }.targetMethod(renderBlockAsItem));
+            }.targetMethod(renderBlockAsItem, renderBlockAsItemVanilla));
         }
     }
 
