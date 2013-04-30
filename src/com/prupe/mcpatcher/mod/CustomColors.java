@@ -2953,6 +2953,76 @@ public class CustomColors extends Mod {
                     );
                 }
             }.targetMethod(renderBlockFluids));
+
+            setupBTW();
+        }
+
+        private void setupBTW() {
+            final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
+            final MethodRef colorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;III)I");
+            final MethodRef renderBlock = new MethodRef(getDeobfClass(), "RenderStandardFullBlock", "(LBlock;III)Z");
+            final MethodRef renderBlockAO = new MethodRef(getDeobfClass(), "RenderStandardFullBlockWithAmbientOcclusion", "(LBlock;III)Z");
+            final MethodRef renderBlockCM = new MethodRef(getDeobfClass(), "RenderStandardFullBlockWithColorMultiplier", "(LBlock;III)Z");
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "setup block color multiplier (btw)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, blockAccess),
+                        ILOAD_2,
+                        ILOAD_3,
+                        ILOAD, 4,
+                        reference(INVOKEVIRTUAL, colorMultiplier),
+                        reference(INVOKESTATIC, setColorF)
+                    );
+                }
+            }.targetMethod(renderBlock));
+
+            addPatch(new BytecodePatch() {
+                private int patchCount;
+
+                @Override
+                public String getDescription() {
+                    return "use block color multiplier (btw)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(or(
+                        build(push(0.5f)),
+                        build(push(0.6f)),
+                        build(push(0.8f)),
+                        build(push(1.0f))
+                    ));
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(GETSTATIC, setColor),
+                        push(patchCount++ % 3),
+                        FALOAD,
+                        FMUL
+                    );
+                }
+            }
+                .setInsertAfter(true)
+                .targetMethod(renderBlockAO, renderBlockCM)
+            );
         }
 
         abstract private class TessellatorPatch extends BytecodePatch {
