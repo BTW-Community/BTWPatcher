@@ -320,7 +320,7 @@ public class ConnectedTextures extends Mod {
 
             @Override
             public byte[] getReplacementBytes() {
-                iconRegister = extractRegisterNum(getCaptureGroup(1));
+                iconRegister = getIconRegister();
                 final byte[] returnCode;
                 if (getMethodInfo().getDescriptor().endsWith("V")) {
                     returnCode = new byte[]{(byte) RETURN};
@@ -353,6 +353,10 @@ public class ConnectedTextures extends Mod {
                     reference(INVOKESTATIC, getTessellator),
                     registerLoadStore(ASTORE, tessellatorRegister)
                 );
+            }
+
+            protected int getIconRegister() {
+                return extractRegisterNum(getCaptureGroup(1));
             }
 
             abstract protected String getTextureType();
@@ -681,9 +685,27 @@ public class ConnectedTextures extends Mod {
         }
 
         private void setupBlockFace(final int face, final String direction) {
+            final MethodRef altMethod = new MethodRef(getDeobfClass(), "RenderFull" + direction + "Face", "(LBlock;DDDLIcon;)V");
             faceMethods[face] = new MethodRef(getDeobfClass(), "render" + direction + "Face", "(LBlock;DDDLIcon;)V");
 
             addPatch(new RenderBlocksPatch() {
+                @Override
+                protected int getIconRegister() {
+                    return 8;
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    if (isAlternateMethod()) {
+                        return buildExpression(
+                            reference(GETSTATIC, instance),
+                            anyASTORE
+                        );
+                    } else {
+                        return super.getMatchExpression();
+                    }
+                }
+
                 @Override
                 protected String getTextureType() {
                     return direction.toLowerCase() + " face";
@@ -706,7 +728,11 @@ public class ConnectedTextures extends Mod {
                 protected MethodRef getCTMUtilsMethod() {
                     return getTile;
                 }
-            }.targetMethod(faceMethods[face]));
+
+                private boolean isAlternateMethod() {
+                    return getMethodInfo().getName().startsWith("RenderFull");
+                }
+            }.targetMethod(faceMethods[face], altMethod));
         }
 
         private void setupNonStandardBlocks() {
