@@ -1,8 +1,11 @@
 package net.minecraft.src;
 
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
 
 public class TextureMap implements IconRegister {
+    public HashMap<String, TextureStitched> mapTexturesStitched;
+
     public TextureMap(int type, String basePath, String textureExt, BufferedImage missingImage) {
     }
 

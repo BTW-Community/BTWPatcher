@@ -355,6 +355,7 @@ public class BaseTilesheetMod extends Mod {
 
             final FieldRef basePath = new FieldRef(getDeobfClass(), "basePath", "Ljava/lang/String;");
             final FieldRef textureExt = new FieldRef(getDeobfClass(), "textureExt", "Ljava/lang/String;");
+            final FieldRef mapTexturesStitched = new FieldRef(getDeobfClass(), "mapTexturesStitched", "Ljava/util/HashMap;");
             final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "()V");
             final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "()LTexture;");
             final ClassRef sbClass = new ClassRef("java/lang/StringBuilder");
@@ -419,6 +420,9 @@ public class BaseTilesheetMod extends Mod {
             );
 
             addMemberMapper(new MethodMapper(getTexture));
+            addMemberMapper(new FieldMapper(mapTexturesStitched));
+
+            addPatch(new MakeMemberPublicPatch(mapTexturesStitched));
 
             addPatch(new BytecodePatch() {
                 private int stitcherRegister;
