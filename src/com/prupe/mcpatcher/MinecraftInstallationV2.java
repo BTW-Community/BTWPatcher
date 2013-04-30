@@ -36,7 +36,7 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
 
     @Override
     boolean prefersThisVersion(MinecraftVersion version) {
-        return version.compareTo("1.5.1") > 0;
+        return version.compareTo("1.5.2") > 0;
     }
 
     @Override
