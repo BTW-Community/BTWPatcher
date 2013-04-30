@@ -60,16 +60,17 @@ abstract class MinecraftInstallation {
         if (version == null) {
             return null;
         }
-        if (v1.isPresent() && v2.isPresent()) {
-            return v1.prefersThisVersion(version) ? v1.getJarPathForVersionImpl(version) : v2.getJarPathForVersionImpl(version);
+        File jar1 = v1.isPresent() ? v1.getJarPathForVersionImpl(version) : null;
+        File jar2 = v2.isPresent() ? v2.getJarPathForVersionImpl(version) : null;
+        if (jar1 != null && jar1.isFile() && jar2 != null && jar2.isFile()) {
+            return v1.prefersThisVersion(version) ? jar1 : jar2;
+        } else if (jar1 != null && jar1.isFile()) {
+            return jar1;
+        } else if (jar2 != null && jar2.isFile()) {
+            return jar2;
+        } else {
+            return null;
         }
-        if (v2.isPresent()) {
-            return v2.getJarPathForVersionImpl(version);
-        }
-        if (v1.isPresent()) {
-            return v1.getJarPathForVersionImpl(version);
-        }
-        return null;
     }
 
     static File getDefaultJarPath() {
