@@ -3,9 +3,13 @@ package com.prupe.mcpatcher.mod;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TileLoader;
 import com.prupe.mcpatcher.WeightedIndex;
-import net.minecraft.src.*;
+import net.minecraft.src.Block;
+import net.minecraft.src.IBlockAccess;
+import net.minecraft.src.Icon;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 
 class TileOverrideImpl {
     final static class CTM extends TileOverride {

@@ -4,7 +4,6 @@ import com.prupe.mcpatcher.*;
 import javassist.bytecode.AccessFlag;
 
 import javax.swing.*;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -103,7 +102,7 @@ public class CustomItemTextures extends Mod {
             armorCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "armor", true));
         }
     }
-    
+
     private class ItemMod extends BaseMod.ItemMod {
         ItemMod() {
             final MethodRef getIconIndex = new MethodRef(getDeobfClass(), "getIconIndex", "(LItemStack;)LIcon;");

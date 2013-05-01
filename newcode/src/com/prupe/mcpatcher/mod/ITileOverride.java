@@ -1,9 +1,9 @@
 package com.prupe.mcpatcher.mod;
 
-import net.minecraft.src.*;
+import net.minecraft.src.Block;
+import net.minecraft.src.IBlockAccess;
+import net.minecraft.src.Icon;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 interface ITileOverride {

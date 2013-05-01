@@ -2,7 +2,9 @@ package com.prupe.mcpatcher;
 
 import javassist.bytecode.AccessFlag;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;

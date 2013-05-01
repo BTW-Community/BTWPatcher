@@ -1,10 +1,8 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
-import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
 
-import java.awt.image.BufferedImage;
 import java.util.*;
 
 public class CTMUtils {

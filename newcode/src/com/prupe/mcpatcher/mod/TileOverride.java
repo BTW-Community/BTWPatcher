@@ -4,14 +4,12 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.TileLoader;
-import net.minecraft.src.*;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.src.Block;
+import net.minecraft.src.IBlockAccess;
+import net.minecraft.src.Icon;
 
-import java.awt.image.BufferedImage;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

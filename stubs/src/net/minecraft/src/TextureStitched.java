@@ -48,6 +48,7 @@ public class TextureStitched implements Icon {
     public int getSheetHeight() {
         return 0;
     }
+
     public TextureStitched(String name) {
     }
 
