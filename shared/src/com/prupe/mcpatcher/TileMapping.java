@@ -551,7 +551,7 @@ public class TileMapping {
         map.add(1, "fcBlockSlats_side");
         map.add(2, "FCBlockBlightL0_bottom");
         map.add(2, "FCBlockBlightL1_bottom");
-        // /btwmodtex/btwterrain01.png,   3 -> (none)
+        // 3 unused
         map.add(4, "fcBlockLightBlock");
         map.add(5, "fcBlockLightBlock_lit");
         map.add(6, "fcBlockBlockDispenser_top");
@@ -590,7 +590,7 @@ public class TileMapping {
         map.add(31, "fcBlockHandCrank_bottom");
         map.add(32, "fcBlockRope");
         map.add(33, "fcBlockAxle_side");
-        // /btwmodtex/btwterrain01.png,  34 -> (none)
+        map.add(34, "fcBlockAxle_end");
         map.add(35, "fcBlockTableWoodOak_leg");
         map.add(35, "fcBlockTurntable_switch");
         map.add(35, "fcBlockHopper_side");
@@ -753,14 +753,14 @@ public class TileMapping {
         map.add(100, "fcBlockStub");
         map.add(100, "fcBlockSoap_top");
         map.add(101, "fcBlockSoap");
-        // /btwmodtex/btwterrain01.png, 102 -> (none)
+        map.add(102, "fcBlockRope_top");
         map.add(103, "fcBlockRope_side");
         map.add(104, "fcBlockGrate");
         map.add(105, "fcBlockVineTrap");
         map.add(106, "fcBlockBloodWood");
         map.add(107, "fcBlockBloodWood_side");
         map.add(108, "fcBlockSaplingBloodWood");
-        // /btwmodtex/btwterrain01.png, 109 -> (none)
+        map.add(109, "fcBlockLeavesBloodWood_old");
         map.add(110, "fcBlockSlabWicker");
         map.add(110, "fcBlockPlatform_bottom");
         map.add(110, "fcBlockWicker");
@@ -775,8 +775,8 @@ public class TileMapping {
         map.add(116, "fcBlockHopper_slats");
         map.add(117, "fcBlockPlanter_top_grass");
         map.add(118, "fcBlockHopper_ironbars");
-        // /btwmodtex/btwterrain01.png, 119 -> (none)
-        // /btwmodtex/btwterrain01.png, 120 -> (none)
+        // 119 unused
+        // 120 unused (flint block?)
         map.add(121, "fcBlockInfernalEnchanter_top");
         map.add(122, "fcBlockInfernalEnchanter_side");
         map.add(123, "fcBlockSoulforgedSteel");
@@ -790,9 +790,9 @@ public class TileMapping {
         map.add(129, "fcBlockGroth_side");
         map.add(130, "fcBlockGroth_bottom");
         map.add(130, "fcBlockNetherrackGrothed_top");
-        // /btwmodtex/btwterrain01.png, 131 -> (none)
-        // /btwmodtex/btwterrain01.png, 132 -> (none)
-        // /btwmodtex/btwterrain01.png, 133 -> (none)
+        // 131 unused (grass_side?)
+        // 132 unused (grass_side_overlay?)
+        // 133 unused (grass_top?)
         map.add(134, "FCBlockSlabDirt_grass_side");
         map.add(135, "FCBlockSlabDirt_grass_side_overlay");
         map.add(136, "FCBlockFarmlandFertilized_wet");
@@ -860,7 +860,7 @@ public class TileMapping {
         map.add(188, "FCBlockBlightL3_roots");
         map.add(189, "FCBlockBlightL3_side");
         map.add(190, "FCBlockPackedEarth");
-        // /btwmodtex/btwterrain01.png, 191 -> (none)
+        // 191 unused (snow_side?)
         map.add(192, "FCBlockSlabDirt_grass_snow_side");
         map.add(208, "fcBlockCandle_c00");
         map.add(208, "fcBlockCrucible_top");
@@ -950,7 +950,7 @@ public class TileMapping {
         map.add(8, "fcItemDonut");
         map.add(9, "fcItemRope");
         map.add(10, "fcItemSlats");
-        // /btwmodtex/btwitems01.png,  11 -> (none)
+        map.add(11, "fcItemDung");
         map.add(12, "fcItemWaterWheel");
         map.add(13, "fcItemBladeWindMill");
         map.add(14, "fcItemWindMill");
@@ -975,11 +975,11 @@ public class TileMapping {
         map.add(33, "fcItemDustHellfire");
         map.add(34, "fcItemConcentratedHellfire");
         map.add(35, "fcItemArmorPlate");
-        // /btwmodtex/btwitems01.png,  36 -> (none)
+        map.add(36, "fcItemHelmetPlate");
         map.add(37, "fcItemChestplatePlate");
         map.add(38, "fcItemLeggingsPlate");
         map.add(39, "fcItemBootsPlate");
-        // /btwmodtex/btwitems01.png,  40 -> (none)
+        map.add(40, "fcItemBowComposite");
         map.add(41, "fcItemArrowheadBroadhead");
         map.add(42, "fcItemArrowBroadhead");
         map.add(43, "fcItemDustCoal");
@@ -992,15 +992,15 @@ public class TileMapping {
         map.add(50, "fcItemPotash");
         map.add(51, "fcItemSoap");
         map.add(52, "fcItemDustSaw");
-        // /btwmodtex/btwitems01.png,  53 -> (none)
+        map.add(53, "fcItemHelmetLeatherTanned");
         map.add(54, "fcItemChestplateLeatherTanned");
         map.add(55, "fcItemLeggingsLeatherTanned");
         map.add(56, "fcItemBootsLeatherTanned");
-        // /btwmodtex/btwitems01.png,  57 -> (none)
-        // /btwmodtex/btwitems01.png,  58 -> (none)
-        // /btwmodtex/btwitems01.png,  59 -> (none)
+        map.add(57, "fcItemBowComposite_pull_0");
+        map.add(58, "fcItemBowComposite_pull_1");
+        map.add(59, "fcItemBowComposite_pull_2");
         map.add(60, "fcItemDynamite");
-        // /btwmodtex/btwitems01.png,  61 -> (none)
+        map.add(61, "fcItemHarnessBreeding");
         map.add(62, "fcItemDustSoul");
         map.add(63, "fcItemMattock");
         map.add(64, "fcItemHatchetRefined");
@@ -1009,7 +1009,7 @@ public class TileMapping {
         map.add(67, "fcItemTuningFork");
         map.add(68, "fcItemScrollArcane");
         map.add(69, "fcItemCandle");
-        // /btwmodtex/btwitems01.png,  70 -> (none)
+        map.add(70, "fcItemSporesNetherGroth");
         map.add(71, "fcItemMould");
         map.add(72, "fcItemCanvas");
         map.add(73, "fcItemKibble");
@@ -1023,7 +1023,7 @@ public class TileMapping {
         map.add(81, "fcItemBrimstone");
         map.add(82, "fcItemNitre");
         map.add(83, "fcItemElement");
-        // /btwmodtex/btwitems01.png,  84 -> (none)
+        map.add(84, "fcItemFuse");
         map.add(85, "fcItemBlastingOil");
         map.add(86, "fcItemWindMillVertical");
         map.add(87, "fcItemPotatoBoiled");
@@ -1032,16 +1032,16 @@ public class TileMapping {
         map.add(90, "fcItemWitchWart");
         map.add(91, "fcItemCarrotCooked");
         map.add(92, "fcItemSandwichTasty");
-        // /btwmodtex/btwitems01.png,  93 -> (none)
+        map.add(93, "fcItemSteakAndPotatoes");
         map.add(94, "fcItemHamAndEggs");
-        // /btwmodtex/btwitems01.png,  95 -> (none)
-        // /btwmodtex/btwitems01.png,  96 -> (none)
-        // /btwmodtex/btwitems01.png,  97 -> (none)
-        // /btwmodtex/btwitems01.png,  98 -> (none)
+        map.add(95, "fcItemDinnerSteak");
+        map.add(96, "fcItemDinnerPork");
+        map.add(97, "fcItemKebabRaw");
+        map.add(98, "fcItemKebabCooked");
         map.add(99, "fcItemSoupChicken");
         map.add(100, "fcItemChowder");
         map.add(101, "fcItemStewHearty");
-        // /btwmodtex/btwitems01.png, 102 -> (none)
+        map.add(102, "fcItemDinnerWolf");
         map.add(103, "fcItemMushroomRed");
         map.add(104, "fcItemMushroomBrown");
         map.add(105, "fcItemNuggetIron");
@@ -1050,7 +1050,7 @@ public class TileMapping {
         map.add(108, "fcItemMushroomOmletCooked");
         map.add(109, "fcItemEggScrambledRaw");
         map.add(110, "fcItemEggScrambledCooked");
-        // /btwmodtex/btwitems01.png, 111 -> (none)
+        map.add(111, "fcItemNetherQuartz");
     }
 
     public static TileMapping getTileMapping(String tilesheetName) {
