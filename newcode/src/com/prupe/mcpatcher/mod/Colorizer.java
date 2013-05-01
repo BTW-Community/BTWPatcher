@@ -161,9 +161,13 @@ public class Colorizer {
     }
 
     static void intToFloat3(int rgb, float[] f, int offset) {
-        f[offset] = (float) (rgb & 0xff0000) / (float) 0xff0000;
-        f[offset + 1] = (float) (rgb & 0xff00) / (float) 0xff00;
-        f[offset + 2] = (float) (rgb & 0xff) / (float) 0xff;
+        if ((rgb & 0xffffff) == 0xffffff) {
+            f[offset] = f[offset + 1] = f[offset + 2] = 1.0f;
+        } else {
+            f[offset] = (float) (rgb & 0xff0000) / (float) 0xff0000;
+            f[offset + 1] = (float) (rgb & 0xff00) / (float) 0xff00;
+            f[offset + 2] = (float) (rgb & 0xff) / (float) 0xff;
+        }
     }
 
     static void intToFloat3(int rgb, float[] f) {
