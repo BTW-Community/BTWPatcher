@@ -107,6 +107,7 @@ public class TileLoader {
     }
 
     public static void registerIcons(TextureMap textureMap, Stitcher stitcher, String mapName, Map<StitchHolder, List<Texture>> map) {
+        logger.fine("before registerIcons(%s) %d icons", mapName, map.size());
         registerIconsCalled = true;
         if (!changeHandlerCalled) {
             logger.severe("beforeChange was not called, invoking directly");
@@ -123,6 +124,7 @@ public class TileLoader {
                 }
             }
         }
+        logger.fine("after registerIcons(%s) %d icons", mapName, map.size());
     }
 
     public static String getOverridePath(String prefix, String name, String ext) {
@@ -289,16 +291,16 @@ public class TileLoader {
         tileTextures.clear();
     }
 
-    public Icon getIcon(String path) {
-        return iconMap.get(path);
+    public Icon getIcon(String name) {
+        Icon icon = iconMap.get(name);
+        if (icon == null && textureMap != null) {
+            icon = textureMap.mapTexturesStitched.get(name);
+        }
+        return icon;
     }
 
     public boolean setDefaultTextureMap(Tessellator tessellator) {
         tessellator.textureMap = textureMap;
         return textureMap != null;
-    }
-
-    public Icon registerIcon(String name) {
-        return textureMap.registerIcon(name);
     }
 }

@@ -409,8 +409,8 @@ class TileOverrideImpl {
         BetterGrass(TileLoader tileLoader, int blockID, String tileName) {
             this.blockID = blockID;
             this.tileName = tileName;
-            fullSnowTile = tileLoader.registerIcon("snow");
-            fullTile = tileLoader.registerIcon(tileName + "_top");
+            fullSnowTile = tileLoader.getIcon("snow");
+            fullTile = tileLoader.getIcon(tileName + "_top");
         }
 
         @Override
