@@ -1,5 +1,10 @@
 package com.prupe.mcpatcher;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class TileMapping {
     public static final String[] BLOCKS = new String[]{
         /*   0:  0, 0 */ "grass_top",
@@ -518,4 +523,81 @@ public class TileMapping {
         /* 254: 14,15 */ null,
         /* 255: 15,15 */ null,
     };
+
+    private static final Map<String, TileMapping> allMappings = new HashMap<String, TileMapping>();
+
+    private final String tilesheetName;
+    private final String dirPrefix;
+    private final Map<String, Integer> tiles = new HashMap<String, Integer>();
+
+    static {
+        TileMapping map = new TileMapping("/terrain.png", "/textures/blocks/");
+        map.addAll(BLOCKS);
+
+        map = new TileMapping("/gui/items.png", "/textures/items/");
+        map.addAll(ITEMS);
+    }
+
+    public static TileMapping getTileMapping(String tilesheetName) {
+        return allMappings.get(tilesheetName);
+    }
+
+    public TileMapping(String tilesheetName, String dirPrefix) {
+        this.tilesheetName = tilesheetName;
+        this.dirPrefix = dirPrefix;
+        allMappings.put(tilesheetName, this);
+    }
+
+    public String getTilesheetName() {
+        return tilesheetName;
+    }
+
+    public String getDirectoryPrefix() {
+        return dirPrefix;
+    }
+
+    public void add(int tileNum, String basename) {
+        if (tileNum >= 0 && tileNum < 256 && basename != null) {
+            tiles.put(getDirectoryPrefix() + basename + ".png", tileNum);
+        }
+    }
+
+    public void add(int row, int col, String basename) {
+        add(row + 16 * col, basename);
+    }
+
+    public void addAll(String[] names) {
+        for (int i = 0; i < names.length; i++) {
+            add(i, names[i]);
+        }
+    }
+
+    public List<String> getTileNames(int tileNum) {
+        List<String> matches = new ArrayList<String>();
+        for (Map.Entry<String, Integer> entry : tiles.entrySet()) {
+            if (tileNum == entry.getValue()) {
+                matches.add(entry.getKey());
+            }
+        }
+        return matches;
+    }
+
+    public String[][] getTileNames() {
+        String[][] lists = new String[256][];
+        for (Map.Entry<String, Integer> entry : tiles.entrySet()) {
+            String name = entry.getKey();
+            int num = entry.getValue();
+            String[] oldList = lists[num];
+            String[] newList;
+            if (oldList == null) {
+                newList = new String[]{name};
+            } else {
+                newList = new String[oldList.length + 1];
+                System.arraycopy(oldList, 0, newList, 0, oldList.length);
+                newList[oldList.length] = name;
+            }
+            lists[num] = newList;
+        }
+        return lists;
+    }
 }

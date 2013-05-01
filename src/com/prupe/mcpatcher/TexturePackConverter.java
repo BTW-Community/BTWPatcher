@@ -40,7 +40,6 @@ public class TexturePackConverter {
         238, 239, 254, 255, /* flowing lava */
 
     };
-    private static final int[] skipItemTiles = new int[]{};
 
     private final File input;
     private final File output;
@@ -108,20 +107,21 @@ public class TexturePackConverter {
                             break;
 
                         case 2:
-                            if (name.equals("terrain.png")) {
-                                convertTilesheet(entry, TileMapping.BLOCKS, skipBlockTiles, "blocks");
-                                removeEntry(name);
-                                for (int i = 0; i <= 2; i++) {
-                                    String carrot = getEntryName("/textures/blocks/carrots_" + i + ".png");
-                                    String potato = getEntryName("/textures/blocks/potatoes_" + i + ".png");
-                                    if (outData.containsKey(carrot) && !outData.containsKey(potato)) {
-                                        addMessage(0, "copy %s -> %s", carrot, potato);
-                                        outData.put(potato, outData.get(carrot));
+                            TileMapping tileMapping = TileMapping.getTileMapping("/" + name);
+                            if (tileMapping != null) {
+                                if (name.equals("terrain.png")) {
+                                    convertTilesheet(entry, tileMapping, skipBlockTiles);
+                                    for (int i = 0; i <= 2; i++) {
+                                        String carrot = getEntryName("/textures/blocks/carrots_" + i + ".png");
+                                        String potato = getEntryName("/textures/blocks/potatoes_" + i + ".png");
+                                        if (outData.containsKey(carrot) && !outData.containsKey(potato)) {
+                                            addMessage(0, "copy %s -> %s", carrot, potato);
+                                            outData.put(potato, outData.get(carrot));
+                                        }
                                     }
+                                } else {
+                                    convertTilesheet(entry, tileMapping, null);
                                 }
-                            }
-                            if (name.equals("gui/items.png")) {
-                                convertTilesheet(entry, TileMapping.ITEMS, skipItemTiles, "items");
                                 removeEntry(name);
                             }
                             if (name.matches("terrain/(sun|moon|sky).*")) {
@@ -364,7 +364,7 @@ public class TexturePackConverter {
         return true;
     }
 
-    private boolean convertTilesheet(ZipEntry entry, String[] tileMapping, int[] skipTiles, String type) {
+    private boolean convertTilesheet(ZipEntry entry, TileMapping tileMapping, int[] skipTiles) {
         String name = entry.getName();
         BufferedImage image = getImage(name);
         if (image == null) {
@@ -372,26 +372,25 @@ public class TexturePackConverter {
         }
         int tileWidth = image.getWidth() / 16;
         int tileHeight = image.getHeight() / 16;
+        BufferedImage newImage = new BufferedImage(tileWidth, tileHeight, BufferedImage.TYPE_INT_ARGB);
         int[] rgb = new int[tileWidth * tileHeight];
-        for (int i = 0; i < 16; i++) {
-            tile:
-            for (int j = 0; j < 16; j++) {
-                int index = 16 * j + i;
-                for (int k : skipTiles) {
-                    if (index == k) {
-                        continue tile;
+        String[][] tileNames = tileMapping.getTileNames();
+        if (skipTiles != null) {
+            for (int i : skipTiles) {
+                tileNames[i] = null;
+            }
+        }
+        for (int i = 0; i < tileNames.length; i++) {
+            String[] names = tileNames[i];
+            if (names != null && names.length > 0) {
+                image.getRGB((i % 16) * tileWidth, (i / 16) * tileHeight, tileWidth, tileHeight, rgb, 0, tileWidth);
+                newImage.setRGB(0, 0, tileWidth, tileHeight, rgb, 0, tileWidth);
+                for (String s : names) {
+                    if (!outData.containsKey(getEntryName(s))) {
+                        addMessage(0, "%s %d,%d -> %s", name, i % 16, i / 16, s);
+                        addEntry(s, newImage);
                     }
                 }
-                String tileName = tileMapping[index];
-                if (tileName == null) {
-                    continue;
-                }
-                tileName = "textures/" + type + "/" + tileName + ".png";
-                image.getRGB(i * tileWidth, j * tileHeight, tileWidth, tileHeight, rgb, 0, tileWidth);
-                BufferedImage newImage = new BufferedImage(tileWidth, tileHeight, BufferedImage.TYPE_INT_ARGB);
-                newImage.setRGB(0, 0, tileWidth, tileHeight, rgb, 0, tileWidth);
-                addMessage(0, "%s %d,%d -> %s", name, i, j, tileName);
-                addEntry(tileName, newImage);
             }
         }
         return true;
