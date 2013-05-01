@@ -596,7 +596,7 @@ class MainForm {
             @Override
             public boolean accept(File f) {
                 String name = f.getName();
-                return name.endsWith(".zip") && !name.startsWith("mcpatcher-converted-");
+                return f.isDirectory() || (name.endsWith(".zip") && !name.startsWith("mcpatcher-converted-"));
             }
 
             @Override
