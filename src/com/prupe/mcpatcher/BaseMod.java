@@ -723,7 +723,7 @@ public final class BaseMod extends Mod {
             addClassSignature(new OrSignature(
                 new ConstSignature("0123456789abcdef"),
                 new ConstSignature("0123456789abcdefk"),
-                new ConstSignature("/font/glyph_sizes.bin")
+                new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "font/glyph_sizes.bin")
             ));
         }
     }
