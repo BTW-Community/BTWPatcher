@@ -159,7 +159,7 @@ public class TileLoader {
             return textures.get(0).getWidth() * textures.get(0).getHeight();
         }
     }
-    
+
     void finish() {
         tileTextures.clear();
     }

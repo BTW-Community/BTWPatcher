@@ -73,7 +73,7 @@ public class ConnectedTextures extends Mod {
 
     @Override
     public String[] getLoggingCategories() {
-        return new String[] {
+        return new String[]{
             MCPatcherUtils.CONNECTED_TEXTURES,
             MCPatcherUtils.CUSTOM_ITEM_TEXTURES,
         };
