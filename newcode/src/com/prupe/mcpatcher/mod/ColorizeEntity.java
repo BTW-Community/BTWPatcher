@@ -11,12 +11,12 @@ import java.util.Random;
 import static com.prupe.mcpatcher.mod.Colorizer.*;
 
 public class ColorizeEntity {
-    private static final String LAVA_DROP_COLORS = "/misc/lavadropcolor.png";
-    private static final String MYCELIUM_COLORS = "/misc/myceliumparticlecolor.png";
-    private static final String XPORB_COLORS = "/misc/xporbcolor.png";
+    private static final String LAVA_DROP_COLORS = MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/lavadropcolor.png";
+    private static final String MYCELIUM_COLORS = MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/myceliumparticlecolor.png";
+    private static final String XPORB_COLORS = MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/xporbcolor.png";
 
     static float[] waterBaseColor; // particle.water
-    private static float[] lavaDropColors; // /misc/lavadropcolor.png
+    private static float[] lavaDropColors; // misc/lavadropcolor.png
 
     public static float[] portalColor = new float[]{1.0f, 0.3f, 0.9f};
 

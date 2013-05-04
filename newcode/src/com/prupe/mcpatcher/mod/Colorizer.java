@@ -8,7 +8,7 @@ import java.util.Properties;
 public class Colorizer {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
-    private static final String COLOR_PROPERTIES = "/color.properties";
+    private static final String COLOR_PROPERTIES = MCPatcherUtils.TEXTURE_PACK_PREFIX + "color.properties";
     private static Properties properties;
 
     static final boolean useWaterColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "water", true);

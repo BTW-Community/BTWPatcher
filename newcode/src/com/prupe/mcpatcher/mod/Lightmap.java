@@ -13,7 +13,7 @@ import java.util.HashMap;
 public final class Lightmap {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
-    private static final String LIGHTMAP_FORMAT = "/environment/lightmap%d.png";
+    private static final String LIGHTMAP_FORMAT = MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/lightmap%d.png";
     private static final int LIGHTMAP_SIZE = 16;
     private static final int HEIGHT_WITHOUT_NIGHTVISION = 2 * LIGHTMAP_SIZE;
     private static final int HEIGHT_WITH_NIGHTVISION = 4 * LIGHTMAP_SIZE;
@@ -27,7 +27,6 @@ public final class Lightmap {
     private final int[] origMap;
     private final boolean valid;
 
-    private final int[] newMap = new int[LIGHTMAP_SIZE * LIGHTMAP_SIZE];
     private final float[] sunrgb = new float[3 * LIGHTMAP_SIZE];
     private final float[] torchrgb = new float[3 * LIGHTMAP_SIZE];
     private final float[] sunrgbnv = new float[3 * LIGHTMAP_SIZE];
@@ -38,7 +37,7 @@ public final class Lightmap {
         lightmaps.clear();
     }
 
-    public static boolean computeLightmap(EntityRenderer renderer, World world, float partialTick) {
+    public static boolean computeLightmap(EntityRenderer renderer, World world, int[] mapRGB, float partialTick) {
         if (world == null || !useLightmaps) {
             return false;
         }
@@ -57,7 +56,7 @@ public final class Lightmap {
             }
             lightmaps.put(worldType, lightmap);
         }
-        return lightmap != null && lightmap.compute(renderer, world, partialTick);
+        return lightmap != null && lightmap.compute(renderer, world, mapRGB, partialTick);
     }
 
     private Lightmap(String name, BufferedImage image) {
@@ -72,7 +71,7 @@ public final class Lightmap {
         }
     }
 
-    private boolean compute(EntityRenderer renderer, World world, float partialTick) {
+    private boolean compute(EntityRenderer renderer, World world, int[] mapRGB, float partialTick) {
         float sun = Colorizer.clamp(world.lightningFlash > 0 ? 1.0f : 7.0f / 6.0f * (world.getSunAngle(1.0f) - 0.2f)) * (width - 1);
         float torch = Colorizer.clamp(renderer.torchFlickerX + 0.5f) * (width - 1);
         float nightVisionStrength = renderer.getNightVisionStrength(partialTick);
@@ -112,10 +111,9 @@ public final class Lightmap {
                         rgb[k] = gamma * tmp + (1.0f - gamma) * rgb[k];
                     }
                 }
-                newMap[s * LIGHTMAP_SIZE + t] = 0xff000000 | Colorizer.float3ToInt(rgb);
+                mapRGB[s * LIGHTMAP_SIZE + t] = 0xff000000 | Colorizer.float3ToInt(rgb);
             }
         }
-        MCPatcherUtils.getMinecraft().renderEngine.createTextureFromBytes(newMap, LIGHTMAP_SIZE, LIGHTMAP_SIZE, renderer.lightmapTexture);
         return true;
     }
 

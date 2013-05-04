@@ -18,8 +18,8 @@ import static com.prupe.mcpatcher.mod.Colorizer.*;
 public class ColorizeBlock {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
-    private static final String REDSTONE_COLORS = "/misc/redstonecolor.png";
-    private static final String STEM_COLORS = "/misc/stemcolor.png";
+    private static final String REDSTONE_COLORS = MCPatcherUtils.TEXTURE_PACK_PREFIX + "/misc/redstonecolor.png";
+    private static final String STEM_COLORS = MCPatcherUtils.TEXTURE_PACK_PREFIX + "/misc/stemcolor.png";
 
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
 
@@ -63,16 +63,16 @@ public class ColorizeBlock {
     }
 
     static void reloadColorMaps(Properties properties) {
-        fixedColorMaps[COLOR_MAP_SWAMP_GRASS].loadColorMap(useSwampColors, "/misc/swampgrasscolor.png");
-        fixedColorMaps[COLOR_MAP_SWAMP_FOLIAGE].loadColorMap(useSwampColors, "/misc/swampfoliagecolor.png");
-        fixedColorMaps[COLOR_MAP_PINE].loadColorMap(useTreeColors, "/misc/pinecolor.png");
-        fixedColorMaps[COLOR_MAP_BIRCH].loadColorMap(useTreeColors, "/misc/birchcolor.png");
-        fixedColorMaps[COLOR_MAP_FOLIAGE].loadColorMap(useTreeColors, "/misc/foliagecolor.png");
+        fixedColorMaps[COLOR_MAP_SWAMP_GRASS].loadColorMap(useSwampColors, MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/swampgrasscolor.png");
+        fixedColorMaps[COLOR_MAP_SWAMP_FOLIAGE].loadColorMap(useSwampColors, MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/swampfoliagecolor.png");
+        fixedColorMaps[COLOR_MAP_PINE].loadColorMap(useTreeColors, MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/pinecolor.png");
+        fixedColorMaps[COLOR_MAP_BIRCH].loadColorMap(useTreeColors, MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/birchcolor.png");
+        fixedColorMaps[COLOR_MAP_FOLIAGE].loadColorMap(useTreeColors, MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/foliagecolor.png");
         fixedColorMaps[COLOR_MAP_FOLIAGE].clear();
-        fixedColorMaps[COLOR_MAP_WATER].loadColorMap(useWaterColors, "/misc/watercolorX.png");
-        fixedColorMaps[COLOR_MAP_UNDERWATER].loadColorMap(useWaterColors, "/misc/underwatercolor.png");
-        fixedColorMaps[COLOR_MAP_FOG0].loadColorMap(useFogColors, "/misc/fogcolor0.png");
-        fixedColorMaps[COLOR_MAP_SKY0].loadColorMap(useFogColors, "/misc/skycolor0.png");
+        fixedColorMaps[COLOR_MAP_WATER].loadColorMap(useWaterColors, MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/watercolorX.png");
+        fixedColorMaps[COLOR_MAP_UNDERWATER].loadColorMap(useWaterColors, MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/underwatercolor.png");
+        fixedColorMaps[COLOR_MAP_FOG0].loadColorMap(useFogColors, MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/fogcolor0.png");
+        fixedColorMaps[COLOR_MAP_SKY0].loadColorMap(useFogColors, MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/skycolor0.png");
     }
 
     static void reloadSwampColors(Properties properties) {
@@ -91,7 +91,7 @@ public class ColorizeBlock {
             if (!key.startsWith(PALETTE_BLOCK_KEY)) {
                 continue;
             }
-            key = key.substring(PALETTE_BLOCK_KEY.length()).trim();
+            key = TexturePackAPI.fixupPath(key.substring(PALETTE_BLOCK_KEY.length()).trim());
             ColorMap colorMap = new ColorMap(0xffffff);
             colorMap.loadColorMap(true, key);
             if (!colorMap.isCustom()) {

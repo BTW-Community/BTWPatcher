@@ -718,10 +718,10 @@ public class CustomColors extends Mod {
             final MethodRef renderItem = new MethodRef(getDeobfClass(), "renderItem", "(LEntityLiving;LItemStack;I)V");
             final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
 
-            addClassSignature(new ConstSignature("/terrain.png"));
-            addClassSignature(new ConstSignature("/gui/items.png"));
-            addClassSignature(new ConstSignature("%blur%/misc/glint.png"));
-            addClassSignature(new ConstSignature("/misc/mapbg.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "terrain.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "gui/items.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/glint.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/mapbg.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -2153,7 +2153,7 @@ public class CustomColors extends Mod {
         EntityLivingMod() {
             setParentClass("Entity");
 
-            addClassSignature(new ConstSignature("/mob/char.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/char.png"));
             addClassSignature(new ConstSignature("bubble"));
             addClassSignature(new ConstSignature("explode"));
         }
@@ -2167,14 +2167,18 @@ public class CustomColors extends Mod {
             final FieldRef fogColorRed = new FieldRef(getDeobfClass(), "fogColorRed", "F");
             final FieldRef fogColorGreen = new FieldRef(getDeobfClass(), "fogColorGreen", "F");
             final FieldRef fogColorBlue = new FieldRef(getDeobfClass(), "fogColorBlue", "F");
+            final FieldRef lightmapColors = new FieldRef(getDeobfClass(), "lightmapColors", "[I");
+            final FieldRef lightmapTexture = new FieldRef(getDeobfClass(), "lightmapTexture", "LTexture;");
+            final FieldRef needLightmapUpdate = new FieldRef(getDeobfClass(), "needLightmapUpdate", "Z");
             final FieldRef thePlayer = new FieldRef("Minecraft", "thePlayer", "LEntityClientPlayerMP;");
             final FieldRef nightVision = new FieldRef("Potion", "nightVision", "LPotion;");
             final MethodRef isPotionActive = new MethodRef("EntityClientPlayerMP", "isPotionActive", "(LPotion;)Z");
             final MethodRef getNightVisionStrength1 = new MethodRef(getDeobfClass(), "getNightVisionStrength1", "(LEntityPlayer;F)F");
             final MethodRef getNightVisionStrength = new MethodRef(getDeobfClass(), "getNightVisionStrength", "(F)F");
+            final MethodRef loadTexture = new MethodRef("Texture", "load", "()V");
 
             addClassSignature(new ConstSignature("ambient.weather.rain"));
-            addClassSignature(new ConstSignature("/terrain.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "terrain.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -2242,17 +2246,23 @@ public class CustomColors extends Mod {
                         // ...
                         any(0, 300),
 
-                        // mc.renderEngine.createTextureFromBytes(lightmapColors, 16, 16, lightmapTexture);
-                        ALOAD_0,
-                        backReference(7),
-                        captureReference(GETFIELD),
+                        // this.lightmapColors[i] = ...;
                         ALOAD_0,
                         captureReference(GETFIELD),
-                        BIPUSH, 16,
-                        BIPUSH, 16,
+                        any(0, 50),
+                        IASTORE,
+
+                        // ...
+                        any(0, 20),
+
+                        // this.lightmapTexture.load();
+                        // this.needLightmapUpdate = false;
                         ALOAD_0,
                         captureReference(GETFIELD),
                         captureReference(INVOKEVIRTUAL),
+                        ALOAD_0,
+                        push(0),
+                        captureReference(PUTFIELD),
                         RETURN
                     );
                 }
@@ -2267,10 +2277,10 @@ public class CustomColors extends Mod {
                 .addXref(7, mc)
                 .addXref(8, new FieldRef("Minecraft", "gameSettings", "LGameSettings;"))
                 .addXref(9, new FieldRef("GameSettings", "gammaSetting", "F"))
-                .addXref(10, new FieldRef("Minecraft", "renderEngine", "LRenderEngine;"))
-                .addXref(11, new FieldRef(getDeobfClass(), "lightmapColors", "[I"))
-                .addXref(12, new FieldRef(getDeobfClass(), "lightmapTexture", "I"))
-                .addXref(13, new MethodRef("RenderEngine", "createTextureFromBytes", "([IIII)V"))
+                .addXref(10, lightmapColors)
+                .addXref(11, lightmapTexture)
+                .addXref(12, loadTexture)
+                .addXref(13, needLightmapUpdate)
             );
 
             addClassSignature(new BytecodeSignature() {
@@ -2385,12 +2395,23 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (Lightmap.computeLightmap(this, world, partialTick)) {
+                        // if (Lightmap.computeLightmap(this, world, this.lightmapColors, partialTick)) {
                         ALOAD_0,
                         ALOAD_2,
+                        ALOAD_0,
+                        reference(GETFIELD, lightmapColors),
                         FLOAD_1,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.LIGHTMAP_CLASS, "computeLightmap", "(LEntityRenderer;LWorld;F)Z")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.LIGHTMAP_CLASS, "computeLightmap", "(LEntityRenderer;LWorld;[IF)Z")),
                         IFEQ, branch("A"),
+
+                        // this.lightmapTexture.load();
+                        // this.needLightmapUpdate = false;
+                        ALOAD_0,
+                        reference(GETFIELD, lightmapTexture),
+                        reference(INVOKEVIRTUAL, loadTexture),
+                        ALOAD_0,
+                        push(0),
+                        reference(PUTFIELD, needLightmapUpdate),
 
                         // return;
                         RETURN,
@@ -3188,7 +3209,7 @@ public class CustomColors extends Mod {
 
     private class RenderGlobalMod extends ClassMod {
         RenderGlobalMod() {
-            addClassSignature(new ConstSignature("/environment/clouds.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/clouds.png"));
 
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final FieldRef gameSettings = new FieldRef("Minecraft", "gameSettings", "LGameSettings;");
@@ -3223,7 +3244,7 @@ public class CustomColors extends Mod {
                         any(1, 50),
 
                         // GL11.glBindTexture(3553, this.i.b("/environment/clouds.png"));
-                        push("/environment/clouds.png")
+                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/clouds.png")
                     );
                 }
             }
@@ -3237,7 +3258,7 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push("/misc/tunnel.png")
+                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/tunnel.png")
                     );
                 }
             }.setMethod(renderSky));
@@ -3568,7 +3589,7 @@ public class CustomColors extends Mod {
 
     private class EntitySheepMod extends ClassMod {
         EntitySheepMod() {
-            addClassSignature(new ConstSignature("/mob/sheep.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/sheep.png"));
             addClassSignature(new OrSignature(
                 new ConstSignature("mob.sheep"),
                 new ConstSignature("mob.sheep.say") // 12w38a+
@@ -3587,7 +3608,7 @@ public class CustomColors extends Mod {
 
             setParentClass("RenderLiving");
 
-            addClassSignature(new ConstSignature("/mob/wolf_collar.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/wolf_collar.png"));
             addClassSignature(new ConstSignature(glColor3f));
 
             addPatch(new BytecodePatch() {
@@ -3775,7 +3796,7 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push("/item/sign.png")
+                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "item/sign.png")
                     );
                 }
             }.setMethod(renderTileSignEntityAt));
@@ -3817,7 +3838,7 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push("/item/xporb.png")
+                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "item/xporb.png")
                     );
                 }
             }.setMethod(render));
