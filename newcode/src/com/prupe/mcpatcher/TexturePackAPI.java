@@ -229,15 +229,16 @@ public class TexturePackAPI {
     }
 
     public static void bindTexture(String s) {
-        MCPatcherUtils.getMinecraft().renderEngine.bindTextureByName(s);
+        MCPatcherUtils.getMinecraft().getTextureManager().bindTexture(s);
     }
 
     public static void bindTexture(int texture) {
-        MCPatcherUtils.getMinecraft().renderEngine.bindTexture(texture);
+        if (texture >= 0) {
+            TextureUtils.bindTexture(texture);
+        }
     }
 
     public static void clearBoundTexture() {
-        MCPatcherUtils.getMinecraft().renderEngine.resetBoundTexture();
     }
 
     public static int unloadTexture(String s) {

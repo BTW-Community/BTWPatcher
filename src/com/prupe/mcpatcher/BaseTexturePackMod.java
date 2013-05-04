@@ -33,6 +33,8 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new TextureUtilsMod());
         addClassMod(new TexturePackListMod());
         addClassMod(new ITexturePackMod());
+        addClassMod(new ILoadableTextureMod());
+        addClassMod(new TexturePlainMod());
         addClassMod(new TexturePackImplementationMod());
         addClassMod(new TexturePackDefaultMod());
         addClassMod(new TexturePackCustomMod());
@@ -75,7 +77,7 @@ public class BaseTexturePackMod extends Mod {
 
     private class MinecraftMod extends BaseMod.MinecraftMod {
         MinecraftMod() {
-            final FieldRef texturePackList = new FieldRef(getDeobfClass(), "texturePackList", "LTexturePackList;");
+            final MethodRef getTextureManager = new MethodRef(getDeobfClass(), "getTextureManager", "()LTextureManager;");
             final FieldRef renderEngine = new FieldRef(getDeobfClass(), "renderEngine", "LRenderEngine;");
             final MethodRef startGame = new MethodRef(getDeobfClass(), "startGame", "()V");
             final MethodRef runGameLoop = new MethodRef(getDeobfClass(), "runGameLoop", "()V");
@@ -99,8 +101,7 @@ public class BaseTexturePackMod extends Mod {
                 }
             }.setMethod(runGameLoop));
 
-            addMemberMapper(new FieldMapper(texturePackList));
-            addMemberMapper(new FieldMapper(renderEngine));
+            addMemberMapper(new MethodMapper(getTextureManager));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -172,14 +173,84 @@ public class BaseTexturePackMod extends Mod {
     }
 
     private class TextureUtilsMod extends ClassMod {
+        private final MethodRef glTexParameteri = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexParameteri", "(III)V");
+
         TextureUtilsMod() {
+            final MethodRef blur = new MethodRef(getDeobfClass(), "blur", "(Z)V");
+            final MethodRef clamp = new MethodRef(getDeobfClass(), "clamp", "(Z)V");
             final MethodRef glTexSubImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
-            final MethodRef glTexParameteri = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexParameteri", "(III)V");
             final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
+            final MethodRef glGenTextures = new MethodRef(MCPatcherUtils.GL11_CLASS, "glGenTextures", "()I");
+            final MethodRef glDeleteTextures = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(I)V");
 
             addClassSignature(new ConstSignature(glTexSubImage2D));
             addClassSignature(new ConstSignature(glTexParameteri));
             addClassSignature(new ConstSignature(glTexImage2D));
+            addClassSignature(new ConstSignature(glGenTextures));
+            addClassSignature(new ConstSignature(glDeleteTextures));
+
+            mapBlurClamp(10241 /* GL_TEXTURE_MIN_FILTER */, 9729 /* GL_LINEAR */, blur);
+            mapBlurClamp(10242 /* GL_TEXTURE_WRAP_S */, 10496 /* GL_CLAMP */, clamp);
+        }
+
+        private void mapBlurClamp(final int pname, final int param, MethodRef method) {
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(3553), // GL_TEXTURE_2D
+                        push(pname),
+                        push(param),
+                        reference(INVOKESTATIC, glTexParameteri)
+                    );
+                }
+            }.setMethod(method));
+        }
+    }
+
+    private class ILoadableTextureMod extends ClassMod {
+        ILoadableTextureMod() {
+            addClassSignature(new InterfaceSignature(
+                new InterfaceMethodRef(getDeobfClass(), "load", "(LITexturePack;)V"),
+                new InterfaceMethodRef(getDeobfClass(), "getGLTexture", "()I")
+            ).setInterfaceOnly(true));
+        }
+    }
+
+    private class TexturePlainMod extends ClassMod {
+        TexturePlainMod() {
+            setInterfaces("ILoadableTexture");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        push(-1),
+                        anyReference(PUTFIELD)
+                    );
+                }
+            }.matchConstructorOnly(true));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin(),
+                        ALOAD_0,
+                        GETFIELD, capture(any(2)),
+                        push(-1),
+                        IF_ICMPNE, any(2),
+
+                        ALOAD_0,
+                        captureReference(INVOKESTATIC),
+                        PUTFIELD, backReference(1)
+                    );
+                }
+            }
+                .setMethod(new MethodRef(getDeobfClass(), "getGLTexture", "()I"))
+                .addXref(2, new MethodRef("TextureUtils", "newGLTexture", "()I"))
+            );
         }
     }
 

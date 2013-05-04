@@ -36,4 +36,8 @@ public class Minecraft {
     public static int getMaxTextureSize() {
         return 0;
     }
+
+    public TextureManager getTextureManager() {
+        return null;
+    }
 }

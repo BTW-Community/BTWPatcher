@@ -4,6 +4,10 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 
 public class TextureManager {
+    public void bindTexture(String texture) {
+    }
+
+    // TODO: 1.5 stuff - remove
     public static TextureManager getInstance() {
         return null;
     }
