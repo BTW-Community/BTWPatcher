@@ -7,6 +7,10 @@ public class TextureManager {
     public void bindTexture(String texture) {
     }
 
+    public ILoadableTexture getTexture(String texture) {
+        return null;
+    }
+
     // TODO: 1.5 stuff - remove
     public static TextureManager getInstance() {
         return null;

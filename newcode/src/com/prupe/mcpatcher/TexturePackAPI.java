@@ -2,6 +2,7 @@ package com.prupe.mcpatcher;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
+import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -21,14 +22,15 @@ public class TexturePackAPI {
     public static TexturePackAPI instance = new TexturePackAPI();
     public static boolean enableTextureBorder;
 
-    private static final ArrayList<Field> textureMapFields = new ArrayList<Field>();
+    private static Field textureIDField;
 
     static {
         try {
-            for (Field field : RenderEngine.class.getDeclaredFields()) {
-                if (HashMap.class.isAssignableFrom(field.getType())) {
+            for (Field field : TexturePlain.class.getDeclaredFields()) {
+                if (field.getType() == Integer.TYPE) {
                     field.setAccessible(true);
-                    textureMapFields.add(field);
+                    textureIDField = field;
+                    break;
                 }
             }
         } catch (Throwable e) {
@@ -208,17 +210,13 @@ public class TexturePackAPI {
     }
 
     public static int getTextureIfLoaded(String s) {
-        RenderEngine renderEngine = MCPatcherUtils.getMinecraft().renderEngine;
-        for (Field field : textureMapFields) {
+        ILoadableTexture texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(s);
+        if (texture instanceof TexturePlain && textureIDField != null) {
             try {
-                HashMap map = (HashMap) field.get(renderEngine);
-                if (map != null) {
-                    Object value = map.get(s);
-                    if (value instanceof Integer) {
-                        return (Integer) value;
-                    }
-                }
+                return (Integer) textureIDField.get(texture);
             } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                textureIDField = null;
             }
         }
         return -1;
@@ -238,53 +236,26 @@ public class TexturePackAPI {
         }
     }
 
-    public static void clearBoundTexture() {
-    }
-
     public static int unloadTexture(String s) {
-        int texture = getTextureIfLoaded(s);
-        if (texture >= 0) {
-            logger.finest("unloading texture %s", s);
-            RenderEngine renderEngine = MCPatcherUtils.getMinecraft().renderEngine;
-            renderEngine.deleteTexture(texture);
-            for (Field field : textureMapFields) {
-                try {
-                    HashMap map = (HashMap) field.get(renderEngine);
-                    if (map != null) {
-                        map.remove(s);
-                    }
-                } catch (IllegalAccessException e) {
-                }
+        int id = -1;
+        ILoadableTexture texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(s);
+        if (texture instanceof TexturePlain && textureIDField != null) {
+            try {
+                id = (Integer) textureIDField.get(texture);
+                deleteTexture(id);
+                textureIDField.set(texture, -1);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                textureIDField = null;
             }
         }
-        return texture;
+        return id;
     }
 
     public static void deleteTexture(int texture) {
         if (texture >= 0) {
-            MCPatcherUtils.getMinecraft().renderEngine.deleteTexture(texture);
+            GL11.glDeleteTextures(texture);
         }
-    }
-
-    public static String getTextureName(int texture) {
-        if (texture >= 0) {
-            RenderEngine renderEngine = MCPatcherUtils.getMinecraft().renderEngine;
-            for (Field field : textureMapFields) {
-                try {
-                    HashMap map = (HashMap) field.get(renderEngine);
-                    for (Object o : map.entrySet()) {
-                        Map.Entry entry = (Map.Entry) o;
-                        Object value = entry.getValue();
-                        Object key = entry.getKey();
-                        if (value instanceof Integer && key instanceof String && (Integer) value == texture) {
-                            return (String) key;
-                        }
-                    }
-                } catch (IllegalAccessException e) {
-                }
-            }
-        }
-        return null;
     }
 
     public static IntBuffer getIntBuffer(IntBuffer buffer, int[] data) {

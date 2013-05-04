@@ -79,6 +79,7 @@ public class BaseTexturePackMod extends Mod {
         MinecraftMod() {
             final MethodRef getTextureManager = new MethodRef(getDeobfClass(), "getTextureManager", "()LTextureManager;");
             final FieldRef renderEngine = new FieldRef(getDeobfClass(), "renderEngine", "LRenderEngine;");
+            final FieldRef texturePackList = new FieldRef(getDeobfClass(), "texturePackList", "LTexturePackList;");
             final MethodRef startGame = new MethodRef(getDeobfClass(), "startGame", "()V");
             final MethodRef runGameLoop = new MethodRef(getDeobfClass(), "runGameLoop", "()V");
             final MethodRef refreshTextureMaps = new MethodRef("RenderEngine", "refreshTextureMaps", "()V");
@@ -101,6 +102,7 @@ public class BaseTexturePackMod extends Mod {
                 }
             }.setMethod(runGameLoop));
 
+            addMemberMapper(new FieldMapper(texturePackList));
             addMemberMapper(new MethodMapper(getTextureManager));
 
             addPatch(new BytecodePatch() {
@@ -165,10 +167,12 @@ public class BaseTexturePackMod extends Mod {
     private class TextureManagerMod extends ClassMod {
         TextureManagerMod() {
             final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(Ljava/lang/String;)V");
+            final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "(Ljava/lang/String;)LILoadableTexture;");
 
             addClassSignature(new ConstSignature("dynamic/%s_%d"));
 
             addMemberMapper(new MethodMapper(bindTexture).accessFlag(AccessFlag.STATIC, false));
+            addMemberMapper(new MethodMapper(getTexture).accessFlag(AccessFlag.STATIC, false));
         }
     }
 
