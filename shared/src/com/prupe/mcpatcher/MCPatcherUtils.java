@@ -87,7 +87,9 @@ public class MCPatcherUtils {
     public static final String ITEM_OVERLAY_LIST_CLASS = "com.prupe.mcpatcher.mod.ItemOverlayList";
     public static final String SHADERS_CLASS = "com.prupe.mcpatcher.mod.Shaders";
 
-    public static final String TEXTURE_PACK_PREFIX = "";
+    public static final String TEXTURE_PACK_BLUR = ""; // 1.5: "%blur%"
+    public static final String TEXTURE_PACK_CLAMP = ""; // 1.5: "%clamp%"
+    public static final String TEXTURE_PACK_PREFIX = ""; // 1.5: "/"
 
     private MCPatcherUtils() {
     }
