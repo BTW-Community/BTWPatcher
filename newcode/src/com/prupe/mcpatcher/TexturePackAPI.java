@@ -23,14 +23,18 @@ public class TexturePackAPI {
     public static boolean enableTextureBorder;
 
     private static Field textureIDField;
+    private static Field textureNameMapField;
 
     static {
         try {
             for (Field field : TexturePlain.class.getDeclaredFields()) {
-                if (field.getType() == Integer.TYPE) {
+                if (textureIDField == null && field.getType() == Integer.TYPE) {
                     field.setAccessible(true);
                     textureIDField = field;
-                    break;
+                }
+                if (textureNameMapField == null && HashMap.class.isAssignableFrom(field.getType())) {
+                    field.setAccessible(true);
+                    textureNameMapField = field;
                 }
             }
         } catch (Throwable e) {
@@ -95,7 +99,7 @@ public class TexturePackAPI {
         return instance.getPropertiesImpl(s, properties);
     }
 
-    private static String fixupPath(String path) {
+    public static String fixupPath(String path) {
         if (path == null) {
             return "";
         } else if (path.startsWith("/")) {
@@ -214,7 +218,7 @@ public class TexturePackAPI {
     }
 
     public static void bindTexture(String s) {
-        MCPatcherUtils.getMinecraft().getTextureManager().bindTexture(fixupPath(s));
+        MCPatcherUtils.getMinecraft().getTextureManager().bindTexture(s);
     }
 
     public static void bindTexture(int texture) {
@@ -223,20 +227,22 @@ public class TexturePackAPI {
         }
     }
 
-    public static int unloadTexture(String s) {
-        int id = -1;
-        ILoadableTexture texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(fixupPath(s));
-        if (texture instanceof TexturePlain && textureIDField != null) {
-            try {
-                id = (Integer) textureIDField.get(texture);
-                deleteTexture(id);
-                textureIDField.set(texture, -1);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-                textureIDField = null;
+    @SuppressWarnings("unchecked")
+    public static void unloadTexture(String s) {
+        TextureManager textureManager = MCPatcherUtils.getMinecraft().getTextureManager();
+        ILoadableTexture texture = textureManager.getTexture(s);
+        if (texture != null) {
+            // TODO: textureManager.unloadTexture(s);
+            if (textureNameMapField != null) {
+                try {
+                    HashMap<String, ILoadableTexture> map = (HashMap<String, ILoadableTexture>) textureNameMapField.get(textureManager);
+                    map.remove(s);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                    textureNameMapField = null;
+                }
             }
         }
-        return id;
     }
 
     public static void deleteTexture(int texture) {
@@ -261,10 +267,10 @@ public class TexturePackAPI {
     protected InputStream getInputStreamImpl(String s) {
         ITexturePack texturePack = getTexturePack();
         if (texturePack == null) {
-            return TexturePackAPI.class.getResourceAsStream("/" + fixupPath(s));
+            return TexturePackAPI.class.getResourceAsStream("/" + s);
         } else {
             try {
-                return texturePack.getResourceAsStream(fixupPath(s));
+                return texturePack.getResourceAsStream(s);
             } catch (Throwable e) {
                 return null;
             }

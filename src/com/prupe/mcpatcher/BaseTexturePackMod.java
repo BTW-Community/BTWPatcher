@@ -168,10 +168,11 @@ public class BaseTexturePackMod extends Mod {
         TextureManagerMod() {
             final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(Ljava/lang/String;)V");
             final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "(Ljava/lang/String;)LILoadableTexture;");
+            final MethodRef unloadTexture = new MethodRef(getDeobfClass(), "unloadTexture", "(Ljava/lang/String;)V");
 
             addClassSignature(new ConstSignature("dynamic/%s_%d"));
 
-            addMemberMapper(new MethodMapper(bindTexture).accessFlag(AccessFlag.STATIC, false));
+            addMemberMapper(new MethodMapper(bindTexture, unloadTexture).accessFlag(AccessFlag.STATIC, false));
             addMemberMapper(new MethodMapper(getTexture).accessFlag(AccessFlag.STATIC, false));
         }
     }
