@@ -38,7 +38,7 @@ public class MobRandomizer {
     }
 
     public static String randomTexture(EntityLiving entity, String texture) {
-        if (texture == null || !texture.startsWith("/mob/") || !texture.endsWith(".png")) {
+        if (texture == null || !texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/") || !texture.endsWith(".png")) {
             return texture;
         }
         String key = texture + ":" + entity.entityId;
