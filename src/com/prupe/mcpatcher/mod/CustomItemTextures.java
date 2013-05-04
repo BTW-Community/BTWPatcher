@@ -12,7 +12,7 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class CustomItemTextures extends Mod {
-    private static final String GLINT_PNG = "%blur%/misc/glint.png";
+    private static final String GLINT_PNG = MCPatcherUtils.TEXTURE_PACK_BLUR + MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/glint.png";
     private static final MethodRef glDepthFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthFunc", "(I)V");
     private static final MethodRef getEntityItem = new MethodRef("EntityItem", "getEntityItem", "()LItemStack;");
     private static final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffect", "()Z");
@@ -226,12 +226,16 @@ public class CustomItemTextures extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // if (itemStack != null && itemStack.hasEffect() ...)
-                        ALOAD_2,
-                        IFNULL, any(2),
+                        // if (itemStack != null && itemStack.hasEffect() && renderPass == 0)
+                        optional(build(
+                            ALOAD_2,
+                            IFNULL, any(2)
+                        )),
                         ALOAD_2,
                         captureReference(INVOKEVIRTUAL),
-                        IFEQ, any(2)
+                        IFEQ, any(2),
+                        ILOAD_3,
+                        IFNE, any(2)
                     );
                 }
             }
@@ -250,12 +254,14 @@ public class CustomItemTextures extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // if (itemStack != null && itemStack.hasEffect() ...)
+                        // if (itemStack != null && itemStack.hasEffect() && renderPass == 0)
                         ALOAD_2,
                         IFNULL, any(2),
                         ALOAD_2,
                         reference(INVOKEVIRTUAL, hasEffect),
                         IFEQ, any(2),
+                        ILOAD_3,
+                        IFNE, any(2),
                         nonGreedy(any(0, 400)),
                         push(515), // GL11.GL_LEQUAL
                         reference(INVOKESTATIC, glDepthFunc)
@@ -519,7 +525,7 @@ public class CustomItemTextures extends Mod {
             final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(L" + entityLivingSubclass + ";IF)V");
             final MethodRef getCurrentArmor = new MethodRef(entityLivingSubclass, "getCurrentArmor", "(I)LItemStack;");
 
-            addClassSignature(new ConstSignature("/armor/"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "armor/"));
             addClassSignature(new ConstSignature("_"));
             addClassSignature(new ConstSignature("_b.png"));
 
@@ -552,7 +558,7 @@ public class CustomItemTextures extends Mod {
             final MethodRef sbInit1 = new MethodRef("java/lang/StringBuilder", "<init>", "(Ljava/lang/String;)V");
             final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
 
-            addClassSignature(new ConstSignature("/armor/"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "armor/"));
             addClassSignature(new ConstSignature("_"));
             addClassSignature(new ConstSignature("_b.png"));
 
@@ -603,14 +609,14 @@ public class CustomItemTextures extends Mod {
                         DUP,
                         or(
                             build(
-                                // new StringBuilder("/armor/")
-                                push("/armor/"),
+                                // new StringBuilder("armor/")
+                                push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "armor/"),
                                 reference(INVOKESPECIAL, sbInit1)
                             ),
                             build(
-                                // new StringBuilder().append("/armor/")
+                                // new StringBuilder().append("armor/")
                                 reference(INVOKESPECIAL, sbInit0),
-                                push("/armor/")
+                                push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "armor/")
                             )
                         ),
                         nonGreedy(any(0, 100)),
@@ -634,7 +640,7 @@ public class CustomItemTextures extends Mod {
         EntityLivingMod() {
             setParentClass("Entity");
 
-            addClassSignature(new ConstSignature("/mob/char.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/char.png"));
             addClassSignature(new ConstSignature("Health"));
             addClassSignature(new ConstSignature("HurtTime"));
         }
@@ -657,7 +663,7 @@ public class CustomItemTextures extends Mod {
 
             setParentClass("EntityLiving");
 
-            addClassSignature(new ConstSignature("/mob/char.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/char.png"));
             addClassSignature(new ConstSignature("random.eat"));
 
             addClassSignature(new BytecodeSignature() {
