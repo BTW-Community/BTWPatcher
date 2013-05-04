@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 class MinecraftInstallationV2 extends MinecraftInstallation {
     static final String MCPATCHER_SUFFIX = "-mcpatcher";
@@ -227,7 +229,7 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
                 boolean foundLibs = false;
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    String[] tokens = line.split("[ \t:\"]+");
+                    String[] tokens = line.split("[ \t:\",]+");
                     if (tokens.length >= 2 && tokens[1].equals("libraries")) {
                         foundLibs = true;
                     } else if (foundLibs && tokens.length >= 5 && tokens[1].equals("name")) {
@@ -237,14 +239,37 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
                         //   lwjgl/            (library name)
                         //   2.9.0/            (library version)
                         //   lwjgl-2.9.0.jar   (<library>-<version>.jar)
-                        String subdir = tokens[2].replace('.', '/');
-                        String base = tokens[3];
+                        String packageDir = tokens[2].replace('.', '/');
+                        String library = tokens[3];
                         String version = tokens[4];
-                        File jar = new File(new File(new File(new File(librariesDir, subdir), base), version), base + '-' + version + ".jar");
-                        if (jar.isFile()) {
-                            classPath.add(jar);
+                        File parent = new File(new File(new File(librariesDir, packageDir), library), version);
+                        File jar;
+                        if (library.endsWith("-platform")) {
+                            String os = System.getProperty("os.name").toLowerCase();
+                            if (os.contains("linux") || os.contains("unix")) {
+                                os = "linux";
+                            } else if (os.contains("win")) {
+                                os = "windows";
+                            } else if (os.contains("mac") || os.contains("osx")) {
+                                os = "macosx";
+                            } else if (os.contains("solaris") || os.contains("sunos")) {
+                                os = "solaris";
+                            } else {
+                                os = "unknown";
+                            }
+                            jar = new File(parent, library + '-' + version + "-natives-" + os + ".jar");
+                            if (jar.isFile()) {
+                                unpackNatives(jar, getNativesDirectory());
+                            } else {
+                                Logger.log(Logger.LOG_JAR, "WARNING: %s not found", jar);
+                            }
                         } else {
-                            Logger.log(Logger.LOG_JAR, "WARNING: %s not found", jar);
+                            jar = new File(parent, library + '-' + version + ".jar");
+                            if (jar.isFile()) {
+                                classPath.add(jar);
+                            } else {
+                                Logger.log(Logger.LOG_JAR, "WARNING: %s not found", jar);
+                            }
                         }
                     }
                 }
@@ -255,6 +280,38 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
                 MCPatcherUtils.close(reader);
             }
             return true;
+        }
+
+        private void unpackNatives(File jar, File natives) {
+            natives.mkdirs();
+            ZipFile zip = null;
+            InputStream is = null;
+            OutputStream os = null;
+            try {
+                zip = new ZipFile(jar);
+                for (ZipEntry entry : Collections.list(zip.entries())) {
+                    String name = entry.getName();
+                    if (isGarbageFile(name)) {
+                        continue;
+                    }
+                    File dest = new File(natives, name);
+                    if (!dest.isFile() || dest.length() != entry.getSize()) {
+                        is = zip.getInputStream(entry);
+                        os = new FileOutputStream(dest);
+                        Util.copyStream(is, os);
+                        MCPatcherUtils.close(is);
+                        MCPatcherUtils.close(os);
+                        is = null;
+                        os = null;
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                MCPatcherUtils.close(zip);
+                MCPatcherUtils.close(is);
+                MCPatcherUtils.close(os);
+            }
         }
 
         private void addAllToClassPath(File dir, List<File> classPath) {
