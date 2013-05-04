@@ -97,9 +97,12 @@ public class TexturePackAPI {
 
     private static String fixupPath(String path) {
         if (path == null) {
-            path = "";
+            return "";
+        } else if (path.startsWith("/")) {
+            return path.substring(1);
+        } else {
+            return path;
         }
-        return path.replace('\\', '/').replaceFirst("^/", "").replaceFirst("^(%(blur|clamp)%)+", "").replaceFirst("/$", "");
     }
 
     public static String[] listResources(String directory, String suffix) {
@@ -113,7 +116,6 @@ public class TexturePackAPI {
     }
 
     public static List<String> listResources(String directory, String suffix, boolean recursive, boolean directories, boolean sortByFilename) {
-        directory = fixupPath(directory);
         if (suffix == null) {
             suffix = "";
         }
@@ -146,7 +148,7 @@ public class TexturePackAPI {
                     if (entry.isDirectory() != directories) {
                         continue;
                     }
-                    String name = fixupPath(entry.getName());
+                    String name = entry.getName().replaceFirst("^/", "");
                     if (!name.startsWith(directory) || !name.endsWith(suffix)) {
                         continue;
                     }
