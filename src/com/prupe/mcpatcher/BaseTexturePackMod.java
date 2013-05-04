@@ -114,9 +114,9 @@ public class BaseTexturePackMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        ALOAD_0,
-                        reference(GETFIELD, renderEngine),
-                        reference(INVOKEVIRTUAL, refreshTextureMaps)
+                        reference(NEW, new ClassRef("TextureManager")),
+                        any(0, 500),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glViewport", "(IIII)V"))
                     );
                 }
 

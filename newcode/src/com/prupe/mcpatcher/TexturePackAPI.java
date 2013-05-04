@@ -54,21 +54,6 @@ public class TexturePackAPI {
         return getTexturePack() instanceof TexturePackDefault;
     }
 
-    public static String[] parseTextureName(String s) {
-        String[] result = new String[]{null, s};
-        if (s.startsWith("##")) {
-            result[0] = "##";
-            result[1] = s.substring(2);
-        } else if (s.startsWith("%")) {
-            int index = s.indexOf('%', 1);
-            if (index > 0) {
-                result[0] = s.substring(0, index + 1);
-                result[1] = s.substring(index + 1);
-            }
-        }
-        return result;
-    }
-
     public static InputStream getInputStream(String s) {
         return instance.getInputStreamImpl(s);
     }
@@ -114,7 +99,7 @@ public class TexturePackAPI {
         if (path == null) {
             path = "";
         }
-        return path.replace('\\', '/').replaceFirst("^/", "").replaceFirst("/$", "");
+        return path.replace('\\', '/').replaceFirst("^/", "").replaceFirst("^(%(blur|clamp)%)+", "").replaceFirst("/$", "");
     }
 
     public static String[] listResources(String directory, String suffix) {
@@ -167,13 +152,13 @@ public class TexturePackAPI {
                     }
                     if (directory.equals("")) {
                         if (recursive || !name.contains("/")) {
-                            resources.add("/" + name);
+                            resources.add(name);
                         }
                     } else {
                         String subpath = name.substring(directory.length());
                         if (subpath.equals("") || subpath.startsWith("/")) {
                             if (recursive || subpath.equals("") || !subpath.substring(1).contains("/")) {
-                                resources.add("/" + name);
+                                resources.add(name);
                             }
                         }
                     }
@@ -194,7 +179,7 @@ public class TexturePackAPI {
             String pathComponent = directory.equals("") ? "" : directory + "/";
             for (String s : list) {
                 File entry = new File(subdirectory, s);
-                String resourceName = "/" + pathComponent + s;
+                String resourceName = pathComponent + s;
                 if (entry.isDirectory()) {
                     if (directories && s.endsWith(suffix)) {
                         resources.add(resourceName);
@@ -227,7 +212,7 @@ public class TexturePackAPI {
     }
 
     public static void bindTexture(String s) {
-        MCPatcherUtils.getMinecraft().getTextureManager().bindTexture(s);
+        MCPatcherUtils.getMinecraft().getTextureManager().bindTexture(fixupPath(s));
     }
 
     public static void bindTexture(int texture) {
@@ -238,7 +223,7 @@ public class TexturePackAPI {
 
     public static int unloadTexture(String s) {
         int id = -1;
-        ILoadableTexture texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(s);
+        ILoadableTexture texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(fixupPath(s));
         if (texture instanceof TexturePlain && textureIDField != null) {
             try {
                 id = (Integer) textureIDField.get(texture);
@@ -272,13 +257,12 @@ public class TexturePackAPI {
     }
 
     protected InputStream getInputStreamImpl(String s) {
-        s = parseTextureName(s)[1];
         ITexturePack texturePack = getTexturePack();
         if (texturePack == null) {
-            return TexturePackAPI.class.getResourceAsStream(s);
+            return TexturePackAPI.class.getResourceAsStream("/" + fixupPath(s));
         } else {
             try {
-                return texturePack.getResourceAsStream(s);
+                return texturePack.getResourceAsStream(fixupPath(s));
             } catch (Throwable e) {
                 return null;
             }
