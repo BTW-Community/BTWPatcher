@@ -29,7 +29,8 @@ public class BaseTexturePackMod extends Mod {
         earlyInitMethods.clear();
 
         addClassMod(new MinecraftMod());
-        addClassMod(new RenderEngineMod());
+        addClassMod(new TextureManagerMod());
+        addClassMod(new TextureUtilsMod());
         addClassMod(new TexturePackListMod());
         addClassMod(new ITexturePackMod());
         addClassMod(new TexturePackImplementationMod());
@@ -157,6 +158,28 @@ public class BaseTexturePackMod extends Mod {
                     );
                 }
             }.targetMethod(runGameLoop));
+        }
+    }
+
+    private class TextureManagerMod extends ClassMod {
+        TextureManagerMod() {
+            final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(Ljava/lang/String;)V");
+
+            addClassSignature(new ConstSignature("dynamic/%s_%d"));
+
+            addMemberMapper(new MethodMapper(bindTexture).accessFlag(AccessFlag.STATIC, false));
+        }
+    }
+
+    private class TextureUtilsMod extends ClassMod {
+        TextureUtilsMod() {
+            final MethodRef glTexSubImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
+            final MethodRef glTexParameteri = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexParameteri", "(III)V");
+            final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
+
+            addClassSignature(new ConstSignature(glTexSubImage2D));
+            addClassSignature(new ConstSignature(glTexParameteri));
+            addClassSignature(new ConstSignature(glTexImage2D));
         }
     }
 
