@@ -27,7 +27,7 @@ public class TexturePackAPI {
 
     static {
         try {
-            for (Field field : TexturePlain.class.getDeclaredFields()) {
+            for (Field field : TextureBase.class.getDeclaredFields()) {
                 if (textureIDField == null && field.getType() == Integer.TYPE) {
                     field.setAccessible(true);
                     textureIDField = field;
@@ -201,8 +201,8 @@ public class TexturePackAPI {
     }
 
     public static int getTextureIfLoaded(String s) {
-        ILoadableTexture texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(s);
-        if (texture instanceof TexturePlain && textureIDField != null) {
+        ITexture texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(s);
+        if (texture instanceof TextureBase && textureIDField != null) {
             try {
                 return (Integer) textureIDField.get(texture);
             } catch (IllegalAccessException e) {
@@ -230,12 +230,12 @@ public class TexturePackAPI {
     @SuppressWarnings("unchecked")
     public static void unloadTexture(String s) {
         TextureManager textureManager = MCPatcherUtils.getMinecraft().getTextureManager();
-        ILoadableTexture texture = textureManager.getTexture(s);
+        ITexture texture = textureManager.getTexture(s);
         if (texture != null) {
             // TODO: textureManager.unloadTexture(s);
             if (textureNameMapField != null) {
                 try {
-                    HashMap<String, ILoadableTexture> map = (HashMap<String, ILoadableTexture>) textureNameMapField.get(textureManager);
+                    HashMap<String, ITexture> map = (HashMap<String, ITexture>) textureNameMapField.get(textureManager);
                     map.remove(s);
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();

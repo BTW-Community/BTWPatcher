@@ -1,6 +1,6 @@
 package net.minecraft.src;
 
-public interface ILoadableTexture {
+public interface ITexture {
     void load(ITexturePack texturePack);
 
     int getGLTexture();

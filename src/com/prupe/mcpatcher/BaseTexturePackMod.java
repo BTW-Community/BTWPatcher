@@ -33,8 +33,8 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new TextureUtilsMod());
         addClassMod(new TexturePackListMod());
         addClassMod(new ITexturePackMod());
-        addClassMod(new ILoadableTextureMod());
-        addClassMod(new TexturePlainMod());
+        addClassMod(new ITextureMod());
+        addClassMod(new TextureBaseMod());
         addClassMod(new TexturePackImplementationMod());
         addClassMod(new TexturePackDefaultMod());
         addClassMod(new TexturePackCustomMod());
@@ -167,7 +167,7 @@ public class BaseTexturePackMod extends Mod {
     private class TextureManagerMod extends ClassMod {
         TextureManagerMod() {
             final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(Ljava/lang/String;)V");
-            final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "(Ljava/lang/String;)LILoadableTexture;");
+            final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "(Ljava/lang/String;)LITexture;");
             final MethodRef unloadTexture = new MethodRef(getDeobfClass(), "unloadTexture", "(Ljava/lang/String;)V");
 
             addClassSignature(new ConstSignature("dynamic/%s_%d"));
@@ -213,8 +213,8 @@ public class BaseTexturePackMod extends Mod {
         }
     }
 
-    private class ILoadableTextureMod extends ClassMod {
-        ILoadableTextureMod() {
+    private class ITextureMod extends ClassMod {
+        ITextureMod() {
             addClassSignature(new InterfaceSignature(
                 new InterfaceMethodRef(getDeobfClass(), "load", "(LITexturePack;)V"),
                 new InterfaceMethodRef(getDeobfClass(), "getGLTexture", "()I")
@@ -222,9 +222,9 @@ public class BaseTexturePackMod extends Mod {
         }
     }
 
-    private class TexturePlainMod extends ClassMod {
-        TexturePlainMod() {
-            setInterfaces("ILoadableTexture");
+    private class TextureBaseMod extends ClassMod {
+        TextureBaseMod() {
+            setInterfaces("ITexture");
 
             addClassSignature(new BytecodeSignature() {
                 @Override

@@ -1,6 +1,6 @@
 package net.minecraft.src;
 
-public class TexturePlain implements ILoadableTexture {
+public class TextureBase implements ITexture {
     public void load(ITexturePack texturePack) {
     }
 

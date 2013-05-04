@@ -7,7 +7,7 @@ public class TextureManager {
     public void bindTexture(String texture) {
     }
 
-    public ILoadableTexture getTexture(String texture) {
+    public ITexture getTexture(String texture) {
         return null;
     }
 
