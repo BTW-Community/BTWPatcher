@@ -16,7 +16,6 @@ public class SkyRenderer {
 
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "skybox", true);
 
-    private static RenderEngine renderEngine;
     private static double worldTime;
     private static float celestialAngle;
     private static float rainStrength;
@@ -58,7 +57,6 @@ public class SkyRenderer {
             currentWorld = newEntry;
             active = currentWorld.active();
             if (active) {
-                SkyRenderer.renderEngine = renderEngine;
                 worldTime = world.getWorldTime() + partialTick;
                 rainStrength = 1.0f - world.getRainStrength(partialTick);
                 SkyRenderer.celestialAngle = celestialAngle;
