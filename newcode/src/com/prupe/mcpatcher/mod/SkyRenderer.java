@@ -103,13 +103,13 @@ public class SkyRenderer {
             objects = new HashMap<String, Layer>();
             textures = new HashSet<String>();
             loadSkies();
-            loadCelestialObject("sun", "/environment/sun.png");
-            loadCelestialObject("moon", "/environment/moon_phases.png");
+            loadCelestialObject("sun", MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/sun.png");
+            loadCelestialObject("moon", MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/moon_phases.png");
         }
 
         private void loadSkies() {
             for (int i = -1; ; i++) {
-                String prefix = "/environment/sky" + worldType + "/sky" + (i < 0 ? "" : "" + i);
+                String prefix = MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/sky" + worldType + "/sky" + (i < 0 ? "" : "" + i);
                 Layer layer = Layer.create(prefix);
                 if (layer == null) {
                     if (i > 0) {
@@ -124,7 +124,7 @@ public class SkyRenderer {
         }
 
         private void loadCelestialObject(String objName, String textureName) {
-            String prefix = "/environment/sky" + worldType + "/" + objName;
+            String prefix = MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/sky" + worldType + "/" + objName;
             Properties properties = TexturePackAPI.getProperties(prefix + ".properties");
             if (properties != null) {
                 properties.setProperty("fade", "false");
@@ -214,7 +214,7 @@ public class SkyRenderer {
         }
 
         private boolean readTexture() {
-            texture = properties.getProperty("source", prefix + ".png");
+            texture = TexturePackAPI.fixupPath(properties.getProperty("source", prefix + ".png"));
             if (TexturePackAPI.hasResource(texture)) {
                 return true;
             } else {

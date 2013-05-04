@@ -104,7 +104,7 @@ public class BetterSkies extends Mod {
             final FieldRef active = new FieldRef(MCPatcherUtils.SKY_RENDERER_CLASS, "active", "Z");
 
             addClassSignature(new ConstSignature("smoke"));
-            addClassSignature(new ConstSignature("/environment/clouds.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/clouds.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -125,7 +125,7 @@ public class BetterSkies extends Mod {
                         ALOAD_0,
                         captureReference(GETFIELD),
                         any(0, 6),
-                        push("/misc/tunnel.png"),
+                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/tunnel.png"),
                         any(0, 8),
 
                         // Tessellator tessellator = Tessellator.instance;
@@ -380,7 +380,7 @@ public class BetterSkies extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push("/environment/" + textureName)
+                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/" + textureName)
                     );
                 }
 
@@ -413,8 +413,8 @@ public class BetterSkies extends Mod {
             final MethodRef bindTextureByName = new MethodRef("RenderEngine", "bindTextureByName", "(Ljava/lang/String;)V");
             final MethodRef glBlendFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBlendFunc", "(II)V");
 
-            addClassSignature(new ConstSignature("/particles.png"));
-            addClassSignature(new ConstSignature("/gui/items.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "particles.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "gui/items.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -437,7 +437,7 @@ public class BetterSkies extends Mod {
                     return buildExpression(
                         ALOAD_0,
                         captureReference(GETFIELD),
-                        push("/particles.png"),
+                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "particles.png"),
                         captureReference(INVOKEVIRTUAL)
                     );
                 }
