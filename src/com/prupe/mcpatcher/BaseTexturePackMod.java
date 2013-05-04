@@ -567,11 +567,12 @@ public class BaseTexturePackMod extends Mod {
 
     private class TexturePackImplementationMod extends ClassMod {
         TexturePackImplementationMod() {
-            interfaces = new String[]{"ITexturePack"};
+            setInterfaces("ITexturePack");
 
             final FieldRef texturePackFile = new FieldRef(getDeobfClass(), "texturePackFile", "Ljava/io/File;");
 
-            addClassSignature(new ConstSignature("/pack.txt"));
+            addClassSignature(new ConstSignature("gui/unknown_pack.png"));
+            addClassSignature(new ConstSignature("pack.txt"));
 
             addMemberMapper(new FieldMapper(texturePackFile));
 
@@ -581,7 +582,7 @@ public class BaseTexturePackMod extends Mod {
 
     private class TexturePackDefaultMod extends ClassMod {
         TexturePackDefaultMod() {
-            parentClass = "TexturePackImplementation";
+            setParentClass("TexturePackImplementation");
 
             addClassSignature(new ConstSignature("The default look of Minecraft"));
         }
@@ -589,7 +590,7 @@ public class BaseTexturePackMod extends Mod {
 
     private class TexturePackCustomMod extends ClassMod {
         TexturePackCustomMod() {
-            parentClass = "TexturePackImplementation";
+            setParentClass("TexturePackImplementation");
 
             final FieldRef zipFile = new FieldRef(getDeobfClass(), "zipFile", "Ljava/util/zip/ZipFile;");
 
@@ -608,22 +609,10 @@ public class BaseTexturePackMod extends Mod {
 
     private class TexturePackFolderMod extends ClassMod {
         TexturePackFolderMod() {
-            parentClass = "TexturePackImplementation";
-
-            final MethodRef substring = new MethodRef("java/lang/String", "substring", "(I)Ljava/lang/String;");
+            setParentClass("TexturePackImplementation");
 
             addClassSignature(new ConstSignature(new ClassRef("java.io.FileInputStream")));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_1,
-                        push(1),
-                        reference(INVOKEVIRTUAL, substring)
-                    );
-                }
-            });
+            addClassSignature(new ConstSignature("textures/"));
         }
     }
 }
