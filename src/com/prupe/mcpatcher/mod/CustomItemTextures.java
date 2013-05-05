@@ -255,8 +255,10 @@ public class CustomItemTextures extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         // if (itemStack != null && itemStack.hasEffect() && renderPass == 0)
-                        ALOAD_2,
-                        IFNULL, any(2),
+                        optional(build(
+                            ALOAD_2,
+                            IFNULL, any(2)
+                        )),
                         ALOAD_2,
                         reference(INVOKEVIRTUAL, hasEffect),
                         IFEQ, any(2),
