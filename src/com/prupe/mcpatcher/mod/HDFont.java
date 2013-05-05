@@ -34,7 +34,7 @@ public class HDFont extends Mod {
             final MethodRef readFontData = new MethodRef(getDeobfClass(), "readFontData", "()V");
             final MethodRef getStringWidth = new MethodRef(getDeobfClass(), "getStringWidth", "(Ljava/lang/String;)I");
             final MethodRef getCharWidth = new MethodRef(getDeobfClass(), "getCharWidth", "(C)I");
-            final MethodRef computeCharWidths = new MethodRef(getDeobfClass(), "computeCharWidths", "(Ljava/lang/String;)V");
+            final MethodRef computeCharWidths = new MethodRef(getDeobfClass(), "computeCharWidths", "()V");
             final MethodRef getImageWidth = new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I");
             final MethodRef getFontName = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getFontName", "(Ljava/lang/String;)Ljava/lang/String;");
             final MethodRef computeCharWidthsf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "computeCharWidthsf", "(LFontRenderer;Ljava/lang/String;Ljava/awt/image/BufferedImage;[I[I)[F");
@@ -51,29 +51,42 @@ public class HDFont extends Mod {
                             build(push(8)),
                             build(push(9))
                         ),
+                        captureReference(PUTFIELD),
+
+                        any(0, 100),
+
+                        ALOAD_0,
+                        ALOAD_2,
                         captureReference(PUTFIELD)
                     );
                 }
             }
                 .matchConstructorOnly(true)
                 .addXref(1, fontHeight)
+                .addXref(2, fontTextureName)
             );
 
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        begin(),
                         ALOAD_0,
+                        anyReference(INVOKESPECIAL),
                         ALOAD_0,
-                        captureReference(GETFIELD),
-                        captureReference(INVOKESPECIAL)
+                        anyReference(INVOKESPECIAL)
                     );
                 }
-            }
-                .setMethod(readFontData)
-                .addXref(1, fontTextureName)
-                .addXref(2, computeCharWidths)
-            );
+            }.setMethod(readFontData));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKEVIRTUAL, getImageWidth)
+                    );
+                }
+            }.setMethod(computeCharWidths));
 
             addMemberMapper(new MethodMapper(getStringWidth));
             addMemberMapper(new MethodMapper(getCharWidth));
@@ -159,7 +172,8 @@ public class HDFont extends Mod {
                         // this.charWidthf = FontUtils.computeCharWidthsf(this, filename, image, rgb, this.charWidth);
                         ALOAD_0,
                         ALOAD_0,
-                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, fontTextureName),
                         ALOAD, imageRegister,
                         ALOAD, rgbRegister,
                         ALOAD_0,
