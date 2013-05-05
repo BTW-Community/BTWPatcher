@@ -1011,51 +1011,36 @@ public final class BaseMod extends Mod {
         protected final MethodRef transferFromImage = new MethodRef(getDeobfClass(), "transferFromImage", "(Ljava/awt/image/BufferedImage;)V");
         protected final MethodRef glBindTexture = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V");
 
+        protected final FieldRef rgb = new FieldRef(getDeobfClass(), "rgb", "[I");
+        protected final MethodRef getRGB = new MethodRef(getDeobfClass(), "getRGB", "()[I");
+
         public TextureMod() {
             setParentClass("TextureBase");
-
-            addClassSignature(new ConstSignature("png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
                         ALOAD_0,
-                        captureReference(GETFIELD),
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        reference(INVOKESTATIC, glBindTexture)
+                        ILOAD_1,
+                        ILOAD_2,
+                        IMUL,
+                        NEWARRAY, T_INT,
+                        captureReference(PUTFIELD)
                     );
                 }
             }
                 .matchConstructorOnly(true)
-                .addXref(1, textureTarget)
-                .addXref(2, glTextureId)
+                .addXref(1, rgb)
             );
 
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        push(1),
-                        captureReference(PUTFIELD),
-                        RETURN,
-                        end()
-                    );
-                }
-            }
-                .setMethod(createTexture)
-                .addXref(1, textureCreated)
-            );
-
-            addMemberMapper(new MethodMapper(getTextureId, getGlTextureId, getWidth, getHeight));
-            addMemberMapper(new MethodMapper(getTextureData));
-            addMemberMapper(new MethodMapper(getTextureName));
-            addMemberMapper(new MethodMapper(transferFromImage));
+            addMemberMapper(new MethodMapper(getRGB));
         }
     }
 
+    /**
+     * Maps Icon interface.
+     */
     public static class IconMod extends ClassMod {
         public IconMod() {
             final InterfaceMethodRef getOriginX = new InterfaceMethodRef(getDeobfClass(), "getOriginX", "()I");

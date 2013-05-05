@@ -22,10 +22,10 @@ public class BaseTilesheetMod extends Mod {
         addClassMod(new TessellatorMod());
         addClassMod(new IconRegisterMod());
         addClassMod(new TextureMapMod());
-        addClassMod(new TextureMod());
+        addClassMod(new BaseMod.TextureMod());
         addClassMod(new TextureManagerMod());
-        addClassMod(new StitcherMod());
-        addClassMod(new StitchHolderMod());
+        //addClassMod(new StitcherMod());
+        //addClassMod(new StitchHolderMod());
 
         addClassFile(MCPatcherUtils.TILE_LOADER_CLASS);
         addClassFile(MCPatcherUtils.TILE_LOADER_CLASS + "$1");
@@ -353,10 +353,8 @@ public class BaseTilesheetMod extends Mod {
         TextureMapMod() {
             setInterfaces("IconRegister");
 
-            final FieldRef basePath = new FieldRef(getDeobfClass(), "basePath", "Ljava/lang/String;");
             final FieldRef textureExt = new FieldRef(getDeobfClass(), "textureExt", "Ljava/lang/String;");
             final FieldRef mapTexturesStitched = new FieldRef(getDeobfClass(), "mapTexturesStitched", "Ljava/util/HashMap;");
-            final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "()V");
             final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "()LTexture;");
             final ClassRef sbClass = new ClassRef("java/lang/StringBuilder");
             final MethodRef strValueOf = new MethodRef("java/lang/String", "valueOf", "(Ljava/lang/Object;)Ljava/lang/String;");
@@ -370,9 +368,78 @@ public class BaseTilesheetMod extends Mod {
             final MethodRef hashMapPut = new MethodRef("java/util/HashMap", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
             final MethodRef doStitch = new MethodRef("Stitcher", "doStitch", "()V");
 
+            final FieldRef basePath = new FieldRef(getDeobfClass(), "basePath", "Ljava/lang/String;");
+            final FieldRef mapTextures = new FieldRef(getDeobfClass(), "mapTextures", "Ljava/util/Map;");
+            final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "(LITexturePack;)V");
+            final MethodRef registerIcon = new MethodRef(getDeobfClass(), "registerIcon", "(Ljava/lang/String;)LIcon;");
+            final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
+            final InterfaceMethodRef setIterator = new InterfaceMethodRef("java/util/Set", "iterator", "()Ljava/util/Iterator;");
+
             addClassSignature(new ConstSignature("missingno"));
             addClassSignature(new ConstSignature(".png"));
             addClassSignature(new ConstSignature(".txt"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        reference(INVOKEINTERFACE, mapEntrySet),
+                        reference(INVOKEINTERFACE, setIterator),
+                        anyASTORE
+                    );
+                }
+            }
+                .setMethod(refreshTextures)
+                .addXref(1, mapTextures)
+            );
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        ALOAD_2,
+                        captureReference(PUTFIELD)
+                    );
+                }
+            }
+                .matchConstructorOnly(true)
+                .addXref(1, basePath)
+            );
+
+            addMemberMapper(new MethodMapper(registerIcon));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "register additional tiles";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        reference(GETFIELD, mapTextures),
+                        reference(INVOKEINTERFACE, mapEntrySet),
+                        reference(INVOKEINTERFACE, setIterator)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_0,
+                        reference(GETFIELD, mapTextures),
+                        ALOAD_0,
+                        reference(GETFIELD, basePath),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "registerIcons", "(Ljava/util/Map;Ljava/lang/String;)Ljava/util/Map;")),
+                        reference(INVOKEINTERFACE, mapEntrySet),
+                        reference(INVOKEINTERFACE, setIterator)
+                    );
+                }
+            }.targetMethod(refreshTextures));
 
             /* TODO: 1.5 stuff
             addClassSignature(new BytecodeSignature() {
@@ -391,23 +458,7 @@ public class BaseTilesheetMod extends Mod {
                 .addXref(1, new MethodRef("TextureManager", "getInstance", "()LTextureManager;"))
                 .addXref(2, new MethodRef("TextureManager", "createStitcher", "(Ljava/lang/String;)Lnet/minecraft/src/Stitcher;"))
             );
-            */
 
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        ALOAD_2,
-                        captureReference(PUTFIELD)
-                    );
-                }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, basePath)
-            );
-
-            /* TODO: 1.5 stuff
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
@@ -421,7 +472,6 @@ public class BaseTilesheetMod extends Mod {
                 .matchConstructorOnly(true)
                 .addXref(1, textureExt)
             );
-            */
 
             //addMemberMapper(new MethodMapper(getTexture));
             addMemberMapper(new FieldMapper(mapTexturesStitched));
@@ -547,6 +597,7 @@ public class BaseTilesheetMod extends Mod {
             }
                 .targetMethod(refreshTextures)
             );
+            */
         }
     }
 
