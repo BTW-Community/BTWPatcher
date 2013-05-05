@@ -121,7 +121,7 @@ public class TileLoader {
                 loader.textureMap = textureMap;
             }
             if (loader.isForThisMap(mapName)) {
-                while (!loader.tilesToRegister.isEmpty() && loader.registerOneIcon(textureMap, mapName, map)) {
+                while (!loader.tilesToRegister.isEmpty() && loader.registerOneIcon(textureMap, mapName, newMap)) {
                     // nothing
                 }
             }
@@ -132,8 +132,8 @@ public class TileLoader {
 
     public static String getOverridePath(String prefix, String name, String ext) {
         String path;
-        if (name.startsWith("/")) {
-            path = name.substring(1).replaceFirst("\\.[^.]+$", "") + ext;
+        if (name.endsWith(".png")) {
+            path = name.replaceFirst("\\.[^.]+$", "") + ext;
         } else {
             path = prefix + name + ext;
         }

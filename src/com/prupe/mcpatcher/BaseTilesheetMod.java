@@ -515,9 +515,7 @@ public class BaseTilesheetMod extends Mod {
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverridePath", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"))
                     );
                 }
-            }
-                .targetMethod(refreshTextures)
-            );
+            });
 
             /* TODO: 1.5 stuff
             addClassSignature(new BytecodeSignature() {
