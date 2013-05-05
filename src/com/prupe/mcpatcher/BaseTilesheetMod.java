@@ -22,8 +22,10 @@ public class BaseTilesheetMod extends Mod {
         addClassMod(new TessellatorMod());
         addClassMod(new IconRegisterMod());
         addClassMod(new TextureMapMod());
+        addClassMod(new BaseMod.TextureBaseMod());
         addClassMod(new BaseMod.TextureMod());
         addClassMod(new TextureManagerMod());
+        addClassMod(new TextureStitchedMod());
         //addClassMod(new StitcherMod());
         //addClassMod(new StitchHolderMod());
 
@@ -245,12 +247,11 @@ public class BaseTilesheetMod extends Mod {
                         reference(GETFIELD, textureMap),
                         IFNULL, branch("A"),
 
-                        // GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureMap.getTexture().getGlTextureId());
+                        // GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureMap.getGlTextureId());
                         push(3553), // GL11.GL_TEXTURE_2D
                         ALOAD_0,
                         reference(GETFIELD, textureMap),
-                        reference(INVOKEVIRTUAL, new MethodRef("TextureMap", "getTexture", "()LTexture;")),
-                        reference(INVOKEVIRTUAL, new MethodRef("Texture", "getGlTextureId", "()I")),
+                        reference(INVOKEVIRTUAL, new MethodRef("TextureMap", "getGlTextureId", "()I")),
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V")),
 
                         // }
@@ -351,7 +352,8 @@ public class BaseTilesheetMod extends Mod {
 
     private class TextureMapMod extends ClassMod {
         TextureMapMod() {
-            setInterfaces("IconRegister");
+            setParentClass("TextureBase");
+            setInterfaces("IStitchedTexture", "IconRegister");
 
             final FieldRef textureExt = new FieldRef(getDeobfClass(), "textureExt", "Ljava/lang/String;");
             final FieldRef mapTexturesStitched = new FieldRef(getDeobfClass(), "mapTexturesStitched", "Ljava/util/HashMap;");
@@ -399,6 +401,30 @@ public class BaseTilesheetMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        begin(),
+                        captureReference(INVOKESTATIC),
+                        ISTORE_2,
+
+                        captureReference(NEW),
+                        DUP,
+                        ILOAD_2,
+                        ILOAD_2,
+                        push(1),
+                        captureReference(INVOKESPECIAL),
+                        ASTORE_3
+                    );
+                }
+            }
+                .setMethod(refreshTextures)
+                .addXref(1, new MethodRef("Minecraft", "getMaxTextureSize", "()I"))
+                .addXref(2, new ClassRef("Stitcher"))
+                .addXref(3, new MethodRef("Stitcher", "<init>", "(IIZ)V"))
+            );
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
                         ALOAD_0,
                         ALOAD_2,
                         captureReference(PUTFIELD)
@@ -420,6 +446,7 @@ public class BaseTilesheetMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // this.mapTextures.entrySet().iterator()
                         ALOAD_0,
                         reference(GETFIELD, mapTextures),
                         reference(INVOKEINTERFACE, mapEntrySet),
@@ -430,16 +457,67 @@ public class BaseTilesheetMod extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // registerIcons(this, this.mapName, this.mapTextures).entrySet().iterator()
                         ALOAD_0,
-                        reference(GETFIELD, mapTextures),
                         ALOAD_0,
                         reference(GETFIELD, basePath),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "registerIcons", "(Ljava/util/Map;Ljava/lang/String;)Ljava/util/Map;")),
+                        ALOAD_0,
+                        reference(GETFIELD, mapTextures),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "registerIcons", "(LTextureMap;Ljava/lang/String;Ljava/util/Map;)Ljava/util/Map;")),
                         reference(INVOKEINTERFACE, mapEntrySet),
                         reference(INVOKEINTERFACE, setIterator)
                     );
                 }
             }.targetMethod(refreshTextures));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override ctm texture paths";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.basePath + name + extension
+                        reference(NEW, sbClass),
+                        DUP,
+                        or(
+                            build( // vanilla mc
+                                reference(INVOKESPECIAL, sbInit0),
+                                ALOAD_0,
+                                reference(GETFIELD, basePath),
+                                reference(INVOKEVIRTUAL, sbAppend)
+                            ),
+                            build( // mcp
+                                ALOAD_0,
+                                reference(GETFIELD, basePath),
+                                optional(build(reference(INVOKESTATIC, strValueOf))), // useless, but added by mcp
+                                reference(INVOKESPECIAL, sbInit1)
+                            )
+                        ),
+                        capture(any(1, 5)),
+                        reference(INVOKEVIRTUAL, sbAppend),
+                        capture(anyLDC),
+                        reference(INVOKEVIRTUAL, sbAppend),
+                        reference(INVOKEVIRTUAL, sbToString)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // TileLoader.getOverridePath(this.basePath, name, extension)
+                        ALOAD_0,
+                        reference(GETFIELD, basePath),
+                        getCaptureGroup(1),
+                        getCaptureGroup(2),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverridePath", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"))
+                    );
+                }
+            }
+                .targetMethod(refreshTextures)
+            );
 
             /* TODO: 1.5 stuff
             addClassSignature(new BytecodeSignature() {
@@ -546,55 +624,6 @@ public class BaseTilesheetMod extends Mod {
                 }
             }
                 .setInsertBefore(true)
-                .targetMethod(refreshTextures)
-            );
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "register ctm animation txt files";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // this.textureExt + name + extension
-                        reference(NEW, sbClass),
-                        DUP,
-                        or(
-                            build( // vanilla mc
-                                reference(INVOKESPECIAL, sbInit0),
-                                ALOAD_0,
-                                reference(GETFIELD, textureExt),
-                                reference(INVOKEVIRTUAL, sbAppend)
-                            ),
-                            build( // mcp
-                                ALOAD_0,
-                                reference(GETFIELD, textureExt),
-                                optional(build(reference(INVOKESTATIC, strValueOf))), // useless, but added by mcp
-                                reference(INVOKESPECIAL, sbInit1)
-                            )
-                        ),
-                        capture(any(1, 5)),
-                        reference(INVOKEVIRTUAL, sbAppend),
-                        capture(build(push(".txt"))),
-                        reference(INVOKEVIRTUAL, sbAppend),
-                        reference(INVOKEVIRTUAL, sbToString)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // TileLoader.getOverridePath(this.textureExt, name, extension)
-                        ALOAD_0,
-                        reference(GETFIELD, textureExt),
-                        getCaptureGroup(1),
-                        getCaptureGroup(2),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverridePath", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"))
-                    );
-                }
-            }
                 .targetMethod(refreshTextures)
             );
             */
@@ -731,6 +760,26 @@ public class BaseTilesheetMod extends Mod {
                 .setMethod(updateAnimations)
                 .addXref(1, new FieldRef(getDeobfClass(), "animations", "Ljava/util/List;"))
             );
+        }
+    }
+
+    private class TextureStitchedMod extends ClassMod {
+        TextureStitchedMod() {
+            setInterfaces("Icon");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(repeat(build(
+                        push(0.009999999776482582),
+                        anyILOAD,
+                        I2D,
+                        DDIV,
+                        D2F,
+                        anyFSTORE
+                    ), 2));
+                }
+            });
         }
     }
 

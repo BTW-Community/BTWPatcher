@@ -954,7 +954,7 @@ public final class BaseMod extends Mod {
      */
     public static class TextureBaseMod extends ClassMod {
         protected final FieldRef glTextureId = new FieldRef(getDeobfClass(), "glTextureId", "I");
-        protected final MethodRef getGLTextureId = new MethodRef(getDeobfClass(), "getGLTextureId", "()I");
+        protected final MethodRef getGLTextureId = new MethodRef(getDeobfClass(), "getGlTextureId", "()I");
 
         public TextureBaseMod() {
             setInterfaces("ITexture");

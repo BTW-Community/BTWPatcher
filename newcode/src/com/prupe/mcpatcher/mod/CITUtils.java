@@ -35,7 +35,7 @@ public class CITUtils {
         TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, 3) {
             @Override
             public void beforeChange() {
-                tileLoader = new TileLoader("items", false, logger);
+                tileLoader = new TileLoader("blocks/items/", false, logger);
                 Arrays.fill(items, null);
                 Arrays.fill(overlays, null);
                 Arrays.fill(armors, null);

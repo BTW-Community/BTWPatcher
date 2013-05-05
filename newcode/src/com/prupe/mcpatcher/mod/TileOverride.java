@@ -316,7 +316,7 @@ abstract class TileOverride implements ITileOverride {
 
     private void loadIcons(Properties properties) {
         tileNames.clear();
-        String tileList = properties.getProperty("tiles", "").trim();
+        String tileList = TexturePackAPI.fixupPath(properties.getProperty("tiles", "").trim());
         if (tileList.equals("")) {
             for (int i = 0; ; i++) {
                 String name = texturesDirectory + "/" + i + ".png";

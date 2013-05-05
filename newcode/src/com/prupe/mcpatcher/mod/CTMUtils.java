@@ -49,11 +49,11 @@ public class CTMUtils {
                 allOverrides.clear();
                 Arrays.fill(blockOverrides, null);
                 tileOverrides.clear();
-                tileLoader = new TileLoader("terrain", true, logger);
+                tileLoader = new TileLoader("textures/blocks/", true, logger);
                 betterGrass = null;
 
                 if (enableStandard || enableNonStandard) {
-                    for (String s : TexturePackAPI.listResources("/ctm", ".properties", true, false, true)) {
+                    for (String s : TexturePackAPI.listResources(MCPatcherUtils.TEXTURE_PACK_PREFIX + "ctm", ".properties", true, false, true)) {
                         registerOverride(TileOverride.create(s, tileLoader));
                     }
                 }
