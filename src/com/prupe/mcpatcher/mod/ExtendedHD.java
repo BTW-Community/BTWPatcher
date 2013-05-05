@@ -28,13 +28,14 @@ public class ExtendedHD extends Mod {
         }
 
         addClassMod(new MinecraftMod());
-        addClassMod(new RenderEngineMod());
-        addClassMod(new ColorizerMod("ColorizerGrass"));
-        addClassMod(new ColorizerMod("ColorizerFoliage"));
+        //addClassMod(new RenderEngineMod());
+        //addClassMod(new ColorizerMod("ColorizerGrass"));
+        //addClassMod(new ColorizerMod("ColorizerFoliage"));
         addClassMod(new BaseMod.IconMod());
-        addClassMod(new TextureMod());
-        addClassMod(new TextureManagerMod());
-        addClassMod(new TextureStitchedMod());
+        addClassMod(new BaseMod.TextureBaseMod());
+        addClassMod(new BaseMod.TextureMod());
+        //addClassMod(new TextureManagerMod());
+        //addClassMod(new TextureStitchedMod());
         addClassMod(new TextureCompassMod());
         addClassMod(new TextureClockMod());
         HDFont.setupMod(this);
@@ -62,12 +63,12 @@ public class ExtendedHD extends Mod {
 
     private class MinecraftMod extends BaseMod.MinecraftMod {
         MinecraftMod() {
-            final FieldRef renderEngine = new FieldRef(getDeobfClass(), "renderEngine", "LRenderEngine;");
+            //final FieldRef renderEngine = new FieldRef(getDeobfClass(), "renderEngine", "LRenderEngine;");
 
-            addColorizerSignature("Grass");
-            addColorizerSignature("Foliage");
+            //addColorizerSignature("Grass");
+            //addColorizerSignature("Foliage");
 
-            addMemberMapper(new FieldMapper(renderEngine));
+            //addMemberMapper(new FieldMapper(renderEngine));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -722,7 +723,6 @@ public class ExtendedHD extends Mod {
         TextureCompassMod() {
             super("compass");
 
-            addClassSignature(new ConstSignature("compass"));
             addClassSignature(new ConstSignature(180.0));
 
             addClassSignature(new BytecodeSignature() {
@@ -753,10 +753,6 @@ public class ExtendedHD extends Mod {
         TextureClockMod() {
             super("clock");
 
-            addClassSignature(new OrSignature(
-                new ConstSignature("compass"), // [sic]
-                new ConstSignature("clock") // in case mojang fixes it
-            ));
             addClassSignature(new ConstSignature(0.8));
             addClassSignature(new ConstSignature(0.5));
 
@@ -779,27 +775,6 @@ public class ExtendedHD extends Mod {
             );
 
             addPatch(new MakeMemberPublicPatch(currentAngle));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "fix icon name";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push("compass")
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        push("clock")
-                    );
-                }
-            }.matchConstructorOnly(true));
         }
 
         @Override
