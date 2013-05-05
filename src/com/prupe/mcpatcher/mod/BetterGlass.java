@@ -333,8 +333,8 @@ public class BetterGlass extends Mod {
             final MethodRef sortAndRender = new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLiving;ID)I");
             final MethodRef doRenderPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "doRenderPass", "(LRenderGlobal;LEntityLiving;ID)V");
 
-            addClassSignature(new ConstSignature("/terrain.png"));
-            addClassSignature(new ConstSignature("/environment/snow.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "terrain.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/snow.png"));
             addClassSignature(new ConstSignature("ambient.weather.rain"));
 
             addClassSignature(new BytecodeSignature() {
@@ -379,7 +379,7 @@ public class BetterGlass extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push("/environment/snow.png")
+                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/snow.png")
                     );
                 }
             }.setMethod(renderRainSnow));
@@ -499,7 +499,7 @@ public class BetterGlass extends Mod {
             final MethodRef generateDisplayLists = new MethodRef("GLAllocation", "generateDisplayLists", "(I)I");
 
             addClassSignature(new ConstSignature("smoke"));
-            addClassSignature(new ConstSignature("/environment/clouds.png"));
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/clouds.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
