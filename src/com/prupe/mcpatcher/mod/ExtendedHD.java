@@ -34,6 +34,7 @@ public class ExtendedHD extends Mod {
         addClassMod(new BaseMod.IconMod());
         addClassMod(new BaseMod.TextureBaseMod());
         addClassMod(new BaseMod.TextureMod());
+        addClassMod(new TextureUtilsMod());
         //addClassMod(new TextureManagerMod());
         //addClassMod(new TextureStitchedMod());
         addClassMod(new TextureCompassMod());
@@ -315,6 +316,91 @@ public class ExtendedHD extends Mod {
         @Override
         public String getDeobfClass() {
             return name;
+        }
+    }
+
+    private class TextureUtilsMod extends ClassMod {
+        TextureUtilsMod() {
+            final MethodRef setupTexture1 = new MethodRef(getDeobfClass(), "setupTexture1", "([IIIIIZZ)V");
+            final MethodRef setupTexture2 = new MethodRef(getDeobfClass(), "setupTexture2", "(Ljava/awt/image/BufferedImage;IIZZ)V");
+            final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
+            final MethodRef glTexSubImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
+            final FieldRef currentMipmapLevel = new FieldRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "currentLevel", "I");
+            final MethodRef setupTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "([IIIII)V");
+            final MethodRef setupTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(Ljava/awt/image/BufferedImage;II)V");
+
+            addClassSignature(new ConstSignature(glTexImage2D));
+            addClassSignature(new ConstSignature(glTexSubImage2D));
+
+            addMemberMapper(new MethodMapper(setupTexture1));
+            addMemberMapper(new MethodMapper(setupTexture2));
+
+            addMipmapPatch(setupTexture1, setupTextureMipmaps1, new int[]{ALOAD_0, ILOAD_1, ILOAD_2, ILOAD_3, ILOAD, 4});
+            addMipmapPatch(setupTexture2, setupTextureMipmaps2, new int[]{ALOAD_0, ILOAD_1, ILOAD_2});
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override mipmap level";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        lookBehind(
+                            build(push(3553)
+                        ), true),
+                        push(0),
+                        lookAhead(build(
+                            any(0, 30),
+                            reference(INVOKESTATIC, glTexSubImage2D)
+                        ), true)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(GETSTATIC, currentMipmapLevel)
+                    );
+                }
+            });
+        }
+
+        private void addMipmapPatch(MethodRef target, final MethodRef replacement, final int[] arguments) {
+            final FieldRef inMipmapHelper = new FieldRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "inMipmapHelper", "Z");
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "setup mipmaps";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // if (!MipmapHelper.inMipmapHelper) {
+                        reference(GETSTATIC, inMipmapHelper),
+                        IFNE, branch("A"),
+
+                        // MipmapHelper.setupTexture(...);
+                        // return;
+                        arguments,
+                        reference(INVOKESTATIC, replacement),
+                        RETURN,
+
+                        // }
+                        label("A")
+                    );
+                }
+            }.targetMethod(target));
         }
     }
 
