@@ -18,7 +18,7 @@ public class BaseTilesheetMod extends Mod {
         addDependency(BaseTexturePackMod.NAME);
 
         addClassMod(new BaseMod.IconMod());
-        addClassMod(new RenderEngineMod());
+        //addClassMod(new RenderEngineMod());
         addClassMod(new TessellatorMod());
         addClassMod(new IconRegisterMod());
         addClassMod(new TextureMapMod());
@@ -374,6 +374,7 @@ public class BaseTilesheetMod extends Mod {
             addClassSignature(new ConstSignature(".png"));
             addClassSignature(new ConstSignature(".txt"));
 
+            /* TODO: 1.5 stuff
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
@@ -390,6 +391,7 @@ public class BaseTilesheetMod extends Mod {
                 .addXref(1, new MethodRef("TextureManager", "getInstance", "()LTextureManager;"))
                 .addXref(2, new MethodRef("TextureManager", "createStitcher", "(Ljava/lang/String;)Lnet/minecraft/src/Stitcher;"))
             );
+            */
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -405,6 +407,7 @@ public class BaseTilesheetMod extends Mod {
                 .addXref(1, basePath)
             );
 
+            /* TODO: 1.5 stuff
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
@@ -418,8 +421,9 @@ public class BaseTilesheetMod extends Mod {
                 .matchConstructorOnly(true)
                 .addXref(1, textureExt)
             );
+            */
 
-            addMemberMapper(new MethodMapper(getTexture));
+            //addMemberMapper(new MethodMapper(getTexture));
             addMemberMapper(new FieldMapper(mapTexturesStitched));
 
             addPatch(new MakeMemberPublicPatch(mapTexturesStitched));
@@ -548,6 +552,7 @@ public class BaseTilesheetMod extends Mod {
 
     private class TextureMod extends BaseMod.TextureMod {
         TextureMod() {
+            /* TODO: 1.5 stuff
             final MethodRef unloadGLTexture = new MethodRef(getDeobfClass(), "unloadGLTexture", "()V");
 
             addPatch(new AddMethodPatch(unloadGLTexture) {
@@ -575,6 +580,7 @@ public class BaseTilesheetMod extends Mod {
                     );
                 }
             });
+            */
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -606,6 +612,10 @@ public class BaseTilesheetMod extends Mod {
 
     private class TextureManagerMod extends ClassMod {
         TextureManagerMod() {
+            setup16();
+        }
+
+        private void setup15() {
             final MethodRef getInstance = new MethodRef(getDeobfClass(), "getInstance", "()LTextureManager;");
             final MethodRef createTextureFromImage = new MethodRef(getDeobfClass(), "createTextureFromImage", "(Ljava/lang/String;IIIIIIIZLjava/awt/image/BufferedImage;)LTexture;");
             final MethodRef createTextureFromFile = new MethodRef(getDeobfClass(), "createTextureFromFile", "(Ljava/lang/String;)Ljava/util/List;");
@@ -647,6 +657,29 @@ public class BaseTilesheetMod extends Mod {
             );
             addMemberMapper(new MethodMapper(createTextureFromImage));
             addMemberMapper(new MethodMapper(createTextureFromFile));
+        }
+
+        private void setup16() {
+            final MethodRef updateAnimations = new MethodRef(getDeobfClass(), "updateAnimations", "()V");
+            final InterfaceMethodRef listIterator = new InterfaceMethodRef("java/util/List", "iterator", "()Ljava/util/Iterator;");
+
+            addClassSignature(new ConstSignature("dynamic/%s_%d"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin(),
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        reference(INVOKEINTERFACE, listIterator)
+
+                    );
+                }
+            }
+                .setMethod(updateAnimations)
+                .addXref(1, new FieldRef(getDeobfClass(), "animations", "Ljava/util/List;"))
+            );
         }
     }
 

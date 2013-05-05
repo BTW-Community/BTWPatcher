@@ -33,7 +33,7 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new TextureUtilsMod());
         addClassMod(new TexturePackListMod());
         addClassMod(new ITexturePackMod());
-        addClassMod(new ITextureMod());
+        addClassMod(new BaseMod.ITextureMod());
         addClassMod(new TextureBaseMod());
         addClassMod(new TexturePackImplementationMod());
         addClassMod(new TexturePackDefaultMod());
@@ -213,49 +213,35 @@ public class BaseTexturePackMod extends Mod {
         }
     }
 
-    private class ITextureMod extends ClassMod {
-        ITextureMod() {
-            addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "load", "(LITexturePack;)V"),
-                new InterfaceMethodRef(getDeobfClass(), "getGLTexture", "()I")
-            ).setInterfaceOnly(true));
-        }
-    }
-
-    private class TextureBaseMod extends ClassMod {
+    private class TextureBaseMod extends BaseMod.TextureBaseMod {
         TextureBaseMod() {
-            setInterfaces("ITexture");
+            final MethodRef unloadGLTexture = new MethodRef(getDeobfClass(), "unloadGLTexture", "()V");
 
-            addClassSignature(new BytecodeSignature() {
+            addPatch(new AddMethodPatch(unloadGLTexture) {
                 @Override
-                public String getMatchExpression() {
-                    return buildExpression(
+                public byte[] generateMethod() {
+                    return buildCode(
+                        // if (this.glTexture >= 0) {
+                        ALOAD_0,
+                        reference(GETFIELD, glTextureId),
+                        IFLT, branch("A"),
+
+                        // GL11.glDeleteTextures(this.glTexture);
+                        ALOAD_0,
+                        reference(GETFIELD, glTextureId),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(I)V")),
+
+                        // this.glTexture = -1;
                         ALOAD_0,
                         push(-1),
-                        anyReference(PUTFIELD)
+                        reference(PUTFIELD, glTextureId),
+
+                        // }
+                        label("A"),
+                        RETURN
                     );
                 }
-            }.matchConstructorOnly(true));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        begin(),
-                        ALOAD_0,
-                        GETFIELD, capture(any(2)),
-                        push(-1),
-                        IF_ICMPNE, any(2),
-
-                        ALOAD_0,
-                        captureReference(INVOKESTATIC),
-                        PUTFIELD, backReference(1)
-                    );
-                }
-            }
-                .setMethod(new MethodRef(getDeobfClass(), "getGLTexture", "()I"))
-                .addXref(2, new MethodRef("TextureUtils", "newGLTexture", "()I"))
-            );
+            });
         }
     }
 

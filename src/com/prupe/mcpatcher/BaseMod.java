@@ -938,6 +938,63 @@ public final class BaseMod extends Mod {
     }
 
     /**
+     * Maps ITexture interface (1.6+).
+     */
+    public static class ITextureMod extends ClassMod {
+        public ITextureMod() {
+            addClassSignature(new InterfaceSignature(
+                new InterfaceMethodRef(getDeobfClass(), "load", "(LITexturePack;)V"),
+                new InterfaceMethodRef(getDeobfClass(), "getGLTexture", "()I")
+            ).setInterfaceOnly(true));
+        }
+    }
+
+    /**
+     * Maps TextureBase class (1.6+).
+     */
+    public static class TextureBaseMod extends ClassMod {
+        protected final FieldRef glTextureId = new FieldRef(getDeobfClass(), "glTextureId", "I");
+        protected final MethodRef getGLTextureId = new MethodRef(getDeobfClass(), "getGLTextureId", "()I");
+
+        public TextureBaseMod() {
+            setInterfaces("ITexture");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        push(-1),
+                        anyReference(PUTFIELD)
+                    );
+                }
+            }.matchConstructorOnly(true));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin(),
+                        ALOAD_0,
+                        GETFIELD, capture(any(2)),
+                        push(-1),
+                        IF_ICMPNE, any(2),
+
+                        ALOAD_0,
+                        captureReference(INVOKESTATIC),
+                        PUTFIELD, backReference(1)
+                    );
+                }
+            }
+                .setMethod(getGLTextureId)
+                .addXref(2, new MethodRef("TextureUtils", "newGLTexture", "()I"))
+            );
+
+            addMemberMapper(new FieldMapper(glTextureId));
+        }
+    }
+
+    /**
      * Maps Texture class and various fields and methods.
      */
     public static class TextureMod extends ClassMod {
@@ -955,6 +1012,8 @@ public final class BaseMod extends Mod {
         protected final MethodRef glBindTexture = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V");
 
         public TextureMod() {
+            setParentClass("TextureBase");
+
             addClassSignature(new ConstSignature("png"));
 
             addClassSignature(new BytecodeSignature() {
@@ -1020,9 +1079,9 @@ public final class BaseMod extends Mod {
                 getMinV,
                 getMaxV,
                 getInterpolatedV,
-                getIconName,
+                getIconName/*,
                 getSheetWidth,
-                getSheetHeight
+                getSheetHeight*/
             ).setInterfaceOnly(true));
         }
     }
