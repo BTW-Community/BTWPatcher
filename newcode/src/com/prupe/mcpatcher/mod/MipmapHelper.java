@@ -407,7 +407,7 @@ public class MipmapHelper {
         return added;
     }
 
-    private static boolean useMipmapsForTexture(String texture) {
+    static boolean useMipmapsForTexture(String texture) {
         if (!useMipmap || texture == null) {
             return false;
         } else if (mipmapType.containsKey(texture)) {

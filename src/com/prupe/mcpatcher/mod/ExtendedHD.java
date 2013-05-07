@@ -19,6 +19,8 @@ public class ExtendedHD extends Mod {
     private static final MethodRef copySubTextureMipmaps = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "([IIIIILjava/lang/String;)V");
     private static final FieldRef textureBorder = new FieldRef("Texture", "border", "I");
 
+    private static final MethodRef imageRead = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
+
     public ExtendedHD() {
         name = MCPatcherUtils.EXTENDED_HD;
         author = "MCPatcher";
@@ -623,8 +625,12 @@ public class ExtendedHD extends Mod {
 
     private class TextureMapMod extends BaseMod.TextureMapMod {
         TextureMapMod() {
-            addPatch(new TextureMipmapPatch(basePath));
+            final MethodRef readTile = new MethodRef(getDeobfClass(), "readTile", "(LTextureStitched;LITexturePack;Ljava/lang/String;)Z");
+            final MethodRef addBorder = new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(Ljava/lang/String;Ljava/lang/String;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
 
+            addMemberMapper(new MethodMapper(readTile));
+
+            addPatch(new TextureMipmapPatch(basePath));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -648,6 +654,34 @@ public class ExtendedHD extends Mod {
                     );
                 }
             });
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "add tile border for aa";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_2,
+                        capture(anyALOAD),
+                        anyReference(INVOKEINTERFACE),
+                        reference(INVOKESTATIC, imageRead)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_0,
+                        reference(GETFIELD, basePath),
+                        getCaptureGroup(1),
+                        getMatch(),
+                        reference(INVOKESTATIC, addBorder)
+                    );
+                }
+            }.targetMethod(readTile));
         }
     }
 
@@ -694,7 +728,6 @@ public class ExtendedHD extends Mod {
 
             final FieldRef textureName = new FieldRef(getDeobfClass(), "textureName", "Ljava/lang/String;");
             final MethodRef load = new MethodRef(getDeobfClass(), "load", "(LITexturePack;)V");
-            final MethodRef imageRead = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
 
             addClassSignature(new BytecodeSignature() {
                 @Override

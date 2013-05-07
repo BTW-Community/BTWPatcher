@@ -16,10 +16,6 @@ public class AAHelper {
 
     public static int border;
 
-    static void reset() {
-        TexturePackAPI.enableTextureBorder = false;
-    }
-
     public static PixelFormat setupPixelFormat(PixelFormat pixelFormat) {
         if (aaSamples > 1) {
             logger.config("setting AA samples to %d", aaSamples);
@@ -29,21 +25,16 @@ public class AAHelper {
         }
     }
 
-    public static BufferedImage addBorder(String name, BufferedImage input, boolean isAnimation) {
-        if (input == null || !TexturePackAPI.enableTextureBorder) {
+    public static BufferedImage addBorder(String tilesheet, String name, BufferedImage input) {
+        if (input == null || !MipmapHelper.useMipmapsForTexture(tilesheet)) {
             border = 0;
             return input;
         }
         input = MipmapHelper.fixTransparency(name, input);
         int width = input.getWidth();
         int height = input.getHeight();
-        int numFrames;
-        if (isAnimation && height % width == 0) {
-            numFrames = height / width;
-            height = width;
-        } else {
-            numFrames = 1;
-        }
+        int numFrames = height / width;
+        height = width;
         setupBorder(input, width, height);
         if (border <= 0) {
             logger.finer("no border around %s", name);
