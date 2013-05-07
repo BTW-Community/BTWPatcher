@@ -8,13 +8,16 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class ExtendedHD extends Mod {
-    private static final MethodRef setupTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "([IIIII)V");
-    private static final MethodRef setupTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(Ljava/awt/image/BufferedImage;II)V");
+    private static final MethodRef copySubTexture1 = new MethodRef("TextureUtils", "copySubTexture1", "([IIIIIZZ)V");
+    private static final MethodRef copySubTexture2 = new MethodRef("TextureUtils", "copySubTexture2", "(Ljava/awt/image/BufferedImage;IIZZ)V");
+    private static final MethodRef setupTexture1 = new MethodRef("TextureUtils", "setupTexture1", "(ILjava/awt/image/BufferedImage;ZZ)I");
+
+    private static final MethodRef setupTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "([IIIIILjava/lang/String;)V");
+    private static final MethodRef setupTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(ILjava/awt/image/BufferedImage;ZZLjava/lang/String;)I");
+    private static final MethodRef copySubTextureMipmaps = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "([IIIIILjava/lang/String;)V");
     private static final FieldRef textureBorder = new FieldRef("Texture", "border", "I");
 
     public ExtendedHD() {
-        clearPatches();
-
         name = MCPatcherUtils.EXTENDED_HD;
         author = "MCPatcher";
         description = "Provides support for custom animations, HD fonts, mipmapping, and other graphical features.";
@@ -34,11 +37,13 @@ public class ExtendedHD extends Mod {
         //addClassMod(new ColorizerMod("ColorizerGrass"));
         //addClassMod(new ColorizerMod("ColorizerFoliage"));
         addClassMod(new BaseMod.IconMod());
+        addClassMod(new BaseMod.ITextureMod());
         addClassMod(new BaseMod.TextureBaseMod());
         addClassMod(new BaseMod.TextureMod());
         addClassMod(new TextureUtilsMod());
         //addClassMod(new TextureManagerMod());
-        //addClassMod(new TextureStitchedMod());
+        addClassMod(new TextureStitchedMod());
+        addClassMod(new TextureNamedMod());
         addClassMod(new TextureCompassMod());
         addClassMod(new TextureClockMod());
         HDFont.setupMod(this);
@@ -321,109 +326,10 @@ public class ExtendedHD extends Mod {
         }
     }
 
-    private class TextureUtilsMod extends ClassMod {
-        private final MethodRef glTexParameteri = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexParameteri", "(III)V");
-
+    private class TextureUtilsMod extends BaseMod.TextureUtilsMod {
         TextureUtilsMod() {
-            final MethodRef copySubTexture1 = new MethodRef(getDeobfClass(), "copySubTexture1", "([IIIIIZZ)V");
-            final MethodRef copySubTexture2 = new MethodRef(getDeobfClass(), "copySubTexture2", "(Ljava/awt/image/BufferedImage;IIZZ)V");
-            final MethodRef setBlur = new MethodRef(getDeobfClass(), "setBlur", "(Z)V");
-            final MethodRef setClamp = new MethodRef(getDeobfClass(), "setClamp", "(Z)V");
-            final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
-            final MethodRef glTexSubImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
-            final FieldRef currentMipmapLevel = new FieldRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "currentLevel", "I");
-
-            addClassSignature(new ConstSignature(glTexImage2D));
-            addClassSignature(new ConstSignature(glTexSubImage2D));
-
-            mapBlurClamp(10241 /* GL_TEXTURE_MIN_FILTER */, 9729 /* GL_LINEAR */, setBlur);
-            mapBlurClamp(10242 /* GL_TEXTURE_WRAP_S */, 10496 /* GL_CLAMP */, setClamp);
-
             addMemberMapper(new MethodMapper(copySubTexture1));
             addMemberMapper(new MethodMapper(copySubTexture2));
-
-            addMipmapPatch(copySubTexture1, setupTextureMipmaps1, new int[]{ALOAD_0, ILOAD_1, ILOAD_2, ILOAD_3, ILOAD, 4});
-            addMipmapPatch(copySubTexture2, setupTextureMipmaps2, new int[]{ALOAD_0, ILOAD_1, ILOAD_2});
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override mipmap level";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        lookBehind(
-                            build(push(3553)
-                            ), true),
-                        push(0),
-                        lookAhead(build(
-                            any(0, 30),
-                            reference(INVOKESTATIC, glTexSubImage2D)
-                        ), true)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(GETSTATIC, currentMipmapLevel)
-                    );
-                }
-            });
-        }
-
-        private void mapBlurClamp(final int pname, final int param, MethodRef method) {
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push(3553), // GL_TEXTURE_2D
-                        push(pname),
-                        push(param),
-                        reference(INVOKESTATIC, glTexParameteri)
-                    );
-                }
-            }.setMethod(method));
-
-            addPatch(new MakeMemberPublicPatch(method));
-        }
-
-        private void addMipmapPatch(MethodRef target, final MethodRef replacement, final int[] arguments) {
-            final FieldRef inMipmapHelper = new FieldRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "inMipmapHelper", "Z");
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "setup mipmaps";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        begin()
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // if (!MipmapHelper.inMipmapHelper) {
-                        reference(GETSTATIC, inMipmapHelper),
-                        IFNE, branch("A"),
-
-                        // MipmapHelper.setupTexture(...);
-                        // return;
-                        arguments,
-                        reference(INVOKESTATIC, replacement),
-                        RETURN,
-
-                        // }
-                        label("A")
-                    );
-                }
-            }.targetMethod(target));
         }
     }
 
@@ -710,45 +616,75 @@ public class ExtendedHD extends Mod {
         }
     }
 
-    private class TextureStitchedMod extends ClassMod {
+    private class TextureStitchedMod extends BaseMod.TextureStitchedMod {
         TextureStitchedMod() {
-            setInterfaces("Icon");
-
-            final FieldRef texture = new FieldRef(getDeobfClass(), "texture", "LTexture;");
-            final MethodRef init = new MethodRef(getDeobfClass(), "init", "(LTexture;Ljava/util/List;IIIIZ)V");
-            final MethodRef updateAnimation = new MethodRef(getDeobfClass(), "updateAnimation", "()V");
-
-            addClassSignature(new ConstSignature("clock"));
-            addClassSignature(new ConstSignature("compass"));
-            addClassSignature(new ConstSignature(","));
-
-            addMemberMapper(new FieldMapper(texture));
-            addMemberMapper(new MethodMapper(init));
-            addMemberMapper(new MethodMapper(updateAnimation));
-
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "override " + getDeobfClass();
+                    return "generate mipmaps";
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(NEW, new ClassRef(getDeobfClass())),
-                        DUP,
-                        ALOAD_0,
-                        reference(INVOKESPECIAL, new MethodRef(getDeobfClass(), "<init>", "(Ljava/lang/String;)V"))
+                        reference(INVOKESTATIC, copySubTexture1)
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(NEW, new ClassRef(MCPatcherUtils.BORDERED_TEXTURE_CLASS)),
-                        DUP,
+                        POP,
+                        POP,
                         ALOAD_0,
-                        reference(INVOKESPECIAL, new MethodRef(MCPatcherUtils.BORDERED_TEXTURE_CLASS, "<init>", "(Ljava/lang/String;)V"))
+                        reference(GETFIELD, textureName),
+                        reference(INVOKESTATIC, copySubTextureMipmaps)
+                    );
+                }
+            });
+        }
+    }
+
+    private class TextureNamedMod extends ClassMod {
+        TextureNamedMod() {
+            setParentClass("TextureBase");
+
+            final FieldRef textureName = new FieldRef(getDeobfClass(), "textureName", "Ljava/lang/String;");
+            final MethodRef load = new MethodRef(getDeobfClass(), "load", "(LITexturePack;)V");
+            final MethodRef imageRead = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_2,
+                        reference(INVOKESTATIC, imageRead),
+                        ASTORE_3
+                    );
+                }
+            }.setMethod(load));
+
+            addMemberMapper(new FieldMapper(textureName));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "generate mipmaps";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKESTATIC, setupTexture1)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_0,
+                        reference(GETFIELD, textureName),
+                        reference(INVOKESTATIC, setupTextureMipmaps2)
                     );
                 }
             });

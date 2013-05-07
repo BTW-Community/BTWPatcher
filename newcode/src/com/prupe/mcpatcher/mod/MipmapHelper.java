@@ -81,24 +81,33 @@ public class MipmapHelper {
         logger.config("lod bias: supported=%s, bias=%d", lodSupported, lodBias);
     }
 
-    public static void setupTexture(int[] rgb, int width, int height, int x, int y, boolean blur, boolean clamp, String textureName) {
-        TextureUtils.setBlur(blur);
-        TextureUtils.setClamp(clamp);
+    private static void setupTexture(int width, int height, boolean blur, boolean clamp, String textureName) {
         int mipmaps = useMipmapsForTexture(textureName) ? getMipmapLevels(width, height, 1) : 0;
+        int magFilter = blur ? GL11.GL_LINEAR : GL11.GL_NEAREST;
+        int minFilter = mipmaps > 0 ? GL11.GL_NEAREST_MIPMAP_LINEAR : magFilter;
+        int wrap = clamp ? GL11.GL_CLAMP : GL11.GL_REPEAT;
         if (mipmaps > 0) {
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST_MIPMAP_LINEAR);
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL, mipmaps);
         }
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, minFilter);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, magFilter);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, wrap);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, wrap);
+    }
+
+    public static void setupTexture(int[] rgb, int width, int height, int x, int y, boolean blur, boolean clamp, String textureName) {
+        setupTexture(width, height, blur, clamp, textureName);
         copySubTexture(rgb, width, height, x, y, textureName);
     }
 
-    public static void setupTexture(BufferedImage image, int x, int y, boolean blur, boolean clamp, String textureName) {
+    public static int setupTexture(int glTexture, BufferedImage image, boolean blur, boolean clamp, String textureName) {
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTexture);
         int width = image.getWidth();
         int height = image.getHeight();
         int[] rgb = new int[width * height];
         image.getRGB(0, 0, width, height, rgb, 0, width);
-        setupTexture(rgb, width, height, x, y, blur, clamp, textureName);
+        setupTexture(rgb, width, height, 0, 0, blur, clamp, textureName);
+        return glTexture;
     }
 
     public static void copySubTexture(int[] rgb, int width, int height, int x, int y, String textureName) {
@@ -122,6 +131,8 @@ public class MipmapHelper {
             height >>= 1;
         }
     }
+
+    // TODO: 1.5 stuff
 
     public static void setupTexture(int target, int level, int internalFormat, int width, int height, int border, int format, int dataType, ByteBuffer buffer, Texture texture) {
         if (!useMipmapsForTexture(texture.getTextureName())) {

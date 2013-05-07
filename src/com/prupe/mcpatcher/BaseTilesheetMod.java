@@ -25,7 +25,7 @@ public class BaseTilesheetMod extends Mod {
         addClassMod(new BaseMod.TextureBaseMod());
         addClassMod(new BaseMod.TextureMod());
         addClassMod(new TextureManagerMod());
-        addClassMod(new TextureStitchedMod());
+        addClassMod(new BaseMod.TextureStitchedMod());
         //addClassMod(new StitcherMod());
         //addClassMod(new StitchHolderMod());
 
@@ -758,26 +758,6 @@ public class BaseTilesheetMod extends Mod {
                 .setMethod(updateAnimations)
                 .addXref(1, new FieldRef(getDeobfClass(), "animations", "Ljava/util/List;"))
             );
-        }
-    }
-
-    private class TextureStitchedMod extends ClassMod {
-        TextureStitchedMod() {
-            setInterfaces("Icon");
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(repeat(build(
-                        push(0.009999999776482582),
-                        anyILOAD,
-                        I2D,
-                        DDIV,
-                        D2F,
-                        anyFSTORE
-                    ), 2));
-                }
-            });
         }
     }
 

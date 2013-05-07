@@ -12,8 +12,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
-import static com.prupe.mcpatcher.BytecodeMatcher.anyReference;
-import static com.prupe.mcpatcher.BytecodeMatcher.captureReference;
+import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 /**
@@ -938,6 +937,25 @@ public final class BaseMod extends Mod {
     }
 
     /**
+     * Maps TextureUtilsClass (1.6).
+     */
+    public static class TextureUtilsMod extends ClassMod {
+        protected final MethodRef glTexSubImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
+        protected final MethodRef glTexParameteri = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexParameteri", "(III)V");
+        protected final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
+        protected final MethodRef glGenTextures = new MethodRef(MCPatcherUtils.GL11_CLASS, "glGenTextures", "()I");
+        protected final MethodRef glDeleteTextures = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(I)V");
+
+        public TextureUtilsMod() {
+            addClassSignature(new ConstSignature(glTexSubImage2D));
+            addClassSignature(new ConstSignature(glTexParameteri));
+            addClassSignature(new ConstSignature(glTexImage2D));
+            addClassSignature(new ConstSignature(glGenTextures));
+            addClassSignature(new ConstSignature(glDeleteTextures));
+        }
+    }
+
+    /**
      * Maps ITexture interface (1.6+).
      */
     public static class ITextureMod extends ClassMod {
@@ -1035,6 +1053,33 @@ public final class BaseMod extends Mod {
             );
 
             addMemberMapper(new MethodMapper(getRGB));
+        }
+    }
+
+    /**
+     * Maps TextureStitched class.
+     */
+    public static class TextureStitchedMod extends ClassMod {
+        protected final FieldRef textureName = new FieldRef(getDeobfClass(), "textureName", "Ljava/lang/String;");
+
+        public TextureStitchedMod() {
+            setInterfaces("Icon");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(repeat(build(
+                        push(0.009999999776482582),
+                        anyILOAD,
+                        I2D,
+                        DDIV,
+                        D2F,
+                        anyFSTORE
+                    ), 2));
+                }
+            });
+
+            addMemberMapper(new FieldMapper(null, textureName));
         }
     }
 

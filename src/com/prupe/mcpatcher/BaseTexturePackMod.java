@@ -30,7 +30,7 @@ public class BaseTexturePackMod extends Mod {
 
         addClassMod(new MinecraftMod());
         addClassMod(new TextureManagerMod());
-        addClassMod(new TextureUtilsMod());
+        addClassMod(new BaseMod.TextureUtilsMod());
         addClassMod(new TexturePackListMod());
         addClassMod(new ITexturePackMod());
         addClassMod(new BaseMod.ITextureMod());
@@ -174,22 +174,6 @@ public class BaseTexturePackMod extends Mod {
 
             addMemberMapper(new MethodMapper(bindTexture, unloadTexture).accessFlag(AccessFlag.STATIC, false));
             addMemberMapper(new MethodMapper(getTexture).accessFlag(AccessFlag.STATIC, false));
-        }
-    }
-
-    private class TextureUtilsMod extends ClassMod {
-        TextureUtilsMod() {
-            final MethodRef glTexSubImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
-            final MethodRef glTexParameteri = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexParameteri", "(III)V");
-            final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
-            final MethodRef glGenTextures = new MethodRef(MCPatcherUtils.GL11_CLASS, "glGenTextures", "()I");
-            final MethodRef glDeleteTextures = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(I)V");
-
-            addClassSignature(new ConstSignature(glTexSubImage2D));
-            addClassSignature(new ConstSignature(glTexParameteri));
-            addClassSignature(new ConstSignature(glTexImage2D));
-            addClassSignature(new ConstSignature(glGenTextures));
-            addClassSignature(new ConstSignature(glDeleteTextures));
         }
     }
 
