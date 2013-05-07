@@ -178,12 +178,9 @@ public class BaseTexturePackMod extends Mod {
     }
 
     private class TextureUtilsMod extends ClassMod {
-        private final MethodRef glTexParameteri = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexParameteri", "(III)V");
-
         TextureUtilsMod() {
-            final MethodRef blur = new MethodRef(getDeobfClass(), "blur", "(Z)V");
-            final MethodRef clamp = new MethodRef(getDeobfClass(), "clamp", "(Z)V");
             final MethodRef glTexSubImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
+            final MethodRef glTexParameteri = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexParameteri", "(III)V");
             final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
             final MethodRef glGenTextures = new MethodRef(MCPatcherUtils.GL11_CLASS, "glGenTextures", "()I");
             final MethodRef glDeleteTextures = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(I)V");
@@ -193,23 +190,6 @@ public class BaseTexturePackMod extends Mod {
             addClassSignature(new ConstSignature(glTexImage2D));
             addClassSignature(new ConstSignature(glGenTextures));
             addClassSignature(new ConstSignature(glDeleteTextures));
-
-            mapBlurClamp(10241 /* GL_TEXTURE_MIN_FILTER */, 9729 /* GL_LINEAR */, blur);
-            mapBlurClamp(10242 /* GL_TEXTURE_WRAP_S */, 10496 /* GL_CLAMP */, clamp);
-        }
-
-        private void mapBlurClamp(final int pname, final int param, MethodRef method) {
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push(3553), // GL_TEXTURE_2D
-                        push(pname),
-                        push(param),
-                        reference(INVOKESTATIC, glTexParameteri)
-                    );
-                }
-            }.setMethod(method));
         }
     }
 

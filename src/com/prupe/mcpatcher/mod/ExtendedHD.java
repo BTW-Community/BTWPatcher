@@ -8,7 +8,9 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class ExtendedHD extends Mod {
-    private final FieldRef textureBorder = new FieldRef("Texture", "border", "I");
+    private static final MethodRef setupTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "([IIIII)V");
+    private static final MethodRef setupTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(Ljava/awt/image/BufferedImage;II)V");
+    private static final FieldRef textureBorder = new FieldRef("Texture", "border", "I");
 
     public ExtendedHD() {
         clearPatches();
@@ -320,23 +322,28 @@ public class ExtendedHD extends Mod {
     }
 
     private class TextureUtilsMod extends ClassMod {
+        private final MethodRef glTexParameteri = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexParameteri", "(III)V");
+
         TextureUtilsMod() {
-            final MethodRef setupTexture1 = new MethodRef(getDeobfClass(), "setupTexture1", "([IIIIIZZ)V");
-            final MethodRef setupTexture2 = new MethodRef(getDeobfClass(), "setupTexture2", "(Ljava/awt/image/BufferedImage;IIZZ)V");
+            final MethodRef copySubTexture1 = new MethodRef(getDeobfClass(), "copySubTexture1", "([IIIIIZZ)V");
+            final MethodRef copySubTexture2 = new MethodRef(getDeobfClass(), "copySubTexture2", "(Ljava/awt/image/BufferedImage;IIZZ)V");
+            final MethodRef setBlur = new MethodRef(getDeobfClass(), "setBlur", "(Z)V");
+            final MethodRef setClamp = new MethodRef(getDeobfClass(), "setClamp", "(Z)V");
             final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
             final MethodRef glTexSubImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
             final FieldRef currentMipmapLevel = new FieldRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "currentLevel", "I");
-            final MethodRef setupTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "([IIIII)V");
-            final MethodRef setupTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(Ljava/awt/image/BufferedImage;II)V");
 
             addClassSignature(new ConstSignature(glTexImage2D));
             addClassSignature(new ConstSignature(glTexSubImage2D));
 
-            addMemberMapper(new MethodMapper(setupTexture1));
-            addMemberMapper(new MethodMapper(setupTexture2));
+            mapBlurClamp(10241 /* GL_TEXTURE_MIN_FILTER */, 9729 /* GL_LINEAR */, setBlur);
+            mapBlurClamp(10242 /* GL_TEXTURE_WRAP_S */, 10496 /* GL_CLAMP */, setClamp);
 
-            addMipmapPatch(setupTexture1, setupTextureMipmaps1, new int[]{ALOAD_0, ILOAD_1, ILOAD_2, ILOAD_3, ILOAD, 4});
-            addMipmapPatch(setupTexture2, setupTextureMipmaps2, new int[]{ALOAD_0, ILOAD_1, ILOAD_2});
+            addMemberMapper(new MethodMapper(copySubTexture1));
+            addMemberMapper(new MethodMapper(copySubTexture2));
+
+            addMipmapPatch(copySubTexture1, setupTextureMipmaps1, new int[]{ALOAD_0, ILOAD_1, ILOAD_2, ILOAD_3, ILOAD, 4});
+            addMipmapPatch(copySubTexture2, setupTextureMipmaps2, new int[]{ALOAD_0, ILOAD_1, ILOAD_2});
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -349,7 +356,7 @@ public class ExtendedHD extends Mod {
                     return buildExpression(
                         lookBehind(
                             build(push(3553)
-                        ), true),
+                            ), true),
                         push(0),
                         lookAhead(build(
                             any(0, 30),
@@ -365,6 +372,22 @@ public class ExtendedHD extends Mod {
                     );
                 }
             });
+        }
+
+        private void mapBlurClamp(final int pname, final int param, MethodRef method) {
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(3553), // GL_TEXTURE_2D
+                        push(pname),
+                        push(param),
+                        reference(INVOKESTATIC, glTexParameteri)
+                    );
+                }
+            }.setMethod(method));
+
+            addPatch(new MakeMemberPublicPatch(method));
         }
 
         private void addMipmapPatch(MethodRef target, final MethodRef replacement, final int[] arguments) {

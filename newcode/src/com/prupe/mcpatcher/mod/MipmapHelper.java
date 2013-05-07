@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.RenderEngine;
 import net.minecraft.src.Texture;
+import net.minecraft.src.TextureUtils;
 import org.lwjgl.opengl.*;
 import org.lwjgl.util.glu.GLU;
 
@@ -78,6 +79,48 @@ public class MipmapHelper {
         logger.config("mipmap: supported=%s, enabled=%s, level=%d", mipmapSupported, mipmapEnabled, maxMipmapLevel);
         logger.config("anisotropic: supported=%s, level=%d, max=%d", anisoSupported, anisoLevel, anisoMax);
         logger.config("lod bias: supported=%s, bias=%d", lodSupported, lodBias);
+    }
+
+    public static void setupTexture(int[] rgb, int width, int height, int x, int y, boolean blur, boolean clamp, String textureName) {
+        TextureUtils.setBlur(blur);
+        TextureUtils.setClamp(clamp);
+        int mipmaps = useMipmapsForTexture(textureName) ? getMipmapLevels(width, height, 1) : 0;
+        if (mipmaps > 0) {
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST_MIPMAP_LINEAR);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL, mipmaps);
+        }
+        copySubTexture(rgb, width, height, x, y, textureName);
+    }
+
+    public static void setupTexture(BufferedImage image, int x, int y, boolean blur, boolean clamp, String textureName) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        int[] rgb = new int[width * height];
+        image.getRGB(0, 0, width, height, rgb, 0, width);
+        setupTexture(rgb, width, height, x, y, blur, clamp, textureName);
+    }
+
+    public static void copySubTexture(int[] rgb, int width, int height, int x, int y, String textureName) {
+        IntBuffer buffer = getPooledBuffer(width * height * 4).asIntBuffer();
+        buffer.put(rgb).position(0);
+        int mipmaps = getMipmapLevels();
+        IntBuffer newBuffer;
+        for (int level = 0; ; ) {
+            GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, level, x, y, width, height, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, buffer);
+            checkGLError("%s: glTexSubImage2D(%d, %d, %d, %d, %d)", textureName, level, x, y, width, height);
+            if (level >= mipmaps) {
+                break;
+            }
+            newBuffer = getPooledBuffer(width * height).asIntBuffer();
+            scaleHalf(buffer, width, height, newBuffer, 0);
+            buffer = newBuffer;
+            level++;
+            x >>= 1;
+            y >>= 1;
+            width >>= 1;
+            height >>= 1;
+        }
     }
 
     public static void setupTexture(int target, int level, int internalFormat, int width, int height, int border, int format, int dataType, ByteBuffer buffer, Texture texture) {
@@ -333,13 +376,13 @@ public class MipmapHelper {
             return mipmapType.get(texture);
         } else if (texture.startsWith("%") ||
             texture.startsWith("##") ||
-            texture.startsWith("/achievement/") ||
-            texture.startsWith("/environment/") ||
-            texture.startsWith("/font/") ||
-            texture.startsWith("/gui/") ||
-            texture.startsWith("/misc/") ||
-            texture.startsWith("/terrain/") ||
-            texture.startsWith("/title/") ||
+            texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "achievement/") ||
+            texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/") ||
+            texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "font/") ||
+            texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "gui/") ||
+            texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/") ||
+            texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "terrain/") ||
+            texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "title/") ||
             texture.contains("item")) {
             return false;
         } else {
