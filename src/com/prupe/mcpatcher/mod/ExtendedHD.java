@@ -46,7 +46,7 @@ public class ExtendedHD extends Mod {
         addClassMod(new TextureNamedMod());
         addClassMod(new TextureCompassMod());
         addClassMod(new TextureClockMod());
-        HDFont.setupMod(this);
+        //HDFont.setupMod(this);
 
         addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS);
         addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS + "$1");
@@ -330,6 +330,7 @@ public class ExtendedHD extends Mod {
         TextureUtilsMod() {
             addMemberMapper(new MethodMapper(copySubTexture1));
             addMemberMapper(new MethodMapper(copySubTexture2));
+            addMemberMapper(new MethodMapper(setupTexture1));
         }
     }
 

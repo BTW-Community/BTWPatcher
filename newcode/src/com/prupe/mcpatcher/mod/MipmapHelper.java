@@ -28,6 +28,9 @@ public class MipmapHelper {
 
     private static final String MIPMAP_PROPERTIES = "/mipmap.properties";
 
+    private static final int TEX_FORMAT = GL12.GL_BGRA;
+    private static final int TEX_DATA_TYPE = GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
+
     private static final int MIN_ALPHA = 0x1a;
     private static final int MAX_ALPHA = 0xe5;
 
@@ -83,16 +86,32 @@ public class MipmapHelper {
 
     private static void setupTexture(int width, int height, boolean blur, boolean clamp, String textureName) {
         int mipmaps = useMipmapsForTexture(textureName) ? getMipmapLevels(width, height, 1) : 0;
+        logger.fine("setupTexture(%s) %dx%d %d mipmaps", textureName, width, height, mipmaps);
         int magFilter = blur ? GL11.GL_LINEAR : GL11.GL_NEAREST;
         int minFilter = mipmaps > 0 ? GL11.GL_NEAREST_MIPMAP_LINEAR : magFilter;
         int wrap = clamp ? GL11.GL_CLAMP : GL11.GL_REPEAT;
         if (mipmaps > 0) {
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL, mipmaps);
+            checkGLError("%s: set GL_TEXTURE_MAX_LEVEL = %d", textureName, mipmaps);
+            if (anisoSupported && anisoLevel > 1) {
+                GL11.glTexParameterf(GL11.GL_TEXTURE_2D, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisoLevel);
+                checkGLError("%s: set GL_TEXTURE_MAX_ANISOTROPY_EXT = %f", textureName, anisoLevel);
+            }
+            if (lodSupported) {
+                GL11.glTexEnvi(EXTTextureLODBias.GL_TEXTURE_FILTER_CONTROL_EXT, EXTTextureLODBias.GL_TEXTURE_LOD_BIAS_EXT, lodBias);
+                checkGLError("%s: set GL_TEXTURE_LOD_BIAS_EXT = %d", textureName, lodBias);
+            }
         }
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, minFilter);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, magFilter);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, wrap);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, wrap);
+        for (int level = 0; level <= mipmaps; level++) {
+            GL11.glTexImage2D(GL11.GL_TEXTURE_2D, level, GL11.GL_RGBA, width, height, 0, TEX_FORMAT, TEX_DATA_TYPE, (IntBuffer) null);
+            checkGLError("%s: glTexImage2D %dx%d level %d", textureName, width, height, level);
+            width >>= 1;
+            height >>= 1;
+        }
     }
 
     public static void setupTexture(int[] rgb, int width, int height, int x, int y, boolean blur, boolean clamp, String textureName) {
@@ -101,9 +120,10 @@ public class MipmapHelper {
     }
 
     public static int setupTexture(int glTexture, BufferedImage image, boolean blur, boolean clamp, String textureName) {
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTexture);
         int width = image.getWidth();
         int height = image.getHeight();
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTexture);
+        logger.fine("setupTexture(%s, %d, %dx%d, %s, %s)", textureName, glTexture, width, height, blur, clamp);
         int[] rgb = new int[width * height];
         image.getRGB(0, 0, width, height, rgb, 0, width);
         setupTexture(rgb, width, height, 0, 0, blur, clamp, textureName);
@@ -115,8 +135,9 @@ public class MipmapHelper {
         buffer.put(rgb).position(0);
         int mipmaps = getMipmapLevels();
         IntBuffer newBuffer;
+        logger.finest("copySubTexture %s %d,%d %dx%d %d mipmaps", textureName, x, y, width, height, mipmaps);
         for (int level = 0; ; ) {
-            GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, level, x, y, width, height, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, buffer);
+            GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, level, x, y, width, height, TEX_FORMAT, TEX_DATA_TYPE, buffer);
             checkGLError("%s: glTexSubImage2D(%d, %d, %d, %d, %d)", textureName, level, x, y, width, height);
             if (level >= mipmaps) {
                 break;
@@ -439,7 +460,7 @@ public class MipmapHelper {
             buffer = ByteBuffer.allocateDirect(size);
             bufferPool.put(size, new SoftReference<ByteBuffer>(buffer));
         }
-        buffer.order(ByteOrder.BIG_ENDIAN);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
         buffer.position(0);
         return buffer;
     }
