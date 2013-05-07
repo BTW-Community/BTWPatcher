@@ -130,6 +130,12 @@ public class MipmapHelper {
         return glTexture;
     }
 
+    public static void setupTexture(int glTexture, int width, int height, String textureName) {
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTexture);
+        logger.fine("setupTexture(tilesheet %s, %d, %dx%d)", textureName, glTexture, width, height);
+        setupTexture(width, height, false, false, textureName);
+    }
+
     public static void copySubTexture(int[] rgb, int width, int height, int x, int y, String textureName) {
         IntBuffer buffer = getPooledBuffer(width * height * 4).asIntBuffer();
         buffer.put(rgb).position(0);

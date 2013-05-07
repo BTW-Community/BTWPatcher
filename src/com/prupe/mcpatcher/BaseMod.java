@@ -1084,6 +1084,60 @@ public final class BaseMod extends Mod {
     }
 
     /**
+     * Maps TextureMap class.
+     */
+    public static class TextureMapMod extends ClassMod {
+        protected final FieldRef basePath = new FieldRef(getDeobfClass(), "basePath", "Ljava/lang/String;");
+        protected final FieldRef mapTextures = new FieldRef(getDeobfClass(), "mapTextures", "Ljava/util/Map;");
+        protected final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "(LITexturePack;)V");
+        protected final MethodRef registerIcon = new MethodRef(getDeobfClass(), "registerIcon", "(Ljava/lang/String;)LIcon;");
+
+        public TextureMapMod() {
+            setParentClass("TextureBase");
+            setInterfaces("IStitchedTexture", "IconRegister");
+
+            final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
+            final InterfaceMethodRef setIterator = new InterfaceMethodRef("java/util/Set", "iterator", "()Ljava/util/Iterator;");
+
+            addClassSignature(new ConstSignature("missingno"));
+            addClassSignature(new ConstSignature(".png"));
+            addClassSignature(new ConstSignature(".txt"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        reference(INVOKEINTERFACE, mapEntrySet),
+                        reference(INVOKEINTERFACE, setIterator),
+                        anyASTORE
+                    );
+                }
+            }
+                .setMethod(refreshTextures)
+                .addXref(1, mapTextures)
+            );
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        ALOAD_2,
+                        captureReference(PUTFIELD)
+                    );
+                }
+            }
+                .matchConstructorOnly(true)
+                .addXref(1, basePath)
+            );
+
+            addMemberMapper(new MethodMapper(registerIcon));
+        }
+    }
+
+    /**
      * Maps Icon interface.
      */
     public static class IconMod extends ClassMod {

@@ -11,9 +11,11 @@ public class ExtendedHD extends Mod {
     private static final MethodRef copySubTexture1 = new MethodRef("TextureUtils", "copySubTexture1", "([IIIIIZZ)V");
     private static final MethodRef copySubTexture2 = new MethodRef("TextureUtils", "copySubTexture2", "(Ljava/awt/image/BufferedImage;IIZZ)V");
     private static final MethodRef setupTexture1 = new MethodRef("TextureUtils", "setupTexture1", "(ILjava/awt/image/BufferedImage;ZZ)I");
+    private static final MethodRef setupTexture3 = new MethodRef("TextureUtils", "setupTexture3", "(III)V");
 
     private static final MethodRef setupTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "([IIIIILjava/lang/String;)V");
     private static final MethodRef setupTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(ILjava/awt/image/BufferedImage;ZZLjava/lang/String;)I");
+    private static final MethodRef setupTextureMipmaps3 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(IIILjava/lang/String;)V");
     private static final MethodRef copySubTextureMipmaps = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "([IIIIILjava/lang/String;)V");
     private static final FieldRef textureBorder = new FieldRef("Texture", "border", "I");
 
@@ -42,6 +44,7 @@ public class ExtendedHD extends Mod {
         addClassMod(new BaseMod.TextureMod());
         addClassMod(new TextureUtilsMod());
         //addClassMod(new TextureManagerMod());
+        addClassMod(new TextureMapMod());
         addClassMod(new TextureStitchedMod());
         addClassMod(new TextureNamedMod());
         addClassMod(new TextureCompassMod());
@@ -331,6 +334,7 @@ public class ExtendedHD extends Mod {
             addMemberMapper(new MethodMapper(copySubTexture1));
             addMemberMapper(new MethodMapper(copySubTexture2));
             addMemberMapper(new MethodMapper(setupTexture1));
+            addMemberMapper(new MethodMapper(setupTexture3));
         }
     }
 
@@ -617,32 +621,70 @@ public class ExtendedHD extends Mod {
         }
     }
 
-    private class TextureStitchedMod extends BaseMod.TextureStitchedMod {
-        TextureStitchedMod() {
+    private class TextureMapMod extends BaseMod.TextureMapMod {
+        TextureMapMod() {
+            addPatch(new TextureMipmapPatch(basePath));
+
+
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "generate mipmaps";
+                    return "enable mipmapping for tilesheets";
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(INVOKESTATIC, copySubTexture1)
+                        reference(INVOKESTATIC, setupTexture3)
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        POP,
-                        POP,
                         ALOAD_0,
-                        reference(GETFIELD, textureName),
-                        reference(INVOKESTATIC, copySubTextureMipmaps)
+                        reference(GETFIELD, basePath),
+                        reference(INVOKESTATIC, setupTextureMipmaps3)
                     );
                 }
             });
+        }
+    }
+
+    private class TextureStitchedMod extends BaseMod.TextureStitchedMod {
+        TextureStitchedMod() {
+            addPatch(new TextureMipmapPatch(textureName));
+        }
+    }
+
+    private static class TextureMipmapPatch extends BytecodePatch {
+        private final FieldRef textureNameField;
+
+        TextureMipmapPatch(FieldRef textureNameField) {
+            this.textureNameField = textureNameField;
+        }
+
+        @Override
+        public String getDescription() {
+            return "generate mipmaps";
+        }
+
+        @Override
+        public String getMatchExpression() {
+            return buildExpression(
+                reference(INVOKESTATIC, copySubTexture1)
+            );
+        }
+
+        @Override
+        public byte[] getReplacementBytes() {
+            return buildCode(
+                POP,
+                POP,
+                ALOAD_0,
+                reference(GETFIELD, textureNameField),
+                reference(INVOKESTATIC, copySubTextureMipmaps)
+            );
         }
     }
 

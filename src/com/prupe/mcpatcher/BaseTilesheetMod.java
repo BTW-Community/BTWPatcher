@@ -350,11 +350,8 @@ public class BaseTilesheetMod extends Mod {
         }
     }
 
-    private class TextureMapMod extends ClassMod {
+    private class TextureMapMod extends BaseMod.TextureMapMod {
         TextureMapMod() {
-            setParentClass("TextureBase");
-            setInterfaces("IStitchedTexture", "IconRegister");
-
             final FieldRef textureExt = new FieldRef(getDeobfClass(), "textureExt", "Ljava/lang/String;");
             final FieldRef mapTexturesStitched = new FieldRef(getDeobfClass(), "mapTexturesStitched", "Ljava/util/HashMap;");
             final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "()LTexture;");
@@ -370,32 +367,8 @@ public class BaseTilesheetMod extends Mod {
             final MethodRef hashMapPut = new MethodRef("java/util/HashMap", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
             final MethodRef doStitch = new MethodRef("Stitcher", "doStitch", "()V");
 
-            final FieldRef basePath = new FieldRef(getDeobfClass(), "basePath", "Ljava/lang/String;");
-            final FieldRef mapTextures = new FieldRef(getDeobfClass(), "mapTextures", "Ljava/util/Map;");
-            final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "(LITexturePack;)V");
-            final MethodRef registerIcon = new MethodRef(getDeobfClass(), "registerIcon", "(Ljava/lang/String;)LIcon;");
             final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
             final InterfaceMethodRef setIterator = new InterfaceMethodRef("java/util/Set", "iterator", "()Ljava/util/Iterator;");
-
-            addClassSignature(new ConstSignature("missingno"));
-            addClassSignature(new ConstSignature(".png"));
-            addClassSignature(new ConstSignature(".txt"));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        reference(INVOKEINTERFACE, mapEntrySet),
-                        reference(INVOKEINTERFACE, setIterator),
-                        anyASTORE
-                    );
-                }
-            }
-                .setMethod(refreshTextures)
-                .addXref(1, mapTextures)
-            );
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -420,22 +393,6 @@ public class BaseTilesheetMod extends Mod {
                 .addXref(2, new ClassRef("Stitcher"))
                 .addXref(3, new MethodRef("Stitcher", "<init>", "(IIZ)V"))
             );
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        ALOAD_2,
-                        captureReference(PUTFIELD)
-                    );
-                }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, basePath)
-            );
-
-            addMemberMapper(new MethodMapper(registerIcon));
 
             addPatch(new BytecodePatch() {
                 @Override
