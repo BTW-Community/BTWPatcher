@@ -55,6 +55,20 @@ public class TextureStitched implements Icon {
     public void init(Texture texture, List<Texture> subTextures, int x0, int y0, int width, int height, boolean flipped) {
     }
 
+    public void init(int tilesheetWidth, int tilesheetHeight, int x0, int y0, boolean flipped) {
+    }
+
+    public int getWidth() {
+        return 0;
+    }
+
+    public int getHeight() {
+        return 0;
+    }
+
     public void updateAnimation() {
+    }
+
+    public void copy(TextureStitched stitched) {
     }
 }

@@ -3,7 +3,7 @@ package com.prupe.mcpatcher.mod;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.TexturePackAPI;
+import net.minecraft.src.TextureStitched;
 import org.lwjgl.opengl.PixelFormat;
 
 import java.awt.image.BufferedImage;
@@ -14,8 +14,6 @@ public class AAHelper {
     private static final int debugColor = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "debugBorder", false) ? 0xff0000ff : 0;
     private static final int aaSamples = Config.getInt(MCPatcherUtils.EXTENDED_HD, "antiAliasing", 1);
 
-    public static int border;
-
     public static PixelFormat setupPixelFormat(PixelFormat pixelFormat) {
         if (aaSamples > 1) {
             logger.config("setting AA samples to %d", aaSamples);
@@ -25,9 +23,8 @@ public class AAHelper {
         }
     }
 
-    public static BufferedImage addBorder(String tilesheet, String name, BufferedImage input) {
-        if (input == null || !MipmapHelper.useMipmapsForTexture(tilesheet)) {
-            border = 0;
+    public static BufferedImage addBorder(TextureStitched stitched, String tilesheet, String name, BufferedImage input) {
+        if (input == null || !(stitched instanceof BorderedTexture)) {
             return input;
         }
         input = MipmapHelper.fixTransparency(name, input);
@@ -35,7 +32,8 @@ public class AAHelper {
         int height = input.getHeight();
         int numFrames = height / width;
         height = width;
-        setupBorder(input, width, height);
+        int border = getBorderWidth(width);
+        ((BorderedTexture) stitched).setBorderWidth(border);
         if (border <= 0) {
             logger.finer("no border around %s", name);
             return input;
@@ -60,12 +58,17 @@ public class AAHelper {
             copyRegion(input, 0, sy + height - border, output, border, dy + height + border, width, border, false, true);
             copyRegion(input, width - border, sy + height - border, output, width + border, dy + height + border, border, border, true, true);
 
-            addDebugOutline(output, dy, width, height);
+            addDebugOutline(output, dy, width, height, border);
         }
         return output;
     }
 
-    private static void setupBorder(BufferedImage input, int width, int height) {
+    static boolean useAAForTexture(String texture) {
+        return (aaSamples > 1 || MipmapHelper.anisoLevel > 1) && MipmapHelper.useMipmapsForTexture(texture);
+    }
+
+    private static int getBorderWidth(int size) {
+        int border;
         if (aaSamples <= 1 && MipmapHelper.anisoLevel <= 1) {
             border = 0;
         } else if (MipmapHelper.mipmapEnabled && MipmapHelper.maxMipmapLevel > 0) {
@@ -73,7 +76,7 @@ public class AAHelper {
         } else {
             border = 2;
         }
-        border = Math.min(border, Math.min(width, height));
+        return Math.min(border, size);
     }
 
     private static void copyRegion(BufferedImage input, int sx, int sy, BufferedImage output, int dx, int dy, int w, int h, boolean flipX, boolean flipY) {
@@ -92,7 +95,7 @@ public class AAHelper {
         }
     }
 
-    private static void addDebugOutline(BufferedImage output, int dy, int width, int height) {
+    private static void addDebugOutline(BufferedImage output, int dy, int width, int height, int border) {
         if (debugColor != 0) {
             for (int i = 0; i < width; i++) {
                 output.setRGB(i + border, dy + border, debugColor);

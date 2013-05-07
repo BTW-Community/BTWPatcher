@@ -626,7 +626,10 @@ public class ExtendedHD extends Mod {
     private class TextureMapMod extends BaseMod.TextureMapMod {
         TextureMapMod() {
             final MethodRef readTile = new MethodRef(getDeobfClass(), "readTile", "(LTextureStitched;LITexturePack;Ljava/lang/String;)Z");
-            final MethodRef addBorder = new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(Ljava/lang/String;Ljava/lang/String;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
+            final ClassRef textureStitched = new ClassRef("TextureStitched");
+            final MethodRef textureStitchedConstructor = new MethodRef("TextureStitched", "<init>", "(Ljava/lang/String;)V");
+            final MethodRef addBorder = new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(LTextureStitched;Ljava/lang/String;Ljava/lang/String;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
+            final MethodRef createTextureStitched = new MethodRef(MCPatcherUtils.BORDERED_TEXTURE_CLASS, "createTextureStitched", "(Ljava/lang/String;Ljava/lang/String;)LTextureStitched;");
 
             addMemberMapper(new MethodMapper(readTile));
 
@@ -674,6 +677,7 @@ public class ExtendedHD extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        ALOAD_1,
                         ALOAD_0,
                         reference(GETFIELD, basePath),
                         getCaptureGroup(1),
@@ -682,6 +686,33 @@ public class ExtendedHD extends Mod {
                     );
                 }
             }.targetMethod(readTile));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override texture coordinates for aa";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(NEW, textureStitched),
+                        DUP,
+                        ALOAD_1,
+                        reference(INVOKESPECIAL, textureStitchedConstructor)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_0,
+                        reference(GETFIELD, basePath),
+                        ALOAD_1,
+                        reference(INVOKESTATIC, createTextureStitched)
+                    );
+                }
+            });
         }
     }
 
