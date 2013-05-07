@@ -629,7 +629,34 @@ public class ExtendedHD extends Mod {
             final ClassRef textureStitched = new ClassRef("TextureStitched");
             final MethodRef textureStitchedConstructor = new MethodRef("TextureStitched", "<init>", "(Ljava/lang/String;)V");
             final MethodRef addBorder = new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(LTextureStitched;Ljava/lang/String;Ljava/lang/String;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
-            final MethodRef createTextureStitched = new MethodRef(MCPatcherUtils.BORDERED_TEXTURE_CLASS, "createTextureStitched", "(Ljava/lang/String;Ljava/lang/String;)LTextureStitched;");
+            final MethodRef createTextureStitched = new MethodRef(MCPatcherUtils.BORDERED_TEXTURE_CLASS, "create", "(Ljava/lang/String;Ljava/lang/String;)LTextureStitched;");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // TextureUtils.setupTexture(t.getFrameRGB(0), t.getX0(), t.getY0(), t.getWidth(), t.getHeight(), false, false);
+                        capture(anyALOAD),
+                        push(0),
+                        captureReference(INVOKEVIRTUAL),
+                        backReference(1),
+                        anyReference(INVOKEVIRTUAL),
+                        backReference(1),
+                        anyReference(INVOKEVIRTUAL),
+                        backReference(1),
+                        captureReference(INVOKEVIRTUAL),
+                        backReference(1),
+                        captureReference(INVOKEVIRTUAL),
+                        push(0),
+                        push(0),
+                        anyReference(INVOKESTATIC)
+                    );
+                }
+            }
+                .addXref(2, new MethodRef("TextureStitched", "getFrameRGB", "(I)[I"))
+                .addXref(3, new MethodRef("TextureStitched", "getWidth", "()I"))
+                .addXref(4, new MethodRef("TextureStitched", "getHeight", "()I"))
+            );
 
             addMemberMapper(new MethodMapper(readTile));
 
@@ -718,6 +745,12 @@ public class ExtendedHD extends Mod {
 
     private class TextureStitchedMod extends BaseMod.TextureStitchedMod {
         TextureStitchedMod() {
+            final MethodRef init = new MethodRef(getDeobfClass(), "init", "(IIIIZ)V");
+            final MethodRef copy = new MethodRef(getDeobfClass(), "copy", "(LTextureStitched;)V");
+
+            addMemberMapper(new MethodMapper(init));
+            addMemberMapper(new MethodMapper(copy));
+
             addPatch(new TextureMipmapPatch(textureName));
         }
     }
