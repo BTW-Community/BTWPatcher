@@ -29,7 +29,7 @@ public class ExtendedHD extends Mod {
 
         configPanel = new HDConfig();
 
-        addDependency(BaseTexturePackMod.NAME);
+        addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
         if (getMinecraftVersion().compareTo("13w09b") < 0) {
             addError("Requires Minecraft 13w09b or newer");

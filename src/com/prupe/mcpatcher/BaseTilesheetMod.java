@@ -7,15 +7,13 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class BaseTilesheetMod extends Mod {
-    public static final String NAME = "__TilesheetBase";
-
     protected BaseTilesheetMod() {
-        name = NAME;
+        name = MCPatcherUtils.BASE_TILESHEET_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
         version = "1.0";
 
-        addDependency(BaseTexturePackMod.NAME);
+        addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
         addClassMod(new BaseMod.IconMod());
         //addClassMod(new RenderEngineMod());

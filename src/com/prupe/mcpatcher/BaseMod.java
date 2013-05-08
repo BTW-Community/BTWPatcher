@@ -23,10 +23,8 @@ import static javassist.bytecode.Opcode.*;
  * can be instantiated or extended as needed.
  */
 public final class BaseMod extends Mod {
-    public static final String NAME = "__Base";
-
     BaseMod() {
-        name = NAME;
+        name = MCPatcherUtils.BASE_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
         version = "1.1";

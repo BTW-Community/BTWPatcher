@@ -21,7 +21,7 @@ public class RandomMobs extends Mod {
 
         haveRenderLivingSub = getMinecraftVersion().compareTo("13w16a") >= 0;
 
-        addDependency(BaseTexturePackMod.NAME);
+        addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
         addClassMod(new RenderLivingMod());
         addClassMod(new RenderEyesMod("Spider"));

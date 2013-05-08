@@ -11,8 +11,6 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class BaseTexturePackMod extends Mod {
-    public static final String NAME = "__TexturePackBase";
-
     private static final List<EarlyInitEntry> earlyInitMethods = new ArrayList<EarlyInitEntry>();
 
     protected final MethodRef earlyInitialize = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "earlyInitialize", "(Ljava/lang/String;Ljava/lang/String;)V");
@@ -21,7 +19,7 @@ public class BaseTexturePackMod extends Mod {
     protected final MethodRef afterChange1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "afterChange1", "()V");
 
     protected BaseTexturePackMod() {
-        name = NAME;
+        name = MCPatcherUtils.BASE_TEXTURE_PACK_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
         version = "2.1";

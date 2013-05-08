@@ -21,8 +21,8 @@ public class ConnectedTextures extends Mod {
         description = "Enables support for connected, randomized, and other custom terrain textures.";
         version = "2.2";
 
-        addDependency(BaseTexturePackMod.NAME);
-        addDependency(BaseTilesheetMod.NAME);
+        addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
+        addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
 
         configPanel = new ConfigPanel();
 

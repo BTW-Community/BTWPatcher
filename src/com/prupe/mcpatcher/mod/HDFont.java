@@ -14,7 +14,7 @@ public class HDFont extends Mod {
         description = "Provides support for higher resolution fonts.";
         version = "1.6";
 
-        addDependency(BaseTexturePackMod.NAME);
+        addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
         setupMod(this);
     }

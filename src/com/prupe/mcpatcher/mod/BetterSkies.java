@@ -19,7 +19,7 @@ public class BetterSkies extends Mod {
 
         configPanel = new ConfigPanel();
 
-        addDependency(BaseTexturePackMod.NAME);
+        addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
         addClassMod(new BaseMod.MinecraftMod().mapWorldClient());
         addClassMod(new WorldMod());

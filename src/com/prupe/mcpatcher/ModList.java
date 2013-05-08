@@ -44,9 +44,9 @@ class ModList {
     }
 
     private static BuiltInMod[] builtInMods = new BuiltInMod[]{
-        new BuiltInMod(BaseMod.NAME, BaseMod.class, false, false),
-        new BuiltInMod(BaseTexturePackMod.NAME, BaseTexturePackMod.class, false, false),
-        new BuiltInMod(BaseTilesheetMod.NAME, BaseTilesheetMod.class, false, false),
+        new BuiltInMod(MCPatcherUtils.BASE_MOD, BaseMod.class, false, false),
+        new BuiltInMod(MCPatcherUtils.BASE_TEXTURE_PACK_MOD, BaseTexturePackMod.class, false, false),
+        new BuiltInMod(MCPatcherUtils.BASE_TILESHEET_MOD, BaseTilesheetMod.class, false, false),
         new BuiltInMod(MCPatcherUtils.EXTENDED_HD, ExtendedHD.class, false, false),
         new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, RandomMobs.class, false, false),
         new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, CustomColors.class, false, false),

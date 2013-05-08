@@ -95,7 +95,7 @@ public abstract class Mod {
      * See HDFont.java (simple) and HDTexture.java (much more complex) for full examples.
      */
     public Mod() {
-        addDependency(BaseMod.NAME);
+        addDependency(MCPatcherUtils.BASE_MOD);
     }
 
     public String getName() {

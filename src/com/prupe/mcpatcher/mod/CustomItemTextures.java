@@ -28,8 +28,8 @@ public class CustomItemTextures extends Mod {
 
         haveEntityLivingSubclass = getMinecraftVersion().compareTo("13w16a") >= 0;
 
-        addDependency(BaseTexturePackMod.NAME);
-        addDependency(BaseTilesheetMod.NAME);
+        addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
+        addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
 
         configPanel = new ConfigPanel();
 

@@ -29,6 +29,7 @@ public class MCPatcherUtils {
     private static String patcherVersion;
 
     public static final String EXTENDED_HD = "Extended HD";
+    public static final String HD_TEXTURES = "HD Textures";
     public static final String HD_FONT = "HD Font";
     public static final String RANDOM_MOBS = "Random Mobs";
     public static final String CUSTOM_COLORS = "Custom Colors";
@@ -37,6 +38,9 @@ public class MCPatcherUtils {
     public static final String BETTER_GLASS = "Better Glass";
     public static final String CUSTOM_ITEM_TEXTURES = "Custom Item Textures";
     public static final String GLSL_SHADERS = "GLSL Shaders";
+    public static final String BASE_MOD = "__Base";
+    public static final String BASE_TEXTURE_PACK_MOD = "__TexturePackBase";
+    public static final String BASE_TILESHEET_MOD = "__TilesheetBase";
 
     public static final String CUSTOM_ANIMATIONS = "Custom Animations";
     public static final String MIPMAP = "Mipmap";
