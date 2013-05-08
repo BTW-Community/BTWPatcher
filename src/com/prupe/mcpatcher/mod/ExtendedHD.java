@@ -51,7 +51,7 @@ public class ExtendedHD extends Mod {
         addClassMod(new TextureNamedMod());
         addClassMod(new TextureCompassMod());
         addClassMod(new TextureClockMod());
-        //HDFont.setupMod(this);
+        HDFont.setupMod(this);
 
         addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS);
         addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS + "$1");
