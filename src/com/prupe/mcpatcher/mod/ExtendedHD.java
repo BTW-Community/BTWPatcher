@@ -631,33 +631,6 @@ public class ExtendedHD extends Mod {
             final MethodRef addBorder = new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(LTextureStitched;Ljava/lang/String;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
             final MethodRef createTextureStitched = new MethodRef(MCPatcherUtils.BORDERED_TEXTURE_CLASS, "create", "(Ljava/lang/String;Ljava/lang/String;)LTextureStitched;");
 
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // TextureUtils.setupTexture(t.getFrameRGB(0), t.getWidth(), t.getHeight(), t.getX0(), t.getY0(), false, false);
-                        capture(anyALOAD),
-                        push(0),
-                        captureReference(INVOKEVIRTUAL),
-                        backReference(1),
-                        anyReference(INVOKEVIRTUAL),
-                        backReference(1),
-                        anyReference(INVOKEVIRTUAL),
-                        backReference(1),
-                        captureReference(INVOKEVIRTUAL),
-                        backReference(1),
-                        captureReference(INVOKEVIRTUAL),
-                        push(0),
-                        push(0),
-                        anyReference(INVOKESTATIC)
-                    );
-                }
-            }
-                .addXref(2, new MethodRef("TextureStitched", "getFrameRGB", "(I)[I"))
-                .addXref(3, new MethodRef("TextureStitched", "getX0", "()I"))
-                .addXref(4, new MethodRef("TextureStitched", "getY0", "()I"))
-            );
-
             addMemberMapper(new MethodMapper(readTile));
 
             addPatch(new TextureMipmapPatch(basePath));

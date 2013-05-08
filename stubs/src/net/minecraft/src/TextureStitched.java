@@ -56,14 +56,6 @@ public class TextureStitched implements Icon {
     public void init(int tilesheetWidth, int tilesheetHeight, int x0, int y0, boolean flipped) {
     }
 
-    public int getX0() {
-        return 0;
-    }
-
-    public int getY0() {
-        return 0;
-    }
-
     public void updateAnimation() {
     }
 
