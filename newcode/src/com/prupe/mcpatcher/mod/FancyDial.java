@@ -1,7 +1,10 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
-import net.minecraft.src.*;
+import net.minecraft.src.Icon;
+import net.minecraft.src.TextureClock;
+import net.minecraft.src.TextureCompass;
+import net.minecraft.src.TextureStitched;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.EXTFramebufferObject;
 import org.lwjgl.opengl.GL11;
@@ -20,7 +23,7 @@ import java.util.*;
 public class FancyDial {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ANIMATIONS, "Animation");
 
-    private static final String ITEMS_PNG = "/gui/items.png";
+    private static final String ITEMS_PNG = MCPatcherUtils.TEXTURE_PACK_PREFIX + "gui/items.png";
     private static final double ANGLE_UNSET = Double.MAX_VALUE;
 
     private static final boolean fboSupported = GLContext.getCapabilities().GL_EXT_framebuffer_object;
@@ -100,14 +103,20 @@ public class FancyDial {
         if (!fboSupported) {
             return;
         }
-        if (icon instanceof TextureCompass && !enableCompass) {
-            return;
-        }
-        if (icon instanceof TextureClock && !enableClock) {
-            return;
-        }
         String name = icon.getIconName();
-        Properties properties = TexturePackAPI.getProperties("/misc/" + name + ".properties");
+        if ("compass".equals(icon.getIconName())) {
+            if (!enableCompass) {
+                return;
+            }
+        } else if ("clock".equals(icon.getIconName())) {
+            if (!enableClock) {
+                return;
+            }
+        } else {
+            logger.warning("ignoring custom animation for %s not compass or clock");
+            return;
+        }
+        Properties properties = TexturePackAPI.getProperties(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/" + name + ".properties");
         if (properties != null) {
             logger.fine("found custom %s", name);
             setupInfo.put(icon, properties);
@@ -178,9 +187,8 @@ public class FancyDial {
             return null;
         }
         setupInfo.remove(icon);
-        RenderEngine renderEngine = MCPatcherUtils.getMinecraft().renderEngine;
         try {
-            FancyDial instance = new FancyDial(renderEngine, icon, properties);
+            FancyDial instance = new FancyDial(icon, properties);
             if (instance.ok) {
                 instances.put(icon, instance);
                 return instance;
@@ -192,13 +200,13 @@ public class FancyDial {
         return null;
     }
 
-    private FancyDial(RenderEngine renderEngine, TextureStitched icon, Properties properties) {
+    private FancyDial(TextureStitched icon, Properties properties) {
         this.icon = icon;
         name = icon.getIconName();
-        x0 = icon.getWidth();
-        y0 = icon.getHeight();
-        width = getIconWidth(icon);
-        height = getIconHeight(icon);
+        x0 = icon.getX0();
+        y0 = icon.getY0();
+        width = icon.getWidth();
+        height = icon.getHeight();
         needExtraUpdate = !hasAnimation(icon);
         if (needExtraUpdate) {
             logger.fine("%s needs direct .update() call", icon.getIconName());
@@ -210,7 +218,8 @@ public class FancyDial {
         final int targetTexture;
         if (useScratchTexture) {
             BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            scratchTexture = renderEngine.allocateAndSetupTexture(image);
+            scratchTexture = GL11.glGenTextures();
+            MipmapHelper.setupTexture(scratchTexture, image, false, false, "textures/items/" + name + "_scratch");
             targetTexture = scratchTexture;
             scratchTextureBuffer = ByteBuffer.allocateDirect(4 * width * height);
             logger.fine("rendering %s to %dx%d scratch texture %d", name, width, height, scratchTexture);
@@ -229,7 +238,7 @@ public class FancyDial {
         logger.fine("setting up %s", this);
 
         for (int i = 0; ; i++) {
-            Layer layer = newLayer("/misc/" + name + ".properties", properties, "." + i);
+            Layer layer = newLayer(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/" + name + ".properties", properties, "." + i);
             if (layer == null) {
                 if (i > 0) {
                     break;
@@ -485,19 +494,11 @@ public class FancyDial {
         super.finalize();
     }
 
-    private static int getIconWidth(Icon icon) {
-        return Math.round(icon.getSheetWidth() * (icon.getMaxU() - icon.getMinU()));
-    }
-
-    private static int getIconHeight(Icon icon) {
-        return Math.round(icon.getSheetHeight() * (icon.getMaxV() - icon.getMinV()));
-    }
-
     private static boolean hasAnimation(Icon icon) {
         if (icon instanceof TextureStitched && subTexturesField != null) {
             try {
                 List list = (List) subTexturesField.get(icon);
-                return list != null && !list.isEmpty();
+                return list != null && list.size() > 1;
             } catch (Throwable e) {
                 e.printStackTrace();
             }
@@ -529,12 +530,16 @@ public class FancyDial {
 
     Layer newLayer(String filename, Properties properties, String suffix) {
         String textureName = MCPatcherUtils.getStringProperty(properties, "source" + suffix, "");
+        boolean filter = textureName.startsWith("%blur%") ||
+            MCPatcherUtils.getBooleanProperty(properties, "filter" + suffix,
+                MCPatcherUtils.getBooleanProperty(properties, "filter", false)
+            );
+        textureName = TexturePackAPI.fixupPath(textureName);
         if (textureName.equals("")) {
             return null;
         }
-        boolean filter = MCPatcherUtils.getBooleanProperty(properties, "filter", false);
-        if (filter && !textureName.startsWith("%blur%")) {
-            textureName = "%blur%" + textureName;
+        if (filter) {
+            TexturePackAPI.loadTexture(textureName, true, false);
         }
         if (!TexturePackAPI.hasResource(textureName)) {
             logger.error("%s: could not read %s", filename, textureName);
@@ -549,7 +554,7 @@ public class FancyDial {
         String blend = MCPatcherUtils.getStringProperty(properties, "blend" + suffix, "alpha");
         BlendMethod blendMethod = BlendMethod.parse(blend);
         if (blendMethod == null) {
-            logger.error("%s: unknown blend method %s", blend);
+            logger.error("%s: unknown blend method %s", filename, blend);
             return null;
         }
         boolean debug = MCPatcherUtils.getBooleanProperty(properties, "debug" + suffix, false);
