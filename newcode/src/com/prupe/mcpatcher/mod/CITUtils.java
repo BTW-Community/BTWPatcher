@@ -203,8 +203,8 @@ public class CITUtils {
         if (lastIcon == null) {
             width = height = 256;
         } else {
-            width = Math.round(lastIcon.getSheetWidth() * (lastIcon.getMaxU() - lastIcon.getMinU()));
-            height = Math.round(lastIcon.getSheetHeight() * (lastIcon.getMaxV() - lastIcon.getMinV()));
+            width = lastIcon.getWidth();
+            height = lastIcon.getHeight();
         }
         ItemOverlay.beginOuter3D();
         for (int i = 0; i < matches.size(); i++) {

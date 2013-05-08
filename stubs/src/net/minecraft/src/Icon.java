@@ -18,8 +18,4 @@ public interface Icon {
     float getInterpolatedV(double v);
 
     String getIconName();
-
-    int getSheetWidth();
-
-    int getSheetHeight();
 }
