@@ -37,6 +37,7 @@ public class FontUtils {
     }
 
     public static BufferedImage getImage(Object o, String name) throws IOException {
+        name = TexturePackAPI.fixupPath(name);
         return enable ? TexturePackAPI.getImage(name) : ImageIO.read(FontUtils.class.getResourceAsStream(name));
     }
 
