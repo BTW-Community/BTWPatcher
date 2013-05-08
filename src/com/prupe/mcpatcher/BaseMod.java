@@ -1057,6 +1057,33 @@ public final class BaseMod extends Mod {
     }
 
     /**
+     * Maps TextureNamed class (1.6+).
+     */
+    public static class TextureNamedMod extends ClassMod {
+        protected final FieldRef textureName = new FieldRef(getDeobfClass(), "textureName", "Ljava/lang/String;");
+        protected final MethodRef load = new MethodRef(getDeobfClass(), "load", "(LITexturePack;)V");
+
+        public TextureNamedMod() {
+            setParentClass("TextureBase");
+
+            final MethodRef imageRead = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_2,
+                        reference(INVOKESTATIC, imageRead),
+                        ASTORE_3
+                    );
+                }
+            }.setMethod(load));
+
+            addMemberMapper(new FieldMapper(textureName));
+        }
+    }
+
+    /**
      * Maps TextureStitched class.
      */
     public static class TextureStitchedMod extends ClassMod {

@@ -35,6 +35,7 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new ITexturePackMod());
         addClassMod(new BaseMod.ITextureMod());
         addClassMod(new TextureBaseMod());
+        addClassMod(new BaseMod.TextureNamedMod());
         addClassMod(new TexturePackImplementationMod());
         addClassMod(new TexturePackDefaultMod());
         addClassMod(new TexturePackCustomMod());
@@ -169,11 +170,13 @@ public class BaseTexturePackMod extends Mod {
             final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(Ljava/lang/String;)V");
             final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "(Ljava/lang/String;)LITexture;");
             final MethodRef unloadTexture = new MethodRef(getDeobfClass(), "unloadTexture", "(Ljava/lang/String;)V");
+            final MethodRef addTexture = new MethodRef(getDeobfClass(), "addTexture", "(Ljava/lang/String;LITexture;)V");
 
             addClassSignature(new ConstSignature("dynamic/%s_%d"));
 
             addMemberMapper(new MethodMapper(bindTexture, unloadTexture).accessFlag(AccessFlag.STATIC, false));
             addMemberMapper(new MethodMapper(getTexture).accessFlag(AccessFlag.STATIC, false));
+            addMemberMapper(new MethodMapper(addTexture));
         }
     }
 
