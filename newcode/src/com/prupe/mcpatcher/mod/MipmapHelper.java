@@ -6,7 +6,6 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.RenderEngine;
 import net.minecraft.src.Texture;
-import net.minecraft.src.TextureUtils;
 import org.lwjgl.opengl.*;
 import org.lwjgl.util.glu.GLU;
 
@@ -139,7 +138,7 @@ public class MipmapHelper {
     public static void copySubTexture(int[] rgb, int width, int height, int x, int y, String textureName) {
         IntBuffer buffer = getPooledBuffer(width * height * 4).asIntBuffer();
         buffer.put(rgb).position(0);
-        int mipmaps = getMipmapLevels();
+        int mipmaps = getMipmapLevelsForCurrentTexture();
         IntBuffer newBuffer;
         logger.finest("copySubTexture %s %d,%d %dx%d %d mipmaps", textureName, x, y, width, height, mipmaps);
         for (int level = 0; ; ) {
@@ -206,7 +205,7 @@ public class MipmapHelper {
             src.textureData = srcBuffer = getDirectByteBuffer(srcBuffer, false);
         }
         TexturePackAPI.bindTexture(dst.getGlTextureId());
-        int mipmaps = dst.mipmapActive ? getMipmapLevels() : 0;
+        int mipmaps = dst.mipmapActive ? getMipmapLevelsForCurrentTexture() : 0;
         int width = src.getWidth();
         int height = src.getHeight();
         if (flipped && !flippedTextureLogged) {
@@ -428,7 +427,7 @@ public class MipmapHelper {
         }
     }
 
-    static int getMipmapLevels() {
+    static int getMipmapLevelsForCurrentTexture() {
         int filter = GL11.glGetTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER);
         if (filter != GL11.GL_NEAREST_MIPMAP_LINEAR && filter != GL11.GL_NEAREST_MIPMAP_NEAREST) {
             return 0;

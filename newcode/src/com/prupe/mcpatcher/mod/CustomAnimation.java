@@ -1,8 +1,6 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
-import net.minecraft.src.ColorizerFoliage;
-import net.minecraft.src.ColorizerGrass;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
@@ -49,15 +47,9 @@ public class CustomAnimation {
 
             @Override
             public void afterChange() {
-                refreshColorizer(ColorizerGrass.colorBuffer, "/misc/grasscolor.png");
-                refreshColorizer(ColorizerFoliage.colorBuffer, "/misc/foliagecolor.png");
                 if (enable) {
-                    for (String name : TexturePackAPI.listResources("/anim/", ".properties")) {
-                        if (isCustomTerrainItemResource(name)) {
-                            logger.warning("ignoring obsolete %s", name);
-                        } else {
-                            addStrip(name);
-                        }
+                    for (String name : TexturePackAPI.listResources(MCPatcherUtils.TEXTURE_PACK_PREFIX + "anim", ".properties", true, false, false)) {
+                        addStrip(name);
                     }
                     Collections.sort(animations, new Comparator<CustomAnimation>() {
                         public int compare(CustomAnimation o1, CustomAnimation o2) {
@@ -65,30 +57,6 @@ public class CustomAnimation {
                         }
                     });
                 }
-            }
-
-            private void refreshColorizer(int[] colorBuffer, String resource) {
-                BufferedImage image = TexturePackAPI.getImage(resource);
-                logger.fine("reloading %s", resource);
-                if (image == null) {
-                    logger.error("could not load %s", resource);
-                } else if (image.getWidth() == 256 && image.getHeight() == 256) {
-                    image.getRGB(0, 0, 256, 256, colorBuffer, 0, 256);
-                } else {
-                    logger.error("%s has wrong dimensions %dx%d", resource, image.getWidth(), image.getHeight());
-                }
-            }
-
-            private boolean isCustomTerrainItemResource(String resource) {
-                resource = resource.replaceFirst("^/anim", "").replaceFirst("\\.(png|properties)$", "");
-                return resource.equals("/custom_lava_still") ||
-                    resource.equals("/custom_lava_flowing") ||
-                    resource.equals("/custom_water_still") ||
-                    resource.equals("/custom_water_flowing") ||
-                    resource.equals("/custom_fire_n_s") ||
-                    resource.equals("/custom_fire_e_w") ||
-                    resource.equals("/custom_portal") ||
-                    resource.matches("/custom_(terrain|item)_\\d+");
             }
         });
     }
@@ -106,8 +74,8 @@ public class CustomAnimation {
         if (properties == null) {
             return;
         }
-        String textureName = properties.getProperty("to", "");
-        String srcName = properties.getProperty("from", "");
+        String textureName = TexturePackAPI.fixupPath(properties.getProperty("to", ""));
+        String srcName = TexturePackAPI.fixupPath(properties.getProperty("from", ""));
         int x = MCPatcherUtils.getIntProperty(properties, "x", 0);
         int y = MCPatcherUtils.getIntProperty(properties, "y", 0);
         int w = MCPatcherUtils.getIntProperty(properties, "w", 0);
@@ -131,7 +99,8 @@ public class CustomAnimation {
             logger.error("%s: image %s not found in texture pack", propertiesName, srcName);
             return;
         }
-        if (dstName.equals("/terrain.png") || dstName.equals("/gui/items.png")) {
+        if (dstName.equals(MCPatcherUtils.TEXTURE_PACK_PREFIX + "terrain.png") ||
+            dstName.equals(MCPatcherUtils.TEXTURE_PACK_PREFIX + "gui/items.png")) {
             logger.error("%s: animations cannot have a target of %s", dstName);
             return;
         }
@@ -142,7 +111,7 @@ public class CustomAnimation {
         TexturePackAPI.bindTexture(dstName);
         int dstWidth = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH);
         int dstHeight = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
-        int levels = MipmapHelper.getMipmapLevels();
+        int levels = MipmapHelper.getMipmapLevelsForCurrentTexture();
         if (x + w > dstWidth || y + h > dstHeight) {
             logger.error("%s: %s dimensions x=%d,y=%d,w=%d,h=%d exceed %s size %dx%d",
                 propertiesName, srcName, x, y, w, h, dstName, dstWidth, dstHeight
