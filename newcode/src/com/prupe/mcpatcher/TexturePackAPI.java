@@ -102,11 +102,17 @@ public class TexturePackAPI {
     public static String fixupPath(String path) {
         if (path == null) {
             return "";
-        } else if (path.startsWith("/")) {
-            return path.substring(1);
-        } else {
-            return path;
         }
+        if (path.startsWith("%blur%")) {
+            path = path.substring(6);
+        }
+        if (path.startsWith("%clamp%")) {
+            path = path.substring(7);
+        }
+        if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        return path;
     }
 
     public static String[] listResources(String directory, String suffix) {
