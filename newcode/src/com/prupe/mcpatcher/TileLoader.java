@@ -106,28 +106,25 @@ public class TileLoader {
         TexturePackChangeHandler.register(changeHandler);
     }
 
-    public static Map<String, TextureStitched> registerIcons(TextureMap textureMap, String mapName, Map<String, TextureStitched> map) {
+    public static void registerIcons(TextureMap textureMap, String mapName, Map<String, TextureStitched> map) {
         logger.fine("before registerIcons(%s) %d icons", mapName, map.size());
         registerIconsCalled = true;
         if (!changeHandlerCalled) {
             logger.severe("beforeChange was not called, invoking directly");
             changeHandler.beforeChange();
         }
-        Map<String, TextureStitched> newMap = new HashMap<String, TextureStitched>();
-        newMap.putAll(map);
         TessellatorUtils.registerTextureMap(textureMap, mapName);
         for (TileLoader loader : loaders) {
             if (loader.textureMap == null && mapName.equals(loader.mapName)) {
                 loader.textureMap = textureMap;
             }
             if (loader.isForThisMap(mapName)) {
-                while (!loader.tilesToRegister.isEmpty() && loader.registerOneIcon(textureMap, mapName, newMap)) {
+                while (!loader.tilesToRegister.isEmpty() && loader.registerOneIcon(textureMap, mapName, map)) {
                     // nothing
                 }
             }
         }
-        logger.fine("after registerIcons(%s) %d icons", mapName, newMap.size());
-        return map.size() == newMap.size() ? map : newMap;
+        logger.fine("after registerIcons(%s) %d icons", mapName, map.size());
     }
 
     public static String getOverridePath(String prefix, String name, String ext) {

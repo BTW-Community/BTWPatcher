@@ -367,6 +367,8 @@ public class BaseTilesheetMod extends Mod {
             final MethodRef hashMapPut = new MethodRef("java/util/HashMap", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
             final MethodRef doStitch = new MethodRef("Stitcher", "doStitch", "()V");
 
+            final MethodRef registerTiles = new MethodRef(getDeobfClass(), "registerTiles", "()V");
+            final InterfaceMethodRef mapClear = new InterfaceMethodRef("java/util/Map", "clear", "()V");
             final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
             final InterfaceMethodRef setIterator = new InterfaceMethodRef("java/util/Set", "iterator", "()Ljava/util/Iterator;");
 
@@ -394,6 +396,21 @@ public class BaseTilesheetMod extends Mod {
                 .addXref(3, new MethodRef("Stitcher", "<init>", "(IIZ)V"))
             );
 
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin(),
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        reference(INVOKEINTERFACE, mapClear)
+                    );
+                }
+            }
+                .setMethod(registerTiles)
+                .addXref(1, mapTextures)
+            );
+
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
@@ -407,30 +424,36 @@ public class BaseTilesheetMod extends Mod {
                         ALOAD_0,
                         reference(GETFIELD, mapTextures),
                         reference(INVOKEINTERFACE, mapEntrySet),
-                        reference(INVOKEINTERFACE, setIterator)
+                        reference(INVOKEINTERFACE, setIterator),
+                        anyASTORE
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // registerIcons(this, this.mapName, this.mapTextures).entrySet().iterator()
+                        // this.registerTiles();
+                        ALOAD_0,
+                        reference(INVOKESPECIAL, registerTiles),
+
+                        // registerIcons(this, this.mapName, this.mapTextures);
                         ALOAD_0,
                         ALOAD_0,
                         reference(GETFIELD, basePath),
                         ALOAD_0,
                         reference(GETFIELD, mapTextures),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "registerIcons", "(LTextureMap;Ljava/lang/String;Ljava/util/Map;)Ljava/util/Map;")),
-                        reference(INVOKEINTERFACE, mapEntrySet),
-                        reference(INVOKEINTERFACE, setIterator)
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "registerIcons", "(LTextureMap;Ljava/lang/String;Ljava/util/Map;)V"))
                     );
                 }
-            }.targetMethod(refreshTextures));
+            }
+                .setInsertBefore(true)
+                .targetMethod(refreshTextures)
+            );
 
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "override ctm texture paths";
+                    return "override tile texture paths";
                 }
 
                 @Override
