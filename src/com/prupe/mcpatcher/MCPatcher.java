@@ -207,7 +207,7 @@ final public class MCPatcher {
         if (modList != null) {
             modList.close();
         }
-        modList = new ModList();
+        modList = new ModList(minecraft.getVersion());
         if (!ignoreSavedMods) {
             modList.loadSavedMods();
         }

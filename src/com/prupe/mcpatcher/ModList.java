@@ -18,6 +18,7 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipFile;
 
 class ModList {
+    private final MinecraftVersion version;
     private final List<Mod> modsByIndex = new ArrayList<Mod>();
     private final Map<String, Mod> modsByName = new HashMap<String, Mod>();
     private boolean applied;
@@ -56,7 +57,8 @@ class ModList {
         new BuiltInMod(MCPatcherUtils.GLSL_SHADERS, GLSLShader.class, false, true),
     };
 
-    ModList() {
+    ModList(MinecraftVersion version) {
+        this.version = version;
         loadBuiltInMods(true);
     }
 
