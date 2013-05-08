@@ -549,6 +549,7 @@ public class ExtendedHD extends Mod {
     private class TextureManagerMod extends ClassMod {
         TextureManagerMod() {
             final MethodRef updateAnimations = new MethodRef(getDeobfClass(), "updateAnimations", "()V");
+            final MethodRef addTexture = new MethodRef(getDeobfClass(), "addTexture", "(Ljava/lang/String;LITexture;)V");
             final FieldRef animations = new FieldRef(getDeobfClass(), "animations", "Ljava/util/List;");
             final InterfaceMethodRef listIterator = new InterfaceMethodRef("java/util/List", "iterator", "()Ljava/util/Iterator;");
 
@@ -569,6 +570,8 @@ public class ExtendedHD extends Mod {
                 .setMethod(updateAnimations)
                 .addXref(1, animations)
             );
+
+            addMemberMapper(new MethodMapper(addTexture));
 
             addPatch(new BytecodePatch() {
                 @Override

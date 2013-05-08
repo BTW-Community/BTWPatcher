@@ -14,6 +14,9 @@ public class TextureManager {
     public void unloadTexture(String texture) {
     }
 
+    public void addTexture(String name, ITexture texture) {
+    }
+
     // TODO: 1.5 stuff - remove
     public static TextureManager getInstance() {
         return null;

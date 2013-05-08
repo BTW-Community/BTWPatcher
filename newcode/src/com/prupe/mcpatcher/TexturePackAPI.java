@@ -233,6 +233,10 @@ public class TexturePackAPI {
         }
     }
 
+    public static void loadTexture(String s, boolean blur, boolean clamp) {
+        MCPatcherUtils.getMinecraft().getTextureManager().addTexture(s, new TextureNamed(s, blur, clamp));
+    }
+
     @SuppressWarnings("unchecked")
     public static void unloadTexture(String s) {
         TextureManager textureManager = MCPatcherUtils.getMinecraft().getTextureManager();
