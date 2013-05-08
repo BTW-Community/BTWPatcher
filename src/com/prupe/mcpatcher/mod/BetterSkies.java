@@ -93,7 +93,6 @@ public class BetterSkies extends Mod {
             final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
             final MethodRef glCallList = new MethodRef(MCPatcherUtils.GL11_CLASS, "glCallList", "(I)V");
             final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
-            final FieldRef renderEngine = new FieldRef(getDeobfClass(), "renderEngine", "LRenderEngine;");
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final FieldRef worldProvider = new FieldRef("World", "worldProvider", "LWorldProvider;");
             final FieldRef worldType = new FieldRef("WorldProvider", "worldType", "I");
@@ -120,13 +119,6 @@ public class BetterSkies extends Mod {
 
                         // ...
                         any(0, 100),
-
-                        // renderEngine....("/misc/tunnel.png");
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        any(0, 6),
-                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/tunnel.png"),
-                        any(0, 8),
 
                         // Tessellator tessellator = Tessellator.instance;
                         captureReference(GETSTATIC),
@@ -157,7 +149,7 @@ public class BetterSkies extends Mod {
 
                         // GL11.glRotatef(worldObj.getCelestialAngle(par1) * 360F, 1.0F, 0.0F, 0.0F);
                         ALOAD_0,
-                        backReference(6),
+                        backReference(5),
                         FLOAD_1,
                         captureReference(INVOKEVIRTUAL),
                         push(360.0f),
@@ -173,11 +165,10 @@ public class BetterSkies extends Mod {
                 .addXref(1, mc)
                 .addXref(2, worldProvider)
                 .addXref(3, worldType)
-                .addXref(4, renderEngine)
-                .addXref(5, tessellator)
-                .addXref(6, worldObj)
-                .addXref(7, getRainStrength)
-                .addXref(8, getCelestialAngle)
+                .addXref(4, tessellator)
+                .addXref(5, worldObj)
+                .addXref(6, getRainStrength)
+                .addXref(7, getCelestialAngle)
             );
 
             addClassSignature(new BytecodeSignature() {
@@ -288,14 +279,12 @@ public class BetterSkies extends Mod {
                     return buildCode(
                         ALOAD_0,
                         reference(GETFIELD, worldObj),
-                        ALOAD_0,
-                        reference(GETFIELD, renderEngine),
                         FLOAD_1,
                         ALOAD_0,
                         reference(GETFIELD, worldObj),
                         FLOAD_1,
                         reference(INVOKEVIRTUAL, getCelestialAngle),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setup", "(LWorld;LRenderEngine;FF)V"))
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setup", "(LWorld;FF)V"))
                     );
                 }
             }.targetMethod(renderSky));
@@ -406,11 +395,9 @@ public class BetterSkies extends Mod {
         EffectRendererMod() {
             final ClassRef list = new ClassRef("java/util/List");
             final FieldRef fxLayers = new FieldRef(getDeobfClass(), "fxLayers", "[Ljava/util/List;");
-            final FieldRef renderer = new FieldRef(getDeobfClass(), "renderer", "LRenderEngine;");
             final MethodRef renderParticles = new MethodRef(getDeobfClass(), "renderParticles", "(LEntity;F)V");
             final MethodRef addEffect = new MethodRef(getDeobfClass(), "addEffect", "(LEntityFX;)V");
             final MethodRef getFXLayer = new MethodRef("EntityFX", "getFXLayer", "()I");
-            final MethodRef bindTextureByName = new MethodRef("RenderEngine", "bindTextureByName", "(Ljava/lang/String;)V");
             final MethodRef glBlendFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBlendFunc", "(II)V");
 
             addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "particles.png"));
@@ -435,17 +422,10 @@ public class BetterSkies extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "particles.png"),
-                        captureReference(INVOKEVIRTUAL)
+                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "particles.png")
                     );
                 }
-            }
-                .setMethod(renderParticles)
-                .addXref(1, renderer)
-                .addXref(2, bindTextureByName)
-            );
+            }.setMethod(renderParticles));
 
             addClassSignature(new BytecodeSignature() {
                 @Override

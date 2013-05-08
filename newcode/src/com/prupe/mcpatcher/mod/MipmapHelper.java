@@ -4,7 +4,6 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
-import net.minecraft.src.RenderEngine;
 import net.minecraft.src.Texture;
 import org.lwjgl.opengl.*;
 import org.lwjgl.util.glu.GLU;
@@ -182,7 +181,7 @@ public class MipmapHelper {
         try {
             currentTexture = texture;
             enableTransparencyFix = false;
-            setupTexture(MCPatcherUtils.getMinecraft().renderEngine, image, texture.getGlTextureId(), false, false, texture.getTextureName());
+            //setupTexture(MCPatcherUtils.getMinecraft().renderEngine, image, texture.getGlTextureId(), false, false, texture.getTextureName());
         } finally {
             enableTransparencyFix = true;
             currentTexture = null;
@@ -237,14 +236,14 @@ public class MipmapHelper {
         }
     }
 
-    public static void setupTexture(RenderEngine renderEngine, BufferedImage image, int texture, boolean blurTexture, boolean clampTexture, String textureName) {
+    public static void setupTexture(/*RenderEngine renderEngine, */BufferedImage image, int texture, boolean blurTexture, boolean clampTexture, String textureName) {
         if (texture < 0 || image == null) {
             return;
         }
         long s1 = System.currentTimeMillis();
         ArrayList<BufferedImage> mipmapImages = getMipmapsForTexture(image, textureName);
         long s2 = System.currentTimeMillis();
-        setupTextureMipmaps(renderEngine, mipmapImages, texture, textureName, blurTexture, clampTexture);
+        setupTextureMipmaps(/*renderEngine, */mipmapImages, texture, textureName, blurTexture, clampTexture);
         long s3 = System.currentTimeMillis();
         if (mipmapImages.size() > 1) {
             logger.finer("%s: generate %dms, setup %dms, total %dms", textureName, s2 - s1, s3 - s2, s3 - s1);
@@ -324,7 +323,7 @@ public class MipmapHelper {
         return image;
     }
 
-    private static void setupTextureMipmaps(RenderEngine renderEngine, ArrayList<BufferedImage> mipmapImages, int texture, String textureName, boolean blurTexture, boolean clampTexture) {
+    private static void setupTextureMipmaps(/*RenderEngine renderEngine, */ArrayList<BufferedImage> mipmapImages, int texture, String textureName, boolean blurTexture, boolean clampTexture) {
         try {
             int mipmaps = mipmapImages.size() - 1;
             for (currentLevel = 0; currentLevel <= mipmaps; currentLevel++) {
@@ -348,7 +347,7 @@ public class MipmapHelper {
                     }
                 }
                 BufferedImage image = mipmapImages.get(currentLevel);
-                renderEngine.setupTextureExt(image, texture, blurTexture, clampTexture);
+                //renderEngine.setupTextureExt(image, texture, blurTexture, clampTexture);
                 checkGLError("setupTexture %s#%d", textureName, currentLevel);
                 if (currentLevel > 0) {
                     logger.finest("%s mipmap level %d (%dx%d)", textureName, currentLevel, image.getWidth(), image.getHeight());

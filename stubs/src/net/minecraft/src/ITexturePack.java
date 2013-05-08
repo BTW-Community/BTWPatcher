@@ -3,9 +3,9 @@ package net.minecraft.src;
 import java.io.InputStream;
 
 public interface ITexturePack {
-    void deleteTexturePack(RenderEngine renderEngine);
+    void deleteTexturePack(TextureManager textureManager);
 
-    void bindThumbnailTexture(RenderEngine renderEngine);
+    void bindThumbnailTexture(TextureManager textureManager);
 
     InputStream getResourceAsStream(String resource);
 

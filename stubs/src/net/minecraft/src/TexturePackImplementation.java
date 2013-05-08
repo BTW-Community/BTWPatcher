@@ -6,10 +6,10 @@ import java.io.InputStream;
 public class TexturePackImplementation implements ITexturePack {
     public File texturePackFile;
 
-    public void deleteTexturePack(RenderEngine renderEngine) {
+    public void deleteTexturePack(TextureManager textureManager) {
     }
 
-    public void bindThumbnailTexture(RenderEngine renderEngine) {
+    public void bindThumbnailTexture(TextureManager textureManager) {
     }
 
     public InputStream getResourceAsStream(String resource) {

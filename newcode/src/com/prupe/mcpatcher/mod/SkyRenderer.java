@@ -1,7 +1,6 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
-import net.minecraft.src.RenderEngine;
 import net.minecraft.src.Tessellator;
 import net.minecraft.src.World;
 import org.lwjgl.opengl.GL11;
@@ -45,7 +44,7 @@ public class SkyRenderer {
         });
     }
 
-    public static void setup(World world, RenderEngine renderEngine, float partialTick, float celestialAngle) {
+    public static void setup(World world, float partialTick, float celestialAngle) {
         if (TexturePackAPI.isDefaultTexturePack()) {
             active = false;
         } else {

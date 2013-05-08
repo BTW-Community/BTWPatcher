@@ -5,7 +5,6 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.FontRenderer;
-import net.minecraft.src.RenderEngine;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -38,7 +37,7 @@ public class FontUtils {
     }
 
     public static BufferedImage getImage(Object o, String name) throws IOException {
-        return enable ? TexturePackAPI.getImage(name) : ImageIO.read(RenderEngine.class.getResourceAsStream(name));
+        return enable ? TexturePackAPI.getImage(name) : ImageIO.read(FontUtils.class.getResourceAsStream(name));
     }
 
     public static float[] computeCharWidthsf(FontRenderer fontRenderer, String filename, BufferedImage image, int[] rgb, int[] charWidth) {
