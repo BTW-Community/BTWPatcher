@@ -8,7 +8,7 @@ import org.w3c.dom.NodeList;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -636,23 +636,32 @@ class ModList {
         }
     }
 
-    private static Mod newModInstance(Class<? extends Mod> modClass) {
-        Mod mod = null;
+    private Mod newModInstance(Class<? extends Mod> modClass) {
+        Mod mod;
         try {
             mod = modClass.getDeclaredConstructor().newInstance();
-        } catch (InstantiationException e) {
+        } catch (Throwable e) {
             e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            return null;
+        }
+        try {
+            Method supportsVersion = modClass.getDeclaredMethod("supportsVersion", MinecraftVersion.class);
+            if (supportsVersion.getReturnType() == Boolean.TYPE && Modifier.isStatic(supportsVersion.getModifiers())) {
+                boolean b = (Boolean) supportsVersion.invoke(null, version);
+                if (!b) {
+                    return null;
+                }
+            }
         } catch (NoSuchMethodException e) {
+            // nothing
+        } catch (Throwable e) {
             e.printStackTrace();
+            return null;
         }
         return mod;
     }
 
-    private static Mod newModInstance(BuiltInMod builtInMod) {
+    private Mod newModInstance(BuiltInMod builtInMod) {
         Mod mod = newModInstance(builtInMod.modClass);
         if (mod != null) {
             mod.internal = builtInMod.internal;
