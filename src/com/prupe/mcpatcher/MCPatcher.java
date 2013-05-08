@@ -604,6 +604,7 @@ final public class MCPatcher {
     }
 
     static HashMap<String, ArrayList<Mod>> getConflicts() {
+        modList.refreshInternalMods();
         HashMap<String, ArrayList<Mod>> conflicts = new HashMap<String, ArrayList<Mod>>();
         ArrayList<Mod> mods = modList.getSelected();
         conflictClasses.clear();
