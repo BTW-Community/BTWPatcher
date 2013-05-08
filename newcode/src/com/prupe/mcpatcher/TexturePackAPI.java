@@ -223,7 +223,7 @@ public class TexturePackAPI {
 
     public static void bindTexture(int texture) {
         if (texture >= 0) {
-            TextureUtils.bindTexture(texture);
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
         }
     }
 
