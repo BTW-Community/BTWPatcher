@@ -86,7 +86,7 @@ public class MipmapHelper {
 
     private static void setupTexture(int width, int height, boolean blur, boolean clamp, String textureName) {
         int mipmaps = useMipmapsForTexture(textureName) ? getMipmapLevels(width, height, 1) : 0;
-        logger.fine("setupTexture(%s) %dx%d %d mipmaps", textureName, width, height, mipmaps);
+        logger.finer("setupTexture(%s) %dx%d %d mipmaps", textureName, width, height, mipmaps);
         int magFilter = blur ? GL11.GL_LINEAR : GL11.GL_NEAREST;
         int minFilter = mipmaps > 0 ? GL11.GL_NEAREST_MIPMAP_LINEAR : magFilter;
         int wrap = clamp ? GL11.GL_CLAMP : GL11.GL_REPEAT;
@@ -123,7 +123,7 @@ public class MipmapHelper {
         int width = image.getWidth();
         int height = image.getHeight();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTexture);
-        logger.fine("setupTexture(%s, %d, %dx%d, %s, %s)", textureName, glTexture, width, height, blur, clamp);
+        logger.finer("setupTexture(%s, %d, %dx%d, %s, %s)", textureName, glTexture, width, height, blur, clamp);
         int[] rgb = new int[width * height];
         image.getRGB(0, 0, width, height, rgb, 0, width);
         setupTexture(rgb, width, height, 0, 0, blur, clamp, textureName);
@@ -132,7 +132,7 @@ public class MipmapHelper {
 
     public static void setupTexture(int glTexture, int width, int height, String textureName) {
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTexture);
-        logger.fine("setupTexture(tilesheet %s, %d, %dx%d)", textureName, glTexture, width, height);
+        logger.finer("setupTexture(tilesheet %s, %d, %dx%d)", textureName, glTexture, width, height);
         setupTexture(width, height, false, false, textureName);
     }
 
@@ -491,7 +491,7 @@ public class MipmapHelper {
         } else {
             int width = image.getWidth();
             int height = image.getHeight();
-            logger.fine("converting %dx%d image to ARGB", width, height);
+            logger.finest("converting %dx%d image to ARGB", width, height);
             BufferedImage newImage = getPooledImage(width, height, 0);
             Graphics2D graphics = newImage.createGraphics();
             Arrays.fill(getARGBAsIntBuffer(newImage).array(), 0);

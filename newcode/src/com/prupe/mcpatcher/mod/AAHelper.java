@@ -35,10 +35,8 @@ public class AAHelper {
         int border = getBorderWidth(width);
         ((BorderedTexture) stitched).setBorderWidth(border);
         if (border <= 0) {
-            logger.finer("no border around %s", name);
             return input;
         }
-        logger.finer("adding %d pixel border around %s", border, name);
         int newWidth = width + 2 * border;
         int newHeight = height + 2 * border;
         BufferedImage output = new BufferedImage(newWidth, numFrames * newHeight, BufferedImage.TYPE_INT_ARGB);

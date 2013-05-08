@@ -98,7 +98,7 @@ public class BorderedTexture extends TextureStitched {
             scaledWidth = scaledHeight = 0.0f;
             return;
         }
-        logger.fine("setBorderWidth(%s, %s, %d): %dx%d -> %dx%d",
+        logger.finer("setBorderWidth(%s, %s, %d): %dx%d -> %dx%d",
             tilesheet, getIconName(), border, width - 2 * border, height - 2 * border, width, height
         );
         if (border > 0) {
