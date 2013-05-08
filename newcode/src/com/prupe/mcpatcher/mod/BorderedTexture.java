@@ -1,8 +1,12 @@
 package com.prupe.mcpatcher.mod;
 
+import com.prupe.mcpatcher.MCLogger;
+import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.TextureStitched;
 
 public class BorderedTexture extends TextureStitched {
+    private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
+
     private float minU;
     private float maxU;
     private float minV;
@@ -20,9 +24,9 @@ public class BorderedTexture extends TextureStitched {
 
     public static TextureStitched create(String tilesheet, String name) {
         if (AAHelper.useAAForTexture(tilesheet)) {
-            return new TextureStitched(name);
-        } else {
             return new BorderedTexture(tilesheet, name);
+        } else {
+            return new TextureStitched(name);
         }
     }
 
@@ -85,8 +89,18 @@ public class BorderedTexture extends TextureStitched {
     }
 
     void setBorderWidth(int border) {
+        this.border = border;
         int width = getWidth();
         int height = getHeight();
+        if (width <= 0 || height <= 0) {
+            x0 = y0 = 0;
+            minU = maxU = minV = maxV = 0.0f;
+            scaledWidth = scaledHeight = 0.0f;
+            return;
+        }
+        logger.fine("setBorderWidth(%s, %s, %d): %dx%d -> %dx%d",
+            tilesheet, getIconName(), border, width - 2 * border, height - 2 * border, width, height
+        );
         if (border > 0) {
             x0 += border;
             y0 += border;

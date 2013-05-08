@@ -195,8 +195,8 @@ public class FancyDial {
     private FancyDial(RenderEngine renderEngine, TextureStitched icon, Properties properties) {
         this.icon = icon;
         name = icon.getIconName();
-        x0 = icon.getOriginX();
-        y0 = icon.getOriginY();
+        x0 = icon.getWidth();
+        y0 = icon.getHeight();
         width = getIconWidth(icon);
         height = getIconHeight(icon);
         needExtraUpdate = !hasAnimation(icon);

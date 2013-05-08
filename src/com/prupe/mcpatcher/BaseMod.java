@@ -1142,8 +1142,8 @@ public final class BaseMod extends Mod {
      */
     public static class IconMod extends ClassMod {
         public IconMod() {
-            final InterfaceMethodRef getOriginX = new InterfaceMethodRef(getDeobfClass(), "getOriginX", "()I");
-            final InterfaceMethodRef getOriginY = new InterfaceMethodRef(getDeobfClass(), "getOriginY", "()I");
+            final InterfaceMethodRef getWidth = new InterfaceMethodRef(getDeobfClass(), "getWidth", "()I");
+            final InterfaceMethodRef getHeight = new InterfaceMethodRef(getDeobfClass(), "getHeight", "()I");
             final InterfaceMethodRef getMinU = new InterfaceMethodRef(getDeobfClass(), "getMinU", "()F");
             final InterfaceMethodRef getMaxU = new InterfaceMethodRef(getDeobfClass(), "getMaxU", "()F");
             final InterfaceMethodRef getInterpolatedU = new InterfaceMethodRef(getDeobfClass(), "getInterpolatedU", "(D)F");
@@ -1155,8 +1155,8 @@ public final class BaseMod extends Mod {
             final InterfaceMethodRef getSheetHeight = new InterfaceMethodRef(getDeobfClass(), "getSheetHeight", "()I");
 
             addClassSignature(new InterfaceSignature(
-                getOriginX,
-                getOriginY,
+                getWidth,
+                getHeight,
                 getMinU,
                 getMaxU,
                 getInterpolatedU,

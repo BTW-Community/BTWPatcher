@@ -3,13 +3,11 @@ package net.minecraft.src;
 import java.util.List;
 
 public class TextureStitched implements Icon {
-    protected Texture texture;
-
-    public int getOriginX() {
+    public int getWidth() {
         return 0;
     }
 
-    public int getOriginY() {
+    public int getHeight() {
         return 0;
     }
 
@@ -58,11 +56,11 @@ public class TextureStitched implements Icon {
     public void init(int tilesheetWidth, int tilesheetHeight, int x0, int y0, boolean flipped) {
     }
 
-    public int getWidth() {
+    public int getX0() {
         return 0;
     }
 
-    public int getHeight() {
+    public int getY0() {
         return 0;
     }
 

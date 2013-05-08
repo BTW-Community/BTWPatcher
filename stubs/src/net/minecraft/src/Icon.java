@@ -1,9 +1,9 @@
 package net.minecraft.src;
 
 public interface Icon {
-    int getOriginX();
+    int getWidth();
 
-    int getOriginY();
+    int getHeight();
 
     float getMinU();
 

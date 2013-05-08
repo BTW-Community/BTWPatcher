@@ -23,7 +23,7 @@ public class AAHelper {
         }
     }
 
-    public static BufferedImage addBorder(TextureStitched stitched, String tilesheet, String name, BufferedImage input) {
+    public static BufferedImage addBorder(TextureStitched stitched, String name, BufferedImage input) {
         if (input == null || !(stitched instanceof BorderedTexture)) {
             return input;
         }
