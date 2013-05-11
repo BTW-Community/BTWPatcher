@@ -19,6 +19,7 @@ import java.util.zip.ZipFile;
 
 class ModList {
     private final MinecraftVersion version;
+    private final Map<String, BuiltInMod> builtInMods = new LinkedHashMap<String, BuiltInMod>();
     private final List<Mod> modsByIndex = new ArrayList<Mod>();
     private final Map<String, Mod> modsByName = new HashMap<String, Mod>();
     private boolean applied;
@@ -32,34 +33,43 @@ class ModList {
     private static class BuiltInMod {
         final String name;
         final Class<? extends Mod> modClass;
-        final boolean internal;
-        final boolean experimental;
+        boolean internal;
+        boolean experimental;
 
-        BuiltInMod(String name, Class<? extends Mod> modClass, boolean internal, boolean experimental) {
+        BuiltInMod(String name, Class<? extends Mod> modClass) {
             this.name = name;
             this.modClass = modClass;
+        }
+
+        BuiltInMod setInternal(boolean internal) {
             this.internal = internal;
+            return this;
+        }
+
+        BuiltInMod setExperimental(boolean experimental) {
             this.experimental = experimental;
+            return this;
         }
     }
 
-    private static BuiltInMod[] builtInMods = new BuiltInMod[]{
-        new BuiltInMod(MCPatcherUtils.BASE_MOD, BaseMod.class, false, false),
-        new BuiltInMod(MCPatcherUtils.BASE_TEXTURE_PACK_MOD, BaseTexturePackMod.class, false, false),
-        new BuiltInMod(MCPatcherUtils.BASE_TILESHEET_MOD, BaseTilesheetMod.class, false, false),
-        new BuiltInMod(MCPatcherUtils.EXTENDED_HD, ExtendedHD.class, false, false),
-        new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, RandomMobs.class, false, false),
-        new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, CustomColors.class, false, false),
-        new BuiltInMod(MCPatcherUtils.CONNECTED_TEXTURES, ConnectedTextures.class, false, false),
-        new BuiltInMod(MCPatcherUtils.BETTER_GLASS, BetterGlass.class, false, false),
-        new BuiltInMod(MCPatcherUtils.BETTER_SKIES, BetterSkies.class, false, false),
-        new BuiltInMod(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, CustomItemTextures.class, false, false),
-        new BuiltInMod(MCPatcherUtils.GLSL_SHADERS, GLSLShader.class, false, true),
-    };
-
     ModList(MinecraftVersion version) {
         this.version = version;
+        register(new BuiltInMod(MCPatcherUtils.BASE_MOD, BaseMod.class).setInternal(false));
+        register(new BuiltInMod(MCPatcherUtils.BASE_TEXTURE_PACK_MOD, BaseTexturePackMod.class).setInternal(false));
+        register(new BuiltInMod(MCPatcherUtils.BASE_TILESHEET_MOD, BaseTilesheetMod.class).setInternal(false));
+        register(new BuiltInMod(MCPatcherUtils.EXTENDED_HD, ExtendedHD.class));
+        register(new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, RandomMobs.class));
+        register(new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, CustomColors.class));
+        register(new BuiltInMod(MCPatcherUtils.CONNECTED_TEXTURES, ConnectedTextures.class));
+        register(new BuiltInMod(MCPatcherUtils.BETTER_GLASS, BetterGlass.class));
+        register(new BuiltInMod(MCPatcherUtils.BETTER_SKIES, BetterSkies.class));
+        register(new BuiltInMod(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, CustomItemTextures.class));
+        register(new BuiltInMod(MCPatcherUtils.GLSL_SHADERS, GLSLShader.class).setExperimental(true));
         loadBuiltInMods(true);
+    }
+
+    private void register(BuiltInMod builtInMod) {
+        builtInMods.put(builtInMod.name, builtInMod);
     }
 
     void close() {
@@ -69,7 +79,7 @@ class ModList {
     }
 
     void loadBuiltInMods(boolean internal) {
-        for (BuiltInMod builtInMod : builtInMods) {
+        for (BuiltInMod builtInMod : builtInMods.values()) {
             if (!modsByName.containsKey(builtInMod.name) && (MCPatcher.experimentalMods || !builtInMod.experimental) && internal == builtInMod.internal) {
                 addNoReplace(newModInstance(builtInMod));
             }
@@ -497,10 +507,9 @@ class ModList {
             if (name == null || type == null) {
                 invalidEntries.add(element);
             } else if (type.equals(Config.VAL_BUILTIN)) {
-                for (BuiltInMod builtInMod : builtInMods) {
-                    if (name.equals(builtInMod.name) && (MCPatcher.experimentalMods || !builtInMod.experimental)) {
-                        mod = newModInstance(builtInMod);
-                    }
+                BuiltInMod builtInMod = builtInMods.get(name);
+                if (builtInMod != null && (MCPatcher.experimentalMods || !builtInMod.experimental)) {
+                    mod = newModInstance(builtInMod);
                 }
                 if (mod == null) {
                     invalidEntries.add(element);
