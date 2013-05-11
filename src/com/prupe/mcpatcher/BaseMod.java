@@ -29,7 +29,7 @@ public final class BaseMod extends Mod {
         description = "Internal mod required by the patcher.";
         version = "1.1";
         configPanel = new ConfigPanel();
-        dependencies.clear();
+        clearDependencies();
 
         addClassMod(new XMinecraftMod());
         addClassMod(new ProfilerMod());

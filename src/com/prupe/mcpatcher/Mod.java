@@ -316,6 +316,13 @@ public abstract class Mod {
         dependencies.add(new Dependency(name, false));
     }
 
+    /**
+     * Clear all dependencies and conflicts.
+     */
+    public void clearDependencies() {
+        dependencies.clear();
+    }
+
     class Dependency {
         String name;
         boolean required;
