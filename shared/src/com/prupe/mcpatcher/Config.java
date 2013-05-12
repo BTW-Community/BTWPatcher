@@ -95,6 +95,8 @@ public class Config {
     static final String TAG_MODIFIED_CLASSES = "modifiedClasses";
     static final String TAG_ADDED_CLASSES = "addedClasses";
 
+    static final String XML_FILENAME = "mcpatcher4.xml";
+
     private static final int XML_INDENT_AMOUNT = 2;
     private static final String XSLT_REFORMAT =
         "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">" +
@@ -108,7 +110,7 @@ public class Config {
             "</xsl:stylesheet>";
 
     Config(File minecraftDir) throws ParserConfigurationException {
-        xmlFile = new File(minecraftDir, "mcpatcher3.xml");
+        xmlFile = new File(minecraftDir, XML_FILENAME);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         boolean save = false;
