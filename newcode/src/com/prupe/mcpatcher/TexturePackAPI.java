@@ -210,7 +210,7 @@ public class TexturePackAPI {
         ITexture texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(s);
         if (texture instanceof TextureBase && textureIDField != null) {
             try {
-                return (Integer) textureIDField.get(texture);
+                return textureIDField.getInt(texture);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
                 textureIDField = null;
@@ -237,16 +237,19 @@ public class TexturePackAPI {
         MCPatcherUtils.getMinecraft().getTextureManager().addTexture(s, new TextureNamed(s, blur, clamp));
     }
 
-    @SuppressWarnings("unchecked")
     public static void unloadTexture(String s) {
         TextureManager textureManager = MCPatcherUtils.getMinecraft().getTextureManager();
         ITexture texture = textureManager.getTexture(s);
         if (texture != null) {
-            // TODO: textureManager.unloadTexture(s);
+            if (texture instanceof TextureBase) {
+                ((TextureBase) texture).unloadGLTexture();
+            }
             if (textureNameMapField != null) {
                 try {
-                    HashMap<String, ITexture> map = (HashMap<String, ITexture>) textureNameMapField.get(textureManager);
-                    map.remove(s);
+                    Object o = textureNameMapField.get(textureManager);
+                    if (o instanceof Map) {
+                        ((Map) o).remove(s);
+                    }
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                     textureNameMapField = null;

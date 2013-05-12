@@ -207,6 +207,17 @@ public class BaseTexturePackMod extends Mod {
                     );
                 }
             });
+
+            addPatch(new AddMethodPatch(new MethodRef(getDeobfClass(), "finalize", "()V")) {
+                @Override
+                public byte[] generateMethod() {
+                    return buildCode(
+                        ALOAD_0,
+                        reference(INVOKEVIRTUAL, unloadGLTexture),
+                        RETURN
+                    );
+                }
+            });
         }
     }
 

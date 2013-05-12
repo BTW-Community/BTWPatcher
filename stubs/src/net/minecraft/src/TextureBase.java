@@ -7,4 +7,7 @@ public class TextureBase implements ITexture {
     public int getGLTexture() {
         return -1;
     }
+
+    public void unloadGLTexture() { // added by __TexturePackBase
+    }
 }
