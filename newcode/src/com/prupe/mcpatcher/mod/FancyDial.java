@@ -113,7 +113,7 @@ public class FancyDial {
                 return;
             }
         } else {
-            logger.warning("ignoring custom animation for %s not compass or clock");
+            logger.warning("ignoring custom animation for %s not compass or clock", icon.getIconName());
             return;
         }
         Properties properties = TexturePackAPI.getProperties(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/" + name + ".properties");
