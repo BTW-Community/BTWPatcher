@@ -167,12 +167,59 @@ public class BaseTexturePackMod extends Mod {
             final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "(Ljava/lang/String;)LITexture;");
             final MethodRef unloadTexture = new MethodRef(getDeobfClass(), "unloadTexture", "(Ljava/lang/String;)V");
             final MethodRef addTexture = new MethodRef(getDeobfClass(), "addTexture", "(Ljava/lang/String;LITexture;)V");
+            final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "(LITexturePack;)V");
 
             addClassSignature(new ConstSignature("dynamic/%s_%d"));
 
             addMemberMapper(new MethodMapper(bindTexture, unloadTexture).accessFlag(AccessFlag.STATIC, false));
             addMemberMapper(new MethodMapper(getTexture).accessFlag(AccessFlag.STATIC, false));
             addMemberMapper(new MethodMapper(addTexture));
+            addMemberMapper(new MethodMapper(refreshTextures));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "before texture pack change";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(INVOKESTATIC, beforeChange1)
+                    );
+                }
+            }.targetMethod(refreshTextures));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "after texture pack change";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        RETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(INVOKESTATIC, afterChange1)
+                    );
+                }
+            }
+                .setInsertBefore(true)
+                .targetMethod(refreshTextures)
+            );
         }
     }
 
