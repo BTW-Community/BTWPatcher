@@ -25,6 +25,8 @@ class MainForm {
     private static final int TAB_CLASS_MAP = 3;
     private static final int TAB_PATCH_SUMMARY = 4;
 
+    static final String FORUM_URL = "http://www.minecraftforum.net/topic/1496369-";
+
     private static final Color MOD_BUSY_COLOR = new Color(192, 192, 192);
     private static final String MOD_DESC_FORMAT1 = "<html>" +
         "<table border=\"0\" cellspacing=\"0\" cellpadding=\"1\" style=\"padding-top: 2px; padding-bottom: 2px; font-weight: normal;\" width=\"%1$d\"><tr>" +
@@ -548,7 +550,7 @@ class MainForm {
                 "http://mojang.com/2013/04/minecraft-snapshot-13w16a-and-new-launcher/\n\n" +
                 "For the old launcher, use MCPatcher 3.x (for Minecraft 1.5.2) or MCPatcher 2.x\n" +
                 "(for Minecraft 1.4.7 and earlier) available from\n" +
-                "http://www.minecraftforum.net/topic/1496369-\n\n" +
+                FORUM_URL + "\n\n" +
                 "If the game is installed somewhere else, please select the game folder now.\n" +
                 "The game folder is the one containing the assets, libraries, and versions subfolders.\n",
             "Minecraft not found", JOptionPane.ERROR_MESSAGE
@@ -570,7 +572,7 @@ class MainForm {
                 "for general use.\n\n" +
                 "Please make backups of your mods, save files, and texture packs\n" +
                 "before using.  Report any problems in the thread for MCPatcher beta at\n" +
-                "http://www.minecraftforum.net/topic/1496369-",
+                FORUM_URL,
             "For testing only", JOptionPane.INFORMATION_MESSAGE
         );
     }
@@ -580,7 +582,7 @@ class MainForm {
             tabbedPane.setSelectedIndex(TAB_LOG);
             JOptionPane.showMessageDialog(frame,
                 "There was an error opening minecraft.jar. This may be because:\n" +
-                    " - You selected the launcher jar and not the main minecraft.jar in the bin folder.\n" +
+                    " - You selected the launcher jar and not the main minecraft.jar in the versions folder.\n" +
                     " - You selected a texture pack and not minecraft.jar.\n" +
                     " - The file has already been patched.\n" +
                     " - There was an update that this patcher cannot handle.\n" +
