@@ -541,7 +541,8 @@ abstract public class ClassMod implements PatchComponent {
 
         protected boolean match(Object o) {
             MethodInfo methodInfo = (MethodInfo) o;
-            return matchInfo(methodInfo.getDescriptor(), methodInfo.getAccessFlags());
+            return !methodInfo.isConstructor() && !methodInfo.isStaticInitializer() &&
+                matchInfo(methodInfo.getDescriptor(), methodInfo.getAccessFlags());
         }
 
         protected JavaRef getObfRef(String className, Object o) {
