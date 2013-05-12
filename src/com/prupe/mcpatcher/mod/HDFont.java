@@ -23,6 +23,7 @@ public class HDFont extends Mod {
         mod.addClassMod(new FontRendererMod());
 
         mod.addClassFile(MCPatcherUtils.FONT_UTILS_CLASS);
+        mod.addClassFile(MCPatcherUtils.FONT_UTILS_CLASS + "$1");
     }
 
     private static class FontRendererMod extends BaseMod.FontRendererMod {

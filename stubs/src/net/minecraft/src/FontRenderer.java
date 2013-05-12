@@ -8,4 +8,7 @@ public class FontRenderer {
     public int getCharWidth(char c) { // 1.2.4 and up
         return 0;
     }
+
+    public void readFontData() {
+    }
 }

@@ -1,16 +1,15 @@
 package com.prupe.mcpatcher.hd;
 
-import com.prupe.mcpatcher.Config;
-import com.prupe.mcpatcher.MCLogger;
-import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.*;
 import net.minecraft.src.FontRenderer;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 public class FontUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.HD_FONT);
@@ -24,6 +23,27 @@ public class FontUtils {
     public static final int[] SPACERS = new int[]{0x02028bfe, 0x02808080, 0x0dffffff};
 
     private static final boolean showLines = false;
+
+    private static final Set<FontRenderer> allRenderers = new HashSet<FontRenderer>();
+
+    static {
+        TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.HD_FONT, 1) {
+            @Override
+            public void initialize() {
+            }
+
+            @Override
+            public void beforeChange() {
+            }
+
+            @Override
+            public void afterChange() {
+                for (FontRenderer renderer : allRenderers) {
+                    renderer.readFontData();
+                }
+            }
+        });
+    }
 
     public static String getFontName(String font) {
         font = font.replaceFirst("_hd\\.png$", ".png");
@@ -49,6 +69,7 @@ public class FontUtils {
             }
             return charWidthf;
         }
+        allRenderers.add(fontRenderer);
         int width = image.getWidth();
         int height = image.getHeight();
         int colWidth = width / COLS;
