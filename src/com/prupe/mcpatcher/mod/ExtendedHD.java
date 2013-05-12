@@ -483,6 +483,22 @@ public class ExtendedHD extends Mod {
         TextureStitchedMod() {
             final MethodRef init = new MethodRef(getDeobfClass(), "init", "(IIIIZ)V");
             final MethodRef copy = new MethodRef(getDeobfClass(), "copy", "(LTextureStitched;)V");
+            final MethodRef updateAnimation = new MethodRef(getDeobfClass(), "updateAnimation", "()V");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // (... + 1) % ...
+                        push(1),
+                        IADD,
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        anyReference(INVOKEVIRTUAL),
+                        IREM
+                    );
+                }
+            }.setMethod(updateAnimation));
 
             addMemberMapper(new MethodMapper(init));
             addMemberMapper(new MethodMapper(copy));
