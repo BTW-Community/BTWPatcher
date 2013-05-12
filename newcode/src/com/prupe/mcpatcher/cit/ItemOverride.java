@@ -72,10 +72,11 @@ class ItemOverride {
                 error("no source texture name specified");
             }
         }
+        value = TexturePackAPI.fixupPath(value);
         if (!error && !value.endsWith(".png")) {
             value += ".png";
         }
-        textureName = value.startsWith("/") || value.startsWith("%") ? value : directory + "/" + value;
+        textureName = value.contains("/") ? value : directory + "/" + value;
 
         if (type == OVERLAY) {
             overlay = ItemOverlay.create(this, properties);
