@@ -369,6 +369,7 @@ public class BaseTilesheetMod extends Mod {
             final InterfaceMethodRef mapClear = new InterfaceMethodRef("java/util/Map", "clear", "()V");
             final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
             final InterfaceMethodRef setIterator = new InterfaceMethodRef("java/util/Set", "iterator", "()Ljava/util/Iterator;");
+            final MethodRef strEquals = new MethodRef("java/lang/String", "equals", "(Ljava/lang/Object;)Z");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -494,6 +495,35 @@ public class BaseTilesheetMod extends Mod {
                     );
                 }
             });
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "check for clock/compass textures";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        capture(or(
+                            build(push("clock")),
+                            build(push("compass"))
+                        )),
+                        ALOAD_1,
+                        reference(INVOKEVIRTUAL, strEquals)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_0,
+                        ALOAD_1,
+                        getCaptureGroup(1),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "isSpecialTexture", "(LTextureMap;Ljava/lang/String;Ljava/lang/String;)Z"))
+                    );
+                }
+            }.targetMethod(registerIcon));
 
             /* TODO: 1.5 stuff
             addClassSignature(new BytecodeSignature() {

@@ -16,6 +16,7 @@ public class TileLoader {
 
     private static final boolean debugTextures = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "debugTextures", false);
     private static final int splitTextures = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "splitTextures", 1);
+    private static final Map<String, String> specialTextures = new HashMap<String, String>();
     private static String overrideTextureName;
 
     private static final TexturePackChangeHandler changeHandler;
@@ -65,6 +66,7 @@ public class TileLoader {
                 }
                 overflowMaps.clear();
                 loaders.clear();
+                specialTextures.clear();
             }
 
             @Override
@@ -150,6 +152,10 @@ public class TileLoader {
         }
     }
 
+    public static boolean isSpecialTexture(TextureMap map, String texture, String special) {
+        return special.equals(texture) || special.equals(specialTextures.get(texture));
+    }
+
     public static void updateAnimations() {
         for (TextureMap textureMap : overflowMaps) {
             textureMap.updateAnimations();
@@ -207,7 +213,7 @@ public class TileLoader {
         return textures.size() * 64 * 64 * 4; // TODO
     }
 
-    public boolean preloadTile(String path, boolean alternate) {
+    public boolean preloadTile(String path, boolean alternate, String special) {
         if (tileTextures.containsKey(path)) {
             return true;
         }
@@ -220,7 +226,14 @@ public class TileLoader {
         }
         tilesToRegister.add(path);
         tileTextures.put(path, image);
+        if (special != null) {
+            specialTextures.put(path, special);
+        }
         return true;
+    }
+
+    public boolean preloadTile(String path, boolean alternate) {
+        return preloadTile(path, alternate, null);
     }
 
     protected boolean isForThisMap(String mapName) {
