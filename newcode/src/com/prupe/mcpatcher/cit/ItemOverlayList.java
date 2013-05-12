@@ -7,165 +7,144 @@ import java.util.*;
 class ItemOverlayList {
     private static final float PI = (float) Math.PI;
 
-    private final Map<Integer, Group> groups = new HashMap<Integer, Group>();
-    private final List<Entry> entries = new ArrayList<Entry>();
+    static final int AVERAGE = 0;
+    static final int LAYERED = 1;
+    static final int CYCLE = 2;
+
+    static int applyMethod;
+    static int limit;
+    static float fade;
+
+    private final List<Layer> layers = new ArrayList<Layer>();
 
     ItemOverlayList(ItemOverride[][] overlays, ItemStack itemStack) {
+        BitSet layersPresent = new BitSet();
+        Map<Integer, Layer> tmpLayers = new HashMap<Integer, Layer>();
         int[] enchantmentLevels = CITUtils.getEnchantmentLevels(itemStack.stackTagCompound);
         int itemID = itemStack.itemID;
         if (itemID >= 0 && itemID < overlays.length && overlays[itemID] != null) {
             for (ItemOverride override : overlays[itemID]) {
                 if (override.match(itemID, itemStack, enchantmentLevels)) {
                     int level = Math.max(override.lastEnchantmentLevel, 1);
-                    Entry entry = getGroup(override.overlay).add(override.overlay, level);
-                    entries.add(entry);
+                    ItemOverlay overlay = override.overlay;
+                    int layer = overlay.layer;
+                    Layer newLayer = new Layer(overlay, level);
+                    Layer oldLayer = tmpLayers.get(layer);
+                    if (oldLayer == null || newLayer.overlay.compareTo(oldLayer.overlay) > 0) {
+                        tmpLayers.put(layer, newLayer);
+                    }
+                    layersPresent.set(layer);
                 }
             }
         }
-        for (Group group : groups.values()) {
-            group.computeIntensities();
+        while (layersPresent.cardinality() > limit) {
+            int layer = layersPresent.nextSetBit(0);
+            layersPresent.clear(layer);
+            tmpLayers.remove(layer);
+        }
+        for (int i = layersPresent.nextSetBit(0); i >= 0; i = layersPresent.nextSetBit(i + 1)) {
+            layers.add(tmpLayers.get(i));
+        }
+        switch (applyMethod) {
+            default:
+                computeIntensitiesAverage();
+                break;
+
+            case LAYERED:
+                computeIntensitiesLayered();
+                break;
+
+            case CYCLE:
+                computeIntensitiesCycle();
+                break;
         }
     }
 
     boolean isEmpty() {
-        return groups.isEmpty();
+        return layers.isEmpty();
     }
 
     int size() {
-        return entries.size();
+        return layers.size();
     }
 
     ItemOverlay getOverlay(int index) {
-        return entries.get(index).overlay;
+        return layers.get(index).overlay;
     }
 
     float getIntensity(int index) {
-        return entries.get(index).intensity;
+        return layers.get(index).intensity;
     }
 
-    private Group getGroup(ItemOverlay overlay) {
-        Group group = groups.get(overlay.groupID);
-        if (group == null) {
-            switch (overlay.applyMethod) {
-                case ItemOverlay.AVERAGE:
-                case ItemOverlay.TOP:
-                    group = new AverageGroup(overlay);
-                    break;
+    private void computeIntensitiesAverage() {
+        int total = 0;
+        for (Layer layer : layers) {
+            total += layer.level;
+        }
+        computeIntensitiesAverage(total);
+    }
 
-                case ItemOverlay.CYCLE:
-                    group = new CycleGroup(overlay);
-                    break;
+    private void computeIntensitiesLayered() {
+        int max = 0;
+        for (Layer layer : layers) {
+            Math.max(max, layer.level);
+        }
+        computeIntensitiesAverage(max);
+    }
+
+    private void computeIntensitiesAverage(int denominator) {
+        if (denominator > 0) {
+            for (Layer layer : layers) {
+                layer.setIntensity((float) layer.level / (float) denominator);
             }
-            groups.put(overlay.groupID, group);
-        }
-        return group;
-    }
-
-    abstract private static class Group {
-        final List<Entry> entries = new ArrayList<Entry>();
-        final int method;
-        final int limit;
-
-        Group(ItemOverlay overlay) {
-            method = overlay.applyMethod;
-            limit = overlay.limit;
-        }
-
-        Entry add(ItemOverlay overlay, int level) {
-            Entry entry = new Entry(overlay, level);
-            entries.add(entry);
-            return entry;
-        }
-
-        void computeIntensities() {
-            for (Entry entry : entries) {
-                entry.intensity = 0.0f;
+        } else {
+            for (Layer layer : layers) {
+                layer.setIntensity(1.0f);
             }
         }
     }
 
-    private static class AverageGroup extends Group {
-        int total;
-
-        AverageGroup(ItemOverlay overlay) {
-            super(overlay);
+    private void computeIntensitiesCycle() {
+        float total = 0.0f;
+        for (Layer layer : layers) {
+            total += layer.getEffectiveDuration();
         }
-
-        @Override
-        void computeIntensities() {
-            if (limit < entries.size()) {
-                Collections.sort(entries, new Comparator<Entry>() {
-                    public int compare(Entry o1, Entry o2) {
-                        int diff = o2.overlay.weight - o1.overlay.weight;
-                        if (diff != 0) {
-                            return diff;
-                        }
-                        return o2.level - o1.level;
-                    }
-                });
-                while (entries.size() > limit) {
-                    entries.remove(limit);
-                }
+        float timestamp = (float) ((System.currentTimeMillis() / 1000.0) % total);
+        for (Layer layer : layers) {
+            if (timestamp <= 0.0f) {
+                break;
             }
-            total = 0;
-            for (Entry entry : entries) {
-                if (method == ItemOverlay.AVERAGE) {
-                    total += entry.level;
-                } else {
-                    total = Math.max(total, entry.level);
-                }
+            float duration = layer.getEffectiveDuration();
+            if (timestamp < duration) {
+                float denominator = (float) Math.sin(PI * fade / duration);
+                layer.setIntensity((float) (Math.sin(PI * timestamp / duration) / (denominator == 0.0f ? 1.0f : denominator)));
             }
-            if (total > 0) {
-                for (Entry entry : entries) {
-                    entry.intensity = (float) entry.level / (float) total;
-                }
-            }
+            timestamp -= duration;
         }
     }
 
-    private static class CycleGroup extends Group {
-        float total;
-
-        CycleGroup(ItemOverlay overlay) {
-            super(overlay);
-        }
-
-        @Override
-        Entry add(ItemOverlay overlay, int level) {
-            Entry entry = super.add(overlay, level);
-            entry.start = total;
-            total += overlay.duration;
-            return entry;
-        }
-
-        @Override
-        void computeIntensities() {
-            if (total <= 0.0f) {
-                return;
-            }
-            float timestamp = (float) ((System.currentTimeMillis() / 1000.0) % total);
-            for (Entry entry : entries) {
-                if (timestamp <= 0.0f) {
-                    break;
-                }
-                float duration = entry.overlay.duration;
-                if (timestamp < duration) {
-                    entry.intensity = (float) Math.sin(PI * timestamp / duration);
-                }
-                timestamp -= duration;
-            }
-        }
-    }
-
-    private static class Entry {
+    private static class Layer {
         final ItemOverlay overlay;
         final int level;
-        float start;
         float intensity;
 
-        Entry(ItemOverlay overlay, int level) {
+        Layer(ItemOverlay overlay, int level) {
             this.overlay = overlay;
             this.level = level;
+        }
+
+        float getEffectiveDuration() {
+            return overlay.duration + 2.0f * fade;
+        }
+
+        void setIntensity(float f) {
+            if (f < 0.0f) {
+                intensity = 0.0f;
+            } else if (f > 1.0f) {
+                intensity = 1.0f;
+            } else {
+                intensity = f;
+            }
         }
     }
 }

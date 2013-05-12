@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.TileLoader;
 import net.minecraft.src.*;
 
+import java.io.File;
 import java.util.*;
 
 class ItemOverride {
@@ -18,7 +19,7 @@ class ItemOverride {
     static final int OVERLAY = 1;
     static final int ARMOR = 2;
 
-    private final String propertiesName;
+    final String propertiesName;
     final int type;
     Icon icon;
     final String textureName;
@@ -35,6 +36,9 @@ class ItemOverride {
     int lastEnchantmentLevel;
 
     static ItemOverride create(String filename) {
+        if (new File(filename).getName().equals("cit.properties")) {
+            return null;
+        }
         Properties properties = TexturePackAPI.getProperties(filename);
         if (properties == null) {
             return null;

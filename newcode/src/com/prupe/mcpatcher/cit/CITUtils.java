@@ -6,6 +6,7 @@ import net.minecraft.src.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 public class CITUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
@@ -29,6 +30,8 @@ public class CITUtils {
     private static final ItemOverride[][] overlays = new ItemOverride[MAX_ITEMS][];
     private static final ItemOverride[][] armors = new ItemOverride[MAX_ITEMS][];
 
+    static boolean useGlint;
+
     private static ItemOverlayList armorMatches;
     private static int armorMatchIndex;
 
@@ -44,6 +47,10 @@ public class CITUtils {
                 Arrays.fill(armors, null);
                 lastIcon = null;
                 itemNameMap.clear();
+                useGlint = true;
+                ItemOverlayList.applyMethod = ItemOverlayList.LAYERED;
+                ItemOverlayList.limit = 99;
+                ItemOverlayList.fade = 0.5f;
                 for (LOWEST_ITEM_ID = 256; LOWEST_ITEM_ID < MAX_ITEMS; LOWEST_ITEM_ID++) {
                     if (Item.itemsList[LOWEST_ITEM_ID] != null) {
                         break;
@@ -123,6 +130,23 @@ public class CITUtils {
                             override.registerIcon(tileLoader);
                         }
                     }
+                }
+                Properties properties = TexturePackAPI.getProperties("cit.properties");
+                if (properties == null) {
+                    properties = TexturePackAPI.getProperties("cit/cit.properties");
+                }
+                if (properties != null) {
+                    String value = MCPatcherUtils.getStringProperty(properties, "method", "").toLowerCase();
+                    if (value.equals("layered")) {
+                        ItemOverlayList.applyMethod = ItemOverlayList.LAYERED;
+                    } else if (value.equals("cycle")) {
+                        ItemOverlayList.applyMethod = ItemOverlayList.CYCLE;
+                    } else {
+                        ItemOverlayList.applyMethod = ItemOverlayList.AVERAGE;
+                    }
+                    ItemOverlayList.limit = MCPatcherUtils.getIntProperty(properties, "cap", ItemOverlayList.limit);
+                    ItemOverlayList.fade = MCPatcherUtils.getFloatProperty(properties, "fade", ItemOverlayList.fade);
+                    useGlint = MCPatcherUtils.getBooleanProperty(properties, "useGlint", useGlint);
                 }
             }
 

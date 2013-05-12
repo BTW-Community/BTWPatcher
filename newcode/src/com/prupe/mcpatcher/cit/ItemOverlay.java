@@ -9,22 +9,16 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Properties;
 
-class ItemOverlay {
-    static final int AVERAGE = 0;
-    static final int CYCLE = 1;
-    static final int TOP = 2;
-
+class ItemOverlay implements Comparable<ItemOverlay> {
     private static final float ITEM_2D_THICKNESS = 0.0625f;
 
-    private final String texture;
+    final ItemOverride override;
     private final BlendMethod blendMethod;
     private final float rotation;
     private final float speed;
     final float duration;
+    final int layer;
     final int weight;
-    final int applyMethod;
-    final int limit;
-    final int groupID;
 
     static void beginOuter2D() {
         GL11.glEnable(GL11.GL_BLEND);
@@ -68,40 +62,19 @@ class ItemOverlay {
         float rotation = MCPatcherUtils.getFloatProperty(properties, "rotation", 0.0f);
         float speed = MCPatcherUtils.getFloatProperty(properties, "speed", 0.0f);
         float duration = MCPatcherUtils.getFloatProperty(properties, "duration", 1.0f);
-        int weight = MCPatcherUtils.getIntProperty(properties, "weight", 1);
-        int applyMethod;
-        String[] tokens = MCPatcherUtils.getStringProperty(properties, "apply", "average").toLowerCase().split("\\s+");
-        if (tokens[0].equals("average")) {
-            applyMethod = AVERAGE;
-        } else if (tokens[0].equals("top")) {
-            applyMethod = TOP;
-        } else if (tokens[0].equals("cycle")) {
-            applyMethod = CYCLE;
-        } else {
-            override.error("unknown apply type %s", tokens[0]);
-            return null;
-        }
-        int limit = CITUtils.MAX_ENCHANTMENTS - 1;
-        if (tokens.length > 1) {
-            try {
-                limit = Integer.parseInt(tokens[1]);
-            } catch (NumberFormatException e) {
-            }
-        }
-        limit = Math.max(Math.min(limit, CITUtils.MAX_ENCHANTMENTS - 1), 0);
-        return new ItemOverlay(override.textureName, blendMethod, rotation, speed, duration, weight, applyMethod, limit);
+        int layer = MCPatcherUtils.getIntProperty(properties, "layer", 0);
+        int weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
+        return new ItemOverlay(override, blendMethod, rotation, speed, duration, layer, weight);
     }
 
-    ItemOverlay(String texture, BlendMethod blendMethod, float rotation, float speed, float duration, int weight, int applyMethod, int limit) {
-        this.texture = texture;
+    ItemOverlay(ItemOverride override, BlendMethod blendMethod, float rotation, float speed, float duration, int layer, int weight) {
+        this.override = override;
         this.blendMethod = blendMethod;
         this.rotation = rotation;
         this.speed = speed;
         this.duration = duration;
+        this.layer = layer;
         this.weight = weight;
-        this.applyMethod = applyMethod;
-        this.limit = limit;
-        groupID = (limit << 2) | applyMethod;
     }
 
     void render2D(Tessellator tessellator, float intensity, float x0, float y0, float x1, float y1, float z) {
@@ -156,7 +129,7 @@ class ItemOverlay {
     }
 
     private void begin(float intensity) {
-        TexturePackAPI.bindTexture(texture);
+        TexturePackAPI.bindTexture(override.textureName);
         blendMethod.applyBlending();
         blendMethod.applyFade(intensity);
         GL11.glPushMatrix();
@@ -169,5 +142,13 @@ class ItemOverlay {
 
     private void end() {
         GL11.glPopMatrix();
+    }
+
+    public int compareTo(ItemOverlay o) {
+        int result = weight - o.weight;
+        if (result != 0) {
+            return result;
+        }
+        return override.textureName.compareTo(o.override.textureName);
     }
 }

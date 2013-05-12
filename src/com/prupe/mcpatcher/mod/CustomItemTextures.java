@@ -54,11 +54,7 @@ public class CustomItemTextures extends Mod {
         addClassFile(MCPatcherUtils.ITEM_OVERRIDE_CLASS);
         addClassFile(MCPatcherUtils.ITEM_OVERLAY_CLASS);
         addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS);
-        addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$Group");
-        addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$AverageGroup");
-        addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$AverageGroup$1");
-        addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$CycleGroup");
-        addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$Entry");
+        addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$Layer");
 
         BaseTexturePackMod.earlyInitialize(2, MCPatcherUtils.CIT_UTILS_CLASS, "init");
     }
