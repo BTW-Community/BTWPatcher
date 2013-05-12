@@ -17,21 +17,15 @@ public class CustomItemTextures extends Mod {
     private static final MethodRef getEntityItem = new MethodRef("EntityItem", "getEntityItem", "()LItemStack;");
     private static final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffect", "()Z");
 
-    private final boolean haveEntityLivingSubclass;
-    private final String entityLivingSubclass = "EntityLivingSub";
-
     public CustomItemTextures() {
         name = MCPatcherUtils.CUSTOM_ITEM_TEXTURES;
         author = "MCPatcher";
         description = "Enables support for custom item textures, enchantments, and armor.";
         version = "0.3";
-
-        haveEntityLivingSubclass = getMinecraftVersion().compareTo("13w16a") >= 0;
+        configPanel = new ConfigPanel();
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
-
-        configPanel = new ConfigPanel();
 
         addClassMod(new BaseMod.TessellatorMod());
         addClassMod(new BaseMod.NBTTagCompoundMod().mapGetTagList());
@@ -45,7 +39,7 @@ public class CustomItemTextures extends Mod {
         addClassMod(new RenderLivingMod());
         addClassMod(new RenderBipedMod());
         addClassMod(new RenderArmorMod());
-        addClassMod(new EntityLivingMod()); // in 1.5 these two will resolve to the same class
+        addClassMod(new EntityLivingMod());
         addClassMod(new EntityLivingSubMod());
         addClassMod(new EntityPlayerMod());
 
@@ -520,8 +514,8 @@ public class CustomItemTextures extends Mod {
 
     private class RenderBipedMod extends ClassMod {
         RenderBipedMod() {
-            final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(L" + entityLivingSubclass + ";IF)V");
-            final MethodRef getCurrentArmor = new MethodRef(entityLivingSubclass, "getCurrentArmor", "(I)LItemStack;");
+            final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(LEntityLivingSub;IF)V");
+            final MethodRef getCurrentArmor = new MethodRef("EntityLivingSub", "getCurrentArmor", "(I)LItemStack;");
 
             addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "armor/"));
             addClassSignature(new ConstSignature("_"));
@@ -646,7 +640,7 @@ public class CustomItemTextures extends Mod {
 
     private class EntityLivingSubMod extends ClassMod {
         EntityLivingSubMod() {
-            setParentClass(haveEntityLivingSubclass ? "EntityLiving" : "Entity");
+            setParentClass("EntityLiving");
 
             addClassSignature(new ConstSignature("explode"));
             addClassSignature(new ConstSignature("CanPickUpLoot"));

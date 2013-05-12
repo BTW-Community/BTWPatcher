@@ -1,6 +1,6 @@
 package net.minecraft.src;
 
-public class EntityPlayer extends EntityLiving {
+public class EntityPlayer extends EntityLivingSub {
     public InventoryPlayer inventory;
 
     public EntityPlayer(World worldObj) {
