@@ -30,7 +30,7 @@ public class CITUtils {
     private static final ItemOverride[][] overlays = new ItemOverride[MAX_ITEMS][];
     private static final ItemOverride[][] armors = new ItemOverride[MAX_ITEMS][];
 
-    static boolean useGlint;
+    private static boolean useGlint;
 
     private static ItemOverlayList armorMatches;
     private static int armorMatchIndex;
@@ -244,7 +244,7 @@ public class CITUtils {
             matches.getOverlay(i).render3D(Tessellator.instance, matches.getIntensity(i), width, height);
         }
         ItemOverlay.endOuter3D();
-        return true;
+        return !useGlint;
     }
 
     public static boolean renderOverlayDropped(ItemStack itemStack) {
@@ -264,7 +264,7 @@ public class CITUtils {
             matches.getOverlay(i).render2D(Tessellator.instance, matches.getIntensity(i), x - 2, y - 2, x + 18, y + 18, z - 50.0f);
         }
         ItemOverlay.endOuter2D();
-        return true;
+        return !useGlint;
     }
 
     public static boolean setupArmorOverlays(EntityLiving entity, int pass) {
