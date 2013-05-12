@@ -14,7 +14,7 @@ class MinecraftInstallationV1 extends MinecraftInstallation {
 
     @Override
     boolean isPresent() {
-        return binDir.isDirectory();
+        return false;
     }
 
     @Override
