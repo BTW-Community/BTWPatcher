@@ -24,7 +24,7 @@ public class CustomItemTextures extends Mod {
         name = MCPatcherUtils.CUSTOM_ITEM_TEXTURES;
         author = "MCPatcher";
         description = "Enables support for custom item textures, enchantments, and armor.";
-        version = "0.2";
+        version = "0.3";
 
         haveEntityLivingSubclass = getMinecraftVersion().compareTo("13w16a") >= 0;
 

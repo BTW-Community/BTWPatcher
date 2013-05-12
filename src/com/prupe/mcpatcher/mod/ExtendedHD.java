@@ -25,21 +25,18 @@ public class ExtendedHD extends Mod {
         name = MCPatcherUtils.EXTENDED_HD;
         author = "MCPatcher";
         description = "Provides support for custom animations, HD fonts, mipmapping, and other graphical features.";
-        version = "2.2";
+        version = "3.0";
 
         configPanel = new HDConfig();
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
-        if (getMinecraftVersion().compareTo("13w09b") < 0) {
-            addError("Requires Minecraft 13w09b or newer");
+        if (getMinecraftVersion().compareTo("13w18a") < 0) {
+            addError("Requires Minecraft 13w18a or newer");
             return;
         }
 
         addClassMod(new MinecraftMod());
-        //addClassMod(new RenderEngineMod());
-        //addClassMod(new ColorizerMod("ColorizerGrass"));
-        //addClassMod(new ColorizerMod("ColorizerFoliage"));
         addClassMod(new BaseMod.IconMod());
         addClassMod(new BaseMod.ITextureMod());
         addClassMod(new BaseMod.TextureBaseMod());
@@ -76,13 +73,6 @@ public class ExtendedHD extends Mod {
 
     private class MinecraftMod extends BaseMod.MinecraftMod {
         MinecraftMod() {
-            //final FieldRef renderEngine = new FieldRef(getDeobfClass(), "renderEngine", "LRenderEngine;");
-
-            //addColorizerSignature("Grass");
-            //addColorizerSignature("Foliage");
-
-            //addMemberMapper(new FieldMapper(renderEngine));
-
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
@@ -103,231 +93,6 @@ public class ExtendedHD extends Mod {
                     );
                 }
             }.setInsertBefore(true));
-        }
-
-        private void addColorizerSignature(final String name) {
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push("/misc/" + name.toLowerCase() + "color.png"),
-                        anyReference(INVOKEVIRTUAL),
-                        captureReference(INVOKESTATIC)
-                    );
-                }
-            }.addXref(1, new MethodRef("Colorizer" + name, "loadColorBuffer", "([I)V")));
-        }
-    }
-
-    private class RenderEngineMod extends BaseMod.RenderEngineMod {
-        RenderEngineMod() {
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "update custom animations";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        RETURN
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CUSTOM_ANIMATION_CLASS, "updateAll", "()V"))
-                    );
-                }
-            }
-                .setInsertBefore(true)
-                .targetMethod(updateDynamicTextures)
-            );
-
-            addMipmappingPatches();
-        }
-
-        private void addMipmappingPatches() {
-            final MethodRef setupTextureExt = new MethodRef(getDeobfClass(), "setupTextureExt", "(Ljava/awt/image/BufferedImage;IZZ)V");
-            final MethodRef setupTextureMipmaps = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(LRenderEngine;Ljava/awt/image/BufferedImage;IZZLjava/lang/String;)V");
-            final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIII" + imageData.getType() + ")V");
-            final FieldRef currentMipmapLevel = new FieldRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "currentLevel", "I");
-            final FieldRef enableTextureBorder = new FieldRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "enableTextureBorder", "Z");
-            final MethodRef getImageWidth = new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I");
-            final MethodRef startsWith = new MethodRef("java/lang/String", "startsWith", "(Ljava/lang/String;)Z");
-
-            addMemberMapper(new MethodMapper(setupTextureExt));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override mipmap level in setupTexture";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, var3, var4, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, this.imageData);
-                        lookBehind(build(
-                            push(3553)
-                        ), true),
-                        push(0),
-                        lookAhead(build(
-                            any(0, 24),
-                            anyILOAD,
-                            anyILOAD,
-                            push(0),
-                            or(build(push(6408)), build(push(32993 /* GL11.GL_BGRA */))),
-                            or(build(push(5121)), build(push(33639 /* GL_UNSIGNED_INT_8_8_8_8_REV */))),
-                            ALOAD_0,
-                            reference(GETFIELD, imageData),
-                            reference(INVOKESTATIC, glTexImage2D)
-                        ), true)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // GL11.glTexImage2D(..., MipmapHelper.currentLevel, ...);
-                        reference(GETSTATIC, currentMipmapLevel)
-                    );
-                }
-            }.targetMethod(setupTextureExt));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "preserve texture parameters during mipmap creation";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        begin(),
-                        capture(nonGreedy(any(0, 300))),
-                        capture(build(
-                            ALOAD_1,
-                            reference(INVOKEVIRTUAL, getImageWidth)
-                        ))
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "currentLevel", "I")),
-                        IFNE, branch("A"),
-                        getCaptureGroup(1),
-                        label("A"),
-                        getCaptureGroup(2)
-                    );
-                }
-            }.targetMethod(setupTextureExt));
-
-            addPatch(new BytecodePatch() {
-                private byte[] pushTextureName;
-                private int position;
-
-                {
-                    addPreMatchSignature(new BytecodeSignature() {
-                        @Override
-                        public String getMatchExpression() {
-                            return buildExpression(
-                                capture(anyALOAD),
-                                push("%blur%"),
-                                reference(INVOKEVIRTUAL, startsWith)
-                            );
-                        }
-
-                        @Override
-                        public boolean afterMatch() {
-                            pushTextureName = getCaptureGroup(1);
-                            position = matcher.getStart();
-                            return true;
-                        }
-                    });
-                }
-
-                @Override
-                public String getDescription() {
-                    return "generate mipmaps during texture setup";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        reference(INVOKEVIRTUAL, setupTextureExt)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    if (matcher.getStart() < position) {
-                        return null;
-                    } else {
-                        return buildCode(
-                            pushTextureName,
-                            reference(INVOKESTATIC, setupTextureMipmaps)
-                        );
-                    }
-                }
-            });
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "enable texture border on terrain";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // this.terrain.refresh();
-                        ALOAD_0,
-                        reference(GETFIELD, textureMapBlocks),
-                        anyReference(INVOKEVIRTUAL)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // TexturePackAPI.enableTextureBorder = true;
-                        push(1),
-                        reference(PUTSTATIC, enableTextureBorder),
-
-                        // ...
-                        getMatch(),
-
-                        // TexturePackAPI.enableTextureBorder = false;
-                        push(0),
-                        reference(PUTSTATIC, enableTextureBorder)
-                    );
-                }
-            }.targetMethod(refreshTextureMaps));
-        }
-    }
-
-    private class ColorizerMod extends ClassMod {
-        private final String name;
-
-        ColorizerMod(String name) {
-            this.name = name;
-
-            final FieldRef colorBuffer = new FieldRef(getDeobfClass(), "colorBuffer", "[I");
-
-            addMemberMapper(new FieldMapper(colorBuffer));
-
-            addPatch(new MakeMemberPublicPatch(colorBuffer));
-
-            addPrerequisiteClass("Minecraft");
-        }
-
-        @Override
-        public String getDeobfClass() {
-            return name;
         }
     }
 

@@ -15,7 +15,7 @@ public class BetterSkies extends Mod {
         name = MCPatcherUtils.BETTER_SKIES;
         author = "MCPatcher";
         description = "Adds support for custom skyboxes.";
-        version = "1.3";
+        version = "1.4";
 
         configPanel = new ConfigPanel();
 

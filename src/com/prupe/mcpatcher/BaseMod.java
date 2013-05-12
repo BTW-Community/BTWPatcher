@@ -27,7 +27,7 @@ public final class BaseMod extends Mod {
         name = MCPatcherUtils.BASE_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
-        version = "1.1";
+        version = "1.2";
         configPanel = new ConfigPanel();
         clearDependencies();
 
@@ -773,91 +773,6 @@ public final class BaseMod extends Mod {
 
             addClassSignature(new ConstSignature(0.1875));
             addClassSignature(new ConstSignature(0.01));
-        }
-    }
-
-    /**
-     * Maps RenderEngine class.
-     */
-    public static class RenderEngineMod extends ClassMod {
-        protected final FieldRef textureMapBlocks = new FieldRef(getDeobfClass(), "textureMapBlocks", "LTextureMap;");
-        protected final FieldRef textureMapItems = new FieldRef(getDeobfClass(), "textureMapItems", "LTextureMap;");
-        protected final MethodRef updateDynamicTextures = new MethodRef(getDeobfClass(), "updateDynamicTextures", "()V");
-        protected final MethodRef refreshTextureMaps = new MethodRef(getDeobfClass(), "refreshTextureMaps", "()V");
-        protected final MethodRef glTexSubImage2DByte = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V");
-        protected final MethodRef glTexSubImage2DInt = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
-        protected final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "()V");
-        protected final MethodRef allocateAndSetupTexture = new MethodRef(getDeobfClass(), "allocateAndSetupTexture", "(Ljava/awt/image/BufferedImage;)I");
-        protected final FieldRef imageData = new FieldRef(getDeobfClass(), "imageData", "Ljava/nio/IntBuffer;");
-
-        private String updateAnimationsMapped;
-
-        public RenderEngineMod() {
-            addClassSignature(new ConstSignature("%clamp%"));
-            addClassSignature(new ConstSignature("%blur%"));
-            addClassSignature(new OrSignature(
-                new ConstSignature(glTexSubImage2DByte),
-                new ConstSignature(glTexSubImage2DInt)
-            ));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push("%blur%")
-                    );
-                }
-            }.setMethod(refreshTextures));
-
-            // updateAnimations and refreshTextureMaps are identical up to obfuscation:
-            // public void xxx() {
-            //   this.terrain.yyy();
-            //   this.items.yyy();
-            // }
-            // They're even called from similar methods, runTick() and startGame() in Minecraft.java.
-            // Normal descriptor and bytecode matching is insufficient here, so we rely on the fact
-            // that updateAnimations is defined first.
-            addClassSignature(new VoidSignature(updateDynamicTextures, "updateAnimations") {
-                @Override
-                public boolean afterMatch() {
-                    updateAnimationsMapped = getMethodInfo().getName();
-                    return true;
-                }
-            });
-
-            addClassSignature(new VoidSignature(refreshTextureMaps, "refreshTextures") {
-                @Override
-                public boolean filterMethod() {
-                    return updateAnimationsMapped != null && getMethodInfo().getName().compareTo(updateAnimationsMapped) > 0;
-                }
-            });
-
-            addMemberMapper(new FieldMapper(imageData));
-            addMemberMapper(new MethodMapper(allocateAndSetupTexture));
-        }
-
-        private class VoidSignature extends BytecodeSignature {
-            VoidSignature(MethodRef method, String textureMethod) {
-                setMethod(method);
-                addXref(1, textureMapBlocks);
-                addXref(2, new MethodRef("TextureMap", textureMethod, "()V"));
-                addXref(3, textureMapItems);
-            }
-
-            @Override
-            public String getMatchExpression() {
-                return buildExpression(
-                    begin(),
-                    ALOAD_0,
-                    captureReference(GETFIELD),
-                    captureReference(INVOKEVIRTUAL),
-                    ALOAD_0,
-                    captureReference(GETFIELD),
-                    backReference(2),
-                    RETURN,
-                    end()
-                );
-            }
         }
     }
 

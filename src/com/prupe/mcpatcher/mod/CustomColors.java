@@ -64,7 +64,7 @@ public class CustomColors extends Mod {
         name = MCPatcherUtils.CUSTOM_COLORS;
         author = "MCPatcher";
         description = "Gives texture packs control over hardcoded colors in the game.";
-        version = "1.5";
+        version = "1.6";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 

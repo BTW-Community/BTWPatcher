@@ -11,12 +11,11 @@ public class BaseTilesheetMod extends Mod {
         name = MCPatcherUtils.BASE_TILESHEET_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
-        version = "1.0";
+        version = "2.0";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
         addClassMod(new BaseMod.IconMod());
-        //addClassMod(new RenderEngineMod());
         addClassMod(new TessellatorMod());
         addClassMod(new IconRegisterMod());
         addClassMod(new TextureMapMod());
@@ -24,8 +23,6 @@ public class BaseTilesheetMod extends Mod {
         addClassMod(new BaseMod.TextureMod());
         addClassMod(new TextureManagerMod());
         addClassMod(new BaseMod.TextureStitchedMod());
-        //addClassMod(new StitcherMod());
-        //addClassMod(new StitchHolderMod());
 
         addClassFile(MCPatcherUtils.TILE_LOADER_CLASS);
         addClassFile(MCPatcherUtils.TILE_LOADER_CLASS + "$1");
@@ -37,38 +34,6 @@ public class BaseTilesheetMod extends Mod {
     @Override
     public String[] getLoggingCategories() {
         return new String[]{"Tilesheet"};
-    }
-
-    private class RenderEngineMod extends BaseMod.RenderEngineMod {
-        RenderEngineMod() {
-            final MethodRef updateAnimations = new MethodRef("TextureMap", "updateAnimations", "()V");
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "update ctm animations";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        reference(GETFIELD, textureMapBlocks),
-                        reference(INVOKEVIRTUAL, updateAnimations)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "updateAnimations", "()V"))
-                    );
-                }
-            }
-                .setInsertBefore(true)
-                .targetMethod(updateDynamicTextures)
-            );
-        }
     }
 
     private class TessellatorMod extends BaseMod.TessellatorMod {
@@ -524,228 +489,11 @@ public class BaseTilesheetMod extends Mod {
                     );
                 }
             }.targetMethod(registerIcon));
-
-            /* TODO: 1.5 stuff
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        captureReference(INVOKESTATIC),
-                        ALOAD_0,
-                        anyReference(GETFIELD),
-                        captureReference(INVOKEVIRTUAL),
-                        anyASTORE
-                    );
-                }
-            }
-                .setMethod(refreshTextures)
-                .addXref(1, new MethodRef("TextureManager", "getInstance", "()LTextureManager;"))
-                .addXref(2, new MethodRef("TextureManager", "createStitcher", "(Ljava/lang/String;)Lnet/minecraft/src/Stitcher;"))
-            );
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        ALOAD_3,
-                        captureReference(PUTFIELD)
-                    );
-                }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, textureExt)
-            );
-
-            //addMemberMapper(new MethodMapper(getTexture));
-            addMemberMapper(new FieldMapper(mapTexturesStitched));
-
-            addPatch(new MakeMemberPublicPatch(mapTexturesStitched));
-
-            addPatch(new BytecodePatch() {
-                private int stitcherRegister;
-                private int nameRegister;
-
-                {
-                    addPreMatchSignature(new BytecodeSignature() {
-                        @Override
-                        public String getMatchExpression() {
-                            return buildExpression(
-                                // stitcher.addStitchHolder(stitchHolder);
-                                capture(anyALOAD),
-                                anyALOAD,
-                                reference(INVOKEVIRTUAL, addStitchHolder),
-
-                                // map.put(stitchHolder, Arrays.asList(new Texture[]{texture}));
-                                capture(anyALOAD),
-                                anyALOAD,
-                                push(1),
-                                reference(ANEWARRAY, new ClassRef("Texture")),
-                                DUP,
-                                push(0),
-                                anyALOAD,
-                                AASTORE,
-                                reference(INVOKESTATIC, asList),
-                                or(
-                                    build(reference(INVOKEINTERFACE, mapPut)),
-                                    build(reference(INVOKEVIRTUAL, hashMapPut))
-                                ),
-                                POP
-                            );
-                        }
-
-                        @Override
-                        public boolean afterMatch() {
-                            stitcherRegister = extractRegisterNum(getCaptureGroup(1));
-                            nameRegister = extractRegisterNum(getCaptureGroup(2));
-                            return true;
-                        }
-                    });
-                }
-
-                @Override
-                public String getDescription() {
-                    return "register additional tiles";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        anyALOAD,
-                        reference(INVOKEVIRTUAL, doStitch)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // TileLoader.registerIcons(this, stitcher, mapName, map);
-                        ALOAD_0,
-                        ALOAD, stitcherRegister,
-                        ALOAD_0,
-                        reference(GETFIELD, basePath),
-                        ALOAD, nameRegister,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "registerIcons", "(LTextureMap;LStitcher;Ljava/lang/String;Ljava/util/Map;)V"))
-                    );
-                }
-            }
-                .setInsertBefore(true)
-                .targetMethod(refreshTextures)
-            );
-            */
-        }
-    }
-
-    private class TextureMod extends BaseMod.TextureMod {
-        TextureMod() {
-            /* TODO: 1.5 stuff
-            final MethodRef unloadGLTexture = new MethodRef(getDeobfClass(), "unloadGLTexture", "()V");
-
-            addPatch(new AddMethodPatch(unloadGLTexture) {
-                @Override
-                public byte[] generateMethod() {
-                    return buildCode(
-                        // if (this.glTexture >= 0) {
-                        ALOAD_0,
-                        reference(GETFIELD, glTextureId),
-                        IFLT, branch("A"),
-
-                        // GL11.glDeleteTextures(this.glTexture);
-                        ALOAD_0,
-                        reference(GETFIELD, glTextureId),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(I)V")),
-
-                        // this.glTexture = -1;
-                        ALOAD_0,
-                        push(-1),
-                        reference(PUTFIELD, glTextureId),
-
-                        // }
-                        label("A"),
-                        RETURN
-                    );
-                }
-            });
-            */
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override texture name";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        ALOAD_1,
-                        captureReference(PUTFIELD)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        ALOAD_0,
-                        ALOAD_1,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverrideTextureName", "(Ljava/lang/String;)Ljava/lang/String;")),
-                        getCaptureGroup(1)
-                    );
-                }
-            }.matchConstructorOnly(true));
         }
     }
 
     private class TextureManagerMod extends ClassMod {
         TextureManagerMod() {
-            setup16();
-        }
-
-        private void setup15() {
-            final MethodRef getInstance = new MethodRef(getDeobfClass(), "getInstance", "()LTextureManager;");
-            final MethodRef createTextureFromImage = new MethodRef(getDeobfClass(), "createTextureFromImage", "(Ljava/lang/String;IIIIIIIZLjava/awt/image/BufferedImage;)LTexture;");
-            final MethodRef createTextureFromFile = new MethodRef(getDeobfClass(), "createTextureFromFile", "(Ljava/lang/String;)Ljava/util/List;");
-
-            addClassSignature(new ConstSignature("/"));
-            addClassSignature(new ConstSignature(".txt"));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        captureReference(INVOKESTATIC),
-                        ISTORE_2,
-                        captureReference(NEW),
-                        DUP,
-                        ALOAD_1,
-                        ILOAD_2,
-                        ILOAD_2,
-                        or(
-                            build( // 13w02a
-                                reference(INVOKESTATIC, new MethodRef("org/lwjgl/opengl/GLContext", "getCapabilities", "()Lorg/lwjgl/opengl/ContextCapabilities;")),
-                                reference(GETFIELD, new FieldRef("org/lwjgl/opengl/ContextCapabilities", "GL_ARB_texture_non_power_of_two", "Z"))
-                            ),
-                            build(push(1)) // 13w02b
-                        ),
-                        anyReference(INVOKESPECIAL),
-                        ARETURN
-                    );
-                }
-            }
-                .setMethod(new MethodRef(getDeobfClass(), "createStitcher", "(Ljava/lang/String;)LStitcher;"))
-                .addXref(1, new MethodRef("Minecraft", "getMaxTextureSize", "()I"))
-                .addXref(2, new ClassRef("Stitcher"))
-            );
-
-            addMemberMapper(new MethodMapper(getInstance)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
-            );
-            addMemberMapper(new MethodMapper(createTextureFromImage));
-            addMemberMapper(new MethodMapper(createTextureFromFile));
-        }
-
-        private void setup16() {
             final MethodRef updateAnimations = new MethodRef(getDeobfClass(), "updateAnimations", "()V");
             final InterfaceMethodRef listIterator = new InterfaceMethodRef("java/util/List", "iterator", "()Ljava/util/Iterator;");
 
@@ -766,72 +514,6 @@ public class BaseTilesheetMod extends Mod {
                 .setMethod(updateAnimations)
                 .addXref(1, new FieldRef(getDeobfClass(), "animations", "Ljava/util/List;"))
             );
-        }
-    }
-
-    private class StitcherMod extends ClassMod {
-        StitcherMod() {
-            final MethodRef ceilPowerOf2 = new MethodRef(getDeobfClass(), "ceilPowerOf2", "(I)I");
-            final MethodRef addStitchHolder = new MethodRef(getDeobfClass(), "addStitchHolder", "(LStitchHolder;)V");
-            final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "()LTexture;");
-            final MethodRef doStitch = new MethodRef(getDeobfClass(), "doStitch", "()V");
-            final MethodRef arraySort = new MethodRef("java/util/Arrays", "sort", "([Ljava/lang/Object;)V");
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 1; i <= 16; i <<= 1) {
-                        sb.append(buildExpression(
-                            ILOAD_2,
-                            ILOAD_2,
-                            push(i),
-                            ISHR,
-                            IOR,
-                            ISTORE_2
-                        ));
-                    }
-                    return sb.toString();
-                }
-            }.setMethod(ceilPowerOf2));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        reference(INVOKESTATIC, arraySort)
-                    );
-                }
-            }.setMethod(doStitch));
-
-            addMemberMapper(new MethodMapper(addStitchHolder));
-            addMemberMapper(new MethodMapper(getTexture));
-        }
-    }
-
-    private class StitchHolderMod extends ClassMod {
-        StitchHolderMod() {
-            setInterfaces("java/lang/Comparable");
-
-            final MethodRef min = new MethodRef("java/lang/Math", "min", "(II)I");
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // (float)par1 / (float)Math.min(this.width, this.height)
-                        ILOAD_1,
-                        I2F,
-                        ALOAD_0,
-                        anyReference(GETFIELD),
-                        ALOAD_0,
-                        anyReference(GETFIELD),
-                        reference(INVOKESTATIC, min),
-                        I2F,
-                        FDIV
-                    );
-                }
-            }.setMethod(new MethodRef(getDeobfClass(), "setNewDimension", "(I)V")));
         }
     }
 }

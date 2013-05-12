@@ -17,7 +17,7 @@ public class RandomMobs extends Mod {
         author = "Balthichou";
         description = "Randomize mob skins if texture pack supports it. Based on Balthichou's mod.";
         website = "http://www.minecraftforum.net/topic/244172-";
-        version = "1.4";
+        version = "1.5";
 
         haveRenderLivingSub = getMinecraftVersion().compareTo("13w16a") >= 0;
 
