@@ -222,10 +222,10 @@ public final class BaseMod extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         ALOAD_0,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.UTILS_CLASS, "setMinecraft", "(LMinecraft;)V")),
-                        push(MCPatcher.minecraft.getVersion().getVersionString()),
+                        ALOAD, 6,
+                        push(getMinecraftVersion().getVersionString()),
                         push(MCPatcher.VERSION_STRING),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.UTILS_CLASS, "setVersions", "(Ljava/lang/String;Ljava/lang/String;)V"))
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.UTILS_CLASS, "setMinecraft", "(LMinecraft;Ljava/io/File;Ljava/lang/String;Ljava/lang/String;)V"))
                     );
                 }
             }

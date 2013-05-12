@@ -21,7 +21,6 @@ import java.util.zip.ZipFile;
  */
 public class MCPatcherUtils {
     private static File minecraftDir = null;
-    private static String directoryStr = "";
     private static boolean isGame;
 
     private static Minecraft minecraft;
@@ -96,26 +95,6 @@ public class MCPatcherUtils {
     public static final String TEXTURE_PACK_PREFIX = ""; // 1.5: "/"
 
     private MCPatcherUtils() {
-    }
-
-    static {
-        isGame = true;
-        try {
-            if (Class.forName("com.prupe.mcpatcher.MCPatcher") != null) {
-                isGame = false;
-            }
-        } catch (ClassNotFoundException e) {
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-
-        if (isGame) {
-            if (setGameDir(new File(".")) || setGameDir(getDefaultGameDir())) {
-                directoryStr = String.format("Game directory:    %s", minecraftDir.getPath());
-            } else {
-                directoryStr = String.format("Current directory: %s", new File(".").getAbsolutePath());
-            }
-        }
     }
 
     static File getDefaultGameDir() {
@@ -274,18 +253,17 @@ public class MCPatcherUtils {
         }
     }
 
-    public static void setMinecraft(Minecraft minecraft) {
+    public static void setMinecraft(Minecraft minecraft, File minecraftDir, String minecraftVersion, String patcherVersion) {
+        isGame = true;
         MCPatcherUtils.minecraft = minecraft;
-    }
-
-    public static void setVersions(String minecraftVersion, String patcherVersion) {
+        MCPatcherUtils.minecraftDir = minecraftDir.getAbsoluteFile();
         MCPatcherUtils.minecraftVersion = minecraftVersion;
         MCPatcherUtils.patcherVersion = patcherVersion;
         System.out.println();
         System.out.printf("MCPatcherUtils initialized:\n");
+        System.out.printf("Game directory:    %s\n", MCPatcherUtils.minecraftDir);
         System.out.printf("Minecraft version: %s\n", minecraftVersion);
         System.out.printf("MCPatcher version: %s\n", patcherVersion);
-        System.out.println(directoryStr);
         System.out.printf("Max heap memory:   %.1fMB\n", Runtime.getRuntime().maxMemory() / 1048576.0f);
         try {
             Class<?> vm = Class.forName("sun.misc.VM");
@@ -296,6 +274,7 @@ public class MCPatcherUtils {
             e.printStackTrace();
         }
         System.out.println();
+        Config.load(minecraftDir);
     }
 
     /**
