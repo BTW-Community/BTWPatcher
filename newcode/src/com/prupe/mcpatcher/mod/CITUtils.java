@@ -96,9 +96,15 @@ public class CITUtils {
                                     registerOverride(list, i, override);
                                 }
                             } else {
+                                int j = 0;
                                 for (int i = override.itemsIDs.nextSetBit(0); i >= 0; i = override.itemsIDs.nextSetBit(i + 1)) {
                                     registerOverride(list, i, override);
-                                    logger.fine("registered %s to item %d (%s)", override, i, getItemName(i));
+                                    if (j < 10) {
+                                        logger.fine("registered %s to item %d (%s)", override, i, getItemName(i));
+                                    } else if (j == 10) {
+                                        logger.fine("... %d total", override.itemsIDs.cardinality());
+                                    }
+                                    j++;
                                 }
                             }
                         }
