@@ -54,9 +54,9 @@ class ModList {
 
     ModList(MinecraftVersion version) {
         this.version = version;
-        register(new BuiltInMod(MCPatcherUtils.BASE_MOD, BaseMod.class).setInternal(false));
-        register(new BuiltInMod(MCPatcherUtils.BASE_TEXTURE_PACK_MOD, BaseTexturePackMod.class).setInternal(false));
-        register(new BuiltInMod(MCPatcherUtils.BASE_TILESHEET_MOD, BaseTilesheetMod.class).setInternal(false));
+        register(new BuiltInMod(MCPatcherUtils.BASE_MOD, BaseMod.class).setInternal(true));
+        register(new BuiltInMod(MCPatcherUtils.BASE_TEXTURE_PACK_MOD, BaseTexturePackMod.class).setInternal(true));
+        register(new BuiltInMod(MCPatcherUtils.BASE_TILESHEET_MOD, BaseTilesheetMod.class).setInternal(true));
         register(new BuiltInMod(MCPatcherUtils.EXTENDED_HD, ExtendedHD.class));
         register(new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, RandomMobs.class));
         register(new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, CustomColors.class));
