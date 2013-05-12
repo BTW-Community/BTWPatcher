@@ -15,7 +15,10 @@ public class CITUtils {
     static int LOWEST_ITEM_ID;
     static int HIGHEST_ITEM_ID;
     static final Map<String, Integer> itemNameMap = new HashMap<String, Integer>();
-    private static final int ITEM_ID_POTION = 373;
+
+    static final int ITEM_ID_COMPASS = 345;
+    static final int ITEM_ID_CLOCK = 347;
+    static final int ITEM_ID_POTION = 373;
 
     private static final boolean enableItems = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "items", true);
     private static final boolean enableOverlays = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "overlays", true);

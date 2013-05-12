@@ -135,7 +135,15 @@ class ItemOverride {
 
     void preload(TileLoader tileLoader) {
         if (type == ITEM) {
-            tileLoader.preloadTile(textureName, false);
+            String special = null;
+            if (itemsIDs != null) {
+                if (itemsIDs.get(CITUtils.ITEM_ID_COMPASS)) {
+                    special = "compass";
+                } else if (itemsIDs.get(CITUtils.ITEM_ID_CLOCK)) {
+                    special = "clock";
+                }
+            }
+            tileLoader.preloadTile(textureName, false, special);
         }
     }
 
