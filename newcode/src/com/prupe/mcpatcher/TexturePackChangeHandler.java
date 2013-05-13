@@ -1,13 +1,9 @@
 package com.prupe.mcpatcher;
 
-import net.minecraft.src.ITexturePack;
-import net.minecraft.src.TexturePackCustom;
-import net.minecraft.src.TexturePackList;
+import net.minecraft.src.*;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 import java.util.zip.ZipFile;
 
 abstract public class TexturePackChangeHandler {
@@ -121,6 +117,20 @@ abstract public class TexturePackChangeHandler {
             } catch (Throwable e) {
                 e.printStackTrace();
                 logger.severe("%s.beforeChange failed", handler.name);
+            }
+        }
+
+        TextureManager textureManager = MCPatcherUtils.getMinecraft().getTextureManager();
+        if (textureManager != null) {
+            Set<String> texturesToUnload = new HashSet<String>();
+            for (Map.Entry<String, ITexture> entry : textureManager.texturesByName.entrySet()) {
+                String name = entry.getKey();
+                if (!TexturePackAPI.hasResource(name)) {
+                    texturesToUnload.add(name);
+                }
+            }
+            for (String name : texturesToUnload) {
+                TexturePackAPI.unloadTexture(name);
             }
         }
     }
