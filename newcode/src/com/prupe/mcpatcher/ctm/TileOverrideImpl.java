@@ -122,7 +122,7 @@ class TileOverrideImpl {
 
         @Override
         Icon getTileImpl(Block block, Icon origIcon, int face, int metadata) {
-            return icons[0];
+            return icons[3];
         }
     }
 
@@ -173,7 +173,7 @@ class TileOverrideImpl {
 
         @Override
         Icon getTileImpl(Block block, Icon origIcon, int face, int metadata) {
-            return icons[0];
+            return icons[3];
         }
     }
 
@@ -212,7 +212,7 @@ class TileOverrideImpl {
 
         @Override
         Icon getTileImpl(Block block, Icon origIcon, int face, int metadata) {
-            return icons[0];
+            return null;
         }
     }
 
