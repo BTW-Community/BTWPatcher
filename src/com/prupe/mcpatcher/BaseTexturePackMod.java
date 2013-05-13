@@ -163,6 +163,7 @@ public class BaseTexturePackMod extends Mod {
 
     private class TextureManagerMod extends ClassMod {
         TextureManagerMod() {
+            final FieldRef texturesByName = new FieldRef(getDeobfClass(), "texturesByName", "Ljava/util/Map;");
             final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(Ljava/lang/String;)V");
             final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "(Ljava/lang/String;)LITexture;");
             final MethodRef unloadTexture = new MethodRef(getDeobfClass(), "unloadTexture", "(Ljava/lang/String;)V");
@@ -171,10 +172,13 @@ public class BaseTexturePackMod extends Mod {
 
             addClassSignature(new ConstSignature("dynamic/%s_%d"));
 
+            addMemberMapper(new FieldMapper(texturesByName));
             addMemberMapper(new MethodMapper(bindTexture, unloadTexture).accessFlag(AccessFlag.STATIC, false));
             addMemberMapper(new MethodMapper(getTexture).accessFlag(AccessFlag.STATIC, false));
             addMemberMapper(new MethodMapper(addTexture));
             addMemberMapper(new MethodMapper(refreshTextures));
+
+            addPatch(new MakeMemberPublicPatch(texturesByName));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -226,6 +230,8 @@ public class BaseTexturePackMod extends Mod {
     private class TextureBaseMod extends BaseMod.TextureBaseMod {
         TextureBaseMod() {
             final MethodRef unloadGLTexture = new MethodRef(getDeobfClass(), "unloadGLTexture", "()V");
+
+            addPatch(new MakeMemberPublicPatch(glTextureId));
 
             addPatch(new AddMethodPatch(unloadGLTexture) {
                 @Override
