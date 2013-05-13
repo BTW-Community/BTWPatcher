@@ -9,7 +9,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.*;
@@ -21,26 +20,6 @@ public class TexturePackAPI {
 
     public static TexturePackAPI instance = new TexturePackAPI();
     public static boolean enableTextureBorder;
-
-    private static Field textureIDField;
-    private static Field textureNameMapField;
-
-    static {
-        try {
-            for (Field field : TextureBase.class.getDeclaredFields()) {
-                if (textureIDField == null && field.getType() == Integer.TYPE) {
-                    field.setAccessible(true);
-                    textureIDField = field;
-                }
-                if (textureNameMapField == null && HashMap.class.isAssignableFrom(field.getType())) {
-                    field.setAccessible(true);
-                    textureNameMapField = field;
-                }
-            }
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-    }
 
     public static ITexturePack getTexturePack() {
         Minecraft minecraft = MCPatcherUtils.getMinecraft();
@@ -208,15 +187,7 @@ public class TexturePackAPI {
 
     public static int getTextureIfLoaded(String s) {
         ITexture texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(s);
-        if (texture instanceof TextureBase && textureIDField != null) {
-            try {
-                return textureIDField.getInt(texture);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-                textureIDField = null;
-            }
-        }
-        return -1;
+        return texture instanceof TextureBase ? ((TextureBase) texture).glTexture : -1;
     }
 
     public static boolean isTextureLoaded(String s) {
@@ -244,17 +215,8 @@ public class TexturePackAPI {
             if (texture instanceof TextureBase) {
                 ((TextureBase) texture).unloadGLTexture();
             }
-            if (textureNameMapField != null) {
-                try {
-                    Object o = textureNameMapField.get(textureManager);
-                    if (o instanceof Map) {
-                        ((Map) o).remove(s);
-                    }
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                    textureNameMapField = null;
-                }
-            }
+            logger.finer("unloading texture %s", s);
+            textureManager.texturesByName.remove(s);
         }
     }
 
