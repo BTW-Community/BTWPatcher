@@ -187,7 +187,7 @@ public class TexturePackAPI {
 
     public static int getTextureIfLoaded(String s) {
         ITexture texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(s);
-        return texture instanceof TextureBase ? ((TextureBase) texture).glTexture : -1;
+        return texture instanceof TextureBase ? ((TextureBase) texture).glTextureId : -1;
     }
 
     public static boolean isTextureLoaded(String s) {
