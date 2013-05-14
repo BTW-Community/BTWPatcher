@@ -23,6 +23,15 @@ abstract class TileOverride implements ITileOverride {
     static final int WEST_FACE = 4; // -1, 0, 0
     static final int EAST_FACE = 5; // 1, 0, 0
 
+    static final int REL_L = 0;
+    static final int REL_DL = 1;
+    static final int REL_D = 2;
+    static final int REL_DR = 3;
+    static final int REL_R = 4;
+    static final int REL_UR = 5;
+    static final int REL_U = 6;
+    static final int REL_UL = 7;
+
     private static final int META_MASK = 0xffff;
     private static final int ORIENTATION_U_D = 0;
     private static final int ORIENTATION_E_W = 1 << 16;

@@ -111,10 +111,10 @@ class TileOverrideImpl {
             }
             int[][] offsets = NEIGHBOR_OFFSET[face];
             int neighborBits = 0;
-            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(0)])) {
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_L)])) {
                 neighborBits |= 1;
             }
-            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(4)])) {
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_R)])) {
                 neighborBits |= 2;
             }
             return icons[neighborMap[neighborBits]];
@@ -162,10 +162,10 @@ class TileOverrideImpl {
             }
             int[][] offsets = NEIGHBOR_OFFSET[face];
             int neighborBits = 0;
-            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(2)])) {
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_D)])) {
                 neighborBits |= 1;
             }
-            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(6)])) {
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_U)])) {
                 neighborBits |= 2;
             }
             return icons[neighborMap[neighborBits]];
@@ -204,7 +204,7 @@ class TileOverrideImpl {
                 return null;
             }
             int[][] offsets = NEIGHBOR_OFFSET[face];
-            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(6)])) {
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_U)])) {
                 return icons[0];
             }
             return null;
