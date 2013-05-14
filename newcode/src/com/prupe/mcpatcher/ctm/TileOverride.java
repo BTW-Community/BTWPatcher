@@ -201,8 +201,12 @@ abstract class TileOverride implements ITileOverride {
             override = new TileOverrideImpl.Fixed(propertiesFile, properties, tileLoader);
         } else if (method.equals("bookshelf") || method.equals("horizontal")) {
             override = new TileOverrideImpl.Horizontal(propertiesFile, properties, tileLoader);
+        } else if (method.equals("horizontal+vertical") || method.equals("h+v")) {
+            override = new TileOverrideImpl.HorizontalVertical(propertiesFile, properties, tileLoader);
         } else if (method.equals("vertical")) {
             override = new TileOverrideImpl.Vertical(propertiesFile, properties, tileLoader);
+        } else if (method.equals("vertical+horizontal") || method.equals("v+h")) {
+            override = new TileOverrideImpl.VerticalHorizontal(propertiesFile, properties, tileLoader);
         } else if (method.equals("sandstone") || method.equals("top")) {
             override = new TileOverrideImpl.Top(propertiesFile, properties, tileLoader);
         } else if (method.equals("repeat") || method.equals("pattern")) {

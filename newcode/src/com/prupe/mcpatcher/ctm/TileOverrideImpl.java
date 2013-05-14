@@ -77,7 +77,7 @@ class TileOverrideImpl {
         }
     }
 
-    final static class Horizontal extends TileOverride {
+    static class Horizontal extends TileOverride {
         // Index into this array is formed from these bit values:
         // 1   *   2
         private static final int[] neighborMap = new int[]{
@@ -126,7 +126,67 @@ class TileOverrideImpl {
         }
     }
 
-    final static class Vertical extends TileOverride {
+    final static class HorizontalVertical extends Horizontal {
+        // Index into this array is formed from these bit values:
+        // 32  16  8
+        //     *
+        // 1   2   4
+        private static final int[] neighborMap = new int[]{
+            3, 3, 6, 3, 3, 3, 3, 3, 3, 3, 6, 3, 3, 3, 3, 3,
+            4, 4, 5, 4, 4, 4, 4, 4, 3, 3, 6, 3, 3, 3, 3, 3,
+            3, 3, 6, 3, 3, 3, 3, 3, 3, 3, 6, 3, 3, 3, 3, 3,
+            3, 3, 6, 3, 3, 3, 3, 3, 3, 3, 6, 3, 3, 3, 3, 3,
+        };
+
+        HorizontalVertical(String filePrefix, Properties properties, TileLoader tileLoader) {
+            super(filePrefix, properties, tileLoader);
+        }
+
+        @Override
+        String getMethod() {
+            return "horizontal+vertical";
+        }
+
+        @Override
+        String checkTileMap() {
+            if (getNumberOfTiles() == 7) {
+                return null;
+            } else {
+                return "requires exactly 7 tiles";
+            }
+        }
+
+        @Override
+        Icon getTileImpl(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int face) {
+            Icon icon = super.getTileImpl(blockAccess, block, origIcon, i, j, k, face);
+            if (icon != icons[3]) {
+                return icon;
+            }
+            int[][] offsets = NEIGHBOR_OFFSET[face];
+            int neighborBits = 0;
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_DL)])) {
+                neighborBits |= 1;
+            }
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_D)])) {
+                neighborBits |= 2;
+            }
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_DR)])) {
+                neighborBits |= 4;
+            }
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_UR)])) {
+                neighborBits |= 8;
+            }
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_U)])) {
+                neighborBits |= 16;
+            }
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_UL)])) {
+                neighborBits |= 32;
+            }
+            return icons[neighborMap[neighborBits]];
+        }
+    }
+
+    static class Vertical extends TileOverride {
         // Index into this array is formed from these bit values:
         // 2
         // *
@@ -174,6 +234,66 @@ class TileOverrideImpl {
         @Override
         Icon getTileImpl(Block block, Icon origIcon, int face, int metadata) {
             return icons[3];
+        }
+    }
+
+    final static class VerticalHorizontal extends Vertical {
+        // Index into this array is formed from these bit values:
+        // 32     16
+        // 1   *   8
+        // 2       4
+        private static final int[] neighborMap = new int[]{
+            3, 6, 3, 3, 3, 6, 3, 3, 4, 5, 4, 4, 3, 6, 3, 3,
+            3, 6, 3, 3, 3, 6, 3, 3, 3, 6, 3, 3, 3, 6, 3, 3,
+            3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 3, 3, 3, 3,
+            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+        };
+
+        VerticalHorizontal(String filePrefix, Properties properties, TileLoader tileLoader) {
+            super(filePrefix, properties, tileLoader);
+        }
+
+        @Override
+        String getMethod() {
+            return "vertical+horizontal";
+        }
+
+        @Override
+        String checkTileMap() {
+            if (getNumberOfTiles() == 7) {
+                return null;
+            } else {
+                return "requires exactly 7 tiles";
+            }
+        }
+
+        @Override
+        Icon getTileImpl(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int face) {
+            Icon icon = super.getTileImpl(blockAccess, block, origIcon, i, j, k, face);
+            if (icon != icons[3]) {
+                return icon;
+            }
+            int[][] offsets = NEIGHBOR_OFFSET[face];
+            int neighborBits = 0;
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_L)])) {
+                neighborBits |= 1;
+            }
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_DL)])) {
+                neighborBits |= 2;
+            }
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_DR)])) {
+                neighborBits |= 4;
+            }
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_R)])) {
+                neighborBits |= 8;
+            }
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_UR)])) {
+                neighborBits |= 16;
+            }
+            if (shouldConnect(blockAccess, block, origIcon, i, j, k, face, offsets[rotateUV(REL_UL)])) {
+                neighborBits |= 32;
+            }
+            return icons[neighborMap[neighborBits]];
         }
     }
 
