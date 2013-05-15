@@ -125,7 +125,7 @@ abstract public class TexturePackChangeHandler {
             Set<String> texturesToUnload = new HashSet<String>();
             for (Map.Entry<String, ITexture> entry : textureManager.texturesByName.entrySet()) {
                 String name = entry.getKey();
-                if (!TexturePackAPI.hasResource(name)) {
+                if (!name.startsWith("dynamic/") && !TexturePackAPI.hasResource(name)) {
                     texturesToUnload.add(name);
                 }
             }

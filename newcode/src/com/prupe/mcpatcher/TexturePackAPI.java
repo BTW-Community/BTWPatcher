@@ -211,7 +211,7 @@ public class TexturePackAPI {
     public static void unloadTexture(String s) {
         TextureManager textureManager = MCPatcherUtils.getMinecraft().getTextureManager();
         ITexture texture = textureManager.getTexture(s);
-        if (texture != null) {
+        if (texture != null && !(texture instanceof TextureMap)) {
             if (texture instanceof TextureBase) {
                 ((TextureBase) texture).unloadGLTexture();
             }
