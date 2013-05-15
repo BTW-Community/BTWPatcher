@@ -283,7 +283,7 @@ public class CustomItemTextures extends Mod {
         RenderItemMod() {
             final FieldRef zLevel = new FieldRef(getDeobfClass(), "zLevel", "F");
             final MethodRef renderDroppedItem = new MethodRef(getDeobfClass(), "renderDroppedItem", "(LEntityItem;LIcon;IFFFF)V");
-            final MethodRef renderItemAndEffectIntoGUI = new MethodRef(getDeobfClass(), "renderItemAndEffectIntoGUI", "(LFontRenderer;LRenderEngine;LItemStack;II)V");
+            final MethodRef renderItemAndEffectIntoGUI = new MethodRef(getDeobfClass(), "renderItemAndEffectIntoGUI", "(LFontRenderer;LTextureManager;LItemStack;II)V");
 
             addClassSignature(new GlintSignature(renderDroppedItem));
             addClassSignature(new GlintSignature(renderItemAndEffectIntoGUI));

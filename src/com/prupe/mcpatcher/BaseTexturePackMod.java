@@ -331,8 +331,8 @@ public class BaseTexturePackMod extends Mod {
     private class ITexturePackMod extends ClassMod {
         ITexturePackMod() {
             addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "deleteTexturePack", "(LRenderEngine;)V"),
-                new InterfaceMethodRef(getDeobfClass(), "bindThumbnailTexture", "(LRenderEngine;)V"),
+                new InterfaceMethodRef(getDeobfClass(), "deleteTexturePack", "(LTextureManager;)V"),
+                new InterfaceMethodRef(getDeobfClass(), "bindThumbnailTexture", "(LTextureManager;)V"),
                 new InterfaceMethodRef(getDeobfClass(), "getResourceAsStream2", "(Ljava/lang/String;Z)Ljava/io/InputStream;"),
                 new InterfaceMethodRef(getDeobfClass(), "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;"),
                 new InterfaceMethodRef(getDeobfClass(), "getTexturePackID", "()Ljava/lang/String;"),
