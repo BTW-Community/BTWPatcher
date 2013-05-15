@@ -196,20 +196,16 @@ public class TileLoader {
         loaders.add(this);
     }
 
-    private static long getTextureSize(List<Texture> textures) {
-        if (textures.isEmpty()) {
-            return 0;
-        } else {
-            Texture texture = textures.get(0);
-            if (texture == null) {
-                return 0;
-            }
-            return 4 * texture.getWidth() * texture.getHeight();
-        }
+    private static long getTextureSize(TextureStitched texture) {
+        return texture == null ? 0 : 4 * texture.getWidth() * texture.getHeight();
     }
 
     private static long getTextureSize(Collection<TextureStitched> textures) {
-        return textures.size() * 64 * 64 * 4; // TODO
+        long size = 0;
+        for (TextureStitched texture : textures) {
+            size += getTextureSize(texture);
+        }
+        return size;
     }
 
     public boolean preloadTile(String path, boolean alternate, String special) {
