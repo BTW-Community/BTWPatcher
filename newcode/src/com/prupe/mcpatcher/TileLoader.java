@@ -58,7 +58,7 @@ public class TileLoader {
                 TessellatorUtils.clear(Tessellator.instance);
                 for (TextureMap textureMap : overflowMaps) {
                     try {
-                        textureMap.getTexture().unloadGLTexture();
+                        textureMap.unloadGLTexture();
                     } catch (Throwable e) {
                         e.printStackTrace();
                     }

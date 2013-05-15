@@ -362,7 +362,7 @@ abstract class TileOverride implements ITileOverride {
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
                     }
-                } else if (token.startsWith("/")) {
+                } else if (token.contains("/")) {
                     if (!addIcon(token)) {
                         warn("could not find image %s", token);
                     }
