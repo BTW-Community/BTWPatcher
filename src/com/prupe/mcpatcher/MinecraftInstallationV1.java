@@ -135,13 +135,5 @@ class MinecraftInstallationV1 extends MinecraftInstallation {
                 Util.copyFile(outputFile, origFile);
             }
         }
-
-        @Override
-        void restoreBackup() throws IOException {
-            super.restoreBackup();
-            if (origFile.exists()) {
-                Util.copyFile(origFile, outputFile);
-            }
-        }
     }
 }

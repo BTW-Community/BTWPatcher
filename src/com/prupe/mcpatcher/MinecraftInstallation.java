@@ -395,6 +395,9 @@ abstract class MinecraftInstallation {
 
         void restoreBackup() throws IOException {
             closeStreams();
+            if (origFile.exists()) {
+                Util.copyFile(origFile, outputFile);
+            }
         }
 
         void setOutputFile(File file) {
