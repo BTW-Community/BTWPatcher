@@ -16,7 +16,6 @@ public class TileLoader {
     private static final boolean debugTextures = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "debugTextures", false);
     private static final int splitTextures = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "splitTextures", 1);
     private static final Map<String, String> specialTextures = new HashMap<String, String>();
-    private static String overrideTextureName;
 
     private static final TexturePackChangeHandler changeHandler;
     private static boolean changeHandlerCalled;
@@ -25,7 +24,6 @@ public class TileLoader {
 
     private static final int OVERFLOW_TEXTURE_MAP_INDEX = 2;
     private static final long MAX_TILESHEET_SIZE;
-    private static final BufferedImage missingTextureImage = generateDebugTexture("missing", 64, 64, false);
 
     protected final String mapName;
     protected final boolean allowOverflow;
@@ -137,18 +135,6 @@ public class TileLoader {
         }
         logger.finer("getOverridePath(%s, %s, %s) -> %s", prefix, name, ext, path);
         return path;
-    }
-
-    public static String getOverrideTextureName(String name) {
-        if (overrideTextureName == null) {
-            if (name.matches("^\\d+$")) {
-                logger.warning("no override set for %s", name);
-            }
-            return name;
-        } else {
-            logger.finer("getOverrideTextureName(%s) -> %s", name, overrideTextureName);
-            return overrideTextureName;
-        }
     }
 
     public static boolean isSpecialTexture(TextureMap map, String texture, String special) {

@@ -226,19 +226,6 @@ public class TexturePackAPI {
         }
     }
 
-    public static IntBuffer getIntBuffer(IntBuffer buffer, int[] data) {
-        buffer.clear();
-        final int have = buffer.capacity();
-        final int needed = data.length;
-        if (needed > have) {
-            logger.finest("resizing gl buffer from 0x%x to 0x%x", have, needed);
-            buffer = ByteBuffer.allocateDirect(4 * needed).order(buffer.order()).asIntBuffer();
-        }
-        buffer.put(data);
-        buffer.position(0).limit(needed);
-        return buffer;
-    }
-
     protected InputStream getInputStreamImpl(String s) {
         ITexturePack texturePack = getTexturePack();
         if (texturePack == null) {
