@@ -2,7 +2,6 @@ package com.prupe.mcpatcher;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
-import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
