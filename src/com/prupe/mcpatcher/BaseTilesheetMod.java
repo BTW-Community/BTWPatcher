@@ -315,25 +315,16 @@ public class BaseTilesheetMod extends Mod {
 
     private class TextureMapMod extends BaseMod.TextureMapMod {
         TextureMapMod() {
-            final FieldRef textureExt = new FieldRef(getDeobfClass(), "textureExt", "Ljava/lang/String;");
-            final FieldRef mapTexturesStitched = new FieldRef(getDeobfClass(), "mapTexturesStitched", "Ljava/util/HashMap;");
-            final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "()LTexture;");
+            final MethodRef registerTiles = new MethodRef(getDeobfClass(), "registerTiles", "()V");
+            final InterfaceMethodRef mapClear = new InterfaceMethodRef("java/util/Map", "clear", "()V");
+            final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
+            final InterfaceMethodRef setIterator = new InterfaceMethodRef("java/util/Set", "iterator", "()Ljava/util/Iterator;");
             final ClassRef sbClass = new ClassRef("java/lang/StringBuilder");
             final MethodRef strValueOf = new MethodRef("java/lang/String", "valueOf", "(Ljava/lang/Object;)Ljava/lang/String;");
             final MethodRef sbInit0 = new MethodRef("java/lang/StringBuilder", "<init>", "()V");
             final MethodRef sbInit1 = new MethodRef("java/lang/StringBuilder", "<init>", "(Ljava/lang/String;)V");
             final MethodRef sbAppend = new MethodRef("java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;");
             final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
-            final MethodRef addStitchHolder = new MethodRef("Stitcher", "addStitchHolder", "(LStitchHolder;)V");
-            final MethodRef asList = new MethodRef("java/util/Arrays", "asList", "([Ljava/lang/Object;)Ljava/util/List;");
-            final InterfaceMethodRef mapPut = new InterfaceMethodRef("java/util/Map", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
-            final MethodRef hashMapPut = new MethodRef("java/util/HashMap", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
-            final MethodRef doStitch = new MethodRef("Stitcher", "doStitch", "()V");
-
-            final MethodRef registerTiles = new MethodRef(getDeobfClass(), "registerTiles", "()V");
-            final InterfaceMethodRef mapClear = new InterfaceMethodRef("java/util/Map", "clear", "()V");
-            final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
-            final InterfaceMethodRef setIterator = new InterfaceMethodRef("java/util/Set", "iterator", "()Ljava/util/Iterator;");
             final MethodRef strEquals = new MethodRef("java/lang/String", "equals", "(Ljava/lang/Object;)Z");
 
             addClassSignature(new BytecodeSignature() {
