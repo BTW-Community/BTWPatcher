@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Properties;
 
-class ItemOverlay implements Comparable<ItemOverlay> {
+class Enchantment implements Comparable<Enchantment> {
     private static final float ITEM_2D_THICKNESS = 0.0625f;
 
     final ItemOverride override;
@@ -52,7 +52,7 @@ class ItemOverlay implements Comparable<ItemOverlay> {
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
     }
 
-    static ItemOverlay create(ItemOverride override, Properties properties) {
+    static Enchantment create(ItemOverride override, Properties properties) {
         String value = MCPatcherUtils.getStringProperty(properties, "blend", "add");
         BlendMethod blendMethod = BlendMethod.parse(value);
         if (blendMethod == null) {
@@ -64,10 +64,10 @@ class ItemOverlay implements Comparable<ItemOverlay> {
         float duration = MCPatcherUtils.getFloatProperty(properties, "duration", 1.0f);
         int layer = MCPatcherUtils.getIntProperty(properties, "layer", 0);
         int weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
-        return new ItemOverlay(override, blendMethod, rotation, speed, duration, layer, weight);
+        return new Enchantment(override, blendMethod, rotation, speed, duration, layer, weight);
     }
 
-    ItemOverlay(ItemOverride override, BlendMethod blendMethod, float rotation, float speed, float duration, int layer, int weight) {
+    Enchantment(ItemOverride override, BlendMethod blendMethod, float rotation, float speed, float duration, int layer, int weight) {
         this.override = override;
         this.blendMethod = blendMethod;
         this.rotation = rotation;
@@ -144,7 +144,7 @@ class ItemOverlay implements Comparable<ItemOverlay> {
         GL11.glPopMatrix();
     }
 
-    public int compareTo(ItemOverlay o) {
+    public int compareTo(Enchantment o) {
         int result = weight - o.weight;
         if (result != 0) {
             return result;

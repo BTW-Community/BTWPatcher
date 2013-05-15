@@ -90,8 +90,8 @@ public class MCPatcherUtils {
 
     public static final String CIT_UTILS_CLASS = "com.prupe.mcpatcher.cit.CITUtils";
     public static final String ITEM_OVERRIDE_CLASS = "com.prupe.mcpatcher.cit.ItemOverride";
-    public static final String ITEM_OVERLAY_CLASS = "com.prupe.mcpatcher.cit.ItemOverlay";
-    public static final String ITEM_OVERLAY_LIST_CLASS = "com.prupe.mcpatcher.cit.ItemOverlayList";
+    public static final String ENCHANTMENT_CLASS = "com.prupe.mcpatcher.cit.Enchantment";
+    public static final String ENCHANTMENT_LIST_CLASS = "com.prupe.mcpatcher.cit.EnchantmentList";
 
     public static final String SHADERS_CLASS = "com.prupe.mcpatcher.glsl.Shaders";
 

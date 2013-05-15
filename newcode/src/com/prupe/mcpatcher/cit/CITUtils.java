@@ -32,7 +32,7 @@ public class CITUtils {
 
     private static boolean useGlint;
 
-    private static ItemOverlayList armorMatches;
+    private static EnchantmentList armorMatches;
     private static int armorMatchIndex;
 
     private static Icon lastIcon;
@@ -48,9 +48,9 @@ public class CITUtils {
                 lastIcon = null;
                 itemNameMap.clear();
                 useGlint = true;
-                ItemOverlayList.applyMethod = ItemOverlayList.LAYERED;
-                ItemOverlayList.limit = 99;
-                ItemOverlayList.fade = 0.5f;
+                EnchantmentList.applyMethod = EnchantmentList.LAYERED;
+                EnchantmentList.limit = 99;
+                EnchantmentList.fade = 0.5f;
                 for (LOWEST_ITEM_ID = 256; LOWEST_ITEM_ID < MAX_ITEMS; LOWEST_ITEM_ID++) {
                     if (Item.itemsList[LOWEST_ITEM_ID] != null) {
                         break;
@@ -88,7 +88,7 @@ public class CITUtils {
                                     list = items;
                                     break;
 
-                                case ItemOverride.OVERLAY:
+                                case ItemOverride.ENCHANTMENT:
                                     list = overlays;
                                     break;
 
@@ -138,14 +138,14 @@ public class CITUtils {
                 if (properties != null) {
                     String value = MCPatcherUtils.getStringProperty(properties, "method", "").toLowerCase();
                     if (value.equals("layered")) {
-                        ItemOverlayList.applyMethod = ItemOverlayList.LAYERED;
+                        EnchantmentList.applyMethod = EnchantmentList.LAYERED;
                     } else if (value.equals("cycle")) {
-                        ItemOverlayList.applyMethod = ItemOverlayList.CYCLE;
+                        EnchantmentList.applyMethod = EnchantmentList.CYCLE;
                     } else {
-                        ItemOverlayList.applyMethod = ItemOverlayList.AVERAGE;
+                        EnchantmentList.applyMethod = EnchantmentList.AVERAGE;
                     }
-                    ItemOverlayList.limit = MCPatcherUtils.getIntProperty(properties, "cap", ItemOverlayList.limit);
-                    ItemOverlayList.fade = MCPatcherUtils.getFloatProperty(properties, "fade", ItemOverlayList.fade);
+                    EnchantmentList.limit = MCPatcherUtils.getIntProperty(properties, "cap", EnchantmentList.limit);
+                    EnchantmentList.fade = MCPatcherUtils.getFloatProperty(properties, "fade", EnchantmentList.fade);
                     useGlint = MCPatcherUtils.getBooleanProperty(properties, "useGlint", useGlint);
                 }
             }
@@ -227,7 +227,7 @@ public class CITUtils {
         if (!enableOverlays || itemStack == null) {
             return false;
         }
-        ItemOverlayList matches = new ItemOverlayList(overlays, itemStack);
+        EnchantmentList matches = new EnchantmentList(overlays, itemStack);
         if (matches.isEmpty()) {
             return false;
         }
@@ -239,11 +239,11 @@ public class CITUtils {
             width = lastIcon.getWidth();
             height = lastIcon.getHeight();
         }
-        ItemOverlay.beginOuter3D();
+        Enchantment.beginOuter3D();
         for (int i = 0; i < matches.size(); i++) {
             matches.getOverlay(i).render3D(Tessellator.instance, matches.getIntensity(i), width, height);
         }
-        ItemOverlay.endOuter3D();
+        Enchantment.endOuter3D();
         return !useGlint;
     }
 
@@ -255,15 +255,15 @@ public class CITUtils {
         if (!enableOverlays || itemStack == null) {
             return false;
         }
-        ItemOverlayList matches = new ItemOverlayList(overlays, itemStack);
+        EnchantmentList matches = new EnchantmentList(overlays, itemStack);
         if (matches.isEmpty()) {
             return false;
         }
-        ItemOverlay.beginOuter2D();
+        Enchantment.beginOuter2D();
         for (int i = 0; i < matches.size(); i++) {
             matches.getOverlay(i).render2D(Tessellator.instance, matches.getIntensity(i), x - 2, y - 2, x + 18, y + 18, z - 50.0f);
         }
-        ItemOverlay.endOuter2D();
+        Enchantment.endOuter2D();
         return !useGlint;
     }
 
@@ -275,14 +275,14 @@ public class CITUtils {
         if (itemStack == null) {
             return false;
         }
-        armorMatches = new ItemOverlayList(overlays, itemStack);
+        armorMatches = new EnchantmentList(overlays, itemStack);
         armorMatchIndex = 0;
         return !armorMatches.isEmpty();
     }
 
     public static boolean preRenderArmorOverlay() {
         if (armorMatchIndex < armorMatches.size()) {
-            ItemOverlay overlay = armorMatches.getOverlay(armorMatchIndex);
+            Enchantment overlay = armorMatches.getOverlay(armorMatchIndex);
             overlay.beginArmor(armorMatches.getIntensity(armorMatchIndex));
             return true;
         } else {

@@ -46,9 +46,9 @@ public class CustomItemTextures extends Mod {
         addClassFile(MCPatcherUtils.CIT_UTILS_CLASS);
         addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$1");
         addClassFile(MCPatcherUtils.ITEM_OVERRIDE_CLASS);
-        addClassFile(MCPatcherUtils.ITEM_OVERLAY_CLASS);
-        addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS);
-        addClassFile(MCPatcherUtils.ITEM_OVERLAY_LIST_CLASS + "$Layer");
+        addClassFile(MCPatcherUtils.ENCHANTMENT_CLASS);
+        addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS);
+        addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS + "$Layer");
 
         BaseTexturePackMod.earlyInitialize(2, MCPatcherUtils.CIT_UTILS_CLASS, "init");
     }

@@ -4,7 +4,7 @@ import net.minecraft.src.ItemStack;
 
 import java.util.*;
 
-class ItemOverlayList {
+class EnchantmentList {
     private static final float PI = (float) Math.PI;
 
     static final int AVERAGE = 0;
@@ -17,7 +17,7 @@ class ItemOverlayList {
 
     private final List<Layer> layers = new ArrayList<Layer>();
 
-    ItemOverlayList(ItemOverride[][] overlays, ItemStack itemStack) {
+    EnchantmentList(ItemOverride[][] overlays, ItemStack itemStack) {
         BitSet layersPresent = new BitSet();
         Map<Integer, Layer> tmpLayers = new HashMap<Integer, Layer>();
         int[] enchantmentLevels = CITUtils.getEnchantmentLevels(itemStack.stackTagCompound);
@@ -26,7 +26,7 @@ class ItemOverlayList {
             for (ItemOverride override : overlays[itemID]) {
                 if (override.match(itemID, itemStack, enchantmentLevels)) {
                     int level = Math.max(override.lastEnchantmentLevel, 1);
-                    ItemOverlay overlay = override.overlay;
+                    Enchantment overlay = override.overlay;
                     int layer = overlay.layer;
                     Layer newLayer = new Layer(overlay, level);
                     Layer oldLayer = tmpLayers.get(layer);
@@ -68,7 +68,7 @@ class ItemOverlayList {
         return layers.size();
     }
 
-    ItemOverlay getOverlay(int index) {
+    Enchantment getOverlay(int index) {
         return layers.get(index).overlay;
     }
 
@@ -124,11 +124,11 @@ class ItemOverlayList {
     }
 
     private static class Layer {
-        final ItemOverlay overlay;
+        final Enchantment overlay;
         final int level;
         float intensity;
 
-        Layer(ItemOverlay overlay, int level) {
+        Layer(Enchantment overlay, int level) {
             this.overlay = overlay;
             this.level = level;
         }

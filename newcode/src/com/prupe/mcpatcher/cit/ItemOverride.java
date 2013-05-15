@@ -16,14 +16,14 @@ class ItemOverride {
     private static final int MAX_STACK_SIZE = 65535;
 
     static final int ITEM = 0;
-    static final int OVERLAY = 1;
+    static final int ENCHANTMENT = 1;
     static final int ARMOR = 2;
 
     final String propertiesName;
     final int type;
     Icon icon;
     final String textureName;
-    final ItemOverlay overlay;
+    final Enchantment overlay;
     final int armorLayer;
     final BitSet itemsIDs;
     private final BitSet damage;
@@ -54,8 +54,8 @@ class ItemOverride {
         String value = MCPatcherUtils.getStringProperty(properties, "type", "item").toLowerCase();
         if (value.equals("item")) {
             type = ITEM;
-        } else if (value.equals("overlay")) {
-            type = OVERLAY;
+        } else if (value.equals("enchantment") || value.equals("overlay")) {
+            type = ENCHANTMENT;
         } else if (value.equals("armor")) {
             type = ARMOR;
         } else {
@@ -82,8 +82,8 @@ class ItemOverride {
         }
         textureName = value.contains("/") ? value : directory + "/" + value;
 
-        if (type == OVERLAY) {
-            overlay = ItemOverlay.create(this, properties);
+        if (type == ENCHANTMENT) {
+            overlay = Enchantment.create(this, properties);
             if (overlay == null) {
                 error = true;
             }
@@ -99,7 +99,7 @@ class ItemOverride {
 
         value = MCPatcherUtils.getStringProperty(properties, "matchItems", "");
         if (value.equals("")) {
-            if (type != OVERLAY) {
+            if (type != ENCHANTMENT) {
                 error("no matching items specified");
             }
             itemsIDs = null;
@@ -204,7 +204,7 @@ class ItemOverride {
 
     @Override
     public String toString() {
-        String typeString = type == ITEM ? "item" : type == OVERLAY ? "overlay" : type == ARMOR ? "armor" : "unknown type " + type;
+        String typeString = type == ITEM ? "item" : type == ENCHANTMENT ? "overlay" : type == ARMOR ? "armor" : "unknown type " + type;
         return String.format("ItemOverride{%s, %s, %s}", typeString, propertiesName, textureName);
     }
 
