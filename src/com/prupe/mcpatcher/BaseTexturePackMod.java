@@ -36,6 +36,7 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new BaseMod.TextureNamedMod());
         addClassMod(new BaseMod.IconMod());
         addClassMod(new BaseMod.TextureMapMod());
+        addClassMod(new BaseMod.TextureWithDataMod());
         addClassMod(new TexturePackImplementationMod());
         addClassMod(new TexturePackDefaultMod());
         addClassMod(new TexturePackCustomMod());

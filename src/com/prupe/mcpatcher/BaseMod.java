@@ -1024,6 +1024,36 @@ public final class BaseMod extends Mod {
     }
 
     /**
+     * Maps TextureWithData class.
+     */
+    public static class TextureWithDataMod extends ClassMod {
+        protected final MethodRef getRGB = new MethodRef(getDeobfClass(), "getRGB", "()[I");
+
+        public TextureWithDataMod() {
+            setParentClass("TextureBase");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        ILOAD_1,
+                        ILOAD_2,
+                        IMUL,
+                        NEWARRAY, T_INT,
+                        anyReference(PUTFIELD)
+                    );
+                }
+            }
+                .matchConstructorOnly(true)
+                .setMethod(new MethodRef(getDeobfClass(), "<init>", "(II)V"))
+            );
+
+            addMemberMapper(new MethodMapper(getRGB));
+        }
+    }
+
+    /**
      * Maps TextureMap class.
      */
     public static class TextureMapMod extends ClassMod {
