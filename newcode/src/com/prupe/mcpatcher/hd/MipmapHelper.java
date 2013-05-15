@@ -131,6 +131,9 @@ public class MipmapHelper {
         IntBuffer newBuffer;
         logger.finest("copySubTexture %s %d,%d %dx%d %d mipmaps", textureName, x, y, width, height, mipmaps);
         for (int level = 0; ; ) {
+            if (width <= 0 || height <= 0) {
+                break;
+            }
             GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, level, x, y, width, height, TEX_FORMAT, TEX_DATA_TYPE, buffer);
             checkGLError("%s: glTexSubImage2D(%d, %d, %d, %d, %d)", textureName, level, x, y, width, height);
             if (level >= mipmaps) {
@@ -249,7 +252,7 @@ public class MipmapHelper {
         if (filter != GL11.GL_NEAREST_MIPMAP_LINEAR && filter != GL11.GL_NEAREST_MIPMAP_NEAREST) {
             return 0;
         }
-        return GL11.glGetTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL);
+        return Math.min(maxMipmapLevel, GL11.glGetTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL));
     }
 
     private static int gcd(int a, int b) {
