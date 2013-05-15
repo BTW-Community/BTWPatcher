@@ -1059,7 +1059,8 @@ public final class BaseMod extends Mod {
     public static class TextureMapMod extends ClassMod {
         protected final FieldRef basePath = new FieldRef(getDeobfClass(), "basePath", "Ljava/lang/String;");
         protected final FieldRef mapTextures = new FieldRef(getDeobfClass(), "mapTextures", "Ljava/util/Map;");
-        protected final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "(LITexturePack;)V");
+        protected final MethodRef refreshTextures1 = new MethodRef(getDeobfClass(), "refreshTextures1", "(LITexturePack;)V");
+        protected final MethodRef refreshTextures2 = new MethodRef(getDeobfClass(), "refreshTextures2", "(LITexturePack;)V");
         protected final MethodRef registerIcon = new MethodRef(getDeobfClass(), "registerIcon", "(Ljava/lang/String;)LIcon;");
 
         public TextureMapMod() {
@@ -1085,7 +1086,7 @@ public final class BaseMod extends Mod {
                     );
                 }
             }
-                .setMethod(refreshTextures)
+                .setMethod(refreshTextures2)
                 .addXref(1, mapTextures)
             );
 
@@ -1104,6 +1105,7 @@ public final class BaseMod extends Mod {
             );
 
             addMemberMapper(new MethodMapper(registerIcon));
+            addMemberMapper(new MethodMapper(refreshTextures1, refreshTextures2));
         }
     }
 

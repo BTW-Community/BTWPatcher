@@ -77,7 +77,7 @@ public class TileLoader {
                                 String mapName = loader.mapName + "_overflow" + ++loader.overflowIndex;
                                 logger.fine("new TextureMap(%s)", mapName);
                                 TextureMap map = new TextureMap(OVERFLOW_TEXTURE_MAP_INDEX, mapName);
-                                map.refreshTextures(TexturePackAPI.getTexturePack());
+                                map.refreshTextures1(TexturePackAPI.getTexturePack());
                                 if (!registerIconsCalled) {
                                     logger.severe("TileLoader.registerIcons was never called!  Possible conflict in TextureMap.class");
                                     break loop;
@@ -117,10 +117,12 @@ public class TileLoader {
             if (loader.textureMap == null && mapName.equals(loader.mapName)) {
                 loader.textureMap = textureMap;
             }
-            if (loader.isForThisMap(mapName)) {
+            if (loader.isForThisMap(mapName) && !loader.tilesToRegister.isEmpty()) {
+                loader.subLogger.fine("adding icons to %s (%d remaining)", mapName, loader.tilesToRegister.size(), mapName);
                 while (!loader.tilesToRegister.isEmpty() && loader.registerOneIcon(textureMap, mapName, map)) {
                     // nothing
                 }
+                loader.subLogger.fine("done adding icons to %s (%d remaining)", mapName, loader.tilesToRegister.size(), mapName);
             }
         }
         logger.fine("after registerIcons(%s) %d icons", mapName, map.size());
@@ -201,6 +203,9 @@ public class TileLoader {
         BufferedImage image = null;
         if (!debugTextures) {
             image = TexturePackAPI.getImage(path);
+            if (image == null) {
+                subLogger.warning("missing %s", path);
+            }
         }
         if (image == null) {
             image = generateDebugTexture(path, 64, 64, alternate);
@@ -233,8 +238,10 @@ public class TileLoader {
             tilesToRegister.remove(name);
             return true;
         }
+        int width = image.getWidth();
+        int height = image.getHeight();
         long currentSize = getTextureSize(map.values());
-        long newSize = image.getWidth() * image.getWidth() * 4;
+        long newSize = 4 * width * width;
         if (newSize + currentSize > MAX_TILESHEET_SIZE) {
             float sizeMB = (float) currentSize / 1048576.0f;
             if (currentSize <= 0) {
@@ -252,9 +259,8 @@ public class TileLoader {
             TessellatorUtils.registerIcon(textureMap, icon);
         }
         iconMap.put(name, icon);
-        //String extra = (textures.size() > 1 ? ", " + textures.size() + " frames" : "");
-        //subLogger.finer("%s -> %s icon: %dx%d%s", name, mapName, texture.getWidth(), texture.getHeight(), extra);
-        subLogger.finer("%s -> %s icon %dx%d", name, mapName, image.getWidth(), image.getHeight());
+        String extra = (width == height ? "" : ", " + (height / width) + " frames");
+        subLogger.finer("%s -> %s icon %dx%d%s", name, mapName, width, width, extra);
         tilesToRegister.remove(name);
         return true;
     }

@@ -22,7 +22,7 @@ public class BaseTilesheetMod extends Mod {
         addClassMod(new BaseMod.TextureBaseMod());
         addClassMod(new BaseMod.TextureMod());
         addClassMod(new TextureManagerMod());
-        addClassMod(new BaseMod.TextureStitchedMod());
+        addClassMod(new TextureStitchedMod());
 
         addClassFile(MCPatcherUtils.TILE_LOADER_CLASS);
         addClassFile(MCPatcherUtils.TILE_LOADER_CLASS + "$1");
@@ -345,7 +345,7 @@ public class BaseTilesheetMod extends Mod {
                     );
                 }
             }
-                .setMethod(refreshTextures)
+                .setMethod(refreshTextures2)
                 .addXref(1, new MethodRef("Minecraft", "getMaxTextureSize", "()I"))
                 .addXref(2, new ClassRef("Stitcher"))
                 .addXref(3, new MethodRef("Stitcher", "<init>", "(IIZ)V"))
@@ -402,7 +402,7 @@ public class BaseTilesheetMod extends Mod {
                 }
             }
                 .setInsertBefore(true)
-                .targetMethod(refreshTextures)
+                .targetMethod(refreshTextures2)
             );
 
             addPatch(new BytecodePatch() {
@@ -505,6 +505,54 @@ public class BaseTilesheetMod extends Mod {
                 .setMethod(updateAnimations)
                 .addXref(1, new FieldRef(getDeobfClass(), "animations", "Ljava/util/List;"))
             );
+        }
+    }
+
+    private class TextureStitchedMod extends BaseMod.TextureStitchedMod {
+        TextureStitchedMod() {
+            final InterfaceMethodRef listSize = new InterfaceMethodRef("java/util/List", "size", "()I");
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "check for null animation data";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin(),
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        reference(INVOKEINTERFACE, listSize),
+                        IRETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // if (this.animationData != null)
+                        ALOAD_0,
+                        getCaptureGroup(1),
+                        ASTORE_1,
+                        ALOAD_1,
+                        IFNULL, branch("A"),
+
+                        // return this.animationData.size();
+                        ALOAD_1,
+                        reference(INVOKEINTERFACE, listSize),
+                        IRETURN,
+
+                        // }
+                        label("A"),
+
+                        // return 1;
+                        push(1),
+                        IRETURN
+                    );
+                }
+            });
         }
     }
 }
