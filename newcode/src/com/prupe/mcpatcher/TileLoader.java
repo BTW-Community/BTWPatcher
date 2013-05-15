@@ -79,8 +79,8 @@ public class TileLoader {
                                 registerIconsCalled = false;
                                 String mapName = loader.mapName + "_overflow" + ++loader.overflowIndex;
                                 logger.fine("new TextureMap(%s)", mapName);
-                                TextureMap map = new TextureMap(OVERFLOW_TEXTURE_MAP_INDEX, mapName, "not_used", missingTextureImage);
-                                map.refreshTextures();
+                                TextureMap map = new TextureMap(OVERFLOW_TEXTURE_MAP_INDEX, mapName);
+                                map.refreshTextures(TexturePackAPI.getTexturePack());
                                 if (!registerIconsCalled) {
                                     logger.severe("TileLoader.registerIcons was never called!  Possible conflict in TextureMap.class");
                                     break loop;
