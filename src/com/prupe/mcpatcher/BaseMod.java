@@ -1019,7 +1019,7 @@ public final class BaseMod extends Mod {
                 }
             });
 
-            addMemberMapper(new FieldMapper(null, textureName));
+            addMemberMapper(new FieldMapper(textureName));
         }
     }
 
