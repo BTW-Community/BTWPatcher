@@ -319,6 +319,7 @@ abstract class TileOverride implements ITileOverride {
         if (!path.endsWith(".png")) {
             path += ".png";
         }
+        path = TexturePackAPI.fixupPath(path);
         tileNames.add(path);
         return tileLoader.preloadTile(path, renderPass > 2);
     }
@@ -453,10 +454,7 @@ abstract class TileOverride implements ITileOverride {
     public final void registerIcons() {
         icons = new Icon[tileNames.size()];
         for (int i = 0; i < icons.length; i++) {
-            String name = tileNames.get(i);
-            if (name != null) {
-                icons[i] = tileLoader.getIcon(name);
-            }
+            icons[i] = tileLoader.getIcon(tileNames.get(i));
         }
     }
 

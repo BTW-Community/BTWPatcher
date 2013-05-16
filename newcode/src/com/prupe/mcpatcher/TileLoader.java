@@ -310,9 +310,12 @@ public class TileLoader {
     }
 
     public Icon getIcon(String name) {
+        if (name == null) {
+            return null;
+        }
         Icon icon = iconMap.get(name);
-        if (icon == null && baseTextureMap != null) {
-            icon = baseTextureMap.registerIcon(name);
+        if (icon == null && baseTexturesByName != null) {
+            icon = baseTexturesByName.get(name);
         }
         return icon;
     }
