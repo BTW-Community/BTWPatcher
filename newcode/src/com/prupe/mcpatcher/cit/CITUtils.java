@@ -47,10 +47,6 @@ public class CITUtils {
                 Arrays.fill(armors, null);
                 lastIcon = null;
                 itemNameMap.clear();
-                useGlint = true;
-                EnchantmentList.applyMethod = EnchantmentList.LAYERED;
-                EnchantmentList.limit = 99;
-                EnchantmentList.fade = 0.5f;
                 for (LOWEST_ITEM_ID = 256; LOWEST_ITEM_ID < MAX_ITEMS; LOWEST_ITEM_ID++) {
                     if (Item.itemsList[LOWEST_ITEM_ID] != null) {
                         break;
@@ -135,19 +131,8 @@ public class CITUtils {
                 if (properties == null) {
                     properties = TexturePackAPI.getProperties("cit/cit.properties");
                 }
-                if (properties != null) {
-                    String value = MCPatcherUtils.getStringProperty(properties, "method", "").toLowerCase();
-                    if (value.equals("layered")) {
-                        EnchantmentList.applyMethod = EnchantmentList.LAYERED;
-                    } else if (value.equals("cycle")) {
-                        EnchantmentList.applyMethod = EnchantmentList.CYCLE;
-                    } else {
-                        EnchantmentList.applyMethod = EnchantmentList.AVERAGE;
-                    }
-                    EnchantmentList.limit = MCPatcherUtils.getIntProperty(properties, "cap", EnchantmentList.limit);
-                    EnchantmentList.fade = MCPatcherUtils.getFloatProperty(properties, "fade", EnchantmentList.fade);
-                    useGlint = MCPatcherUtils.getBooleanProperty(properties, "useGlint", useGlint);
-                }
+                useGlint = MCPatcherUtils.getBooleanProperty(properties, "useGlint", true);
+                EnchantmentList.setProperties(properties);
             }
 
             private void registerOverride(ItemOverride[][] list, int itemID, ItemOverride override) {

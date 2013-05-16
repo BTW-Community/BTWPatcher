@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher.cit;
 
+import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.ItemStack;
 
 import java.util.*;
@@ -7,15 +8,33 @@ import java.util.*;
 class EnchantmentList {
     private static final float PI = (float) Math.PI;
 
-    static final int AVERAGE = 0;
-    static final int LAYERED = 1;
-    static final int CYCLE = 2;
+    private static final int AVERAGE = 0;
+    private static final int LAYERED = 1;
+    private static final int CYCLE = 2;
 
-    static int applyMethod;
-    static int limit;
-    static float fade;
+    private static int applyMethod;
+    private static int limit;
+    private static float fade;
 
     private final List<Layer> layers = new ArrayList<Layer>();
+
+    static void setProperties(Properties properties) {
+        applyMethod = LAYERED;
+        limit = 99;
+        fade = 0.5f;
+        if (properties != null) {
+            String value = MCPatcherUtils.getStringProperty(properties, "method", "").toLowerCase();
+            if (value.equals("layered")) {
+                applyMethod = LAYERED;
+            } else if (value.equals("cycle")) {
+                applyMethod = CYCLE;
+            } else {
+                applyMethod = AVERAGE;
+            }
+            limit = MCPatcherUtils.getIntProperty(properties, "cap", limit);
+            fade = MCPatcherUtils.getFloatProperty(properties, "fade", fade);
+        }
+    }
 
     EnchantmentList(ItemOverride[][] overlays, ItemStack itemStack) {
         BitSet layersPresent = new BitSet();
