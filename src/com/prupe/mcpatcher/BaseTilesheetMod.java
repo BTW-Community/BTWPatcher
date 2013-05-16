@@ -364,7 +364,7 @@ public class BaseTilesheetMod extends Mod {
                 }
             }
                 .setMethod(registerTiles)
-                .addXref(1, mapTextures)
+                .addXref(1, texturesByName)
             );
 
             addPatch(new BytecodePatch() {
@@ -378,7 +378,7 @@ public class BaseTilesheetMod extends Mod {
                     return buildExpression(
                         // this.mapTextures.entrySet().iterator()
                         ALOAD_0,
-                        reference(GETFIELD, mapTextures),
+                        reference(GETFIELD, texturesByName),
                         reference(INVOKEINTERFACE, mapEntrySet),
                         reference(INVOKEINTERFACE, setIterator),
                         anyASTORE
@@ -397,7 +397,7 @@ public class BaseTilesheetMod extends Mod {
                         ALOAD_0,
                         reference(GETFIELD, basePath),
                         ALOAD_0,
-                        reference(GETFIELD, mapTextures),
+                        reference(GETFIELD, texturesByName),
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "registerIcons", "(LTextureMap;Ljava/lang/String;Ljava/util/Map;)V"))
                     );
                 }
