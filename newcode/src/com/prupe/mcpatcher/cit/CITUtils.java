@@ -74,7 +74,7 @@ public class CITUtils {
                     );
                 }
                 if (enableItems || enableOverlays || enableArmor) {
-                    for (String path : TexturePackAPI.listResources("/cit", ".properties", true, false, true)) {
+                    for (String path : TexturePackAPI.listResources(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit", ".properties", true, false, true)) {
                         ItemOverride override = ItemOverride.create(path);
                         if (override != null) {
                             ItemOverride[][] list;
