@@ -95,11 +95,11 @@ class EnchantmentList {
     private void computeIntensitiesAverage(int denominator) {
         if (denominator > 0) {
             for (Layer layer : layers) {
-                layer.setIntensity((float) layer.level / (float) denominator);
+                layer.intensity = (float) layer.level / (float) denominator;
             }
         } else {
             for (Layer layer : layers) {
-                layer.setIntensity(1.0f);
+                layer.intensity = 1.0f;
             }
         }
     }
@@ -117,7 +117,7 @@ class EnchantmentList {
             float duration = layer.getEffectiveDuration();
             if (timestamp < duration) {
                 float denominator = (float) Math.sin(PI * fade / duration);
-                layer.setIntensity((float) (Math.sin(PI * timestamp / duration) / (denominator == 0.0f ? 1.0f : denominator)));
+                layer.intensity = (float) (Math.sin(PI * timestamp / duration) / (denominator == 0.0f ? 1.0f : denominator));
             }
             timestamp -= duration;
         }
@@ -135,16 +135,6 @@ class EnchantmentList {
 
         float getEffectiveDuration() {
             return overlay.duration + 2.0f * fade;
-        }
-
-        void setIntensity(float f) {
-            if (f < 0.0f) {
-                intensity = 0.0f;
-            } else if (f > 1.0f) {
-                intensity = 1.0f;
-            } else {
-                intensity = f;
-            }
         }
     }
 }
