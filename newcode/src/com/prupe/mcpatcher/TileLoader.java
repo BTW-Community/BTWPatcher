@@ -1,10 +1,15 @@
 package com.prupe.mcpatcher;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.*;
+import net.minecraft.src.Icon;
+import net.minecraft.src.Tessellator;
+import net.minecraft.src.TextureMap;
+import net.minecraft.src.TextureStitched;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
@@ -141,6 +146,21 @@ public class TileLoader {
 
     public static boolean isSpecialTexture(TextureMap map, String texture, String special) {
         return special.equals(texture) || special.equals(specialTextures.get(texture));
+    }
+
+    public static BufferedImage getOverrideImage(String path) throws IOException {
+        BufferedImage image;
+        for (TileLoader loader : loaders) {
+            image = loader.tileTextures.get(path);
+            if (image != null) {
+                return image;
+            }
+        }
+        image = TexturePackAPI.getImage(path);
+        if (image == null) {
+            throw new FileNotFoundException(path + " not found");
+        }
+        return image;
     }
 
     public static void updateAnimations() {

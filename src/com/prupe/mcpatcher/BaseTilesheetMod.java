@@ -326,6 +326,7 @@ public class BaseTilesheetMod extends Mod {
             final MethodRef sbAppend = new MethodRef("java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;");
             final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
             final MethodRef strEquals = new MethodRef("java/lang/String", "equals", "(Ljava/lang/Object;)Z");
+            final MethodRef readImage = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -480,6 +481,33 @@ public class BaseTilesheetMod extends Mod {
                     );
                 }
             }.targetMethod(registerIcon));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override tile image";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // ImageIO.read(texturePack.getResourceAsStream(path))
+                        anyALOAD,
+                        capture(anyALOAD),
+                        anyReference(INVOKEINTERFACE),
+                        reference(INVOKESTATIC, readImage)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // TileLoader.getOverrideImage(path)
+                        getCaptureGroup(1),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverrideImage", "(Ljava/lang/String;)Ljava/awt/image/BufferedImage;"))
+                    );
+                }
+            });
         }
     }
 
