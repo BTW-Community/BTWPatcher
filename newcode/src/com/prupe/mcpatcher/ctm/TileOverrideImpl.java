@@ -569,9 +569,14 @@ class TileOverrideImpl {
             }
             int[] offset = OFFSET_MATRIX[face - 2];
             if (blockAccess.getBlockId(i + offset[0], j - 1, k + offset[1]) == blockID) {
-                final int neighborBlock = blockAccess.getBlockId(i, j + 1, k);
+                int neighborBlock = blockAccess.getBlockId(i, j + 1, k);
                 if (neighborBlock == CTMUtils.BLOCK_ID_SNOW || neighborBlock == CTMUtils.BLOCK_ID_CRAFTED_SNOW) {
-                    return fullSnowTile;
+                    neighborBlock = blockAccess.getBlockId(i + offset[0], j, k + offset[1]);
+                    if (neighborBlock == CTMUtils.BLOCK_ID_SNOW || neighborBlock == CTMUtils.BLOCK_ID_CRAFTED_SNOW) {
+                        return fullSnowTile;
+                    } else {
+                        return null;
+                    }
                 } else {
                     return fullTile;
                 }
