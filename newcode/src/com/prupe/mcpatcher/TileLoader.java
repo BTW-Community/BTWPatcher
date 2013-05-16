@@ -35,9 +35,10 @@ public class TileLoader {
     protected final MCLogger subLogger;
 
     private int overflowIndex;
-    private TextureMap textureMap;
+    private TextureMap baseTextureMap;
+    private Map<String, TextureStitched> baseTexturesByName;
     private final Set<String> tilesToRegister = new HashSet<String>();
-    private final Map<String, BufferedImage> tileTextures = new HashMap<String, BufferedImage>();
+    private final Map<String, BufferedImage> tileImages = new HashMap<String, BufferedImage>();
     private final Map<String, Icon> iconMap = new HashMap<String, Icon>();
 
     static {
@@ -79,7 +80,7 @@ public class TileLoader {
                         if (!loader.tilesToRegister.isEmpty()) {
                             if (loader.allowOverflow && splitTextures > 0) {
                                 registerIconsCalled = false;
-                                String mapName = loader.mapName + "_overflow" + ++loader.overflowIndex;
+                                String mapName = loader.mapName + "_overflow" + (++loader.overflowIndex);
                                 logger.fine("new TextureMap(%s)", mapName);
                                 TextureMap map = new TextureMap(OVERFLOW_TEXTURE_MAP_INDEX, mapName);
                                 map.refreshTextures1(TexturePackAPI.getTexturePack());
@@ -119,8 +120,9 @@ public class TileLoader {
         }
         TessellatorUtils.registerTextureMap(textureMap, mapName);
         for (TileLoader loader : loaders) {
-            if (loader.textureMap == null && mapName.equals(loader.mapName)) {
-                loader.textureMap = textureMap;
+            if (loader.baseTextureMap == null && mapName.equals(loader.mapName)) {
+                loader.baseTextureMap = textureMap;
+                loader.baseTexturesByName = map;
             }
             if (loader.isForThisMap(mapName) && !loader.tilesToRegister.isEmpty()) {
                 loader.subLogger.fine("adding icons to %s (%d remaining)", mapName, loader.tilesToRegister.size(), mapName);
@@ -151,7 +153,7 @@ public class TileLoader {
     public static BufferedImage getOverrideImage(String path) throws IOException {
         BufferedImage image;
         for (TileLoader loader : loaders) {
-            image = loader.tileTextures.get(path);
+            image = loader.tileImages.get(path);
             if (image != null) {
                 return image;
             }
@@ -217,7 +219,7 @@ public class TileLoader {
     }
 
     public boolean preloadTile(String path, boolean alternate, String special) {
-        if (tileTextures.containsKey(path)) {
+        if (tileImages.containsKey(path)) {
             return true;
         }
         BufferedImage image = null;
@@ -231,7 +233,7 @@ public class TileLoader {
             image = generateDebugTexture(path, 64, 64, alternate);
         }
         tilesToRegister.add(path);
-        tileTextures.put(path, image);
+        tileImages.put(path, image);
         if (special != null) {
             specialTextures.put(path, special);
         }
@@ -250,9 +252,26 @@ public class TileLoader {
         }
     }
 
+    private boolean registerDefaultIcon(String name) {
+        if (name.startsWith(mapName) && name.endsWith(".png") && baseTextureMap != null) {
+            String defaultName = name.substring(mapName.length()).replaceFirst("\\.png$", "");
+            TextureStitched texture = baseTexturesByName.get(defaultName);
+            if (texture != null) {
+                subLogger.finer("%s -> existing icon %s", name, defaultName);
+                iconMap.put(name, texture);
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean registerOneIcon(TextureMap textureMap, String mapName, Map<String, TextureStitched> map) {
         String name = tilesToRegister.iterator().next();
-        BufferedImage image = tileTextures.get(name);
+        if (registerDefaultIcon(name)) {
+            tilesToRegister.remove(name);
+            return true;
+        }
+        BufferedImage image = tileImages.get(name);
         if (image == null) {
             subLogger.error("tile for %s unexpectedly missing", name);
             tilesToRegister.remove(name);
@@ -287,19 +306,19 @@ public class TileLoader {
 
     public void finish() {
         tilesToRegister.clear();
-        tileTextures.clear();
+        tileImages.clear();
     }
 
     public Icon getIcon(String name) {
         Icon icon = iconMap.get(name);
-        if (icon == null && textureMap != null) {
-            icon = textureMap.registerIcon(name);
+        if (icon == null && baseTextureMap != null) {
+            icon = baseTextureMap.registerIcon(name);
         }
         return icon;
     }
 
     public boolean setDefaultTextureMap(Tessellator tessellator) {
-        tessellator.textureMap = textureMap;
-        return textureMap != null;
+        tessellator.textureMap = baseTextureMap;
+        return baseTextureMap != null;
     }
 }
