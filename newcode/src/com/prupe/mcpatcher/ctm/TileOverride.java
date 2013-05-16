@@ -232,14 +232,9 @@ abstract class TileOverride implements ITileOverride {
         propertiesName = propertiesFile.replaceFirst(".*/", "").replaceFirst("\\.properties$", "");
         this.tileLoader = tileLoader;
 
-        try {
-            TexturePackAPI.enableTextureBorder = true;
-            loadIcons(properties);
-            if (tileNames.isEmpty()) {
-                error("no images found in %s/", texturesDirectory);
-            }
-        } finally {
-            TexturePackAPI.enableTextureBorder = false;
+        loadIcons(properties);
+        if (tileNames.isEmpty()) {
+            error("no images found in %s/", texturesDirectory);
         }
 
         String[] mappings = new String[Block.blocksList.length];
