@@ -208,8 +208,11 @@ public class CITUtils {
         return null;
     }
 
-    public static boolean renderOverlayHeld(ItemStack itemStack) {
-        if (!enableOverlays || itemStack == null) {
+    public static boolean renderOverlayHeld(ItemStack itemStack, int renderPass) {
+        if (itemStack == null || renderPass != 0) {
+            return true;
+        }
+        if (!enableOverlays) {
             return false;
         }
         EnchantmentList matches = new EnchantmentList(overlays, itemStack);
@@ -233,7 +236,7 @@ public class CITUtils {
     }
 
     public static boolean renderOverlayDropped(ItemStack itemStack) {
-        return renderOverlayHeld(itemStack);
+        return renderOverlayHeld(itemStack, 0);
     }
 
     public static boolean renderOverlayGUI(ItemStack itemStack, int x, int y, float z) {

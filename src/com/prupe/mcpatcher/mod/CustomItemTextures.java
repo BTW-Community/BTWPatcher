@@ -263,9 +263,10 @@ public class CustomItemTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (!CITUtils.renderOverlayHeld(itemStack)) {
+                        // if (!CITUtils.renderOverlayHeld(itemStack, renderPass)) {
                         ALOAD_2,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "renderOverlayHeld", "(LItemStack;)Z")),
+                        ILOAD_3,
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "renderOverlayHeld", "(LItemStack;I)Z")),
                         IFNE, branch("A"),
 
                         // ...
