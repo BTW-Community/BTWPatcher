@@ -160,10 +160,10 @@ public class CITUtils {
     public static void init() {
     }
 
-    public static Icon getIcon(Icon icon, Item item, ItemStack itemStack) {
+    public static Icon getIcon(Icon icon, ItemStack itemStack, int renderPass) {
         lastIcon = icon;
         if (enableItems) {
-            ItemOverride override = findMatch(items, itemStack);
+            ItemOverride override = findMatch(items, itemStack, renderPass);
             if (override != null) {
                 lastIcon = override.icon;
             }
@@ -182,25 +182,12 @@ public class CITUtils {
         return texture;
     }
 
-    private static ItemOverride findMatch(ItemOverride[][] overrides, ItemStack itemStack) {
+    private static ItemOverride findMatch(ItemOverride[][] overrides, ItemStack itemStack, int renderPass) {
         int itemID = itemStack.itemID;
         if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
             int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
             for (ItemOverride override : overrides[itemID]) {
-                if (override.match(itemID, itemStack, enchantmentLevels)) {
-                    return override;
-                }
-            }
-        }
-        return null;
-    }
-
-    private static ItemOverride findMatch(ItemOverride[][] overrides, ItemStack itemStack, int layer) {
-        int itemID = itemStack.itemID;
-        if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
-            int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
-            for (ItemOverride override : overrides[itemID]) {
-                if (override.armorLayer == layer && override.match(itemID, itemStack, enchantmentLevels)) {
+                if (override.renderPass == renderPass && override.match(itemID, itemStack, enchantmentLevels)) {
                     return override;
                 }
             }

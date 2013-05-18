@@ -13,9 +13,13 @@ import static javassist.bytecode.Opcode.*;
 
 public class CustomItemTextures extends Mod {
     private static final String GLINT_PNG = MCPatcherUtils.TEXTURE_PACK_BLUR + MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/glint.png";
+    private static final FieldRef itemsList = new FieldRef("Item", "itemsList", "[LItem;");
     private static final MethodRef glDepthFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthFunc", "(I)V");
     private static final MethodRef getEntityItem = new MethodRef("EntityItem", "getEntityItem", "()LItemStack;");
     private static final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffect", "()Z");
+    private static final MethodRef getIconFromDamageForRenderPass = new MethodRef("Item", "getIconFromDamageForRenderPass", "(II)LIcon;");
+    private static final MethodRef getItem = new MethodRef("ItemStack", "getItem", "()LItem;");
+    private static final MethodRef getCITIcon = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getIcon", "(LIcon;LItemStack;I)LIcon;");
 
     public CustomItemTextures() {
         name = MCPatcherUtils.CUSTOM_ITEM_TEXTURES;
@@ -115,15 +119,17 @@ public class CustomItemTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        ALOAD_0,
                         ALOAD_1,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getIcon", "(LIcon;LItem;LItemStack;)LIcon;"))
+                        push(0),
+                        reference(INVOKESTATIC, getCITIcon)
                     );
                 }
             }
                 .setInsertBefore(true)
                 .targetMethod(getIconIndex)
             );
+
+            addMemberMapper(new MethodMapper(getIconFromDamageForRenderPass));
         }
     }
 
@@ -179,6 +185,7 @@ public class CustomItemTextures extends Mod {
             );
 
             addMemberMapper(new FieldMapper(stackTagCompound));
+            addMemberMapper(new MethodMapper(getItem));
         }
     }
 
@@ -389,6 +396,38 @@ public class CustomItemTextures extends Mod {
                     );
                 }
             }.targetMethod(renderItemAndEffectIntoGUI));
+
+            addPatch(new ItemStackRenderPassPatch("other"));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "handle items with multiple render passes (gui)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // Item.itemsList[itemID].getIconFromDamageForRenderPass(itemDamage, renderPass)
+                        reference(GETSTATIC, itemsList),
+                        anyILOAD,
+                        AALOAD,
+                        anyILOAD,
+                        capture(anyILOAD),
+                        reference(INVOKEVIRTUAL, getIconFromDamageForRenderPass)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // CITUtils.getIcon(..., itemStack, renderPass)
+                        ALOAD_3,
+                        getCaptureGroup(1),
+                        reference(INVOKESTATIC, getCITIcon)
+                    );
+                }
+            }.setInsertAfter(true));
         }
     }
 
@@ -673,6 +712,45 @@ public class CustomItemTextures extends Mod {
                     );
                 }
             }.setMethod(getCurrentArmor));
+
+            addPatch(new ItemStackRenderPassPatch("player held"));
+        }
+    }
+
+    private class ItemStackRenderPassPatch extends BytecodePatch {
+        private final String desc;
+
+        ItemStackRenderPassPatch(String desc) {
+            this.desc = desc;
+            setInsertAfter(true);
+        }
+
+        @Override
+        public String getDescription() {
+            return "handle items with multiple render passes (" + desc + ")";
+        }
+
+        @Override
+        public String getMatchExpression() {
+            return buildExpression(
+                // itemStack.getItem().getIconFromDamageForRenderPass(itemStack.getItemDamage(), renderPass)
+                capture(anyALOAD),
+                reference(INVOKEVIRTUAL, getItem),
+                backReference(1),
+                anyReference(INVOKEVIRTUAL),
+                capture(anyILOAD),
+                reference(INVOKEVIRTUAL, getIconFromDamageForRenderPass)
+            );
+        }
+
+        @Override
+        public byte[] getReplacementBytes() {
+            return buildCode(
+                // CITUtils.getIcon(..., itemStack, renderPass)
+                getCaptureGroup(1),
+                getCaptureGroup(2),
+                reference(INVOKESTATIC, getCITIcon)
+            );
         }
     }
 }
