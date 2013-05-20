@@ -29,6 +29,7 @@ public class MobRandomizer {
             public void afterChange() {
                 MobRuleList.clear();
                 MobOverlay.reset();
+                LineRenderer.reset();
             }
         });
     }

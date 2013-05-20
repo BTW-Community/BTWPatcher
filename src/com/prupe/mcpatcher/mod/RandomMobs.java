@@ -50,6 +50,7 @@ public class RandomMobs extends Mod {
         addClassFile(MCPatcherUtils.MOB_RULE_LIST_CLASS);
         addClassFile(MCPatcherUtils.MOB_RULE_LIST_CLASS + "$MobRuleEntry");
         addClassFile(MCPatcherUtils.MOB_OVERLAY_CLASS);
+        addClassFile(MCPatcherUtils.LINE_RENDERER_CLASS);
     }
 
     private class RenderMod extends ClassMod {
@@ -611,7 +612,7 @@ public class RandomMobs extends Mod {
                         DLOAD, getCaptureGroup(1),
                         DLOAD, getCaptureGroup(2),
                         DLOAD, getCaptureGroup(3),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "renderLine", "(IDDDDDD)Z")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.LINE_RENDERER_CLASS, "renderLine", "(IDDDDDD)Z")),
                         IFNE, branch("A"),
 
                         getMatch(),

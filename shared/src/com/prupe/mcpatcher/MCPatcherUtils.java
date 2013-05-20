@@ -67,6 +67,7 @@ public class MCPatcherUtils {
     public static final String RANDOM_MOBS_CLASS = "com.prupe.mcpatcher.mob.MobRandomizer";
     public static final String MOB_RULE_LIST_CLASS = "com.prupe.mcpatcher.mob.MobRuleList";
     public static final String MOB_OVERLAY_CLASS = "com.prupe.mcpatcher.mob.MobOverlay";
+    public static final String LINE_RENDERER_CLASS = "com.prupe.mcpatcher.mob.LineRenderer";
 
     public static final String COLORIZER_CLASS = "com.prupe.mcpatcher.cc.Colorizer";
     public static final String COLORIZE_WORLD_CLASS = "com.prupe.mcpatcher.cc.ColorizeWorld";
