@@ -10,6 +10,9 @@ import static javassist.bytecode.Opcode.*;
 public class RandomMobs extends Mod {
     private static final String EXTRA_INFO_CLASS = MCPatcherUtils.RANDOM_MOBS_CLASS + "$ExtraInfo";
 
+    private static final MethodRef glEnable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glEnable", "(I)V");
+    private static final MethodRef glDisable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDisable", "(I)V");
+
     private final boolean haveRenderLivingSub;
 
     public RandomMobs() {
@@ -38,6 +41,8 @@ public class RandomMobs extends Mod {
         addClassMod(new RenderMooshroomMod());
         addClassMod(new MiscSkinMod("RenderSheep", MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/sheep_fur.png"));
         addClassMod(new MiscSkinMod("RenderWolf", MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/wolf_collar.png"));
+        addClassMod(new RenderFishMod());
+        addClassMod(new RenderLeashMod());
 
         addClassFile(MCPatcherUtils.RANDOM_MOBS_CLASS);
         addClassFile(MCPatcherUtils.RANDOM_MOBS_CLASS + "$1");
@@ -371,7 +376,6 @@ public class RandomMobs extends Mod {
             final FieldRef mushroomRed = new FieldRef("Block", "mushroomRed", "LBlockFlower;");
             final MethodRef renderEquippedItems = new MethodRef(getDeobfClass(), "renderEquippedItems1", "(LEntityMooshroom;F)V");
             final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(Ljava/lang/String;)V");
-            final MethodRef glEnable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glEnable", "(I)V");
             final MethodRef glPushMatrix = new MethodRef(MCPatcherUtils.GL11_CLASS, "glPushMatrix", "()V");
             final MethodRef renderBlockAsItem = new MethodRef("RenderBlocks", "renderBlockAsItem", "(LBlock;IF)V");
 
@@ -538,6 +542,119 @@ public class RandomMobs extends Mod {
         @Override
         public String getDeobfClass() {
             return className;
+        }
+    }
+
+    abstract private class RenderLineMod extends ClassMod {
+        RenderLineMod(final String desc, final int type) {
+            final MethodRef renderMethod = getRenderMethod();
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        capture(anyFLOAD),
+                        backReference(1),
+                        FMUL,
+                        backReference(1),
+                        FADD
+                    );
+                }
+            }.setMethod(renderMethod));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override " + desc + " rendering";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        lookBehind(build(
+                            DLOAD, any(),
+                            DLOAD, any(),
+                            DSUB,
+                            optional(build(D2F, F2D)),
+                            DSTORE, capture(any()),
+
+                            DLOAD, any(),
+                            DLOAD, any(),
+                            DSUB,
+                            optional(build(D2F, F2D)),
+                            DSTORE, capture(any()),
+
+                            DLOAD, any(),
+                            DLOAD, any(),
+                            DSUB,
+                            optional(build(D2F, F2D)),
+                            DSTORE, capture(any())
+                        ), true),
+
+                        push(3553), // GL_TEXTURE_2D
+                        reference(INVOKESTATIC, glDisable),
+
+                        any(0, 1000),
+
+                        push(3553), // GL_TEXTURE_2D
+                        reference(INVOKESTATIC, glEnable)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        push(type),
+                        DLOAD_2,
+                        DLOAD, 4,
+                        DLOAD, 6,
+                        DLOAD, getCaptureGroup(1),
+                        DLOAD, getCaptureGroup(2),
+                        DLOAD, getCaptureGroup(3),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "renderLine", "(IDDDDDD)Z")),
+                        IFNE, branch("A"),
+
+                        getMatch(),
+
+                        label("A")
+                    );
+                }
+            }.targetMethod(renderMethod));
+        }
+
+        abstract MethodRef getRenderMethod();
+    }
+
+    private class RenderFishMod extends RenderLineMod {
+        RenderFishMod() {
+            super("fishing line", 0);
+
+            setParentClass("Render");
+
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "particles.png"));
+            addClassSignature(new ConstSignature(3.1415927f));
+            addClassSignature(new ConstSignature(180.0f));
+        }
+
+        @Override
+        MethodRef getRenderMethod() {
+            return new MethodRef(getDeobfClass(), "renderFishingLine", "(LEntityFishHook;DDDFF)V");
+        }
+    }
+
+    private class RenderLeashMod extends RenderLineMod {
+        RenderLeashMod() {
+            super("leash", 1);
+
+            setParentClass("RenderLiving");
+
+            addClassSignature(new ConstSignature(0.01745329238474369));
+            addClassSignature(new ConstSignature(1.5707963267948966));
+        }
+
+        @Override
+        MethodRef getRenderMethod() {
+            return new MethodRef(getDeobfClass(), "renderLeash", "(LEntityLivingSub;DDDFF)V");
         }
     }
 }
