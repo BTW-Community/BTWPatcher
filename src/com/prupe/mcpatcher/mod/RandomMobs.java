@@ -572,6 +572,9 @@ public class RandomMobs extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // dx = (double)(float) (ax1 - ax0);
+                        // dy = (double)(float) (ay1 - ay0);
+                        // dz = (double)(float) (az1 - az0);
                         lookBehind(build(
                             DLOAD, any(),
                             DLOAD, any(),
@@ -592,12 +595,15 @@ public class RandomMobs extends Mod {
                             DSTORE, capture(any())
                         ), true),
 
-                        push(3553), // GL_TEXTURE_2D
+                        // GL11.glDisable(GL11.GL_TEXTURE_2D);
+                        push(3553),
                         reference(INVOKESTATIC, glDisable),
 
+                        // ...
                         any(0, 1000),
 
-                        push(3553), // GL_TEXTURE_2D
+                        // GL11.glEnable(GL11.GL_TEXTURE_2D);
+                        push(3553),
                         reference(INVOKESTATIC, glEnable)
                     );
                 }
@@ -605,6 +611,7 @@ public class RandomMobs extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // if (!LineRenderer.renderLine(type, x, y, z, dx, dy, dz)) {
                         push(type),
                         DLOAD_2,
                         DLOAD, 4,
@@ -615,8 +622,10 @@ public class RandomMobs extends Mod {
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.LINE_RENDERER_CLASS, "renderLine", "(IDDDDDD)Z")),
                         IFNE, branch("A"),
 
+                        // ...
                         getMatch(),
 
+                        // }
                         label("A")
                     );
                 }

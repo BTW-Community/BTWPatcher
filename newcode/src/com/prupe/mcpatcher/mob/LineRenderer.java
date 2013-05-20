@@ -18,12 +18,12 @@ public class LineRenderer {
     private boolean active;
 
     static {
-        new LineRenderer(0, "fishing_line", 0.01f, 16);
+        new LineRenderer(0, "fishing_line", 0.0075f, 16);
         new LineRenderer(1, "lead", 0.025f, 24);
     }
 
-    public static boolean renderLine(int type, double x0, double y0, double z0, double x1, double y1, double z1) {
-        return renderers[type].render(x0, y0, z0, x1, y1, z1);
+    public static boolean renderLine(int type, double x, double y, double z, double dx, double dy, double dz) {
+        return renderers[type].render(x, y, z, dx, dy, dz);
     }
 
     static void reset() {
@@ -37,24 +37,28 @@ public class LineRenderer {
         this.width = width;
         this.segments = segments;
         renderers[type] = this;
-        logger.fine("%d: new %s", type, this);
     }
 
     void reset1() {
         active = enable && TexturePackAPI.hasResource(texture);
+        if (active) {
+            logger.fine("using %s", this);
+        } else {
+            logger.fine("%s not found", this);
+        }
     }
 
-    boolean render(double x0, double y0, double z0, double x1, double y1, double z1) {
+    boolean render(double x, double y, double z, double dx, double dy, double dz) {
         if (!active) {
             return false;
         }
         TexturePackAPI.bindTexture(texture);
         Tessellator tessellator = Tessellator.instance;
         tessellator.startDrawingQuads();
-        tessellator.addVertexWithUV(x0, y0, z0, 0.0, 0.0);
-        tessellator.addVertexWithUV(x1, y1, z1, 1.0, 0.0);
-        tessellator.addVertexWithUV(x1, y1 + width, z1, 1.0, 1.0);
-        tessellator.addVertexWithUV(x0, y0 + width, z0, 0.0, 1.0);
+        tessellator.addVertexWithUV(x, y, z, 0.0, 0.0);
+        tessellator.addVertexWithUV(x + dx, y + dy, z + dz, 1.0, 0.0);
+        tessellator.addVertexWithUV(x + dx, y + dy + width, z + dz, 1.0, 1.0);
+        tessellator.addVertexWithUV(x, y + width, z, 0.0, 1.0);
         tessellator.draw();
         return true;
     }
