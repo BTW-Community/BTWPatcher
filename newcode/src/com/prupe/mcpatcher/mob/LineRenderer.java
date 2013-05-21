@@ -46,7 +46,7 @@ public class LineRenderer {
         }
     }
 
-    LineRenderer(String name, double width, double a, double b, int segments) {
+    private LineRenderer(String name, double width, double a, double b, int segments) {
         texture = MCPatcherUtils.TEXTURE_PACK_PREFIX + "item/" + name.toLowerCase() + ".png";
         active = TexturePackAPI.hasResource(texture);
         Properties properties = TexturePackAPI.getProperties(LINE_PROPERTIES);
@@ -56,17 +56,17 @@ public class LineRenderer {
         this.segments = MCPatcherUtils.getIntProperty(properties, name + ".segments", segments);
     }
 
-    boolean render(double x, double y, double z, double dx, double dy, double dz) {
+    private boolean render(double x, double y, double z, double dx, double dy, double dz) {
         TexturePackAPI.bindTexture(texture);
         Tessellator tessellator = Tessellator.instance;
         tessellator.startDrawingQuads();
         double x0 = x;
-        double y0 = y;
+        double y0 = y + a + b;
         double z0 = z;
         for (int i = 1; i <= segments; i++) {
             double s = i / (double) segments;
             double x1 = x + s * dx;
-            double y1 = y + (s * s + s) * dy * 0.5 + a * (1.0 - s) + b;
+            double y1 = y + (s * s + s) * 0.5 * dy + a * (1.0 - s) + b;
             double z1 = z + s * dz;
 
             tessellator.addVertexWithUV(x0, y0, z0, 0.0, 0.0);
