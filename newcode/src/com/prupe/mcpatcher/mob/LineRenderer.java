@@ -6,21 +6,28 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.Tessellator;
 
+import java.util.Properties;
+
 public class LineRenderer {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.RANDOM_MOBS);
 
+    private static final String LINE_PROPERTIES = MCPatcherUtils.TEXTURE_PACK_PREFIX + "item/line.properties";
+
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.RANDOM_MOBS, "leashLine", true);
     private static final LineRenderer[] renderers = new LineRenderer[] {
-        new LineRenderer("fishing_line", 0.0075, 0.0, 0.0, 16),
+        new LineRenderer("fishingLine", 0.0075, 0.0, 0.0, 16),
         new LineRenderer("lead", 0.025, 4.0 / 3.0, 0.125, 24),
     };
 
+    private final String name;
     private final String texture;
-    private final double width;
+    private final double defaultWidth;
     private final double a;
     private final double b;
     private final int segments;
+
     private boolean active;
+    private double width;
 
     public static boolean renderLine(int type, double x, double y, double z, double dx, double dy, double dz) {
         return renderers[type].render(x, y, z, dx, dy, dz);
@@ -29,12 +36,18 @@ public class LineRenderer {
     static void reset() {
         for (LineRenderer renderer : renderers) {
             renderer.reset1();
+            if (renderer.active) {
+                logger.fine("using %s", renderer);
+            } else {
+                logger.fine("%s not found", renderer);
+            }
         }
     }
 
-    LineRenderer(String name, double width, double a, double b, int segments) {
-        texture = MCPatcherUtils.TEXTURE_PACK_PREFIX + "item/" + name + ".png";
-        this.width = width;
+    LineRenderer(String name, double defaultWidth, double a, double b, int segments) {
+        this.name = name;
+        texture = MCPatcherUtils.TEXTURE_PACK_PREFIX + "item/" + name.toLowerCase() + ".png";
+        this.defaultWidth = defaultWidth;
         this.a = a;
         this.b = b;
         this.segments = segments;
@@ -42,10 +55,10 @@ public class LineRenderer {
 
     void reset1() {
         active = enable && TexturePackAPI.hasResource(texture);
+        width = defaultWidth;
         if (active) {
-            logger.fine("using %s", this);
-        } else {
-            logger.fine("%s not found", this);
+            Properties properties = TexturePackAPI.getProperties(LINE_PROPERTIES);
+            width = MCPatcherUtils.getDoubleProperty(properties, name + ".width", defaultWidth);
         }
     }
 
