@@ -229,6 +229,27 @@ public class MCPatcherUtils {
     }
 
     /**
+     * Get a value from a properties file.
+     *
+     * @param properties   properties file
+     * @param key          property name
+     * @param defaultValue default value if not found in properties file
+     * @return property value
+     */
+    public static double getDoubleProperty(Properties properties, String key, double defaultValue) {
+        if (properties != null) {
+            String value = properties.getProperty(key, "").trim();
+            if (!value.equals("")) {
+                try {
+                    return Double.parseDouble(value);
+                } catch (NumberFormatException e) {
+                }
+            }
+        }
+        return defaultValue;
+    }
+
+    /**
      * Convenience method to close a stream ignoring exceptions.
      *
      * @param closeable closeable object
