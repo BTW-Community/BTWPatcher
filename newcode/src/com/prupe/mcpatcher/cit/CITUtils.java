@@ -187,7 +187,7 @@ public class CITUtils {
         if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
             int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
             for (ItemOverride override : overrides[itemID]) {
-                if (override.renderPass == renderPass && override.match(itemID, itemStack, enchantmentLevels)) {
+                if (override.layer == renderPass && override.match(itemID, itemStack, enchantmentLevels)) {
                     return override;
                 }
             }

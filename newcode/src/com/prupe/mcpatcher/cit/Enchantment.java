@@ -17,7 +17,6 @@ class Enchantment implements Comparable<Enchantment> {
     private final float rotation;
     private final float speed;
     final float duration;
-    final int layer;
     final int weight;
 
     static void beginOuter2D() {
@@ -62,18 +61,16 @@ class Enchantment implements Comparable<Enchantment> {
         float rotation = MCPatcherUtils.getFloatProperty(properties, "rotation", 0.0f);
         float speed = MCPatcherUtils.getFloatProperty(properties, "speed", 0.0f);
         float duration = MCPatcherUtils.getFloatProperty(properties, "duration", 1.0f);
-        int layer = MCPatcherUtils.getIntProperty(properties, "layer", 0);
         int weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
-        return new Enchantment(override, blendMethod, rotation, speed, duration, layer, weight);
+        return new Enchantment(override, blendMethod, rotation, speed, duration, weight);
     }
 
-    Enchantment(ItemOverride override, BlendMethod blendMethod, float rotation, float speed, float duration, int layer, int weight) {
+    Enchantment(ItemOverride override, BlendMethod blendMethod, float rotation, float speed, float duration, int weight) {
         this.override = override;
         this.blendMethod = blendMethod;
         this.rotation = rotation;
         this.speed = speed;
         this.duration = duration;
-        this.layer = layer;
         this.weight = weight;
     }
 

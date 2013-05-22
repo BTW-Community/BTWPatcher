@@ -46,7 +46,7 @@ class EnchantmentList {
                 if (override.match(itemID, itemStack, enchantmentLevels)) {
                     int level = Math.max(override.lastEnchantmentLevel, 1);
                     Enchantment overlay = override.overlay;
-                    int layer = overlay.layer;
+                    int layer = override.layer;
                     Layer newLayer = new Layer(overlay, level);
                     Layer oldLayer = tmpLayers.get(layer);
                     if (oldLayer == null || newLayer.overlay.compareTo(oldLayer.overlay) > 0) {

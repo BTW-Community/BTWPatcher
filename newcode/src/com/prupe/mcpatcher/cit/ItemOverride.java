@@ -24,7 +24,7 @@ class ItemOverride {
     Icon icon;
     final String textureName;
     final Enchantment overlay;
-    final int renderPass;
+    final int layer;
     final BitSet itemsIDs;
     private final BitSet damage;
     private final BitSet stackSize;
@@ -82,6 +82,8 @@ class ItemOverride {
         }
         textureName = value.contains("/") ? value : directory + "/" + value;
 
+        layer = MCPatcherUtils.getIntProperty(properties, "layer", 0);
+
         if (type == ENCHANTMENT) {
             overlay = Enchantment.create(this, properties);
             if (overlay == null) {
@@ -89,12 +91,6 @@ class ItemOverride {
             }
         } else {
             overlay = null;
-        }
-
-        if (type == ARMOR) {
-            renderPass = MCPatcherUtils.getIntProperty(properties, "renderPass", 0);
-        } else {
-            renderPass = 0;
         }
 
         value = MCPatcherUtils.getStringProperty(properties, "matchItems", "");
