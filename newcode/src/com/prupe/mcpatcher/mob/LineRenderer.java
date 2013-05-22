@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.mob;
 import com.prupe.mcpatcher.*;
 import net.minecraft.src.Tessellator;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Properties;
 
@@ -77,6 +78,7 @@ public class LineRenderer {
         TexturePackAPI.bindTexture(texture);
         Tessellator tessellator = Tessellator.instance;
         tessellator.startDrawingQuads();
+        GL11.glDisable(GL11.GL_CULL_FACE);
         double x0 = x;
         double y0 = y + a + b;
         double z0 = z;
@@ -92,13 +94,13 @@ public class LineRenderer {
 
             tessellator.addVertexWithUV(x0, y0, z0, 0.0, 0.0);
             tessellator.addVertexWithUV(x1, y1, z1, 1.0, 0.0);
-            tessellator.addVertexWithUV(x1, y1 + w, z1, 1.0, 1.0);
-            tessellator.addVertexWithUV(x0, y0 + w, z0, 0.0, 1.0);
+            tessellator.addVertexWithUV(x1 + w, y1 + w, z1, 1.0, 1.0);
+            tessellator.addVertexWithUV(x0 + w, y0 + w, z0, 0.0, 1.0);
 
-            tessellator.addVertexWithUV(x0, y0 + w, z0, 0.0, 1.0);
-            tessellator.addVertexWithUV(x1, y1 + w, z1, 1.0, 1.0);
-            tessellator.addVertexWithUV(x1, y1, z1, 1.0, 0.0);
-            tessellator.addVertexWithUV(x0, y0, z0, 0.0, 0.0);
+            tessellator.addVertexWithUV(x0, y0 + w, z0, 0.0, 0.0);
+            tessellator.addVertexWithUV(x1, y1 + w, z1, 1.0, 0.0);
+            tessellator.addVertexWithUV(x1 + w, y1, z1 + w, 1.0, 1.0);
+            tessellator.addVertexWithUV(x0 + w, y0, z0 + w, 0.0, 1.0);
 
             x0 = x1;
             y0 = y1;
@@ -106,6 +108,7 @@ public class LineRenderer {
 
         }
         tessellator.draw();
+        GL11.glEnable(GL11.GL_CULL_FACE);
         return true;
     }
 
