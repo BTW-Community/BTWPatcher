@@ -42,6 +42,7 @@ public final class BaseMod extends Mod {
         addClassFile(MCPatcherUtils.CONFIG_CLASS);
         addClassFile(MCPatcherUtils.TILE_MAPPING_CLASS);
         addClassFile(MCPatcherUtils.PROFILER_API_CLASS);
+        addClassFile(MCPatcherUtils.INPUT_HANDLER_CLASS);
     }
 
     @Override
