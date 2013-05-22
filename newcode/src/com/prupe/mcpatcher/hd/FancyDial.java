@@ -42,8 +42,6 @@ public class FancyDial {
     private static final Map<TextureStitched, Properties> setupInfo = new WeakHashMap<TextureStitched, Properties>();
     private static final Map<TextureStitched, FancyDial> instances = new WeakHashMap<TextureStitched, FancyDial>();
 
-    private static final HashSet<Integer> keysDown = new HashSet<Integer>();
-
     private final TextureStitched icon;
     private final String name;
     private final int x0;
@@ -63,7 +61,7 @@ public class FancyDial {
 
     private final List<Layer> layers = new ArrayList<Layer>();
 
-    private boolean debug;
+    private InputHandler keyboard;
     private static final float STEP = 0.01f;
     private float scaleXDelta;
     private float scaleYDelta;
@@ -237,6 +235,7 @@ public class FancyDial {
 
         logger.fine("setting up %s", this);
 
+        boolean debug = false;
         for (int i = 0; ; i++) {
             Layer layer = newLayer(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/" + name + ".properties", properties, "." + i);
             if (layer == null) {
@@ -249,6 +248,7 @@ public class FancyDial {
             debug |= layer.debug;
             logger.fine("  new %s", layer);
         }
+        keyboard = new InputHandler(name, debug);
         if (layers.size() < 2) {
             logger.error("custom %s needs at least two layers defined", name);
             return;
@@ -279,25 +279,25 @@ public class FancyDial {
         }
 
         boolean changed = true;
-        if (!debug) {
+        if (!keyboard.isEnabled()) {
             changed = false;
-        } else if (tap(Keyboard.KEY_NUMPAD2)) {
+        } else if (keyboard.keyPressed(Keyboard.KEY_NUMPAD2)) {
             scaleYDelta -= STEP;
-        } else if (tap(Keyboard.KEY_NUMPAD8)) {
+        } else if (keyboard.keyPressed(Keyboard.KEY_NUMPAD8)) {
             scaleYDelta += STEP;
-        } else if (tap(Keyboard.KEY_NUMPAD4)) {
+        } else if (keyboard.keyPressed(Keyboard.KEY_NUMPAD4)) {
             scaleXDelta -= STEP;
-        } else if (tap(Keyboard.KEY_NUMPAD6)) {
+        } else if (keyboard.keyPressed(Keyboard.KEY_NUMPAD6)) {
             scaleXDelta += STEP;
-        } else if (tap(Keyboard.KEY_DOWN)) {
+        } else if (keyboard.keyPressed(Keyboard.KEY_DOWN)) {
             offsetYDelta += STEP;
-        } else if (tap(Keyboard.KEY_UP)) {
+        } else if (keyboard.keyPressed(Keyboard.KEY_UP)) {
             offsetYDelta -= STEP;
-        } else if (tap(Keyboard.KEY_LEFT)) {
+        } else if (keyboard.keyPressed(Keyboard.KEY_LEFT)) {
             offsetXDelta -= STEP;
-        } else if (tap(Keyboard.KEY_RIGHT)) {
+        } else if (keyboard.keyPressed(Keyboard.KEY_RIGHT)) {
             offsetXDelta += STEP;
-        } else if (tap(Keyboard.KEY_MULTIPLY)) {
+        } else if (keyboard.keyPressed(Keyboard.KEY_MULTIPLY)) {
             scaleXDelta = scaleYDelta = offsetXDelta = offsetYDelta = 0.0f;
         } else {
             changed = false;
@@ -514,18 +514,6 @@ public class FancyDial {
         } else {
             return 0.0;
         }
-    }
-
-    private static boolean tap(int key) {
-        if (Keyboard.isKeyDown(key)) {
-            if (!keysDown.contains(key)) {
-                keysDown.add(key);
-                return true;
-            }
-        } else {
-            keysDown.remove(key);
-        }
-        return false;
     }
 
     Layer newLayer(String filename, Properties properties, String suffix) {
