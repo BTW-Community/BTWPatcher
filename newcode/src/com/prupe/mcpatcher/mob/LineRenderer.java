@@ -92,15 +92,15 @@ public class LineRenderer {
             double y1 = y + (s * s + s) * 0.5 * dy + a * (1.0 - s) + b;
             double z1 = z + s * dz;
 
-            tessellator.addVertexWithUV(x0, y0, z0, 0.0, 0.0);
-            tessellator.addVertexWithUV(x1, y1, z1, 1.0, 0.0);
-            tessellator.addVertexWithUV(x1 + w, y1 + w, z1, 1.0, 1.0);
-            tessellator.addVertexWithUV(x0 + w, y0 + w, z0, 0.0, 1.0);
+            tessellator.addVertexWithUV(x0, y0, z0, 0.0, 1.0);
+            tessellator.addVertexWithUV(x1, y1, z1, 1.0, 1.0);
+            tessellator.addVertexWithUV(x1 + w, y1 + w, z1, 1.0, 0.0);
+            tessellator.addVertexWithUV(x0 + w, y0 + w, z0, 0.0, 0.0);
 
-            tessellator.addVertexWithUV(x0, y0 + w, z0, 0.0, 0.0);
-            tessellator.addVertexWithUV(x1, y1 + w, z1, 1.0, 0.0);
-            tessellator.addVertexWithUV(x1 + w, y1, z1 + w, 1.0, 1.0);
-            tessellator.addVertexWithUV(x0 + w, y0, z0 + w, 0.0, 1.0);
+            tessellator.addVertexWithUV(x0, y0 + w, z0, 0.0, 1.0);
+            tessellator.addVertexWithUV(x1, y1 + w, z1, 1.0, 1.0);
+            tessellator.addVertexWithUV(x1 + w, y1, z1 + w, 1.0, 0.0);
+            tessellator.addVertexWithUV(x0 + w, y0, z0 + w, 0.0, 0.0);
 
             x0 = x1;
             y0 = y1;
