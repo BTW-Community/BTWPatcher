@@ -281,23 +281,23 @@ public class FancyDial {
         boolean changed = true;
         if (!keyboard.isEnabled()) {
             changed = false;
-        } else if (keyboard.keyPressed(Keyboard.KEY_NUMPAD2)) {
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD2)) {
             scaleYDelta -= STEP;
-        } else if (keyboard.keyPressed(Keyboard.KEY_NUMPAD8)) {
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD8)) {
             scaleYDelta += STEP;
-        } else if (keyboard.keyPressed(Keyboard.KEY_NUMPAD4)) {
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD4)) {
             scaleXDelta -= STEP;
-        } else if (keyboard.keyPressed(Keyboard.KEY_NUMPAD6)) {
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD6)) {
             scaleXDelta += STEP;
-        } else if (keyboard.keyPressed(Keyboard.KEY_DOWN)) {
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_DOWN)) {
             offsetYDelta += STEP;
-        } else if (keyboard.keyPressed(Keyboard.KEY_UP)) {
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_UP)) {
             offsetYDelta -= STEP;
-        } else if (keyboard.keyPressed(Keyboard.KEY_LEFT)) {
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_LEFT)) {
             offsetXDelta -= STEP;
-        } else if (keyboard.keyPressed(Keyboard.KEY_RIGHT)) {
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_RIGHT)) {
             offsetXDelta += STEP;
-        } else if (keyboard.keyPressed(Keyboard.KEY_MULTIPLY)) {
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_MULTIPLY)) {
             scaleXDelta = scaleYDelta = offsetXDelta = offsetYDelta = 0.0f;
         } else {
             changed = false;

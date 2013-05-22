@@ -22,7 +22,7 @@ public class InputHandler {
         return enabled;
     }
 
-    public boolean keyPressed(int key) {
+    public boolean isKeyPressed(int key) {
         if (!enabled) {
             // nothing
         } else if (Keyboard.isKeyDown(key)) {
@@ -34,6 +34,10 @@ public class InputHandler {
             keysDown.clear(key);
         }
         return false;
+    }
+
+    public boolean isKeyDown(int key) {
+        return enabled && Keyboard.isKeyDown(key);
     }
 
     @Override
