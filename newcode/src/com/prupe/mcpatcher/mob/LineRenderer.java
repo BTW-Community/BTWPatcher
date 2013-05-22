@@ -60,12 +60,17 @@ public class LineRenderer {
         keyboard = new InputHandler(name, MCPatcherUtils.getBooleanProperty(properties, name + ".debug", true));
     }
 
+    private boolean fixed = true;
+    private double mult = 24.0;
+
     private boolean render(double x, double y, double z, double dx, double dy, double dz) {
         if (keyboard.isKeyDown(Keyboard.KEY_MULTIPLY)) {
             return false;
         }
         boolean changed = false;
-        if (keyboard.isKeyPressed(Keyboard.KEY_ADD)) {
+        if (!keyboard.isEnabled()) {
+            // nothing
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_ADD)) {
             extraWidth += D_WIDTH;
             changed = true;
         } else if (keyboard.isKeyPressed(Keyboard.KEY_SUBTRACT)) {
@@ -74,6 +79,15 @@ public class LineRenderer {
         } else if (keyboard.isKeyPressed(Keyboard.KEY_DIVIDE)) {
             extraWidth = 0.0;
             changed = true;
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD0)) {
+            changed = true;
+            fixed = !fixed;
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD1)) {
+            changed = true;
+            mult--;
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD2)) {
+            changed = true;
+            mult++;
         }
         TexturePackAPI.bindTexture(texture);
         Tessellator tessellator = Tessellator.instance;
@@ -83,29 +97,39 @@ public class LineRenderer {
         double y0 = y + a + b;
         double z0 = z;
         double w = width + extraWidth;
+        double u0 = 0.0;
+        double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
         if (changed) {
-            logger.info("%s", this);
+            logger.info("%s: dx=%f, dy=%f, dz=%f, len=%f(*%d=%f), slen=%f",
+                this, dx, dy, dz, len, (int) mult, len * mult, len * mult / segments
+            );
+        }
+        if (fixed) {
+            len *= mult / segments;
+        } else {
+            len = 1.0;
         }
         for (int i = 1; i <= segments; i++) {
             double s = i / (double) segments;
             double x1 = x + s * dx;
             double y1 = y + (s * s + s) * 0.5 * dy + a * (1.0 - s) + b;
             double z1 = z + s * dz;
+            double u1 = i * len;
 
-            tessellator.addVertexWithUV(x0, y0, z0, 0.0, 1.0);
-            tessellator.addVertexWithUV(x1, y1, z1, 1.0, 1.0);
-            tessellator.addVertexWithUV(x1 + w, y1 + w, z1, 1.0, 0.0);
-            tessellator.addVertexWithUV(x0 + w, y0 + w, z0, 0.0, 0.0);
+            tessellator.addVertexWithUV(x0, y0, z0, u0, 1.0);
+            tessellator.addVertexWithUV(x1, y1, z1, u1, 1.0);
+            tessellator.addVertexWithUV(x1 + w, y1 + w, z1, u1, 0.0);
+            tessellator.addVertexWithUV(x0 + w, y0 + w, z0, u0, 0.0);
 
-            tessellator.addVertexWithUV(x0, y0 + w, z0, 0.0, 1.0);
-            tessellator.addVertexWithUV(x1, y1 + w, z1, 1.0, 1.0);
-            tessellator.addVertexWithUV(x1 + w, y1, z1 + w, 1.0, 0.0);
-            tessellator.addVertexWithUV(x0 + w, y0, z0 + w, 0.0, 0.0);
+            tessellator.addVertexWithUV(x0, y0 + w, z0, u0, 1.0);
+            tessellator.addVertexWithUV(x1, y1 + w, z1, u1, 1.0);
+            tessellator.addVertexWithUV(x1 + w, y1, z1 + w, u1, 0.0);
+            tessellator.addVertexWithUV(x0 + w, y0, z0 + w, u0, 0.0);
 
             x0 = x1;
             y0 = y1;
             z0 = z1;
-
+            u0 = u1;
         }
         tessellator.draw();
         GL11.glEnable(GL11.GL_CULL_FACE);
