@@ -23,7 +23,6 @@ class ItemOverride {
     final int type;
     Icon icon;
     final String textureName;
-    final Enchantment overlay;
     final int layer;
     final BitSet itemsIDs;
     private final BitSet damage;
@@ -43,7 +42,13 @@ class ItemOverride {
         if (properties == null) {
             return null;
         }
-        ItemOverride override = new ItemOverride(filename, properties);
+        String type = MCPatcherUtils.getStringProperty(properties, "type", "item").toLowerCase();
+        ItemOverride override;
+        if (type.equals("enchantment") || type.equals("overlay")) {
+            override = new Enchantment(filename, properties);
+        } else {
+            override = new ItemOverride(filename, properties);
+        }
         return override.error ? null : override;
     }
 
@@ -83,15 +88,6 @@ class ItemOverride {
         textureName = value.contains("/") ? value : directory + "/" + value;
 
         layer = MCPatcherUtils.getIntProperty(properties, "layer", 0);
-
-        if (type == ENCHANTMENT) {
-            overlay = Enchantment.create(this, properties);
-            if (overlay == null) {
-                error = true;
-            }
-        } else {
-            overlay = null;
-        }
 
         value = MCPatcherUtils.getStringProperty(properties, "matchItems", "");
         if (value.equals("")) {

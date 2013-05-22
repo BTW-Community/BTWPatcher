@@ -9,10 +9,9 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Properties;
 
-class Enchantment implements Comparable<Enchantment> {
+class Enchantment extends ItemOverride implements Comparable<Enchantment> {
     private static final float ITEM_2D_THICKNESS = 0.0625f;
 
-    final ItemOverride override;
     private final BlendMethod blendMethod;
     private final float rotation;
     private final float speed;
@@ -51,27 +50,18 @@ class Enchantment implements Comparable<Enchantment> {
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
     }
 
-    static Enchantment create(ItemOverride override, Properties properties) {
-        String value = MCPatcherUtils.getStringProperty(properties, "blend", "add");
-        BlendMethod blendMethod = BlendMethod.parse(value);
-        if (blendMethod == null) {
-            override.error("unknown blend type %s", value);
-            return null;
-        }
-        float rotation = MCPatcherUtils.getFloatProperty(properties, "rotation", 0.0f);
-        float speed = MCPatcherUtils.getFloatProperty(properties, "speed", 0.0f);
-        float duration = MCPatcherUtils.getFloatProperty(properties, "duration", 1.0f);
-        int weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
-        return new Enchantment(override, blendMethod, rotation, speed, duration, weight);
-    }
+    Enchantment(String propertiesName, Properties properties) {
+        super(propertiesName, properties);
 
-    Enchantment(ItemOverride override, BlendMethod blendMethod, float rotation, float speed, float duration, int weight) {
-        this.override = override;
-        this.blendMethod = blendMethod;
-        this.rotation = rotation;
-        this.speed = speed;
-        this.duration = duration;
-        this.weight = weight;
+        String value = MCPatcherUtils.getStringProperty(properties, "blend", "add");
+        blendMethod = BlendMethod.parse(value);
+        if (blendMethod == null) {
+            error("unknown blend type %s", value);
+        }
+        rotation = MCPatcherUtils.getFloatProperty(properties, "rotation", 0.0f);
+        speed = MCPatcherUtils.getFloatProperty(properties, "speed", 0.0f);
+        duration = MCPatcherUtils.getFloatProperty(properties, "duration", 1.0f);
+        weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
     }
 
     void render2D(Tessellator tessellator, float intensity, float x0, float y0, float x1, float y1, float z) {
@@ -126,7 +116,7 @@ class Enchantment implements Comparable<Enchantment> {
     }
 
     private void begin(float intensity) {
-        TexturePackAPI.bindTexture(override.textureName);
+        TexturePackAPI.bindTexture(textureName);
         blendMethod.applyBlending();
         blendMethod.applyFade(intensity);
         GL11.glPushMatrix();
@@ -146,6 +136,6 @@ class Enchantment implements Comparable<Enchantment> {
         if (result != 0) {
             return result;
         }
-        return override.textureName.compareTo(o.override.textureName);
+        return textureName.compareTo(o.textureName);
     }
 }
