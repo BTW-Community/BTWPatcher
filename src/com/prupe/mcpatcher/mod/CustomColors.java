@@ -2168,14 +2168,14 @@ public class CustomColors extends Mod {
             final FieldRef fogColorGreen = new FieldRef(getDeobfClass(), "fogColorGreen", "F");
             final FieldRef fogColorBlue = new FieldRef(getDeobfClass(), "fogColorBlue", "F");
             final FieldRef lightmapColors = new FieldRef(getDeobfClass(), "lightmapColors", "[I");
-            final FieldRef lightmapTexture = new FieldRef(getDeobfClass(), "lightmapTexture", "LTexture;");
+            final FieldRef lightmapTexture = new FieldRef(getDeobfClass(), "lightmapTexture", "LTextureWithData;");
             final FieldRef needLightmapUpdate = new FieldRef(getDeobfClass(), "needLightmapUpdate", "Z");
             final FieldRef thePlayer = new FieldRef("Minecraft", "thePlayer", "LEntityClientPlayerMP;");
             final FieldRef nightVision = new FieldRef("Potion", "nightVision", "LPotion;");
             final MethodRef isPotionActive = new MethodRef("EntityClientPlayerMP", "isPotionActive", "(LPotion;)Z");
             final MethodRef getNightVisionStrength1 = new MethodRef(getDeobfClass(), "getNightVisionStrength1", "(LEntityPlayer;F)F");
             final MethodRef getNightVisionStrength = new MethodRef(getDeobfClass(), "getNightVisionStrength", "(F)F");
-            final MethodRef loadTexture = new MethodRef("Texture", "load", "()V");
+            final MethodRef reloadTexture = new MethodRef("TextureWithData", "reload", "()V");
 
             addClassSignature(new ConstSignature("ambient.weather.rain"));
             addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "terrain.png"));
@@ -2279,7 +2279,7 @@ public class CustomColors extends Mod {
                 .addXref(9, new FieldRef("GameSettings", "gammaSetting", "F"))
                 .addXref(10, lightmapColors)
                 .addXref(11, lightmapTexture)
-                .addXref(12, loadTexture)
+                .addXref(12, reloadTexture)
                 .addXref(13, needLightmapUpdate)
             );
 
@@ -2408,7 +2408,7 @@ public class CustomColors extends Mod {
                         // this.needLightmapUpdate = false;
                         ALOAD_0,
                         reference(GETFIELD, lightmapTexture),
-                        reference(INVOKEVIRTUAL, loadTexture),
+                        reference(INVOKEVIRTUAL, reloadTexture),
                         ALOAD_0,
                         push(0),
                         reference(PUTFIELD, needLightmapUpdate),

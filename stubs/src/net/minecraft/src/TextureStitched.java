@@ -50,9 +50,6 @@ public class TextureStitched implements Icon {
     public TextureStitched(String name) {
     }
 
-    public void init(Texture texture, List<Texture> subTextures, int x0, int y0, int width, int height, boolean flipped) {
-    }
-
     public void init(int tilesheetWidth, int tilesheetHeight, int x0, int y0, boolean flipped) {
     }
 
