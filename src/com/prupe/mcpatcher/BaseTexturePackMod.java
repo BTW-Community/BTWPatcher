@@ -18,6 +18,8 @@ public class BaseTexturePackMod extends Mod {
     protected final MethodRef beforeChange1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "beforeChange1", "()V");
     protected final MethodRef afterChange1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "afterChange1", "()V");
 
+    private final boolean haveResourceBundle;
+
     protected BaseTexturePackMod() {
         name = MCPatcherUtils.BASE_TEXTURE_PACK_MOD;
         author = "MCPatcher";
@@ -25,6 +27,8 @@ public class BaseTexturePackMod extends Mod {
         version = "3.0";
 
         earlyInitMethods.clear();
+
+        haveResourceBundle = getMinecraftVersion().compareTo("13w21a") >= 0;
 
         addClassMod(new MinecraftMod());
         addClassMod(new TextureManagerMod());
@@ -41,8 +45,9 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new TexturePackDefaultMod());
         addClassMod(new TexturePackCustomMod());
         addClassMod(new TexturePackFolderMod());
-        if (getMinecraftVersion().compareTo("13w21a") >= 0) {
+        if (haveResourceBundle) {
             addClassMod(new IResourceBundleMod());
+            addClassMod(new ITextureResourceBundleMod());
             addClassMod(new IResourceMod());
             addClassMod(new ResourceAddressMod());
         }
@@ -86,6 +91,7 @@ public class BaseTexturePackMod extends Mod {
         MinecraftMod() {
             final MethodRef getTextureManager = new MethodRef(getDeobfClass(), "getTextureManager", "()LTextureManager;");
             final FieldRef texturePackList = new FieldRef(getDeobfClass(), "texturePackList", "LTexturePackList;");
+            final FieldRef resourceBundle = new FieldRef(getDeobfClass(), "resourceBundle", "LITextureResourceBundle;");
             final MethodRef startGame = new MethodRef(getDeobfClass(), "startGame", "()V");
             final MethodRef runGameLoop = new MethodRef(getDeobfClass(), "runGameLoop", "()V");
 
@@ -108,6 +114,9 @@ public class BaseTexturePackMod extends Mod {
             }.setMethod(runGameLoop));
 
             addMemberMapper(new FieldMapper(texturePackList));
+            if (haveResourceBundle) {
+                addMemberMapper(new FieldMapper(resourceBundle));
+            }
             addMemberMapper(new MethodMapper(getTextureManager));
 
             addPatch(new BytecodePatch() {
@@ -166,6 +175,26 @@ public class BaseTexturePackMod extends Mod {
                     );
                 }
             }.targetMethod(runGameLoop));
+
+            addPatch(new AddMethodPatch(new MethodRef(getDeobfClass(), "getResourceBundle", "()LIResourceBundle;")) {
+                @Override
+                public byte[] generateMethod() {
+                    if (haveResourceBundle) {
+                        return buildCode(
+                            ALOAD_0,
+                            reference(GETFIELD, resourceBundle),
+                            ARETURN
+                        );
+                    } else {
+                        return buildCode(
+                            ALOAD_0,
+                            reference(GETFIELD, texturePackList),
+                            reference(INVOKEVIRTUAL, new MethodRef("TexturePackList", "getSelectedTexturePack", "()LITexturePack;")),
+                            ARETURN
+                        );
+                    }
+                }
+            });
         }
     }
 
@@ -392,6 +421,17 @@ public class BaseTexturePackMod extends Mod {
             addClassSignature(new InterfaceSignature(
                 new InterfaceMethodRef(getDeobfClass(), "getResource1", "(LResourceAddress;)LIResource;"),
                 new InterfaceMethodRef(getDeobfClass(), "getResource2", "(Ljava/lang/String;)LIResource;")
+            ).setInterfaceOnly(true));
+        }
+    }
+
+    private class ITextureResourceBundleMod extends ClassMod {
+        ITextureResourceBundleMod() {
+            setInterfaces("IResourceBundle");
+
+            addClassSignature(new InterfaceSignature(
+                new InterfaceMethodRef(getDeobfClass(), "method1", "([LIWTF2;)V"),
+                new InterfaceMethodRef(getDeobfClass(), "method2", "(LIWTF1;)V")
             ).setInterfaceOnly(true));
         }
     }

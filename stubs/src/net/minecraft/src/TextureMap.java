@@ -8,10 +8,7 @@ public class TextureMap extends TextureBase implements IStitchedTexture, IconReg
         return null;
     }
 
-    public void refreshTextures1(ITexturePack texturePack) {
-    }
-
-    public void refreshTextures2(ITexturePack texturePack) {
+    public void refreshTextures1(IResourceBundle resources) {
     }
 
     public void updateAnimations() {

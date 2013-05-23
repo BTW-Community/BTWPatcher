@@ -39,4 +39,8 @@ public class Minecraft {
     public TextureManager getTextureManager() {
         return null;
     }
+
+    public IResourceBundle getResourceBundle() { // added by __TexturePackBase
+        return null;
+    }
 }
