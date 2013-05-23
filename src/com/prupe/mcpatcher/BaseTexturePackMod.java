@@ -41,6 +41,11 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new TexturePackDefaultMod());
         addClassMod(new TexturePackCustomMod());
         addClassMod(new TexturePackFolderMod());
+        if (getMinecraftVersion().compareTo("13w21a") >= 0) {
+            addClassMod(new IResourceBundleMod());
+            addClassMod(new IResourceMod());
+            addClassMod(new ResourceAddressMod());
+        }
 
         addClassFile(MCPatcherUtils.TEXTURE_PACK_API_CLASS);
         addClassFile(MCPatcherUtils.TEXTURE_PACK_API_CLASS + "$1");
@@ -396,6 +401,42 @@ public class BaseTexturePackMod extends Mod {
 
             addClassSignature(new ConstSignature(new ClassRef("java.io.FileInputStream")));
             addClassSignature(new ConstSignature("textures/"));
+        }
+    }
+
+    private class IResourceBundleMod extends ClassMod {
+        IResourceBundleMod() {
+            addClassSignature(new InterfaceSignature(
+                new InterfaceMethodRef(getDeobfClass(), "getResource1", "(LResourceAddress;)LIResource;"),
+                new InterfaceMethodRef(getDeobfClass(), "getResource2", "(Ljava/lang/String;)LIResource;")
+            ).setInterfaceOnly(true));
+        }
+    }
+
+    private class IResourceMod extends ClassMod {
+        IResourceMod() {
+            addClassSignature(new InterfaceSignature(
+                new InterfaceMethodRef(getDeobfClass(), "getInputStream", "()Ljava/io/InputStream;"),
+                new InterfaceMethodRef(getDeobfClass(), "isPresent", "()Z")
+            ));
+        }
+    }
+
+    private class ResourceAddressMod extends ClassMod {
+        ResourceAddressMod() {
+            final MethodRef indexOf = new MethodRef("java/lang/String", "indexOf", "(I)I");
+
+            addClassSignature(new ConstSignature("minecraft"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(58),
+                        reference(INVOKEVIRTUAL, indexOf)
+                    );
+                }
+            });
         }
     }
 }
