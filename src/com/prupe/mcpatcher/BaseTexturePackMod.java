@@ -171,7 +171,7 @@ public class BaseTexturePackMod extends Mod {
             final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "(Ljava/lang/String;)LITexture;");
             final MethodRef unloadTexture = new MethodRef(getDeobfClass(), "unloadTexture", "(Ljava/lang/String;)V");
             final MethodRef addTexture = new MethodRef(getDeobfClass(), "addTexture", "(Ljava/lang/String;LITexture;)V");
-            final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "(LITexturePack;)V");
+            final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "(LIResourceBundle;)V");
 
             addClassSignature(new ConstSignature("dynamic/%s_%d"));
 
@@ -343,8 +343,6 @@ public class BaseTexturePackMod extends Mod {
                 new InterfaceMethodRef(getDeobfClass(), "getFirstDescriptionLine", "()Ljava/lang/String;"),
                 new InterfaceMethodRef(getDeobfClass(), "getSecondDescriptionLine", "()Ljava/lang/String;"),
                 new InterfaceMethodRef(getDeobfClass(), "hasResource", "(Ljava/lang/String;Z)Z"),
-                getMinecraftVersion().compareTo("1.5") >= 0 ?
-                    null : new InterfaceMethodRef(getDeobfClass(), "getTexturePackResolution", "()I"),
                 new InterfaceMethodRef(getDeobfClass(), "isCompatible", "()Z")
             ).setInterfaceOnly(true));
         }

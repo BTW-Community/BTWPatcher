@@ -875,7 +875,7 @@ public final class BaseMod extends Mod {
     public static class ITextureMod extends ClassMod {
         public ITextureMod() {
             addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "load", "(LITexturePack;)V"),
+                new InterfaceMethodRef(getDeobfClass(), "load", "(LIResourceBundle;)V"),
                 new InterfaceMethodRef(getDeobfClass(), "getGLTexture", "()I")
             ).setInterfaceOnly(true));
         }
@@ -975,7 +975,7 @@ public final class BaseMod extends Mod {
      */
     public static class TextureNamedMod extends ClassMod {
         protected final FieldRef textureName = new FieldRef(getDeobfClass(), "textureName", "Ljava/lang/String;");
-        protected final MethodRef load = new MethodRef(getDeobfClass(), "load", "(LITexturePack;)V");
+        protected final MethodRef load = new MethodRef(getDeobfClass(), "load", "(LIResourceBundle;)V");
 
         public TextureNamedMod() {
             setParentClass("TextureBase");
@@ -1060,8 +1060,8 @@ public final class BaseMod extends Mod {
     public static class TextureMapMod extends ClassMod {
         protected final FieldRef basePath = new FieldRef(getDeobfClass(), "basePath", "Ljava/lang/String;");
         protected final FieldRef texturesByName = new FieldRef(getDeobfClass(), "texturesByName", "Ljava/util/Map;");
-        protected final MethodRef refreshTextures1 = new MethodRef(getDeobfClass(), "refreshTextures1", "(LITexturePack;)V");
-        protected final MethodRef refreshTextures2 = new MethodRef(getDeobfClass(), "refreshTextures2", "(LITexturePack;)V");
+        protected final MethodRef refreshTextures1 = new MethodRef(getDeobfClass(), "refreshTextures1", "(LIResourceBundle;)V");
+        protected final MethodRef refreshTextures2 = new MethodRef(getDeobfClass(), "refreshTextures2", "(LIResourceBundle;)V");
         protected final MethodRef registerIcon = new MethodRef(getDeobfClass(), "registerIcon", "(Ljava/lang/String;)LIcon;");
 
         public TextureMapMod() {
@@ -1073,7 +1073,6 @@ public final class BaseMod extends Mod {
 
             addClassSignature(new ConstSignature("missingno"));
             addClassSignature(new ConstSignature(".png"));
-            addClassSignature(new ConstSignature(".txt"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override

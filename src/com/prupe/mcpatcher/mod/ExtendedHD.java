@@ -156,7 +156,7 @@ public class ExtendedHD extends Mod {
 
     private class TextureMapMod extends BaseMod.TextureMapMod {
         TextureMapMod() {
-            final MethodRef readTile = new MethodRef(getDeobfClass(), "readTile", "(LTextureStitched;LITexturePack;Ljava/lang/String;)Z");
+            final MethodRef readTile = new MethodRef(getDeobfClass(), "readTile", "(LTextureStitched;LIResourceBundle;Ljava/lang/String;)Z");
             final ClassRef textureStitched = new ClassRef("TextureStitched");
             final MethodRef textureStitchedConstructor = new MethodRef("TextureStitched", "<init>", "(Ljava/lang/String;)V");
             final MethodRef addBorder = new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(LTextureStitched;Ljava/lang/String;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
