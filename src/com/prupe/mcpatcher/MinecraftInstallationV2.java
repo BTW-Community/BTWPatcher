@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher;
 
 import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -12,9 +13,25 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
     static final String MCPATCHER_SUFFIX = "-mcpatcher";
     private static final String ORIGINAL_SUFFIX = "-original";
     private static final String NATIVES_SUFFIX = "-natives";
+    private static final String NATIVES_TYPE;
 
     private final File versionsDir;
     private final File librariesDir;
+
+    static {
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("linux") || os.contains("unix")) {
+            NATIVES_TYPE = "linux";
+        } else if (os.contains("win")) {
+            NATIVES_TYPE = "windows";
+        } else if (os.contains("mac") || os.contains("osx")) {
+            NATIVES_TYPE = "macosx";
+        } else if (os.contains("solaris") || os.contains("sunos")) {
+            NATIVES_TYPE = "solaris";
+        } else {
+            NATIVES_TYPE = "unknown";
+        }
+    }
 
     MinecraftInstallationV2(File baseDir) {
         super(baseDir);
@@ -83,8 +100,9 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
                 if (!d.getName().endsWith(MCPATCHER_SUFFIX)) {
                     MinecraftVersion version = MinecraftVersion.parseShortVersion(d.getName());
                     if (version != null) {
-                        File f = new File(d, d.getName() + ".jar");
-                        if (f.isFile()) {
+                        File jar = new File(d, d.getName() + ".jar");
+                        File json = new File(d, d.getName() + ".json");
+                        if (jar.isFile() && json.isFile()) {
                             availableVersions.add(version);
                         }
                     }
@@ -245,19 +263,7 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
                         File parent = new File(new File(new File(librariesDir, packageDir), library), version);
                         File jar;
                         if (library.endsWith("-platform")) {
-                            String os = System.getProperty("os.name").toLowerCase();
-                            if (os.contains("linux") || os.contains("unix")) {
-                                os = "linux";
-                            } else if (os.contains("win")) {
-                                os = "windows";
-                            } else if (os.contains("mac") || os.contains("osx")) {
-                                os = "macosx";
-                            } else if (os.contains("solaris") || os.contains("sunos")) {
-                                os = "solaris";
-                            } else {
-                                os = "unknown";
-                            }
-                            jar = new File(parent, library + '-' + version + "-natives-" + os + ".jar");
+                            jar = new File(parent, library + '-' + version + "-natives-" + NATIVES_TYPE + ".jar");
                             if (jar.isFile()) {
                                 unpackNatives(jar, getNativesDirectory());
                             } else {
@@ -317,14 +323,22 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
         private void addAllToClassPath(File dir, List<File> classPath) {
             File[] files = dir.listFiles();
             if (files != null) {
+                File nativesDirectory = getNativesDirectory();
                 for (File f : files) {
                     if (f.isFile() && f.getName().endsWith(".jar")) {
-                        classPath.add(f);
+                        if (f.getName().contains("-natives-" + NATIVES_TYPE)) {
+                            if (!nativesDirectory.isDirectory()) {
+                                unpackNatives(f, nativesDirectory);
+                            }
+                        } else {
+                            classPath.add(f);
+                        }
                     } else if (f.isDirectory()) {
                         addAllToClassPath(f, classPath);
                     }
                 }
             }
         }
+
     }
 }
