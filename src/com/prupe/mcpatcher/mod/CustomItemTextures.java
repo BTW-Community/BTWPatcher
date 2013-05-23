@@ -60,7 +60,7 @@ public class CustomItemTextures extends Mod {
     private class ConfigPanel extends ModConfigPanel {
         private JPanel panel;
         private JCheckBox itemsCheckBox;
-        private JCheckBox overlayCheckBox;
+        private JCheckBox enchantmentCheckBox;
         private JCheckBox armorCheckBox;
 
         @Override
@@ -76,9 +76,9 @@ public class CustomItemTextures extends Mod {
                 }
             });
 
-            overlayCheckBox.addActionListener(new ActionListener() {
+            enchantmentCheckBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    Config.set(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "overlays", overlayCheckBox.isSelected());
+                    Config.set(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "enchantments", enchantmentCheckBox.isSelected());
                 }
             });
 
@@ -92,7 +92,7 @@ public class CustomItemTextures extends Mod {
         @Override
         public void save() {
             itemsCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "items", true));
-            overlayCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "overlays", true));
+            enchantmentCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "enchantments", true));
             armorCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "armor", true));
         }
     }
@@ -245,7 +245,7 @@ public class CustomItemTextures extends Mod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "render item overlay (held)";
+                    return "render item enchantment (held)";
                 }
 
                 @Override
@@ -270,10 +270,10 @@ public class CustomItemTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (!CITUtils.renderOverlayHeld(itemStack, renderPass)) {
+                        // if (!CITUtils.renderEnchantmentHeld(itemStack, renderPass)) {
                         ALOAD_2,
                         ILOAD_3,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "renderOverlayHeld", "(LItemStack;I)Z")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "renderEnchantmentHeld", "(LItemStack;I)Z")),
                         IFNE, branch("A"),
 
                         // ...
@@ -322,7 +322,7 @@ public class CustomItemTextures extends Mod {
 
                 @Override
                 public String getDescription() {
-                    return "render item overlay (dropped)";
+                    return "render item enchantment (dropped)";
                 }
 
                 @Override
@@ -343,9 +343,9 @@ public class CustomItemTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (!CITUtils.renderOverlayDropped(itemStack)) {
+                        // if (!CITUtils.renderEnchantmentDropped(itemStack)) {
                         ALOAD, itemStackRegister,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "renderOverlayDropped", "(LItemStack;)Z")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "renderEnchantmentDropped", "(LItemStack;)Z")),
                         IFNE, branch("A"),
 
                         // ...
@@ -360,7 +360,7 @@ public class CustomItemTextures extends Mod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "render item overlay (gui)";
+                    return "render item enchantment (gui)";
                 }
 
                 @Override
@@ -379,13 +379,13 @@ public class CustomItemTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (!CITUtils.renderOverlayGUI(itemStack, x, y, this.zLevel)) {
+                        // if (!CITUtils.renderEnchantmentGUI(itemStack, x, y, this.zLevel)) {
                         ALOAD_3,
                         ILOAD, 4,
                         ILOAD, 5,
                         ALOAD_0,
                         reference(GETFIELD, zLevel),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "renderOverlayGUI", "(LItemStack;IIF)Z")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "renderEnchantmentGUI", "(LItemStack;IIF)Z")),
                         IFNE, branch("A"),
 
                         // ...
@@ -494,7 +494,7 @@ public class CustomItemTextures extends Mod {
 
                 @Override
                 public String getDescription() {
-                    return "render item overlay (armor)";
+                    return "render item enchantment (armor)";
                 }
 
                 @Override
@@ -519,21 +519,21 @@ public class CustomItemTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (CITUtils.setupArmorOverlays(entityLiving, pass)) {
+                        // if (CITUtils.setupArmorEnchantments(entityLiving, pass)) {
                         ALOAD_1,
                         ILOAD, passRegister,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "setupArmorOverlays", "(LEntityLiving;I)Z")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "setupArmorEnchantments", "(LEntityLiving;I)Z")),
                         IFEQ, branch("A"),
 
-                        // while (CITUtils.preRenderArmorOverlay()) {
+                        // while (CITUtils.preRenderArmorEnchantment()) {
                         label("B"),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "preRenderArmorOverlay", "()Z")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "preRenderArmorEnchantment", "()Z")),
                         IFEQ, branch("C"),
 
                         // this.renderPassModel.render(...);
-                        // CITUtils.postRenderArmorOverlay();
+                        // CITUtils.postRenderArmorEnchantment();
                         renderModelCode,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "postRenderArmorOverlay", "()V")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "postRenderArmorEnchantment", "()V")),
                         GOTO, branch("B"),
 
                         // }

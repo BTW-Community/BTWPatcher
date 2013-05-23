@@ -36,19 +36,19 @@ class EnchantmentList {
         }
     }
 
-    EnchantmentList(Enchantment[][] overlays, ItemStack itemStack) {
+    EnchantmentList(Enchantment[][] enchantments, ItemStack itemStack) {
         BitSet layersPresent = new BitSet();
         Map<Integer, Layer> tmpLayers = new HashMap<Integer, Layer>();
         int[] enchantmentLevels = CITUtils.getEnchantmentLevels(itemStack.stackTagCompound);
         int itemID = itemStack.itemID;
-        if (itemID >= 0 && itemID < overlays.length && overlays[itemID] != null) {
-            for (Enchantment overlay : overlays[itemID]) {
-                if (overlay.match(itemID, itemStack, enchantmentLevels)) {
-                    int level = Math.max(overlay.lastEnchantmentLevel, 1);
-                    int layer = overlay.layer;
-                    Layer newLayer = new Layer(overlay, level);
+        if (itemID >= 0 && itemID < enchantments.length && enchantments[itemID] != null) {
+            for (Enchantment enchantment : enchantments[itemID]) {
+                if (enchantment.match(itemID, itemStack, enchantmentLevels)) {
+                    int level = Math.max(enchantment.lastEnchantmentLevel, 1);
+                    int layer = enchantment.layer;
+                    Layer newLayer = new Layer(enchantment, level);
                     Layer oldLayer = tmpLayers.get(layer);
-                    if (oldLayer == null || newLayer.overlay.compareTo(oldLayer.overlay) > 0) {
+                    if (oldLayer == null || newLayer.enchantment.compareTo(oldLayer.enchantment) > 0) {
                         tmpLayers.put(layer, newLayer);
                     }
                     layersPresent.set(layer);
@@ -86,8 +86,8 @@ class EnchantmentList {
         return layers.size();
     }
 
-    Enchantment getOverlay(int index) {
-        return layers.get(index).overlay;
+    Enchantment getEnchantment(int index) {
+        return layers.get(index).enchantment;
     }
 
     float getIntensity(int index) {
@@ -142,17 +142,17 @@ class EnchantmentList {
     }
 
     private static class Layer {
-        final Enchantment overlay;
+        final Enchantment enchantment;
         final int level;
         float intensity;
 
-        Layer(Enchantment overlay, int level) {
-            this.overlay = overlay;
+        Layer(Enchantment enchantment, int level) {
+            this.enchantment = enchantment;
             this.level = level;
         }
 
         float getEffectiveDuration() {
-            return overlay.duration + 2.0f * fade;
+            return enchantment.duration + 2.0f * fade;
         }
     }
 }

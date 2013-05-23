@@ -196,7 +196,7 @@ class ItemOverride {
 
     @Override
     public String toString() {
-        String typeString = type == ITEM ? "item" : type == ENCHANTMENT ? "overlay" : type == ARMOR ? "armor" : "unknown type " + type;
+        String typeString = type == ITEM ? "item" : type == ENCHANTMENT ? "enchantment" : type == ARMOR ? "armor" : "unknown type " + type;
         return String.format("ItemOverride{%s, %s, %s}", typeString, propertiesName, textureName);
     }
 

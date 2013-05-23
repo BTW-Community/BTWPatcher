@@ -22,12 +22,12 @@ public class CITUtils {
     static final int ITEM_ID_POTION = 373;
 
     private static final boolean enableItems = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "items", true);
-    private static final boolean enableOverlays = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "overlays", true);
+    private static final boolean enableEnchantments = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "enchantments", true);
     private static final boolean enableArmor = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "armor", true);
 
     static TileLoader tileLoader;
     private static final ItemOverride[][] items = new ItemOverride[MAX_ITEMS][];
-    private static final Enchantment[][] overlays = new Enchantment[MAX_ITEMS][];
+    private static final Enchantment[][] enchantments = new Enchantment[MAX_ITEMS][];
     private static final ItemOverride[][] armors = new ItemOverride[MAX_ITEMS][];
 
     private static boolean useGlint;
@@ -43,7 +43,7 @@ public class CITUtils {
             public void beforeChange() {
                 tileLoader = new TileLoader("textures/items/", false, logger);
                 Arrays.fill(items, null);
-                Arrays.fill(overlays, null);
+                Arrays.fill(enchantments, null);
                 Arrays.fill(armors, null);
                 lastIcon = null;
                 itemNameMap.clear();
@@ -73,7 +73,7 @@ public class CITUtils {
                         HIGHEST_ITEM_ID, getItemName(HIGHEST_ITEM_ID)
                     );
                 }
-                if (enableItems || enableOverlays || enableArmor) {
+                if (enableItems || enableEnchantments || enableArmor) {
                     for (String path : TexturePackAPI.listResources(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit", ".properties", true, false, true)) {
                         ItemOverride override = ItemOverride.create(path);
                         if (override != null) {
@@ -85,7 +85,7 @@ public class CITUtils {
                                     break;
 
                                 case ItemOverride.ENCHANTMENT:
-                                    list = overlays;
+                                    list = enchantments;
                                     break;
 
                                 case ItemOverride.ARMOR:
@@ -195,14 +195,14 @@ public class CITUtils {
         return null;
     }
 
-    public static boolean renderOverlayHeld(ItemStack itemStack, int renderPass) {
+    public static boolean renderEnchantmentHeld(ItemStack itemStack, int renderPass) {
         if (itemStack == null || renderPass != 0) {
             return true;
         }
-        if (!enableOverlays) {
+        if (!enableEnchantments) {
             return false;
         }
-        EnchantmentList matches = new EnchantmentList(overlays, itemStack);
+        EnchantmentList matches = new EnchantmentList(enchantments, itemStack);
         if (matches.isEmpty()) {
             return false;
         }
@@ -216,49 +216,49 @@ public class CITUtils {
         }
         Enchantment.beginOuter3D();
         for (int i = 0; i < matches.size(); i++) {
-            matches.getOverlay(i).render3D(Tessellator.instance, matches.getIntensity(i), width, height);
+            matches.getEnchantment(i).render3D(Tessellator.instance, matches.getIntensity(i), width, height);
         }
         Enchantment.endOuter3D();
         return !useGlint;
     }
 
-    public static boolean renderOverlayDropped(ItemStack itemStack) {
-        return renderOverlayHeld(itemStack, 0);
+    public static boolean renderEnchantmentDropped(ItemStack itemStack) {
+        return renderEnchantmentHeld(itemStack, 0);
     }
 
-    public static boolean renderOverlayGUI(ItemStack itemStack, int x, int y, float z) {
-        if (!enableOverlays || itemStack == null) {
+    public static boolean renderEnchantmentGUI(ItemStack itemStack, int x, int y, float z) {
+        if (!enableEnchantments || itemStack == null) {
             return false;
         }
-        EnchantmentList matches = new EnchantmentList(overlays, itemStack);
+        EnchantmentList matches = new EnchantmentList(enchantments, itemStack);
         if (matches.isEmpty()) {
             return false;
         }
         Enchantment.beginOuter2D();
         for (int i = 0; i < matches.size(); i++) {
-            matches.getOverlay(i).render2D(Tessellator.instance, matches.getIntensity(i), x - 2, y - 2, x + 18, y + 18, z - 50.0f);
+            matches.getEnchantment(i).render2D(Tessellator.instance, matches.getIntensity(i), x - 2, y - 2, x + 18, y + 18, z - 50.0f);
         }
         Enchantment.endOuter2D();
         return !useGlint;
     }
 
-    public static boolean setupArmorOverlays(EntityLiving entity, int pass) {
-        if (!enableOverlays || !(entity instanceof EntityLivingSub)) {
+    public static boolean setupArmorEnchantments(EntityLiving entity, int pass) {
+        if (!enableEnchantments || !(entity instanceof EntityLivingSub)) {
             return false;
         }
         ItemStack itemStack = ((EntityLivingSub) entity).getCurrentArmor(3 - pass);
         if (itemStack == null) {
             return false;
         }
-        armorMatches = new EnchantmentList(overlays, itemStack);
+        armorMatches = new EnchantmentList(enchantments, itemStack);
         armorMatchIndex = 0;
         return !armorMatches.isEmpty();
     }
 
-    public static boolean preRenderArmorOverlay() {
+    public static boolean preRenderArmorEnchantment() {
         if (armorMatchIndex < armorMatches.size()) {
-            Enchantment overlay = armorMatches.getOverlay(armorMatchIndex);
-            overlay.beginArmor(armorMatches.getIntensity(armorMatchIndex));
+            Enchantment enchantment = armorMatches.getEnchantment(armorMatchIndex);
+            enchantment.beginArmor(armorMatches.getIntensity(armorMatchIndex));
             return true;
         } else {
             armorMatches = null;
@@ -267,8 +267,8 @@ public class CITUtils {
         }
     }
 
-    public static void postRenderArmorOverlay() {
-        armorMatches.getOverlay(armorMatchIndex).endArmor();
+    public static void postRenderArmorEnchantment() {
+        armorMatches.getEnchantment(armorMatchIndex).endArmor();
         armorMatchIndex++;
     }
 
