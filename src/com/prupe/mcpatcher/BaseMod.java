@@ -850,6 +850,23 @@ public final class BaseMod extends Mod {
         }
     }
 
+    public static class ITexturePackMod extends ClassMod {
+        public ITexturePackMod() {
+            addClassSignature(new InterfaceSignature(
+                new InterfaceMethodRef(getDeobfClass(), "deleteTexturePack", "(LTextureManager;)V"),
+                new InterfaceMethodRef(getDeobfClass(), "bindThumbnailTexture", "(LTextureManager;)V"),
+                new InterfaceMethodRef(getDeobfClass(), "getResourceAsStream2", "(Ljava/lang/String;Z)Ljava/io/InputStream;"),
+                new InterfaceMethodRef(getDeobfClass(), "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;"),
+                new InterfaceMethodRef(getDeobfClass(), "getTexturePackID", "()Ljava/lang/String;"),
+                new InterfaceMethodRef(getDeobfClass(), "getTexturePackFileName", "()Ljava/lang/String;"),
+                new InterfaceMethodRef(getDeobfClass(), "getFirstDescriptionLine", "()Ljava/lang/String;"),
+                new InterfaceMethodRef(getDeobfClass(), "getSecondDescriptionLine", "()Ljava/lang/String;"),
+                new InterfaceMethodRef(getDeobfClass(), "hasResource", "(Ljava/lang/String;Z)Z"),
+                new InterfaceMethodRef(getDeobfClass(), "isCompatible", "()Z")
+            ).setInterfaceOnly(true));
+        }
+    }
+
     /**
      * Maps TextureUtilsClass (1.6).
      */

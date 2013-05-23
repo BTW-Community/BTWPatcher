@@ -30,7 +30,7 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new TextureManagerMod());
         addClassMod(new BaseMod.TextureUtilsMod());
         addClassMod(new TexturePackListMod());
-        addClassMod(new ITexturePackMod());
+        addClassMod(new BaseMod.ITexturePackMod());
         addClassMod(new BaseMod.ITextureMod());
         addClassMod(new TextureBaseMod());
         addClassMod(new BaseMod.TextureNamedMod());
@@ -333,23 +333,6 @@ public class BaseTexturePackMod extends Mod {
                 .accessFlag(AccessFlag.PUBLIC, true)
                 .accessFlag(AccessFlag.STATIC, false)
             );
-        }
-    }
-
-    private class ITexturePackMod extends ClassMod {
-        ITexturePackMod() {
-            addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "deleteTexturePack", "(LTextureManager;)V"),
-                new InterfaceMethodRef(getDeobfClass(), "bindThumbnailTexture", "(LTextureManager;)V"),
-                new InterfaceMethodRef(getDeobfClass(), "getResourceAsStream2", "(Ljava/lang/String;Z)Ljava/io/InputStream;"),
-                new InterfaceMethodRef(getDeobfClass(), "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;"),
-                new InterfaceMethodRef(getDeobfClass(), "getTexturePackID", "()Ljava/lang/String;"),
-                new InterfaceMethodRef(getDeobfClass(), "getTexturePackFileName", "()Ljava/lang/String;"),
-                new InterfaceMethodRef(getDeobfClass(), "getFirstDescriptionLine", "()Ljava/lang/String;"),
-                new InterfaceMethodRef(getDeobfClass(), "getSecondDescriptionLine", "()Ljava/lang/String;"),
-                new InterfaceMethodRef(getDeobfClass(), "hasResource", "(Ljava/lang/String;Z)Z"),
-                new InterfaceMethodRef(getDeobfClass(), "isCompatible", "()Z")
-            ).setInterfaceOnly(true));
         }
     }
 
