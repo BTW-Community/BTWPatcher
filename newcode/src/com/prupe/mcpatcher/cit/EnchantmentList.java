@@ -42,17 +42,17 @@ class EnchantmentList {
         }
     }
 
-    EnchantmentList(Enchantment[][] enchantments, ItemStack itemStack) {
+    EnchantmentList(ItemOverride[][] enchantments, ItemStack itemStack) {
         BitSet layersPresent = new BitSet();
         Map<Integer, Layer> tmpLayers = new HashMap<Integer, Layer>();
         int[] enchantmentLevels = CITUtils.getEnchantmentLevels(itemStack.stackTagCompound);
         int itemID = itemStack.itemID;
         if (itemID >= 0 && itemID < enchantments.length && enchantments[itemID] != null) {
-            for (Enchantment enchantment : enchantments[itemID]) {
+            for (ItemOverride enchantment : enchantments[itemID]) {
                 if (enchantment.match(itemID, itemStack, enchantmentLevels)) {
                     int level = Math.max(enchantment.lastEnchantmentLevel, 1);
                     int layer = enchantment.layer;
-                    Layer newLayer = new Layer(enchantment, level);
+                    Layer newLayer = new Layer((Enchantment) enchantment, level);
                     Layer oldLayer = tmpLayers.get(layer);
                     if (oldLayer == null || newLayer.enchantment.compareTo(oldLayer.enchantment) > 0) {
                         tmpLayers.put(layer, newLayer);

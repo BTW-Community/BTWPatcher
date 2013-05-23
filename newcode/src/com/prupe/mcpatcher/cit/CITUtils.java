@@ -28,7 +28,7 @@ public class CITUtils {
 
     static TileLoader tileLoader;
     private static final ItemOverride[][] items = new ItemOverride[MAX_ITEMS][];
-    private static final Enchantment[][] enchantments = new Enchantment[MAX_ITEMS][];
+    private static final ItemOverride[][] enchantments = new ItemOverride[MAX_ITEMS][];
     private static final ItemOverride[][] armors = new ItemOverride[MAX_ITEMS][];
 
     private static boolean useGlint;
