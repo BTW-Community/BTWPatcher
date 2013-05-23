@@ -14,6 +14,7 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
     private static final String ORIGINAL_SUFFIX = "-original";
     private static final String NATIVES_SUFFIX = "-natives";
     private static final String NATIVES_TYPE;
+    private static final String BASE_URL = "http://s3.amazonaws.com/Minecraft.Download/versions/";
 
     private final File versionsDir;
     private final File librariesDir;
@@ -196,6 +197,7 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
                 }
             }
 
+            fetchJSON(version.getVersionString(), new File(getInputJarDirectory(), version.getVersionString() + ".json"));
             if (!outputFile.getParentFile().isDirectory()) {
                 createVersionDirectory(origFile.getParentFile(), outputFile.getParentFile());
             }
@@ -233,6 +235,32 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
                     addAllToClassPath(librariesDir, classPath);
                 }
             }
+        }
+
+        private boolean fetchJSON(String version, File json) {
+            if (json.isFile() && json.length() > 0) {
+                return true;
+            }
+            InputStream input = null;
+            OutputStream output = null;
+            boolean success = false;
+            try {
+                URL url = new URL(BASE_URL + version + "/" + version + ".json");
+                Logger.log(Logger.LOG_MAIN, "Downloading %s...", url);
+                input = url.openStream();
+                output = new FileOutputStream(json);
+                Util.copyStream(input, output);
+                success = true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                MCPatcherUtils.close(input);
+                MCPatcherUtils.close(output);
+            }
+            if (!success) {
+                json.delete();
+            }
+            return success && json.isFile();
         }
 
         private boolean getClassPathFromJSON(List<File> classPath) {
