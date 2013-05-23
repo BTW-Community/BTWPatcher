@@ -1,11 +1,14 @@
 package com.prupe.mcpatcher.cit;
 
+import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.ItemStack;
 
 import java.util.*;
 
 class EnchantmentList {
+    private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
+
     private static final float PI = (float) Math.PI;
 
     private static final int AVERAGE = 0;
@@ -23,16 +26,19 @@ class EnchantmentList {
         limit = 99;
         fade = 0.5f;
         if (properties != null) {
-            String value = MCPatcherUtils.getStringProperty(properties, "method", "").toLowerCase();
+            String value = MCPatcherUtils.getStringProperty(properties, "method", "average").toLowerCase();
             if (value.equals("layered")) {
                 applyMethod = LAYERED;
             } else if (value.equals("cycle")) {
                 applyMethod = CYCLE;
+            } else if (value.equals("average")) {
+                applyMethod = AVERAGE;
             } else {
+                logger.warning("%s: unknown enchantment layering method '%s'", CITUtils.CIT_PROPERTIES, value);
                 applyMethod = AVERAGE;
             }
-            limit = MCPatcherUtils.getIntProperty(properties, "cap", limit);
-            fade = MCPatcherUtils.getFloatProperty(properties, "fade", fade);
+            limit = Math.max(MCPatcherUtils.getIntProperty(properties, "cap", limit), 0);
+            fade = Math.max(MCPatcherUtils.getFloatProperty(properties, "fade", fade), 0.0f);
         }
     }
 
@@ -54,6 +60,9 @@ class EnchantmentList {
                     layersPresent.set(layer);
                 }
             }
+        }
+        if (layersPresent.isEmpty()) {
+            return;
         }
         while (layersPresent.cardinality() > limit) {
             int layer = layersPresent.nextSetBit(0);

@@ -11,6 +11,7 @@ import java.util.Properties;
 public class CITUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
+    static final String CIT_PROPERTIES = "cit.properties";
     static final int MAX_ITEMS = Item.itemsList.length;
     static final int MAX_ENCHANTMENTS = 256;
     static int LOWEST_ITEM_ID;
@@ -127,9 +128,9 @@ public class CITUtils {
                         }
                     }
                 }
-                Properties properties = TexturePackAPI.getProperties("cit.properties");
+                Properties properties = TexturePackAPI.getProperties(MCPatcherUtils.TEXTURE_PACK_PREFIX + CIT_PROPERTIES);
                 if (properties == null) {
-                    properties = TexturePackAPI.getProperties("cit/cit.properties");
+                    properties = TexturePackAPI.getProperties(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit/" + CIT_PROPERTIES);
                 }
                 useGlint = MCPatcherUtils.getBooleanProperty(properties, "useGlint", true);
                 EnchantmentList.setProperties(properties);
