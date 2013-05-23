@@ -142,21 +142,25 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
         String oldVersion = oldDir.getName();
         String newVersion = newDir.getName();
         newDir.mkdirs();
+        File oldJSON = new File(oldDir, oldVersion + ".json");
+        File newJSON = new File(newDir, newVersion + ".json");
         BufferedReader reader = null;
         PrintWriter writer = null;
-        try {
-            reader = new BufferedReader(new FileReader(new File(oldDir, oldVersion + ".json")));
-            writer = new PrintWriter(new FileWriter(new File(newDir, newVersion + ".json")));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.contains("\"id\":")) {
-                    line = line.replace(oldVersion, newVersion);
+        if (oldJSON.isFile() && !newJSON.isFile()) {
+            try {
+                reader = new BufferedReader(new FileReader(oldJSON));
+                writer = new PrintWriter(new FileWriter(newJSON));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.contains("\"id\":")) {
+                        line = line.replace(oldVersion, newVersion);
+                    }
+                    writer.println(line);
                 }
-                writer.println(line);
+            } finally {
+                MCPatcherUtils.close(reader);
+                MCPatcherUtils.close(writer);
             }
-        } finally {
-            MCPatcherUtils.close(reader);
-            MCPatcherUtils.close(writer);
         }
         oldDir = new File(oldDir, oldVersion + NATIVES_SUFFIX);
         newDir = new File(newDir, newVersion + NATIVES_SUFFIX);
@@ -198,9 +202,7 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
             }
 
             fetchJSON(version.getVersionString(), new File(getInputJarDirectory(), version.getVersionString() + ".json"));
-            if (!outputFile.getParentFile().isDirectory()) {
-                createVersionDirectory(origFile.getParentFile(), outputFile.getParentFile());
-            }
+            createVersionDirectory(origFile.getParentFile(), outputFile.getParentFile());
         }
 
         @Override
