@@ -33,7 +33,7 @@ public class LineRenderer {
 
     static void reset() {
         if (enable) {
-            setup(0, "fishingLine", 0.0075, 0.0, 0.0, 16);
+            setup(0, "fishingLine", 0.0075, 0.0, 0.25, 16);
             setup(1, "lead", 0.025, 4.0 / 3.0, 0.125, 24);
         }
     }
