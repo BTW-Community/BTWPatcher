@@ -20,6 +20,8 @@ public class ExtendedHD extends Mod {
 
     private static final MethodRef imageRead = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
 
+    private final boolean haveResourceBundle;
+
     public ExtendedHD() {
         name = MCPatcherUtils.EXTENDED_HD;
         author = "MCPatcher";
@@ -27,6 +29,8 @@ public class ExtendedHD extends Mod {
         version = "3.0";
 
         configPanel = new HDConfig();
+
+        haveResourceBundle = getMinecraftVersion().compareTo("13w21a") >= 0;
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
@@ -224,17 +228,37 @@ public class ExtendedHD extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_2,
-                        capture(anyALOAD),
-                        anyReference(INVOKEINTERFACE),
-                        reference(INVOKESTATIC, imageRead)
-                    );
+                    if (haveResourceBundle) {
+                        return buildExpression(
+                            // resource = bundle.getResource(new ResourceAddress(path));
+                            ALOAD_2,
+                            anyReference(NEW),
+                            DUP,
+                            capture(anyALOAD),
+                            anyReference(INVOKESPECIAL),
+                            anyReference(INVOKEINTERFACE),
+                            ASTORE, capture(any()),
+
+                            // image = ImageIO.read(resource.getInputStream());
+                            ALOAD, backReference(2),
+                            anyReference(INVOKEINTERFACE),
+                            reference(INVOKESTATIC, imageRead)
+                        );
+                    } else {
+                        return buildExpression(
+                            // ImageIO.read(texturePack.getInputStream(path))
+                            ALOAD_2,
+                            capture(anyALOAD),
+                            anyReference(INVOKEINTERFACE),
+                            reference(INVOKESTATIC, imageRead)
+                        );
+                    }
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // AAHelper.addBorder(stitched, path, ...)
                         ALOAD_1,
                         getCaptureGroup(1),
                         getMatch(),
