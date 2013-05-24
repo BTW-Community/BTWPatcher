@@ -12,6 +12,7 @@ public class LineRenderer {
 
     private static final String LINE_PROPERTIES = MCPatcherUtils.TEXTURE_PACK_PREFIX + "item/line.properties";
     private static final double D_WIDTH = 1.0 / 1024.0;
+    private static final double D_POS = 1.0 / 256.0;
 
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.RANDOM_MOBS, "leashLine", true);
     private static final LineRenderer[] renderers = new LineRenderer[2];
@@ -20,11 +21,19 @@ public class LineRenderer {
     private final double width;
     private final double a;
     private final double b;
+    private final double sx;
+    private final double sy;
+    private final double sz;
     private final int segments;
+    private final double tileFactor;
     private final boolean active;
     private final InputHandler keyboard;
 
-    private double extraWidth;
+    private double plusWidth;
+    private double plusTile;
+    private double plusSX;
+    private double plusSY;
+    private double plusSZ;
 
     public static boolean renderLine(int type, double x, double y, double z, double dx, double dy, double dz) {
         LineRenderer renderer = renderers[type];
@@ -33,7 +42,7 @@ public class LineRenderer {
 
     static void reset() {
         if (enable) {
-            setup(0, "fishingLine", 0.0075, 0.0, 0.25, 16);
+            setup(0, "fishingline", 0.0075, 0.0, 0.25, 16);
             setup(1, "lead", 0.025, 4.0 / 3.0, 0.125, 24);
         }
     }
@@ -50,18 +59,19 @@ public class LineRenderer {
     }
 
     private LineRenderer(String name, double width, double a, double b, int segments) {
-        texture = MCPatcherUtils.TEXTURE_PACK_PREFIX + "item/" + name.toLowerCase() + ".png";
+        texture = MCPatcherUtils.TEXTURE_PACK_PREFIX + "item/" + name + ".png";
         active = TexturePackAPI.hasResource(texture);
-        Properties properties = TexturePackAPI.getProperties(LINE_PROPERTIES);
-        this.width = MCPatcherUtils.getDoubleProperty(properties, name + ".width", width);
-        this.a = MCPatcherUtils.getDoubleProperty(properties, name + ".a", a);
-        this.b = MCPatcherUtils.getDoubleProperty(properties, name + ".b", b);
-        this.segments = MCPatcherUtils.getIntProperty(properties, name + ".segments", segments);
-        keyboard = new InputHandler(name, MCPatcherUtils.getBooleanProperty(properties, name + ".debug", true));
+        Properties properties = TexturePackAPI.getProperties(texture.replaceFirst("\\.png$", ".properties"));
+        this.width = MCPatcherUtils.getDoubleProperty(properties, "width", width);
+        this.a = MCPatcherUtils.getDoubleProperty(properties, "a", a);
+        this.b = MCPatcherUtils.getDoubleProperty(properties, "b", b);
+        this.sx = MCPatcherUtils.getDoubleProperty(properties, "sx", 0.0);
+        this.sy = MCPatcherUtils.getDoubleProperty(properties, "sy", 0.0);
+        this.sz = MCPatcherUtils.getDoubleProperty(properties, "sz", 0.0);
+        this.segments = MCPatcherUtils.getIntProperty(properties, "segments", segments);
+        this.tileFactor = MCPatcherUtils.getDoubleProperty(properties, "tileFactor", 24.0);
+        keyboard = new InputHandler(name, MCPatcherUtils.getBooleanProperty(properties, "debug", true));
     }
-
-    private boolean fixed = true;
-    private double mult = 24.0;
 
     private boolean render(double x, double y, double z, double dx, double dy, double dz) {
         if (keyboard.isKeyDown(Keyboard.KEY_MULTIPLY)) {
@@ -71,44 +81,64 @@ public class LineRenderer {
         if (!keyboard.isEnabled()) {
             // nothing
         } else if (keyboard.isKeyPressed(Keyboard.KEY_ADD)) {
-            extraWidth += D_WIDTH;
             changed = true;
+            plusWidth += D_WIDTH;
         } else if (keyboard.isKeyPressed(Keyboard.KEY_SUBTRACT)) {
-            extraWidth -= D_WIDTH;
             changed = true;
+            plusWidth -= D_WIDTH;
         } else if (keyboard.isKeyPressed(Keyboard.KEY_DIVIDE)) {
-            extraWidth = 0.0;
             changed = true;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD0)) {
+            plusWidth = plusTile = plusSX = plusSY = plusSZ = 0.0;
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD3)) {
             changed = true;
-            fixed = !fixed;
+            plusTile--;
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD9)) {
+            changed = true;
+            plusTile++;
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD4)) {
+            changed = true;
+            plusSX -= D_POS;
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD6)) {
+            changed = true;
+            plusSX += D_POS;
         } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD1)) {
             changed = true;
-            mult--;
+            plusSY -= D_POS;
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD7)) {
+            changed = true;
+            plusSY += D_POS;
         } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD2)) {
             changed = true;
-            mult++;
+            plusSZ += D_POS;
+        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD8)) {
+            changed = true;
+            plusSZ -= D_POS;
         }
         TexturePackAPI.bindTexture(texture);
         Tessellator tessellator = Tessellator.instance;
         tessellator.startDrawingQuads();
         GL11.glDisable(GL11.GL_CULL_FACE);
+        dx += sx + plusSX;
+        dy += sy + plusSY;
+        dz += sz + plusSZ;
         double x0 = x;
         double y0 = y + a + b;
         double z0 = z;
-        double w = width + extraWidth;
         double u0 = 0.0;
         double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        double t = tileFactor + plusTile;
+        double w = width + plusWidth;
         if (changed) {
             logger.info("%s: dx=%f, dy=%f, dz=%f, len=%f(*%d=%f), slen=%f",
-                this, dx, dy, dz, len, (int) mult, len * mult, len * mult / segments
+                this, dx, dy, dz, len, (int) t, len * t, len * t / segments
             );
+            System.out.printf("width=%f\n", w);
+            System.out.printf("tileFactor=%f\n", t);
+            System.out.printf("sx=%f\n", sx + plusSX);
+            System.out.printf("sy=%f\n", sy + plusSY);
+            System.out.printf("sz=%f\n", sz + plusSZ);
         }
-        if (fixed) {
-            len *= mult / segments;
-        } else {
-            len = 1.0;
-        }
+        len *= t / segments;
         for (int i = 1; i <= segments; i++) {
             double s = i / (double) segments;
             double x1 = x + s * dx;
@@ -138,6 +168,6 @@ public class LineRenderer {
 
     @Override
     public String toString() {
-        return "LineRenderer{" + texture + ", " + (width + extraWidth) + "}";
+        return "LineRenderer{" + texture + ", " + (width + plusWidth) + "}";
     }
 }
