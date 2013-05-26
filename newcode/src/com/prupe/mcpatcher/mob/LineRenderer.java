@@ -10,7 +10,6 @@ import java.util.Properties;
 public class LineRenderer {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.RANDOM_MOBS);
 
-    private static final String LINE_PROPERTIES = MCPatcherUtils.TEXTURE_PACK_PREFIX + "item/line.properties";
     private static final double D_WIDTH = 1.0 / 1024.0;
     private static final double D_POS = 1.0 / 256.0;
 
@@ -70,7 +69,7 @@ public class LineRenderer {
         this.sz = MCPatcherUtils.getDoubleProperty(properties, "sz", 0.0);
         this.segments = MCPatcherUtils.getIntProperty(properties, "segments", segments);
         this.tileFactor = MCPatcherUtils.getDoubleProperty(properties, "tileFactor", 24.0);
-        keyboard = new InputHandler(name, MCPatcherUtils.getBooleanProperty(properties, "debug", true));
+        keyboard = new InputHandler(name, MCPatcherUtils.getBooleanProperty(properties, "debug", false));
     }
 
     private boolean render(double x, double y, double z, double dx, double dy, double dz) {
@@ -144,7 +143,7 @@ public class LineRenderer {
             double x1 = x + s * dx;
             double y1 = y + (s * s + s) * 0.5 * dy + a * (1.0 - s) + b;
             double z1 = z + s * dz;
-            double u1 = i * len;
+            double u1 = (segments - i) * len;
 
             tessellator.addVertexWithUV(x0, y0, z0, u0, 1.0);
             tessellator.addVertexWithUV(x1, y1, z1, u1, 1.0);
