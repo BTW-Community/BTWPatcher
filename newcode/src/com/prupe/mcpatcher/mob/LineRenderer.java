@@ -94,22 +94,22 @@ public class LineRenderer {
         } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD9)) {
             changed = true;
             plusTile++;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD4)) {
+        } else if (keyboard.isKeyDown(Keyboard.KEY_NUMPAD4)) {
             changed = true;
             plusSX -= D_POS;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD6)) {
+        } else if (keyboard.isKeyDown(Keyboard.KEY_NUMPAD6)) {
             changed = true;
             plusSX += D_POS;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD1)) {
+        } else if (keyboard.isKeyDown(Keyboard.KEY_NUMPAD1)) {
             changed = true;
             plusSY -= D_POS;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD7)) {
+        } else if (keyboard.isKeyDown(Keyboard.KEY_NUMPAD7)) {
             changed = true;
             plusSY += D_POS;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD2)) {
+        } else if (keyboard.isKeyDown(Keyboard.KEY_NUMPAD2)) {
             changed = true;
             plusSZ += D_POS;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD8)) {
+        } else if (keyboard.isKeyDown(Keyboard.KEY_NUMPAD8)) {
             changed = true;
             plusSZ -= D_POS;
         }
