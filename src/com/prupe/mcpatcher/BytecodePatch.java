@@ -229,8 +229,6 @@ abstract public class BytecodePatch extends ClassPatch {
         ArrayList<String> txtBefore = null;
 
         while (matcher.match(mi, offset)) {
-            recordPatch(String.format("%s%s@%d", mi.getName(), mi.getDescriptor(), matcher.getStart()));
-
             byte repl[];
             classMod.addToConstPool = false;
             classMod.addToConstPool = true;
@@ -243,6 +241,9 @@ abstract public class BytecodePatch extends ClassPatch {
                 }
                 continue;
             }
+
+            recordPatch(String.format("%s%s@%d", mi.getName(), mi.getDescriptor(), matcher.getStart()));
+
             if ((insertBefore || insertAfter) && matcher.getMatchLength() > 0) {
                 byte[] match = getMatch();
                 byte[] newRepl = new byte[repl.length + match.length];
