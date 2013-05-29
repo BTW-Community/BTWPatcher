@@ -148,44 +148,66 @@ class ItemOverride {
         icon = tileLoader.getIcon(textureName);
     }
 
-    boolean match(int itemID, ItemStack itemStack, int[] itemEnchantmentLevels) {
-        if (damage != null && !damage.get(itemStack.getItemDamage())) {
-            return false;
+    boolean match(ItemStack itemStack, int[] itemEnchantmentLevels, boolean hasEffect) {
+        return matchDamage(itemStack) &&
+            matchStackSize(itemStack) &&
+            matchEnchantment(itemEnchantmentLevels, hasEffect) &&
+            matchNBT(itemStack);
+    }
+
+    private boolean matchDamage(ItemStack itemStack) {
+        return damage == null || damage.get(itemStack.getItemDamage());
+    }
+
+    private boolean matchStackSize(ItemStack itemStack) {
+        return stackSize == null || stackSize.get(itemStack.stackSize);
+    }
+
+    private boolean matchEnchantment(int[] itemEnchantmentLevels, boolean hasEffect) {
+        if (enchantmentLevels == null && enchantmentIDs == null) {
+            return true;
+        } else if (itemEnchantmentLevels == null) {
+            return (lastEnchantmentLevel = getEnchantmentLevelMatch(hasEffect)) >= 0;
+        } else {
+            return (lastEnchantmentLevel = getEnchantmentLevelMatch(itemEnchantmentLevels)) >= 0;
         }
-        if (stackSize != null && !stackSize.get(itemStack.stackSize)) {
-            return false;
+    }
+
+    private int getEnchantmentLevelMatch(boolean hasEffect) {
+        if (hasEffect && enchantmentIDs == null && enchantmentLevels.get(1)) {
+            return 1;
+        } else {
+            return -1;
         }
-        if (enchantmentIDs != null || enchantmentLevels != null) {
-            if (itemEnchantmentLevels == null) {
-                return false;
+    }
+
+    private int getEnchantmentLevelMatch(int[] itemEnchantmentLevels) {
+        int matchLevel = -1;
+        if (enchantmentIDs == null) {
+            int sum = 0;
+            for (int level : itemEnchantmentLevels) {
+                sum += level;
             }
-            lastEnchantmentLevel = 0;
-            if (enchantmentIDs == null) {
-                int sum = 0;
-                for (int level : itemEnchantmentLevels) {
-                    sum += level;
-                }
-                if (!enchantmentLevels.get(sum)) {
-                    return false;
-                }
-                lastEnchantmentLevel = sum;
-            } else {
-                for (int id = enchantmentIDs.nextSetBit(0); id >= 0; id = enchantmentIDs.nextSetBit(id + 1)) {
-                    if (enchantmentLevels == null) {
-                        if (itemEnchantmentLevels[id] > 0) {
-                            lastEnchantmentLevel = Math.max(lastEnchantmentLevel, itemEnchantmentLevels[id]);
-                        }
-                    } else {
-                        if (enchantmentLevels.get(itemEnchantmentLevels[id])) {
-                            lastEnchantmentLevel = Math.max(lastEnchantmentLevel, itemEnchantmentLevels[id]);
-                        }
-                    }
+            if (enchantmentLevels.get(sum)) {
+                return sum;
+            }
+        } else if (enchantmentLevels == null) {
+            for (int id = enchantmentIDs.nextSetBit(0); id >= 0; id = enchantmentIDs.nextSetBit(id + 1)) {
+                if (itemEnchantmentLevels[id] > 0) {
+                    matchLevel = Math.max(matchLevel, itemEnchantmentLevels[id]);
                 }
             }
-            if (lastEnchantmentLevel <= 0) {
-                return false;
+        } else {
+            for (int id = enchantmentIDs.nextSetBit(0); id >= 0; id = enchantmentIDs.nextSetBit(id + 1)) {
+                if (enchantmentLevels.get(itemEnchantmentLevels[id])) {
+                    matchLevel = Math.max(matchLevel, itemEnchantmentLevels[id]);
+                }
             }
         }
+        return matchLevel;
+    }
+
+    private boolean matchNBT(ItemStack itemStack) {
         for (String[] rule : nbtRules) {
             if (!matchNBTTagCompound(rule, 1, rule[0], itemStack.stackTagCompound)) {
                 return false;
