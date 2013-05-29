@@ -36,6 +36,7 @@ public class CITUtils {
     private static EnchantmentList armorMatches;
     private static int armorMatchIndex;
 
+    private static int lastRenderPass;
     private static Icon lastIcon;
 
     static {
@@ -184,6 +185,7 @@ public class CITUtils {
     }
 
     private static ItemOverride findMatch(ItemOverride[][] overrides, ItemStack itemStack, int renderPass) {
+        lastRenderPass = renderPass;
         int itemID = itemStack.itemID;
         if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
             int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
@@ -225,7 +227,7 @@ public class CITUtils {
     }
 
     public static boolean renderEnchantmentDropped(ItemStack itemStack) {
-        return renderEnchantmentHeld(itemStack, 0);
+        return renderEnchantmentHeld(itemStack, lastRenderPass);
     }
 
     public static boolean renderEnchantmentGUI(ItemStack itemStack, int x, int y, float z) {
