@@ -12,4 +12,8 @@ public class ItemStack {
     public int getItemDamage() {
         return 0;
     }
+
+    public boolean hasEffect() {
+        return false;
+    }
 }
