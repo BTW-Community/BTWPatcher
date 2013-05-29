@@ -54,6 +54,7 @@ class ModList {
 
     ModList(MinecraftVersion version) {
         this.version = version;
+        BaseTexturePackMod.clearEarlyInitializeMethods();
         register(new BuiltInMod(MCPatcherUtils.BASE_MOD, BaseMod.class).setInternal(true));
         register(new BuiltInMod(MCPatcherUtils.BASE_TEXTURE_PACK_MOD, BaseTexturePackMod.class).setInternal(true));
         register(new BuiltInMod(MCPatcherUtils.BASE_TILESHEET_MOD, BaseTilesheetMod.class).setInternal(true));

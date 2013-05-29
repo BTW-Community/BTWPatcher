@@ -26,8 +26,6 @@ public class BaseTexturePackMod extends Mod {
         description = "Internal mod required by the patcher.";
         version = "3.0";
 
-        earlyInitMethods.clear();
-
         haveResourceBundle = getMinecraftVersion().compareTo("13w21a") >= 0;
 
         addClassMod(new MinecraftMod());
@@ -65,6 +63,10 @@ public class BaseTexturePackMod extends Mod {
     @Override
     public String[] getLoggingCategories() {
         return new String[]{"Texture Pack"};
+    }
+
+    static void clearEarlyInitializeMethods() {
+        earlyInitMethods.clear();
     }
 
     public static void earlyInitialize(int order, String className, String methodName) {
