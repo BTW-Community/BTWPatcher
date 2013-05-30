@@ -23,27 +23,27 @@ public class CITUtils {
     static final int ITEM_ID_POTION = 373;
 
     private static final int[][] POTION_EFFECT_BITS = new int[][]{
-        {0xffff, 0},  // 0: water
-        {0x401f, 2}, // 1: move speed
-        {0x401f, 10}, // 2: move slow
-        null, // 3: dig speed
-        null, // 4: dig slow
-        {0x401f, 9}, // 5: damage boost
-        {0x401f, 5}, // 6: heal
-        {0x401f, 12}, // 7: harm
-        null, // 8: jump
-        null, // 9: confusion
-        {0x401f, 1}, // 10: regeneration
-        null, // 11: resistance
-        {0x401f, 3}, // 12: fire resistance
-        null, // 13: water breathing
+        {0xffff, 0},  // 0:  water
+        {0x401f, 2},  // 1:  move speed
+        {0x401f, 10}, // 2:  move slow
+        null,         // 3:  dig speed
+        null,         // 4:  dig slow
+        {0x401f, 9},  // 5:  damage boost
+        {0x401f, 5},  // 6:  heal
+        {0x401f, 12}, // 7:  harm
+        null,         // 8:  jump
+        null,         // 9:  confusion
+        {0x401f, 1},  // 10: regeneration
+        null,         // 11: resistance
+        {0x401f, 3},  // 12: fire resistance
+        null,         // 13: water breathing
         {0x401f, 14}, // 14: invisibility
-        null, // 15: blindness
-        {0x401f, 6}, // 16: night vision
-        null, // 17: hunger
-        {0x401f, 8}, // 18: weakness
-        {0x401f, 4}, // 19: poison
-        null, // 20: wither
+        null,         // 15: blindness
+        {0x401f, 6},  // 16: night vision
+        null,         // 17: hunger
+        {0x401f, 8},  // 18: weakness
+        {0x401f, 4},  // 19: poison
+        null,         // 20: wither
     };
 
     private static final boolean enableItems = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "items", true);
@@ -104,8 +104,8 @@ public class CITUtils {
                         registerOverride(ItemOverride.create(path));
                     }
                     if (enableItems) {
-                        registerPotions(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit/custom_potion_", 0, 0);
-                        registerPotions(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit/custom_splash_potion_", 1, 0x4000);
+                        registerPotions(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit/custom_potion_", 0, false);
+                        registerPotions(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit/custom_splash_potion_", 1, true);
                     }
                 }
             }
@@ -197,17 +197,28 @@ public class CITUtils {
                 return list;
             }
 
-            private void registerPotions(String prefix, int start, int bits) {
-                Properties properties = new Properties();
-                properties.setProperty("type", "item");
-                properties.setProperty("matchItems", "" + ITEM_ID_POTION);
+            private void registerPotions(String prefix, int start, boolean splash) {
                 for (int id = start; id < POTION_EFFECT_BITS.length; id++) {
                     String path = prefix + id + ".png";
-                    if (POTION_EFFECT_BITS[id] != null && TexturePackAPI.hasResource(path)) {
-                        int mask = POTION_EFFECT_BITS[id][0];
-                        int damage = POTION_EFFECT_BITS[id][1];
-                        properties.setProperty("damage", "" + (damage | bits));
-                        properties.setProperty("damageMask", "" + mask);
+                    if (TexturePackAPI.hasResource(path)) {
+                        Properties properties = new Properties();
+                        properties.setProperty("type", "item");
+                        properties.setProperty("matchItems", "" + ITEM_ID_POTION);
+
+                        if (POTION_EFFECT_BITS[id] == null) {
+                            if (splash) {
+                                continue;
+                            }
+                            properties.setProperty("nbt.CustomPotionEffects.0.Id", "" + id);
+                        } else {
+                            int mask = POTION_EFFECT_BITS[id][0];
+                            int damage = POTION_EFFECT_BITS[id][1];
+                            if (splash) {
+                                damage |= 0x4000;
+                            }
+                            properties.setProperty("damage", "" + damage);
+                            properties.setProperty("damageMask", "" + mask);
+                        }
 
                         properties.setProperty("texture", path);
                         properties.setProperty("layer", "0");
