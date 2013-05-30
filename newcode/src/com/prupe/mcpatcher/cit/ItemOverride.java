@@ -81,6 +81,9 @@ class ItemOverride {
                 error("no source texture name specified");
             }
         }
+        if (value.equals("blank")) {
+            value = MCPatcherUtils.BLANK_PNG;
+        }
         value = TexturePackAPI.fixupPath(value);
         if (!error && !value.endsWith(".png")) {
             value += ".png";

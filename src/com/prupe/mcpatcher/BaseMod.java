@@ -2,11 +2,17 @@ package com.prupe.mcpatcher;
 
 import javassist.bytecode.AccessFlag;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -43,11 +49,25 @@ public final class BaseMod extends Mod {
         addClassFile(MCPatcherUtils.TILE_MAPPING_CLASS);
         addClassFile(MCPatcherUtils.PROFILER_API_CLASS);
         addClassFile(MCPatcherUtils.INPUT_HANDLER_CLASS);
+
+        addFile(MCPatcherUtils.BLANK_PNG);
     }
 
     @Override
     public String[] getLoggingCategories() {
         return null;
+    }
+
+    @Override
+    public InputStream openFile(String name) throws IOException {
+        if (name.equals("/" + MCPatcherUtils.BLANK_PNG)) {
+            BufferedImage image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", output);
+            return new ByteArrayInputStream(output.toByteArray());
+        } else {
+            return super.openFile(name);
+        }
     }
 
     class ConfigPanel extends ModConfigPanel {
