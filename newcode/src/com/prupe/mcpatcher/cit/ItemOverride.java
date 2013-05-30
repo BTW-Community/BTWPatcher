@@ -26,11 +26,12 @@ class ItemOverride {
     final int layer;
     final BitSet itemsIDs;
     private final BitSet damage;
+    private final int damageMask;
     private final BitSet stackSize;
     private final BitSet enchantmentIDs;
     private final BitSet enchantmentLevels;
     private final List<String[]> nbtRules = new ArrayList<String[]>();
-    private boolean error;
+    boolean error;
 
     int lastEnchantmentLevel;
 
@@ -111,6 +112,7 @@ class ItemOverride {
         }
 
         damage = parseBitSet(properties, "damage", 0, MAX_DAMAGE);
+        damageMask = MCPatcherUtils.getIntProperty(properties, "damageMask", MAX_DAMAGE);
         stackSize = parseBitSet(properties, "stackSize", 0, MAX_STACK_SIZE);
         enchantmentIDs = parseBitSet(properties, "enchantmentIDs", 0, CITUtils.MAX_ENCHANTMENTS - 1);
         enchantmentLevels = parseBitSet(properties, "enchantmentLevels", 0, CITUtils.MAX_ENCHANTMENTS - 1);
@@ -159,7 +161,7 @@ class ItemOverride {
     }
 
     private boolean matchDamage(ItemStack itemStack) {
-        return damage == null || damage.get(itemStack.getItemDamage());
+        return damage == null || damage.get(itemStack.getItemDamage() & damageMask);
     }
 
     private boolean matchStackSize(ItemStack itemStack) {
