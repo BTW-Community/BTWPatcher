@@ -22,11 +22,35 @@ public class CITUtils {
     static final int ITEM_ID_CLOCK = 347;
     static final int ITEM_ID_POTION = 373;
 
+    private static final int[][] POTION_EFFECT_BITS = new int[][]{
+        {0xffff, 0},  // 0: water
+        {0x401f, 2}, // 1: move speed
+        {0x401f, 10}, // 2: move slow
+        null, // 3: dig speed
+        null, // 4: dig slow
+        {0x401f, 9}, // 5: damage boost
+        {0x401f, 5}, // 6: heal
+        {0x401f, 12}, // 7: harm
+        null, // 8: jump
+        null, // 9: confusion
+        {0x401f, 1}, // 10: regeneration
+        null, // 11: resistance
+        {0x401f, 3}, // 12: fire resistance
+        null, // 13: water breathing
+        {0x401f, 14}, // 14: invisibility
+        null, // 15: blindness
+        {0x401f, 6}, // 16: night vision
+        null, // 17: hunger
+        {0x401f, 8}, // 18: weakness
+        {0x401f, 4}, // 19: poison
+        null, // 20: wither
+    };
+
     private static final boolean enableItems = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "items", true);
     private static final boolean enableEnchantments = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "enchantments", true);
     private static final boolean enableArmor = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "armor", true);
 
-    static TileLoader tileLoader;
+    private static TileLoader tileLoader;
     private static final ItemOverride[][] items = new ItemOverride[MAX_ITEMS][];
     private static final ItemOverride[][] enchantments = new ItemOverride[MAX_ITEMS][];
     private static final ItemOverride[][] armors = new ItemOverride[MAX_ITEMS][];
@@ -77,45 +101,11 @@ public class CITUtils {
                 }
                 if (enableItems || enableEnchantments || enableArmor) {
                     for (String path : TexturePackAPI.listResources(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit", ".properties", true, false, true)) {
-                        ItemOverride override = ItemOverride.create(path);
-                        if (override != null) {
-                            ItemOverride[][] list;
-                            switch (override.type) {
-                                case ItemOverride.ITEM:
-                                    override.preload(tileLoader);
-                                    list = items;
-                                    break;
-
-                                case ItemOverride.ENCHANTMENT:
-                                    list = enchantments;
-                                    break;
-
-                                case ItemOverride.ARMOR:
-                                    list = armors;
-                                    break;
-
-                                default:
-                                    logger.severe("unknown ItemOverride type %d", override.type);
-                                    continue;
-                            }
-                            if (override.itemsIDs == null) {
-                                logger.fine("registered %s to all items", override);
-                                for (int i = LOWEST_ITEM_ID; i <= HIGHEST_ITEM_ID; i++) {
-                                    registerOverride(list, i, override);
-                                }
-                            } else {
-                                int j = 0;
-                                for (int i = override.itemsIDs.nextSetBit(0); i >= 0; i = override.itemsIDs.nextSetBit(i + 1)) {
-                                    registerOverride(list, i, override);
-                                    if (j < 10) {
-                                        logger.fine("registered %s to item %d (%s)", override, i, getItemName(i));
-                                    } else if (j == 10) {
-                                        logger.fine("... %d total", override.itemsIDs.cardinality());
-                                    }
-                                    j++;
-                                }
-                            }
-                        }
+                        registerOverride(ItemOverride.create(path));
+                    }
+                    if (enableItems) {
+                        registerPotions(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit/custom_potion_", 0, 0);
+                        registerPotions(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit/custom_splash_potion_", 1, 0x4000);
                     }
                 }
             }
@@ -137,6 +127,56 @@ public class CITUtils {
                 EnchantmentList.setProperties(properties);
             }
 
+            private void registerOverride(ItemOverride override) {
+                if (override != null && !override.error) {
+                    ItemOverride[][] list;
+                    switch (override.type) {
+                        case ItemOverride.ITEM:
+                            if (!enableItems) {
+                                return;
+                            }
+                            override.preload(tileLoader);
+                            list = items;
+                            break;
+
+                        case ItemOverride.ENCHANTMENT:
+                            if (!enableEnchantments) {
+                                return;
+                            }
+                            list = enchantments;
+                            break;
+
+                        case ItemOverride.ARMOR:
+                            if (!enableArmor) {
+                                return;
+                            }
+                            list = armors;
+                            break;
+
+                        default:
+                            logger.severe("unknown ItemOverride type %d", override.type);
+                            return;
+                    }
+                    if (override.itemsIDs == null) {
+                        logger.fine("registered %s to all items", override);
+                        for (int i = LOWEST_ITEM_ID; i <= HIGHEST_ITEM_ID; i++) {
+                            registerOverride(list, i, override);
+                        }
+                    } else {
+                        int j = 0;
+                        for (int i = override.itemsIDs.nextSetBit(0); i >= 0; i = override.itemsIDs.nextSetBit(i + 1)) {
+                            registerOverride(list, i, override);
+                            if (j < 10) {
+                                logger.fine("registered %s to item %d (%s)", override, i, getItemName(i));
+                            } else if (j == 10) {
+                                logger.fine("... %d total", override.itemsIDs.cardinality());
+                            }
+                            j++;
+                        }
+                    }
+                }
+            }
+
             private void registerOverride(ItemOverride[][] list, int itemID, ItemOverride override) {
                 if (Item.itemsList[itemID] != null) {
                     list[itemID] = registerOverride(list[itemID], override);
@@ -155,6 +195,29 @@ public class CITUtils {
                     }
                 }
                 return list;
+            }
+
+            private void registerPotions(String prefix, int start, int bits) {
+                Properties properties = new Properties();
+                properties.setProperty("type", "item");
+                properties.setProperty("matchItems", "" + ITEM_ID_POTION);
+                for (int id = start; id < POTION_EFFECT_BITS.length; id++) {
+                    String path = prefix + id + ".png";
+                    if (POTION_EFFECT_BITS[id] != null && TexturePackAPI.hasResource(path)) {
+                        int mask = POTION_EFFECT_BITS[id][0];
+                        int damage = POTION_EFFECT_BITS[id][1];
+                        properties.setProperty("damage", "" + (damage | bits));
+                        properties.setProperty("damageMask", "" + mask);
+
+                        properties.setProperty("texture", path);
+                        properties.setProperty("layer", "0");
+                        registerOverride(new ItemOverride(path, properties));
+
+                        properties.setProperty("texture", "blank");
+                        properties.setProperty("layer", "1");
+                        registerOverride(new ItemOverride(path, properties));
+                    }
+                }
             }
         });
     }
