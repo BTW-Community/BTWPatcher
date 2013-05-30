@@ -21,6 +21,7 @@ public class CITUtils {
     static final int ITEM_ID_COMPASS = 345;
     static final int ITEM_ID_CLOCK = 347;
     static final int ITEM_ID_POTION = 373;
+    static final int ITEM_ID_ENCHANTED_BOOK = 403;
 
     private static final int[][] POTION_EFFECT_BITS = new int[][]{
         {0xffff, 0},  // 0:  water
@@ -262,7 +263,7 @@ public class CITUtils {
         lastRenderPass = renderPass;
         int itemID = itemStack.itemID;
         if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
-            int[] enchantmentLevels = getEnchantmentLevels(itemStack.stackTagCompound);
+            int[] enchantmentLevels = getEnchantmentLevels(itemID, itemStack.stackTagCompound);
             boolean hasEffect = itemStack.hasEffect();
             for (ItemOverride override : overrides[itemID]) {
                 if (override.layer == renderPass && override.match(itemStack, enchantmentLevels, hasEffect)) {
@@ -363,12 +364,14 @@ public class CITUtils {
         return "unknown item " + itemID;
     }
 
-    static int[] getEnchantmentLevels(NBTTagCompound nbt) {
+    static int[] getEnchantmentLevels(int itemID, NBTTagCompound nbt) {
         int[] levels = null;
         if (nbt != null) {
-            NBTBase base = nbt.getTag("ench");
-            if (base == null) {
+            NBTBase base;
+            if (itemID == ITEM_ID_ENCHANTED_BOOK) {
                 base = nbt.getTag("StoredEnchantments");
+            } else {
+                base = nbt.getTag("ench");
             }
             if (base instanceof NBTTagList) {
                 NBTTagList list = (NBTTagList) base;

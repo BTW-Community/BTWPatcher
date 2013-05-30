@@ -45,9 +45,9 @@ class EnchantmentList {
     EnchantmentList(ItemOverride[][] enchantments, ItemStack itemStack) {
         BitSet layersPresent = new BitSet();
         Map<Integer, Layer> tmpLayers = new HashMap<Integer, Layer>();
-        int[] enchantmentLevels = CITUtils.getEnchantmentLevels(itemStack.stackTagCompound);
-        boolean hasEffect = itemStack.hasEffect();
         int itemID = itemStack.itemID;
+        int[] enchantmentLevels = CITUtils.getEnchantmentLevels(itemID, itemStack.stackTagCompound);
+        boolean hasEffect = itemStack.hasEffect();
         if (itemID >= 0 && itemID < enchantments.length && enchantments[itemID] != null) {
             for (ItemOverride enchantment : enchantments[itemID]) {
                 if (enchantment.match(itemStack, enchantmentLevels, hasEffect)) {
