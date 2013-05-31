@@ -96,6 +96,7 @@ public class MCPatcherUtils {
     public static final String ITEM_OVERRIDE_CLASS = "com.prupe.mcpatcher.cit.ItemOverride";
     public static final String ENCHANTMENT_CLASS = "com.prupe.mcpatcher.cit.Enchantment";
     public static final String ENCHANTMENT_LIST_CLASS = "com.prupe.mcpatcher.cit.EnchantmentList";
+    public static final String POTION_REPLACER_CLASS = "com.prupe.mcpatcher.cit.PotionReplacer";
 
     public static final String SHADERS_CLASS = "com.prupe.mcpatcher.glsl.Shaders";
 

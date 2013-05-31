@@ -54,6 +54,7 @@ public class CustomItemTextures extends Mod {
         addClassFile(MCPatcherUtils.ENCHANTMENT_CLASS);
         addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS);
         addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS + "$Layer");
+        addClassFile(MCPatcherUtils.POTION_REPLACER_CLASS);
 
         BaseTexturePackMod.earlyInitialize(2, MCPatcherUtils.CIT_UTILS_CLASS, "init");
     }
