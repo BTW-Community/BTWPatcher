@@ -47,6 +47,7 @@ public class CustomItemTextures extends Mod {
         addClassMod(new EntityLivingSubMod());
         addClassMod(new EntityPlayerMod());
         addClassMod(new PotionMod());
+        addClassMod(new PotionHelperMod());
 
         addClassFile(MCPatcherUtils.CIT_UTILS_CLASS);
         addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$1");
@@ -772,6 +773,20 @@ public class CustomItemTextures extends Mod {
             addMemberMapper(new MethodMapper(getName)
                 .accessFlag(AccessFlag.PUBLIC, true)
                 .accessFlag(AccessFlag.STATIC, false)
+            );
+        }
+    }
+
+    private class PotionHelperMod extends ClassMod {
+        PotionHelperMod() {
+            final MethodRef getMundaneName = new MethodRef(getDeobfClass(), "getMundaneName", "(I)Ljava/lang/String;");
+
+            addClassSignature(new ConstSignature("potion.prefix.mundane"));
+            addClassSignature(new ConstSignature("potion.prefix.uninteresting"));
+
+            addMemberMapper(new MethodMapper(getMundaneName)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, true)
             );
         }
     }
