@@ -4,9 +4,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.Potion;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 class PotionReplacer {
     private static final int ITEM_ID_POTION = 373;
@@ -36,7 +34,33 @@ class PotionReplacer {
         -1, // 20: wither
     };
 
+    private static final Map<String, Integer> mundanePotionMap = new HashMap<String, Integer>();
+
     final List<ItemOverride> overrides = new ArrayList<ItemOverride>();
+
+    static {
+        int[] mundaneIds = new int[]{
+            0, 7, 11, 13, 15,
+            16, 23, 27, 29, 31,
+            32, 39, 43, 45, 47,
+            48, 55, 59, 61, 63,
+        };
+
+        String[] mundaneNames = new String[]{
+            "mundane", "uninteresting", "bland", "clear",
+            "milky", "diffuse", "artless", "thin",
+            "awkward", "flat", "bulky", "bungling",
+            "buttered", "smooth", "suave", "debonair",
+            "thick", "elegant", "fancy", "charming",
+            "dashing", "refined", "cordial", "sparkling",
+            "potent", "foul", "odorless", "rank",
+            "harsh", "acrid", "gross", "stinky",
+        };
+
+        for (int i : mundaneIds) {
+            mundanePotionMap.put(mundaneNames[i / 2], i);
+        }
+    }
 
     PotionReplacer() {
         String path = getPotionPath("water", false);
@@ -49,14 +73,10 @@ class PotionReplacer {
         }
         registerPotionsByEffect(false);
         registerPotionsByEffect(true);
-        path = getPotionPath("other", false);
-        if (TexturePackAPI.hasResource(path)) {
-            registerVanillaPotion(path, ITEM_ID_POTION, 0, 0x401f);
-        }
-        path = getPotionPath("other", true);
-        if (TexturePackAPI.hasResource(path)) {
-            registerVanillaPotion(path, ITEM_ID_POTION, 0x4000, 0x400f);
-        }
+        registerMundanePotions(false);
+        registerMundanePotions(true);
+        registerOtherPotions(false);
+        registerOtherPotions(true);
     }
 
     private static String getPotionPath(String name, boolean splash) {
@@ -85,9 +105,14 @@ class PotionReplacer {
         }
     }
 
-    private void registerMundanePotion(String name, int damage) {
-        registerMundanePotion(name, damage, false);
-        registerMundanePotion(name, damage | 0x4000, true);
+    private void registerMundanePotions(boolean splash) {
+        for (Map.Entry<String, Integer> entry : mundanePotionMap.entrySet()) {
+            int damage = entry.getValue();
+            if (splash) {
+                damage |= 0x4000;
+            }
+            registerMundanePotion(entry.getKey(), damage, splash);
+        }
     }
 
     private void registerMundanePotion(String name, int damage, boolean splash) {
@@ -104,7 +129,7 @@ class PotionReplacer {
             properties.setProperty("type", "item");
             properties.setProperty("matchItems", String.valueOf(ITEM_ID_POTION));
             StringBuilder sb = new StringBuilder();
-            for (int i : new int[]{0, 7, 11, 13, 15, 16, 23, 27, 29, 31, 32, 39, 43, 45, 47, 48, 55, 59, 61, 63}) {
+            for (int i : mundanePotionMap.values()) {
                 if (splash) {
                     i |= 0x4000;
                 }
@@ -144,12 +169,19 @@ class PotionReplacer {
     }
 
     private void addOverride(Properties properties) {
-        ItemOverride override = new ItemOverride("(0)", properties);
-        overrides.add(override);
+        ItemOverride layer0 = new ItemOverride("(0)", properties);
+        if (layer0.error) {
+            return;
+        }
 
         properties.setProperty("texture", "blank");
         properties.setProperty("layer", "1");
-        override = new ItemOverride("(1)", properties);
-        overrides.add(override);
+        ItemOverride layer1 = new ItemOverride("(1)", properties);
+        if (layer1.error) {
+            return;
+        }
+
+        overrides.add(layer0);
+        overrides.add(layer1);
     }
 }
