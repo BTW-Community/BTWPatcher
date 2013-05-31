@@ -1,12 +1,16 @@
 package com.prupe.mcpatcher.cit;
 
+import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.Potion;
+import net.minecraft.src.PotionHelper;
 
 import java.util.*;
 
 class PotionReplacer {
+    private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
+
     private static final int ITEM_ID_POTION = 373;
     private static final int ITEM_ID_GLASS_BOTTLE = 374;
 
@@ -44,26 +48,20 @@ class PotionReplacer {
     final List<ItemOverride> overrides = new ArrayList<ItemOverride>();
 
     static {
-        int[] mundaneIds = new int[]{
-            0, 7, 11, 13, 15,
-            16, 23, 27, 29, 31,
-            32, 39, 43, 45, 47,
-            48, 55, 59, 61, 63,
-        };
-
-        String[] mundaneNames = new String[]{
-            "mundane", "uninteresting", "bland", "clear",
-            "milky", "diffuse", "artless", "thin",
-            "awkward", "flat", "bulky", "bungling",
-            "buttered", "smooth", "suave", "debonair",
-            "thick", "elegant", "fancy", "charming",
-            "dashing", "refined", "cordial", "sparkling",
-            "potent", "foul", "odorless", "rank",
-            "harsh", "acrid", "gross", "stinky",
-        };
-
-        for (int i : mundaneIds) {
-            mundanePotionMap.put(mundaneNames[i / 2], i);
+        try {
+            for (int i : new int[]{0, 7, 11, 13, 15, 16, 23, 27, 29, 31, 32, 39, 43, 45, 47, 48, 55, 59, 61, 63}) {
+                String name = PotionHelper.getMundaneName(i).replaceFirst("^potion\\.prefix\\.", "");
+                mundanePotionMap.put(name, i);
+                logger.fine("%s potion -> damage value %d", name, i);
+            }
+            for (int i = 0; i < Potion.potionTypes.length; i++) {
+                Potion potion = Potion.potionTypes[i];
+                if (potion != null) {
+                    logger.fine("%s potion -> effect %d", potion.getName().replaceFirst("^potion\\.", ""), i);
+                }
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
     }
 
