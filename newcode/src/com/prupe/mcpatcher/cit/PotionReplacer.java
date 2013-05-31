@@ -85,8 +85,8 @@ class PotionReplacer {
     }
 
     private static String getPotionPath(String name, boolean splash) {
-        return MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit/custom_potion_" +
-            (splash ? "splash_" : "") + name + ".png";
+        return MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit/potion/" +
+            (splash ? "splash/" : "normal/") + name + ".png";
     }
 
     private void registerPotionsByEffect(boolean splash) {
