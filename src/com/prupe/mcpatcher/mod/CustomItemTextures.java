@@ -46,6 +46,7 @@ public class CustomItemTextures extends Mod {
         addClassMod(new EntityLivingMod());
         addClassMod(new EntityLivingSubMod());
         addClassMod(new EntityPlayerMod());
+        addClassMod(new PotionMod());
 
         addClassFile(MCPatcherUtils.CIT_UTILS_CLASS);
         addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$1");
@@ -750,6 +751,26 @@ public class CustomItemTextures extends Mod {
                 getCaptureGroup(1),
                 getCaptureGroup(2),
                 reference(INVOKESTATIC, getCITIcon)
+            );
+        }
+    }
+
+    private class PotionMod extends ClassMod {
+        PotionMod() {
+            final FieldRef potionTypes = new FieldRef(getDeobfClass(), "potionTypes", "[LPotion;");
+            final MethodRef getName = new MethodRef(getDeobfClass(), "getName", "()Ljava/lang/String;");
+
+            addClassSignature(new ConstSignature("potion.moveSpeed"));
+            addClassSignature(new ConstSignature("potion.moveSlowdown"));
+
+            addMemberMapper(new FieldMapper(potionTypes)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, true)
+            );
+
+            addMemberMapper(new MethodMapper(getName)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, false)
             );
         }
     }
