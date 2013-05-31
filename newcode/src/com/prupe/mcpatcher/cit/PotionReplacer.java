@@ -10,6 +10,11 @@ class PotionReplacer {
     private static final int ITEM_ID_POTION = 373;
     private static final int ITEM_ID_GLASS_BOTTLE = 374;
 
+    private static final int SPLASH_BIT = 0x4000;
+    private static final int EFFECT_BITS = 0x400f;
+    private static final int MUNDANE_BITS = 0x403f;
+    private static final int WATER_BITS = 0xffff;
+
     private static final int[] POTION_EFFECTS = new int[]{
         -1, // 0:  none
         2,  // 1:  moveSpeed
@@ -65,7 +70,7 @@ class PotionReplacer {
     PotionReplacer() {
         String path = getPotionPath("water", false);
         if (TexturePackAPI.hasResource(path)) {
-            registerVanillaPotion(path, ITEM_ID_POTION, 0, 0xffff);
+            registerVanillaPotion(path, ITEM_ID_POTION, 0, WATER_BITS);
         }
         path = getPotionPath("empty", false);
         if (TexturePackAPI.hasResource(path)) {
@@ -94,9 +99,9 @@ class PotionReplacer {
                 if (effect < POTION_EFFECTS.length && POTION_EFFECTS[effect] >= 0) {
                     int damage = POTION_EFFECTS[effect];
                     if (splash) {
-                        damage |= 0x4000;
+                        damage |= SPLASH_BIT;
                     }
-                    registerVanillaPotion(path, damage, 0x400f);
+                    registerVanillaPotion(path, damage, EFFECT_BITS);
                 }
                 if (!splash) {
                     registerCustomPotion(path, effect);
@@ -109,7 +114,7 @@ class PotionReplacer {
         for (Map.Entry<String, Integer> entry : mundanePotionMap.entrySet()) {
             int damage = entry.getValue();
             if (splash) {
-                damage |= 0x4000;
+                damage |= SPLASH_BIT;
             }
             registerMundanePotion(entry.getKey(), damage, splash);
         }
@@ -118,7 +123,7 @@ class PotionReplacer {
     private void registerMundanePotion(String name, int damage, boolean splash) {
         String path = getPotionPath(name, splash);
         if (TexturePackAPI.hasResource(path)) {
-            registerVanillaPotion(path, damage, 0x403f);
+            registerVanillaPotion(path, damage, MUNDANE_BITS);
         }
     }
 
@@ -131,12 +136,12 @@ class PotionReplacer {
             StringBuilder sb = new StringBuilder();
             for (int i : mundanePotionMap.values()) {
                 if (splash) {
-                    i |= 0x4000;
+                    i |= SPLASH_BIT;
                 }
                 sb.append(' ').append(i);
             }
             properties.setProperty("damage", sb.toString().trim());
-            properties.setProperty("damageMask", String.valueOf(0x403f));
+            properties.setProperty("damageMask", String.valueOf(MUNDANE_BITS));
             properties.setProperty("texture", path);
             properties.setProperty("layer", "0");
             addOverride(properties);
