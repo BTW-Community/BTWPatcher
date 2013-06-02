@@ -146,9 +146,6 @@ public abstract class Mod {
         for (com.prupe.mcpatcher.ClassMod classMod : getClassMods()) {
             classMod.bestMatch = null;
             classMod.bestMatchCount = 0;
-            for (ClassSignature classSignature : classMod.classSignatures) {
-                classSignature.setClassMod(classMod);
-            }
             for (ClassPatch classPatch : classMod.patches) {
                 classPatch.setClassMod(classMod);
             }

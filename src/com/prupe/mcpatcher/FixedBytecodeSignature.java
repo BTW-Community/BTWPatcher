@@ -9,7 +9,8 @@ public class FixedBytecodeSignature extends BytecodeSignature {
      * @param objects BinaryRegex expressions representing a fixed signature
      * @see BinaryRegex#build(Object...)
      */
-    public FixedBytecodeSignature(Object... objects) {
+    public FixedBytecodeSignature(ClassMod classMod, Object... objects) {
+        super(classMod);
         matcher = new BytecodeMatcher(objects);
     }
 

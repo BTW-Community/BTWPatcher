@@ -17,6 +17,10 @@ abstract public class BytecodeSignature extends ClassSignature {
     boolean constructorOnly;
     boolean staticInitializerOnly;
 
+    public BytecodeSignature(ClassMod classMod) {
+        super(classMod);
+    }
+
     /**
      * Matcher object.
      *
@@ -35,14 +39,6 @@ abstract public class BytecodeSignature extends ClassSignature {
 
     void initMatcher() {
         matcher = new BytecodeMatcher(getMatchExpression());
-    }
-
-    @Override
-    void setClassMod(ClassMod classMod) {
-        super.setClassMod(classMod);
-        if (deobfMethod != null && deobfMethod.getClassName() == null) {
-            deobfMethod = new MethodRef(classMod.getDeobfClass(), deobfMethod.getName(), deobfMethod.getType());
-        }
     }
 
     private boolean filterMethod1() {
@@ -170,7 +166,11 @@ abstract public class BytecodeSignature extends ClassSignature {
      * @return this
      */
     public BytecodeSignature setMethod(MethodRef methodRef) {
-        this.deobfMethod = methodRef;
+        if (deobfMethod != null && deobfMethod.getClassName() == null) {
+            deobfMethod = new MethodRef(classMod.getDeobfClass(), deobfMethod.getName(), deobfMethod.getType());
+        } else {
+            this.deobfMethod = methodRef;
+        }
         return this;
     }
 

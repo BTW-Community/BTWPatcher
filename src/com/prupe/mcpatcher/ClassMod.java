@@ -32,7 +32,7 @@ import java.util.*;
 abstract public class ClassMod implements PatchComponent {
     final Mod mod;
     final List<String> prerequisiteClasses = new ArrayList<String>();
-    final List<ClassSignature> classSignatures = new ArrayList<ClassSignature>();
+    final List<com.prupe.mcpatcher.ClassSignature> classSignatures = new ArrayList<com.prupe.mcpatcher.ClassSignature>();
     final List<ClassPatch> patches = new ArrayList<ClassPatch>();
     final List<MemberMapper> memberMappers = new ArrayList<MemberMapper>();
     boolean global = false;
@@ -64,7 +64,7 @@ abstract public class ClassMod implements PatchComponent {
         String deobfName = getDeobfClass();
 
         int sigIndex = 0;
-        for (ClassSignature cs : classSignatures) {
+        for (com.prupe.mcpatcher.ClassSignature cs : classSignatures) {
             boolean found = false;
 
             if (cs.match(filename, classFile, newMap)) {
@@ -199,8 +199,7 @@ abstract public class ClassMod implements PatchComponent {
         prerequisiteClasses.add(className);
     }
 
-    protected void addClassSignature(ClassSignature classSignature) {
-        classSignature.classMod = this;
+    protected void addClassSignature(com.prupe.mcpatcher.ClassSignature classSignature) {
         classSignatures.add(classSignature);
     }
 
@@ -561,6 +560,48 @@ abstract public class ClassMod implements PatchComponent {
 
         protected List getMatchingObjects(ClassFile classFile) {
             return classFile.getMethods();
+        }
+    }
+
+    abstract public class ClassSignature extends com.prupe.mcpatcher.ClassSignature {
+        public ClassSignature() {
+            super(ClassMod.this);
+        }
+    }
+
+    public class ConstSignature extends com.prupe.mcpatcher.ConstSignature {
+        public ConstSignature(Object value) {
+            super(ClassMod.this, value);
+        }
+    }
+
+    public class FilenameSignature extends com.prupe.mcpatcher.FilenameSignature {
+        public FilenameSignature(String filename) {
+            super(ClassMod.this, filename);
+        }
+    }
+
+    abstract public class BytecodeSignature extends com.prupe.mcpatcher.BytecodeSignature {
+        public BytecodeSignature() {
+            super(ClassMod.this);
+        }
+    }
+
+    public class FixedBytecodeSignature extends com.prupe.mcpatcher.FixedBytecodeSignature {
+        public FixedBytecodeSignature(Object... objects) {
+            super(ClassMod.this, objects);
+        }
+    }
+
+    public class InterfaceSignature extends com.prupe.mcpatcher.InterfaceSignature {
+        public InterfaceSignature(JavaRef... methods) {
+            super(ClassMod.this, methods);
+        }
+    }
+
+    public class OrSignature extends com.prupe.mcpatcher.OrSignature {
+        public OrSignature(com.prupe.mcpatcher.ClassSignature... signatures) {
+            super(ClassMod.this, signatures);
         }
     }
 }

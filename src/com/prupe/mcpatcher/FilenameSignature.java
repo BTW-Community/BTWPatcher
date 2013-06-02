@@ -8,7 +8,8 @@ import javassist.bytecode.ClassFile;
 public class FilenameSignature extends ClassSignature {
     protected String filename;
 
-    public FilenameSignature(String filename) {
+    public FilenameSignature(ClassMod classMod, String filename) {
+        super(classMod);
         this.filename = filename;
     }
 

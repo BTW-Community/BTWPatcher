@@ -14,7 +14,8 @@ public class ConstSignature extends ClassSignature {
      *
      * @param value can be a constant (float, double, String) or JavaRef
      */
-    public ConstSignature(Object value) {
+    public ConstSignature(ClassMod classMod, Object value) {
+        super(classMod);
         this.value = value;
         tag = ConstPoolUtils.getTag(value);
     }

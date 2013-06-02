@@ -207,14 +207,6 @@ abstract public class BytecodePatch extends ClassPatch {
      */
     abstract public byte[] getReplacementBytes();
 
-    @Override
-    void setClassMod(ClassMod classMod) {
-        super.setClassMod(classMod);
-        for (BytecodeSignature signature : preMatchSignatures) {
-            signature.classMod = classMod;
-        }
-    }
-
     private boolean apply(MethodInfo mi) throws BadBytecode {
         boolean patched = false;
         CodeAttribute ca = mi.getCodeAttribute();

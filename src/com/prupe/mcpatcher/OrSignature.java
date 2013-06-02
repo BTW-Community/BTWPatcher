@@ -5,7 +5,8 @@ import javassist.bytecode.ClassFile;
 public class OrSignature extends ClassSignature {
     private ClassSignature[] signatures;
 
-    public OrSignature(ClassSignature... signatures) {
+    public OrSignature(ClassMod classMod, ClassSignature... signatures) {
+        super(classMod);
         this.signatures = signatures;
     }
 
@@ -17,13 +18,5 @@ public class OrSignature extends ClassSignature {
             }
         }
         return false;
-    }
-
-    @Override
-    void setClassMod(ClassMod classMod) {
-        super.setClassMod(classMod);
-        for (ClassSignature signature : signatures) {
-            signature.setClassMod(classMod);
-        }
     }
 }

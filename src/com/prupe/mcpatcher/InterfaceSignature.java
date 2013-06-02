@@ -12,7 +12,8 @@ public class InterfaceSignature extends ClassSignature {
     private boolean abstractOnly;
     private boolean exactMatch;
 
-    public InterfaceSignature(JavaRef... methods) {
+    public InterfaceSignature(ClassMod classMod, JavaRef... methods) {
+        super(classMod);
         List<JavaRef> tmpMethods = new ArrayList<JavaRef>();
         for (JavaRef method : methods) {
             if (method == null) {

@@ -9,7 +9,11 @@ import javassist.bytecode.MethodInfo;
  */
 abstract public class ClassSignature implements PatchComponent {
     boolean negate = false;
-    protected ClassMod classMod;
+    protected final ClassMod classMod;
+
+    public ClassSignature(ClassMod classMod) {
+        this.classMod = classMod;
+    }
 
     /**
      * Negates a signature's meaning.  A class that does not match underlying signature will be
@@ -24,10 +28,6 @@ abstract public class ClassSignature implements PatchComponent {
     }
 
     abstract public boolean match(String filename, ClassFile classFile, ClassMap tempClassMap);
-
-    void setClassMod(ClassMod classMod) {
-        this.classMod = classMod;
-    }
 
     // PatchComponent methods
 

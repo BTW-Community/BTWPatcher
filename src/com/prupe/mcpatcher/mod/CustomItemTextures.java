@@ -205,7 +205,8 @@ public class CustomItemTextures extends Mod {
     }
 
     private class GlintSignature extends BytecodeSignature {
-        GlintSignature(MethodRef method) {
+        GlintSignature(ClassMod classMod, MethodRef method) {
+            super(classMod);
             setMethod(method);
         }
 
@@ -222,7 +223,7 @@ public class CustomItemTextures extends Mod {
             final MethodRef renderItem = new MethodRef(getDeobfClass(), "renderItem", "(LEntityLiving;LItemStack;I)V");
             final MethodRef renderItemIn2D = new MethodRef(getDeobfClass(), "renderItemIn2D", "(LTessellator;FFFFIIF)V");
 
-            addClassSignature(new GlintSignature(renderItem));
+            addClassSignature(new GlintSignature(this, renderItem));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -298,8 +299,8 @@ public class CustomItemTextures extends Mod {
             final MethodRef renderDroppedItem = new MethodRef(getDeobfClass(), "renderDroppedItem", "(LEntityItem;LIcon;IFFFF)V");
             final MethodRef renderItemAndEffectIntoGUI = new MethodRef(getDeobfClass(), "renderItemAndEffectIntoGUI", "(LFontRenderer;LTextureManager;LItemStack;II)V");
 
-            addClassSignature(new GlintSignature(renderDroppedItem));
-            addClassSignature(new GlintSignature(renderItemAndEffectIntoGUI));
+            addClassSignature(new GlintSignature(this, renderDroppedItem));
+            addClassSignature(new GlintSignature(this, renderItemAndEffectIntoGUI));
 
             addMemberMapper(new FieldMapper(zLevel).accessFlag(AccessFlag.STATIC, false));
 
@@ -440,7 +441,7 @@ public class CustomItemTextures extends Mod {
         RenderLivingMod() {
             final MethodRef doRenderLiving = new MethodRef(getDeobfClass(), "doRenderLiving", "(LEntityLiving;DDDFF)V");
 
-            addClassSignature(new GlintSignature(doRenderLiving));
+            addClassSignature(new GlintSignature(this, doRenderLiving));
             addClassSignature(new ConstSignature("deadmau5"));
 
             addPatch(new BytecodePatch() {
