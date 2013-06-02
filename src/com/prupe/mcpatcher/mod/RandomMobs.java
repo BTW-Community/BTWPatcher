@@ -72,6 +72,10 @@ public class RandomMobs extends Mod {
         RenderLivingMod() {
             setParentClass("Render");
 
+            final MethodRef doRenderLiving = new MethodRef(getDeobfClass(), "doRenderLiving", "(LEntityLiving;DDDFF)V");
+            final MethodRef getEntityTexture = new MethodRef("EntityLiving", "getEntityTexture", "()Ljava/lang/String;");
+            final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
+
             addClassSignature(new ConstSignature(180.0f));
 
             addClassSignature(new BytecodeSignature() {
@@ -85,10 +89,10 @@ public class RandomMobs extends Mod {
                         push(0.0078125f),
                         FSUB,
                         FCONST_0,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V"))
+                        reference(INVOKESTATIC, glTranslatef)
                     );
                 }
-            }.setMethodName("doRenderLiving"));
+            }.setMethod(doRenderLiving));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -100,7 +104,7 @@ public class RandomMobs extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         capture(anyALOAD),
-                        reference(INVOKEVIRTUAL, new MethodRef("EntityLiving", "getEntityTexture", "()Ljava/lang/String;"))
+                        reference(INVOKEVIRTUAL, getEntityTexture)
                     );
                 }
 

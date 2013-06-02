@@ -166,17 +166,6 @@ abstract public class BytecodeSignature extends ClassSignature {
      * Assigns a name to a signature.  On matching, the target class and method will be added.
      * to the class map.
      *
-     * @param methodName descriptive name of method
-     * @return this
-     */
-    public BytecodeSignature setMethodName(String methodName) {
-        return setMethod(new MethodRef(null, methodName, null));
-    }
-
-    /**
-     * Assigns a name to a signature.  On matching, the target class and method will be added.
-     * to the class map.
-     *
      * @param methodRef descriptive name/type of method
      * @return this
      */
