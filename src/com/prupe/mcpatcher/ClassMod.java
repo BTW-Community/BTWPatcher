@@ -625,10 +625,6 @@ abstract public class ClassMod implements PatchComponent {
             super(ClassMod.this, fieldRef, accessFlags);
         }
 
-        public AddFieldPatch(String name, String type, int accessFlags) {
-            super(ClassMod.this, name, type, accessFlags);
-        }
-
         public AddFieldPatch(String name) {
             super(ClassMod.this, name);
         }

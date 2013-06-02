@@ -56,32 +56,6 @@ abstract public class AddMethodPatch extends ClassPatch {
     }
 
     /**
-     * Create an AddMethodPatch with given name and type.
-     *
-     * @param name name of method
-     * @param type Java type descriptor of method; may use deobfuscated names
-     * @see #AddMethodPatch(ClassMod, MethodRef)
-     * @deprecated
-     */
-    public AddMethodPatch(ClassMod classMod, String name, String type) {
-        this(classMod, new MethodRef(null, name, type), AccessFlag.PUBLIC);
-    }
-
-    /**
-     * Create an AddMethodPatch with given name, type, and access flags.
-     *
-     * @param name        name of method
-     * @param type        Java type descriptor of method; may use deobfuscated names
-     * @param accessFlags method access flags
-     * @see #AddMethodPatch(ClassMod, MethodRef, int)
-     * @see javassist.bytecode.AccessFlag
-     * @deprecated
-     */
-    public AddMethodPatch(ClassMod classMod, String name, String type, int accessFlags) {
-        this(classMod, new MethodRef(null, name, type), accessFlags);
-    }
-
-    /**
      * Create an AddMethodPatch with given name.
      * NOTE: getDescriptor must be overridden if you are using this constructor.
      *

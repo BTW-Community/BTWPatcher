@@ -35,30 +35,6 @@ public class AddFieldPatch extends ClassPatch {
 
     /**
      * Add a new public, non-static field.
-     *
-     * @param name field name
-     * @param type field type descriptor
-     * @see #AddFieldPatch(ClassMod, FieldRef)
-     * @deprecated
-     */
-    public AddFieldPatch(ClassMod classMod, String name, String type) {
-        this(classMod, new FieldRef(null, name, type));
-    }
-
-    /**
-     * Add a new field.
-     *
-     * @param name        field name
-     * @param type        field type descriptor
-     * @param accessFlags Java access flags (public, private, etc.).
-     * @see javassist.bytecode.AccessFlag
-     */
-    public AddFieldPatch(ClassMod classMod, String name, String type, int accessFlags) {
-        this(classMod, new FieldRef(null, name, type), accessFlags);
-    }
-
-    /**
-     * Add a new public, non-static field.
      * NOTE: getDescriptor must be overridden if you are using this constructor.
      */
     public AddFieldPatch(ClassMod classMod, String name) {
