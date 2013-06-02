@@ -21,7 +21,7 @@ public class GLSLShader extends Mod {
         defaultEnabled = false;
 
         addClassMod(new MinecraftMod());
-        addClassMod(new BaseMod.GLAllocationMod(this));
+        addClassMod(new GLAllocationMod());
         addClassMod(new RenderEngineMod());
         addClassMod(new RenderGlobalMod());
         addClassMod(new RenderLivingMod());
@@ -90,6 +90,29 @@ public class GLSLShader extends Mod {
                 .accessFlag(AccessFlag.PUBLIC, true)
                 .accessFlag(AccessFlag.STATIC, true)
             );
+        }
+    }
+
+    /**
+     * Matches GLAllocation class and maps createDirectByteBuffer method.
+     */
+    private class GLAllocationMod extends ClassMod {
+        protected final MethodRef createDirectByteBuffer = new MethodRef(getDeobfClass(), "createDirectByteBuffer", "(I)Ljava/nio/ByteBuffer;");
+
+        public GLAllocationMod() {
+            final MethodRef allocateDirect = new MethodRef("java.nio.ByteBuffer", "allocateDirect", "(I)Ljava/nio/ByteBuffer;");
+            final MethodRef glDeleteLists = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteLists", "(II)V");
+
+            addClassSignature(new ConstSignature(glDeleteLists));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKESTATIC, allocateDirect)
+                    );
+                }
+            }.setMethod(createDirectByteBuffer));
         }
     }
 

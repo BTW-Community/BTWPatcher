@@ -292,29 +292,6 @@ public final class BaseMod extends Mod {
     }
 
     /**
-     * Matches GLAllocation class and maps createDirectByteBuffer method.
-     */
-    public static class GLAllocationMod extends com.prupe.mcpatcher.ClassMod {
-        public GLAllocationMod(Mod mod) {
-            super(mod);
-            addClassSignature(new ConstSignature(new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteLists", "(II)V")));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    if (getMethodInfo().getDescriptor().equals("(I)Ljava/nio/ByteBuffer;")) {
-                        return buildExpression(
-                            reference(INVOKESTATIC, new MethodRef("java.nio.ByteBuffer", "allocateDirect", "(I)Ljava/nio/ByteBuffer;"))
-                        );
-                    } else {
-                        return null;
-                    }
-                }
-            }.setMethodName("createDirectByteBuffer"));
-        }
-    }
-
-    /**
      * Matches Tessellator class and instance and maps several commonly used rendering methods.
      */
     public static class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
