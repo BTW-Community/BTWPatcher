@@ -1,8 +1,9 @@
-MCVER = 1.5.2
-MCVERSS =
-MCJAR = ../bin/minecraft.jar
-MCJARV = ../bin/minecraft-$(MCVER).jar
-MCJARVSS = ../bin/minecraft-$(MCVERSS).jar
+MCVER = 13w22a
+MCVERSS = 13w22a
+MCJAR = ../versions/$(MCVER)/$(MCVER).jar
+MCJARSS = ../versions/$(MCVERSS)/$(MCVERSS).jar
+MCJARV = ../versions/$(MCVER)-mcpatcher/$(MCVER)-mcpatcher.jar
+MCJARVSS = ../versions/$(MCVERSS)-mcpatcher/$(MCVERSS)-mcpatcher.jar
 MODJAR = ../mcpatcher-mods/mcpatcher-builtin.jar
 MCPATCHER = out/artifacts/mcpatcher/mcpatcher.jar
 JIP = $(HOME)/jip-1.2/profile/profile.jar
@@ -39,12 +40,12 @@ runexp: $(MCPATCHER)
 	java -jar $(MCPATCHER) -experimental
 
 test: $(MCPATCHER)
-	time java -jar $(MCPATCHER) $(TEST_OPTS) > $(TEST_LOG) 2>&1
+	time java -jar $(MCPATCHER) $(TEST_OPTS) -profile "Minecraft $(MCVER)" > $(TEST_LOG) 2>&1
 	diff -c $(GOOD_LOG) $(TEST_LOG)
 	rm -f $(TEST_LOG)
 
 testfilter: $(MCPATCHER)
-	time java -jar $(MCPATCHER) $(TEST_OPTS) > $(TEST_LOG) 2>&1
+	time java -jar $(MCPATCHER) $(TEST_OPTS) -profile "Minecraft $(MCVER)" > $(TEST_LOG) 2>&1
 	@$(FILTER) $(TEST_LOG) > $(TEST_LOG).1
 	@$(FILTER) $(GOOD_LOG) > $(GOOD_LOG).1
 	diff -c $(GOOD_LOG).1 $(TEST_LOG).1
@@ -75,8 +76,8 @@ modjar: $(MCPATCHER)
 	cd $(TMPDIR) && jar -cf ../$(MODJAR) *
 	rm -rf $(TMPDIR)
 
-restore: $(MCJARV)
-	cp -pf $(MCJARV) $(MCJAR)
+restore: $(MCJAR)
+	cp -pf $(MCJAR) $(MCJARV)
 
-restore_ss: $(MCJARVSS)
-	cp -pf $(MCJARVSS) $(MCJAR)
+restore_ss: $(MCJARSS)
+	cp -pf $(MCJARSS) $(MCJARVSS)
