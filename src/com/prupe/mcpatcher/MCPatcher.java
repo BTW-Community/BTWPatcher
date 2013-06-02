@@ -67,6 +67,7 @@ final public class MCPatcher {
      * -loglevel n: set log level to n (0-7)<br>
      * -mcdir path: specify path to minecraft<br>
      * -auto: apply all applicable mods to the default minecraft.jar and exit (no GUI)<br>
+     * -profile: select specified profile<br>
      * -ignoresavedmods: do not load mods from mcpatcher.xml<br>
      * -ignorebuiltinmods: do not load mods built into mcpatcher<br>
      * -ignorecustommods: do not load mods from the mcpatcher-mods directory<br>
@@ -80,6 +81,7 @@ final public class MCPatcher {
         int exitStatus = 1;
         boolean guiEnabled = true;
         String enteredMCDir = null;
+        String profile = null;
 
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-loglevel") && i + 1 < args.length) {
@@ -96,6 +98,9 @@ final public class MCPatcher {
                 enteredMCDir = args[i];
             } else if (args[i].equals("-auto")) {
                 guiEnabled = false;
+            } else if (args[i].equals("-profile") && i + 1 < args.length) {
+                i++;
+                profile = args[i].trim();
             } else if (args[i].equals("-ignoresavedmods")) {
                 ignoreSavedMods = true;
             } else if (args[i].equals("-ignorebuiltinmods")) {
@@ -134,6 +139,16 @@ final public class MCPatcher {
 
         Util.logOSInfo();
 
+        if (profile != null && !profile.equals("")) {
+            if (Config.instance.findProfileByName(profile, false) == null) {
+                if (ui.shouldExit()) {
+                    System.out.printf("ERROR: profile '%s' not found\n", profile);
+                    System.exit(exitStatus);
+                }
+            } else {
+                Config.instance.selectProfile(profile);
+            }
+        }
         String lastVersion = Config.getString(Config.TAG_LAST_VERSION, "");
         if (!lastVersion.equals(VERSION_STRING)) {
             Config.set(Config.TAG_LAST_VERSION, VERSION_STRING);
