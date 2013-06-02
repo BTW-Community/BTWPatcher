@@ -13,9 +13,13 @@ import java.util.Map;
  * Base class of all class patches.
  */
 abstract public class ClassPatch implements PatchComponent {
-    ClassMod classMod;
+    final ClassMod classMod;
     final Map<String, Integer> numMatches = new HashMap<String, Integer>();
     boolean optional;
+
+    public ClassPatch(ClassMod classMod) {
+        this.classMod = classMod;
+    }
 
     /**
      * Returns a text description of the patch.  This string will be displayed in the log window and
@@ -35,10 +39,6 @@ abstract public class ClassPatch implements PatchComponent {
      * @throws IOException              if an error occurs while writing new bytecode
      */
     abstract boolean apply(ClassFile classFile) throws BadBytecode, DuplicateMemberException, IOException;
-
-    void setClassMod(ClassMod classMod) {
-        this.classMod = classMod;
-    }
 
     private void addPatch(String desc) {
         int val = 0;

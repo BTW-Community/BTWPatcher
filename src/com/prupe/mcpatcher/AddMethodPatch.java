@@ -37,8 +37,8 @@ abstract public class AddMethodPatch extends ClassPatch {
      *
      * @param methodRef method
      */
-    public AddMethodPatch(MethodRef methodRef) {
-        this(methodRef, AccessFlag.PUBLIC);
+    public AddMethodPatch(ClassMod classMod, MethodRef methodRef) {
+        this(classMod, methodRef, AccessFlag.PUBLIC);
     }
 
     /**
@@ -48,7 +48,8 @@ abstract public class AddMethodPatch extends ClassPatch {
      * @param accessFlags Java access flags
      * @see javassist.bytecode.AccessFlag
      */
-    public AddMethodPatch(MethodRef methodRef, int accessFlags) {
+    public AddMethodPatch(ClassMod classMod, MethodRef methodRef, int accessFlags) {
+        super(classMod);
         this.methodRef = methodRef;
         this.accessFlags = accessFlags;
         allowDuplicate(true);
@@ -59,11 +60,11 @@ abstract public class AddMethodPatch extends ClassPatch {
      *
      * @param name name of method
      * @param type Java type descriptor of method; may use deobfuscated names
-     * @see #AddMethodPatch(MethodRef)
+     * @see #AddMethodPatch(ClassMod, MethodRef)
      * @deprecated
      */
-    public AddMethodPatch(String name, String type) {
-        this(new MethodRef(null, name, type), AccessFlag.PUBLIC);
+    public AddMethodPatch(ClassMod classMod, String name, String type) {
+        this(classMod, new MethodRef(null, name, type), AccessFlag.PUBLIC);
     }
 
     /**
@@ -72,12 +73,12 @@ abstract public class AddMethodPatch extends ClassPatch {
      * @param name        name of method
      * @param type        Java type descriptor of method; may use deobfuscated names
      * @param accessFlags method access flags
-     * @see #AddMethodPatch(MethodRef, int)
+     * @see #AddMethodPatch(ClassMod, MethodRef, int)
      * @see javassist.bytecode.AccessFlag
      * @deprecated
      */
-    public AddMethodPatch(String name, String type, int accessFlags) {
-        this(new MethodRef(null, name, type), accessFlags);
+    public AddMethodPatch(ClassMod classMod, String name, String type, int accessFlags) {
+        this(classMod, new MethodRef(null, name, type), accessFlags);
     }
 
     /**
@@ -86,8 +87,8 @@ abstract public class AddMethodPatch extends ClassPatch {
      *
      * @param name name of method
      */
-    public AddMethodPatch(String name) {
-        this(name, AccessFlag.PUBLIC);
+    public AddMethodPatch(ClassMod classMod, String name) {
+        this(classMod, name, AccessFlag.PUBLIC);
     }
 
     /**
@@ -98,8 +99,8 @@ abstract public class AddMethodPatch extends ClassPatch {
      * @param accessFlags method access flags
      * @see javassist.bytecode.AccessFlag
      */
-    public AddMethodPatch(String name, int accessFlags) {
-        this(new MethodRef(null, name, null), accessFlags);
+    public AddMethodPatch(ClassMod classMod, String name, int accessFlags) {
+        this(classMod, new MethodRef(null, name, null), accessFlags);
     }
 
     /**

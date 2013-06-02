@@ -17,7 +17,8 @@ public class MakeMemberPublicPatch extends ClassPatch {
     /**
      * @param ref may use deobfuscated names, provided they are in the class map
      */
-    public MakeMemberPublicPatch(JavaRef ref) {
+    public MakeMemberPublicPatch(ClassMod classMod, JavaRef ref) {
+        super(classMod);
         member = ref;
         optional = true;
         if (ref instanceof FieldRef) {

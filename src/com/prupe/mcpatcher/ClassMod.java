@@ -33,7 +33,7 @@ abstract public class ClassMod implements PatchComponent {
     final Mod mod;
     final List<String> prerequisiteClasses = new ArrayList<String>();
     final List<com.prupe.mcpatcher.ClassSignature> classSignatures = new ArrayList<com.prupe.mcpatcher.ClassSignature>();
-    final List<ClassPatch> patches = new ArrayList<ClassPatch>();
+    final List<com.prupe.mcpatcher.ClassPatch> patches = new ArrayList<com.prupe.mcpatcher.ClassPatch>();
     final List<MemberMapper> memberMappers = new ArrayList<MemberMapper>();
     boolean global = false;
     String parentClass;
@@ -203,8 +203,7 @@ abstract public class ClassMod implements PatchComponent {
         classSignatures.add(classSignature);
     }
 
-    protected void addPatch(ClassPatch classPatch) {
-        classPatch.classMod = this;
+    protected void addPatch(com.prupe.mcpatcher.ClassPatch classPatch) {
         patches.add(classPatch);
     }
 
@@ -602,6 +601,64 @@ abstract public class ClassMod implements PatchComponent {
     public class OrSignature extends com.prupe.mcpatcher.OrSignature {
         public OrSignature(com.prupe.mcpatcher.ClassSignature... signatures) {
             super(ClassMod.this, signatures);
+        }
+    }
+
+    abstract public class ClassPatch extends com.prupe.mcpatcher.ClassPatch {
+        public ClassPatch() {
+            super(ClassMod.this);
+        }
+    }
+
+    abstract public class BytecodePatch extends com.prupe.mcpatcher.BytecodePatch {
+        public BytecodePatch() {
+            super(ClassMod.this);
+        }
+    }
+    
+    public class AddFieldPatch extends com.prupe.mcpatcher.AddFieldPatch {
+        public AddFieldPatch(FieldRef fieldRef) {
+            super(ClassMod.this, fieldRef);
+        }
+
+        public AddFieldPatch(FieldRef fieldRef, int accessFlags) {
+            super(ClassMod.this, fieldRef, accessFlags);
+        }
+
+        public AddFieldPatch(String name, String type, int accessFlags) {
+            super(ClassMod.this, name, type, accessFlags);
+        }
+
+        public AddFieldPatch(String name) {
+            super(ClassMod.this, name);
+        }
+
+        public AddFieldPatch(String name, int accessFlags) {
+            super(ClassMod.this, name, accessFlags);
+        }
+    }
+    
+    abstract public class AddMethodPatch extends com.prupe.mcpatcher.AddMethodPatch {
+        public AddMethodPatch(MethodRef methodRef) {
+            super(ClassMod.this, methodRef);
+        }
+
+        public AddMethodPatch(MethodRef methodRef, int accessFlags) {
+            super(ClassMod.this, methodRef, accessFlags);
+        }
+
+        public AddMethodPatch(String name) {
+            super(ClassMod.this, name);
+        }
+
+        public AddMethodPatch(String name, int accessFlags) {
+            super(ClassMod.this, name, accessFlags);
+        }
+    }
+
+    public class MakeMemberPublicPatch extends com.prupe.mcpatcher.MakeMemberPublicPatch {
+        public MakeMemberPublicPatch(JavaRef ref) {
+            super(ClassMod.this, ref);
         }
     }
 }

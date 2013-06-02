@@ -403,7 +403,7 @@ public class CustomItemTextures extends Mod {
                 }
             }.targetMethod(renderItemAndEffectIntoGUI));
 
-            addPatch(new ItemStackRenderPassPatch("other"));
+            addPatch(new ItemStackRenderPassPatch(this, "other"));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -719,14 +719,15 @@ public class CustomItemTextures extends Mod {
                 }
             }.setMethod(getCurrentArmor));
 
-            addPatch(new ItemStackRenderPassPatch("player held"));
+            addPatch(new ItemStackRenderPassPatch(this, "player held"));
         }
     }
 
     private class ItemStackRenderPassPatch extends BytecodePatch {
         private final String desc;
 
-        ItemStackRenderPassPatch(String desc) {
+        ItemStackRenderPassPatch(ClassMod classMod, String desc) {
+            super(classMod);
             this.desc = desc;
             setInsertAfter(true);
         }

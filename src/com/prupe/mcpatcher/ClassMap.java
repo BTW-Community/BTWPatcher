@@ -483,7 +483,7 @@ public class ClassMap {
                 }
             };
             mod.classFile = cf;
-            BytecodePatch patch = new BytecodePatch() {
+            BytecodePatch patch = new BytecodePatch(mod) {
                 final private String typeStr;
                 final private byte[] opcodes;
                 final private JavaRef oldRef;
@@ -555,7 +555,6 @@ public class ClassMap {
                     );
                 }
             };
-            patch.setClassMod(mod);
             patch.apply(cf);
         }
     }

@@ -15,8 +15,8 @@ public class AddFieldPatch extends ClassPatch {
      *
      * @param fieldRef new field
      */
-    public AddFieldPatch(FieldRef fieldRef) {
-        this(fieldRef, AccessFlag.PUBLIC);
+    public AddFieldPatch(ClassMod classMod, FieldRef fieldRef) {
+        this(classMod, fieldRef, AccessFlag.PUBLIC);
     }
 
     /**
@@ -26,7 +26,8 @@ public class AddFieldPatch extends ClassPatch {
      * @param accessFlags Java access flags (public, private, etc.).
      * @see javassist.bytecode.AccessFlag
      */
-    public AddFieldPatch(FieldRef fieldRef, int accessFlags) {
+    public AddFieldPatch(ClassMod classMod, FieldRef fieldRef, int accessFlags) {
+        super(classMod);
         this.fieldRef = fieldRef;
         this.accessFlags = accessFlags;
         allowDuplicate(true);
@@ -37,11 +38,11 @@ public class AddFieldPatch extends ClassPatch {
      *
      * @param name field name
      * @param type field type descriptor
-     * @see #AddFieldPatch(FieldRef)
+     * @see #AddFieldPatch(ClassMod, FieldRef)
      * @deprecated
      */
-    public AddFieldPatch(String name, String type) {
-        this(new FieldRef(null, name, type));
+    public AddFieldPatch(ClassMod classMod, String name, String type) {
+        this(classMod, new FieldRef(null, name, type));
     }
 
     /**
@@ -52,16 +53,16 @@ public class AddFieldPatch extends ClassPatch {
      * @param accessFlags Java access flags (public, private, etc.).
      * @see javassist.bytecode.AccessFlag
      */
-    public AddFieldPatch(String name, String type, int accessFlags) {
-        this(new FieldRef(null, name, type), accessFlags);
+    public AddFieldPatch(ClassMod classMod, String name, String type, int accessFlags) {
+        this(classMod, new FieldRef(null, name, type), accessFlags);
     }
 
     /**
      * Add a new public, non-static field.
      * NOTE: getDescriptor must be overridden if you are using this constructor.
      */
-    public AddFieldPatch(String name) {
-        this(name, AccessFlag.PUBLIC);
+    public AddFieldPatch(ClassMod classMod, String name) {
+        this(classMod, name, AccessFlag.PUBLIC);
     }
 
     /**
@@ -72,8 +73,8 @@ public class AddFieldPatch extends ClassPatch {
      * @param accessFlags Java access flags (public, private, etc.).
      * @see javassist.bytecode.AccessFlag
      */
-    public AddFieldPatch(String name, int accessFlags) {
-        this(new FieldRef(null, name, null), accessFlags);
+    public AddFieldPatch(ClassMod classMod, String name, int accessFlags) {
+        this(classMod, new FieldRef(null, name, null), accessFlags);
     }
 
     /**

@@ -23,6 +23,10 @@ abstract public class BytecodePatch extends ClassPatch {
     private boolean insertAfter;
     int labelOffset;
 
+    public BytecodePatch(ClassMod classMod) {
+        super(classMod);
+    }
+
     /**
      * Matcher object.
      *

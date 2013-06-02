@@ -201,7 +201,7 @@ public class ExtendedHD extends Mod {
 
             addMemberMapper(new MethodMapper(readTile));
 
-            addPatch(new TextureMipmapPatch(basePath));
+            addPatch(new TextureMipmapPatch(this, basePath));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -328,14 +328,15 @@ public class ExtendedHD extends Mod {
             addMemberMapper(new MethodMapper(init));
             addMemberMapper(new MethodMapper(copy));
 
-            addPatch(new TextureMipmapPatch(textureName));
+            addPatch(new TextureMipmapPatch(this, textureName));
         }
     }
 
     private static class TextureMipmapPatch extends BytecodePatch {
         private final FieldRef textureNameField;
 
-        TextureMipmapPatch(FieldRef textureNameField) {
+        TextureMipmapPatch(com.prupe.mcpatcher.ClassMod classMod, FieldRef textureNameField) {
+            super(classMod);
             this.textureNameField = textureNameField;
         }
 
