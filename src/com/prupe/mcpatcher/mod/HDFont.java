@@ -20,14 +20,16 @@ public class HDFont extends Mod {
     }
 
     static void setupMod(Mod mod) {
-        mod.addClassMod(new FontRendererMod());
+        mod.addClassMod(new FontRendererMod(mod));
 
         mod.addClassFile(MCPatcherUtils.FONT_UTILS_CLASS);
         mod.addClassFile(MCPatcherUtils.FONT_UTILS_CLASS + "$1");
     }
 
     private static class FontRendererMod extends BaseMod.FontRendererMod {
-        FontRendererMod() {
+        FontRendererMod(Mod mod) {
+            super(mod);
+
             final FieldRef fontTextureName = new FieldRef(getDeobfClass(), "fontTextureName", "Ljava/lang/String;");
             final FieldRef charWidth = new FieldRef(getDeobfClass(), "charWidth", "[I");
             final FieldRef fontHeight = new FieldRef(getDeobfClass(), "fontHeight", "I");

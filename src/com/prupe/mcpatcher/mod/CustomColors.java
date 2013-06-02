@@ -70,9 +70,9 @@ public class CustomColors extends Mod {
 
         configPanel = new ConfigPanel();
 
-        addClassMod(new BaseMod.MinecraftMod().mapWorldClient());
-        addClassMod(new BaseMod.IBlockAccessMod());
-        addClassMod(new BaseMod.TessellatorMod());
+        addClassMod(new BaseMod.MinecraftMod(this).mapWorldClient());
+        addClassMod(new BaseMod.IBlockAccessMod(this));
+        addClassMod(new BaseMod.TessellatorMod(this));
         addClassMod(new BlockMod());
 
         addClassMod(new BiomeGenBaseMod());
@@ -89,7 +89,7 @@ public class CustomColors extends Mod {
         addClassMod(new BlockLeavesMod());
 
         addClassMod(new WorldMod());
-        addClassMod(new BaseMod.WorldClientMod());
+        addClassMod(new BaseMod.WorldClientMod(this));
         addClassMod(new WorldProviderMod());
         addClassMod(new WorldProviderHellMod());
         addClassMod(new WorldProviderEndMod());
@@ -324,6 +324,8 @@ public class CustomColors extends Mod {
 
     private class BlockMod extends BaseMod.BlockMod {
         BlockMod() {
+            super(CustomColors.this);
+
             final MethodRef getRenderColor = new MethodRef(getDeobfClass(), "getRenderColor", "(I)I");
             final MethodRef colorMultiplier = new MethodRef(getDeobfClass(), "colorMultiplier", "(LIBlockAccess;III)I");
             final InterfaceMethodRef getBlockMetadata = new InterfaceMethodRef("IBlockAccess", "getBlockMetadata", "(III)I");
@@ -658,6 +660,8 @@ public class CustomColors extends Mod {
 
     private class ItemMod extends BaseMod.ItemMod {
         ItemMod() {
+            super(CustomColors.this);
+
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
@@ -1068,6 +1072,7 @@ public class CustomColors extends Mod {
 
     private class WorldMod extends BaseMod.WorldMod {
         WorldMod() {
+            super(CustomColors.this);
             setInterfaces("IBlockAccess");
 
             final MethodRef getWorldChunkManager = new MethodRef(getDeobfClass(), "getWorldChunkManager", "()LWorldChunkManager;");
@@ -3700,6 +3705,8 @@ public class CustomColors extends Mod {
 
     private class FontRendererMod extends BaseMod.FontRendererMod {
         FontRendererMod() {
+            super(CustomColors.this);
+
             final MethodRef renderString = new MethodRef(getDeobfClass(), "renderString", "(Ljava/lang/String;IIIZ)I");
             final MethodRef glColor4f = new MethodRef(MCPatcherUtils.GL11_CLASS, "glColor4f", "(FFFF)V");
             final FieldRef colorCode = new FieldRef(getDeobfClass(), "colorCode", "[I");

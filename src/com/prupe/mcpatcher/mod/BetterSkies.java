@@ -21,9 +21,9 @@ public class BetterSkies extends Mod {
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
-        addClassMod(new BaseMod.MinecraftMod().mapWorldClient());
+        addClassMod(new BaseMod.MinecraftMod(this).mapWorldClient());
         addClassMod(new WorldMod());
-        addClassMod(new BaseMod.WorldClientMod());
+        addClassMod(new BaseMod.WorldClientMod(this));
         addClassMod(new RenderGlobalMod());
 
         addClassMod(new EffectRendererMod());
@@ -74,6 +74,8 @@ public class BetterSkies extends Mod {
 
     private class WorldMod extends BaseMod.WorldMod {
         WorldMod() {
+            super(BetterSkies.this);
+
             final MethodRef getWorldTime = new MethodRef(getDeobfClass(), "getWorldTime", "()J");
 
             addMemberMapper(new MethodMapper(null, null, getWorldTime));

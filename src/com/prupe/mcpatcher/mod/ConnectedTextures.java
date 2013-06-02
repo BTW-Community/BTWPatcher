@@ -26,9 +26,9 @@ public class ConnectedTextures extends Mod {
 
         configPanel = new ConfigPanel();
 
-        addClassMod(new BaseMod.IBlockAccessMod());
-        addClassMod(new BaseMod.TessellatorMod());
-        addClassMod(new BaseMod.IconMod());
+        addClassMod(new BaseMod.IBlockAccessMod(this));
+        addClassMod(new BaseMod.TessellatorMod(this));
+        addClassMod(new BaseMod.IconMod(this));
         addClassMod(new BlockMod());
         addClassMod(new RenderBlocksMod());
         addClassMod(new WorldRendererMod());
@@ -144,6 +144,8 @@ public class ConnectedTextures extends Mod {
 
     private class BlockMod extends BaseMod.BlockMod {
         BlockMod() {
+            super(ConnectedTextures.this);
+
             final FieldRef blockMaterial = new FieldRef(getDeobfClass(), "blockMaterial", "LMaterial;");
             final MethodRef getBlockIcon = new MethodRef(getDeobfClass(), "getBlockIcon", "(LIBlockAccess;IIII)LIcon;");
             final InterfaceMethodRef getBlockMetadata = new InterfaceMethodRef("IBlockAccess", "getBlockMetadata", "(III)I");
@@ -232,6 +234,8 @@ public class ConnectedTextures extends Mod {
         private final MethodRef getTessellator = new MethodRef(MCPatcherUtils.TESSELLATOR_UTILS_CLASS, "getTessellator", "(LTessellator;LIcon;)LTessellator;");
 
         RenderBlocksMod() {
+            super(ConnectedTextures.this);
+
             mapRenderTypeMethod(0, renderStandardBlock);
 
             addClassSignature(new BytecodeSignature() {

@@ -31,8 +31,8 @@ public class RandomMobs extends Mod {
         addClassMod(new RenderEyesMod("Enderman"));
         addClassMod(new EntityMod());
         addClassMod(new EntityLivingMod());
-        addClassMod(new BaseMod.NBTTagCompoundMod());
-        addClassMod(new BaseMod.TessellatorMod());
+        addClassMod(new BaseMod.NBTTagCompoundMod(this));
+        addClassMod(new BaseMod.TessellatorMod(this));
         addClassMod(new RenderMod());
         if (haveRenderLivingSub) {
             addClassMod(new RenderLivingSubMod());

@@ -40,10 +40,10 @@ public class ExtendedHD extends Mod {
         }
 
         addClassMod(new MinecraftMod());
-        addClassMod(new BaseMod.IconMod());
-        addClassMod(new BaseMod.ITextureMod());
-        addClassMod(new BaseMod.TextureBaseMod());
-        addClassMod(new BaseMod.TextureMod());
+        addClassMod(new BaseMod.IconMod(this));
+        addClassMod(new BaseMod.ITextureMod(this));
+        addClassMod(new BaseMod.TextureBaseMod(this));
+        addClassMod(new BaseMod.TextureMod(this));
         addClassMod(new TextureUtilsMod());
         addClassMod(new TextureManagerMod());
         addClassMod(new TextureMapMod());
@@ -76,6 +76,8 @@ public class ExtendedHD extends Mod {
 
     private class MinecraftMod extends BaseMod.MinecraftMod {
         MinecraftMod() {
+            super(ExtendedHD.this);
+
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
@@ -101,6 +103,8 @@ public class ExtendedHD extends Mod {
 
     private class TextureUtilsMod extends BaseMod.TextureUtilsMod {
         TextureUtilsMod() {
+            super(ExtendedHD.this);
+
             addMemberMapper(new MethodMapper(copySubTexture1));
             addMemberMapper(new MethodMapper(copySubTexture2));
             addMemberMapper(new MethodMapper(setupTexture1));
@@ -160,6 +164,8 @@ public class ExtendedHD extends Mod {
 
     private class TextureMapMod extends BaseMod.TextureMapMod {
         TextureMapMod() {
+            super(ExtendedHD.this);
+
             final MethodRef readTile = new MethodRef(getDeobfClass(), "readTile", "(LTextureStitched;LIResourceBundle;Ljava/lang/String;)Z");
             final ClassRef textureStitched = new ClassRef("TextureStitched");
             final MethodRef textureStitchedConstructor = new MethodRef("TextureStitched", "<init>", "(Ljava/lang/String;)V");
@@ -298,6 +304,8 @@ public class ExtendedHD extends Mod {
 
     private class TextureStitchedMod extends BaseMod.TextureStitchedMod {
         TextureStitchedMod() {
+            super(ExtendedHD.this);
+
             final MethodRef init = new MethodRef(getDeobfClass(), "init", "(IIIIZ)V");
             final MethodRef copy = new MethodRef(getDeobfClass(), "copy", "(LTextureStitched;)V");
             final MethodRef updateAnimation = new MethodRef(getDeobfClass(), "updateAnimation", "()V");
@@ -357,6 +365,8 @@ public class ExtendedHD extends Mod {
 
     private class TextureNamedMod extends BaseMod.TextureNamedMod {
         TextureNamedMod() {
+            super(ExtendedHD.this);
+
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {

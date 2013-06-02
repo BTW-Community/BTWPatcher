@@ -31,10 +31,10 @@ public class CustomItemTextures extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
 
-        addClassMod(new BaseMod.TessellatorMod());
-        addClassMod(new BaseMod.NBTTagCompoundMod().mapGetTagList());
-        addClassMod(new BaseMod.NBTTagListMod());
-        addClassMod(new BaseMod.IconMod());
+        addClassMod(new BaseMod.TessellatorMod(this));
+        addClassMod(new BaseMod.NBTTagCompoundMod(this).mapGetTagList());
+        addClassMod(new BaseMod.NBTTagListMod(this));
+        addClassMod(new BaseMod.IconMod(this));
         addClassMod(new ItemMod());
         addClassMod(new ItemStackMod());
         addClassMod(new EntityItemMod());
@@ -102,6 +102,8 @@ public class CustomItemTextures extends Mod {
 
     private class ItemMod extends BaseMod.ItemMod {
         ItemMod() {
+            super(CustomItemTextures.this);
+
             final MethodRef getIconIndex = new MethodRef(getDeobfClass(), "getIconIndex", "(LItemStack;)LIcon;");
 
             addMemberMapper(new MethodMapper(getIconIndex));

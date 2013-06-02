@@ -476,7 +476,7 @@ public class ClassMap {
             final String newClass2 = newClass;
             final String newName2 = newName;
             final String newType2 = newType;
-            ClassMod mod = new ClassMod() {
+            ClassMod mod = new ClassMod(null) {
                 @Override
                 public String getDeobfClass() {
                     return newClass2;

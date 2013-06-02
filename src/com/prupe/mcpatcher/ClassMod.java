@@ -30,7 +30,7 @@ import java.util.*;
  * the ClassMod.
  */
 abstract public class ClassMod implements PatchComponent {
-    Mod mod;
+    final Mod mod;
     final List<String> prerequisiteClasses = new ArrayList<String>();
     final List<ClassSignature> classSignatures = new ArrayList<ClassSignature>();
     final List<ClassPatch> patches = new ArrayList<ClassPatch>();
@@ -48,6 +48,10 @@ abstract public class ClassMod implements PatchComponent {
     final private List<Label> labels = new ArrayList<Label>();
     private final Map<String, Integer> labelPositions = new HashMap<String, Integer>();
     boolean matchAddedFiles;
+
+    ClassMod(Mod mod) {
+        this.mod = mod;
+    }
 
     boolean matchClassFile(String filename, ClassFile classFile) {
         addToConstPool = false;

@@ -44,7 +44,7 @@ public abstract class Mod {
      */
     protected ModConfigPanel configPanel = null;
 
-    final List<ClassMod> classMods = new ArrayList<ClassMod>();
+    final List<com.prupe.mcpatcher.ClassMod> classMods = new ArrayList<com.prupe.mcpatcher.ClassMod>();
     final List<String> filesToAdd = new ArrayList<String>();
     final ClassMap classMap = new ClassMap();
     private final List<String> errors = new ArrayList<String>();
@@ -143,8 +143,7 @@ public abstract class Mod {
     }
 
     void setRefs() {
-        for (ClassMod classMod : getClassMods()) {
-            classMod.mod = this;
+        for (com.prupe.mcpatcher.ClassMod classMod : getClassMods()) {
             classMod.bestMatch = null;
             classMod.bestMatchCount = 0;
             for (ClassSignature classSignature : classMod.classSignatures) {
@@ -158,14 +157,14 @@ public abstract class Mod {
 
     void resetCounts() {
         filesAdded.clear();
-        for (ClassMod classMod : getClassMods()) {
+        for (com.prupe.mcpatcher.ClassMod classMod : getClassMods()) {
             for (ClassPatch classPatch : classMod.patches) {
                 classPatch.numMatches.clear();
             }
         }
     }
 
-    List<ClassMod> getClassMods() {
+    List<com.prupe.mcpatcher.ClassMod> getClassMods() {
         return classMods;
     }
 
@@ -190,7 +189,7 @@ public abstract class Mod {
      * @return this
      */
     public Mod clearPatches() {
-        for (ClassMod classMod : classMods) {
+        for (com.prupe.mcpatcher.ClassMod classMod : classMods) {
             classMod.patches.clear();
         }
         filesToAdd.clear();
@@ -202,8 +201,7 @@ public abstract class Mod {
      *
      * @param classMod class mod
      */
-    public void addClassMod(ClassMod classMod) {
-        classMod.mod = this;
+    public void addClassMod(com.prupe.mcpatcher.ClassMod classMod) {
         classMods.add(classMod);
     }
 
@@ -228,7 +226,7 @@ public abstract class Mod {
 
     ArrayList<String> getErrors() {
         ArrayList<String> errors = new ArrayList<String>(this.errors);
-        for (ClassMod classMod : classMods) {
+        for (com.prupe.mcpatcher.ClassMod classMod : classMods) {
             if (!classMod.okToApply()) {
                 for (String s : classMod.errors) {
                     errors.add(String.format("%s: %s", classMod.getDeobfClass(), s));
@@ -330,6 +328,12 @@ public abstract class Mod {
         Dependency(String name, boolean required) {
             this.name = name;
             this.required = required;
+        }
+    }
+
+    public class ClassMod extends com.prupe.mcpatcher.ClassMod {
+        public ClassMod() {
+            super(Mod.this);
         }
     }
 }

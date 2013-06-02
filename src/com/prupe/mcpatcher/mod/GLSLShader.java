@@ -21,14 +21,14 @@ public class GLSLShader extends Mod {
         defaultEnabled = false;
 
         addClassMod(new MinecraftMod());
-        addClassMod(new BaseMod.GLAllocationMod());
+        addClassMod(new BaseMod.GLAllocationMod(this));
         addClassMod(new RenderEngineMod());
         addClassMod(new RenderGlobalMod());
         addClassMod(new RenderLivingMod());
         addClassMod(new EntityRendererMod());
         addClassMod(new EntityLivingMod());
         addClassMod(new BlockMod());
-        addClassMod(new BaseMod.IconMod());
+        addClassMod(new BaseMod.IconMod(this));
         addClassMod(new GameSettingsMod());
         addClassMod(new TessellatorMod());
         addClassMod(new RenderBlocksMod());
@@ -38,7 +38,7 @@ public class GLSLShader extends Mod {
         addClassMod(new InventoryPlayerMod());
         addClassMod(new ItemStackMod());
         addClassMod(new WorldMod());
-        addClassMod(new BaseMod.WorldClientMod());
+        addClassMod(new BaseMod.WorldClientMod(this));
         addClassMod(new WorldRendererMod());
 
         addClassFile(MCPatcherUtils.SHADERS_CLASS);
@@ -46,6 +46,8 @@ public class GLSLShader extends Mod {
 
     private class MinecraftMod extends BaseMod.MinecraftMod {
         MinecraftMod() {
+            super(GLSLShader.this);
+
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
@@ -567,6 +569,8 @@ public class GLSLShader extends Mod {
 
     private class BlockMod extends BaseMod.BlockMod {
         BlockMod() {
+            super(GLSLShader.this);
+
             addMemberMapper(new FieldMapper(
                 new FieldRef(getDeobfClass(), "lightOpacity", "[I"),
                 new FieldRef(getDeobfClass(), "lightValue", "[I")
@@ -580,6 +584,8 @@ public class GLSLShader extends Mod {
 
     private class GameSettingsMod extends BaseMod.GameSettingsMod {
         GameSettingsMod() {
+            super(GLSLShader.this);
+
             mapOption("viewDistance", "renderDistance", "I");
         }
     }
@@ -946,6 +952,8 @@ public class GLSLShader extends Mod {
         private final MethodRef[] faceMethods = new MethodRef[6];
 
         RenderBlocksMod() {
+            super(GLSLShader.this);
+
             setupBlockFace(0, "Bottom", 0, -1, 0);
             setupBlockFace(1, "Top", 0, 1, 0);
             setupBlockFace(2, "North", 0, 0, -1);
@@ -1056,6 +1064,8 @@ public class GLSLShader extends Mod {
 
     private class WorldMod extends BaseMod.WorldMod {
         WorldMod() {
+            super(GLSLShader.this);
+
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {

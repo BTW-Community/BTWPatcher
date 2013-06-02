@@ -15,13 +15,13 @@ public class BaseTilesheetMod extends Mod {
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
-        addClassMod(new BaseMod.ITexturePackMod());
-        addClassMod(new BaseMod.IconMod());
+        addClassMod(new BaseMod.ITexturePackMod(this));
+        addClassMod(new BaseMod.IconMod(this));
         addClassMod(new TessellatorMod());
         addClassMod(new IconRegisterMod());
         addClassMod(new TextureMapMod());
-        addClassMod(new BaseMod.TextureBaseMod());
-        addClassMod(new BaseMod.TextureMod());
+        addClassMod(new BaseMod.TextureBaseMod(this));
+        addClassMod(new BaseMod.TextureMod(this));
         addClassMod(new TextureManagerMod());
         addClassMod(new TextureStitchedMod());
 
@@ -39,6 +39,8 @@ public class BaseTilesheetMod extends Mod {
 
     private class TessellatorMod extends BaseMod.TessellatorMod {
         TessellatorMod() {
+            super(BaseTilesheetMod.this);
+
             final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(I)V");
             final MethodRef reset = new MethodRef(getDeobfClass(), "reset", "()V");
             final FieldRef isDrawing = new FieldRef(getDeobfClass(), "isDrawing", "Z");
@@ -316,6 +318,8 @@ public class BaseTilesheetMod extends Mod {
 
     private class TextureMapMod extends BaseMod.TextureMapMod {
         TextureMapMod() {
+            super(BaseTilesheetMod.this);
+
             final MethodRef registerTiles = new MethodRef(getDeobfClass(), "registerTiles", "()V");
             final InterfaceMethodRef mapClear = new InterfaceMethodRef("java/util/Map", "clear", "()V");
             final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
@@ -539,6 +543,8 @@ public class BaseTilesheetMod extends Mod {
 
     private class TextureStitchedMod extends BaseMod.TextureStitchedMod {
         TextureStitchedMod() {
+            super(BaseTilesheetMod.this);
+
             final InterfaceMethodRef listSize = new InterfaceMethodRef("java/util/List", "size", "()I");
 
             addPatch(new BytecodePatch() {

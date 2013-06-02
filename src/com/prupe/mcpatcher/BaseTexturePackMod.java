@@ -30,15 +30,15 @@ public class BaseTexturePackMod extends Mod {
 
         addClassMod(new MinecraftMod());
         addClassMod(new TextureManagerMod());
-        addClassMod(new BaseMod.TextureUtilsMod());
+        addClassMod(new BaseMod.TextureUtilsMod(this));
         addClassMod(new TexturePackListMod());
-        addClassMod(new BaseMod.ITexturePackMod());
-        addClassMod(new BaseMod.ITextureMod());
+        addClassMod(new BaseMod.ITexturePackMod(this));
+        addClassMod(new BaseMod.ITextureMod(this));
         addClassMod(new TextureBaseMod());
-        addClassMod(new BaseMod.TextureNamedMod());
-        addClassMod(new BaseMod.IconMod());
-        addClassMod(new BaseMod.TextureMapMod());
-        addClassMod(new BaseMod.TextureWithDataMod());
+        addClassMod(new BaseMod.TextureNamedMod(this));
+        addClassMod(new BaseMod.IconMod(this));
+        addClassMod(new BaseMod.TextureMapMod(this));
+        addClassMod(new BaseMod.TextureWithDataMod(this));
         addClassMod(new TexturePackImplementationMod());
         addClassMod(new TexturePackDefaultMod());
         addClassMod(new TexturePackCustomMod());
@@ -91,6 +91,8 @@ public class BaseTexturePackMod extends Mod {
 
     private class MinecraftMod extends BaseMod.MinecraftMod {
         MinecraftMod() {
+            super(BaseTexturePackMod.this);
+
             final MethodRef getTextureManager = new MethodRef(getDeobfClass(), "getTextureManager", "()LTextureManager;");
             final FieldRef texturePackList = new FieldRef(getDeobfClass(), "texturePackList", "LTexturePackList;");
             final FieldRef resourceBundle = new FieldRef(getDeobfClass(), "resourceBundle", "LITextureResourceBundle;");
@@ -268,6 +270,8 @@ public class BaseTexturePackMod extends Mod {
 
     private class TextureBaseMod extends BaseMod.TextureBaseMod {
         TextureBaseMod() {
+            super(BaseTexturePackMod.this);
+
             final MethodRef unloadGLTexture = new MethodRef(getDeobfClass(), "unloadGLTexture", "()V");
 
             addPatch(new MakeMemberPublicPatch(glTextureId));

@@ -27,9 +27,9 @@ public class BetterGlass extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.CONNECTED_TEXTURES);
 
-        addClassMod(new BaseMod.MinecraftMod());
-        addClassMod(new BaseMod.BlockMod());
-        addClassMod(new BaseMod.IBlockAccessMod());
+        addClassMod(new BaseMod.MinecraftMod(this));
+        addClassMod(new BaseMod.BlockMod(this));
+        addClassMod(new BaseMod.IBlockAccessMod(this));
         addClassMod(new WorldRendererMod());
         addClassMod(new EntityRendererMod());
         addClassMod(new RenderGlobalMod());
@@ -652,6 +652,8 @@ public class BetterGlass extends Mod {
 
     private class RenderBlocksMod extends BaseMod.RenderBlocksMod {
         RenderBlocksMod() {
+            super(BetterGlass.this);
+
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
