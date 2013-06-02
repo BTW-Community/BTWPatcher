@@ -34,7 +34,7 @@ abstract public class ClassMod implements PatchComponent {
     final List<String> prerequisiteClasses = new ArrayList<String>();
     final List<com.prupe.mcpatcher.ClassSignature> classSignatures = new ArrayList<com.prupe.mcpatcher.ClassSignature>();
     final List<com.prupe.mcpatcher.ClassPatch> patches = new ArrayList<com.prupe.mcpatcher.ClassPatch>();
-    final List<MemberMapper> memberMappers = new ArrayList<MemberMapper>();
+    final List<com.prupe.mcpatcher.MemberMapper> memberMappers = new ArrayList<com.prupe.mcpatcher.MemberMapper>();
     boolean global = false;
     String parentClass;
     String[] interfaces;
@@ -207,7 +207,7 @@ abstract public class ClassMod implements PatchComponent {
         patches.add(classPatch);
     }
 
-    protected void addMemberMapper(MemberMapper memberMapper) {
+    protected void addMemberMapper(com.prupe.mcpatcher.MemberMapper memberMapper) {
         memberMappers.add(memberMapper);
     }
 
@@ -355,212 +355,7 @@ abstract public class ClassMod implements PatchComponent {
         return mod.getClassMap().map(ref);
     }
 
-    /**
-     * Represents a field or method to be located within a class.  By default,
-     * the match is done by type signature, but this can be overridden.
-     */
-    public abstract class MemberMapper {
-        /**
-         * Deobfuscated members.
-         */
-        protected JavaRef[] refs;
-        /**
-         * Java type descriptor, e.g.,<br>
-         * "[B" represents an array of bytes.<br>
-         * "(I)Lnet/minecraft/client/Minecraft;" represents a method taking an int and returning a Minecraft object.
-         */
-        protected String descriptor;
-
-        private int mapSuperclass;
-        int mapInterface = -1;
-
-        private int setAccessFlags;
-        private int clearAccessFlags;
-        private int count;
-
-        MemberMapper(JavaRef... refs) {
-            this.refs = refs.clone();
-            for (JavaRef ref : refs) {
-                if (ref != null && ref.getType() != null) {
-                    return;
-                }
-            }
-            throw new RuntimeException("refs list has no descriptor");
-        }
-
-        /**
-         * Specify a required access flag.
-         *
-         * @param flags access flags
-         * @param set   if true, flags are required; if false, flags are forbidden
-         * @return this
-         * @see AccessFlag
-         */
-        public MemberMapper accessFlag(int flags, boolean set) {
-            if (set) {
-                setAccessFlags |= flags;
-            } else {
-                clearAccessFlags |= flags;
-            }
-            return this;
-        }
-
-        public MemberMapper mapToSuperclass(int ancestry) {
-            if (ancestry > 1) {
-                throw new IllegalArgumentException("ancestry " + ancestry + " is not supported");
-            }
-            this.mapSuperclass = ancestry;
-            return this;
-        }
-
-        void mapDescriptor(ClassMap classMap) {
-            count = 0;
-            for (JavaRef ref : refs) {
-                if (ref != null && ref.getType() != null) {
-                    descriptor = classMap.mapTypeString(ref.getType());
-                    return;
-                }
-            }
-        }
-
-        boolean matchInfo(String descriptor, int flags) {
-            return descriptor.equals(this.descriptor) &&
-                (flags & setAccessFlags) == setAccessFlags &&
-                (flags & clearAccessFlags) == 0;
-        }
-
-        JavaRef getRef() {
-            return count < refs.length ? refs[count] : null;
-        }
-
-        String getClassName() {
-            JavaRef ref = getRef();
-            if (ref == null)
-                return null;
-            else if (ref.getClassName() == null || ref.getClassName().equals("")) {
-                return getDeobfClass();
-            } else {
-                return ref.getClassName();
-            }
-        }
-
-        String getName() {
-            JavaRef ref = getRef();
-            return ref == null ? null : ref.getName();
-        }
-
-        void afterMatch() {
-            count++;
-        }
-
-        boolean allMatched() {
-            return count >= refs.length;
-        }
-
-        abstract protected String getMapperType();
-
-        abstract protected List getMatchingObjects(ClassFile classFile);
-
-        abstract protected boolean match(Object o);
-
-        abstract protected JavaRef getObfRef(String className, Object o);
-
-        abstract protected String[] describeMatch(Object o);
-
-        protected void updateClassMap(ClassMap classMap, ClassFile classFile, Object o) {
-            JavaRef ref = getRef();
-            if (ref != null) {
-                String obfClassName;
-                String prefix;
-                if (mapSuperclass == 1) {
-                    obfClassName = classFile.getSuperclass();
-                    prefix = getClassName() + '.';
-                } else if (mapInterface >= 0) {
-                    obfClassName = classFile.getInterfaces()[mapInterface];
-                    prefix = getClassName() + '.';
-                } else {
-                    obfClassName = classFile.getName();
-                    prefix = "";
-                }
-                JavaRef obfRef = getObfRef(obfClassName, o);
-                String[] s = describeMatch(o);
-                Logger.log(Logger.LOG_FIELD, "%s %s matches %s%s %s", getMapperType(), ref.getName(), prefix, s[0], s[1]);
-                classMap.addMap(ref, obfRef);
-            }
-        }
-    }
-
-    /**
-     * Represents a field to be located within a class.  By default,
-     * the match is done by type signature, but this can be overridden.
-     */
-    public class FieldMapper extends MemberMapper {
-        public FieldMapper(FieldRef... refs) {
-            super(refs);
-        }
-
-        protected final String getMapperType() {
-            return "field";
-        }
-
-        protected boolean match(Object o) {
-            FieldInfo fieldInfo = (FieldInfo) o;
-            return matchInfo(fieldInfo.getDescriptor(), fieldInfo.getAccessFlags());
-        }
-
-        protected JavaRef getObfRef(String className, Object o) {
-            FieldInfo fieldInfo = (FieldInfo) o;
-            return new FieldRef(className, fieldInfo.getName(), fieldInfo.getDescriptor());
-        }
-
-        protected String[] describeMatch(Object o) {
-            FieldInfo fieldInfo = (FieldInfo) o;
-            return new String[]{fieldInfo.getName(), fieldInfo.getDescriptor()};
-        }
-
-        protected List getMatchingObjects(ClassFile classFile) {
-            return classFile.getFields();
-        }
-    }
-
-    /**
-     * Represents a method to be located within a class.  By default,
-     * the match is done by type signature, but this can be overridden.
-     */
-    public class MethodMapper extends MemberMapper {
-        public MethodMapper(MethodRef... refs) {
-            super(refs);
-        }
-
-        public MethodMapper mapToInterface(int mapInterface) {
-            this.mapInterface = mapInterface;
-            return this;
-        }
-
-        protected final String getMapperType() {
-            return "method";
-        }
-
-        protected boolean match(Object o) {
-            MethodInfo methodInfo = (MethodInfo) o;
-            return !methodInfo.isConstructor() && !methodInfo.isStaticInitializer() &&
-                matchInfo(methodInfo.getDescriptor(), methodInfo.getAccessFlags());
-        }
-
-        protected JavaRef getObfRef(String className, Object o) {
-            MethodInfo methodInfo = (MethodInfo) o;
-            return new MethodRef(className, methodInfo.getName(), methodInfo.getDescriptor());
-        }
-
-        protected String[] describeMatch(Object o) {
-            MethodInfo methodInfo = (MethodInfo) o;
-            return new String[]{methodInfo.getName(), methodInfo.getDescriptor()};
-        }
-
-        protected List getMatchingObjects(ClassFile classFile) {
-            return classFile.getMethods();
-        }
-    }
+    // inner class versions of ClassSignature and its subclasses
 
     abstract public class ClassSignature extends com.prupe.mcpatcher.ClassSignature {
         public ClassSignature() {
@@ -603,6 +398,22 @@ abstract public class ClassMod implements PatchComponent {
             super(ClassMod.this, signatures);
         }
     }
+
+    // inner class versions of MemberMapper and its subclasses
+
+    public class FieldMapper extends com.prupe.mcpatcher.FieldMapper {
+        public FieldMapper(FieldRef... refs) {
+            super(ClassMod.this, refs);
+        }
+    }
+
+    public class MethodMapper extends com.prupe.mcpatcher.MethodMapper {
+        public MethodMapper(MethodRef... refs) {
+            super(ClassMod.this, refs);
+        }
+    }
+
+    // inner class versions of ClassPatch and its subclasses
 
     abstract public class ClassPatch extends com.prupe.mcpatcher.ClassPatch {
         public ClassPatch() {
