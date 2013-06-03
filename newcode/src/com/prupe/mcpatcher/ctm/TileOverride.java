@@ -197,6 +197,9 @@ abstract class TileOverride implements ITileOverride {
             override = new TileOverrideImpl.CTM(propertiesFile, properties, tileLoader);
         } else if (method.equals("random")) {
             override = new TileOverrideImpl.Random1(propertiesFile, properties, tileLoader);
+            if (override.getNumberOfTiles() == 1) {
+                override = new TileOverrideImpl.Fixed(propertiesFile, properties, tileLoader);
+            }
         } else if (method.equals("fixed") || method.equals("static")) {
             override = new TileOverrideImpl.Fixed(propertiesFile, properties, tileLoader);
         } else if (method.equals("bookshelf") || method.equals("horizontal")) {

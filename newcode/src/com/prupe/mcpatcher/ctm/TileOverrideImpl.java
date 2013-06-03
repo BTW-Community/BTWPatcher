@@ -368,9 +368,6 @@ class TileOverrideImpl {
 
         @Override
         Icon getTileImpl(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int face) {
-            if (getNumberOfTiles() == 1) {
-                return icons[0];
-            }
             if (face < 0) {
                 face = 0;
             }
