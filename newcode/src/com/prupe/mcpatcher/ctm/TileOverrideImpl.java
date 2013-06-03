@@ -337,12 +337,8 @@ class TileOverrideImpl {
     }
 
     final static class Random1 extends TileOverride {
-        private static final long P1 = 0x1c3764a30115L;
-        private static final long P2 = 0x227c1adccd1dL;
-        private static final long P3 = 0xe0d251c03ba5L;
-        private static final long P4 = 0xa2fb1377aeb3L;
-        private static final long MULTIPLIER = 0x5deece66dL;
-        private static final long ADDEND = 0xbL;
+        private static final long K1 = 0xb492b66fbe98f273L;
+        private static final long KMUL = 0x9ddfea08eb382d69L;
 
         private final int symmetry;
         private final WeightedIndex chooser;
@@ -379,8 +375,15 @@ class TileOverrideImpl {
                 face = 0;
             }
             face = reorient(face) / symmetry;
-            long n = P1 * i * (i + ADDEND) + P2 * j * (j + ADDEND) + P3 * k * (k + ADDEND) + P4 * face * (face + ADDEND);
-            n = MULTIPLIER * (n + i + j + k + face) + ADDEND;
+            // adapted from CityHash http://code.google.com/p/cityhash/source/browse/trunk/ (MIT license)
+            long a = ((long) i << 32) | j;
+            long b = ((long) k << 32) | face;
+            a = shiftMix(a * K1) * K1;
+            long c = b * K1 + hash128to64(a, b);
+            long d = shiftMix(a + b);
+            a = hash128to64(a, c);
+            b = hash128to64(d, b);
+            long n = a ^ b ^ hash128to64(b, a);
             int index = chooser.choose(n);
             return icons[index];
         }
@@ -388,6 +391,19 @@ class TileOverrideImpl {
         @Override
         Icon getTileImpl(Block block, Icon origIcon, int face, int metadata) {
             return icons[0];
+        }
+
+        private static long shiftMix(long val) {
+            return val ^ (val >>> 47);
+        }
+
+        private static long hash128to64(long u, long v) {
+            long a = (u ^ v) * KMUL;
+            a ^= (a >>> 47);
+            long b = (u ^ a) * KMUL;
+            b ^= (b >>> 47);
+            b *= KMUL;
+            return b;
         }
     }
 
