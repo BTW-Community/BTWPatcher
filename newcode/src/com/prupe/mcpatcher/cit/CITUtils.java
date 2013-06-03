@@ -103,6 +103,9 @@ public class CITUtils {
                 }
                 useGlint = MCPatcherUtils.getBooleanProperty(properties, "useGlint", true);
                 EnchantmentList.setProperties(properties);
+                sortOverrides(items);
+                sortOverrides(enchantments);
+                sortOverrides(armors);
             }
 
             private void registerOverride(ItemOverride override) {
@@ -173,6 +176,14 @@ public class CITUtils {
                     }
                 }
                 return list;
+            }
+
+            private void sortOverrides(ItemOverride[][] overrides) {
+                for (ItemOverride[] list : overrides) {
+                    if (list != null) {
+                        Arrays.sort(list);
+                    }
+                }
             }
         });
     }

@@ -9,7 +9,7 @@ import net.minecraft.src.*;
 import java.io.File;
 import java.util.*;
 
-class ItemOverride {
+class ItemOverride implements Comparable<ItemOverride> {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
     private static final int MAX_DAMAGE = 65535;
@@ -24,6 +24,7 @@ class ItemOverride {
     Icon icon;
     final String textureName;
     final int layer;
+    final int weight;
     final BitSet itemsIDs;
     private final BitSet damage;
     private final int damageMask;
@@ -92,6 +93,7 @@ class ItemOverride {
         textureName = value.contains("/") ? value : directory + "/" + value;
 
         layer = MCPatcherUtils.getIntProperty(properties, "layer", 0);
+        weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
 
         value = MCPatcherUtils.getStringProperty(properties, "matchItems", "");
         if (value.equals("")) {
@@ -151,6 +153,14 @@ class ItemOverride {
 
     void registerIcon(TileLoader tileLoader) {
         icon = tileLoader.getIcon(textureName);
+    }
+
+    public int compareTo(ItemOverride o) {
+        int result = o.weight - weight;
+        if (result != 0) {
+            return result;
+        }
+        return textureName.compareTo(o.textureName);
     }
 
     boolean match(ItemStack itemStack, int[] itemEnchantmentLevels, boolean hasEffect) {

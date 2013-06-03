@@ -9,14 +9,13 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Properties;
 
-class Enchantment extends ItemOverride implements Comparable<Enchantment> {
+class Enchantment extends ItemOverride {
     private static final float ITEM_2D_THICKNESS = 0.0625f;
 
     private final BlendMethod blendMethod;
     private final float rotation;
     private final float speed;
     final float duration;
-    final int weight;
 
     static void beginOuter2D() {
         GL11.glEnable(GL11.GL_BLEND);
@@ -61,7 +60,6 @@ class Enchantment extends ItemOverride implements Comparable<Enchantment> {
         rotation = MCPatcherUtils.getFloatProperty(properties, "rotation", 0.0f);
         speed = MCPatcherUtils.getFloatProperty(properties, "speed", 0.0f);
         duration = MCPatcherUtils.getFloatProperty(properties, "duration", 1.0f);
-        weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
     }
 
     void render2D(Tessellator tessellator, float intensity, float x0, float y0, float x1, float y1, float z) {
@@ -129,13 +127,5 @@ class Enchantment extends ItemOverride implements Comparable<Enchantment> {
 
     private void end() {
         GL11.glPopMatrix();
-    }
-
-    public int compareTo(Enchantment o) {
-        int result = weight - o.weight;
-        if (result != 0) {
-            return result;
-        }
-        return textureName.compareTo(o.textureName);
     }
 }

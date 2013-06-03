@@ -87,6 +87,16 @@ class PotionReplacer {
             (splash ? "splash/" : "normal/") + name + ".png";
     }
 
+    private static Properties newProperties(int itemID, String path) {
+        Properties properties = new Properties();
+        properties.setProperty("type", "item");
+        properties.setProperty("matchItems", String.valueOf(itemID));
+        properties.setProperty("texture", path);
+        properties.setProperty("layer", "0");
+        properties.setProperty("weight", "-1");
+        return properties;
+    }
+
     private void registerPotionsByEffect(boolean splash) {
         for (int effect = 0; effect < Potion.potionTypes.length; effect++) {
             if (Potion.potionTypes[effect] == null) {
@@ -128,9 +138,7 @@ class PotionReplacer {
     private void registerOtherPotions(boolean splash) {
         String path = getPotionPath("other", splash);
         if (TexturePackAPI.hasResource(path)) {
-            Properties properties = new Properties();
-            properties.setProperty("type", "item");
-            properties.setProperty("matchItems", String.valueOf(ITEM_ID_POTION));
+            Properties properties = newProperties(ITEM_ID_POTION, path);
             StringBuilder sb = new StringBuilder();
             for (int i : mundanePotionMap.values()) {
                 if (splash) {
@@ -140,8 +148,6 @@ class PotionReplacer {
             }
             properties.setProperty("damage", sb.toString().trim());
             properties.setProperty("damageMask", String.valueOf(MUNDANE_BITS));
-            properties.setProperty("texture", path);
-            properties.setProperty("layer", "0");
             addOverride(properties);
         }
     }
@@ -151,23 +157,15 @@ class PotionReplacer {
     }
 
     private void registerVanillaPotion(String path, int itemID, int damage, int mask) {
-        Properties properties = new Properties();
-        properties.setProperty("type", "item");
-        properties.setProperty("matchItems", String.valueOf(itemID));
+        Properties properties = newProperties(itemID, path);
         properties.setProperty("damage", String.valueOf(damage));
         properties.setProperty("damageMask", String.valueOf(mask));
-        properties.setProperty("texture", path);
-        properties.setProperty("layer", "0");
         addOverride(properties);
     }
 
     private void registerCustomPotion(String path, int effect) {
-        Properties properties = new Properties();
-        properties.setProperty("type", "item");
-        properties.setProperty("matchItems", String.valueOf(ITEM_ID_POTION));
+        Properties properties = newProperties(ITEM_ID_POTION, path);
         properties.setProperty("nbt.CustomPotionEffects.0.Id", String.valueOf(effect));
-        properties.setProperty("texture", path);
-        properties.setProperty("layer", "0");
         addOverride(properties);
     }
 
