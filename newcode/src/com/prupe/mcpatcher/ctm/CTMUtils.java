@@ -77,6 +77,18 @@ public class CTMUtils {
                         }
                     }
                 }
+                for (ITileOverride[] overrides : blockOverrides) {
+                    sortOverrides(overrides);
+                }
+                for (ITileOverride[] overrides : tileOverrides.values()) {
+                    sortOverrides(overrides);
+                }
+            }
+
+            private void sortOverrides(ITileOverride[] overrides) {
+                if (overrides != null) {
+                    Arrays.sort(overrides);
+                }
             }
         });
     }

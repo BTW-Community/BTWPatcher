@@ -150,6 +150,7 @@ abstract class TileOverride implements ITileOverride {
     private final String directoryName;
     private final TileLoader tileLoader;
     private final int renderPass;
+    private final int weight;
     private final Set<Integer> matchBlocks;
     private final Set<String> matchTiles;
     private final int faces;
@@ -316,6 +317,8 @@ abstract class TileOverride implements ITileOverride {
         } else if (renderPass >= 0 && !matchTiles.isEmpty()) {
             error("renderPass=%d must be block-based not tile-based", renderPass);
         }
+
+        weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
     }
 
     private boolean addIcon(String path) {
@@ -488,6 +491,22 @@ abstract class TileOverride implements ITileOverride {
 
     final public int getRenderPass() {
         return renderPass;
+    }
+
+    final public int getWeight() {
+        return weight;
+    }
+
+    public int compareTo(ITileOverride o) {
+        int result = o.getWeight() - getWeight();
+        if (result != 0) {
+            return result;
+        }
+        if (o instanceof TileOverride) {
+            return propertiesName.compareTo(((TileOverride) o).propertiesName);
+        } else {
+            return -1;
+        }
     }
 
     final boolean shouldConnect(IBlockAccess blockAccess, Block block, Icon icon, int i, int j, int k, int face, int[] offset) {

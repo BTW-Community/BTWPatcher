@@ -576,6 +576,14 @@ class TileOverrideImpl {
             return 0;
         }
 
+        public int getWeight() {
+            return -1;
+        }
+
+        public int compareTo(ITileOverride o) {
+            return o.getWeight() - getWeight();
+        }
+
         public Icon getTile(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int face) {
             if (face < 2 || face > 5) {
                 return null;

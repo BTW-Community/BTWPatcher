@@ -6,7 +6,7 @@ import net.minecraft.src.Icon;
 
 import java.util.Set;
 
-interface ITileOverride {
+interface ITileOverride extends Comparable<ITileOverride> {
     boolean isDisabled();
 
     void registerIcons();
@@ -16,6 +16,8 @@ interface ITileOverride {
     Set<String> getMatchingTiles();
 
     int getRenderPass();
+
+    int getWeight();
 
     Icon getTile(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int face);
 
