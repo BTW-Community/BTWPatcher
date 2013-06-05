@@ -337,9 +337,6 @@ class TileOverrideImpl {
     }
 
     final static class Random1 extends TileOverride {
-        private static final long K1 = 0xb492b66fbe98f273L;
-        private static final long KMUL = 0x9ddfea08eb382d69L;
-
         private final int symmetry;
         private final WeightedIndex chooser;
 
@@ -371,36 +368,14 @@ class TileOverrideImpl {
             if (face < 0) {
                 face = 0;
             }
-            face = reorient(face) / symmetry;
-            // adapted from CityHash http://code.google.com/p/cityhash/source/browse/trunk/ (MIT license)
-            long a = ((long) i << 32) | j;
-            long b = ((long) k << 32) | face;
-            a = shiftMix(a * K1) * K1;
-            long c = b * K1 + hash128to64(a, b);
-            long d = shiftMix(a + b);
-            a = hash128to64(a, c);
-            b = hash128to64(d, b);
-            long n = a ^ b ^ hash128to64(b, a);
-            int index = chooser.choose(n);
+            long hash = WeightedIndex.hash128To64(i, j, k, reorient(face) / symmetry);
+            int index = chooser.choose(hash);
             return icons[index];
         }
 
         @Override
         Icon getTileImpl(Block block, Icon origIcon, int face, int metadata) {
             return icons[0];
-        }
-
-        private static long shiftMix(long val) {
-            return val ^ (val >>> 47);
-        }
-
-        private static long hash128to64(long u, long v) {
-            long a = (u ^ v) * KMUL;
-            a ^= (a >>> 47);
-            long b = (u ^ a) * KMUL;
-            b ^= (b >>> 47);
-            b *= KMUL;
-            return b;
         }
     }
 
