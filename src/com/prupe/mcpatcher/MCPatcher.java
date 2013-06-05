@@ -237,17 +237,12 @@ final public class MCPatcher {
 
     static void getApplicableMods() throws IOException, InterruptedException {
         JarFile origJar = minecraft.getInputJar();
-        for (Mod mod : modList.getAll()) {
-            mod.setRefs();
-        }
-
         mapModClasses(origJar);
         mapModDependentClasses(origJar);
         checkAllClassesMapped();
         mapModClassMembers(origJar);
         resolveModDependencies();
         printModList();
-
         modList.enableValidMods(enableAllMods);
     }
 

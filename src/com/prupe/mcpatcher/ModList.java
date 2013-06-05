@@ -239,7 +239,6 @@ class ModList {
         }
         modsByIndex.add(0, mod);
         modsByName.put(name, mod);
-        mod.setRefs();
         return indexOfVisible(mod);
     }
 
@@ -258,7 +257,6 @@ class ModList {
         }
         modsByIndex.add(i, mod);
         modsByName.put(name, mod);
-        mod.setRefs();
         return indexOfVisible(mod);
     }
 
@@ -270,7 +268,6 @@ class ModList {
         }
         modsByIndex.add(mod);
         modsByName.put(name, mod);
-        mod.setRefs();
         return indexOfVisible(mod);
     }
 
@@ -329,7 +326,6 @@ class ModList {
             Logger.log(Logger.LOG_MOD, "WARNING: duplicate mod %s ignored", name);
             return false;
         }
-        mod.setRefs();
         modsByName.put(name, mod);
         modsByIndex.add(mod);
         mod.setEnabled(mod.defaultEnabled);

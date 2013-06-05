@@ -142,13 +142,6 @@ public abstract class Mod {
         return (MCPatcher.minecraft == null ? null : MCPatcher.minecraft.getVersion());
     }
 
-    void setRefs() {
-        for (com.prupe.mcpatcher.ClassMod classMod : getClassMods()) {
-            classMod.bestMatch = null;
-            classMod.bestMatchCount = 0;
-        }
-    }
-
     void resetCounts() {
         filesAdded.clear();
         for (com.prupe.mcpatcher.ClassMod classMod : getClassMods()) {
