@@ -680,18 +680,18 @@ public class ConnectedTextures extends Mod {
         }
 
         private void setupStandardBlocks() {
-            setupBlockFace(0, "Bottom");
-            setupBlockFace(1, "Top");
-            setupBlockFace(2, "North");
-            setupBlockFace(3, "South");
-            setupBlockFace(4, "West");
-            setupBlockFace(5, "East");
+            setupBlockFace(0, "Bottom", "Bottom");
+            setupBlockFace(1, "Top", "Top");
+            setupBlockFace(2, "North", "East");
+            setupBlockFace(3, "South", "West");
+            setupBlockFace(4, "West", "North");
+            setupBlockFace(5, "East", "South");
 
             addMemberMapper(new MethodMapper(faceMethods));
         }
 
-        private void setupBlockFace(final int face, final String direction) {
-            final MethodRef altMethod = new MethodRef(getDeobfClass(), "RenderFull" + direction + "Face", "(LBlock;DDDLIcon;)V");
+        private void setupBlockFace(final int face, final String direction, String altDirection) {
+            final MethodRef altMethod = new MethodRef(getDeobfClass(), "RenderFull" + altDirection + "Face", "(LBlock;DDDLIcon;)V");
             faceMethods[face] = new MethodRef(getDeobfClass(), "render" + direction + "Face", "(LBlock;DDDLIcon;)V");
 
             addPatch(new RenderBlocksPatch() {
