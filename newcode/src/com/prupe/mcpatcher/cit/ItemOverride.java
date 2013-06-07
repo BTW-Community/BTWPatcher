@@ -10,6 +10,10 @@ class ItemOverride extends OverrideBase {
 
     ItemOverride(String propertiesName, Properties properties) {
         super(propertiesName, properties);
+
+        if (itemsIDs == null) {
+            error("no matching items specified");
+        }
     }
 
     @Override

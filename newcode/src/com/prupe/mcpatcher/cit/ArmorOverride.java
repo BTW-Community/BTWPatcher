@@ -5,6 +5,10 @@ import java.util.Properties;
 class ArmorOverride extends OverrideBase {
     ArmorOverride(String propertiesName, Properties properties) {
         super(propertiesName, properties);
+
+        if (itemsIDs == null) {
+            error("no matching items specified");
+        }
     }
 
     @Override

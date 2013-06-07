@@ -112,32 +112,25 @@ public class CITUtils {
             private void registerOverride(OverrideBase override) {
                 if (override != null && !override.error) {
                     OverrideBase[][] list;
-                    switch (override.type) {
-                        case OverrideBase.ITEM:
-                            if (!enableItems) {
-                                return;
-                            }
-                            ((ItemOverride) override).preload(tileLoader);
-                            list = items;
-                            break;
-
-                        case OverrideBase.ENCHANTMENT:
-                            if (!enableEnchantments) {
-                                return;
-                            }
-                            list = enchantments;
-                            break;
-
-                        case OverrideBase.ARMOR:
-                            if (!enableArmor) {
-                                return;
-                            }
-                            list = armors;
-                            break;
-
-                        default:
-                            logger.severe("unknown ItemOverride type %d", override.type);
+                    if (override instanceof ItemOverride) {
+                        if (!enableItems) {
                             return;
+                        }
+                        ((ItemOverride) override).preload(tileLoader);
+                        list = items;
+                    } else if (override instanceof Enchantment) {
+                        if (!enableEnchantments) {
+                            return;
+                        }
+                        list = enchantments;
+                    } else if (override instanceof ArmorOverride) {
+                        if (!enableArmor) {
+                            return;
+                        }
+                        list = armors;
+                    } else {
+                        logger.severe("unknown ItemOverride type %d", override.getClass().getName());
+                        return;
                     }
                     if (override.itemsIDs == null) {
                         logger.fine("registered %s to all items", override);

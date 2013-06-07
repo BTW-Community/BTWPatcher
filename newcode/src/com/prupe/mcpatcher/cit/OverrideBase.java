@@ -14,12 +14,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
     private static final int MAX_DAMAGE = 65535;
     private static final int MAX_STACK_SIZE = 65535;
 
-    static final int ITEM = 0;
-    static final int ENCHANTMENT = 1;
-    static final int ARMOR = 2;
-
     final String propertiesName;
-    final int type;
     final String textureName;
     final int layer;
     final int weight;
@@ -61,19 +56,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
         this.propertiesName = propertiesName;
         String directory = propertiesName.replaceFirst("/[^/]*$", "");
 
-        String value = MCPatcherUtils.getStringProperty(properties, "type", "item").toLowerCase();
-        if (value.equals("item")) {
-            type = ITEM;
-        } else if (value.equals("enchantment") || value.equals("overlay")) {
-            type = ENCHANTMENT;
-        } else if (value.equals("armor")) {
-            type = ARMOR;
-        } else {
-            error("unknown type %s", value);
-            type = ITEM;
-        }
-
-        value = MCPatcherUtils.getStringProperty(properties, "source", "");
+        String value = MCPatcherUtils.getStringProperty(properties, "source", "");
         if (value.equals("")) {
             value = MCPatcherUtils.getStringProperty(properties, "texture", "");
         }
@@ -100,9 +83,6 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
 
         value = MCPatcherUtils.getStringProperty(properties, "matchItems", "");
         if (value.equals("")) {
-            if (type != ENCHANTMENT) {
-                error("no matching items specified");
-            }
             itemsIDs = null;
         } else {
             BitSet ids = parseBitSet(properties, "matchItems", CITUtils.LOWEST_ITEM_ID, CITUtils.HIGHEST_ITEM_ID);
