@@ -7,7 +7,7 @@ import net.minecraft.src.ItemStack;
 
 import java.util.Properties;
 
-class ItemOverride extends OverrideBase {
+final class ItemOverride extends OverrideBase {
     final String matchIcon;
     Icon icon;
 

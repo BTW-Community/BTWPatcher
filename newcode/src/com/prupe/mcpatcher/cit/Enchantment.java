@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Properties;
 
-class Enchantment extends OverrideBase {
+final class Enchantment extends OverrideBase {
     private static final float ITEM_2D_THICKNESS = 0.0625f;
 
     private final BlendMethod blendMethod;
