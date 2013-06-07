@@ -45,7 +45,7 @@ class PotionReplacer {
 
     private static final Map<String, Integer> mundanePotionMap = new HashMap<String, Integer>();
 
-    final List<ItemOverride> overrides = new ArrayList<ItemOverride>();
+    final List<OverrideBase> overrides = new ArrayList<OverrideBase>();
 
     static {
         try {

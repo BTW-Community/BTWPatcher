@@ -27,9 +27,9 @@ public class CITUtils {
     private static final boolean enableArmor = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "armor", true);
 
     private static TileLoader tileLoader;
-    private static final ItemOverride[][] items = new ItemOverride[MAX_ITEMS][];
-    private static final ItemOverride[][] enchantments = new ItemOverride[MAX_ITEMS][];
-    private static final ItemOverride[][] armors = new ItemOverride[MAX_ITEMS][];
+    private static final OverrideBase[][] items = new OverrideBase[MAX_ITEMS][];
+    private static final OverrideBase[][] enchantments = new OverrideBase[MAX_ITEMS][];
+    private static final OverrideBase[][] armors = new OverrideBase[MAX_ITEMS][];
 
     private static boolean useGlint;
 
@@ -77,11 +77,11 @@ public class CITUtils {
                 }
                 if (enableItems || enableEnchantments || enableArmor) {
                     for (String path : TexturePackAPI.listResources(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit", ".properties", true, false, true)) {
-                        registerOverride(ItemOverride.create(path));
+                        registerOverride(OverrideBase.create(path));
                     }
                     if (enableItems) {
                         PotionReplacer replacer = new PotionReplacer();
-                        for (ItemOverride override : replacer.overrides) {
+                        for (OverrideBase override : replacer.overrides) {
                             registerOverride(override);
                         }
                     }
@@ -90,10 +90,10 @@ public class CITUtils {
 
             @Override
             public void afterChange() {
-                for (ItemOverride[] overrides1 : items) {
+                for (OverrideBase[] overrides1 : items) {
                     if (overrides1 != null) {
-                        for (ItemOverride override : overrides1) {
-                            override.registerIcon(tileLoader);
+                        for (OverrideBase override : overrides1) {
+                            ((ItemOverride) override).registerIcon(tileLoader);
                         }
                     }
                 }
@@ -108,26 +108,26 @@ public class CITUtils {
                 sortOverrides(armors);
             }
 
-            private void registerOverride(ItemOverride override) {
+            private void registerOverride(OverrideBase override) {
                 if (override != null && !override.error) {
-                    ItemOverride[][] list;
+                    OverrideBase[][] list;
                     switch (override.type) {
-                        case ItemOverride.ITEM:
+                        case OverrideBase.ITEM:
                             if (!enableItems) {
                                 return;
                             }
-                            override.preload(tileLoader);
+                            ((ItemOverride) override).preload(tileLoader);
                             list = items;
                             break;
 
-                        case ItemOverride.ENCHANTMENT:
+                        case OverrideBase.ENCHANTMENT:
                             if (!enableEnchantments) {
                                 return;
                             }
                             list = enchantments;
                             break;
 
-                        case ItemOverride.ARMOR:
+                        case OverrideBase.ARMOR:
                             if (!enableArmor) {
                                 return;
                             }
@@ -158,18 +158,18 @@ public class CITUtils {
                 }
             }
 
-            private void registerOverride(ItemOverride[][] list, int itemID, ItemOverride override) {
+            private void registerOverride(OverrideBase[][] list, int itemID, OverrideBase override) {
                 if (Item.itemsList[itemID] != null) {
                     list[itemID] = registerOverride(list[itemID], override);
                 }
             }
 
-            private ItemOverride[] registerOverride(ItemOverride[] list, ItemOverride override) {
+            private OverrideBase[] registerOverride(OverrideBase[] list, OverrideBase override) {
                 if (override != null) {
                     if (list == null) {
-                        list = new ItemOverride[]{override};
+                        list = new OverrideBase[]{override};
                     } else {
-                        ItemOverride[] newList = new ItemOverride[list.length + 1];
+                        OverrideBase[] newList = new OverrideBase[list.length + 1];
                         System.arraycopy(list, 0, newList, 0, list.length);
                         newList[list.length] = override;
                         list = newList;
@@ -178,8 +178,8 @@ public class CITUtils {
                 return list;
             }
 
-            private void sortOverrides(ItemOverride[][] overrides) {
-                for (ItemOverride[] list : overrides) {
+            private void sortOverrides(OverrideBase[][] overrides) {
+                for (OverrideBase[] list : overrides) {
                     if (list != null) {
                         Arrays.sort(list);
                     }
@@ -194,9 +194,9 @@ public class CITUtils {
     public static Icon getIcon(Icon icon, ItemStack itemStack, int renderPass) {
         lastIcon = icon;
         if (enableItems) {
-            ItemOverride override = findMatch(items, itemStack, renderPass);
+            OverrideBase override = findMatch(items, itemStack, renderPass);
             if (override != null) {
-                lastIcon = override.icon;
+                lastIcon = ((ItemOverride) override).icon;
             }
         }
         return lastIcon;
@@ -205,7 +205,7 @@ public class CITUtils {
     public static String getArmorTexture(String texture, EntityLiving entity, ItemStack itemStack) {
         if (enableArmor) {
             int layer = texture.endsWith("_b.png") ? 1 : 0;
-            ItemOverride override = findMatch(armors, itemStack, layer);
+            OverrideBase override = findMatch(armors, itemStack, layer);
             if (override != null) {
                 return override.textureName;
             }
@@ -213,13 +213,13 @@ public class CITUtils {
         return texture;
     }
 
-    private static ItemOverride findMatch(ItemOverride[][] overrides, ItemStack itemStack, int renderPass) {
+    private static OverrideBase findMatch(OverrideBase[][] overrides, ItemStack itemStack, int renderPass) {
         lastRenderPass = renderPass;
         int itemID = itemStack.itemID;
         if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
             int[] enchantmentLevels = getEnchantmentLevels(itemID, itemStack.stackTagCompound);
             boolean hasEffect = itemStack.hasEffect();
-            for (ItemOverride override : overrides[itemID]) {
+            for (OverrideBase override : overrides[itemID]) {
                 if (override.layer == renderPass && override.match(itemStack, enchantmentLevels, hasEffect)) {
                     return override;
                 }

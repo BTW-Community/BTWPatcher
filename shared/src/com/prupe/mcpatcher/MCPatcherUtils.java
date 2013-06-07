@@ -93,9 +93,11 @@ public class MCPatcherUtils {
     public static final String FIREWORKS_HELPER_CLASS = "com.prupe.mcpatcher.sky.FireworksHelper";
 
     public static final String CIT_UTILS_CLASS = "com.prupe.mcpatcher.cit.CITUtils";
+    public static final String OVERRIDE_BASE_CLASS = "com.prupe.mcpatcher.cit.OverrideBase";
     public static final String ITEM_OVERRIDE_CLASS = "com.prupe.mcpatcher.cit.ItemOverride";
     public static final String ENCHANTMENT_CLASS = "com.prupe.mcpatcher.cit.Enchantment";
     public static final String ENCHANTMENT_LIST_CLASS = "com.prupe.mcpatcher.cit.EnchantmentList";
+    public static final String ARMOR_OVERRIDE_CLASS = "com.prupe.mcpatcher.cit.ArmorOverride";
     public static final String POTION_REPLACER_CLASS = "com.prupe.mcpatcher.cit.PotionReplacer";
 
     public static final String SHADERS_CLASS = "com.prupe.mcpatcher.glsl.Shaders";

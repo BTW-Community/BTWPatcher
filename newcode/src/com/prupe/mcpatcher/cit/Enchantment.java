@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Properties;
 
-class Enchantment extends ItemOverride {
+class Enchantment extends OverrideBase {
     private static final float ITEM_2D_THICKNESS = 0.0625f;
 
     private final BlendMethod blendMethod;
@@ -60,6 +60,11 @@ class Enchantment extends ItemOverride {
         rotation = MCPatcherUtils.getFloatProperty(properties, "rotation", 0.0f);
         speed = MCPatcherUtils.getFloatProperty(properties, "speed", 0.0f);
         duration = MCPatcherUtils.getFloatProperty(properties, "duration", 1.0f);
+    }
+
+    @Override
+    String getType() {
+        return "enchantment";
     }
 
     void render2D(Tessellator tessellator, float intensity, float x0, float y0, float x1, float y1, float z) {
