@@ -50,7 +50,7 @@ class EnchantmentList {
         boolean hasEffect = itemStack.hasEffect();
         if (itemID >= 0 && itemID < enchantments.length && enchantments[itemID] != null) {
             for (OverrideBase enchantment : enchantments[itemID]) {
-                if (enchantment.match(itemStack, enchantmentLevels, hasEffect)) {
+                if (enchantment.match(itemStack, null, enchantmentLevels, hasEffect)) {
                     int level = Math.max(enchantment.lastEnchantmentLevel, 1);
                     int layer = enchantment.layer;
                     Layer newLayer = new Layer((Enchantment) enchantment, level);

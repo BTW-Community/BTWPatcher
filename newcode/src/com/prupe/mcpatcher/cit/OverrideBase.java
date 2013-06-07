@@ -128,7 +128,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
         return textureName.compareTo(o.textureName);
     }
 
-    boolean match(ItemStack itemStack, int[] itemEnchantmentLevels, boolean hasEffect) {
+    boolean match(ItemStack itemStack, Icon origIcon, int[] itemEnchantmentLevels, boolean hasEffect) {
         return matchDamage(itemStack) &&
             matchStackSize(itemStack) &&
             matchEnchantment(itemEnchantmentLevels, hasEffect) &&

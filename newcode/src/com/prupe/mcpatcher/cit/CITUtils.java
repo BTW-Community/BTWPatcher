@@ -192,7 +192,7 @@ public class CITUtils {
     public static Icon getIcon(Icon icon, ItemStack itemStack, int renderPass) {
         lastIcon = icon;
         if (enableItems) {
-            OverrideBase override = findMatch(items, itemStack, renderPass);
+            OverrideBase override = findMatch(items, itemStack, icon, renderPass);
             if (override != null) {
                 lastIcon = ((ItemOverride) override).icon;
             }
@@ -203,7 +203,7 @@ public class CITUtils {
     public static String getArmorTexture(String texture, EntityLiving entity, ItemStack itemStack) {
         if (enableArmor) {
             int layer = texture.endsWith("_b.png") ? 1 : 0;
-            OverrideBase override = findMatch(armors, itemStack, layer);
+            OverrideBase override = findMatch(armors, itemStack, null, layer);
             if (override != null) {
                 return override.textureName;
             }
@@ -211,14 +211,14 @@ public class CITUtils {
         return texture;
     }
 
-    private static OverrideBase findMatch(OverrideBase[][] overrides, ItemStack itemStack, int renderPass) {
+    private static OverrideBase findMatch(OverrideBase[][] overrides, ItemStack itemStack, Icon origIcon, int renderPass) {
         lastRenderPass = renderPass;
         int itemID = itemStack.itemID;
         if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
             int[] enchantmentLevels = getEnchantmentLevels(itemID, itemStack.stackTagCompound);
             boolean hasEffect = itemStack.hasEffect();
             for (OverrideBase override : overrides[itemID]) {
-                if (override.layer == renderPass && override.match(itemStack, enchantmentLevels, hasEffect)) {
+                if (override.layer == renderPass && override.match(itemStack, origIcon, enchantmentLevels, hasEffect)) {
                     return override;
                 }
             }

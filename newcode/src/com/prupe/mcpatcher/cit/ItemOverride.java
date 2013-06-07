@@ -1,11 +1,14 @@
 package com.prupe.mcpatcher.cit;
 
+import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TileLoader;
 import net.minecraft.src.Icon;
+import net.minecraft.src.ItemStack;
 
 import java.util.Properties;
 
 class ItemOverride extends OverrideBase {
+    final String matchIcon;
     Icon icon;
 
     ItemOverride(String propertiesName, Properties properties) {
@@ -14,11 +17,22 @@ class ItemOverride extends OverrideBase {
         if (itemsIDs == null) {
             error("no matching items specified");
         }
+        String value = MCPatcherUtils.getStringProperty(properties, "matchTile", "");
+        matchIcon = value.equals("") ? null : value;
     }
 
     @Override
     String getType() {
         return "item";
+    }
+
+    @Override
+    boolean match(ItemStack itemStack, Icon origIcon, int[] itemEnchantmentLevels, boolean hasEffect) {
+        return super.match(itemStack, origIcon, itemEnchantmentLevels, hasEffect) && matchOrigIcon(origIcon);
+    }
+
+    private boolean matchOrigIcon(Icon origIcon) {
+        return matchIcon == null || matchIcon.equals(origIcon.getIconName());
     }
 
     void preload(TileLoader tileLoader) {
