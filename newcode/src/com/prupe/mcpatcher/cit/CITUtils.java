@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.cit;
 import com.prupe.mcpatcher.*;
 import net.minecraft.src.*;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,9 +28,9 @@ public class CITUtils {
     private static final boolean enableArmor = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "armor", true);
 
     private static TileLoader tileLoader;
-    private static final OverrideBase[][] items = new OverrideBase[MAX_ITEMS][];
-    private static final OverrideBase[][] enchantments = new OverrideBase[MAX_ITEMS][];
-    private static final OverrideBase[][] armors = new OverrideBase[MAX_ITEMS][];
+    private static final ItemOverride[][] items = new ItemOverride[MAX_ITEMS][];
+    private static final Enchantment[][] enchantments = new Enchantment[MAX_ITEMS][];
+    private static final ArmorOverride[][] armors = new ArmorOverride[MAX_ITEMS][];
 
     private static boolean useGlint;
 
@@ -160,20 +161,24 @@ public class CITUtils {
 
             private void registerOverride(OverrideBase[][] list, int itemID, OverrideBase override) {
                 if (Item.itemsList[itemID] != null) {
-                    list[itemID] = registerOverride(list[itemID], override);
+                    Class<? extends OverrideBase> overrideClass = list.getClass().getComponentType().getComponentType().asSubclass(OverrideBase.class);
+                    list[itemID] = registerOverride(list[itemID], override, overrideClass);
                 }
             }
 
-            private OverrideBase[] registerOverride(OverrideBase[] list, OverrideBase override) {
-                if (override != null) {
-                    if (list == null) {
-                        list = new OverrideBase[]{override};
-                    } else {
-                        OverrideBase[] newList = new OverrideBase[list.length + 1];
-                        System.arraycopy(list, 0, newList, 0, list.length);
-                        newList[list.length] = override;
-                        list = newList;
-                    }
+            private OverrideBase[] registerOverride(OverrideBase[] list, OverrideBase override, Class<? extends OverrideBase> overrideClass) {
+                if (override == null) {
+                    // nothing
+                } else if (!overrideClass.isAssignableFrom(override.getClass())) {
+                    logger.severe("unexpected class %s in %s array", override.getClass().getName(), overrideClass.getSimpleName());
+                } else if (list == null) {
+                    list = (OverrideBase[]) Array.newInstance(overrideClass, 1);
+                    list[0] = override;
+                } else {
+                    OverrideBase[] newList = (OverrideBase[]) Array.newInstance(overrideClass, list.length + 1);
+                    System.arraycopy(list, 0, newList, 0, list.length);
+                    newList[list.length] = override;
+                    list = newList;
                 }
                 return list;
             }
