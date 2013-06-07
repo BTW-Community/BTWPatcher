@@ -239,6 +239,16 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
             }
         }
 
+        @Override
+        void addGameParams(List<String> params) {
+            if (getVersion().compareTo("13w23a") >= 0) {
+                params.add("--version");
+                params.add(getVersion().getVersionString() + MCPATCHER_SUFFIX);
+            }
+            params.add("--workDir");
+            params.add(baseDir.getPath());
+        }
+
         private boolean fetchJSON(String version, File json) {
             if (json.isFile() && json.length() > 0) {
                 return true;
@@ -369,6 +379,5 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
                 }
             }
         }
-
     }
 }

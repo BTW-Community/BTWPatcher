@@ -362,6 +362,8 @@ abstract class MinecraftInstallation {
 
         abstract void addToClassPath(List<File> classPath);
 
+        abstract void addGameParams(List<String> params);
+
         @Override
         protected void finalize() throws Throwable {
             closeStreams();
@@ -492,6 +494,7 @@ abstract class MinecraftInstallation {
                 params.add("-XX:MaxDirectMemorySize=" + directSize + "M");
             }
             params.add(getMainClass());
+            addGameParams(params);
 
             ProcessBuilder pb = new ProcessBuilder(params.toArray(new String[params.size()]));
             pb.redirectErrorStream(true);

@@ -129,6 +129,10 @@ class MinecraftInstallationV1 extends MinecraftInstallation {
         }
 
         @Override
+        void addGameParams(List<String> params) {
+        }
+
+        @Override
         void createBackup() throws IOException {
             super.createBackup();
             if (outputFile.exists() && !origFile.exists()) {
