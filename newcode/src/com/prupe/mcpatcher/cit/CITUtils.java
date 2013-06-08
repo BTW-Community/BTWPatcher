@@ -23,9 +23,9 @@ public class CITUtils {
     static final int ITEM_ID_CLOCK = 347;
     static final int ITEM_ID_ENCHANTED_BOOK = 403;
 
-    private static final boolean enableItems = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "items", true);
-    private static final boolean enableEnchantments = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "enchantments", true);
-    private static final boolean enableArmor = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "armor", true);
+    static final boolean enableItems = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "items", true);
+    static final boolean enableEnchantments = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "enchantments", true);
+    static final boolean enableArmor = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "armor", true);
 
     private static TileLoader tileLoader;
     private static final ItemOverride[][] items = new ItemOverride[MAX_ITEMS][];
@@ -113,20 +113,11 @@ public class CITUtils {
                 if (override != null && !override.error) {
                     OverrideBase[][] list;
                     if (override instanceof ItemOverride) {
-                        if (!enableItems) {
-                            return;
-                        }
                         ((ItemOverride) override).preload(tileLoader);
                         list = items;
                     } else if (override instanceof Enchantment) {
-                        if (!enableEnchantments) {
-                            return;
-                        }
                         list = enchantments;
                     } else if (override instanceof ArmorOverride) {
-                        if (!enableArmor) {
-                            return;
-                        }
                         list = armors;
                     } else {
                         logger.severe("unknown ItemOverride type %d", override.getClass().getName());

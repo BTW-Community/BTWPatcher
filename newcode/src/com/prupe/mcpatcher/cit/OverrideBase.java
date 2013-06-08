@@ -40,10 +40,19 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
         String type = MCPatcherUtils.getStringProperty(properties, "type", "item").toLowerCase();
         OverrideBase override;
         if (type.equals("item")) {
+            if (!CITUtils.enableItems) {
+                return null;
+            }
             override = new ItemOverride(filename, properties);
         } else if (type.equals("enchantment") || type.equals("overlay")) {
+            if (!CITUtils.enableEnchantments) {
+                return null;
+            }
             override = new Enchantment(filename, properties);
         } else if (type.equals("armor")) {
+            if (!CITUtils.enableArmor) {
+                return null;
+            }
             override = new ArmorOverride(filename, properties);
         } else {
             logger.error("%s: unknown type '%s'", filename, type);
