@@ -35,19 +35,19 @@ final class EnchantmentList {
         }
     }
 
-    EnchantmentList(OverrideBase[][] enchantments, ItemStack itemStack) {
+    EnchantmentList(Enchantment[][] enchantments, ItemStack itemStack) {
         BitSet layersPresent = new BitSet();
         Map<Integer, Layer> tmpLayers = new HashMap<Integer, Layer>();
         int itemID = itemStack.itemID;
         int[] enchantmentLevels = CITUtils.getEnchantmentLevels(itemID, itemStack.stackTagCompound);
         boolean hasEffect = itemStack.hasEffect();
         if (itemID >= 0 && itemID < enchantments.length && enchantments[itemID] != null) {
-            for (OverrideBase enchantment : enchantments[itemID]) {
+            for (Enchantment enchantment : enchantments[itemID]) {
                 if (enchantment.match(itemStack, null, enchantmentLevels, hasEffect)) {
                     int level = Math.max(enchantment.lastEnchantmentLevel, 1);
                     int layer = enchantment.layer;
-                    if (!tmpLayers.containsKey(layer)) {
-                        Layer newLayer = new Layer((Enchantment) enchantment, level);
+                    if (!layersPresent.get(layer)) {
+                        Layer newLayer = new Layer(enchantment, level);
                         tmpLayers.put(layer, newLayer);
                         layersPresent.set(layer);
                     }
