@@ -13,15 +13,13 @@ public class CITUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
     static final String CIT_PROPERTIES = "cit.properties";
-    static final int MAX_ITEMS = Item.itemsList.length;
+    private static final int MAX_ITEMS = Item.itemsList.length;
     static final int MAX_ENCHANTMENTS = 256;
     static int LOWEST_ITEM_ID;
     static int HIGHEST_ITEM_ID;
     static final Map<String, Integer> itemNameMap = new HashMap<String, Integer>();
 
-    static final int ITEM_ID_COMPASS = 345;
-    static final int ITEM_ID_CLOCK = 347;
-    static final int ITEM_ID_ENCHANTED_BOOK = 403;
+    private static final int ITEM_ID_ENCHANTED_BOOK = 403;
 
     static final boolean enableItems = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "items", true);
     static final boolean enableEnchantments = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "enchantments", true);

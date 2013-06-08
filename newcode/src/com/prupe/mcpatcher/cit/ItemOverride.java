@@ -9,6 +9,9 @@ import net.minecraft.src.ItemStack;
 import java.util.Properties;
 
 final class ItemOverride extends OverrideBase {
+    private static final int ITEM_ID_COMPASS = 345;
+    private static final int ITEM_ID_CLOCK = 347;
+
     final String matchIconName;
     Icon icon;
     Icon matchIcon;
@@ -39,9 +42,9 @@ final class ItemOverride extends OverrideBase {
     void preload(TileLoader tileLoader) {
         String special = null;
         if (itemsIDs != null) {
-            if (itemsIDs.get(CITUtils.ITEM_ID_COMPASS)) {
+            if (itemsIDs.get(ITEM_ID_COMPASS)) {
                 special = "compass";
-            } else if (itemsIDs.get(CITUtils.ITEM_ID_CLOCK)) {
+            } else if (itemsIDs.get(ITEM_ID_CLOCK)) {
                 special = "clock";
             }
         }
