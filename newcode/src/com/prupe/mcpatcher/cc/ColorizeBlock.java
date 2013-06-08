@@ -16,16 +16,16 @@ import java.util.Properties;
 public class ColorizeBlock {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
-    private static final String REDSTONE_COLORS = MCPatcherUtils.TEXTURE_PACK_PREFIX + "/misc/redstonecolor.png";
-    private static final String STEM_COLORS = MCPatcherUtils.TEXTURE_PACK_PREFIX + "/misc/stemcolor.png";
+    private static final String REDSTONE_COLORS = MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/redstonecolor.png";
+    private static final String STEM_COLORS = MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/stemcolor.png";
 
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
 
     private static final ColorMap[] blockColorMaps = new ColorMap[Block.blocksList.length]; // bitmaps from palette.block.*
     private static final Map<Float, ColorMap> blockMetaColorMaps = new HashMap<Float, ColorMap>(); // bitmaps from palette.block.*
     private static int lilypadColor; // lilypad
-    private static float[][] redstoneColor; // /misc/redstonecolor.png
-    private static int[] stemColors; // /misc/stemcolor.png
+    private static float[][] redstoneColor; // misc/redstonecolor.png
+    private static int[] stemColors; // misc/stemcolor.png
 
     private static final int blockBlendRadius = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius", 1);
     private static final float blockBlendScale = (float) Math.pow(2 * blockBlendRadius + 1, -2);

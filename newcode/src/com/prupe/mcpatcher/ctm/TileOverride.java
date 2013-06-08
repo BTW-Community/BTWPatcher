@@ -423,7 +423,7 @@ abstract class TileOverride implements ITileOverride {
         String property = properties.getProperty(key, "");
         for (String token : property.split("\\s+")) {
             if (!token.equals("")) {
-                list.add(token.replaceFirst("^/", ""));
+                list.add(TexturePackAPI.fixupPath(token));
             }
         }
         return list;

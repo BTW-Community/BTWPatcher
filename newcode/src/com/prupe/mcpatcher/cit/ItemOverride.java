@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.TileLoader;
 import net.minecraft.src.Icon;
 import net.minecraft.src.ItemStack;
@@ -18,7 +19,7 @@ final class ItemOverride extends OverrideBase {
         if (itemsIDs == null) {
             error("no matching items specified");
         }
-        matchIconName = MCPatcherUtils.getStringProperty(properties, "matchTile", "");
+        matchIconName = TexturePackAPI.fixupPath(MCPatcherUtils.getStringProperty(properties, "matchTile", ""));
     }
 
     @Override
