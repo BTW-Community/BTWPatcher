@@ -92,7 +92,7 @@ class PotionReplacer {
         properties.setProperty("type", "item");
         properties.setProperty("matchItems", String.valueOf(itemID));
         properties.setProperty("texture", path);
-        properties.setProperty("layer", "0");
+        properties.setProperty("layer", "1");
         properties.setProperty("weight", "-1");
         return properties;
     }
@@ -170,15 +170,15 @@ class PotionReplacer {
     }
 
     private void addOverride(Properties properties) {
-        ItemOverride layer0 = new ItemOverride("(0)", properties);
-        if (layer0.error) {
+        ItemOverride layer1 = new ItemOverride("(1)", properties);
+        if (layer1.error) {
             return;
         }
 
         properties.setProperty("texture", "blank");
-        properties.setProperty("layer", "1");
-        ItemOverride layer1 = new ItemOverride("(1)", properties);
-        if (layer1.error) {
+        properties.setProperty("layer", "0");
+        ItemOverride layer0 = new ItemOverride("(0)", properties);
+        if (layer0.error) {
             return;
         }
 
