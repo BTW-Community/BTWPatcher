@@ -227,7 +227,7 @@ public class CITUtils {
         }
         EnchantmentList matches = new EnchantmentList(enchantments, itemStack);
         if (matches.isEmpty()) {
-            return false;
+            return !useGlint;
         }
         int width;
         int height;
@@ -255,7 +255,7 @@ public class CITUtils {
         }
         EnchantmentList matches = new EnchantmentList(enchantments, itemStack);
         if (matches.isEmpty()) {
-            return false;
+            return !useGlint;
         }
         Enchantment.beginOuter2D();
         for (int i = 0; i < matches.size(); i++) {
