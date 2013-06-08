@@ -46,12 +46,11 @@ final class EnchantmentList {
                 if (enchantment.match(itemStack, null, enchantmentLevels, hasEffect)) {
                     int level = Math.max(enchantment.lastEnchantmentLevel, 1);
                     int layer = enchantment.layer;
-                    Layer newLayer = new Layer((Enchantment) enchantment, level);
-                    Layer oldLayer = tmpLayers.get(layer);
-                    if (oldLayer == null || newLayer.enchantment.compareTo(oldLayer.enchantment) > 0) {
+                    if (!tmpLayers.containsKey(layer)) {
+                        Layer newLayer = new Layer((Enchantment) enchantment, level);
                         tmpLayers.put(layer, newLayer);
+                        layersPresent.set(layer);
                     }
-                    layersPresent.set(layer);
                 }
             }
         }
