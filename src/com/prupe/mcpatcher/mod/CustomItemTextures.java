@@ -56,6 +56,10 @@ public class CustomItemTextures extends Mod {
         addClassFile(MCPatcherUtils.ENCHANTMENT_CLASS);
         addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS);
         addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS + "$Layer");
+        addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS + "$LayerMethod");
+        addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS + "$Average");
+        addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS + "$Layered");
+        addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS + "$Cycle");
         addClassFile(MCPatcherUtils.ARMOR_OVERRIDE_CLASS);
         addClassFile(MCPatcherUtils.POTION_REPLACER_CLASS);
 

@@ -6,36 +6,29 @@ import net.minecraft.src.ItemStack;
 
 import java.util.*;
 
-class EnchantmentList {
+final class EnchantmentList {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
     private static final float PI = (float) Math.PI;
 
-    private static final int AVERAGE = 0;
-    private static final int LAYERED = 1;
-    private static final int CYCLE = 2;
-
-    private static int applyMethod;
+    private static LayerMethod applyMethod;
     private static int limit;
     private static float fade;
 
     private final List<Layer> layers = new ArrayList<Layer>();
 
     static void setProperties(Properties properties) {
-        applyMethod = LAYERED;
+        applyMethod = new Average();
         limit = 99;
         fade = 0.5f;
         if (properties != null) {
             String value = MCPatcherUtils.getStringProperty(properties, "method", "average").toLowerCase();
             if (value.equals("layered")) {
-                applyMethod = LAYERED;
+                applyMethod = new Layered();
             } else if (value.equals("cycle")) {
-                applyMethod = CYCLE;
-            } else if (value.equals("average")) {
-                applyMethod = AVERAGE;
-            } else {
+                applyMethod = new Cycle();
+            } else if (!value.equals("average")) {
                 logger.warning("%s: unknown enchantment layering method '%s'", CITUtils.CIT_PROPERTIES, value);
-                applyMethod = AVERAGE;
             }
             limit = Math.max(MCPatcherUtils.getIntProperty(properties, "cap", limit), 0);
             fade = Math.max(MCPatcherUtils.getFloatProperty(properties, "fade", fade), 0.0f);
@@ -73,19 +66,7 @@ class EnchantmentList {
         for (int i = layersPresent.nextSetBit(0); i >= 0; i = layersPresent.nextSetBit(i + 1)) {
             layers.add(tmpLayers.get(i));
         }
-        switch (applyMethod) {
-            default:
-                computeIntensitiesAverage();
-                break;
-
-            case LAYERED:
-                computeIntensitiesLayered();
-                break;
-
-            case CYCLE:
-                computeIntensitiesCycle();
-                break;
-        }
+        applyMethod.computeIntensities(this);
     }
 
     boolean isEmpty() {
@@ -104,54 +85,7 @@ class EnchantmentList {
         return layers.get(index).intensity;
     }
 
-    private void computeIntensitiesAverage() {
-        int total = 0;
-        for (Layer layer : layers) {
-            total += layer.level;
-        }
-        computeIntensitiesAverage(total);
-    }
-
-    private void computeIntensitiesLayered() {
-        int max = 0;
-        for (Layer layer : layers) {
-            Math.max(max, layer.level);
-        }
-        computeIntensitiesAverage(max);
-    }
-
-    private void computeIntensitiesAverage(int denominator) {
-        if (denominator > 0) {
-            for (Layer layer : layers) {
-                layer.intensity = (float) layer.level / (float) denominator;
-            }
-        } else {
-            for (Layer layer : layers) {
-                layer.intensity = 1.0f;
-            }
-        }
-    }
-
-    private void computeIntensitiesCycle() {
-        float total = 0.0f;
-        for (Layer layer : layers) {
-            total += layer.getEffectiveDuration();
-        }
-        float timestamp = (float) ((System.currentTimeMillis() / 1000.0) % total);
-        for (Layer layer : layers) {
-            if (timestamp <= 0.0f) {
-                break;
-            }
-            float duration = layer.getEffectiveDuration();
-            if (timestamp < duration) {
-                float denominator = (float) Math.sin(PI * fade / duration);
-                layer.intensity = (float) (Math.sin(PI * timestamp / duration) / (denominator == 0.0f ? 1.0f : denominator));
-            }
-            timestamp -= duration;
-        }
-    }
-
-    private static class Layer {
+    private static final class Layer {
         final Enchantment enchantment;
         final int level;
         float intensity;
@@ -163,6 +97,66 @@ class EnchantmentList {
 
         float getEffectiveDuration() {
             return enchantment.duration + 2.0f * fade;
+        }
+    }
+
+    abstract private static class LayerMethod {
+        abstract void computeIntensities(EnchantmentList enchantments);
+
+        protected void scaleIntensities(EnchantmentList enchantments, int denominator) {
+            if (denominator > 0) {
+                for (Layer layer : enchantments.layers) {
+                    layer.intensity = (float) layer.level / (float) denominator;
+                }
+            } else {
+                for (Layer layer : enchantments.layers) {
+                    layer.intensity = layer.level > 0 ? 1.0f : 0.0f;
+                }
+            }
+        }
+    }
+
+    private static final class Average extends LayerMethod {
+        @Override
+        void computeIntensities(EnchantmentList enchantments) {
+            int total = 0;
+            for (Layer layer : enchantments.layers) {
+                total += layer.level;
+            }
+            scaleIntensities(enchantments, total);
+        }
+    }
+
+    private static final class Layered extends LayerMethod {
+        @Override
+        void computeIntensities(EnchantmentList enchantments) {
+            int max = 0;
+            for (Layer layer : enchantments.layers) {
+                Math.max(max, layer.level);
+            }
+            scaleIntensities(enchantments, max);
+        }
+    }
+
+    private static final class Cycle extends LayerMethod {
+        @Override
+        void computeIntensities(EnchantmentList enchantments) {
+            float total = 0.0f;
+            for (Layer layer : enchantments.layers) {
+                total += layer.getEffectiveDuration();
+            }
+            float timestamp = (float) ((System.currentTimeMillis() / 1000.0) % total);
+            for (Layer layer : enchantments.layers) {
+                if (timestamp <= 0.0f) {
+                    break;
+                }
+                float duration = layer.getEffectiveDuration();
+                if (timestamp < duration) {
+                    float denominator = (float) Math.sin(PI * fade / duration);
+                    layer.intensity = (float) (Math.sin(PI * timestamp / duration) / (denominator == 0.0f ? 1.0f : denominator));
+                }
+                timestamp -= duration;
+            }
         }
     }
 }

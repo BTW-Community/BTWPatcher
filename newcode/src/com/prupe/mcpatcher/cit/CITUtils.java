@@ -48,6 +48,7 @@ public class CITUtils {
                 Arrays.fill(armors, null);
                 lastIcon = null;
                 itemNameMap.clear();
+
                 for (LOWEST_ITEM_ID = 256; LOWEST_ITEM_ID < MAX_ITEMS; LOWEST_ITEM_ID++) {
                     if (Item.itemsList[LOWEST_ITEM_ID] != null) {
                         break;
@@ -74,6 +75,14 @@ public class CITUtils {
                         HIGHEST_ITEM_ID, getItemName(HIGHEST_ITEM_ID)
                     );
                 }
+
+                Properties properties = TexturePackAPI.getProperties(MCPatcherUtils.TEXTURE_PACK_PREFIX + CIT_PROPERTIES);
+                if (properties == null) {
+                    properties = TexturePackAPI.getProperties(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit/" + CIT_PROPERTIES);
+                }
+                useGlint = MCPatcherUtils.getBooleanProperty(properties, "useGlint", true);
+                EnchantmentList.setProperties(properties);
+
                 if (enableItems || enableEnchantments || enableArmor) {
                     for (String path : TexturePackAPI.listResources(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit", ".properties", true, false, true)) {
                         registerOverride(OverrideBase.create(path));
@@ -96,12 +105,6 @@ public class CITUtils {
                         }
                     }
                 }
-                Properties properties = TexturePackAPI.getProperties(MCPatcherUtils.TEXTURE_PACK_PREFIX + CIT_PROPERTIES);
-                if (properties == null) {
-                    properties = TexturePackAPI.getProperties(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit/" + CIT_PROPERTIES);
-                }
-                useGlint = MCPatcherUtils.getBooleanProperty(properties, "useGlint", true);
-                EnchantmentList.setProperties(properties);
                 sortOverrides(items);
                 sortOverrides(enchantments);
                 sortOverrides(armors);
