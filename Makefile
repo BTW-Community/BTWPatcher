@@ -1,4 +1,4 @@
-MCVER ?= 13w22a
+MCVER ?= 13w23b
 
 VERSIONSDIR = ../versions
 MCJAR = $(VERSIONSDIR)/$(MCVER)/$(MCVER).jar
