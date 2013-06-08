@@ -8,8 +8,9 @@ import net.minecraft.src.ItemStack;
 import java.util.Properties;
 
 final class ItemOverride extends OverrideBase {
-    final String matchIcon;
+    final String matchIconName;
     Icon icon;
+    Icon matchIcon;
 
     ItemOverride(String propertiesName, Properties properties) {
         super(propertiesName, properties);
@@ -17,8 +18,7 @@ final class ItemOverride extends OverrideBase {
         if (itemsIDs == null) {
             error("no matching items specified");
         }
-        String value = MCPatcherUtils.getStringProperty(properties, "matchTile", "");
-        matchIcon = value.equals("") ? null : value;
+        matchIconName = MCPatcherUtils.getStringProperty(properties, "matchTile", "");
     }
 
     @Override
@@ -32,7 +32,7 @@ final class ItemOverride extends OverrideBase {
     }
 
     private boolean matchOrigIcon(Icon origIcon) {
-        return matchIcon == null || matchIcon.equals(origIcon.getIconName());
+        return matchIcon == null || matchIcon == origIcon;
     }
 
     void preload(TileLoader tileLoader) {
@@ -49,5 +49,6 @@ final class ItemOverride extends OverrideBase {
 
     void registerIcon(TileLoader tileLoader) {
         icon = tileLoader.getIcon(textureName);
+        matchIcon = tileLoader.getIcon(matchIconName);
     }
 }

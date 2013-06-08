@@ -310,7 +310,7 @@ public class TileLoader {
     }
 
     public Icon getIcon(String name) {
-        if (name == null) {
+        if (name == null || name.equals("")) {
             return null;
         }
         Icon icon = iconMap.get(name);
