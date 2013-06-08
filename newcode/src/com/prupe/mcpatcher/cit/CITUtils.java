@@ -82,7 +82,7 @@ public class CITUtils {
                     }
                     if (enableItems) {
                         PotionReplacer replacer = new PotionReplacer();
-                        for (OverrideBase override : replacer.overrides) {
+                        for (ItemOverride override : replacer.overrides) {
                             registerOverride(override);
                         }
                     }
