@@ -7,16 +7,15 @@ import org.lwjgl.util.glu.GLU;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Properties;
+import java.util.*;
+import java.util.List;
 
 public class CustomAnimation implements Comparable<CustomAnimation> {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ANIMATIONS, "Animation");
 
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "animations", true);
-    private static final ArrayList<CustomAnimation> animations = new ArrayList<CustomAnimation>();
+    private static final Map<String, Properties> pending = new HashMap<String, Properties>();
+    private static final List<CustomAnimation> animations = new ArrayList<CustomAnimation>();
 
     private final String propertiesName;
     private final String dstName;
@@ -40,6 +39,13 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.EXTENDED_HD, 1) {
             @Override
             public void beforeChange() {
+                if (!pending.isEmpty()) {
+                    logger.fine("%d animations were never registered:", pending.size());
+                    for (String name : pending.keySet()) {
+                        logger.fine("  %s", name);
+                    }
+                    pending.clear();
+                }
                 animations.clear();
                 MipmapHelper.reset();
                 FancyDial.refresh();
@@ -49,9 +55,11 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
             public void afterChange() {
                 if (enable) {
                     for (String name : TexturePackAPI.listResources(MCPatcherUtils.TEXTURE_PACK_PREFIX + "anim", ".properties", true, false, false)) {
-                        addStrip(name);
+                        Properties properties = TexturePackAPI.getProperties(name);
+                        if (properties != null) {
+                            pending.put(name, properties);
+                        }
                     }
-                    Collections.sort(animations);
                 }
             }
         });
@@ -59,42 +67,60 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
 
     public static void updateAll() {
         FancyDial.updateAll();
+        if (!pending.isEmpty()) {
+            try {
+                checkPendingAnimations();
+            } catch (Throwable e) {
+                e.printStackTrace();
+                logger.error("%d remaining animations cleared", pending.size());
+                pending.clear();
+            }
+        }
         for (CustomAnimation animation : animations) {
             animation.update();
         }
         FancyDial.postUpdateAll();
     }
 
-    static void addStrip(String name) {
-        Properties properties = TexturePackAPI.getProperties(name);
-        if (properties == null) {
-            return;
-        }
-        String textureName = TexturePackAPI.fixupPath(properties.getProperty("to", ""));
-        String srcName = TexturePackAPI.fixupPath(properties.getProperty("from", ""));
-        int x = MCPatcherUtils.getIntProperty(properties, "x", 0);
-        int y = MCPatcherUtils.getIntProperty(properties, "y", 0);
-        int w = MCPatcherUtils.getIntProperty(properties, "w", 0);
-        int h = MCPatcherUtils.getIntProperty(properties, "h", 0);
-        if (!"".equals(textureName) && !"".equals(srcName)) {
-            newStrip(name, properties, textureName, srcName, TexturePackAPI.getImage(srcName), x, y, w, h);
-        }
-    }
-
-    private static void add(CustomAnimation animation) {
-        if (animation != null) {
-            animations.add(animation);
-            if (animation.mipmapLevel == 0) {
-                logger.fine("new %s", animation);
+    private static void checkPendingAnimations() {
+        List<String> done = new ArrayList<String>();
+        for (Map.Entry<String, Properties> entry : pending.entrySet()) {
+            String name = entry.getKey();
+            Properties properties = entry.getValue();
+            String textureName = TexturePackAPI.fixupPath(MCPatcherUtils.getStringProperty(properties, "to", ""));
+            if (TexturePackAPI.isTextureLoaded(textureName)) {
+                addStrip(name, properties);
+                done.add(name);
             }
         }
+        if (!done.isEmpty()) {
+            for (String name : done) {
+                pending.remove(name);
+            }
+            Collections.sort(animations);
+        }
     }
 
-    private static void newStrip(String propertiesName, Properties properties, String dstName, String srcName, BufferedImage srcImage, int x, int y, int w, int h) {
+    private static void addStrip(String propertiesName, Properties properties) {
+        String dstName = TexturePackAPI.fixupPath(properties.getProperty("to", ""));
+        if (dstName.equals("")) {
+            logger.error("%s: missing to= property");
+            return;
+        }
+        String srcName = TexturePackAPI.fixupPath(properties.getProperty("from", ""));
+        if (srcName.equals("")) {
+            logger.error("%s: missing to= property");
+            return;
+        }
+        BufferedImage srcImage = TexturePackAPI.getImage(srcName);
         if (srcImage == null) {
             logger.error("%s: image %s not found in texture pack", propertiesName, srcName);
             return;
         }
+        int x = MCPatcherUtils.getIntProperty(properties, "x", 0);
+        int y = MCPatcherUtils.getIntProperty(properties, "y", 0);
+        int w = MCPatcherUtils.getIntProperty(properties, "w", 0);
+        int h = MCPatcherUtils.getIntProperty(properties, "h", 0);
         if (dstName.equals(MCPatcherUtils.TEXTURE_PACK_PREFIX + "terrain.png") ||
             dstName.equals(MCPatcherUtils.TEXTURE_PACK_PREFIX + "gui/items.png")) {
             logger.error("%s: animations cannot have a target of %s", dstName);
@@ -145,6 +171,15 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
             y >>= 1;
             w >>= 1;
             h >>= 1;
+        }
+    }
+
+    private static void add(CustomAnimation animation) {
+        if (animation != null) {
+            animations.add(animation);
+            if (animation.mipmapLevel == 0) {
+                logger.fine("new %s", animation);
+            }
         }
     }
 
