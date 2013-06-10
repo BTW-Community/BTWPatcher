@@ -14,6 +14,10 @@ class PotionReplacer {
     private static final int ITEM_ID_POTION = 373;
     private static final int ITEM_ID_GLASS_BOTTLE = 374;
 
+    private static final int LAYER_POTION_CONTENTS = 0;
+    private static final int LAYER_POTION_BOTTLE = 1;
+    private static final int LAYER_EMPTY_BOTTLE = 0;
+
     private static final int SPLASH_BIT = 0x4000;
     private static final int EFFECT_BITS = 0x400f;
     private static final int MUNDANE_BITS = 0x403f;
@@ -68,16 +72,11 @@ class PotionReplacer {
     PotionReplacer() {
         String path = getPotionPath("water", false);
         if (TexturePackAPI.hasResource(path)) {
-            registerVanillaPotion(path, ITEM_ID_POTION, 0, WATER_BITS);
+            registerVanillaPotion(path, 0, WATER_BITS);
         }
         path = getPotionPath("empty", false);
         if (TexturePackAPI.hasResource(path)) {
-            Properties properties = newProperties(ITEM_ID_GLASS_BOTTLE, path);
-            properties.setProperty("layer", "0");
-            ItemOverride layer = new ItemOverride("(0)", properties);
-            if (!layer.error) {
-                overrides.add(layer);
-            }
+            registerEmptyBottle(path);
         }
         registerPotionsByEffect(false);
         registerPotionsByEffect(true);
@@ -92,12 +91,16 @@ class PotionReplacer {
             (splash ? "splash/" : "normal/") + name + ".png";
     }
 
-    private static Properties newProperties(int itemID, String path) {
+    private static String getOverrideName(int layer) {
+        return "(" + layer + ")";
+    }
+
+    private static Properties newProperties(int itemID, int layer, String path) {
         Properties properties = new Properties();
         properties.setProperty("type", "item");
         properties.setProperty("matchItems", String.valueOf(itemID));
         properties.setProperty("texture", path);
-        properties.setProperty("layer", "1");
+        properties.setProperty("layer", String.valueOf(layer));
         properties.setProperty("weight", "-1");
         return properties;
     }
@@ -143,7 +146,7 @@ class PotionReplacer {
     private void registerOtherPotions(boolean splash) {
         String path = getPotionPath("other", splash);
         if (TexturePackAPI.hasResource(path)) {
-            Properties properties = newProperties(ITEM_ID_POTION, path);
+            Properties properties = newProperties(ITEM_ID_POTION, LAYER_POTION_BOTTLE, path);
             StringBuilder sb = new StringBuilder();
             for (int i : mundanePotionMap.values()) {
                 if (splash) {
@@ -158,31 +161,35 @@ class PotionReplacer {
     }
 
     private void registerVanillaPotion(String path, int damage, int mask) {
-        registerVanillaPotion(path, ITEM_ID_POTION, damage, mask);
-    }
-
-    private void registerVanillaPotion(String path, int itemID, int damage, int mask) {
-        Properties properties = newProperties(itemID, path);
+        Properties properties = newProperties(ITEM_ID_POTION, LAYER_POTION_BOTTLE, path);
         properties.setProperty("damage", String.valueOf(damage));
         properties.setProperty("damageMask", String.valueOf(mask));
         addOverride(properties);
     }
 
     private void registerCustomPotion(String path, int effect) {
-        Properties properties = newProperties(ITEM_ID_POTION, path);
+        Properties properties = newProperties(ITEM_ID_POTION, LAYER_POTION_BOTTLE, path);
         properties.setProperty("nbt.CustomPotionEffects.0.Id", String.valueOf(effect));
         addOverride(properties);
     }
 
+    private void registerEmptyBottle(String path) {
+        Properties properties = newProperties(ITEM_ID_GLASS_BOTTLE, LAYER_EMPTY_BOTTLE, path);
+        ItemOverride layer = new ItemOverride(getOverrideName(LAYER_EMPTY_BOTTLE), properties);
+        if (!layer.error) {
+            overrides.add(layer);
+        }
+    }
+
     private void addOverride(Properties properties) {
-        ItemOverride layer1 = new ItemOverride("(1)", properties);
+        ItemOverride layer1 = new ItemOverride(getOverrideName(LAYER_POTION_BOTTLE), properties);
         if (layer1.error) {
             return;
         }
 
         properties.setProperty("texture", "blank");
-        properties.setProperty("layer", "0");
-        ItemOverride layer0 = new ItemOverride("(0)", properties);
+        properties.setProperty("layer", String.valueOf(LAYER_POTION_CONTENTS));
+        ItemOverride layer0 = new ItemOverride(getOverrideName(LAYER_POTION_CONTENTS), properties);
         if (layer0.error) {
             return;
         }
