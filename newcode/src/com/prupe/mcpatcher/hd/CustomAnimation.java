@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Properties;
 
-public class CustomAnimation {
+public class CustomAnimation implements Comparable<CustomAnimation> {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ANIMATIONS, "Animation");
 
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "animations", true);
@@ -51,11 +51,7 @@ public class CustomAnimation {
                     for (String name : TexturePackAPI.listResources(MCPatcherUtils.TEXTURE_PACK_PREFIX + "anim", ".properties", true, false, false)) {
                         addStrip(name);
                     }
-                    Collections.sort(animations, new Comparator<CustomAnimation>() {
-                        public int compare(CustomAnimation o1, CustomAnimation o2) {
-                            return o1.dstName.compareTo(o2.dstName);
-                        }
-                    });
+                    Collections.sort(animations);
                 }
             }
         });
@@ -194,6 +190,10 @@ public class CustomAnimation {
             return;
         }
         currentDelay = getDelay();
+    }
+
+    public int compareTo(CustomAnimation o) {
+        return dstName.compareTo(o.dstName);
     }
 
     @Override

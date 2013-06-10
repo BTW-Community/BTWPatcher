@@ -55,7 +55,6 @@ public class ExtendedHD extends Mod {
 
         addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS);
         addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS + "$1");
-        addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS + "$1$1");
         addClassFile(MCPatcherUtils.MIPMAP_HELPER_CLASS);
         addClassFile(MCPatcherUtils.AA_HELPER_CLASS);
         addClassFile(MCPatcherUtils.BORDERED_TEXTURE_CLASS);
