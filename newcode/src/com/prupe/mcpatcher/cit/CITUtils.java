@@ -203,13 +203,15 @@ public class CITUtils {
         return lastIcon;
     }
 
-    public static Icon getEntityIcon(Icon icon, Entity entity, int renderPass) {
-        if (potionItemStackField != null && entity instanceof EntityPotion) {
-            try {
-                return getIcon(icon, (ItemStack) potionItemStackField.get(entity), renderPass);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-                potionItemStackField = null;
+    public static Icon getEntityIcon(Icon icon, Entity entity) {
+        if (entity instanceof EntityPotion) {
+            if (potionItemStackField != null) {
+                try {
+                    return getIcon(icon, (ItemStack) potionItemStackField.get(entity), 1);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                    potionItemStackField = null;
+                }
             }
         }
         return icon;

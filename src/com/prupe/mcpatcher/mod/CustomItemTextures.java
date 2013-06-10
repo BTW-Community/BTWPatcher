@@ -728,11 +728,10 @@ public class CustomItemTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // icon = CITUtils.getEntityIcon(entity, ..., 0);
-                        ALOAD_1,
+                        // icon = CITUtils.getEntityIcon(..., entity);
                         getCaptureGroup(1),
-                        push(0),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getEntityIcon", "(LEntity;LIcon;I)LIcon;")),
+                        ALOAD_1,
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getEntityIcon", "(LIcon;LEntity;)LIcon;")),
                         getCaptureGroup(2)
                     );
                 }
