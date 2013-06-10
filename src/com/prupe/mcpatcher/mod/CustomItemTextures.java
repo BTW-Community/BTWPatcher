@@ -43,6 +43,7 @@ public class CustomItemTextures extends Mod {
         addClassMod(new RenderLivingMod());
         addClassMod(new RenderBipedMod());
         addClassMod(new RenderArmorMod());
+        addClassMod(new RenderSnowballMod());
         addClassMod(new EntityLivingMod());
         addClassMod(new EntityLivingSubMod());
         addClassMod(new EntityPlayerMod());
@@ -677,6 +678,65 @@ public class CustomItemTextures extends Mod {
                     );
                 }
             }.setInsertAfter(true));
+        }
+    }
+
+    private class RenderSnowballMod extends ClassMod {
+        RenderSnowballMod() {
+            setParentClass("Render");
+
+            final MethodRef doRender = new MethodRef(getDeobfClass(), "doRender", "(LEntity;DDDFF)V");
+
+            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "gui/items.png"));
+            addClassSignature(new ConstSignature("potion_splash"));
+            addClassSignature(new ConstSignature("potion_contents"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_1,
+                        captureReference(CHECKCAST),
+                        captureReference(INVOKEVIRTUAL)
+                    );
+                }
+            }
+                .setMethod(doRender)
+                .addXref(1, new ClassRef("EntityPotion"))
+                .addXref(2, new MethodRef("EntityPotion", "getPotionDamage", "()I"))
+            );
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override potion entity texture";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // icon = ...;
+                        begin(),
+                        capture(build(
+                            ALOAD_0,
+                            nonGreedy(any(0, 20)))
+                        ),
+                        capture(anyASTORE)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // icon = CITUtils.getEntityIcon(entity, ..., 0);
+                        ALOAD_1,
+                        getCaptureGroup(1),
+                        push(0),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getEntityIcon", "(LEntity;LIcon;I)LIcon;")),
+                        getCaptureGroup(2)
+                    );
+                }
+            }.targetMethod(doRender));
         }
     }
 

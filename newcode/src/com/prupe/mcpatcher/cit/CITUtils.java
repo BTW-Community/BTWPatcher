@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.*;
 import net.minecraft.src.*;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +39,17 @@ public class CITUtils {
     private static int lastRenderPass;
     private static Icon lastIcon;
 
+    private static Field potionItemStackField;
+
     static {
+        for (Field f : EntityPotion.class.getDeclaredFields()) {
+            if (ItemStack.class.isAssignableFrom(f.getType())) {
+                f.setAccessible(true);
+                potionItemStackField = f;
+                break;
+            }
+        }
+
         TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, 3) {
             @Override
             public void beforeChange() {
@@ -190,6 +201,18 @@ public class CITUtils {
             }
         }
         return lastIcon;
+    }
+
+    public static Icon getEntityIcon(Icon icon, Entity entity, int renderPass) {
+        if (potionItemStackField != null && entity instanceof EntityPotion) {
+            try {
+                return getIcon(icon, (ItemStack) potionItemStackField.get(entity), renderPass);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                potionItemStackField = null;
+            }
+        }
+        return icon;
     }
 
     public static String getArmorTexture(String texture, EntityLiving entity, ItemStack itemStack) {
