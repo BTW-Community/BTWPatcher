@@ -72,7 +72,12 @@ class PotionReplacer {
         }
         path = getPotionPath("empty", false);
         if (TexturePackAPI.hasResource(path)) {
-            registerVanillaPotion(path, ITEM_ID_GLASS_BOTTLE, 0, 0);
+            Properties properties = newProperties(ITEM_ID_GLASS_BOTTLE, path);
+            properties.setProperty("layer", "0");
+            ItemOverride layer = new ItemOverride("(0)", properties);
+            if (!layer.error) {
+                overrides.add(layer);
+            }
         }
         registerPotionsByEffect(false);
         registerPotionsByEffect(true);
