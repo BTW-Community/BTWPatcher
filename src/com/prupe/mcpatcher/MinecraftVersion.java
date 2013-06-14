@@ -221,6 +221,9 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             addKnownVersion("13w23a", "705c39f24f367e61947c8971cab7eff9");
             addKnownVersion("13w23b", "447dc4eb124ef2a0e3f45f3dda617cbd");
 
+            // resource packs replace texture packs
+            addKnownVersion("13w24a", "6164313863f51af4f0ea206fc351dacf");
+
             for (int i = 0; i < versionOrdering.size(); i++) {
                 MinecraftVersion a = versionOrdering.get(i);
                 for (int j = 0; j < versionOrdering.size(); j++) {
