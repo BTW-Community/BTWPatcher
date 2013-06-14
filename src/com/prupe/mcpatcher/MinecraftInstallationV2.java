@@ -245,6 +245,8 @@ class MinecraftInstallationV2 extends MinecraftInstallation {
                 params.add("--version");
                 params.add(getVersion().getVersionString() + MCPATCHER_SUFFIX);
             }
+            params.add("--assetsDir");
+            params.add(new File(baseDir, "assets").getPath());
             params.add("--workDir");
             params.add(baseDir.getPath());
         }
