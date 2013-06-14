@@ -15,7 +15,7 @@ public class BetterSkies extends Mod {
         name = MCPatcherUtils.BETTER_SKIES;
         author = "MCPatcher";
         description = "Adds support for custom skyboxes.";
-        version = "1.4";
+        version = "1.5";
 
         configPanel = new ConfigPanel();
 
@@ -105,7 +105,7 @@ public class BetterSkies extends Mod {
             final FieldRef active = new FieldRef(MCPatcherUtils.SKY_RENDERER_CLASS, "active", "Z");
 
             addClassSignature(new ConstSignature("smoke"));
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/clouds.png"));
+            addClassSignature(new ConstSignature("textures/environment/clouds.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -361,7 +361,11 @@ public class BetterSkies extends Mod {
             addCelestialObjectPatch("moon", "moon_phases.png");
         }
 
-        private void addCelestialObjectPatch(final String objName, final String textureName) {
+        private void addCelestialObjectPatch(final String objName, String textureName) {
+            final FieldRef textureField = new FieldRef(getDeobfClass(), objName, "LResourceAddress;");
+
+            addClassSignature(new BaseMod.ResourceAddressSignature(this, textureField, "textures/environment/" + textureName));
+
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
@@ -371,14 +375,14 @@ public class BetterSkies extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/" + textureName)
+                        reference(GETSTATIC, textureField)
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setupCelestialObject", "(Ljava/lang/String;)Ljava/lang/String;"))
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setupCelestialObject", "(LResourceAddress;)LResourceAddress;"))
                     );
                 }
             }
@@ -401,9 +405,9 @@ public class BetterSkies extends Mod {
             final MethodRef addEffect = new MethodRef(getDeobfClass(), "addEffect", "(LEntityFX;)V");
             final MethodRef getFXLayer = new MethodRef("EntityFX", "getFXLayer", "()I");
             final MethodRef glBlendFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBlendFunc", "(II)V");
+            final MethodRef glAlphaFunc = new MethodRef("org/lwjgl/opengl/GL11", "glAlphaFunc", "(IF)V");
 
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "particles.png"));
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "gui/items.png"));
+            addClassSignature(new ConstSignature("textures/particle/particles.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -424,7 +428,9 @@ public class BetterSkies extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "particles.png")
+                        push(516),
+                        push(0.003921569f),
+                        reference(INVOKESTATIC, glAlphaFunc)
                     );
                 }
             }.setMethod(renderParticles));
