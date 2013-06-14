@@ -892,7 +892,6 @@ public final class BaseMod extends Mod {
         protected final MethodRef glTexParameteri = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexParameteri", "(III)V");
         protected final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
         protected final MethodRef glGenTextures = new MethodRef(MCPatcherUtils.GL11_CLASS, "glGenTextures", "()I");
-        protected final MethodRef glDeleteTextures = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(I)V");
 
         public TextureUtilsMod(Mod mod) {
             super(mod);
@@ -901,7 +900,6 @@ public final class BaseMod extends Mod {
             addClassSignature(new ConstSignature(glTexParameteri));
             addClassSignature(new ConstSignature(glTexImage2D));
             addClassSignature(new ConstSignature(glGenTextures));
-            addClassSignature(new ConstSignature(glDeleteTextures));
         }
     }
 
@@ -1014,7 +1012,7 @@ public final class BaseMod extends Mod {
      * Maps TextureNamed class (1.6+).
      */
     public static class TextureNamedMod extends com.prupe.mcpatcher.ClassMod {
-        protected final FieldRef textureName = new FieldRef(getDeobfClass(), "textureName", "Ljava/lang/String;");
+        protected final FieldRef textureName = new FieldRef(getDeobfClass(), "address", "LResourceAddress;");
         protected final MethodRef load = new MethodRef(getDeobfClass(), "load", "(LIResourceBundle;)V");
 
         public TextureNamedMod(Mod mod) {
@@ -1023,13 +1021,14 @@ public final class BaseMod extends Mod {
 
             final MethodRef imageRead = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
 
+            addClassSignature(new ConstSignature("texture"));
+
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        ALOAD_2,
                         reference(INVOKESTATIC, imageRead),
-                        ASTORE_3
+                        anyASTORE
                     );
                 }
             }.setMethod(load));

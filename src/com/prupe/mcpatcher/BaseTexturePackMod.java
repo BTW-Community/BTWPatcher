@@ -24,25 +24,25 @@ public class BaseTexturePackMod extends Mod {
         name = MCPatcherUtils.BASE_TEXTURE_PACK_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
-        version = "3.0";
+        version = "4.0";
 
         haveResourceBundle = getMinecraftVersion().compareTo("13w21a") >= 0;
 
         addClassMod(new MinecraftMod());
         addClassMod(new TextureManagerMod());
         addClassMod(new BaseMod.TextureUtilsMod(this));
-        addClassMod(new TexturePackListMod());
-        addClassMod(new BaseMod.ITexturePackMod(this));
-        addClassMod(new BaseMod.ITextureMod(this));
+        //addClassMod(new TexturePackListMod());
+        //addClassMod(new BaseMod.ITexturePackMod(this));
+        //addClassMod(new BaseMod.ITextureMod(this));
         addClassMod(new TextureBaseMod());
         addClassMod(new BaseMod.TextureNamedMod(this));
         addClassMod(new BaseMod.IconMod(this));
         addClassMod(new BaseMod.TextureMapMod(this));
         addClassMod(new BaseMod.TextureWithDataMod(this));
-        addClassMod(new TexturePackImplementationMod());
-        addClassMod(new TexturePackDefaultMod());
-        addClassMod(new TexturePackCustomMod());
-        addClassMod(new TexturePackFolderMod());
+        //addClassMod(new TexturePackImplementationMod());
+        //addClassMod(new TexturePackDefaultMod());
+        //addClassMod(new TexturePackCustomMod());
+        //addClassMod(new TexturePackFolderMod());
         if (haveResourceBundle) {
             addClassMod(new IResourceBundleMod());
             addClassMod(new ITextureResourceBundleMod());
@@ -117,7 +117,7 @@ public class BaseTexturePackMod extends Mod {
                 }
             }.setMethod(runGameLoop));
 
-            addMemberMapper(new FieldMapper(texturePackList));
+            //addMemberMapper(new FieldMapper(texturePackList));
             if (haveResourceBundle) {
                 addMemberMapper(new FieldMapper(resourceBundle));
             }
@@ -205,16 +205,15 @@ public class BaseTexturePackMod extends Mod {
     private class TextureManagerMod extends ClassMod {
         TextureManagerMod() {
             final FieldRef texturesByName = new FieldRef(getDeobfClass(), "texturesByName", "Ljava/util/Map;");
-            final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(Ljava/lang/String;)V");
-            final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "(Ljava/lang/String;)LITexture;");
-            final MethodRef unloadTexture = new MethodRef(getDeobfClass(), "unloadTexture", "(Ljava/lang/String;)V");
-            final MethodRef addTexture = new MethodRef(getDeobfClass(), "addTexture", "(Ljava/lang/String;LITexture;)V");
+            final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(LResourceAddress;)V");
+            final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "(LResourceAddress;)LITexture;");
+            final MethodRef addTexture = new MethodRef(getDeobfClass(), "addTexture", "(LResourceAddress;LITexture;)V");
             final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "(LIResourceBundle;)V");
 
             addClassSignature(new ConstSignature("dynamic/%s_%d"));
 
             addMemberMapper(new FieldMapper(texturesByName));
-            addMemberMapper(new MethodMapper(bindTexture, unloadTexture).accessFlag(AccessFlag.STATIC, false));
+            addMemberMapper(new MethodMapper(bindTexture).accessFlag(AccessFlag.STATIC, false));
             addMemberMapper(new MethodMapper(getTexture).accessFlag(AccessFlag.STATIC, false));
             addMemberMapper(new MethodMapper(addTexture));
             addMemberMapper(new MethodMapper(refreshTextures));
@@ -425,8 +424,7 @@ public class BaseTexturePackMod extends Mod {
     private class IResourceBundleMod extends ClassMod {
         IResourceBundleMod() {
             addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "getResource1", "(LResourceAddress;)LIResource;"),
-                new InterfaceMethodRef(getDeobfClass(), "getResource2", "(Ljava/lang/String;)LIResource;")
+                new InterfaceMethodRef(getDeobfClass(), "getResource1", "(LResourceAddress;)LIResource;")
             ).setInterfaceOnly(true));
         }
     }
@@ -436,7 +434,7 @@ public class BaseTexturePackMod extends Mod {
             setInterfaces("IResourceBundle");
 
             addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "method1", "([LIWTF2;)V"),
+                new InterfaceMethodRef(getDeobfClass(), "method1", "(Ljava/util/List;)V"),
                 new InterfaceMethodRef(getDeobfClass(), "method2", "(LIWTF1;)V")
             ).setInterfaceOnly(true));
         }
@@ -445,8 +443,10 @@ public class BaseTexturePackMod extends Mod {
     private class IResourceMod extends ClassMod {
         IResourceMod() {
             addClassSignature(new InterfaceSignature(
+                new InterfaceMethodRef(getDeobfClass(), "getAddress", "()LResourceAddress;"),
                 new InterfaceMethodRef(getDeobfClass(), "getInputStream", "()Ljava/io/InputStream;"),
-                new InterfaceMethodRef(getDeobfClass(), "isPresent", "()Z")
+                new InterfaceMethodRef(getDeobfClass(), "isPresent", "()Z"),
+                new InterfaceMethodRef(getDeobfClass(), "getWTFEmpty", "(Ljava/lang/String;)LIWTFEmpty;")
             ));
         }
     }
