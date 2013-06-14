@@ -152,7 +152,7 @@ class ModList {
     List<Mod> getVisible() {
         List<Mod> visibleMods = new ArrayList<Mod>();
         for (Mod mod : modsByIndex) {
-            if (!mod.internal) {
+            if (!mod.internal || MCPatcher.showInternal) {
                 visibleMods.add(mod);
             }
         }

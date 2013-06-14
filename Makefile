@@ -1,4 +1,5 @@
 MCVER ?= 13w23b
+EXT_OPTS ?=
 
 VERSIONSDIR = ../versions
 MCJAR = $(VERSIONSDIR)/$(MCVER)/$(MCVER).jar
@@ -18,7 +19,7 @@ DOC_OUT = doc/javadoc
 DOC_SRC = $(PACKAGE)
 DOC_SRCPATH = shared/src:stubs/src:newcode/src:src:
 
-TEST_OPTS = -ignoresavedmods -ignorecustommods -enableallmods -auto -loglevel 5
+TEST_OPTS = -ignoresavedmods -ignorecustommods -enableallmods -auto -loglevel 5 $(EXT_OPTS)
 TEST_LOG = test.log
 GOOD_LOG = good.log
 TMPDIR = t.1
@@ -41,10 +42,10 @@ release: $(MCPATCHER)
 	rm -f $(LAUNCH4J_XML).tmp
 
 run: $(MCPATCHER)
-	java -jar $(MCPATCHER)
+	java -jar $(MCPATCHER) $(EXT_OPTS)
 
 runexp: $(MCPATCHER)
-	java -jar $(MCPATCHER) -experimental
+	java -jar $(MCPATCHER) $(EXT_OPTS) -experimental
 
 test: $(MCPATCHER)
 	time java -jar $(MCPATCHER) $(TEST_OPTS) -profile "$(MCPROFILE)" > $(TEST_LOG) 2>&1

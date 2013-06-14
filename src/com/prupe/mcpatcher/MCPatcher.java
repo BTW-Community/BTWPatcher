@@ -52,6 +52,7 @@ final public class MCPatcher {
     private static boolean ignoreBuiltInMods = false;
     private static boolean ignoreCustomMods = false;
     private static boolean enableAllMods = false;
+    static boolean showInternal = false;
     static boolean experimentalMods = false;
 
     static UserInterface ui;
@@ -72,6 +73,7 @@ final public class MCPatcher {
      * -ignorebuiltinmods: do not load mods built into mcpatcher<br>
      * -ignorecustommods: do not load mods from the mcpatcher-mods directory<br>
      * -enableallmods: enable all valid mods instead of selected mods from last time<br>
+     * -showinternal: show hidden "internal" mods<br>
      * -experimental: load mods considered "experimental"<br>
      * -convert &lt;path&gt;: convert a texture pack<br>
      *
@@ -109,6 +111,8 @@ final public class MCPatcher {
                 ignoreCustomMods = true;
             } else if (args[i].equals("-enableallmods")) {
                 enableAllMods = true;
+            } else if (args[i].equals("-showinternal")) {
+                showInternal = true;
             } else if (args[i].equals("-experimental")) {
                 experimentalMods = true;
             } else if (args[i].equals("-convert") && i + 1 < args.length) {
