@@ -20,15 +20,15 @@ public class RandomMobs extends Mod {
         author = "Balthichou";
         description = "Randomize mob skins if texture pack supports it. Based on Balthichou's mod.";
         website = "http://www.minecraftforum.net/topic/244172-";
-        version = "1.5";
+        version = "1.6";
 
         haveRenderLivingSub = getMinecraftVersion().compareTo("13w16a") >= 0;
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
         addClassMod(new RenderLivingMod());
-        addClassMod(new RenderEyesMod("Spider"));
-        addClassMod(new RenderEyesMod("Enderman"));
+        addClassMod(new RenderEyesMod("Spider", "spider"));
+        addClassMod(new RenderEyesMod("Enderman", "enderman/enderman"));
         addClassMod(new EntityMod());
         addClassMod(new EntityLivingMod());
         addClassMod(new BaseMod.NBTTagCompoundMod(this));
@@ -39,8 +39,8 @@ public class RandomMobs extends Mod {
         }
         addClassMod(new RenderSnowmanMod());
         addClassMod(new RenderMooshroomMod());
-        addClassMod(new MiscSkinMod("RenderSheep", MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/sheep_fur.png"));
-        addClassMod(new MiscSkinMod("RenderWolf", MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/wolf_collar.png"));
+        addClassMod(new MiscSkinMod("RenderSheep", "textures/entity/sheep/sheep_fur.png"));
+        addClassMod(new MiscSkinMod("RenderWolf", "textures/entity/wolf/wolf_collar.png"));
         addClassMod(new RenderFishMod());
         addClassMod(new RenderLeashMod());
 
@@ -55,11 +55,10 @@ public class RandomMobs extends Mod {
 
     private class RenderMod extends ClassMod {
         RenderMod() {
-            addClassSignature(new ConstSignature("terrain.png"));
-            addClassSignature(new ConstSignature("misc/shadow.png"));
+            addClassSignature(new ConstSignature("textures/misc/shadow.png"));
             addClassSignature(new ConstSignature(0.45f));
 
-            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(Ljava/lang/String;)V");
+            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceAddress;)V");
 
             addMemberMapper(new MethodMapper(loadTexture)
                 .accessFlag(AccessFlag.PROTECTED, true)
@@ -123,9 +122,9 @@ public class RandomMobs extends Mod {
         private String mobName;
         private String eyeTexture;
 
-        RenderEyesMod(String mob) {
+        RenderEyesMod(String mob, String path) {
             mobName = mob;
-            eyeTexture = MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/" + mobName.toLowerCase() + "_eyes.png";
+            eyeTexture = "textures/entity/" + path + "_eyes.png";
 
             addClassSignature(new ConstSignature(eyeTexture));
 
@@ -225,8 +224,9 @@ public class RandomMobs extends Mod {
 
             setParentClass("Entity");
 
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/char.png"));
+            addClassSignature(new ConstSignature("HealF"));
             addClassSignature(new ConstSignature("Health"));
+            addClassSignature(new ConstSignature("ActiveEffects"));
 
             addMemberMapper(new MethodMapper(getEntityTexture));
             addMemberMapper(new MethodMapper(writeToNBT, readFromNBT)
@@ -379,18 +379,21 @@ public class RandomMobs extends Mod {
 
             final FieldRef renderBlocks = new FieldRef(getDeobfClass(), "renderBlocks", "LRenderBlocks;");
             final FieldRef mushroomRed = new FieldRef("Block", "mushroomRed", "LBlockFlower;");
+            final FieldRef blocksAtlas = new FieldRef("TextureMap", "blocks", "LResourceAddress;");
             final MethodRef renderEquippedItems = new MethodRef(getDeobfClass(), "renderEquippedItems1", "(LEntityMooshroom;F)V");
-            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(Ljava/lang/String;)V");
+            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceAddress;)V");
             final MethodRef glPushMatrix = new MethodRef(MCPatcherUtils.GL11_CLASS, "glPushMatrix", "()V");
             final MethodRef renderBlockAsItem = new MethodRef("RenderBlocks", "renderBlockAsItem", "(LBlock;IF)V");
+
+            addClassSignature(new ConstSignature("textures/entity/cow/mooshroom.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // loadTexture("terrain.png");
+                        // loadTexture(TextureMap.blocks);
                         ALOAD_0,
-                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "terrain.png"),
+                        captureReference(GETSTATIC),
                         captureReference(INVOKEVIRTUAL),
 
                         // GL11.glEnable(GL11.GL_CULL_FACE);
@@ -414,10 +417,11 @@ public class RandomMobs extends Mod {
                 }
             }
                 .setMethod(renderEquippedItems)
-                .addXref(1, loadTexture)
-                .addXref(2, renderBlocks)
-                .addXref(3, mushroomRed)
-                .addXref(4, renderBlockAsItem)
+                .addXref(1, blocksAtlas)
+                .addXref(2, loadTexture)
+                .addXref(3, renderBlocks)
+                .addXref(4, mushroomRed)
+                .addXref(5, renderBlockAsItem)
             );
 
             addPatch(new BytecodePatch() {
@@ -429,7 +433,7 @@ public class RandomMobs extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "terrain.png")
+                        reference(GETSTATIC, blocksAtlas)
                     );
                 }
 
@@ -437,8 +441,8 @@ public class RandomMobs extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         ALOAD_1,
-                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "terrain.png"),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "setupMooshroom", "(LEntityLiving;Ljava/lang/String;)Ljava/lang/String;"))
+                        getMatch(),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "setupMooshroom", "(LEntityLiving;LResourceAddress;)LResourceAddress;"))
                     );
                 }
             }.targetMethod(renderEquippedItems));
@@ -645,7 +649,7 @@ public class RandomMobs extends Mod {
 
             setParentClass("Render");
 
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "particles.png"));
+            addClassSignature(new ConstSignature("textures/particle/particles.png"));
             addClassSignature(new ConstSignature(3.1415927f));
             addClassSignature(new ConstSignature(180.0f));
         }
