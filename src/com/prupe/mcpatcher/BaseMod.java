@@ -702,6 +702,50 @@ public final class BaseMod extends Mod {
         }
     }
 
+    public static class EntityLivingMod extends com.prupe.mcpatcher.ClassMod {
+        public EntityLivingMod(Mod mod) {
+            super(mod);
+            setParentClass("Entity");
+
+            addClassSignature(new ConstSignature("HealF"));
+            addClassSignature(new ConstSignature("Health"));
+            addClassSignature(new ConstSignature("ActiveEffects"));
+        }
+    }
+
+    public static class ResourceAddressSignature extends BytecodeSignature {
+        protected static final ClassRef resourceAddressClass = new ClassRef("ResourceAddress");
+        protected static final MethodRef resourceAddressInit1 = new MethodRef("ResourceAddress", "<init>", "(Ljava/lang/String;)V");
+        protected final FieldRef mappedField;
+        protected final String path;
+
+        public ResourceAddressSignature(com.prupe.mcpatcher.ClassMod classMod, FieldRef mappedField, String path) {
+            super(classMod);
+            this.mappedField = mappedField;
+            this.path = path;
+
+            matchStaticInitializerOnly(true);
+            addXref(1, resourceAddressClass);
+            addXref(2, resourceAddressInit1);
+            addXref(3, mappedField);
+        }
+
+        @Override
+        public String getMatchExpression() {
+            return buildExpression(
+                captureReference(NEW),
+                DUP,
+                push(getResourcePath()),
+                captureReference(INVOKESPECIAL),
+                captureReference(PUTSTATIC)
+            );
+        }
+
+        protected String getResourcePath() {
+            return path;
+        }
+    }
+
     /*
      * Matches FontRenderer class and maps charWidth, fontTextureName, and spaceWidth fields.
      */

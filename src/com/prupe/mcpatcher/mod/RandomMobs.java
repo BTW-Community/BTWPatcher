@@ -216,17 +216,13 @@ public class RandomMobs extends Mod {
         }
     }
 
-    private class EntityLivingMod extends ClassMod {
+    private class EntityLivingMod extends BaseMod.EntityLivingMod {
         EntityLivingMod() {
+            super(RandomMobs.this);
+
             final MethodRef getEntityTexture = new MethodRef(getDeobfClass(), "getEntityTexture", "()Ljava/lang/String;");
             final MethodRef writeToNBT = new MethodRef(getDeobfClass(), "writeToNBT", "(LNBTTagCompound;)V");
             final MethodRef readFromNBT = new MethodRef(getDeobfClass(), "readFromNBT", "(LNBTTagCompound;)V");
-
-            setParentClass("Entity");
-
-            addClassSignature(new ConstSignature("HealF"));
-            addClassSignature(new ConstSignature("Health"));
-            addClassSignature(new ConstSignature("ActiveEffects"));
 
             addMemberMapper(new MethodMapper(getEntityTexture));
             addMemberMapper(new MethodMapper(writeToNBT, readFromNBT)

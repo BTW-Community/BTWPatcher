@@ -104,7 +104,7 @@ public class CustomColors extends Mod {
         addClassMod(new EntityPortalFXMod());
         addClassMod(new EntityAuraFXMod());
 
-        addClassMod(new EntityLivingMod());
+        addClassMod(new BaseMod.EntityLivingMod(this));
         addClassMod(new EntityRendererMod());
 
         addClassMod(new BlockLilyPadMod());
@@ -722,10 +722,8 @@ public class CustomColors extends Mod {
             final MethodRef renderItem = new MethodRef(getDeobfClass(), "renderItem", "(LEntityLiving;LItemStack;I)V");
             final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
 
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "terrain.png"));
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "gui/items.png"));
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/glint.png"));
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/mapbg.png"));
+            addClassSignature(new ConstSignature("textures/misc/enchanted_item_glint.png"));
+            addClassSignature(new ConstSignature("textures/map/map_background.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -2154,16 +2152,6 @@ public class CustomColors extends Mod {
         }
     }
 
-    private class EntityLivingMod extends ClassMod {
-        EntityLivingMod() {
-            setParentClass("Entity");
-
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/char.png"));
-            addClassSignature(new ConstSignature("bubble"));
-            addClassSignature(new ConstSignature("explode"));
-        }
-    }
-
     private class EntityRendererMod extends ClassMod {
         EntityRendererMod() {
             final MethodRef updateLightmap = new MethodRef(getDeobfClass(), "updateLightmap", "(F)V");
@@ -2183,7 +2171,6 @@ public class CustomColors extends Mod {
             final MethodRef reloadTexture = new MethodRef("TextureWithData", "reload", "()V");
 
             addClassSignature(new ConstSignature("ambient.weather.rain"));
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "terrain.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -3214,13 +3201,15 @@ public class CustomColors extends Mod {
 
     private class RenderGlobalMod extends ClassMod {
         RenderGlobalMod() {
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/clouds.png"));
-
+            final FieldRef clouds = new FieldRef(getDeobfClass(), "clouds", "LResourceAddress;");
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final FieldRef gameSettings = new FieldRef("Minecraft", "gameSettings", "LGameSettings;");
             final FieldRef fancyGraphics = new FieldRef("GameSettings", "fancyGraphics", "Z");
             final MethodRef renderClouds = new MethodRef(getDeobfClass(), "renderClouds", "(F)V");
             final MethodRef renderSky = new MethodRef(getDeobfClass(), "renderSky", "(F)V");
+            final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
+
+            addClassSignature(new BaseMod.ResourceAddressSignature(this, clouds, "textures/environment/clouds.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -3248,8 +3237,8 @@ public class CustomColors extends Mod {
                         // ...
                         any(1, 50),
 
-                        // GL11.glBindTexture(3553, this.i.b("/environment/clouds.png"));
-                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/clouds.png")
+                        // ...(RenderGlobal.clouds);
+                        captureReference(GETSTATIC)
                     );
                 }
             }
@@ -3257,13 +3246,18 @@ public class CustomColors extends Mod {
                 .addXref(1, mc)
                 .addXref(2, gameSettings)
                 .addXref(3, fancyGraphics)
+                .addXref(4, clouds)
             );
 
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/tunnel.png")
+                        push(90.0f),
+                        push(1.0f),
+                        push(0.0f),
+                        push(0.0f),
+                        reference(INVOKESTATIC, glRotatef)
                     );
                 }
             }.setMethod(renderSky));
@@ -3548,7 +3542,6 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature("black"));
             addClassSignature(new ConstSignature("purple"));
             addClassSignature(new ConstSignature("cyan"));
-            addClassSignature(new ConstSignature("dyePowder_black"));
 
             addMemberMapper(new FieldMapper(dyeColorNames)
                 .accessFlag(AccessFlag.PUBLIC, true)
@@ -3594,11 +3587,7 @@ public class CustomColors extends Mod {
 
     private class EntitySheepMod extends ClassMod {
         EntitySheepMod() {
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/sheep.png"));
-            addClassSignature(new OrSignature(
-                new ConstSignature("mob.sheep"),
-                new ConstSignature("mob.sheep.say") // 12w38a+
-            ));
+            addClassSignature(new ConstSignature("mob.sheep.say"));
 
             addMemberMapper(new FieldMapper(fleeceColorTable)
                 .accessFlag(AccessFlag.PUBLIC, true)
@@ -3613,7 +3602,7 @@ public class CustomColors extends Mod {
 
             setParentClass("RenderLiving");
 
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/wolf_collar.png"));
+            addClassSignature(new ConstSignature("textures/entity/wolf/wolf_collar.png"));
             addClassSignature(new ConstSignature(glColor3f));
 
             addPatch(new BytecodePatch() {
@@ -3794,21 +3783,24 @@ public class CustomColors extends Mod {
 
     private class TileEntitySignRendererMod extends ClassMod {
         TileEntitySignRendererMod() {
-            final MethodRef renderTileSignEntityAt = new MethodRef(getDeobfClass(), "renderTileSignEntityAt", "(LTileEntitySign;DDDF)V");
+            final FieldRef sign = new FieldRef(getDeobfClass(), "sign", "LResourceAddress;");
             final MethodRef glDepthMask = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthMask", "(Z)V");
 
             addClassSignature(new ConstSignature(glDepthMask));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "item/sign.png")
-                    );
-                }
-            }.setMethod(renderTileSignEntityAt));
+            addClassSignature(new BaseMod.ResourceAddressSignature(this, sign, "textures/entity/sign.png"));
 
             addPatch(new BytecodePatch() {
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                reference(GETSTATIC, sign)
+                            );
+                        }
+                    });
+                }
+
                 @Override
                 public String getDescription() {
                     return "override sign text color";
@@ -3817,9 +3809,9 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        ICONST_0,
+                        push(0),
                         reference(INVOKESTATIC, glDepthMask),
-                        ICONST_0,
+                        push(0),
                         capture(anyISTORE)
                     );
                 }
@@ -3827,7 +3819,7 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        ICONST_0,
+                        push(0),
                         reference(INVOKESTATIC, glDepthMask),
                         reference(INVOKESTATIC, colorizeSignText),
                         getCaptureGroup(1)
@@ -3839,16 +3831,7 @@ public class CustomColors extends Mod {
 
     private class RenderXPOrbMod extends ClassMod {
         RenderXPOrbMod() {
-            final MethodRef render = new MethodRef(getDeobfClass(), "render", "(LEntityXPOrb;DDDFF)V");
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "item/xporb.png")
-                    );
-                }
-            }.setMethod(render));
+            addClassSignature(new ConstSignature("textures/entity/experience_orb.png"));
 
             addPatch(new BytecodePatch() {
                 @Override
