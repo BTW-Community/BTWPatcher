@@ -715,7 +715,7 @@ public final class BaseMod extends Mod {
 
     public static class ResourceAddressMod extends com.prupe.mcpatcher.ClassMod {
         protected final MethodRef getNamespace = new MethodRef(getDeobfClass(), "getNamespace", "()Ljava/lang/String;");
-        protected final MethodRef getAddress = new MethodRef(getDeobfClass(), "getAddress", "()Ljava/lang/String;");
+        protected final MethodRef getPath = new MethodRef(getDeobfClass(), "getPath", "()Ljava/lang/String;");
 
         public ResourceAddressMod(Mod mod) {
             super(mod);
@@ -734,7 +734,7 @@ public final class BaseMod extends Mod {
                 }
             });
 
-            addMemberMapper(new MethodMapper(getAddress, getNamespace)
+            addMemberMapper(new MethodMapper(getPath, getNamespace)
                 .accessFlag(AccessFlag.PUBLIC, true)
                 .accessFlag(AccessFlag.STATIC, false)
             );

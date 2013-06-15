@@ -42,6 +42,7 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new ResourcePackFolderMod());
         addClassMod(new IResourceBundleMod());
         addClassMod(new ITextureResourceBundleMod());
+        addClassMod(new TextureResourceBundleMod());
         addClassMod(new ResourceBundleMod());
         addClassMod(new IResourceMod());
         addClassMod(new BaseMod.ResourceAddressMod(this));
@@ -409,7 +410,7 @@ public class BaseTexturePackMod extends Mod {
     private class IResourceBundleMod extends ClassMod {
         IResourceBundleMod() {
             addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "getResource1", "(LResourceAddress;)LIResource;")
+                new InterfaceMethodRef(getDeobfClass(), "getResource", "(LResourceAddress;)LIResource;")
             ).setInterfaceOnly(true));
         }
     }
@@ -420,8 +421,38 @@ public class BaseTexturePackMod extends Mod {
 
             addClassSignature(new InterfaceSignature(
                 new InterfaceMethodRef(getDeobfClass(), "method1", "(Ljava/util/List;)V"),
-                new InterfaceMethodRef(getDeobfClass(), "method2", "(LIWTF1;)V")
+                new InterfaceMethodRef(getDeobfClass(), "method2", "(LILoadableResource;)V")
             ).setInterfaceOnly(true));
+        }
+    }
+
+    private class TextureResourceBundleMod extends ClassMod {
+        TextureResourceBundleMod() {
+            setInterfaces("ITextureResourceBundle");
+
+            final ClassRef fnfException = new ClassRef("java/io/FileNotFoundException");
+            final MethodRef fnfInit = new MethodRef("java/io/FileNotFoundException", "<init>", "(Ljava/lang/String;)V");
+            final MethodRef getResource = new MethodRef(getDeobfClass(), "getResource", "(LResourceAddress;)LIResource;");
+            final MethodRef addressToString = new MethodRef("ResourceAddress", "toString", "()Ljava/lang/String;");
+
+            addClassSignature(new ConstSignature(new InterfaceMethodRef("java/util/Map", "clear", "()V")));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(NEW, fnfException),
+                        DUP,
+                        ALOAD_1,
+                        captureReference(INVOKEVIRTUAL),
+                        reference(INVOKESPECIAL, fnfInit),
+                        ATHROW
+                    );
+                }
+            }
+                .setMethod(getResource)
+                .addXref(1, addressToString)
+            );
         }
     }
 
