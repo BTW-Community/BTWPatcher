@@ -6,10 +6,7 @@ import net.minecraft.src.Tessellator;
 import net.minecraft.src.World;
 import org.lwjgl.opengl.GL11;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Properties;
+import java.util.*;
 
 public class SkyRenderer {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.BETTER_SKIES);
@@ -70,13 +67,13 @@ public class SkyRenderer {
         }
     }
 
-    public static String setupCelestialObject(String defaultTexture) {
+    public static ResourceAddress setupCelestialObject(ResourceAddress defaultTexture) {
         if (active) {
             Layer.clearBlendingMethod();
             Layer layer = currentWorld.getCelestialObject(defaultTexture);
             if (layer != null) {
                 layer.setBlendingMethod(rainStrength);
-                return layer.texture.getPath();
+                return layer.texture;
             }
         }
         return defaultTexture;
@@ -93,23 +90,20 @@ public class SkyRenderer {
 
     private static class WorldEntry {
         private final int worldType;
-        private final ArrayList<Layer> skies;
-        private final HashMap<String, Layer> objects;
-        private final HashSet<ResourceAddress> textures;
+        private final List<Layer> skies = new ArrayList<Layer>();
+        private final Map<ResourceAddress, Layer> objects = new HashMap<ResourceAddress, Layer>();
+        private final Set<ResourceAddress> textures = new HashSet<ResourceAddress>();
 
         WorldEntry(int worldType) {
             this.worldType = worldType;
-            skies = new ArrayList<Layer>();
-            objects = new HashMap<String, Layer>();
-            textures = new HashSet<ResourceAddress>();
             loadSkies();
-            loadCelestialObject("sun", MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/sun.png");
-            loadCelestialObject("moon", MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/moon_phases.png");
+            loadCelestialObject("sun", new ResourceAddress("textures/environment/sun.png"));
+            loadCelestialObject("moon", new ResourceAddress("textures/environment/moon_phases.png"));
         }
 
         private void loadSkies() {
             for (int i = -1; ; i++) {
-                String prefix = MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/sky" + worldType + "/sky" + (i < 0 ? "" : "" + i);
+                String prefix = "textures/environment/sky" + worldType + "/sky" + (i < 0 ? "" : "" + i);
                 Layer layer = Layer.create(prefix);
                 if (layer == null) {
                     if (i > 0) {
@@ -123,8 +117,8 @@ public class SkyRenderer {
             }
         }
 
-        private void loadCelestialObject(String objName, String textureName) {
-            String prefix = "environment/sky" + worldType + "/" + objName;
+        private void loadCelestialObject(String objName, ResourceAddress textureName) {
+            String prefix = "textures/environment/sky" + worldType + "/" + objName;
             Properties properties = TexturePackAPI.getProperties(new ResourceAddress(prefix + ".properties"));
             if (properties != null) {
                 properties.setProperty("fade", "false");
@@ -142,13 +136,13 @@ public class SkyRenderer {
         }
 
         void renderAll(Tessellator tessellator) {
-            HashSet<ResourceAddress> texturesNeeded = new HashSet<ResourceAddress>();
+            Set<ResourceAddress> texturesNeeded = new HashSet<ResourceAddress>();
             for (Layer layer : skies) {
                 if (layer.prepare()) {
                     texturesNeeded.add(layer.texture);
                 }
             }
-            HashSet<ResourceAddress> texturesToUnload = new HashSet<ResourceAddress>();
+            Set<ResourceAddress> texturesToUnload = new HashSet<ResourceAddress>();
             texturesToUnload.addAll(textures);
             texturesToUnload.removeAll(texturesNeeded);
             for (ResourceAddress resource : texturesToUnload) {
@@ -162,7 +156,7 @@ public class SkyRenderer {
             }
         }
 
-        Layer getCelestialObject(String defaultTexture) {
+        Layer getCelestialObject(ResourceAddress defaultTexture) {
             return objects.get(defaultTexture);
         }
 
