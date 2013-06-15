@@ -13,20 +13,20 @@ class MobRuleList {
 
     public static final String ALTERNATIVES_REGEX = "_(eyes|overlay|tame|angry|collar|fur|invul)\\.properties$";
 
-    private static final HashMap<String, MobRuleList> allRules = new HashMap<String, MobRuleList>();
+    private static final Map<ResourceAddress, MobRuleList> allRules = new HashMap<ResourceAddress, MobRuleList>();
 
-    private final String baseSkin;
-    private final ArrayList<String> allSkins;
+    private final ResourceAddress baseSkin;
+    private final List<ResourceAddress> allSkins;
     private final int skinCount;
-    private final ArrayList<MobRuleEntry> entries;
+    private final List<MobRuleEntry> entries;
 
-    MobRuleList(String baseSkin) {
+    private MobRuleList(ResourceAddress baseSkin) {
         this.baseSkin = baseSkin;
-        allSkins = new ArrayList<String>();
+        allSkins = new ArrayList<ResourceAddress>();
         allSkins.add(baseSkin);
         for (int i = 2; ; i++) {
-            final String skin = baseSkin.replace(".png", "" + i + ".png");
-            if (!TexturePackAPI.hasResource(new ResourceAddress(skin))) {
+            ResourceAddress skin = new ResourceAddress(baseSkin.getNamespace(), baseSkin.getPath().replaceFirst("\\.png$", "" + i + ".png"));
+            if (!TexturePackAPI.hasResource(skin)) {
                 break;
             }
             allSkins.add(skin);
@@ -38,11 +38,11 @@ class MobRuleList {
         }
         logger.fine("found %d variations for %s", skinCount, baseSkin);
 
-        String filename = baseSkin.replace(".png", ".properties");
-        String altFilename = filename.replaceFirst(ALTERNATIVES_REGEX, ".properties");
-        Properties properties = TexturePackAPI.getProperties(new ResourceAddress(filename));
+        ResourceAddress filename = new ResourceAddress(baseSkin.getNamespace(), baseSkin.getPath().replace(".png", ".properties"));
+        ResourceAddress altFilename = new ResourceAddress(baseSkin.getNamespace(), filename.getPath().replaceFirst(ALTERNATIVES_REGEX, ".properties"));
+        Properties properties = TexturePackAPI.getProperties(filename);
         if (properties == null && !filename.equals(altFilename)) {
-            properties = TexturePackAPI.getProperties(new ResourceAddress(altFilename));
+            properties = TexturePackAPI.getProperties(altFilename);
             if (properties != null) {
                 logger.fine("using %s for %s", altFilename, baseSkin);
             }
@@ -64,7 +64,7 @@ class MobRuleList {
         entries = tmpEntries.isEmpty() ? null : tmpEntries;
     }
 
-    String getSkin(long key, int i, int j, int k, String biome) {
+    ResourceAddress getSkin(long key, int i, int j, int k, String biome) {
         if (entries == null) {
             int index = (int) (key % skinCount);
             if (index < 0) {
@@ -82,7 +82,7 @@ class MobRuleList {
         return baseSkin;
     }
 
-    static MobRuleList get(String texture) {
+    static MobRuleList get(ResourceAddress texture) {
         MobRuleList list = allRules.get(texture);
         if (list == null) {
             list = new MobRuleList(texture);
@@ -98,7 +98,7 @@ class MobRuleList {
     private static class MobRuleEntry {
         final int[] skins;
         final WeightedIndex weightedIndex;
-        private final HashSet<String> biomes;
+        private final Set<String> biomes;
         private final int minHeight;
         private final int maxHeight;
 

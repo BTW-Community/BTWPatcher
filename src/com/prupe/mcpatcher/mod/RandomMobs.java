@@ -13,8 +13,6 @@ public class RandomMobs extends Mod {
     private static final MethodRef glEnable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glEnable", "(I)V");
     private static final MethodRef glDisable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDisable", "(I)V");
 
-    private final boolean haveRenderLivingSub;
-
     public RandomMobs() {
         name = MCPatcherUtils.RANDOM_MOBS;
         author = "Balthichou";
@@ -22,25 +20,22 @@ public class RandomMobs extends Mod {
         website = "http://www.minecraftforum.net/topic/244172-";
         version = "1.6";
 
-        haveRenderLivingSub = getMinecraftVersion().compareTo("13w16a") >= 0;
-
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
-        addClassMod(new RenderLivingMod());
-        addClassMod(new RenderEyesMod("Spider", "spider"));
-        addClassMod(new RenderEyesMod("Enderman", "enderman/enderman"));
-        addClassMod(new EntityMod());
-        addClassMod(new EntityLivingMod());
+        addClassMod(new BaseMod.ResourceAddressMod(this));
         addClassMod(new BaseMod.NBTTagCompoundMod(this));
         addClassMod(new BaseMod.TessellatorMod(this));
+        addClassMod(new EntityMod());
+        addClassMod(new EntityLivingMod());
         addClassMod(new RenderMod());
-        if (haveRenderLivingSub) {
-            addClassMod(new RenderLivingSubMod());
-        }
+        addClassMod(new RenderLivingMod());
+        addClassMod(new RenderLivingSubMod());
+        addClassMod(new RenderMiscMod("Spider", "textures/entity/spider_eyes.png"));
+        addClassMod(new RenderMiscMod("Enderman", "textures/entity/enderman/enderman_eyes.png"));
+        addClassMod(new RenderMiscMod("Sheep", "textures/entity/sheep/sheep_fur.png"));
+        addClassMod(new RenderMiscMod("Wolf", "textures/entity/wolf/wolf_collar.png"));
         addClassMod(new RenderSnowmanMod());
         addClassMod(new RenderMooshroomMod());
-        addClassMod(new MiscSkinMod("RenderSheep", "textures/entity/sheep/sheep_fur.png"));
-        addClassMod(new MiscSkinMod("RenderWolf", "textures/entity/wolf/wolf_collar.png"));
         addClassMod(new RenderFishMod());
         addClassMod(new RenderLeashMod());
 
@@ -51,111 +46,6 @@ public class RandomMobs extends Mod {
         addClassFile(MCPatcherUtils.MOB_RULE_LIST_CLASS + "$MobRuleEntry");
         addClassFile(MCPatcherUtils.MOB_OVERLAY_CLASS);
         addClassFile(MCPatcherUtils.LINE_RENDERER_CLASS);
-    }
-
-    private class RenderMod extends ClassMod {
-        RenderMod() {
-            addClassSignature(new ConstSignature("textures/misc/shadow.png"));
-            addClassSignature(new ConstSignature(0.45f));
-
-            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceAddress;)V");
-
-            addMemberMapper(new MethodMapper(loadTexture)
-                .accessFlag(AccessFlag.PROTECTED, true)
-                .accessFlag(AccessFlag.STATIC, false)
-            );
-        }
-    }
-
-    private class RenderLivingMod extends ClassMod {
-        RenderLivingMod() {
-            setParentClass("Render");
-
-            final MethodRef doRenderLiving = new MethodRef(getDeobfClass(), "doRenderLiving", "(LEntityLiving;DDDFF)V");
-            final MethodRef getEntityTexture = new MethodRef("EntityLiving", "getEntityTexture", "()Ljava/lang/String;");
-            final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
-
-            addClassSignature(new ConstSignature(180.0f));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        FCONST_0,
-                        push(-24.0f),
-                        anyFLOAD,
-                        FMUL,
-                        push(0.0078125f),
-                        FSUB,
-                        FCONST_0,
-                        reference(INVOKESTATIC, glTranslatef)
-                    );
-                }
-            }.setMethod(doRenderLiving));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "replace mob textures";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        capture(anyALOAD),
-                        reference(INVOKEVIRTUAL, getEntityTexture)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        getCaptureGroup(1),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(LEntityLiving;)Ljava/lang/String;"))
-                    );
-                }
-            });
-        }
-    }
-
-    private class RenderEyesMod extends ClassMod {
-        private String mobName;
-        private String eyeTexture;
-
-        RenderEyesMod(String mob, String path) {
-            mobName = mob;
-            eyeTexture = "textures/entity/" + path + "_eyes.png";
-
-            addClassSignature(new ConstSignature(eyeTexture));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override " + mobName.toLowerCase() + " eye texture";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push(eyeTexture)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        ALOAD_1,
-                        push(eyeTexture),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(LEntityLiving;Ljava/lang/String;)Ljava/lang/String;"))
-                    );
-                }
-            });
-        }
-
-        @Override
-        public String getDeobfClass() {
-            return "Render" + mobName;
-        }
     }
 
     private class EntityMod extends ClassMod {
@@ -279,6 +169,79 @@ public class RandomMobs extends Mod {
         }
     }
 
+    private class RenderMod extends ClassMod {
+        RenderMod() {
+            addClassSignature(new ConstSignature("textures/misc/shadow.png"));
+            addClassSignature(new ConstSignature(0.45f));
+
+            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceAddress;)V");
+            final MethodRef getEntityTexture = new MethodRef(getDeobfClass(), "getEntityTexture", "(LEntity;)LResourceAddress;");
+            final MethodRef randomTexture = new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(LEntity;LResourceAddress;)LResourceAddress;");
+
+            addMemberMapper(new MethodMapper(loadTexture)
+                .accessFlag(AccessFlag.PROTECTED, true)
+                .accessFlag(AccessFlag.STATIC, false)
+            );
+
+            addMemberMapper(new MethodMapper(getEntityTexture)
+                .accessFlag(AccessFlag.PROTECTED, true)
+                .accessFlag(AccessFlag.STATIC, false)
+            );
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "replace mob texture";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        ALOAD_1,
+                        reference(INVOKEVIRTUAL, getEntityTexture)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_1,
+                        getMatch(),
+                        reference(INVOKESTATIC, randomTexture)
+                    );
+                }
+            });
+        }
+    }
+
+    private class RenderLivingMod extends ClassMod {
+        RenderLivingMod() {
+            setParentClass("Render");
+
+            final MethodRef doRenderLiving = new MethodRef(getDeobfClass(), "doRenderLiving", "(LEntityLiving;DDDFF)V");
+            final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
+
+            addClassSignature(new ConstSignature(180.0f));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        FCONST_0,
+                        push(-24.0f),
+                        anyFLOAD,
+                        FMUL,
+                        push(0.0078125f),
+                        FSUB,
+                        FCONST_0,
+                        reference(INVOKESTATIC, glTranslatef)
+                    );
+                }
+            }.setMethod(doRenderLiving));
+        }
+    }
+
     private class RenderLivingSubMod extends ClassMod {
         RenderLivingSubMod() {
             setParentClass("RenderLiving");
@@ -290,14 +253,60 @@ public class RandomMobs extends Mod {
         }
     }
 
+    private class RenderMiscMod extends ClassMod {
+        private final String mob;
+
+        RenderMiscMod(String mob, final String texture) {
+            this.mob = mob;
+
+            final FieldRef miscSkin = new FieldRef(getDeobfClass(), mob.toLowerCase() + "MiscSkin", "LResourceAddress;");
+            final MethodRef randomTexture = new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(LEntityLiving;LResourceAddress;)LResourceAddress;");
+
+            addClassSignature(new BaseMod.ResourceAddressSignature(this, miscSkin, texture));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "randomize " + texture;
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    if ((getMethodInfo().getAccessFlags() & AccessFlag.STATIC) == 0 &&
+                        getMethodInfo().getDescriptor().startsWith("(L")) {
+                        return buildExpression(
+                            reference(GETSTATIC, miscSkin)
+                        );
+                    } else {
+                        return null;
+                    }
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_1,
+                        getMatch(),
+                        reference(INVOKESTATIC, randomTexture)
+                    );
+                }
+            });
+        }
+
+        @Override
+        public String getDeobfClass() {
+            return "Render" + mob;
+        }
+    }
+
     private class RenderSnowmanMod extends ClassMod {
         RenderSnowmanMod() {
-            setParentClass(haveRenderLivingSub ? "RenderLivingSub" : "RenderLiving");
+            setParentClass("RenderLivingSub");
 
             final MethodRef renderEquippedItems = new MethodRef(getDeobfClass(), "renderEquippedItems1", "(LEntitySnowman;F)V");
-            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(Ljava/lang/String;)V");
+            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceAddress;)V");
             final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
-            final FieldRef snowmanOverlayTexture = new FieldRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "snowmanOverlayTexture", "Ljava/lang/String;");
+            final FieldRef snowmanOverlayTexture = new FieldRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "snowmanOverlayTexture", "LResourceAddress;");
             final MethodRef setupSnowman = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "setupSnowman", "(LEntityLiving;)Z");
             final MethodRef renderSnowmanOverlay = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "renderSnowmanOverlay", "()V");
 
@@ -371,7 +380,7 @@ public class RandomMobs extends Mod {
 
     private class RenderMooshroomMod extends ClassMod {
         RenderMooshroomMod() {
-            setParentClass(haveRenderLivingSub ? "RenderLivingSub" : "RenderLiving");
+            setParentClass("RenderLivingSub");
 
             final FieldRef renderBlocks = new FieldRef(getDeobfClass(), "renderBlocks", "LRenderBlocks;");
             final FieldRef mushroomRed = new FieldRef("Block", "mushroomRed", "LBlockFlower;");
@@ -501,52 +510,6 @@ public class RandomMobs extends Mod {
                 .setInsertBefore(true)
                 .targetMethod(renderEquippedItems)
             );
-        }
-    }
-
-    private class MiscSkinMod extends ClassMod {
-        private final String className;
-
-        MiscSkinMod(String className, final String texture) {
-            final MethodRef randomTexture = new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;");
-
-            this.className = className;
-            setMultipleMatchesAllowed(true);
-
-            addClassSignature(new ConstSignature(texture));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "randomize " + texture;
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    if ((getMethodInfo().getAccessFlags() & AccessFlag.STATIC) == 0 &&
-                        getMethodInfo().getDescriptor().startsWith("(L")) {
-                        return buildExpression(
-                            push(texture)
-                        );
-                    } else {
-                        return null;
-                    }
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        ALOAD_1,
-                        getMatch(),
-                        reference(INVOKESTATIC, randomTexture)
-                    );
-                }
-            });
-        }
-
-        @Override
-        public String getDeobfClass() {
-            return className;
         }
     }
 

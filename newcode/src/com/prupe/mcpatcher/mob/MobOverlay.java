@@ -6,8 +6,8 @@ import net.minecraft.src.ResourceAddress;
 import net.minecraft.src.Tessellator;
 
 public class MobOverlay {
-    private static final ResourceAddress MOOSHROOM_OVERLAY = new ResourceAddress("mob/redcow_overlay.png");
-    private static final ResourceAddress SNOWMAN_OVERLAY = new ResourceAddress("mob/snowman_overlay.png");
+    private static final ResourceAddress MOOSHROOM_OVERLAY = new ResourceAddress("textures/entity/redcow_overlay.png");
+    private static final ResourceAddress SNOWMAN_OVERLAY = new ResourceAddress("textures/entity/snowman_overlay.png");
 
     private static final double MOO_X0 = -0.45;
     private static final double MOO_X1 = 0.45;
@@ -28,18 +28,18 @@ public class MobOverlay {
     private static boolean haveMooshroom;
     private static boolean haveSnowman;
 
-    public static String snowmanOverlayTexture;
+    public static ResourceAddress snowmanOverlayTexture;
 
     static void reset() {
         haveMooshroom = TexturePackAPI.hasResource(MOOSHROOM_OVERLAY);
         haveSnowman = TexturePackAPI.hasResource(SNOWMAN_OVERLAY);
     }
 
-    public static String setupMooshroom(EntityLiving entity, String defaultTexture) {
+    public static ResourceAddress setupMooshroom(EntityLiving entity, ResourceAddress defaultTexture) {
         overlayCounter = 0;
         if (haveMooshroom) {
             overlayActive = true;
-            return MobRandomizer.randomTexture(entity, MOOSHROOM_OVERLAY.getPath());
+            return MobRandomizer.randomTexture(entity, MOOSHROOM_OVERLAY);
         } else {
             overlayActive = false;
             return defaultTexture;
@@ -81,7 +81,7 @@ public class MobOverlay {
 
     public static boolean setupSnowman(EntityLiving entity) {
         if (haveSnowman) {
-            snowmanOverlayTexture = MobRandomizer.randomTexture(entity, SNOWMAN_OVERLAY.getPath());
+            snowmanOverlayTexture = MobRandomizer.randomTexture(entity, SNOWMAN_OVERLAY);
             return true;
         } else {
             snowmanOverlayTexture = null;

@@ -3,8 +3,10 @@ package com.prupe.mcpatcher.mob;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackChangeHandler;
+import net.minecraft.src.Entity;
 import net.minecraft.src.EntityLiving;
 import net.minecraft.src.NBTTagCompound;
+import net.minecraft.src.ResourceAddress;
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
@@ -16,7 +18,7 @@ import java.util.LinkedHashMap;
 
 public class MobRandomizer {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.RANDOM_MOBS);
-    private static final LinkedHashMap<String, String> cache = new LinkedHashMap<String, String>();
+    private static final LinkedHashMap<String, ResourceAddress> cache = new LinkedHashMap<String, ResourceAddress>();
 
     static {
         TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.RANDOM_MOBS, 2) {
@@ -34,16 +36,12 @@ public class MobRandomizer {
         });
     }
 
-    public static String randomTexture(EntityLiving entity) {
-        return randomTexture(entity, entity.getEntityTexture());
-    }
-
-    public static String randomTexture(EntityLiving entity, String texture) {
-        if (texture == null || !texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/") || !texture.endsWith(".png")) {
+    public static ResourceAddress randomTexture(EntityLiving entity, ResourceAddress texture) {
+        if (texture == null || !texture.getPath().startsWith("textures/entity/") || !texture.getPath().endsWith(".png")) {
             return texture;
         }
-        String key = texture + ":" + entity.entityId;
-        String newTexture = cache.get(key);
+        String key = texture.toString() + ":" + entity.entityId;
+        ResourceAddress newTexture = cache.get(key);
         if (newTexture == null) {
             ExtraInfo info = ExtraInfo.getInfo(entity);
             MobRuleList list = MobRuleList.get(texture);
@@ -59,7 +57,7 @@ public class MobRandomizer {
         return newTexture;
     }
 
-    public static String randomTexture(Object entity, String texture) {
+    public static ResourceAddress randomTexture(Entity entity, ResourceAddress texture) {
         if (entity instanceof EntityLiving) {
             return randomTexture((EntityLiving) entity, texture);
         } else {
