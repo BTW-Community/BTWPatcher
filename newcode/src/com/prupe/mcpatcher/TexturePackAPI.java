@@ -10,14 +10,14 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class TexturePackAPI {
     private static final MCLogger logger = MCLogger.getLogger("Texture Pack");
+
+    public static final String DEFAULT_NAMESPACE = "minecraft";
 
     public static TexturePackAPI instance = new TexturePackAPI();
 
@@ -36,7 +36,7 @@ public class TexturePackAPI {
     }
 
     public static boolean isDefaultTexturePack() {
-        return getResourcePacks("minecraft").size() <= 1;
+        return getResourcePacks(DEFAULT_NAMESPACE).size() <= 1;
     }
 
     public static InputStream getInputStream(String s) {
@@ -101,7 +101,7 @@ public class TexturePackAPI {
             suffix = "";
         }
         List<String> resources = new ArrayList<String>();
-        findResources("minecraft", "assets/minecraft", directory, suffix, recursive, directories, resources);
+        findResources(DEFAULT_NAMESPACE, directory, suffix, recursive, directories, resources);
         if (sortByFilename) {
             Collections.sort(resources, new Comparator<String>() {
                 public int compare(String o1, String o2) {
@@ -120,24 +120,28 @@ public class TexturePackAPI {
         return resources;
     }
 
-    private static void findResources(String namespace, String root, String directory, String suffix, boolean recursive, boolean directories, Collection<String> resources) {
+    private static void findResources(String namespace, String directory, String suffix, boolean recursive, boolean directories, Collection<String> resources) {
         for (IResourcePack resourcePack : getResourcePacks(namespace)) {
+            logger.info("%s", resourcePack);
             if (resourcePack instanceof ResourcePackZip) {
                 ZipFile zipFile = ((ResourcePackZip) resourcePack).zipFile;
                 if (zipFile != null) {
-                    findResources(zipFile, root, directory, suffix, recursive, directories, resources);
+                    findResources(zipFile, "assets/" + namespace, directory, suffix, recursive, directories, resources);
                 }
-            } else if (resourcePack instanceof ResourcePackBase || resourcePack instanceof ResourcePackDefault) {
-                File base;
-                if (resourcePack instanceof ResourcePackBase) {
-                    base = ((ResourcePackBase) resourcePack).file;
-                } else {
-                    base = ((ResourcePackDefault) resourcePack).file;
+            } else if (resourcePack instanceof ResourcePackDefault) {
+                if (!DEFAULT_NAMESPACE.equals(namespace)) {
+                    continue;
                 }
+                File base = ((ResourcePackDefault) resourcePack).file;
+                if (base != null && base.isDirectory()) {
+                    findResources(base, directory, suffix, recursive, directories, resources);
+                }
+            } else if (resourcePack instanceof ResourcePackBase) {
+                File base = ((ResourcePackBase) resourcePack).file;
                 if (base == null || !base.isDirectory()) {
                     continue;
                 }
-                base = new File(base, root);
+                base = new File(base, "assets/" + namespace);
                 if (base.isDirectory()) {
                     findResources(base, directory, suffix, recursive, directories, resources);
                 }

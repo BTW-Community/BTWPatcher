@@ -363,8 +363,14 @@ public class BaseTexturePackMod extends Mod {
         ResourcePackDefaultMod() {
             setInterfaces("IResourcePack");
 
+            final FieldRef file = new FieldRef(getDeobfClass(), "file", "Ljava/io/File;");
+
             addClassSignature(new ConstSignature("minecraft"));
             addClassSignature(new ConstSignature("/assets/minecraft/"));
+
+            addMemberMapper(new FieldMapper(file));
+
+            addPatch(new MakeMemberPublicPatch(file));
         }
     }
 
@@ -431,6 +437,7 @@ public class BaseTexturePackMod extends Mod {
             setInterfaces("ITextureResourceBundle");
 
             final ClassRef fnfException = new ClassRef("java/io/FileNotFoundException");
+            final FieldRef namespaceMap = new FieldRef(getDeobfClass(), "namespaceMap", "Ljava/util/Map;");
             final MethodRef fnfInit = new MethodRef("java/io/FileNotFoundException", "<init>", "(Ljava/lang/String;)V");
             final MethodRef getResource = new MethodRef(getDeobfClass(), "getResource", "(LResourceAddress;)LIResource;");
             final MethodRef addressToString = new MethodRef("ResourceAddress", "toString", "()Ljava/lang/String;");
@@ -453,6 +460,10 @@ public class BaseTexturePackMod extends Mod {
                 .setMethod(getResource)
                 .addXref(1, addressToString)
             );
+
+            addMemberMapper(new FieldMapper(namespaceMap));
+
+            addPatch(new MakeMemberPublicPatch(namespaceMap));
         }
     }
 
