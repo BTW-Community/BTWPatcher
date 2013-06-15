@@ -19,7 +19,7 @@ public class ConnectedTextures extends Mod {
         name = MCPatcherUtils.CONNECTED_TEXTURES;
         author = "MCPatcher";
         description = "Enables support for connected, randomized, and other custom terrain textures.";
-        version = "2.3";
+        version = "2.4";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
@@ -29,6 +29,7 @@ public class ConnectedTextures extends Mod {
         addClassMod(new BaseMod.IBlockAccessMod(this));
         addClassMod(new BaseMod.TessellatorMod(this));
         addClassMod(new BaseMod.IconMod(this));
+        addClassMod(new BaseMod.ResourceAddressMod(this));
         addClassMod(new BlockMod());
         addClassMod(new RenderBlocksMod());
         addClassMod(new WorldRendererMod());
@@ -191,16 +192,14 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        begin(),
-                        ALOAD_0,
-                        anyReference(GETFIELD),
-                        ARETURN,
-                        end()
+                        push("MISSING_ICON_TILE_")
                     );
                 }
             }.setMethod(getShortName));
 
             addMemberMapper(new FieldMapper(blockMaterial).accessFlag(AccessFlag.PUBLIC, true));
+
+            addPatch(new MakeMemberPublicPatch(getShortName));
         }
     }
 

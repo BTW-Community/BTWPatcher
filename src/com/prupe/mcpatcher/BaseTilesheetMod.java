@@ -16,11 +16,12 @@ public class BaseTilesheetMod extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
         addClassMod(new BaseMod.IconMod(this));
+        addClassMod(new BaseMod.ResourceAddressMod(this));
+        addClassMod(new BaseMod.TextureBaseMod(this));
+        addClassMod(new BaseMod.TextureMod(this));
         addClassMod(new TessellatorMod());
         addClassMod(new IconRegisterMod());
         addClassMod(new TextureMapMod());
-        addClassMod(new BaseMod.TextureBaseMod(this));
-        addClassMod(new BaseMod.TextureMod(this));
         addClassMod(new TextureManagerMod());
         addClassMod(new TextureStitchedMod());
 

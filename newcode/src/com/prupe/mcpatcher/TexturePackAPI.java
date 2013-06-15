@@ -32,7 +32,12 @@ public class TexturePackAPI {
                 }
             }
         }
+        Collections.reverse(list);
         return list;
+    }
+
+    public static IResourceBundle getResourceBundle() {
+        return Minecraft.getInstance().getResourceBundle();
     }
 
     public static boolean isDefaultTexturePack() {
@@ -57,14 +62,6 @@ public class TexturePackAPI {
 
     public static BufferedImage getImage(ResourceAddress resource) {
         return instance.getImageImpl(resource);
-    }
-
-    public static BufferedImage getImage(Object o, ResourceAddress resource) {
-        return getImage(resource);
-    }
-
-    public static BufferedImage getImage(Object o1, Object o2, ResourceAddress resource) {
-        return getImage(resource);
     }
 
     public static Properties getProperties(ResourceAddress resource) {
@@ -126,7 +123,6 @@ public class TexturePackAPI {
 
     private static void findResources(String namespace, String directory, String suffix, boolean recursive, boolean directories, Collection<ResourceAddress> resources) {
         for (IResourcePack resourcePack : getResourcePacks(namespace)) {
-            logger.info("%s", resourcePack);
             if (resourcePack instanceof ResourcePackZip) {
                 ZipFile zipFile = ((ResourcePackZip) resourcePack).zipFile;
                 if (zipFile != null) {
