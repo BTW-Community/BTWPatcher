@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
 
 import java.io.*;
@@ -54,7 +55,7 @@ abstract public class TexturePackChangeHandler {
 
     public static void register(TexturePackChangeHandler handler) {
         if (handler != null) {
-            if (TexturePackAPI.getTexturePack() != null) {
+            if (Minecraft.getInstance().getResourceBundle() != null) {
                 try {
                     logger.info("initializing %s...", handler.name);
                     handler.initialize();
@@ -98,7 +99,7 @@ abstract public class TexturePackChangeHandler {
 
     public static void beforeChange1() {
         if (changing) {
-            logger.warning("recursive call to TexturePackChangeHandler detected");
+            new RuntimeException("recursive call to TexturePackChangeHandler detected").printStackTrace();
             return;
         }
         changing = true;

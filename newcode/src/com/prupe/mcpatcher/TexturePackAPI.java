@@ -2,6 +2,7 @@ package com.prupe.mcpatcher;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
+import net.minecraft.src.ResourceBundle;
 import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
@@ -20,21 +21,22 @@ public class TexturePackAPI {
 
     public static TexturePackAPI instance = new TexturePackAPI();
 
-    public static TexturePack getTexturePack() {
-        Minecraft minecraft = MCPatcherUtils.getMinecraft();
-        if (minecraft == null) {
-            return null;
+    public static List<IResourcePack> getResourcePacks(String namespace) {
+        List<IResourcePack> list = new ArrayList<IResourcePack>();
+        IResourceBundle resourceBundle = Minecraft.getInstance().getResourceBundle();
+        if (resourceBundle instanceof TextureResourceBundle) {
+            for (Map.Entry<String, ResourceBundle> entry : ((TextureResourceBundle) resourceBundle).namespaceMap.entrySet()) {
+                if (namespace == null || namespace.equals(entry.getKey())) {
+                    ResourceBundle bundle = entry.getValue();
+                    list.addAll(bundle.resourcePacks);
+                }
+            }
         }
-        TexturePackList texturePackList = minecraft.texturePackList;
-        if (texturePackList == null) {
-            return null;
-        }
-        List<TexturePack> selected = texturePackList.getSelectedTexturePacks();
-        return selected == null || selected.isEmpty() ? null : selected.get(0);
+        return list;
     }
 
     public static boolean isDefaultTexturePack() {
-        return getTexturePack() == null;
+        return getResourcePacks("minecraft").size() <= 1;
     }
 
     public static InputStream getInputStream(String s) {
@@ -129,41 +131,43 @@ public class TexturePackAPI {
     }
 
     private static void findResources(String directory, String suffix, boolean recursive, boolean directories, Collection<String> resources) {
-        IResourcePack texturePack = getTexturePack().getResourcePack();
-        if (texturePack instanceof ResourcePackZip) {
-            ZipFile zipFile = ((ResourcePackZip) texturePack).zipFile;
-            if (zipFile != null) {
-                for (ZipEntry entry : Collections.list(zipFile.entries())) {
-                    if (entry.isDirectory() != directories) {
-                        continue;
-                    }
-                    String name = entry.getName().replaceFirst("^/", "");
-                    if (!name.startsWith(directory) || !name.endsWith(suffix)) {
-                        continue;
-                    }
-                    if (directory.equals("")) {
-                        if (recursive || !name.contains("/")) {
-                            resources.add(name);
+        Minecraft.getInstance().getResourceBundle();
+        for (IResourcePack resourcePack : getResourcePacks("minecraft")) {
+            if (resourcePack instanceof ResourcePackZip) {
+                ZipFile zipFile = ((ResourcePackZip) resourcePack).zipFile;
+                if (zipFile != null) {
+                    for (ZipEntry entry : Collections.list(zipFile.entries())) {
+                        if (entry.isDirectory() != directories) {
+                            continue;
                         }
-                    } else {
-                        String subpath = name.substring(directory.length());
-                        if (subpath.equals("") || subpath.startsWith("/")) {
-                            if (recursive || subpath.equals("") || !subpath.substring(1).contains("/")) {
+                        String name = entry.getName().replaceFirst("^/", "");
+                        if (!name.startsWith(directory) || !name.endsWith(suffix)) {
+                            continue;
+                        }
+                        if (directory.equals("")) {
+                            if (recursive || !name.contains("/")) {
                                 resources.add(name);
+                            }
+                        } else {
+                            String subpath = name.substring(directory.length());
+                            if (subpath.equals("") || subpath.startsWith("/")) {
+                                if (recursive || subpath.equals("") || !subpath.substring(1).contains("/")) {
+                                    resources.add(name);
+                                }
                             }
                         }
                     }
                 }
-            }
-        } else if (texturePack instanceof ResourcePackBase) {
-            File base = ((ResourcePackBase) texturePack).file;
-            if (base != null && base.isDirectory()) {
-                findResources(base, directory, suffix, recursive, directories, resources);
-            }
-        } else if (texturePack instanceof ResourcePackDefault) {
-            File base = ((ResourcePackDefault) texturePack).file;
-            if (base != null && base.isDirectory()) {
-                findResources(base, directory, suffix, recursive, directories, resources);
+            } else if (resourcePack instanceof ResourcePackBase) {
+                File base = ((ResourcePackBase) resourcePack).file;
+                if (base != null && base.isDirectory()) {
+                    findResources(base, directory, suffix, recursive, directories, resources);
+                }
+            } else if (resourcePack instanceof ResourcePackDefault) {
+                File base = ((ResourcePackDefault) resourcePack).file;
+                if (base != null && base.isDirectory()) {
+                    findResources(base, directory, suffix, recursive, directories, resources);
+                }
             }
         }
     }
@@ -232,15 +236,10 @@ public class TexturePackAPI {
     }
 
     protected InputStream getInputStreamImpl(String s) {
-        TexturePack texturePack = getTexturePack();
-        if (texturePack == null) {
-            return TexturePackAPI.class.getResourceAsStream("/" + s);
-        } else {
-            try {
-                return texturePack.getResourcePack().getInputStream(new ResourceAddress(s));
-            } catch (Throwable e) {
-                return null;
-            }
+        try {
+            return Minecraft.getInstance().getResourceBundle().getResource(new ResourceAddress(s)).getInputStream();
+        } catch (IOException e) {
+            return null;
         }
     }
 

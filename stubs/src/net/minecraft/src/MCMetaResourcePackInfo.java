@@ -1,4 +1,4 @@
 package net.minecraft.src;
 
-public class MCMetaResourcePackInfo {
+public class MCMetaResourcePackInfo implements IMCMeta {
 }
