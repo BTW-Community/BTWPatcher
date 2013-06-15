@@ -30,7 +30,7 @@ public class HDFont extends Mod {
         FontRendererMod(Mod mod) {
             super(mod);
 
-            final FieldRef fontTextureName = new FieldRef(getDeobfClass(), "fontTextureName", "Ljava/lang/String;");
+            final FieldRef fontResource = new FieldRef(getDeobfClass(), "fontResource", "LResourceAddress;");
             final FieldRef charWidth = new FieldRef(getDeobfClass(), "charWidth", "[I");
             final FieldRef fontHeight = new FieldRef(getDeobfClass(), "fontHeight", "I");
             final FieldRef charWidthf = new FieldRef(getDeobfClass(), "charWidthf", "[F");
@@ -39,8 +39,8 @@ public class HDFont extends Mod {
             final MethodRef getCharWidth = new MethodRef(getDeobfClass(), "getCharWidth", "(C)I");
             final MethodRef computeCharWidths = new MethodRef(getDeobfClass(), "computeCharWidths", "()V");
             final MethodRef getImageWidth = new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I");
-            final MethodRef getFontName = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getFontName", "(Ljava/lang/String;)Ljava/lang/String;");
-            final MethodRef computeCharWidthsf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "computeCharWidthsf", "(LFontRenderer;Ljava/lang/String;Ljava/awt/image/BufferedImage;[I[I)[F");
+            final MethodRef getFontName = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getFontName", "(LResourceAddress;)LResourceAddress;");
+            final MethodRef computeCharWidthsf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "computeCharWidthsf", "(LFontRenderer;LResourceAddress;Ljava/awt/image/BufferedImage;[I[I)[F");
             final MethodRef getCharWidthf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getCharWidthf", "(LFontRenderer;[II)F");
             final MethodRef getStringWidthf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getStringWidthf", "(LFontRenderer;Ljava/lang/String;)F");
             final FieldRef enableFont = new FieldRef(MCPatcherUtils.FONT_UTILS_CLASS, "enable", "Z");
@@ -50,10 +50,7 @@ public class HDFont extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         ALOAD_0,
-                        or(
-                            build(push(8)),
-                            build(push(9))
-                        ),
+                        push(9),
                         captureReference(PUTFIELD),
 
                         any(0, 100),
@@ -66,7 +63,7 @@ public class HDFont extends Mod {
             }
                 .matchConstructorOnly(true)
                 .addXref(1, fontHeight)
-                .addXref(2, fontTextureName)
+                .addXref(2, fontResource)
             );
 
             addClassSignature(new BytecodeSignature() {
@@ -96,7 +93,7 @@ public class HDFont extends Mod {
 
             addPatch(new AddFieldPatch(charWidthf));
 
-            addPatch(new MakeMemberPublicPatch(fontTextureName) {
+            addPatch(new MakeMemberPublicPatch(fontResource) {
                 @Override
                 public int getNewFlags(int oldFlags) {
                     return oldFlags & ~AccessFlag.FINAL;
@@ -121,9 +118,9 @@ public class HDFont extends Mod {
                     return buildCode(
                         ALOAD_0,
                         ALOAD_0,
-                        reference(GETFIELD, fontTextureName),
+                        reference(GETFIELD, fontResource),
                         reference(INVOKESTATIC, getFontName),
-                        reference(PUTFIELD, fontTextureName)
+                        reference(PUTFIELD, fontResource)
                     );
                 }
             }.targetMethod(readFontData));
@@ -176,7 +173,7 @@ public class HDFont extends Mod {
                         ALOAD_0,
                         ALOAD_0,
                         ALOAD_0,
-                        reference(GETFIELD, fontTextureName),
+                        reference(GETFIELD, fontResource),
                         ALOAD, imageRegister,
                         ALOAD, rgbRegister,
                         ALOAD_0,

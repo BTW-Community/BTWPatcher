@@ -18,15 +18,11 @@ public class BaseTexturePackMod extends Mod {
     protected final MethodRef beforeChange1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "beforeChange1", "()V");
     protected final MethodRef afterChange1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "afterChange1", "()V");
 
-    private final boolean haveResourceBundle;
-
     protected BaseTexturePackMod() {
         name = MCPatcherUtils.BASE_TEXTURE_PACK_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
         version = "4.0";
-
-        haveResourceBundle = getMinecraftVersion().compareTo("13w21a") >= 0;
 
         addClassMod(new MinecraftMod());
         addClassMod(new TextureManagerMod());
@@ -43,12 +39,10 @@ public class BaseTexturePackMod extends Mod {
         //addClassMod(new TexturePackDefaultMod());
         //addClassMod(new TexturePackCustomMod());
         //addClassMod(new TexturePackFolderMod());
-        if (haveResourceBundle) {
-            addClassMod(new IResourceBundleMod());
-            addClassMod(new ITextureResourceBundleMod());
-            addClassMod(new IResourceMod());
-            addClassMod(new ResourceAddressMod());
-        }
+        addClassMod(new IResourceBundleMod());
+        addClassMod(new ITextureResourceBundleMod());
+        addClassMod(new IResourceMod());
+        addClassMod(new BaseMod.ResourceAddressMod(this));
 
         addClassFile(MCPatcherUtils.TEXTURE_PACK_API_CLASS);
         addClassFile(MCPatcherUtils.TEXTURE_PACK_API_CLASS + "$1");
@@ -118,9 +112,7 @@ public class BaseTexturePackMod extends Mod {
             }.setMethod(runGameLoop));
 
             //addMemberMapper(new FieldMapper(texturePackList));
-            if (haveResourceBundle) {
-                addMemberMapper(new FieldMapper(resourceBundle));
-            }
+            addMemberMapper(new FieldMapper(resourceBundle));
             addMemberMapper(new MethodMapper(getTextureManager));
 
             addPatch(new BytecodePatch() {
@@ -183,20 +175,11 @@ public class BaseTexturePackMod extends Mod {
             addPatch(new AddMethodPatch(new MethodRef(getDeobfClass(), "getResourceBundle", "()LIResourceBundle;")) {
                 @Override
                 public byte[] generateMethod() {
-                    if (haveResourceBundle) {
-                        return buildCode(
-                            ALOAD_0,
-                            reference(GETFIELD, resourceBundle),
-                            ARETURN
-                        );
-                    } else {
-                        return buildCode(
-                            ALOAD_0,
-                            reference(GETFIELD, texturePackList),
-                            reference(INVOKEVIRTUAL, new MethodRef("TexturePackList", "getSelectedTexturePack", "()LITexturePack;")),
-                            ARETURN
-                        );
-                    }
+                    return buildCode(
+                        ALOAD_0,
+                        reference(GETFIELD, resourceBundle),
+                        ARETURN
+                    );
                 }
             });
         }
@@ -448,24 +431,6 @@ public class BaseTexturePackMod extends Mod {
                 new InterfaceMethodRef(getDeobfClass(), "isPresent", "()Z"),
                 new InterfaceMethodRef(getDeobfClass(), "getWTFEmpty", "(Ljava/lang/String;)LIWTFEmpty;")
             ));
-        }
-    }
-
-    private class ResourceAddressMod extends ClassMod {
-        ResourceAddressMod() {
-            final MethodRef indexOf = new MethodRef("java/lang/String", "indexOf", "(I)I");
-
-            addClassSignature(new ConstSignature("minecraft"));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push(58),
-                        reference(INVOKEVIRTUAL, indexOf)
-                    );
-                }
-            });
         }
     }
 }

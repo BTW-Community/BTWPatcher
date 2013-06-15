@@ -26,7 +26,7 @@ public class ExtendedHD extends Mod {
         name = MCPatcherUtils.EXTENDED_HD;
         author = "MCPatcher";
         description = "Provides support for custom animations, HD fonts, mipmapping, and other graphical features.";
-        version = "3.0";
+        version = "3.1";
 
         configPanel = new HDConfig();
 
@@ -198,7 +198,7 @@ public class ExtendedHD extends Mod {
                 .addXref(4, new MethodRef("TextureStitched", "getY0", "()I"))
             );
 
-            addMemberMapper(new MethodMapper(readTile));
+            //addMemberMapper(new MethodMapper(readTile));
 
             addPatch(new TextureMipmapPatch(this, basePath));
 
@@ -316,9 +316,7 @@ public class ExtendedHD extends Mod {
                         // (... + 1) % ...
                         push(1),
                         IADD,
-                        ALOAD_0,
-                        anyReference(GETFIELD),
-                        anyReference(INVOKEVIRTUAL),
+                        any(1, 6),
                         IREM
                     );
                 }

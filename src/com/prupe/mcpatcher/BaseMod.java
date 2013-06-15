@@ -713,6 +713,34 @@ public final class BaseMod extends Mod {
         }
     }
 
+    public static class ResourceAddressMod extends com.prupe.mcpatcher.ClassMod {
+        protected final MethodRef getNamespace = new MethodRef(getDeobfClass(), "getNamespace", "()Ljava/lang/String;");
+        protected final MethodRef getAddress = new MethodRef(getDeobfClass(), "getAddress", "()Ljava/lang/String;");
+
+        public ResourceAddressMod(Mod mod) {
+            super(mod);
+
+            final MethodRef indexOf = new MethodRef("java/lang/String", "indexOf", "(I)I");
+
+            addClassSignature(new ConstSignature("minecraft"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(58),
+                        reference(INVOKEVIRTUAL, indexOf)
+                    );
+                }
+            });
+
+            addMemberMapper(new MethodMapper(getAddress, getNamespace)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, false)
+            );
+        }
+    }
+
     public static class ResourceAddressSignature extends BytecodeSignature {
         protected static final ClassRef resourceAddressClass = new ClassRef("ResourceAddress");
         protected static final MethodRef resourceAddressInit1 = new MethodRef("ResourceAddress", "<init>", "(Ljava/lang/String;)V");
