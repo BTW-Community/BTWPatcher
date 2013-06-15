@@ -96,22 +96,12 @@ public class TexturePackAPI {
         return path;
     }
 
-    public static String[] listResources(String directory, String suffix) {
-        List<String> resources = listResources(directory, suffix, false, false, false);
-        return resources.toArray(new String[resources.size()]);
-    }
-
-    public static String[] listDirectories(String directory) {
-        List<String> resources = listResources(directory, "", false, true, false);
-        return resources.toArray(new String[resources.size()]);
-    }
-
     public static List<String> listResources(String directory, String suffix, boolean recursive, boolean directories, boolean sortByFilename) {
         if (suffix == null) {
             suffix = "";
         }
         List<String> resources = new ArrayList<String>();
-        findResources(directory, suffix, recursive, directories, resources);
+        findResources("minecraft", "assets/minecraft", directory, suffix, recursive, directories, resources);
         if (sortByFilename) {
             Collections.sort(resources, new Comparator<String>() {
                 public int compare(String o1, String o2) {
@@ -130,43 +120,51 @@ public class TexturePackAPI {
         return resources;
     }
 
-    private static void findResources(String directory, String suffix, boolean recursive, boolean directories, Collection<String> resources) {
-        Minecraft.getInstance().getResourceBundle();
-        for (IResourcePack resourcePack : getResourcePacks("minecraft")) {
+    private static void findResources(String namespace, String root, String directory, String suffix, boolean recursive, boolean directories, Collection<String> resources) {
+        for (IResourcePack resourcePack : getResourcePacks(namespace)) {
             if (resourcePack instanceof ResourcePackZip) {
                 ZipFile zipFile = ((ResourcePackZip) resourcePack).zipFile;
                 if (zipFile != null) {
-                    for (ZipEntry entry : Collections.list(zipFile.entries())) {
-                        if (entry.isDirectory() != directories) {
-                            continue;
-                        }
-                        String name = entry.getName().replaceFirst("^/", "");
-                        if (!name.startsWith(directory) || !name.endsWith(suffix)) {
-                            continue;
-                        }
-                        if (directory.equals("")) {
-                            if (recursive || !name.contains("/")) {
-                                resources.add(name);
-                            }
-                        } else {
-                            String subpath = name.substring(directory.length());
-                            if (subpath.equals("") || subpath.startsWith("/")) {
-                                if (recursive || subpath.equals("") || !subpath.substring(1).contains("/")) {
-                                    resources.add(name);
-                                }
-                            }
-                        }
+                    findResources(zipFile, root, directory, suffix, recursive, directories, resources);
+                }
+            } else if (resourcePack instanceof ResourcePackBase || resourcePack instanceof ResourcePackDefault) {
+                File base;
+                if (resourcePack instanceof ResourcePackBase) {
+                    base = ((ResourcePackBase) resourcePack).file;
+                } else {
+                    base = ((ResourcePackDefault) resourcePack).file;
+                }
+                if (base == null || !base.isDirectory()) {
+                    continue;
+                }
+                base = new File(base, root);
+                if (base.isDirectory()) {
+                    findResources(base, directory, suffix, recursive, directories, resources);
+                }
+            }
+        }
+    }
+
+    private static void findResources(ZipFile zipFile, String root, String directory, String suffix, boolean recursive, boolean directories, Collection<String> resources) {
+        String base = root + "/" + directory;
+        for (ZipEntry entry : Collections.list(zipFile.entries())) {
+            if (entry.isDirectory() != directories) {
+                continue;
+            }
+            String name = entry.getName().replaceFirst("^/", "");
+            if (!name.startsWith(base) || !name.endsWith(suffix)) {
+                continue;
+            }
+            if (directory.equals("")) {
+                if (recursive || !name.contains("/")) {
+                    resources.add(name);
+                }
+            } else {
+                String subpath = name.substring(directory.length());
+                if (subpath.equals("") || subpath.startsWith("/")) {
+                    if (recursive || subpath.equals("") || !subpath.substring(1).contains("/")) {
+                        resources.add(name.substring(root.length() + 1));
                     }
-                }
-            } else if (resourcePack instanceof ResourcePackBase) {
-                File base = ((ResourcePackBase) resourcePack).file;
-                if (base != null && base.isDirectory()) {
-                    findResources(base, directory, suffix, recursive, directories, resources);
-                }
-            } else if (resourcePack instanceof ResourcePackDefault) {
-                File base = ((ResourcePackDefault) resourcePack).file;
-                if (base != null && base.isDirectory()) {
-                    findResources(base, directory, suffix, recursive, directories, resources);
                 }
             }
         }
