@@ -1,4 +1,4 @@
-MCVER ?= 13w23b
+MCVER ?= 13w24b
 EXT_OPTS ?=
 
 VERSIONSDIR = ../versions

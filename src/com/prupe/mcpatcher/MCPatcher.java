@@ -21,7 +21,7 @@ final public class MCPatcher {
     /**
      * Minor MCPatcher version number
      */
-    public static final int MINOR_VERSION = 0;
+    public static final int MINOR_VERSION = 1;
     /**
      * MCPatcher release number
      */
