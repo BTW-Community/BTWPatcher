@@ -35,10 +35,11 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new BaseMod.IconMod(this));
         addClassMod(new BaseMod.TextureMapMod(this));
         addClassMod(new BaseMod.TextureWithDataMod(this));
-        //addClassMod(new TexturePackImplementationMod());
-        //addClassMod(new TexturePackDefaultMod());
-        //addClassMod(new TexturePackCustomMod());
-        //addClassMod(new TexturePackFolderMod());
+        addClassMod(new IResourcePackMod());
+        addClassMod(new ResourcePackDefaultMod());
+        addClassMod(new ResourcePackBaseMod());
+        addClassMod(new ResourcePackZipMod());
+        addClassMod(new ResourcePackFolderMod());
         addClassMod(new IResourceBundleMod());
         addClassMod(new ITextureResourceBundleMod());
         addClassMod(new IResourceMod());
@@ -353,54 +354,51 @@ public class BaseTexturePackMod extends Mod {
         }
     }
 
-    private class TexturePackImplementationMod extends ClassMod {
-        TexturePackImplementationMod() {
-            setInterfaces("ITexturePack");
-
-            final FieldRef texturePackFile = new FieldRef(getDeobfClass(), "texturePackFile", "Ljava/io/File;");
-
-            addClassSignature(new ConstSignature("gui/unknown_pack.png"));
-            addClassSignature(new ConstSignature("pack.txt"));
-
-            addMemberMapper(new FieldMapper(texturePackFile));
-
-            addPatch(new MakeMemberPublicPatch(texturePackFile));
+    private class IResourcePackMod extends ClassMod {
+        IResourcePackMod() {
+            addClassSignature(new InterfaceSignature(
+                new InterfaceMethodRef(getDeobfClass(), "getInputStream", "(LResourceAddress;)Ljava/io/InputStream;"),
+                new InterfaceMethodRef(getDeobfClass(), "hasResource", "(LResourceAddress;)Z"),
+                new InterfaceMethodRef(getDeobfClass(), "getNamespaces", "()Ljava/util/List;"),
+                new InterfaceMethodRef(getDeobfClass(), "getPackInfo", "(LMCMetaParser;)LMCMetaResourcePackInfo;"),
+                new InterfaceMethodRef(getDeobfClass(), "getPackIcon", "()Ljava/awt/image/BufferedImage;")
+            ).setInterfaceOnly(true));
         }
     }
 
-    private class TexturePackDefaultMod extends ClassMod {
-        TexturePackDefaultMod() {
-            setParentClass("TexturePackImplementation");
+    private class ResourcePackDefaultMod extends ClassMod {
+        ResourcePackDefaultMod() {
+            setInterfaces("IResourcePack");
 
-            addClassSignature(new ConstSignature("The default look of Minecraft"));
+            addClassSignature(new ConstSignature("minecraft"));
+            addClassSignature(new ConstSignature("/assets/minecraft/"));
         }
     }
 
-    private class TexturePackCustomMod extends ClassMod {
-        TexturePackCustomMod() {
-            setParentClass("TexturePackImplementation");
+    private class ResourcePackBaseMod extends ClassMod {
+        ResourcePackBaseMod() {
+            setInterfaces("IResourcePack");
 
-            final FieldRef zipFile = new FieldRef(getDeobfClass(), "zipFile", "Ljava/util/zip/ZipFile;");
-
-            addClassSignature(new ConstSignature(new MethodRef("java/util/zip/ZipFile", "getEntry", "(Ljava/lang/String;)Ljava/util/zip/ZipEntry;")));
-            addClassSignature(new ConstSignature(new MethodRef("java/util/zip/ZipFile", "close", "()V")));
-            addClassSignature(new ConstSignature("textures/"));
-
-            addMemberMapper(new FieldMapper(zipFile));
-
-            addPatch(new MakeMemberPublicPatch(zipFile));
-            addPatch(new AddFieldPatch(new FieldRef(getDeobfClass(), "origZip", "Ljava/util/zip/ZipFile;")));
-            addPatch(new AddFieldPatch(new FieldRef(getDeobfClass(), "tmpFile", "Ljava/io/File;")));
-            addPatch(new AddFieldPatch(new FieldRef(getDeobfClass(), "lastModified", "J")));
+            addClassSignature(new ConstSignature("assets"));
+            addClassSignature(new ConstSignature("pack.mcmeta"));
         }
     }
 
-    private class TexturePackFolderMod extends ClassMod {
-        TexturePackFolderMod() {
-            setParentClass("TexturePackImplementation");
+    private class ResourcePackZipMod extends ClassMod {
+        ResourcePackZipMod() {
+            setParentClass("ResourcePackBase");
 
-            addClassSignature(new ConstSignature(new ClassRef("java.io.FileInputStream")));
-            addClassSignature(new ConstSignature("textures/"));
+            addClassSignature(new ConstSignature("assets/"));
+            addClassSignature(new ConstSignature(new ClassRef("java/util/zip/ZipFile")));
+        }
+    }
+
+    private class ResourcePackFolderMod extends ClassMod {
+        ResourcePackFolderMod() {
+            setParentClass("ResourcePackBase");
+
+            addClassSignature(new ConstSignature("assets/"));
+            addClassSignature(new ConstSignature(new ClassRef("java/io/FileInputStream")));
         }
     }
 
@@ -429,7 +427,7 @@ public class BaseTexturePackMod extends Mod {
                 new InterfaceMethodRef(getDeobfClass(), "getAddress", "()LResourceAddress;"),
                 new InterfaceMethodRef(getDeobfClass(), "getInputStream", "()Ljava/io/InputStream;"),
                 new InterfaceMethodRef(getDeobfClass(), "isPresent", "()Z"),
-                new InterfaceMethodRef(getDeobfClass(), "getWTFEmpty", "(Ljava/lang/String;)LIWTFEmpty;")
+                new InterfaceMethodRef(getDeobfClass(), "getMCMeta", "(Ljava/lang/String;)LIMCMeta;")
             ));
         }
     }
