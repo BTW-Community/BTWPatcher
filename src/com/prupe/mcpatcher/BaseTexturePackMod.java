@@ -88,17 +88,20 @@ public class BaseTexturePackMod extends Mod {
         MinecraftMod() {
             super(BaseTexturePackMod.this);
 
+            final ClassRef textureManagerClass = new ClassRef("TextureManager");
             final MethodRef getTextureManager = new MethodRef(getDeobfClass(), "getTextureManager", "()LTextureManager;");
-            final FieldRef texturePackList = new FieldRef(getDeobfClass(), "texturePackList", "LTexturePackList;");
-            final FieldRef resourceBundle = new FieldRef(getDeobfClass(), "resourceBundle", "LITextureResourceBundle;");
+            final MethodRef getResourceBundle = new MethodRef(getDeobfClass(), "getResourceBundle", "()LIResourceBundle;");
             final MethodRef startGame = new MethodRef(getDeobfClass(), "startGame", "()V");
             final MethodRef runGameLoop = new MethodRef(getDeobfClass(), "runGameLoop", "()V");
+            final MethodRef setTitle = new MethodRef("org/lwjgl/opengl/Display", "setTitle", "(Ljava/lang/String;)V");
+            final MethodRef isCloseRequested = new MethodRef("org/lwjgl/opengl/Display", "isCloseRequested", "()Z");
+            final MethodRef glViewport = new MethodRef(MCPatcherUtils.GL11_CLASS, "glViewport", "(IIII)V");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(INVOKESTATIC, new MethodRef("org/lwjgl/opengl/Display", "setTitle", "(Ljava/lang/String;)V"))
+                        reference(INVOKESTATIC, setTitle)
                     );
                 }
             }.setMethod(startGame));
@@ -107,13 +110,12 @@ public class BaseTexturePackMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(INVOKESTATIC, new MethodRef("org/lwjgl/opengl/Display", "isCloseRequested", "()Z"))
+                        reference(INVOKESTATIC, isCloseRequested)
                     );
                 }
             }.setMethod(runGameLoop));
 
-            //addMemberMapper(new FieldMapper(texturePackList));
-            addMemberMapper(new FieldMapper(resourceBundle));
+            addMemberMapper(new MethodMapper(getResourceBundle));
             addMemberMapper(new MethodMapper(getTextureManager));
 
             addPatch(new BytecodePatch() {
@@ -125,9 +127,9 @@ public class BaseTexturePackMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(NEW, new ClassRef("TextureManager")),
+                        reference(NEW, textureManagerClass),
                         any(0, 500),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glViewport", "(IIII)V"))
+                        reference(INVOKESTATIC, glViewport)
                     );
                 }
 
@@ -172,17 +174,6 @@ public class BaseTexturePackMod extends Mod {
                     );
                 }
             }.targetMethod(runGameLoop));
-
-            addPatch(new AddMethodPatch(new MethodRef(getDeobfClass(), "getResourceBundle", "()LIResourceBundle;")) {
-                @Override
-                public byte[] generateMethod() {
-                    return buildCode(
-                        ALOAD_0,
-                        reference(GETFIELD, resourceBundle),
-                        ARETURN
-                    );
-                }
-            });
         }
     }
 
