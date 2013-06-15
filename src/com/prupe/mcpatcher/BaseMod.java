@@ -263,21 +263,21 @@ public final class BaseMod extends Mod {
     }
 
     /**
-     * Matches Minecraft class and maps the texturePackList field.
+     * Matches Minecraft class and maps the getInstance method.
      */
     public static class MinecraftMod extends com.prupe.mcpatcher.ClassMod {
+        protected final MethodRef getInstance = new MethodRef(getDeobfClass(), "getInstance", "()LMinecraft;");
+
         public MinecraftMod(Mod mod) {
             super(mod);
-            if (getMinecraftVersion().compareTo("13w16a") < 0) {
-                addClassSignature(new FilenameSignature("net/minecraft/client/Minecraft.class"));
-            } else {
-                addClassSignature(new ConstSignature("Minecraft-Client"));
-            }
-        }
 
-        public MinecraftMod mapTexturePackList() {
-            addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "texturePackList", "LTexturePackList;")));
-            return this;
+            addClassSignature(new ConstSignature("Minecraft-Client"));
+            addClassSignature(new ConstSignature("assets"));
+
+            addMemberMapper(new MethodMapper(getInstance)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, true)
+            );
         }
 
         public MinecraftMod mapWorldClient() {
