@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.hd;
 
 import com.prupe.mcpatcher.*;
 import net.minecraft.src.FontRenderer;
+import net.minecraft.src.ResourceAddress;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -48,7 +49,7 @@ public class FontUtils {
     public static String getFontName(String font) {
         font = font.replaceFirst("_hd\\.png$", ".png");
         String newFont = font.replaceFirst("\\.png$", "_hd.png");
-        if (enable && TexturePackAPI.hasResource(newFont)) {
+        if (enable && TexturePackAPI.hasResource(new ResourceAddress(newFont))) {
             logger.fine("using %s instead of %s", newFont, font);
             return newFont;
         } else {
@@ -57,8 +58,8 @@ public class FontUtils {
     }
 
     public static BufferedImage getImage(Object o, String name) throws IOException {
-        name = TexturePackAPI.fixupPath(name);
-        return enable ? TexturePackAPI.getImage(name) : ImageIO.read(FontUtils.class.getResourceAsStream(name));
+        ResourceAddress resource = TexturePackAPI.parseResourceAddress(name);
+        return enable && resource != null ? TexturePackAPI.getImage(resource) : ImageIO.read(FontUtils.class.getResourceAsStream(name));
     }
 
     public static float[] computeCharWidthsf(FontRenderer fontRenderer, String filename, BufferedImage image, int[] rgb, int[] charWidth) {
@@ -199,7 +200,7 @@ public class FontUtils {
     }
 
     private static void getCharWidthOverrides(String font, float[] charWidthf, boolean[] isOverride) {
-        String textFile = font.replace(".png", ".properties");
+        ResourceAddress textFile = new ResourceAddress(font.replace(".png", ".properties"));
         Properties props = TexturePackAPI.getProperties(textFile);
         if (props == null) {
             return;

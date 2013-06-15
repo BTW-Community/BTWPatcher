@@ -14,8 +14,8 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
     private static final int MAX_DAMAGE = 65535;
     private static final int MAX_STACK_SIZE = 65535;
 
-    final String propertiesName;
-    final String textureName;
+    final ResourceAddress propertiesName;
+    final ResourceAddress textureName;
     final int layer;
     final int weight;
     final BitSet itemsIDs;
@@ -29,8 +29,8 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
 
     int lastEnchantmentLevel;
 
-    static OverrideBase create(String filename) {
-        if (new File(filename).getName().equals("cit.properties")) {
+    static OverrideBase create(ResourceAddress filename) {
+        if (new File(filename.getPath()).getName().equals("cit.properties")) {
             return null;
         }
         Properties properties = TexturePackAPI.getProperties(filename);
@@ -61,9 +61,8 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
         return override.error ? null : override;
     }
 
-    OverrideBase(String propertiesName, Properties properties) {
+    OverrideBase(ResourceAddress propertiesName, Properties properties) {
         this.propertiesName = propertiesName;
-        String directory = propertiesName.replaceFirst("/[^/]*$", "");
 
         String value = MCPatcherUtils.getStringProperty(properties, "source", "");
         if (value.equals("")) {
@@ -73,19 +72,23 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             value = MCPatcherUtils.getStringProperty(properties, "tile", "");
         }
         if (value.equals("")) {
-            value = propertiesName.replaceFirst("\\.properties$", ".png");
-            if (!TexturePackAPI.hasResource(value)) {
-                error("no source texture name specified");
-            }
+            value = propertiesName.getPath().replaceFirst("\\.properties$", ".png");
         }
         if (value.equals("blank")) {
             value = MCPatcherUtils.BLANK_PNG;
         }
-        value = TexturePackAPI.fixupPath(value);
-        if (!error && !value.endsWith(".png")) {
+        if (!value.endsWith(".png")) {
             value += ".png";
         }
-        textureName = value.contains("/") ? value : directory + "/" + value;
+        ResourceAddress resource = TexturePackAPI.parseResourceAddress(value);
+        if (resource == null) {
+            if (value.equals("")) {
+                error("no source texture name specified");
+            } else {
+                error("source texture %s not found", value);
+            }
+        }
+        textureName = resource;
 
         layer = MCPatcherUtils.getIntProperty(properties, "layer", 0);
         weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
@@ -134,7 +137,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
         if (result != 0) {
             return result;
         }
-        return propertiesName.compareTo(o.propertiesName);
+        return propertiesName.getPath().compareTo(o.propertiesName.getPath());
     }
 
     boolean match(ItemStack itemStack, Icon origIcon, int[] itemEnchantmentLevels, boolean hasEffect) {

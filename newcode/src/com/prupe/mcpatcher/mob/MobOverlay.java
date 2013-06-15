@@ -2,11 +2,12 @@ package com.prupe.mcpatcher.mob;
 
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.EntityLiving;
+import net.minecraft.src.ResourceAddress;
 import net.minecraft.src.Tessellator;
 
 public class MobOverlay {
-    private static final String MOOSHROOM_OVERLAY = "/mob/redcow_overlay.png";
-    private static final String SNOWMAN_OVERLAY = "/mob/snowman_overlay.png";
+    private static final ResourceAddress MOOSHROOM_OVERLAY = new ResourceAddress("mob/redcow_overlay.png");
+    private static final ResourceAddress SNOWMAN_OVERLAY = new ResourceAddress("mob/snowman_overlay.png");
 
     private static final double MOO_X0 = -0.45;
     private static final double MOO_X1 = 0.45;
@@ -38,7 +39,7 @@ public class MobOverlay {
         overlayCounter = 0;
         if (haveMooshroom) {
             overlayActive = true;
-            return MobRandomizer.randomTexture(entity, MOOSHROOM_OVERLAY);
+            return MobRandomizer.randomTexture(entity, MOOSHROOM_OVERLAY.getPath());
         } else {
             overlayActive = false;
             return defaultTexture;
@@ -80,7 +81,7 @@ public class MobOverlay {
 
     public static boolean setupSnowman(EntityLiving entity) {
         if (haveSnowman) {
-            snowmanOverlayTexture = MobRandomizer.randomTexture(entity, SNOWMAN_OVERLAY);
+            snowmanOverlayTexture = MobRandomizer.randomTexture(entity, SNOWMAN_OVERLAY.getPath());
             return true;
         } else {
             snowmanOverlayTexture = null;

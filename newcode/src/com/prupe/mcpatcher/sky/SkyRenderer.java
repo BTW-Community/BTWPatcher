@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.sky;
 
 import com.prupe.mcpatcher.*;
+import net.minecraft.src.ResourceAddress;
 import net.minecraft.src.Tessellator;
 import net.minecraft.src.World;
 import org.lwjgl.opengl.GL11;
@@ -75,7 +76,7 @@ public class SkyRenderer {
             Layer layer = currentWorld.getCelestialObject(defaultTexture);
             if (layer != null) {
                 layer.setBlendingMethod(rainStrength);
-                return layer.texture;
+                return layer.texture.getPath();
             }
         }
         return defaultTexture;
@@ -94,13 +95,13 @@ public class SkyRenderer {
         private final int worldType;
         private final ArrayList<Layer> skies;
         private final HashMap<String, Layer> objects;
-        private final HashSet<String> textures;
+        private final HashSet<ResourceAddress> textures;
 
         WorldEntry(int worldType) {
             this.worldType = worldType;
             skies = new ArrayList<Layer>();
             objects = new HashMap<String, Layer>();
-            textures = new HashSet<String>();
+            textures = new HashSet<ResourceAddress>();
             loadSkies();
             loadCelestialObject("sun", MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/sun.png");
             loadCelestialObject("moon", MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/moon_phases.png");
@@ -123,8 +124,8 @@ public class SkyRenderer {
         }
 
         private void loadCelestialObject(String objName, String textureName) {
-            String prefix = MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/sky" + worldType + "/" + objName;
-            Properties properties = TexturePackAPI.getProperties(prefix + ".properties");
+            String prefix = "environment/sky" + worldType + "/" + objName;
+            Properties properties = TexturePackAPI.getProperties(new ResourceAddress(prefix + ".properties"));
             if (properties != null) {
                 properties.setProperty("fade", "false");
                 properties.setProperty("rotate", "true");
@@ -141,17 +142,17 @@ public class SkyRenderer {
         }
 
         void renderAll(Tessellator tessellator) {
-            HashSet<String> texturesNeeded = new HashSet<String>();
+            HashSet<ResourceAddress> texturesNeeded = new HashSet<ResourceAddress>();
             for (Layer layer : skies) {
                 if (layer.prepare()) {
                     texturesNeeded.add(layer.texture);
                 }
             }
-            HashSet<String> texturesToUnload = new HashSet<String>();
+            HashSet<ResourceAddress> texturesToUnload = new HashSet<ResourceAddress>();
             texturesToUnload.addAll(textures);
             texturesToUnload.removeAll(texturesNeeded);
-            for (String s : texturesToUnload) {
-                TexturePackAPI.unloadTexture(s);
+            for (ResourceAddress resource : texturesToUnload) {
+                TexturePackAPI.unloadTexture(resource);
             }
             for (Layer layer : skies) {
                 if (layer.brightness > 0.0f) {
@@ -181,7 +182,7 @@ public class SkyRenderer {
 
         private String prefix;
         private Properties properties;
-        private String texture;
+        private ResourceAddress texture;
         private boolean fade;
         private boolean rotate;
         private float[] axis;
@@ -197,7 +198,7 @@ public class SkyRenderer {
         float brightness;
 
         static Layer create(String prefix) {
-            Properties properties = TexturePackAPI.getProperties(prefix + ".properties");
+            Properties properties = TexturePackAPI.getProperties(new ResourceAddress(prefix + ".properties"));
             if (properties == null) {
                 return null;
             } else {
@@ -213,7 +214,7 @@ public class SkyRenderer {
         }
 
         private boolean readTexture() {
-            texture = TexturePackAPI.fixupPath(properties.getProperty("source", prefix + ".png"));
+            texture = TexturePackAPI.parseResourceAddress(properties.getProperty("source", prefix + ".png"));
             if (TexturePackAPI.hasResource(texture)) {
                 return true;
             } else {

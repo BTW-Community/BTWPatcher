@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.hd;
 
 import com.prupe.mcpatcher.*;
+import net.minecraft.src.ResourceAddress;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
@@ -14,12 +15,12 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ANIMATIONS, "Animation");
 
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "animations", true);
-    private static final Map<String, Properties> pending = new HashMap<String, Properties>();
+    private static final Map<ResourceAddress, Properties> pending = new HashMap<ResourceAddress, Properties>();
     private static final List<CustomAnimation> animations = new ArrayList<CustomAnimation>();
 
-    private final String propertiesName;
-    private final String dstName;
-    private final String srcName;
+    private final ResourceAddress propertiesName;
+    private final ResourceAddress dstName;
+    private final ResourceAddress srcName;
     private final int mipmapLevel;
     private final ByteBuffer imageData;
     private final int x;
@@ -41,8 +42,8 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
             public void beforeChange() {
                 if (!pending.isEmpty()) {
                     logger.fine("%d animations were never registered:", pending.size());
-                    for (String name : pending.keySet()) {
-                        logger.fine("  %s", name);
+                    for (ResourceAddress resource : pending.keySet()) {
+                        logger.fine("  %s", resource);
                     }
                     pending.clear();
                 }
@@ -54,10 +55,10 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
             @Override
             public void afterChange() {
                 if (enable) {
-                    for (String name : TexturePackAPI.listResources(MCPatcherUtils.TEXTURE_PACK_PREFIX + "anim", ".properties", true, false, false)) {
-                        Properties properties = TexturePackAPI.getProperties(name);
+                    for (ResourceAddress resource : TexturePackAPI.listResources("anim", ".properties", true, true, false)) {
+                        Properties properties = TexturePackAPI.getProperties(resource);
                         if (properties != null) {
-                            pending.put(name, properties);
+                            pending.put(resource, properties);
                         }
                     }
                 }
@@ -83,32 +84,32 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
     }
 
     private static void checkPendingAnimations() {
-        List<String> done = new ArrayList<String>();
-        for (Map.Entry<String, Properties> entry : pending.entrySet()) {
-            String name = entry.getKey();
+        List<ResourceAddress> done = new ArrayList<ResourceAddress>();
+        for (Map.Entry<ResourceAddress, Properties> entry : pending.entrySet()) {
+            ResourceAddress name = entry.getKey();
             Properties properties = entry.getValue();
-            String textureName = TexturePackAPI.fixupPath(MCPatcherUtils.getStringProperty(properties, "to", ""));
+            ResourceAddress textureName = TexturePackAPI.parseResourceAddress(MCPatcherUtils.getStringProperty(properties, "to", ""));
             if (TexturePackAPI.isTextureLoaded(textureName)) {
                 addStrip(name, properties);
                 done.add(name);
             }
         }
         if (!done.isEmpty()) {
-            for (String name : done) {
+            for (ResourceAddress name : done) {
                 pending.remove(name);
             }
             Collections.sort(animations);
         }
     }
 
-    private static void addStrip(String propertiesName, Properties properties) {
-        String dstName = TexturePackAPI.fixupPath(properties.getProperty("to", ""));
-        if (dstName.equals("")) {
+    private static void addStrip(ResourceAddress propertiesName, Properties properties) {
+        ResourceAddress dstName = TexturePackAPI.parseResourceAddress(properties.getProperty("to", ""));
+        if (dstName == null) {
             logger.error("%s: missing to= property");
             return;
         }
-        String srcName = TexturePackAPI.fixupPath(properties.getProperty("from", ""));
-        if (srcName.equals("")) {
+        ResourceAddress srcName = TexturePackAPI.parseResourceAddress(properties.getProperty("from", ""));
+        if (srcName == null) {
             logger.error("%s: missing to= property");
             return;
         }
@@ -121,8 +122,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         int y = MCPatcherUtils.getIntProperty(properties, "y", 0);
         int w = MCPatcherUtils.getIntProperty(properties, "w", 0);
         int h = MCPatcherUtils.getIntProperty(properties, "h", 0);
-        if (dstName.equals(MCPatcherUtils.TEXTURE_PACK_PREFIX + "terrain.png") ||
-            dstName.equals(MCPatcherUtils.TEXTURE_PACK_PREFIX + "gui/items.png")) {
+        if (dstName.getPath().startsWith("textures/atlas/")) {
             logger.error("%s: animations cannot have a target of %s", dstName);
             return;
         }
@@ -183,7 +183,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         }
     }
 
-    private CustomAnimation(String propertiesName, String srcName, String dstName, int mipmapLevel, int x, int y, int w, int h, ByteBuffer imageData, int numFrames, Properties properties) {
+    private CustomAnimation(ResourceAddress propertiesName, ResourceAddress srcName, ResourceAddress dstName, int mipmapLevel, int x, int y, int w, int h, ByteBuffer imageData, int numFrames, Properties properties) {
         this.propertiesName = propertiesName;
         this.srcName = srcName;
         this.dstName = dstName;
@@ -196,9 +196,6 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         this.numFrames = numFrames;
         currentFrame = -1;
         numTiles = numFrames;
-        if (properties == null) {
-            properties = TexturePackAPI.getProperties(srcName.replace(".png", ".properties"));
-        }
         loadProperties(properties);
     }
 
@@ -228,7 +225,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
     }
 
     public int compareTo(CustomAnimation o) {
-        return dstName.compareTo(o.dstName);
+        return dstName.getPath().compareTo(o.dstName.getPath());
     }
 
     @Override

@@ -1,10 +1,7 @@
 package com.prupe.mcpatcher.hd;
 
 import com.prupe.mcpatcher.*;
-import net.minecraft.src.Icon;
-import net.minecraft.src.TextureClock;
-import net.minecraft.src.TextureCompass;
-import net.minecraft.src.TextureStitched;
+import net.minecraft.src.*;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.EXTFramebufferObject;
 import org.lwjgl.opengl.GL11;
@@ -23,7 +20,7 @@ import java.util.*;
 public class FancyDial {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ANIMATIONS, "Animation");
 
-    private static final String ITEMS_PNG = MCPatcherUtils.TEXTURE_PACK_PREFIX + "gui/items.png";
+    private static final ResourceAddress ITEMS_PNG = new ResourceAddress("textures/atlas/items.png");
     private static final double ANGLE_UNSET = Double.MAX_VALUE;
 
     private static final boolean fboSupported = GLContext.getCapabilities().GL_EXT_framebuffer_object;
@@ -114,7 +111,7 @@ public class FancyDial {
             logger.warning("ignoring custom animation for %s not compass or clock", icon.getIconName());
             return;
         }
-        Properties properties = TexturePackAPI.getProperties(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/" + name + ".properties");
+        Properties properties = TexturePackAPI.getProperties(new ResourceAddress("misc/" + name + ".properties"));
         if (properties != null) {
             logger.fine("found custom %s", name);
             setupInfo.put(icon, properties);
@@ -517,9 +514,8 @@ public class FancyDial {
     }
 
     Layer newLayer(String filename, Properties properties, String suffix) {
-        String textureName = MCPatcherUtils.getStringProperty(properties, "source" + suffix, "");
-        textureName = TexturePackAPI.fixupPath(textureName);
-        if (textureName.equals("")) {
+        ResourceAddress textureName = TexturePackAPI.parseResourceAddress(MCPatcherUtils.getStringProperty(properties, "source" + suffix, ""));
+        if (textureName == null) {
             return null;
         }
         if (!TexturePackAPI.hasResource(textureName)) {
@@ -543,7 +539,7 @@ public class FancyDial {
     }
 
     private class Layer {
-        final String textureName;
+        final ResourceAddress textureName;
         final float scaleX;
         final float scaleY;
         final float offsetX;
@@ -553,7 +549,7 @@ public class FancyDial {
         final BlendMethod blendMethod;
         final boolean debug;
 
-        Layer(String textureName, float scaleX, float scaleY, float offsetX, float offsetY, float rotationMultiplier, float rotationOffset, BlendMethod blendMethod, boolean debug) {
+        Layer(ResourceAddress textureName, float scaleX, float scaleY, float offsetX, float offsetY, float rotationMultiplier, float rotationOffset, BlendMethod blendMethod, boolean debug) {
             this.textureName = textureName;
             this.scaleX = scaleX;
             this.scaleY = scaleY;

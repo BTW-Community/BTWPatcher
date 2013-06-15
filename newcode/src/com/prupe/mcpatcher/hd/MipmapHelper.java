@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
+import net.minecraft.src.ResourceAddress;
 import org.lwjgl.opengl.*;
 import org.lwjgl.util.glu.GLU;
 
@@ -23,7 +24,7 @@ import java.util.*;
 public class MipmapHelper {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
 
-    private static final String MIPMAP_PROPERTIES = MCPatcherUtils.TEXTURE_PACK_PREFIX + "mipmap.properties";
+    private static final ResourceAddress MIPMAP_PROPERTIES = new ResourceAddress("mipmap.properties");
 
     private static final int TEX_FORMAT = GL12.GL_BGRA;
     private static final int TEX_DATA_TYPE = GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
@@ -199,31 +200,6 @@ public class MipmapHelper {
                 }
             }
         }
-    }
-
-    private static boolean getCustomMipmaps(ArrayList<BufferedImage> mipmaps, String texture, int baseWidth, int baseHeight) {
-        boolean added = false;
-        if (useMipmap && texture != null && texture.endsWith(".png")) {
-            for (int i = 1; baseWidth > 0 && baseHeight > 0 && i <= maxMipmapLevel; i++) {
-                baseWidth >>>= 1;
-                baseHeight >>>= 1;
-                String name = texture.replace(".png", "-mipmap" + i + ".png");
-                BufferedImage image = TexturePackAPI.getImage(name);
-                if (image == null) {
-                    break;
-                }
-                int width = image.getWidth();
-                int height = image.getHeight();
-                if (width == baseWidth && height == baseHeight) {
-                    mipmaps.add(image);
-                    added = true;
-                } else {
-                    logger.error("%s has wrong size %dx%d (expecting %dx%d)", name, width, height, baseWidth, baseHeight);
-                    break;
-                }
-            }
-        }
-        return added;
     }
 
     static boolean useMipmapsForTexture(String texture) {

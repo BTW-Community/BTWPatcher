@@ -5,6 +5,7 @@ import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.TileLoader;
 import net.minecraft.src.Icon;
 import net.minecraft.src.ItemStack;
+import net.minecraft.src.ResourceAddress;
 
 import java.util.Properties;
 
@@ -12,17 +13,17 @@ final class ItemOverride extends OverrideBase {
     private static final int ITEM_ID_COMPASS = 345;
     private static final int ITEM_ID_CLOCK = 347;
 
-    final String matchIconName;
+    final ResourceAddress matchIconName;
     Icon icon;
     Icon matchIcon;
 
-    ItemOverride(String propertiesName, Properties properties) {
+    ItemOverride(ResourceAddress propertiesName, Properties properties) {
         super(propertiesName, properties);
 
         if (itemsIDs == null) {
             error("no matching items specified");
         }
-        matchIconName = TexturePackAPI.fixupPath(MCPatcherUtils.getStringProperty(properties, "matchTile", ""));
+        matchIconName = TexturePackAPI.parseResourceAddress(MCPatcherUtils.getStringProperty(properties, "matchTile", ""));
     }
 
     @Override
@@ -52,7 +53,7 @@ final class ItemOverride extends OverrideBase {
     }
 
     void registerIcon(TileLoader tileLoader) {
-        icon = tileLoader.getIcon(textureName);
-        matchIcon = tileLoader.getIcon(matchIconName);
+        icon = tileLoader.getIcon(textureName.getPath());
+        matchIcon = tileLoader.getIcon(matchIconName.getPath());
     }
 }

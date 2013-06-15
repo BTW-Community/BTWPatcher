@@ -5,6 +5,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.EntityRenderer;
+import net.minecraft.src.ResourceAddress;
 import net.minecraft.src.World;
 
 import java.awt.image.BufferedImage;
@@ -46,10 +47,10 @@ public final class Lightmap {
         if (lightmaps.containsKey(worldType)) {
             lightmap = lightmaps.get(worldType);
         } else {
-            String name = String.format(LIGHTMAP_FORMAT, worldType);
-            BufferedImage image = TexturePackAPI.getImage(name);
+            ResourceAddress resource = new ResourceAddress(String.format(LIGHTMAP_FORMAT, worldType));
+            BufferedImage image = TexturePackAPI.getImage(resource);
             if (image != null) {
-                lightmap = new Lightmap(name, image);
+                lightmap = new Lightmap(resource, image);
                 if (!lightmap.valid) {
                     lightmap = null;
                 }
@@ -59,7 +60,7 @@ public final class Lightmap {
         return lightmap != null && lightmap.compute(renderer, world, mapRGB, partialTick);
     }
 
-    private Lightmap(String name, BufferedImage image) {
+    private Lightmap(ResourceAddress resource, BufferedImage image) {
         width = image.getWidth();
         int height = image.getHeight();
         customNightvision = (height == HEIGHT_WITH_NIGHTVISION);
@@ -67,7 +68,7 @@ public final class Lightmap {
         image.getRGB(0, 0, width, height, origMap, 0, width);
         valid = (height == HEIGHT_WITHOUT_NIGHTVISION || height == HEIGHT_WITH_NIGHTVISION);
         if (!valid) {
-            logger.error("%s must be exactly %d or %d pixels high", name, HEIGHT_WITHOUT_NIGHTVISION, HEIGHT_WITH_NIGHTVISION);
+            logger.error("%s must be exactly %d or %d pixels high", resource, HEIGHT_WITHOUT_NIGHTVISION, HEIGHT_WITH_NIGHTVISION);
         }
     }
 

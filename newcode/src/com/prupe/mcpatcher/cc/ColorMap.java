@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.cc;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
+import net.minecraft.src.ResourceAddress;
 
 final class ColorMap {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
@@ -29,21 +30,21 @@ final class ColorMap {
         mapDefault = defaultColor;
     }
 
-    void loadColorMap(boolean useCustom, String filename) {
+    void loadColorMap(boolean useCustom, ResourceAddress resource) {
         if (!useCustom) {
             return;
         }
-        map = MCPatcherUtils.getImageRGB(TexturePackAPI.getImage(filename));
+        map = MCPatcherUtils.getImageRGB(TexturePackAPI.getImage(resource));
         if (map == null) {
             return;
         }
         if (map.length != COLORMAP_SIZE * COLORMAP_SIZE) {
-            logger.error("%s must be %dx%d", filename, COLORMAP_SIZE, COLORMAP_SIZE);
+            logger.error("%s must be %dx%d", resource, COLORMAP_SIZE, COLORMAP_SIZE);
             map = null;
             return;
         }
         mapDefault = colorize(0xffffff, 0.5, 1.0);
-        logger.fine("using %s, default color %06x", filename, mapDefault);
+        logger.fine("using %s, default color %06x", resource, mapDefault);
     }
 
     boolean isCustom() {

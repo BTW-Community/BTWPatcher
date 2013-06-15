@@ -2,13 +2,14 @@ package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.*;
 import net.minecraft.src.Potion;
+import net.minecraft.src.ResourceAddress;
 
 import java.util.Properties;
 
 public class Colorizer {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
-    private static final String COLOR_PROPERTIES = MCPatcherUtils.TEXTURE_PACK_PREFIX + "color.properties";
+    private static final ResourceAddress COLOR_PROPERTIES = new ResourceAddress("color.properties");
     private static Properties properties;
 
     static final boolean useWaterColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "water", true);

@@ -119,15 +119,15 @@ abstract public class TexturePackChangeHandler {
 
         TextureManager textureManager = MCPatcherUtils.getMinecraft().getTextureManager();
         if (textureManager != null) {
-            Set<String> texturesToUnload = new HashSet<String>();
+            Set<ResourceAddress> texturesToUnload = new HashSet<ResourceAddress>();
             for (Map.Entry<ResourceAddress, ITexture> entry : textureManager.texturesByName.entrySet()) {
-                String name = entry.getKey().getPath();
-                if (!name.startsWith("dynamic/") && !TexturePackAPI.hasResource(name)) {
-                    texturesToUnload.add(name);
+                ResourceAddress resource = entry.getKey();
+                if (!resource.getPath().startsWith("dynamic/") && !TexturePackAPI.hasResource(resource)) {
+                    texturesToUnload.add(resource);
                 }
             }
-            for (String name : texturesToUnload) {
-                TexturePackAPI.unloadTexture(name);
+            for (ResourceAddress resource : texturesToUnload) {
+                TexturePackAPI.unloadTexture(resource);
             }
         }
     }

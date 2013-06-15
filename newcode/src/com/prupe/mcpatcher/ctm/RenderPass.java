@@ -10,7 +10,7 @@ import java.util.Properties;
 public class RenderPass {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.BETTER_GLASS);
 
-    private static final String RENDERPASS_PROPERTIES = MCPatcherUtils.TEXTURE_PACK_PREFIX + "renderpass.properties";
+    private static final ResourceAddress RENDERPASS_PROPERTIES = new ResourceAddress("renderpass.properties");
 
     private static final int[] baseRenderPass = new int[Block.blocksList.length];
     private static final int[] extraRenderPass = new int[Block.blocksList.length];

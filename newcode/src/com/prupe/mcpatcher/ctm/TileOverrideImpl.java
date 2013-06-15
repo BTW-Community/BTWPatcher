@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.WeightedIndex;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.Icon;
+import net.minecraft.src.ResourceAddress;
 
 import java.util.HashSet;
 import java.util.Properties;
@@ -36,7 +37,7 @@ class TileOverrideImpl {
             37, 38, 37, 38, 30, 11, 30, 32, 37, 38, 37, 38, 25, 33, 25, 26,
         };
 
-        CTM(String filePrefix, Properties properties, TileLoader tileLoader) {
+        CTM(ResourceAddress filePrefix, Properties properties, TileLoader tileLoader) {
             super(filePrefix, properties, tileLoader);
         }
 
@@ -84,7 +85,7 @@ class TileOverrideImpl {
             3, 2, 0, 1,
         };
 
-        Horizontal(String filePrefix, Properties properties, TileLoader tileLoader) {
+        Horizontal(ResourceAddress filePrefix, Properties properties, TileLoader tileLoader) {
             super(filePrefix, properties, tileLoader);
         }
 
@@ -138,7 +139,7 @@ class TileOverrideImpl {
             3, 3, 6, 3, 3, 3, 3, 3, 3, 3, 6, 3, 3, 3, 3, 3,
         };
 
-        HorizontalVertical(String filePrefix, Properties properties, TileLoader tileLoader) {
+        HorizontalVertical(ResourceAddress filePrefix, Properties properties, TileLoader tileLoader) {
             super(filePrefix, properties, tileLoader);
         }
 
@@ -195,7 +196,7 @@ class TileOverrideImpl {
             3, 2, 0, 1,
         };
 
-        Vertical(String filePrefix, Properties properties, TileLoader tileLoader) {
+        Vertical(ResourceAddress filePrefix, Properties properties, TileLoader tileLoader) {
             super(filePrefix, properties, tileLoader);
         }
 
@@ -249,7 +250,7 @@ class TileOverrideImpl {
             3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
         };
 
-        VerticalHorizontal(String filePrefix, Properties properties, TileLoader tileLoader) {
+        VerticalHorizontal(ResourceAddress filePrefix, Properties properties, TileLoader tileLoader) {
             super(filePrefix, properties, tileLoader);
         }
 
@@ -298,7 +299,7 @@ class TileOverrideImpl {
     }
 
     final static class Top extends TileOverride {
-        Top(String filePrefix, Properties properties, TileLoader tileLoader) {
+        Top(ResourceAddress filePrefix, Properties properties, TileLoader tileLoader) {
             super(filePrefix, properties, tileLoader);
         }
 
@@ -340,7 +341,7 @@ class TileOverrideImpl {
         private final int symmetry;
         private final WeightedIndex chooser;
 
-        Random1(String filePrefix, Properties properties, TileLoader tileLoader) {
+        Random1(ResourceAddress filePrefix, Properties properties, TileLoader tileLoader) {
             super(filePrefix, properties, tileLoader);
 
             String sym = properties.getProperty("symmetry", "none");
@@ -384,7 +385,7 @@ class TileOverrideImpl {
         private final int height;
         private final int symmetry;
 
-        Repeat(String filePrefix, Properties properties, TileLoader tileLoader) {
+        Repeat(ResourceAddress filePrefix, Properties properties, TileLoader tileLoader) {
             super(filePrefix, properties, tileLoader);
             width = MCPatcherUtils.getIntProperty(properties, "width", 0);
             height = MCPatcherUtils.getIntProperty(properties, "height", 0);
@@ -475,7 +476,7 @@ class TileOverrideImpl {
     }
 
     final static class Fixed extends TileOverride {
-        Fixed(String filePrefix, Properties properties, TileLoader tileLoader) {
+        Fixed(ResourceAddress filePrefix, Properties properties, TileLoader tileLoader) {
             super(filePrefix, properties, tileLoader);
         }
 

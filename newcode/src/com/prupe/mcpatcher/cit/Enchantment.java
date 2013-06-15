@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.BlendMethod;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.ItemRenderer;
+import net.minecraft.src.ResourceAddress;
 import net.minecraft.src.Tessellator;
 import org.lwjgl.opengl.GL11;
 
@@ -49,7 +50,7 @@ final class Enchantment extends OverrideBase {
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
     }
 
-    Enchantment(String propertiesName, Properties properties) {
+    Enchantment(ResourceAddress propertiesName, Properties properties) {
         super(propertiesName, properties);
 
         String value = MCPatcherUtils.getStringProperty(properties, "blend", "add");

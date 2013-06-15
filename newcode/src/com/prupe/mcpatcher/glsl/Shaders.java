@@ -6,10 +6,7 @@ package com.prupe.mcpatcher.glsl;
 
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.Block;
-import net.minecraft.src.EntityLiving;
-import net.minecraft.src.ItemStack;
-import net.minecraft.src.RenderGlobal;
+import net.minecraft.src.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.ARBVertexProgram;
 import org.lwjgl.opengl.GL11;
@@ -382,9 +379,9 @@ public class Shaders {
     public static void beginTerrain() {
         useProgram(Shaders.ProgramTerrain);
         glActiveTexture(GL_TEXTURE2);
-        TexturePackAPI.bindTexture("/terrain_nh.png");
+        TexturePackAPI.bindTexture(new ResourceAddress("terrain_nh.png"));
         glActiveTexture(GL_TEXTURE3);
-        TexturePackAPI.bindTexture("/terrain_s.png");
+        TexturePackAPI.bindTexture(new ResourceAddress("/terrain_s.png"));
         glActiveTexture(GL_TEXTURE0);
         FloatBuffer projection = BufferUtils.createFloatBuffer(16);
     }
@@ -396,9 +393,9 @@ public class Shaders {
     public static void beginWater() {
         useProgram(Shaders.ProgramWater);
         glActiveTexture(GL_TEXTURE2);
-        TexturePackAPI.bindTexture("/terrain_nh.png");
+        TexturePackAPI.bindTexture(new ResourceAddress("terrain_nh.png"));
         glActiveTexture(GL_TEXTURE3);
-        TexturePackAPI.bindTexture("/terrain_s.png");
+        TexturePackAPI.bindTexture(new ResourceAddress("terrain_s.png"));
         glActiveTexture(GL_TEXTURE0);
     }
 

@@ -14,6 +14,9 @@ public class CITUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
     static final String CIT_PROPERTIES = "cit.properties";
+    private static final ResourceAddress CIT_PROPERTIES1 = new ResourceAddress("cit.properties");
+    private static final ResourceAddress CIT_PROPERTIES2 = new ResourceAddress("cit/cit.properties");
+
     private static final int MAX_ITEMS = Item.itemsList.length;
     static final int MAX_ENCHANTMENTS = 256;
     static int LOWEST_ITEM_ID;
@@ -87,16 +90,16 @@ public class CITUtils {
                     );
                 }
 
-                Properties properties = TexturePackAPI.getProperties(MCPatcherUtils.TEXTURE_PACK_PREFIX + CIT_PROPERTIES);
+                Properties properties = TexturePackAPI.getProperties(CIT_PROPERTIES1);
                 if (properties == null) {
-                    properties = TexturePackAPI.getProperties(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit/" + CIT_PROPERTIES);
+                    properties = TexturePackAPI.getProperties(CIT_PROPERTIES2);
                 }
                 useGlint = MCPatcherUtils.getBooleanProperty(properties, "useGlint", true);
                 EnchantmentList.setProperties(properties);
 
                 if (enableItems || enableEnchantments || enableArmor) {
-                    for (String path : TexturePackAPI.listResources(MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit", ".properties", true, false, true)) {
-                        registerOverride(OverrideBase.create(path));
+                    for (ResourceAddress resource : TexturePackAPI.listResources("cit", ".properties", true, false, true)) {
+                        registerOverride(OverrideBase.create(resource));
                     }
                     if (enableItems) {
                         PotionReplacer replacer = new PotionReplacer();
@@ -222,7 +225,7 @@ public class CITUtils {
             int layer = texture.endsWith("_b.png") ? 1 : 0;
             OverrideBase override = findMatch(armors, itemStack, null, layer);
             if (override != null) {
-                return override.textureName;
+                return override.textureName.getPath();
             }
         }
         return texture;

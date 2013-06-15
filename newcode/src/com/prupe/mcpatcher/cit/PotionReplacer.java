@@ -5,6 +5,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.Potion;
 import net.minecraft.src.PotionHelper;
+import net.minecraft.src.ResourceAddress;
 
 import java.util.*;
 
@@ -70,7 +71,7 @@ class PotionReplacer {
     }
 
     PotionReplacer() {
-        String path = getPotionPath("water", false);
+        ResourceAddress path = getPotionPath("water", false);
         if (TexturePackAPI.hasResource(path)) {
             registerVanillaPotion(path, 0, WATER_BITS);
         }
@@ -86,20 +87,19 @@ class PotionReplacer {
         registerOtherPotions(true);
     }
 
-    private static String getPotionPath(String name, boolean splash) {
-        return MCPatcherUtils.TEXTURE_PACK_PREFIX + "cit/potion/" +
-            (splash ? "splash/" : "normal/") + name + ".png";
+    private static ResourceAddress getPotionPath(String name, boolean splash) {
+        return new ResourceAddress("cit/potion/" + (splash ? "splash/" : "normal/") + name + ".png");
     }
 
-    private static String getOverrideName(int layer) {
-        return "(" + layer + ")";
+    private static ResourceAddress getOverrideName(int layer) {
+        return new ResourceAddress("(" + layer + ")");
     }
 
-    private static Properties newProperties(int itemID, int layer, String path) {
+    private static Properties newProperties(int itemID, int layer, ResourceAddress path) {
         Properties properties = new Properties();
         properties.setProperty("type", "item");
         properties.setProperty("matchItems", String.valueOf(itemID));
-        properties.setProperty("texture", path);
+        properties.setProperty("texture", path.getPath());
         properties.setProperty("layer", String.valueOf(layer));
         properties.setProperty("weight", "-1");
         return properties;
@@ -110,7 +110,7 @@ class PotionReplacer {
             if (Potion.potionTypes[effect] == null) {
                 continue;
             }
-            String path = getPotionPath(Potion.potionTypes[effect].getName().replaceFirst("^potion\\.", ""), splash);
+            ResourceAddress path = getPotionPath(Potion.potionTypes[effect].getName().replaceFirst("^potion\\.", ""), splash);
             if (TexturePackAPI.hasResource(path)) {
                 if (effect < POTION_EFFECTS.length && POTION_EFFECTS[effect] >= 0) {
                     int damage = POTION_EFFECTS[effect];
@@ -137,14 +137,14 @@ class PotionReplacer {
     }
 
     private void registerMundanePotion(String name, int damage, boolean splash) {
-        String path = getPotionPath(name, splash);
+        ResourceAddress path = getPotionPath(name, splash);
         if (TexturePackAPI.hasResource(path)) {
             registerVanillaPotion(path, damage, MUNDANE_BITS);
         }
     }
 
     private void registerOtherPotions(boolean splash) {
-        String path = getPotionPath("other", splash);
+        ResourceAddress path = getPotionPath("other", splash);
         if (TexturePackAPI.hasResource(path)) {
             Properties properties = newProperties(ITEM_ID_POTION, LAYER_POTION_BOTTLE, path);
             StringBuilder sb = new StringBuilder();
@@ -160,20 +160,20 @@ class PotionReplacer {
         }
     }
 
-    private void registerVanillaPotion(String path, int damage, int mask) {
+    private void registerVanillaPotion(ResourceAddress path, int damage, int mask) {
         Properties properties = newProperties(ITEM_ID_POTION, LAYER_POTION_BOTTLE, path);
         properties.setProperty("damage", String.valueOf(damage));
         properties.setProperty("damageMask", String.valueOf(mask));
         addOverride(properties);
     }
 
-    private void registerCustomPotion(String path, int effect) {
+    private void registerCustomPotion(ResourceAddress path, int effect) {
         Properties properties = newProperties(ITEM_ID_POTION, LAYER_POTION_BOTTLE, path);
         properties.setProperty("nbt.CustomPotionEffects.0.Id", String.valueOf(effect));
         addOverride(properties);
     }
 
-    private void registerEmptyBottle(String path) {
+    private void registerEmptyBottle(ResourceAddress path) {
         Properties properties = newProperties(ITEM_ID_GLASS_BOTTLE, LAYER_EMPTY_BOTTLE, path);
         ItemOverride layer = new ItemOverride(getOverrideName(LAYER_EMPTY_BOTTLE), properties);
         if (!layer.error) {

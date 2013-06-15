@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.WeightedIndex;
+import net.minecraft.src.ResourceAddress;
 
 import java.util.*;
 
@@ -25,7 +26,7 @@ class MobRuleList {
         allSkins.add(baseSkin);
         for (int i = 2; ; i++) {
             final String skin = baseSkin.replace(".png", "" + i + ".png");
-            if (!TexturePackAPI.hasResource(skin)) {
+            if (!TexturePackAPI.hasResource(new ResourceAddress(skin))) {
                 break;
             }
             allSkins.add(skin);
@@ -39,9 +40,9 @@ class MobRuleList {
 
         String filename = baseSkin.replace(".png", ".properties");
         String altFilename = filename.replaceFirst(ALTERNATIVES_REGEX, ".properties");
-        Properties properties = TexturePackAPI.getProperties(filename);
+        Properties properties = TexturePackAPI.getProperties(new ResourceAddress(filename));
         if (properties == null && !filename.equals(altFilename)) {
-            properties = TexturePackAPI.getProperties(altFilename);
+            properties = TexturePackAPI.getProperties(new ResourceAddress(altFilename));
             if (properties != null) {
                 logger.fine("using %s for %s", altFilename, baseSkin);
             }

@@ -7,6 +7,7 @@ import com.prupe.mcpatcher.TileLoader;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.Icon;
+import net.minecraft.src.ResourceAddress;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -144,10 +145,9 @@ abstract class TileOverride implements ITileOverride {
 
     private static Method getBiomeNameAt;
 
-    private final String propertiesFile;
+    private final ResourceAddress propertiesFile;
     private final String texturesDirectory;
     private final String propertiesName;
-    private final String directoryName;
     private final TileLoader tileLoader;
     private final int renderPass;
     private final int weight;
@@ -182,7 +182,7 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    static TileOverride create(String propertiesFile, TileLoader tileLoader) {
+    static TileOverride create(ResourceAddress propertiesFile, TileLoader tileLoader) {
         if (propertiesFile == null) {
             return null;
         }
@@ -229,11 +229,10 @@ abstract class TileOverride implements ITileOverride {
         return override == null || override.disabled ? null : override;
     }
 
-    protected TileOverride(String propertiesFile, Properties properties, TileLoader tileLoader) {
+    protected TileOverride(ResourceAddress propertiesFile, Properties properties, TileLoader tileLoader) {
         this.propertiesFile = propertiesFile;
-        texturesDirectory = propertiesFile.replaceFirst("/[^/]*$", "");
-        directoryName = texturesDirectory.replaceAll(".*/", "");
-        propertiesName = propertiesFile.replaceFirst(".*/", "").replaceFirst("\\.properties$", "");
+        texturesDirectory = propertiesFile.getPath().replaceFirst("/[^/]*$", "");
+        propertiesName = propertiesFile.getPath().replaceFirst(".*/", "").replaceFirst("\\.properties$", "");
         this.tileLoader = tileLoader;
 
         loadIcons(properties);
@@ -325,18 +324,18 @@ abstract class TileOverride implements ITileOverride {
         if (!path.endsWith(".png")) {
             path += ".png";
         }
-        path = TexturePackAPI.fixupPath(path);
-        tileNames.add(path);
-        return tileLoader.preloadTile(path, renderPass > 2);
+        ResourceAddress resource = TexturePackAPI.parseResourceAddress(path);
+        tileNames.add(resource.getPath());
+        return tileLoader.preloadTile(resource, renderPass > 2);
     }
 
     private void loadIcons(Properties properties) {
         tileNames.clear();
-        String tileList = TexturePackAPI.fixupPath(properties.getProperty("tiles", "").trim());
+        String tileList = properties.getProperty("tiles", "").trim();
         if (tileList.equals("")) {
             for (int i = 0; ; i++) {
                 String name = texturesDirectory + "/" + i + ".png";
-                if (!TexturePackAPI.hasResource(name)) {
+                if (!TexturePackAPI.hasResource(new ResourceAddress(name))) {
                     break;
                 }
                 if (!addIcon(name)) {
@@ -423,7 +422,7 @@ abstract class TileOverride implements ITileOverride {
         String property = properties.getProperty(key, "");
         for (String token : property.split("\\s+")) {
             if (!token.equals("")) {
-                list.add(TexturePackAPI.fixupPath(token));
+                list.add(token);
             }
         }
         return list;

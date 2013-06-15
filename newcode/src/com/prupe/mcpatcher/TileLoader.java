@@ -1,10 +1,8 @@
 package com.prupe.mcpatcher;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.Icon;
-import net.minecraft.src.Tessellator;
-import net.minecraft.src.TextureMap;
-import net.minecraft.src.TextureStitched;
+import net.minecraft.src.*;
+import net.minecraft.src.ResourceBundle;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -37,8 +35,8 @@ public class TileLoader {
     private int overflowIndex;
     private TextureMap baseTextureMap;
     private Map<String, TextureStitched> baseTexturesByName;
-    private final Set<String> tilesToRegister = new HashSet<String>();
-    private final Map<String, BufferedImage> tileImages = new HashMap<String, BufferedImage>();
+    private final Set<ResourceAddress> tilesToRegister = new HashSet<ResourceAddress>();
+    private final Map<ResourceAddress, BufferedImage> tileImages = new HashMap<ResourceAddress, BufferedImage>();
     private final Map<String, Icon> iconMap = new HashMap<String, Icon>();
 
     static {
@@ -150,17 +148,17 @@ public class TileLoader {
         return special.equals(texture) || special.equals(specialTextures.get(texture));
     }
 
-    public static BufferedImage getOverrideImage(String path) throws IOException {
+    public static BufferedImage getOverrideImage(ResourceAddress resource) throws IOException {
         BufferedImage image;
         for (TileLoader loader : loaders) {
-            image = loader.tileImages.get(path);
+            image = loader.tileImages.get(resource);
             if (image != null) {
                 return image;
             }
         }
-        image = TexturePackAPI.getImage(path);
+        image = TexturePackAPI.getImage(resource);
         if (image == null) {
-            throw new FileNotFoundException(path + " not found");
+            throw new FileNotFoundException(resource + " not found");
         }
         return image;
     }
@@ -218,30 +216,30 @@ public class TileLoader {
         return size;
     }
 
-    public boolean preloadTile(String path, boolean alternate, String special) {
-        if (tileImages.containsKey(path)) {
+    public boolean preloadTile(ResourceAddress resource, boolean alternate, String special) {
+        if (tileImages.containsKey(resource)) {
             return true;
         }
         BufferedImage image = null;
         if (!debugTextures) {
-            image = TexturePackAPI.getImage(path);
+            image = TexturePackAPI.getImage(resource);
             if (image == null) {
-                subLogger.warning("missing %s", path);
+                subLogger.warning("missing %s", resource);
             }
         }
         if (image == null) {
-            image = generateDebugTexture(path, 64, 64, alternate);
+            image = generateDebugTexture(resource.getPath(), 64, 64, alternate);
         }
-        tilesToRegister.add(path);
-        tileImages.put(path, image);
+        tilesToRegister.add(resource);
+        tileImages.put(resource, image);
         if (special != null) {
-            specialTextures.put(path, special);
+            specialTextures.put(resource.getPath(), special);
         }
         return true;
     }
 
-    public boolean preloadTile(String path, boolean alternate) {
-        return preloadTile(path, alternate, null);
+    public boolean preloadTile(ResourceAddress resource, boolean alternate) {
+        return preloadTile(resource, alternate, null);
     }
 
     protected boolean isForThisMap(String mapName) {
@@ -266,15 +264,16 @@ public class TileLoader {
     }
 
     private boolean registerOneIcon(TextureMap textureMap, String mapName, Map<String, TextureStitched> map) {
-        String name = tilesToRegister.iterator().next();
+        ResourceAddress resource = tilesToRegister.iterator().next();
+        String name = resource.getPath();
         if (registerDefaultIcon(name)) {
-            tilesToRegister.remove(name);
+            tilesToRegister.remove(resource);
             return true;
         }
-        BufferedImage image = tileImages.get(name);
+        BufferedImage image = tileImages.get(resource);
         if (image == null) {
-            subLogger.error("tile for %s unexpectedly missing", name);
-            tilesToRegister.remove(name);
+            subLogger.error("tile for %s unexpectedly missing", resource);
+            tilesToRegister.remove(resource);
             return true;
         }
         int width = image.getWidth();
@@ -285,7 +284,7 @@ public class TileLoader {
             float sizeMB = (float) currentSize / 1048576.0f;
             if (currentSize <= 0) {
                 subLogger.error("%s too big for any tilesheet (%.1fMB), dropping", name, sizeMB);
-                tilesToRegister.remove(name);
+                tilesToRegister.remove(resource);
                 return true;
             } else {
                 subLogger.warning("%s nearly full (%.1fMB), will start a new tilesheet", mapName, sizeMB);
@@ -300,7 +299,7 @@ public class TileLoader {
         iconMap.put(name, icon);
         String extra = (width == height ? "" : ", " + (height / width) + " frames");
         subLogger.finer("%s -> %s icon %dx%d%s", name, mapName, width, width, extra);
-        tilesToRegister.remove(name);
+        tilesToRegister.remove(resource);
         return true;
     }
 
