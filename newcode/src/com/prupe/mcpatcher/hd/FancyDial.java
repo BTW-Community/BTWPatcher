@@ -518,16 +518,9 @@ public class FancyDial {
 
     Layer newLayer(String filename, Properties properties, String suffix) {
         String textureName = MCPatcherUtils.getStringProperty(properties, "source" + suffix, "");
-        boolean filter = textureName.startsWith("%blur%") ||
-            MCPatcherUtils.getBooleanProperty(properties, "filter" + suffix,
-                MCPatcherUtils.getBooleanProperty(properties, "filter", false)
-            );
         textureName = TexturePackAPI.fixupPath(textureName);
         if (textureName.equals("")) {
             return null;
-        }
-        if (filter) {
-            TexturePackAPI.loadTexture(textureName, true, false);
         }
         if (!TexturePackAPI.hasResource(textureName)) {
             logger.error("%s: could not read %s", filename, textureName);

@@ -215,10 +215,6 @@ public class TexturePackAPI {
         }
     }
 
-    public static void loadTexture(String s, boolean blur, boolean clamp) {
-        MCPatcherUtils.getMinecraft().getTextureManager().addTexture(new ResourceAddress(s), new TextureNamed(s, blur, clamp));
-    }
-
     public static void unloadTexture(String s) {
         TextureManager textureManager = MCPatcherUtils.getMinecraft().getTextureManager();
         ITexture texture = textureManager.getTexture(new ResourceAddress(s));
