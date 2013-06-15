@@ -42,6 +42,7 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new ResourcePackFolderMod());
         addClassMod(new IResourceBundleMod());
         addClassMod(new ITextureResourceBundleMod());
+        addClassMod(new ResourceBundleMod());
         addClassMod(new IResourceMod());
         addClassMod(new BaseMod.ResourceAddressMod(this));
 
@@ -370,8 +371,14 @@ public class BaseTexturePackMod extends Mod {
         ResourcePackBaseMod() {
             setInterfaces("IResourcePack");
 
+            final FieldRef file = new FieldRef(getDeobfClass(), "file", "Ljava/io/File;");
+
             addClassSignature(new ConstSignature("assets"));
             addClassSignature(new ConstSignature("pack.mcmeta"));
+
+            addMemberMapper(new FieldMapper(file));
+
+            addPatch(new MakeMemberPublicPatch(file));
         }
     }
 
@@ -379,8 +386,14 @@ public class BaseTexturePackMod extends Mod {
         ResourcePackZipMod() {
             setParentClass("ResourcePackBase");
 
+            final FieldRef zipFile = new FieldRef(getDeobfClass(), "zipFile", "Ljava/util/zip/ZipFile;");
+
             addClassSignature(new ConstSignature("assets/"));
             addClassSignature(new ConstSignature(new ClassRef("java/util/zip/ZipFile")));
+
+            addMemberMapper(new FieldMapper(zipFile));
+
+            addPatch(new MakeMemberPublicPatch(zipFile));
         }
     }
 
@@ -409,6 +422,20 @@ public class BaseTexturePackMod extends Mod {
                 new InterfaceMethodRef(getDeobfClass(), "method1", "(Ljava/util/List;)V"),
                 new InterfaceMethodRef(getDeobfClass(), "method2", "(LIWTF1;)V")
             ).setInterfaceOnly(true));
+        }
+    }
+
+    private class ResourceBundleMod extends ClassMod {
+        ResourceBundleMod() {
+            setInterfaces("IResourceBundle");
+
+            final FieldRef resourcePacks = new FieldRef(getDeobfClass(), "resourcePacks", "Ljava/util/List;");
+
+            addClassSignature(new ConstSignature(".mcmeta"));
+
+            addMemberMapper(new FieldMapper(resourcePacks));
+
+            addPatch(new MakeMemberPublicPatch(resourcePacks));
         }
     }
 
