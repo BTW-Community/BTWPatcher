@@ -11,11 +11,10 @@ public class BaseTilesheetMod extends Mod {
         name = MCPatcherUtils.BASE_TILESHEET_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
-        version = "2.0";
+        version = "2.1";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
-        addClassMod(new BaseMod.ITexturePackMod(this));
         addClassMod(new BaseMod.IconMod(this));
         addClassMod(new TessellatorMod());
         addClassMod(new IconRegisterMod());
@@ -320,6 +319,8 @@ public class BaseTilesheetMod extends Mod {
         TextureMapMod() {
             super(BaseTilesheetMod.this);
 
+            final FieldRef blocksAtlas = new FieldRef(getDeobfClass(), "blocksAtlas", "LResourceAddress;");
+            final FieldRef itemsAtlas = new FieldRef(getDeobfClass(), "itemssAtlas", "LResourceAddress;");
             final MethodRef registerTiles = new MethodRef(getDeobfClass(), "registerTiles", "()V");
             final InterfaceMethodRef mapClear = new InterfaceMethodRef("java/util/Map", "clear", "()V");
             final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
@@ -332,6 +333,9 @@ public class BaseTilesheetMod extends Mod {
             final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
             final MethodRef strEquals = new MethodRef("java/lang/String", "equals", "(Ljava/lang/Object;)Z");
             final MethodRef readImage = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
+
+            addClassSignature(new BaseMod.ResourceAddressSignature(this, blocksAtlas, "textures/atlas/blocks.png"));
+            addClassSignature(new BaseMod.ResourceAddressSignature(this, itemsAtlas, "textures/atlas/items.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override

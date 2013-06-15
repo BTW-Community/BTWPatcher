@@ -197,6 +197,14 @@ public class TileLoader {
     static void init() {
     }
 
+    public static ResourceAddress getBlocksAtlas() {
+        return TextureMap.blocksAtlas;
+    }
+
+    public static ResourceAddress getItemsAtlas() {
+        return TextureMap.itemsAtlas;
+    }
+
     public TileLoader(String mapName, boolean allowOverflow, MCLogger logger) {
         this.mapName = mapName;
         this.allowOverflow = allowOverflow;
