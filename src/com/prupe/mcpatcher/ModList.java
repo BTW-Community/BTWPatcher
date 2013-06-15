@@ -384,9 +384,11 @@ class ModList {
             }
             break;
         }
-        for (Mod mod : modsByIndex) {
-            if (mod.internal) {
-                mod.setEnabled(false);
+        if (!MCPatcher.showInternal) {
+            for (Mod mod : modsByIndex) {
+                if (mod.internal) {
+                    mod.setEnabled(false);
+                }
             }
         }
         HashMap<Mod, Boolean> changes = new HashMap<Mod, Boolean>();
