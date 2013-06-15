@@ -3,7 +3,7 @@ package net.minecraft.src;
 public class TextureBase implements ITexture {
     public int glTextureId; // made public by __TexturePackBase
 
-    public void load(ITexturePack texturePack) {
+    public void load(IResourceBundle resourceBundle) {
     }
 
     public int getGLTexture() {

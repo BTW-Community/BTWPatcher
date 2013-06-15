@@ -20,7 +20,7 @@ public class TexturePackAPI {
 
     public static TexturePackAPI instance = new TexturePackAPI();
 
-    public static ITexturePack getTexturePack() {
+    public static TexturePack getTexturePack() {
         Minecraft minecraft = MCPatcherUtils.getMinecraft();
         if (minecraft == null) {
             return null;
@@ -29,11 +29,12 @@ public class TexturePackAPI {
         if (texturePackList == null) {
             return null;
         }
-        return texturePackList.getSelectedTexturePack();
+        List<TexturePack> selected = texturePackList.getSelectedTexturePacks();
+        return selected == null || selected.isEmpty() ? null : selected.get(0);
     }
 
     public static boolean isDefaultTexturePack() {
-        return getTexturePack() instanceof TexturePackDefault;
+        return getTexturePack() == null;
     }
 
     public static InputStream getInputStream(String s) {
@@ -128,9 +129,9 @@ public class TexturePackAPI {
     }
 
     private static void findResources(String directory, String suffix, boolean recursive, boolean directories, Collection<String> resources) {
-        ITexturePack texturePack = getTexturePack();
-        if (texturePack instanceof TexturePackCustom) {
-            ZipFile zipFile = ((TexturePackCustom) texturePack).zipFile;
+        IResourcePack texturePack = getTexturePack().getResourcePack();
+        if (texturePack instanceof ResourcePackZip) {
+            ZipFile zipFile = ((ResourcePackZip) texturePack).zipFile;
             if (zipFile != null) {
                 for (ZipEntry entry : Collections.list(zipFile.entries())) {
                     if (entry.isDirectory() != directories) {
@@ -154,8 +155,13 @@ public class TexturePackAPI {
                     }
                 }
             }
-        } else if (texturePack instanceof TexturePackFolder) {
-            File base = ((TexturePackFolder) texturePack).texturePackFile;
+        } else if (texturePack instanceof ResourcePackBase) {
+            File base = ((ResourcePackBase) texturePack).file;
+            if (base != null && base.isDirectory()) {
+                findResources(base, directory, suffix, recursive, directories, resources);
+            }
+        } else if (texturePack instanceof ResourcePackDefault) {
+            File base = ((ResourcePackDefault) texturePack).file;
             if (base != null && base.isDirectory()) {
                 findResources(base, directory, suffix, recursive, directories, resources);
             }
@@ -185,7 +191,7 @@ public class TexturePackAPI {
     }
 
     public static int getTextureIfLoaded(String s) {
-        ITexture texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(s);
+        ITexture texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(new ResourceAddress(s));
         return texture instanceof TextureBase ? ((TextureBase) texture).glTextureId : -1;
     }
 
@@ -194,7 +200,7 @@ public class TexturePackAPI {
     }
 
     public static void bindTexture(String s) {
-        MCPatcherUtils.getMinecraft().getTextureManager().bindTexture(s);
+        MCPatcherUtils.getMinecraft().getTextureManager().bindTexture(new ResourceAddress(s));
     }
 
     public static void bindTexture(int texture) {
@@ -204,18 +210,18 @@ public class TexturePackAPI {
     }
 
     public static void loadTexture(String s, boolean blur, boolean clamp) {
-        MCPatcherUtils.getMinecraft().getTextureManager().addTexture(s, new TextureNamed(s, blur, clamp));
+        MCPatcherUtils.getMinecraft().getTextureManager().addTexture(new ResourceAddress(s), new TextureNamed(s, blur, clamp));
     }
 
     public static void unloadTexture(String s) {
         TextureManager textureManager = MCPatcherUtils.getMinecraft().getTextureManager();
-        ITexture texture = textureManager.getTexture(s);
+        ITexture texture = textureManager.getTexture(new ResourceAddress(s));
         if (texture != null && !(texture instanceof TextureMap) && !(texture instanceof TextureWithData)) {
             if (texture instanceof TextureBase) {
                 ((TextureBase) texture).unloadGLTexture();
             }
             logger.finer("unloading texture %s", s);
-            textureManager.texturesByName.remove(s);
+            textureManager.texturesByName.remove(new ResourceAddress(s));
         }
     }
 
@@ -226,12 +232,12 @@ public class TexturePackAPI {
     }
 
     protected InputStream getInputStreamImpl(String s) {
-        ITexturePack texturePack = getTexturePack();
+        TexturePack texturePack = getTexturePack();
         if (texturePack == null) {
             return TexturePackAPI.class.getResourceAsStream("/" + s);
         } else {
             try {
-                return texturePack.getResourceAsStream(s);
+                return texturePack.getResourcePack().getInputStream(new ResourceAddress(s));
             } catch (Throwable e) {
                 return null;
             }

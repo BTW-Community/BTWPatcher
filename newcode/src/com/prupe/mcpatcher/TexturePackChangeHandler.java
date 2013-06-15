@@ -94,10 +94,6 @@ abstract public class TexturePackChangeHandler {
                 }
             }
         }
-        ITexturePack texturePack = TexturePackAPI.getTexturePack();
-        if (texturePack instanceof TexturePackCustom) {
-            checkFileChange(MCPatcherUtils.getMinecraft().texturePackList, (TexturePackCustom) texturePack);
-        }
     }
 
     public static void beforeChange1() {
@@ -123,8 +119,8 @@ abstract public class TexturePackChangeHandler {
         TextureManager textureManager = MCPatcherUtils.getMinecraft().getTextureManager();
         if (textureManager != null) {
             Set<String> texturesToUnload = new HashSet<String>();
-            for (Map.Entry<String, ITexture> entry : textureManager.texturesByName.entrySet()) {
-                String name = entry.getKey();
+            for (Map.Entry<ResourceAddress, ITexture> entry : textureManager.texturesByName.entrySet()) {
+                String name = entry.getKey().getPath();
                 if (!name.startsWith("dynamic/") && !TexturePackAPI.hasResource(name)) {
                     texturesToUnload.add(name);
                 }
@@ -164,6 +160,7 @@ abstract public class TexturePackChangeHandler {
         changing = false;
     }
 
+    /*
     private static boolean openTexturePackFile(TexturePackCustom pack) {
         if (pack.zipFile == null) {
             return false;
@@ -219,6 +216,7 @@ abstract public class TexturePackChangeHandler {
     }
 
     private static boolean checkFileChange(TexturePackList list, TexturePackCustom pack) {
+        return false;
         if (!autoRefreshTextures || !openTexturePackFile(pack)) {
             return false;
         }
@@ -246,4 +244,5 @@ abstract public class TexturePackChangeHandler {
         scheduleTexturePackRefresh();
         return true;
     }
+    */
 }

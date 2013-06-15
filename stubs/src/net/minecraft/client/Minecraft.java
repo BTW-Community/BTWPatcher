@@ -7,8 +7,6 @@ import java.io.File;
 public class Minecraft {
     public TexturePackList texturePackList;
     public GameSettings gameSettings;
-    public FontRenderer fontRenderer;
-    public FontRenderer alternateFontRenderer;
     public EntityLiving renderViewEntity;
     public EntityRenderer entityRenderer;
     public int displayWidth;
@@ -20,6 +18,10 @@ public class Minecraft {
     public Profiler mcProfiler;
     public EntityClientPlayerMP thePlayer;
     public WorldClient theWorld;
+
+    public static Minecraft getInstance() {
+        return null;
+    }
 
     public static File getMinecraftDir() {
         return null;
@@ -40,7 +42,7 @@ public class Minecraft {
         return null;
     }
 
-    public IResourceBundle getResourceBundle() { // added by __TexturePackBase
+    public IResourceBundle getResourceBundle() {
         return null;
     }
 }

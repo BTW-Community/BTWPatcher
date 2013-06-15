@@ -1,7 +1,7 @@
 package net.minecraft.src;
 
 public interface ITexture {
-    void load(ITexturePack texturePack);
+    void load(IResourceBundle resourceBundle);
 
     int getGLTexture();
 }

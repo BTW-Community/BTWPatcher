@@ -6,19 +6,11 @@ public class TexturePackList {
     public void updateAvailableTexturePacks() {
     }
 
-    public boolean setTexturePack(ITexturePack texturePackBase) {
-        return false;
-    }
-
-    public List<ITexturePack> availableTexturePacks() {
+    public List<TexturePack> getAvailableTexturePacks() {
         return null;
     }
 
-    public ITexturePack getDefaultTexturePack() { // added by BaseMod.TexturePackBaseMod
-        return null;
-    }
-
-    public ITexturePack getSelectedTexturePack() {
+    public List<TexturePack> getSelectedTexturePacks() {
         return null;
     }
 }
