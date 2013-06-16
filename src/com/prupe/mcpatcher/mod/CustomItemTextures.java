@@ -213,18 +213,38 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private class GlintSignature extends BytecodeSignature {
-        GlintSignature(ClassMod classMod, MethodRef method) {
-            super(classMod);
-            setMethod(method);
-        }
+    private void addGlintSignature(ClassMod classMod, MethodRef method) {
+        addGlintSignature(classMod, method, ALOAD_0);
+    }
 
-        @Override
-        public String getMatchExpression() {
-            return buildExpression(
-                push(GLINT_PNG)
-            );
+    private void addGlintSignature(ClassMod classMod, MethodRef method, final int opcode) {
+        final FieldRef glint = new FieldRef(classMod.getDeobfClass(), "glint", "LResourceAddress;");
+
+        classMod.addClassSignature(new BaseMod.ResourceAddressSignature(classMod, glint, GLINT_PNG));
+
+        classMod.addClassSignature(new BytecodeSignature(classMod) {
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    opcode,
+                    any(0, 10),
+                    captureReference(GETSTATIC),
+                    anyReference(INVOKEVIRTUAL)
+                );
+            }
+
+            @Override
+            public boolean afterMatchPre() {
+                // ensure GETSTATIC is from the same class
+                int index = ((getCaptureGroup(1)[1] & 0xff) << 8) | (getCaptureGroup(1)[2] & 0xff);
+                String cl1 = getMethodInfo().getConstPool().getFieldrefClassName(index);
+                String cl2 = getClassFile().getName();
+                return cl1.equals(cl2);
+            }
         }
+            .setMethod(method)
+            .addXref(1, glint)
+        );
     }
 
     private class ItemRendererMod extends ClassMod {
@@ -232,7 +252,9 @@ public class CustomItemTextures extends Mod {
             final MethodRef renderItem = new MethodRef(getDeobfClass(), "renderItem", "(LEntityLiving;LItemStack;I)V");
             final MethodRef renderItemIn2D = new MethodRef(getDeobfClass(), "renderItemIn2D", "(LTessellator;FFFFIIF)V");
 
-            addClassSignature(new GlintSignature(this, renderItem));
+            addClassSignature(new ConstSignature("textures/map/map_background.png"));
+            addClassSignature(new ConstSignature("textures/misc/underwater.png"));
+            addGlintSignature(this, renderItem);
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -308,8 +330,9 @@ public class CustomItemTextures extends Mod {
             final MethodRef renderDroppedItem = new MethodRef(getDeobfClass(), "renderDroppedItem", "(LEntityItem;LIcon;IFFFF)V");
             final MethodRef renderItemAndEffectIntoGUI = new MethodRef(getDeobfClass(), "renderItemAndEffectIntoGUI", "(LFontRenderer;LTextureManager;LItemStack;II)V");
 
-            addClassSignature(new GlintSignature(this, renderDroppedItem));
-            addClassSignature(new GlintSignature(this, renderItemAndEffectIntoGUI));
+            addClassSignature(new ConstSignature("missingno"));
+            addGlintSignature(this, renderDroppedItem);
+            addGlintSignature(this, renderItemAndEffectIntoGUI, ALOAD_2);
 
             addMemberMapper(new FieldMapper(zLevel).accessFlag(AccessFlag.STATIC, false));
 
@@ -450,8 +473,8 @@ public class CustomItemTextures extends Mod {
         RenderLivingMod() {
             final MethodRef doRenderLiving = new MethodRef(getDeobfClass(), "doRenderLiving", "(LEntityLiving;DDDFF)V");
 
-            addClassSignature(new GlintSignature(this, doRenderLiving));
             addClassSignature(new ConstSignature("deadmau5"));
+            addGlintSignature(this, doRenderLiving);
 
             addPatch(new BytecodePatch() {
                 private int passRegister;
