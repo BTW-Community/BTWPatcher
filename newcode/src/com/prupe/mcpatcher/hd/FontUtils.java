@@ -58,11 +58,6 @@ public class FontUtils {
         }
     }
 
-    public static BufferedImage getImage(Object o, String name) throws IOException {
-        ResourceAddress resource = TexturePackAPI.parseResourceAddress(name);
-        return enable && resource != null ? TexturePackAPI.getImage(resource) : ImageIO.read(FontUtils.class.getResourceAsStream(name));
-    }
-
     public static float[] computeCharWidthsf(FontRenderer fontRenderer, ResourceAddress filename, BufferedImage image, int[] rgb, int[] charWidth) {
         float[] charWidthf = new float[charWidth.length];
         if (!enable) {

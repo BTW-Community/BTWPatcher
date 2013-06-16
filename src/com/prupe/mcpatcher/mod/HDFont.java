@@ -278,46 +278,6 @@ public class HDFont extends Mod {
                     );
                 }
             });
-
-            addGetResourcePatch();
-        }
-
-        private void addGetResourcePatch() {
-            final MethodRef getResource = new MethodRef("java.lang.Class", "getResource", "(Ljava/lang/String;)Ljava/net/URL;");
-            final MethodRef readURL = new MethodRef("javax.imageio.ImageIO", "read", "(Ljava/net/URL;)Ljava/awt/image/BufferedImage;");
-            final MethodRef getResourceAsStream = new MethodRef("java.lang.Class", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
-            final MethodRef readStream = new MethodRef("javax.imageio.ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
-            final MethodRef getImage = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getImage", "(Ljava/lang/Object;Ljava/lang/String;)Ljava/awt/image/BufferedImage;");
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "ImageIO.read(getResource(...)) -> getImage(...)";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        BinaryRegex.or(
-                            buildExpression(
-                                reference(INVOKEVIRTUAL, getResource),
-                                reference(INVOKESTATIC, readURL)
-                            ),
-                            buildExpression(
-                                reference(INVOKEVIRTUAL, getResourceAsStream),
-                                reference(INVOKESTATIC, readStream)
-                            )
-                        )
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, getImage)
-                    );
-                }
-            });
         }
     }
 }
