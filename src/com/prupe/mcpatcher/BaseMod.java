@@ -74,17 +74,10 @@ public final class BaseMod extends Mod {
         private JPanel panel;
         private JTextField heapSizeText;
         private JTextField directSizeText;
-        private JCheckBox autoRefreshTexturesCheckBox;
         private JCheckBox profilingCheckBox;
         private JTable logTable;
 
         ConfigPanel() {
-            autoRefreshTexturesCheckBox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    Config.set("autoRefreshTextures", autoRefreshTexturesCheckBox.isSelected());
-                }
-            });
-
             profilingCheckBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     Config.set("extraProfiling", profilingCheckBox.isSelected());
@@ -186,7 +179,6 @@ public final class BaseMod extends Mod {
         public void load() {
             loadIntConfig(Config.TAG_JAVA_HEAP_SIZE, heapSizeText, 1024);
             loadIntConfig(Config.TAG_DIRECT_MEMORY_SIZE, directSizeText, 0);
-            autoRefreshTexturesCheckBox.setSelected(Config.getBoolean("autoRefreshTextures", false));
             profilingCheckBox.setSelected(Config.getBoolean("extraProfiling", false));
 
             showAdvancedOption(profilingCheckBox);
@@ -196,6 +188,7 @@ public final class BaseMod extends Mod {
         public void save() {
             saveIntConfig(Config.TAG_JAVA_HEAP_SIZE, heapSizeText);
             saveIntConfig(Config.TAG_DIRECT_MEMORY_SIZE, directSizeText);
+            Config.remove("autoRefreshTextures");
         }
 
         private void loadIntConfig(String tag, JTextField field, int defaultValue) {

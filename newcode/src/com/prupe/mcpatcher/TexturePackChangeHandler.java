@@ -16,9 +16,6 @@ abstract public class TexturePackChangeHandler {
     private static long startTime;
     private static long startMem;
 
-    private static final boolean autoRefreshTextures = Config.getBoolean("autoRefreshTextures", false);
-    private static long lastCheckTime;
-
     private boolean updateNeeded;
 
     protected final String name;
@@ -178,90 +175,4 @@ abstract public class TexturePackChangeHandler {
         changing = false;
         initializing = false;
     }
-
-    /*
-    private static boolean openTexturePackFile(TexturePackCustom pack) {
-        if (pack.zipFile == null) {
-            return false;
-        }
-        if (pack.origZip != null) {
-            return true;
-        }
-        InputStream input = null;
-        OutputStream output = null;
-        ZipFile newZipFile = null;
-        try {
-            pack.lastModified = pack.texturePackFile.lastModified();
-            pack.tmpFile = File.createTempFile("tmpmc", ".zip");
-            pack.tmpFile.deleteOnExit();
-            MCPatcherUtils.close(pack.zipFile);
-            input = new FileInputStream(pack.texturePackFile);
-            output = new FileOutputStream(pack.tmpFile);
-            byte[] buffer = new byte[65536];
-            while (true) {
-                int nread = input.read(buffer);
-                if (nread <= 0) {
-                    break;
-                }
-                output.write(buffer, 0, nread);
-            }
-            MCPatcherUtils.close(input);
-            MCPatcherUtils.close(output);
-            newZipFile = new ZipFile(pack.tmpFile);
-            pack.origZip = pack.zipFile;
-            pack.zipFile = newZipFile;
-            newZipFile = null;
-            logger.fine("copied %s to %s, lastModified = %d", pack.texturePackFile.getPath(), pack.tmpFile.getPath(), pack.lastModified);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            MCPatcherUtils.close(input);
-            MCPatcherUtils.close(output);
-            MCPatcherUtils.close(newZipFile);
-        }
-        return true;
-    }
-
-    private static void closeTexturePackFile(TexturePackCustom pack) {
-        if (pack.origZip != null) {
-            MCPatcherUtils.close(pack.zipFile);
-            pack.zipFile = pack.origZip;
-            pack.origZip = null;
-            pack.tmpFile.delete();
-            logger.fine("deleted %s", pack.tmpFile.getPath());
-            pack.tmpFile = null;
-        }
-    }
-
-    private static boolean checkFileChange(TexturePackList list, TexturePackCustom pack) {
-        return false;
-        if (!autoRefreshTextures || !openTexturePackFile(pack)) {
-            return false;
-        }
-        long now = System.currentTimeMillis();
-        if (now - lastCheckTime < 1000L) {
-            return false;
-        }
-        lastCheckTime = now;
-        long lastModified = pack.texturePackFile.lastModified();
-        if (lastModified == pack.lastModified || lastModified == 0 || pack.lastModified == 0) {
-            return false;
-        }
-        logger.finer("%s lastModified changed from %d to %d", pack.texturePackFile.getName(), pack.lastModified, lastModified);
-        ZipFile tmpZip = null;
-        try {
-            tmpZip = new ZipFile(pack.texturePackFile);
-        } catch (IOException e) {
-            // file is still being written
-            return false;
-        } finally {
-            MCPatcherUtils.close(tmpZip);
-        }
-        closeTexturePackFile(pack);
-        list.updateAvailableTexturePacks();
-        scheduleTexturePackRefresh();
-        return true;
-    }
-    */
 }
