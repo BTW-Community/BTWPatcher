@@ -54,6 +54,8 @@ final class ItemOverride extends OverrideBase {
 
     void registerIcon(TileLoader tileLoader) {
         icon = tileLoader.getIcon(textureName.getPath());
-        matchIcon = tileLoader.getIcon(matchIconName.getPath());
+        if (matchIconName != null) {
+            matchIcon = tileLoader.getIcon(matchIconName.getPath());
+        }
     }
 }
