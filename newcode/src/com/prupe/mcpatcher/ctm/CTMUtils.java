@@ -194,7 +194,7 @@ public class CTMUtils {
                         if (blockName == null) {
                             blockName = "";
                         } else {
-                            blockName = " (" + blockName + ")";
+                            blockName = " (" + blockName.replaceFirst("^tile\\.", "") + ")";
                         }
                     }
                     blockOverrides[index] = registerOverride(blockOverrides[index], override, "block " + index + blockName);

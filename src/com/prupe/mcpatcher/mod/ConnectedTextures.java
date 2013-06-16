@@ -192,7 +192,7 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push("MISSING_ICON_TILE_")
+                        push("tile.")
                     );
                 }
             }.setMethod(getShortName));
