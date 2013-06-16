@@ -220,12 +220,12 @@ public class CITUtils {
         return icon;
     }
 
-    public static String getArmorTexture(String texture, EntityLiving entity, ItemStack itemStack) {
+    public static ResourceAddress getArmorTexture(ResourceAddress texture, EntityLiving entity, ItemStack itemStack) {
         if (enableArmor) {
-            int layer = texture.endsWith("_b.png") ? 1 : 0;
+            int layer = texture.getPath().endsWith("_overlay.png") ? 1 : 0;
             OverrideBase override = findMatch(armors, itemStack, null, layer);
             if (override != null) {
-                return override.textureName.getPath();
+                return override.textureName;
             }
         }
         return texture;

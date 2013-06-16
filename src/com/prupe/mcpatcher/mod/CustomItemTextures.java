@@ -38,13 +38,14 @@ public class CustomItemTextures extends Mod {
         addClassMod(new BaseMod.NBTTagListMod(this));
         addClassMod(new BaseMod.IconMod(this));
         addClassMod(new ItemMod());
+        addClassMod(new ItemArmorMod());
         addClassMod(new ItemStackMod());
         addClassMod(new EntityItemMod());
         addClassMod(new ItemRendererMod());
         addClassMod(new RenderItemMod());
         addClassMod(new RenderLivingMod());
         addClassMod(new RenderBipedMod());
-        addClassMod(new RenderArmorMod());
+        addClassMod(new RenderPlayerMod());
         addClassMod(new RenderSnowballMod());
         addClassMod(new BaseMod.EntityLivingMod(this));
         addClassMod(new BaseMod.EntityLivingSubMod(this));
@@ -144,6 +145,13 @@ public class CustomItemTextures extends Mod {
             );
 
             addMemberMapper(new MethodMapper(getIconFromDamageForRenderPass));
+        }
+    }
+
+    private class ItemArmorMod extends ClassMod {
+        ItemArmorMod() {
+            addClassSignature(new ConstSignature("leather_helmet_overlay"));
+            addClassSignature(new ConstSignature("empty_armor_slot_helmet"));
         }
     }
 
@@ -366,9 +374,7 @@ public class CustomItemTextures extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // if (itemStack != null && itemStack.hasEffect() ...)
-                        ALOAD, itemStackRegister,
-                        IFNULL, any(2),
+                        // if (itemStack.hasEffect() ...)
                         ALOAD, itemStackRegister,
                         reference(INVOKEVIRTUAL, hasEffect),
                         IFEQ, any(2),
@@ -590,8 +596,10 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private class RenderBipedMod extends ClassMod {
+    private class RenderBipedMod extends RenderArmorMod {
         RenderBipedMod() {
+            setParentClass("RenderLivingSub");
+
             final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(LEntityLivingSub;IF)V");
             final MethodRef getCurrentArmor = new MethodRef("EntityLivingSub", "getCurrentArmor", "(I)LItemStack;");
 
@@ -612,23 +620,58 @@ public class CustomItemTextures extends Mod {
                 .setMethod(loadTextureForPass)
                 .addXref(1, getCurrentArmor)
             );
+
+            addMemberMapper(new MethodMapper(getArmorTexture2).accessFlag(AccessFlag.STATIC, true));
+            addMemberMapper(new MethodMapper(getArmorTexture3).accessFlag(AccessFlag.STATIC, true));
+        }
+
+        @Override
+        String getEntityClass() {
+            return "EntityLivingSub";
         }
     }
 
-    private class RenderArmorMod extends ClassMod {
-        RenderArmorMod() {
+    private class RenderPlayerMod extends RenderArmorMod {
+        RenderPlayerMod() {
             setParentClass("RenderLiving");
-            setMultipleMatchesAllowed(true);
 
-            final MethodRef getArmorTexture = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getArmorTexture", "(Ljava/lang/String;LEntityLiving;LItemStack;)Ljava/lang/String;");
-            final ClassRef sbClass = new ClassRef("java/lang/StringBuilder");
-            final MethodRef sbInit0 = new MethodRef("java/lang/StringBuilder", "<init>", "()V");
-            final MethodRef sbInit1 = new MethodRef("java/lang/StringBuilder", "<init>", "(Ljava/lang/String;)V");
-            final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
+            addClassSignature(new ConstSignature("textures/entity/steve.png"));
+        }
 
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "armor/"));
-            addClassSignature(new ConstSignature("_"));
-            addClassSignature(new ConstSignature("_b.png"));
+        @Override
+        String getEntityClass() {
+            return "EntityPlayer";
+        }
+    }
+
+    abstract private class RenderArmorMod extends ClassMod {
+        protected final MethodRef getArmorTexture2 = new MethodRef("RenderBiped", "getArmorTexture2", "(LItemArmor;I)LResourceAddress;");
+        protected final MethodRef getArmorTexture3 = new MethodRef("RenderBiped", "getArmorTexture3", "(LItemArmor;ILjava/lang/String;)LResourceAddress;");
+
+        RenderArmorMod() {
+            final MethodRef renderArmor = new MethodRef(getDeobfClass(), "renderArmor", "(L" + getEntityClass() + ";IF)V");
+            final MethodRef getArmorTexture = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getArmorTexture", "(LResourceAddress;LEntityLiving;LItemStack;)LResourceAddress;");
+
+            final com.prupe.mcpatcher.BytecodeSignature signature = new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin(),
+                        // itemStack = entityLiving.getCurrentArmor(3 - slot);
+                        // - or -
+                        // itemStack = entityPlayer.inventory.armorItemInSlot(3 - slot);
+                        ALOAD_1,
+                        optional(build(anyReference(GETFIELD))),
+                        push(3),
+                        ILOAD_2,
+                        ISUB,
+                        anyReference(INVOKEVIRTUAL),
+                        capture(anyASTORE)
+                    );
+                }
+            }.setMethod(renderArmor);
+
+            addClassSignature(signature);
 
             addPatch(new BytecodePatch() {
                 private int armorRegister;
@@ -637,19 +680,7 @@ public class CustomItemTextures extends Mod {
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
                         public String getMatchExpression() {
-                            return buildExpression(
-                                begin(),
-                                // itemStack = entityLiving.getCurrentArmor(3 - slot);
-                                // - or -
-                                // itemStack = entityPlayer.inventory.armorItemInSlot(3 - slot);
-                                ALOAD_1,
-                                optional(build(anyReference(GETFIELD))),
-                                push(3),
-                                ILOAD_2,
-                                ISUB,
-                                anyReference(INVOKEVIRTUAL),
-                                capture(anyASTORE)
-                            );
+                            return signature.getMatchExpression();
                         }
 
                         @Override
@@ -672,24 +703,10 @@ public class CustomItemTextures extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    return buildExpression(
-                        reference(NEW, sbClass),
-                        DUP,
-                        or(
-                            build(
-                                // new StringBuilder("armor/")
-                                push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "armor/"),
-                                reference(INVOKESPECIAL, sbInit1)
-                            ),
-                            build(
-                                // new StringBuilder().append("armor/")
-                                reference(INVOKESPECIAL, sbInit0),
-                                push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "armor/")
-                            )
-                        ),
-                        nonGreedy(any(0, 100)),
-                        reference(INVOKEVIRTUAL, sbToString)
-                    );
+                    return buildExpression(or(
+                        build(reference(INVOKESTATIC, getArmorTexture2)),
+                        build(reference(INVOKESTATIC, getArmorTexture3))
+                    ));
                 }
 
                 @Override
@@ -702,6 +719,8 @@ public class CustomItemTextures extends Mod {
                 }
             }.setInsertAfter(true));
         }
+
+        abstract String getEntityClass();
     }
 
     private class RenderSnowballMod extends ClassMod {
@@ -758,27 +777,6 @@ public class CustomItemTextures extends Mod {
                     );
                 }
             }.targetMethod(doRender));
-        }
-    }
-
-    private class EntityLivingMod extends ClassMod {
-        EntityLivingMod() {
-            setParentClass("Entity");
-
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/char.png"));
-            addClassSignature(new ConstSignature("Health"));
-            addClassSignature(new ConstSignature("HurtTime"));
-        }
-    }
-
-    private class EntityLivingSubMod extends ClassMod {
-        EntityLivingSubMod() {
-            setParentClass("EntityLiving");
-
-            addClassSignature(new ConstSignature("explode"));
-            addClassSignature(new ConstSignature("CanPickUpLoot"));
-            addClassSignature(new ConstSignature("PersistenceRequired"));
-            addClassSignature(new ConstSignature("Equipment"));
         }
     }
 
