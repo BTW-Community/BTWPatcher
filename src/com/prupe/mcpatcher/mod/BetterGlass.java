@@ -14,6 +14,7 @@ public class BetterGlass extends Mod {
     private static final MethodRef glDepthMask = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthMask", "(Z)V");
     private static final MethodRef glShadeModel = new MethodRef(MCPatcherUtils.GL11_CLASS, "glShadeModel", "(I)V");
     private static final MethodRef glCallList = new MethodRef(MCPatcherUtils.GL11_CLASS, "glCallList", "(I)V");
+    private static final MethodRef glAlphaFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glAlphaFunc", "(IF)V");
     private static final MethodRef getRenderBlockPass = new MethodRef("Block", "getRenderBlockPass", "()I");
     private static final MethodRef enableLightmap = new MethodRef("EntityRenderer", "enableLightmap", "(D)V");
     private static final MethodRef disableLightmap = new MethodRef("EntityRenderer", "disableLightmap", "(D)V");
@@ -22,12 +23,13 @@ public class BetterGlass extends Mod {
         name = MCPatcherUtils.BETTER_GLASS;
         author = "MCPatcher";
         description = "Enables partial transparency for glass blocks.";
-        version = "2.1";
+        version = "2.2";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.CONNECTED_TEXTURES);
 
         addClassMod(new BaseMod.MinecraftMod(this));
+        addClassMod(new BaseMod.ResourceAddressMod(this));
         addClassMod(new BaseMod.BlockMod(this));
         addClassMod(new BaseMod.IBlockAccessMod(this));
         addClassMod(new WorldRendererMod());
@@ -333,8 +335,7 @@ public class BetterGlass extends Mod {
             final MethodRef sortAndRender = new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLiving;ID)I");
             final MethodRef doRenderPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "doRenderPass", "(LRenderGlobal;LEntityLiving;ID)V");
 
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "terrain.png"));
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/snow.png"));
+            addClassSignature(new ConstSignature("textures/environment/snow.png"));
             addClassSignature(new ConstSignature("ambient.weather.rain"));
 
             addClassSignature(new BytecodeSignature() {
@@ -379,7 +380,9 @@ public class BetterGlass extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/snow.png")
+                        push(516), // GL_GREATER
+                        push(0.01f),
+                        reference(INVOKESTATIC, glAlphaFunc)
                     );
                 }
             }.setMethod(renderRainSnow));
@@ -499,7 +502,7 @@ public class BetterGlass extends Mod {
             final MethodRef generateDisplayLists = new MethodRef("GLAllocation", "generateDisplayLists", "(I)I");
 
             addClassSignature(new ConstSignature("smoke"));
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/clouds.png"));
+            addClassSignature(new ConstSignature("textures/environment/clouds.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
