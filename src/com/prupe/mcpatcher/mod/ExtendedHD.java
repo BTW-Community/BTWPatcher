@@ -10,17 +10,13 @@ public class ExtendedHD extends Mod {
     private static final MethodRef copySubTexture1 = new MethodRef("TextureUtils", "copySubTexture1", "([IIIIIZZ)V");
     private static final MethodRef copySubTexture2 = new MethodRef("TextureUtils", "copySubTexture2", "(Ljava/awt/image/BufferedImage;IIZZ)V");
     private static final MethodRef setupTexture1 = new MethodRef("TextureUtils", "setupTexture1", "(ILjava/awt/image/BufferedImage;ZZ)I");
-    private static final MethodRef setupTexture3 = new MethodRef("TextureUtils", "setupTexture3", "(III)V");
+    private static final MethodRef setupTexture2 = new MethodRef("TextureUtils", "setupTexture2", "(III)V");
 
-    private static final MethodRef setupTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "([IIIIILjava/lang/String;)V");
-    private static final MethodRef setupTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(ILjava/awt/image/BufferedImage;ZZLjava/lang/String;)I");
-    private static final MethodRef setupTextureMipmaps3 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(IIILjava/lang/String;)V");
+    private static final MethodRef setupTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(ILjava/awt/image/BufferedImage;ZZLResourceAddress;)I");
+    private static final MethodRef setupTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(IIILjava/lang/String;)V");
     private static final MethodRef copySubTextureMipmaps = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "([IIIIILjava/lang/String;)V");
-    private static final FieldRef textureBorder = new FieldRef("Texture", "border", "I");
 
     private static final MethodRef imageRead = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
-
-    private final boolean haveResourceBundle;
 
     public ExtendedHD() {
         name = MCPatcherUtils.EXTENDED_HD;
@@ -30,16 +26,15 @@ public class ExtendedHD extends Mod {
 
         configPanel = new HDConfig();
 
-        haveResourceBundle = getMinecraftVersion().compareTo("13w21a") >= 0;
-
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
-        if (getMinecraftVersion().compareTo("13w18a") < 0) {
-            addError("Requires Minecraft 13w18a or newer");
+        if (getMinecraftVersion().compareTo("13w24b") < 0) {
+            addError("Requires Minecraft 13w24b or newer");
             return;
         }
 
         addClassMod(new MinecraftMod());
+        addClassMod(new BaseMod.ResourceAddressMod(this));
         addClassMod(new BaseMod.IconMod(this));
         addClassMod(new BaseMod.ITextureMod(this));
         addClassMod(new BaseMod.TextureBaseMod(this));
@@ -107,7 +102,7 @@ public class ExtendedHD extends Mod {
             addMemberMapper(new MethodMapper(copySubTexture1));
             addMemberMapper(new MethodMapper(copySubTexture2));
             addMemberMapper(new MethodMapper(setupTexture1));
-            addMemberMapper(new MethodMapper(setupTexture3));
+            addMemberMapper(new MethodMapper(setupTexture2));
         }
     }
 
@@ -211,7 +206,7 @@ public class ExtendedHD extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(INVOKESTATIC, setupTexture3)
+                        reference(INVOKESTATIC, setupTexture2)
                     );
                 }
 
@@ -220,7 +215,7 @@ public class ExtendedHD extends Mod {
                     return buildCode(
                         ALOAD_0,
                         reference(GETFIELD, basePath),
-                        reference(INVOKESTATIC, setupTextureMipmaps3)
+                        reference(INVOKESTATIC, setupTextureMipmaps2)
                     );
                 }
             });
@@ -233,31 +228,21 @@ public class ExtendedHD extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    if (haveResourceBundle) {
-                        return buildExpression(
-                            // resource = bundle.getResource(new ResourceAddress(path));
-                            ALOAD_2,
-                            anyReference(NEW),
-                            DUP,
-                            capture(anyALOAD),
-                            anyReference(INVOKESPECIAL),
-                            anyReference(INVOKEINTERFACE),
-                            ASTORE, capture(any()),
+                    return buildExpression(
+                        // resource = bundle.getResource(new ResourceAddress(path));
+                        ALOAD_2,
+                        anyReference(NEW),
+                        DUP,
+                        capture(anyALOAD),
+                        anyReference(INVOKESPECIAL),
+                        anyReference(INVOKEINTERFACE),
+                        ASTORE, capture(any()),
 
-                            // image = ImageIO.read(resource.getInputStream());
-                            ALOAD, backReference(2),
-                            anyReference(INVOKEINTERFACE),
-                            reference(INVOKESTATIC, imageRead)
-                        );
-                    } else {
-                        return buildExpression(
-                            // ImageIO.read(texturePack.getInputStream(path))
-                            ALOAD_2,
-                            capture(anyALOAD),
-                            anyReference(INVOKEINTERFACE),
-                            reference(INVOKESTATIC, imageRead)
-                        );
-                    }
+                        // image = ImageIO.read(resource.getInputStream());
+                        ALOAD, backReference(2),
+                        anyReference(INVOKEINTERFACE),
+                        reference(INVOKESTATIC, imageRead)
+                    );
                 }
 
                 @Override
@@ -383,7 +368,7 @@ public class ExtendedHD extends Mod {
                     return buildCode(
                         ALOAD_0,
                         reference(GETFIELD, textureName),
-                        reference(INVOKESTATIC, setupTextureMipmaps2)
+                        reference(INVOKESTATIC, setupTextureMipmaps1)
                     );
                 }
             });

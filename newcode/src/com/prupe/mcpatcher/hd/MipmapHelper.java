@@ -108,14 +108,14 @@ public class MipmapHelper {
         copySubTexture(rgb, width, height, x, y, textureName);
     }
 
-    public static int setupTexture(int glTexture, BufferedImage image, boolean blur, boolean clamp, String textureName) {
+    public static int setupTexture(int glTexture, BufferedImage image, boolean blur, boolean clamp, ResourceAddress textureName) {
         int width = image.getWidth();
         int height = image.getHeight();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTexture);
         logger.finer("setupTexture(%s, %d, %dx%d, %s, %s)", textureName, glTexture, width, height, blur, clamp);
         int[] rgb = new int[width * height];
         image.getRGB(0, 0, width, height, rgb, 0, width);
-        setupTexture(rgb, width, height, 0, 0, blur, clamp, textureName);
+        setupTexture(rgb, width, height, 0, 0, blur, clamp, textureName.getPath());
         return glTexture;
     }
 

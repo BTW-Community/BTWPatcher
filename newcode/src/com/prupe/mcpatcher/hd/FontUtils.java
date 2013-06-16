@@ -46,10 +46,11 @@ public class FontUtils {
         });
     }
 
-    public static String getFontName(String font) {
-        font = font.replaceFirst("_hd\\.png$", ".png");
-        String newFont = font.replaceFirst("\\.png$", "_hd.png");
-        if (enable && TexturePackAPI.hasResource(new ResourceAddress(newFont))) {
+    public static ResourceAddress getFontName(ResourceAddress font) {
+        String path = font.getPath().replaceFirst("_hd\\.png$", ".png");
+        String newPath = path.replaceFirst("\\.png$", "_hd.png");
+        ResourceAddress newFont = new ResourceAddress(font.getNamespace(), newPath);
+        if (enable && TexturePackAPI.hasResource(newFont)) {
             logger.fine("using %s instead of %s", newFont, font);
             return newFont;
         } else {
@@ -62,7 +63,7 @@ public class FontUtils {
         return enable && resource != null ? TexturePackAPI.getImage(resource) : ImageIO.read(FontUtils.class.getResourceAsStream(name));
     }
 
-    public static float[] computeCharWidthsf(FontRenderer fontRenderer, String filename, BufferedImage image, int[] rgb, int[] charWidth) {
+    public static float[] computeCharWidthsf(FontRenderer fontRenderer, ResourceAddress filename, BufferedImage image, int[] rgb, int[] charWidth) {
         float[] charWidthf = new float[charWidth.length];
         if (!enable) {
             for (int i = 0; i < charWidth.length; i++) {
@@ -199,8 +200,8 @@ public class FontUtils {
         }
     }
 
-    private static void getCharWidthOverrides(String font, float[] charWidthf, boolean[] isOverride) {
-        ResourceAddress textFile = new ResourceAddress(font.replace(".png", ".properties"));
+    private static void getCharWidthOverrides(ResourceAddress font, float[] charWidthf, boolean[] isOverride) {
+        ResourceAddress textFile = new ResourceAddress(font.getNamespace(), font.getPath().replace(".png", ".properties"));
         Properties props = TexturePackAPI.getProperties(textFile);
         if (props == null) {
             return;

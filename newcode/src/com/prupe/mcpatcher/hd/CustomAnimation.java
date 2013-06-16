@@ -55,7 +55,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
             @Override
             public void afterChange() {
                 if (enable) {
-                    for (ResourceAddress resource : TexturePackAPI.listResources("anim", ".properties", true, true, false)) {
+                    for (ResourceAddress resource : TexturePackAPI.listResources("anim", ".properties", true, false, false)) {
                         Properties properties = TexturePackAPI.getProperties(resource);
                         if (properties != null) {
                             pending.put(resource, properties);
@@ -110,7 +110,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         }
         ResourceAddress srcName = TexturePackAPI.parseResourceAddress(properties.getProperty("from", ""));
         if (srcName == null) {
-            logger.error("%s: missing to= property");
+            logger.error("%s: missing from= property");
             return;
         }
         BufferedImage srcImage = TexturePackAPI.getImage(srcName);

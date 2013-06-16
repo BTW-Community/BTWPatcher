@@ -214,7 +214,7 @@ public class FancyDial {
         if (useScratchTexture) {
             BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             scratchTexture = GL11.glGenTextures();
-            MipmapHelper.setupTexture(scratchTexture, image, false, false, "textures/items/" + name + "_scratch");
+            MipmapHelper.setupTexture(scratchTexture, image, false, false, new ResourceAddress("textures/items/" + name + "_scratch"));
             targetTexture = scratchTexture;
             scratchTextureBuffer = ByteBuffer.allocateDirect(4 * width * height);
             logger.fine("rendering %s to %dx%d scratch texture %d", name, width, height, scratchTexture);
