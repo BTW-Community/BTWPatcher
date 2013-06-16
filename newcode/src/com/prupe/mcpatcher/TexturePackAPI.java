@@ -23,7 +23,7 @@ public class TexturePackAPI {
 
     public static List<IResourcePack> getResourcePacks(String namespace) {
         List<IResourcePack> list = new ArrayList<IResourcePack>();
-        IResourceBundle resourceBundle = Minecraft.getInstance().getResourceBundle();
+        IResourceBundle resourceBundle = getResourceBundle();
         if (resourceBundle instanceof TextureResourceBundle) {
             for (Map.Entry<String, ResourceBundle> entry : ((TextureResourceBundle) resourceBundle).namespaceMap.entrySet()) {
                 if (namespace == null || namespace.equals(entry.getKey())) {

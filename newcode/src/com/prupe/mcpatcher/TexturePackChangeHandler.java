@@ -11,6 +11,7 @@ abstract public class TexturePackChangeHandler {
     private static final MCLogger logger = MCLogger.getLogger("Texture Pack");
 
     private static final ArrayList<TexturePackChangeHandler> handlers = new ArrayList<TexturePackChangeHandler>();
+    private static boolean initializing = true;
     private static boolean changing;
     private static long startTime;
     private static long startMem;
@@ -99,13 +100,21 @@ abstract public class TexturePackChangeHandler {
 
     public static void beforeChange1() {
         if (changing) {
-            new RuntimeException("recursive call to TexturePackChangeHandler detected").printStackTrace();
+            if (initializing) {
+                logger.finer("skipping beforeChange1 because we are still initializing");
+            } else {
+                new RuntimeException("unexpected recursive call to TexturePackChangeHandler").printStackTrace();
+            }
             return;
         }
         changing = true;
         startTime = System.currentTimeMillis();
         Runtime runtime = Runtime.getRuntime();
         startMem = runtime.totalMemory() - runtime.freeMemory();
+        logger.fine("%s resource packs:", initializing ? "initializing" : "changing");
+        for (IResourcePack pack : TexturePackAPI.getResourcePacks(null)) {
+            logger.fine("resource pack: %s", pack);
+        }
 
         for (TexturePackChangeHandler handler : handlers) {
             try {
@@ -133,6 +142,11 @@ abstract public class TexturePackChangeHandler {
     }
 
     public static void afterChange1() {
+        if (initializing) {
+            logger.finer("deferring afterChange1 because we are still initializing");
+            initializing = false;
+            return;
+        }
         for (TexturePackChangeHandler handler : handlers) {
             try {
                 logger.info("refreshing %s (post)...", handler.name);

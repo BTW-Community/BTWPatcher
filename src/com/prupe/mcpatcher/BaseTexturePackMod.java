@@ -91,7 +91,7 @@ public class BaseTexturePackMod extends Mod {
         MinecraftMod() {
             super(BaseTexturePackMod.this);
 
-            final ClassRef textureManagerClass = new ClassRef("TextureManager");
+            final ClassRef textureResourceBundleClass = new ClassRef("TextureResourceBundle");
             final MethodRef getTextureManager = new MethodRef(getDeobfClass(), "getTextureManager", "()LTextureManager;");
             final MethodRef getResourceBundle = new MethodRef(getDeobfClass(), "getResourceBundle", "()LIResourceBundle;");
             final MethodRef startGame = new MethodRef(getDeobfClass(), "startGame", "()V");
@@ -130,7 +130,7 @@ public class BaseTexturePackMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(NEW, textureManagerClass),
+                        reference(NEW, textureResourceBundleClass),
                         any(0, 500),
                         reference(INVOKESTATIC, glViewport)
                     );
@@ -197,51 +197,6 @@ public class BaseTexturePackMod extends Mod {
             addMemberMapper(new MethodMapper(refreshTextures));
 
             addPatch(new MakeMemberPublicPatch(texturesByName));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "before texture pack change";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        begin()
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, beforeChange1)
-                    );
-                }
-            }.targetMethod(refreshTextures));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "after texture pack change";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        RETURN
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, afterChange1)
-                    );
-                }
-            }
-                .setInsertBefore(true)
-                .targetMethod(refreshTextures)
-            );
         }
     }
 
@@ -441,9 +396,12 @@ public class BaseTexturePackMod extends Mod {
             final FieldRef namespaceMap = new FieldRef(getDeobfClass(), "namespaceMap", "Ljava/util/Map;");
             final MethodRef fnfInit = new MethodRef("java/io/FileNotFoundException", "<init>", "(Ljava/lang/String;)V");
             final MethodRef getResource = new MethodRef(getDeobfClass(), "getResource", "(LResourceAddress;)LIResource;");
+            final MethodRef loadResources = new MethodRef(getDeobfClass(), "loadResources", "()V");
             final MethodRef addressToString = new MethodRef("ResourceAddress", "toString", "()Ljava/lang/String;");
+            final InterfaceMethodRef mapClear = new InterfaceMethodRef("java/util/Map", "clear", "()V");
+            final InterfaceMethodRef listIterator = new InterfaceMethodRef("java/util/List", "iterator", "()Ljava/util/Iterator;");
 
-            addClassSignature(new ConstSignature(new InterfaceMethodRef("java/util/Map", "clear", "()V")));
+            addClassSignature(new ConstSignature(mapClear));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -462,9 +420,63 @@ public class BaseTexturePackMod extends Mod {
                 .addXref(1, addressToString)
             );
 
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKEINTERFACE, listIterator)
+                    );
+                }
+            }.setMethod(loadResources));
+
             addMemberMapper(new FieldMapper(namespaceMap));
 
             addPatch(new MakeMemberPublicPatch(namespaceMap));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "before texture pack change";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(INVOKESTATIC, beforeChange1)
+                    );
+                }
+            }.targetMethod(loadResources));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "after texture pack change";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        RETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(INVOKESTATIC, afterChange1)
+                    );
+                }
+            }
+                .setInsertBefore(true)
+                .targetMethod(loadResources)
+            );
         }
     }
 
