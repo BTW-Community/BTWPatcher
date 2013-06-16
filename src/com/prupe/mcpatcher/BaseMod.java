@@ -706,6 +706,18 @@ public final class BaseMod extends Mod {
         }
     }
 
+    public static class EntityLivingSubMod extends com.prupe.mcpatcher.ClassMod {
+        public EntityLivingSubMod(Mod mod) {
+            super(mod);
+            setParentClass("EntityLiving");
+
+            addClassSignature(new ConstSignature("explode"));
+            addClassSignature(new ConstSignature("CanPickUpLoot"));
+            addClassSignature(new ConstSignature("PersistenceRequired"));
+            addClassSignature(new ConstSignature("Equipment"));
+        }
+    }
+
     public static class ResourceAddressMod extends com.prupe.mcpatcher.ClassMod {
         protected final MethodRef getNamespace = new MethodRef(getDeobfClass(), "getNamespace", "()Ljava/lang/String;");
         protected final MethodRef getPath = new MethodRef(getDeobfClass(), "getPath", "()Ljava/lang/String;");

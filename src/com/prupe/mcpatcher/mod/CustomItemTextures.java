@@ -12,7 +12,8 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class CustomItemTextures extends Mod {
-    private static final String GLINT_PNG = MCPatcherUtils.TEXTURE_PACK_BLUR + MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/glint.png";
+    private static final String GLINT_PNG = "textures/misc/enchanted_item_glint.png";
+
     private static final FieldRef itemsList = new FieldRef("Item", "itemsList", "[LItem;");
     private static final MethodRef glDepthFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthFunc", "(I)V");
     private static final MethodRef getEntityItem = new MethodRef("EntityItem", "getEntityItem", "()LItemStack;");
@@ -25,12 +26,13 @@ public class CustomItemTextures extends Mod {
         name = MCPatcherUtils.CUSTOM_ITEM_TEXTURES;
         author = "MCPatcher";
         description = "Enables support for custom item textures, enchantments, and armor.";
-        version = "0.4";
+        version = "0.5";
         configPanel = new ConfigPanel();
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
 
+        addClassMod(new BaseMod.ResourceAddressMod(this));
         addClassMod(new BaseMod.TessellatorMod(this));
         addClassMod(new BaseMod.NBTTagCompoundMod(this).mapGetTagList());
         addClassMod(new BaseMod.NBTTagListMod(this));
@@ -44,8 +46,8 @@ public class CustomItemTextures extends Mod {
         addClassMod(new RenderBipedMod());
         addClassMod(new RenderArmorMod());
         addClassMod(new RenderSnowballMod());
-        addClassMod(new EntityLivingMod());
-        addClassMod(new EntityLivingSubMod());
+        addClassMod(new BaseMod.EntityLivingMod(this));
+        addClassMod(new BaseMod.EntityLivingSubMod(this));
         addClassMod(new EntityPlayerMod());
         addClassMod(new PotionMod());
         addClassMod(new PotionHelperMod());
@@ -570,9 +572,7 @@ public class CustomItemTextures extends Mod {
             final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(LEntityLivingSub;IF)V");
             final MethodRef getCurrentArmor = new MethodRef("EntityLivingSub", "getCurrentArmor", "(I)LItemStack;");
 
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "armor/"));
-            addClassSignature(new ConstSignature("_"));
-            addClassSignature(new ConstSignature("_b.png"));
+            addClassSignature(new ConstSignature("textures/models/armor/%s_layer_%d%s.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -687,9 +687,8 @@ public class CustomItemTextures extends Mod {
 
             final MethodRef doRender = new MethodRef(getDeobfClass(), "doRender", "(LEntity;DDDFF)V");
 
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "gui/items.png"));
-            addClassSignature(new ConstSignature("potion_splash"));
-            addClassSignature(new ConstSignature("potion_contents"));
+            addClassSignature(new ConstSignature("bottle_splash"));
+            addClassSignature(new ConstSignature("overlay"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -766,7 +765,6 @@ public class CustomItemTextures extends Mod {
 
             setParentClass("EntityLiving");
 
-            addClassSignature(new ConstSignature(MCPatcherUtils.TEXTURE_PACK_PREFIX + "mob/char.png"));
             addClassSignature(new ConstSignature("random.eat"));
 
             addClassSignature(new BytecodeSignature() {
