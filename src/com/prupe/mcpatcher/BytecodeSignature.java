@@ -108,6 +108,9 @@ abstract public class BytecodeSignature extends ClassSignature {
     }
 
     private boolean afterMatch1(String className, ClassMap tempClassMap) {
+        if (!afterMatchPre()) {
+            return false;
+        }
         MethodInfo methodInfo = getMethodInfo();
         ConstPool constPool = methodInfo.getConstPool();
         ArrayList<JavaRef> tempMappings = new ArrayList<JavaRef>();
@@ -222,6 +225,16 @@ abstract public class BytecodeSignature extends ClassSignature {
 
     /**
      * Called immediately after a successful match.  Gives an opportunity to extract bytecode
+     * values using getCaptureGroup, for example.
+     *
+     * @return false if match should be ignored
+     */
+    public boolean afterMatchPre() {
+        return true;
+    }
+
+    /**
+     * Called after a successful match.  Gives an opportunity to extract bytecode
      * values using getCaptureGroup, for example.
      *
      * @return false if match should be ignored
