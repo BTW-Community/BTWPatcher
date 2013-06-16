@@ -15,8 +15,8 @@ public class BaseTexturePackMod extends Mod {
 
     protected final MethodRef earlyInitialize = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "earlyInitialize", "(Ljava/lang/String;Ljava/lang/String;)V");
     protected final MethodRef checkForTexturePackChange = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "checkForTexturePackChange", "()V");
-    protected final MethodRef beforeChange1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "beforeChange1", "()V");
-    protected final MethodRef afterChange1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "afterChange1", "()V");
+    protected final MethodRef beforeChange1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "beforeChange1", "(Z)V");
+    protected final MethodRef afterChange1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "afterChange1", "(Z)V");
 
     protected BaseTexturePackMod() {
         name = MCPatcherUtils.BASE_TEXTURE_PACK_MOD;
@@ -150,8 +150,10 @@ public class BaseTexturePackMod extends Mod {
                     }
                     return buildCode(
                         earlyInitCode,
+                        push(1),
                         reference(INVOKESTATIC, beforeChange1),
                         getMatch(),
+                        push(1),
                         reference(INVOKESTATIC, afterChange1)
                     );
                 }
@@ -449,6 +451,7 @@ public class BaseTexturePackMod extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        push(0),
                         reference(INVOKESTATIC, beforeChange1)
                     );
                 }
@@ -470,6 +473,7 @@ public class BaseTexturePackMod extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        push(0),
                         reference(INVOKESTATIC, afterChange1)
                     );
                 }

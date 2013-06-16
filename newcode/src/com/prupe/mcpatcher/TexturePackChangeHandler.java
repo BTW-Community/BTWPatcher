@@ -11,7 +11,7 @@ abstract public class TexturePackChangeHandler {
     private static final MCLogger logger = MCLogger.getLogger("Texture Pack");
 
     private static final ArrayList<TexturePackChangeHandler> handlers = new ArrayList<TexturePackChangeHandler>();
-    private static boolean initializing = true;
+    private static boolean initializing;
     private static boolean changing;
     private static long startTime;
     private static long startMem;
@@ -98,21 +98,24 @@ abstract public class TexturePackChangeHandler {
         }
     }
 
-    public static void beforeChange1() {
-        if (changing) {
-            if (initializing) {
-                logger.finer("skipping beforeChange1 because we are still initializing");
-            } else {
-                new RuntimeException("unexpected recursive call to TexturePackChangeHandler").printStackTrace();
-            }
+    public static void beforeChange1(boolean initializing1) {
+        logger.finer("beforeChange1(%s) initializing=%s changing=%s", initializing1, initializing, changing);
+        if (initializing1) {
+            logger.finer("skipping beforeChange1 because we are still initializing");
+            initializing = true;
+            return;
+        }
+        if (changing && !initializing) {
+            new RuntimeException("unexpected recursive call to TexturePackChangeHandler").printStackTrace();
             return;
         }
         changing = true;
         startTime = System.currentTimeMillis();
         Runtime runtime = Runtime.getRuntime();
         startMem = runtime.totalMemory() - runtime.freeMemory();
-        logger.fine("%s resource packs:", initializing ? "initializing" : "changing");
-        for (IResourcePack pack : TexturePackAPI.getResourcePacks(null)) {
+        List<IResourcePack> resourcePacks = TexturePackAPI.getResourcePacks(null);
+        logger.fine("%s resource packs (%d selected):", initializing ? "initializing" : "changing", resourcePacks.size());
+        for (IResourcePack pack : resourcePacks) {
             logger.fine("resource pack: %s", pack);
         }
 
@@ -141,10 +144,10 @@ abstract public class TexturePackChangeHandler {
         }
     }
 
-    public static void afterChange1() {
-        if (initializing) {
+    public static void afterChange1(boolean initializing1) {
+        logger.finer("afterChange1(%s) initializing=%s changing=%s", initializing1, initializing, changing);
+        if (initializing && !initializing1) {
             logger.finer("deferring afterChange1 because we are still initializing");
-            initializing = false;
             return;
         }
         for (TexturePackChangeHandler handler : handlers) {
@@ -173,6 +176,7 @@ abstract public class TexturePackChangeHandler {
         long memDiff = runtime.totalMemory() - runtime.freeMemory() - startMem;
         logger.info("done (%.3fs elapsed, mem usage %+.1fMB)\n", timeDiff / 1000.0, memDiff / 1048576.0);
         changing = false;
+        initializing = false;
     }
 
     /*
