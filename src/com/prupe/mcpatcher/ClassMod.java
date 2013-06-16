@@ -195,27 +195,27 @@ abstract public class ClassMod implements PatchComponent {
     public void postPatch(String filename, ClassFile classFile) throws Exception {
     }
 
-    protected void addPrerequisiteClass(String className) {
+    public void addPrerequisiteClass(String className) {
         prerequisiteClasses.add(className);
     }
 
-    protected void addClassSignature(com.prupe.mcpatcher.ClassSignature classSignature) {
+    public void addClassSignature(com.prupe.mcpatcher.ClassSignature classSignature) {
         classSignatures.add(classSignature);
     }
 
-    protected void addPatch(com.prupe.mcpatcher.ClassPatch classPatch) {
+    public void addPatch(com.prupe.mcpatcher.ClassPatch classPatch) {
         patches.add(classPatch);
     }
 
-    protected void addMemberMapper(com.prupe.mcpatcher.MemberMapper memberMapper) {
+    public void addMemberMapper(com.prupe.mcpatcher.MemberMapper memberMapper) {
         memberMappers.add(memberMapper);
     }
 
-    protected void setMultipleMatchesAllowed(boolean match) {
+    public void setMultipleMatchesAllowed(boolean match) {
         global = match;
     }
 
-    protected void setMatchAddedFiles(boolean match) {
+    public void setMatchAddedFiles(boolean match) {
         if (match) {
             matchAddedFiles = true;
             setMultipleMatchesAllowed(true);
@@ -224,11 +224,11 @@ abstract public class ClassMod implements PatchComponent {
         }
     }
 
-    protected void setParentClass(String className) {
+    public void setParentClass(String className) {
         parentClass = className;
     }
 
-    protected void setInterfaces(String... interfaces) {
+    public void setInterfaces(String... interfaces) {
         this.interfaces = interfaces.clone();
     }
 
@@ -243,11 +243,11 @@ abstract public class ClassMod implements PatchComponent {
         }
     }
 
-    final protected Label label(String key) {
+    final public Label label(String key) {
         return new Label(key, true);
     }
 
-    final protected Label branch(String key) {
+    final public Label branch(String key) {
         return new Label(key, false);
     }
 
