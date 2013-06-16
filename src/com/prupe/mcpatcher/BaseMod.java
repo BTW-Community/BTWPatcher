@@ -774,6 +774,19 @@ public final class BaseMod extends Mod {
         }
     }
 
+    public static class IResourceMod extends com.prupe.mcpatcher.ClassMod {
+        public IResourceMod(Mod mod) {
+            super(mod);
+
+            addClassSignature(new InterfaceSignature(
+                new InterfaceMethodRef(getDeobfClass(), "getAddress", "()LResourceAddress;"),
+                new InterfaceMethodRef(getDeobfClass(), "getInputStream", "()Ljava/io/InputStream;"),
+                new InterfaceMethodRef(getDeobfClass(), "isPresent", "()Z"),
+                new InterfaceMethodRef(getDeobfClass(), "getMCMeta", "(Ljava/lang/String;)LIMCMeta;")
+            ));
+        }
+    }
+
     /*
      * Matches FontRenderer class and maps charWidth, fontTextureName, and spaceWidth fields.
      */

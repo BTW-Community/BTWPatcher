@@ -151,7 +151,7 @@ public class MipmapHelper {
         }
     }
 
-    static BufferedImage fixTransparency(String name, BufferedImage image) {
+    static BufferedImage fixTransparency(ResourceAddress name, BufferedImage image) {
         if (image == null) {
             return image;
         }

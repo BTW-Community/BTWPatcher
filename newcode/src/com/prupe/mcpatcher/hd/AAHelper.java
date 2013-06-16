@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.hd;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import net.minecraft.src.ResourceAddress;
 import net.minecraft.src.TextureStitched;
 import org.lwjgl.opengl.PixelFormat;
 
@@ -23,7 +24,7 @@ public class AAHelper {
         }
     }
 
-    public static BufferedImage addBorder(TextureStitched stitched, String name, BufferedImage input) {
+    public static BufferedImage addBorder(TextureStitched stitched, ResourceAddress name, BufferedImage input) {
         if (input == null || !(stitched instanceof BorderedTexture)) {
             return input;
         }

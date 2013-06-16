@@ -35,6 +35,7 @@ public class ExtendedHD extends Mod {
 
         addClassMod(new MinecraftMod());
         addClassMod(new BaseMod.ResourceAddressMod(this));
+        addClassMod(new BaseMod.IResourceMod(this));
         addClassMod(new BaseMod.IconMod(this));
         addClassMod(new BaseMod.ITextureMod(this));
         addClassMod(new BaseMod.TextureBaseMod(this));
@@ -160,10 +161,8 @@ public class ExtendedHD extends Mod {
         TextureMapMod() {
             super(ExtendedHD.this);
 
-            final MethodRef readTile = new MethodRef(getDeobfClass(), "readTile", "(LTextureStitched;LIResourceBundle;Ljava/lang/String;)Z");
             final ClassRef textureStitched = new ClassRef("TextureStitched");
             final MethodRef textureStitchedConstructor = new MethodRef("TextureStitched", "<init>", "(Ljava/lang/String;)V");
-            final MethodRef addBorder = new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(LTextureStitched;Ljava/lang/String;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
             final MethodRef createTextureStitched = new MethodRef(MCPatcherUtils.BORDERED_TEXTURE_CLASS, "create", "(Ljava/lang/String;Ljava/lang/String;)LTextureStitched;");
 
             addClassSignature(new BytecodeSignature() {
@@ -193,8 +192,6 @@ public class ExtendedHD extends Mod {
                 .addXref(4, new MethodRef("TextureStitched", "getY0", "()I"))
             );
 
-            //addMemberMapper(new MethodMapper(readTile));
-
             addPatch(new TextureMipmapPatch(this, basePath));
 
             addPatch(new BytecodePatch() {
@@ -219,43 +216,6 @@ public class ExtendedHD extends Mod {
                     );
                 }
             });
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "add tile border for aa";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // resource = bundle.getResource(new ResourceAddress(path));
-                        ALOAD_2,
-                        anyReference(NEW),
-                        DUP,
-                        capture(anyALOAD),
-                        anyReference(INVOKESPECIAL),
-                        anyReference(INVOKEINTERFACE),
-                        ASTORE, capture(any()),
-
-                        // image = ImageIO.read(resource.getInputStream());
-                        ALOAD, backReference(2),
-                        anyReference(INVOKEINTERFACE),
-                        reference(INVOKESTATIC, imageRead)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // AAHelper.addBorder(stitched, path, ...)
-                        ALOAD_1,
-                        getCaptureGroup(1),
-                        getMatch(),
-                        reference(INVOKESTATIC, addBorder)
-                    );
-                }
-            }.targetMethod(readTile));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -293,6 +253,9 @@ public class ExtendedHD extends Mod {
             final MethodRef init = new MethodRef(getDeobfClass(), "init", "(IIIIZ)V");
             final MethodRef copy = new MethodRef(getDeobfClass(), "copy", "(LTextureStitched;)V");
             final MethodRef updateAnimation = new MethodRef(getDeobfClass(), "updateAnimation", "()V");
+            final MethodRef loadResource = new MethodRef(getDeobfClass(), "loadResource", "(LIResource;)V");
+            final InterfaceMethodRef getResourceAddress = new InterfaceMethodRef("IResource", "getAddress", "()LResourceAddress;");
+            final MethodRef addBorder = new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(LTextureStitched;LResourceAddress;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -309,8 +272,37 @@ public class ExtendedHD extends Mod {
 
             addMemberMapper(new MethodMapper(init));
             addMemberMapper(new MethodMapper(copy));
+            addMemberMapper(new MethodMapper(loadResource));
 
             addPatch(new TextureMipmapPatch(this, textureName));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "add tile border for aa";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // image = ImageIO.read(inputStream);
+                        anyALOAD,
+                        reference(INVOKESTATIC, imageRead)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // AAHelper.addBorder(stitched, resource.getAddress(), ...)
+                        ALOAD_0,
+                        ALOAD_1,
+                        reference(INVOKEINTERFACE, getResourceAddress),
+                        getMatch(),
+                        reference(INVOKESTATIC, addBorder)
+                    );
+                }
+            }.targetMethod(loadResource));
         }
     }
 

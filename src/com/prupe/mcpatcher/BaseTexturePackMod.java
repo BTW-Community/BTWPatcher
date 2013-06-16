@@ -44,7 +44,7 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new ITextureResourceBundleMod());
         addClassMod(new TextureResourceBundleMod());
         addClassMod(new ResourceBundleMod());
-        addClassMod(new IResourceMod());
+        addClassMod(new BaseMod.IResourceMod(this));
         addClassMod(new BaseMod.ResourceAddressMod(this));
 
         addClassFile(MCPatcherUtils.TEXTURE_PACK_API_CLASS);
@@ -495,17 +495,6 @@ public class BaseTexturePackMod extends Mod {
             addMemberMapper(new FieldMapper(resourcePacks));
 
             addPatch(new MakeMemberPublicPatch(resourcePacks));
-        }
-    }
-
-    private class IResourceMod extends ClassMod {
-        IResourceMod() {
-            addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "getAddress", "()LResourceAddress;"),
-                new InterfaceMethodRef(getDeobfClass(), "getInputStream", "()Ljava/io/InputStream;"),
-                new InterfaceMethodRef(getDeobfClass(), "isPresent", "()Z"),
-                new InterfaceMethodRef(getDeobfClass(), "getMCMeta", "(Ljava/lang/String;)LIMCMeta;")
-            ));
         }
     }
 }
