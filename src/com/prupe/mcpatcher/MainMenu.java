@@ -216,11 +216,20 @@ class MainMenu {
         convert.setForeground(Color.RED);
         menuBar.add(convert);
 
-        convertItem = new JMenuItem("Convert...");
-        convertItem.setMnemonic('v');
+        convertItem = new JMenuItem("Convert 1.4 to 1.5...");
+        convertItem.setMnemonic('5');
         convertItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mainForm.showTexturePackConverter();
+                mainForm.showTexturePackConverter(15);
+            }
+        });
+        convert.add(convertItem);
+
+        convertItem = new JMenuItem("Convert 1.5 to 1.6...");
+        convertItem.setMnemonic('6');
+        convertItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                mainForm.showTexturePackConverter(16);
             }
         });
         convert.add(convertItem);

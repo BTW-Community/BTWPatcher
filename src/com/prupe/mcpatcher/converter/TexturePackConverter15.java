@@ -89,9 +89,9 @@ public class TexturePackConverter15 extends TexturePackConverter {
                                 for (int i = 0; i <= 2; i++) {
                                     String carrot = getEntryName("/textures/blocks/carrots_" + i + ".png");
                                     String potato = getEntryName("/textures/blocks/potatoes_" + i + ".png");
-                                    if (outData.containsKey(carrot) && !outData.containsKey(potato)) {
+                                    if (hasEntry(carrot) && !hasEntry(potato)) {
                                         addMessage(0, "copy %s -> %s", carrot, potato);
-                                        outData.put(potato, outData.get(carrot));
+                                        copyEntry(carrot, potato);
                                     }
                                 }
                             } else {
@@ -301,7 +301,7 @@ public class TexturePackConverter15 extends TexturePackConverter {
                 image.getRGB((i % 16) * tileWidth, (i / 16) * tileHeight, tileWidth, tileHeight, rgb, 0, tileWidth);
                 newImage.setRGB(0, 0, tileWidth, tileHeight, rgb, 0, tileWidth);
                 for (String s : names) {
-                    if (!outData.containsKey(getEntryName(s))) {
+                    if (!hasEntry(name)) {
                         addMessage(0, "%s %d,%d -> %s", name, i % 16, i / 16, s);
                         addEntry(s, newImage);
                     }

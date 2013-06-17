@@ -2,6 +2,7 @@ package com.prupe.mcpatcher;
 
 import com.prupe.mcpatcher.converter.TexturePackConverter;
 import com.prupe.mcpatcher.converter.TexturePackConverter15;
+import com.prupe.mcpatcher.converter.TexturePackConverter16;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -608,7 +609,7 @@ class MainForm {
         }
     }
 
-    void showTexturePackConverter() {
+    void showTexturePackConverter(final int version) {
         JFileChooser fd = new JFileChooser();
         fd.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fd.setFileHidingEnabled(false);
@@ -633,7 +634,7 @@ class MainForm {
             setBusy(true);
             runWorker(new Runnable() {
                 public void run() {
-                    final TexturePackConverter converter = new TexturePackConverter15(selectedFile);
+                    TexturePackConverter converter = (version == 16 ? new TexturePackConverter16(selectedFile) : new TexturePackConverter15(selectedFile));
                     boolean result = converter.convert(MCPatcher.ui);
                     StringBuilder sb = new StringBuilder();
                     for (String s : converter.getMessages()) {

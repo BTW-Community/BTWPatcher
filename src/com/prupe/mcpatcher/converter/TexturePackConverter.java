@@ -15,11 +15,13 @@ import java.util.zip.ZipOutputStream;
 abstract public class TexturePackConverter {
     protected final File input;
     protected File output;
+
     protected ZipFile inZip;
     protected final List<ZipEntry> inEntries = new ArrayList<ZipEntry>();
-    protected ZipOutputStream outZip;
-    protected final Map<String, ByteArrayOutputStream> outData = new HashMap<String, ByteArrayOutputStream>();
-    protected final List<String> messages = new ArrayList<String>();
+
+    private ZipOutputStream outZip;
+    private final Map<String, ByteArrayOutputStream> outData = new HashMap<String, ByteArrayOutputStream>();
+    private final List<String> messages = new ArrayList<String>();
 
     protected TexturePackConverter(File input) {
         this.input = input;
@@ -46,8 +48,10 @@ abstract public class TexturePackConverter {
             e.printStackTrace();
             addMessage(2, "ERROR: %s", e);
             MCPatcherUtils.close(outZip);
-            addMessage(0, "deleting %s", output.getPath());
-            output.delete();
+            if (output.isFile()) {
+                addMessage(0, "deleting %s", output.getPath());
+                output.delete();
+            }
             return false;
         } finally {
             MCPatcherUtils.close(inZip);
@@ -57,6 +61,7 @@ abstract public class TexturePackConverter {
     }
 
     private void preConvert(UserInterface ui) throws IOException {
+        messages.clear();
         addMessage(0, "");
         addMessage(0, "Converting texture pack");
         ui.setStatusText("Reading %s...", input.getName());
@@ -65,6 +70,11 @@ abstract public class TexturePackConverter {
         for (ZipEntry entry : Collections.list(inZip.entries())) {
             inEntries.add(entry);
         }
+        Collections.sort(inEntries, new Comparator<ZipEntry>() {
+            public int compare(ZipEntry o1, ZipEntry o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
         addMessage(0, "  input:  %s", input.getPath());
         addMessage(0, "    %d bytes", input.length());
         addMessage(0, "    %d files", inEntries.size());
@@ -195,6 +205,10 @@ abstract public class TexturePackConverter {
         outData.remove(getEntryName(name));
     }
 
+    protected boolean hasEntry(String name) {
+        return outData.containsKey(getEntryName(name));
+    }
+
     protected void addEntry(String name, Properties properties) {
         addEntry(name, properties, null);
     }
@@ -218,6 +232,15 @@ abstract public class TexturePackConverter {
             e.printStackTrace();
         } finally {
             MCPatcherUtils.close(outputStream);
+        }
+    }
+
+    protected void copyEntry(String from, String to) {
+        ByteArrayOutputStream data = outData.get(getEntryName(from));
+        if (data == null) {
+            outData.remove(getEntryName(to));
+        } else {
+            outData.put(getEntryName(to), data);
         }
     }
 
