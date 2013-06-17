@@ -68,7 +68,9 @@ abstract public class TexturePackConverter {
         inZip = new ZipFile(input);
         inEntries.clear();
         for (ZipEntry entry : Collections.list(inZip.entries())) {
-            inEntries.add(entry);
+            if (!entry.isDirectory()) {
+                inEntries.add(entry);
+            }
         }
         Collections.sort(inEntries, new Comparator<ZipEntry>() {
             public int compare(ZipEntry o1, ZipEntry o2) {
