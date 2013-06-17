@@ -1,14 +1,19 @@
 package com.prupe.mcpatcher.converter;
 
+import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.UserInterface;
 
-import java.io.File;
-import java.util.*;
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.zip.ZipEntry;
 
 public class TexturePackConverter16 extends TexturePackConverter {
     private static final String COLOR_PROPERTIES = "color.properties";
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
+
+    private static final String MCMETA_SUFFIX = ".mcmeta";
 
     private static final PlainEntry[] convertEntries = {
         // Blocks
@@ -728,9 +733,9 @@ public class TexturePackConverter16 extends TexturePackConverter {
                     addEntry(newName, properties);
                 }
             } else if (name.equals("pack.txt")) {
-                handled = convertPackTxt(name);
+                handled = convertPackTxt(entry, name);
             } else if (name.endsWith(".txt")) {
-                handled = convertAnimation(name);
+                handled = convertAnimation(entry, name);
             }
             if (!handled && newName != null) {
                 copyEntry(entry, newName);
@@ -797,11 +802,46 @@ public class TexturePackConverter16 extends TexturePackConverter {
         return !changes.isEmpty();
     }
 
-    private boolean convertPackTxt(String name) {
-        return false;
+    private boolean convertPackTxt(ZipEntry entry, String name) throws IOException {
+        String newName = name.replaceFirst("\\.txt", MCMETA_SUFFIX);
+        PrintStream txtStream = new PrintStream(getOutputStream(newName));
+        txtStream.println("{");
+        txtStream.println("  \"pack\": {");
+        txtStream.println("    \"pack_format\": 1,");
+        txtStream.print("    \"description\": \"");
+        BufferedReader input = new BufferedReader(new InputStreamReader(inZip.getInputStream(entry)));
+        int c;
+        loop:
+        while ((c = input.read()) != -1) {
+            switch (c) {
+                default:
+                    if (c >= 32 && c < 127) {
+                        txtStream.print((char) c);
+                        break;
+                    }
+                    // fall through
+
+                case '\\':
+                case '\'':
+                case '\"':
+                    txtStream.printf("\\u%04x", c & 0xffff);
+                    break;
+
+                case '\r':
+                    continue;
+
+                case '\n':
+                    break loop;
+            }
+        }
+        MCPatcherUtils.close(input);
+        txtStream.println("\"");
+        txtStream.println("  }");
+        txtStream.println("}");
+        return true;
     }
 
-    private boolean convertAnimation(String name) {
+    private boolean convertAnimation(ZipEntry entry, String name) {
         return false;
     }
 
@@ -844,7 +884,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
             return getClass().getSimpleName() + "{" + from + "->" + to + "}";
         }
     }
-    
+
     private static class TextureEntry extends PlainEntry {
         TextureEntry(String from, String to) {
             super(from, to == null ? null : "assets/minecraft/textures/" + to);

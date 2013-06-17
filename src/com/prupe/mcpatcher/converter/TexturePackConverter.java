@@ -247,9 +247,8 @@ abstract public class TexturePackConverter {
     }
 
     protected OutputStream getOutputStream(String name) {
-        name = name.replaceFirst("^/", "");
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outData.put(name, outputStream);
+        outData.put(getEntryName(name), outputStream);
         return outputStream;
     }
 
