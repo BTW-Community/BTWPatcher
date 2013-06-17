@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher;
 
+import com.prupe.mcpatcher.converter.TexturePackConverter;
 import javassist.bytecode.ClassFile;
 
 import java.io.*;

@@ -3,7 +3,7 @@ package com.prupe.mcpatcher;
 import java.io.File;
 import java.util.ArrayList;
 
-abstract class UserInterface {
+abstract public class UserInterface {
     abstract boolean shouldExit();
 
     void show() {
@@ -61,7 +61,7 @@ abstract class UserInterface {
         }
     }
 
-    void updateProgress(int value, int max) {
+    public void updateProgress(int value, int max) {
     }
 
     void setModList(ModList modList) {
@@ -70,10 +70,10 @@ abstract class UserInterface {
     void updateModList() {
     }
 
-    void setStatusText(String format, Object... params) {
+    public void setStatusText(String format, Object... params) {
     }
 
-    void setBusy(boolean busy) {
+    public void setBusy(boolean busy) {
     }
 
     void showBetaWarning() {
@@ -102,7 +102,7 @@ abstract class UserInterface {
         }
 
         @Override
-        void updateProgress(int value, int max) {
+        public void updateProgress(int value, int max) {
             mainForm.updateProgress(value, max);
         }
 
@@ -117,12 +117,12 @@ abstract class UserInterface {
         }
 
         @Override
-        void setStatusText(String format, Object... params) {
+        public void setStatusText(String format, Object... params) {
             mainForm.setStatusText(format, params);
         }
 
         @Override
-        void setBusy(boolean busy) {
+        public void setBusy(boolean busy) {
             mainForm.setBusy(busy);
         }
 

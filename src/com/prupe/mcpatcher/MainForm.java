@@ -1,5 +1,7 @@
 package com.prupe.mcpatcher;
 
+import com.prupe.mcpatcher.converter.TexturePackConverter;
+
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;

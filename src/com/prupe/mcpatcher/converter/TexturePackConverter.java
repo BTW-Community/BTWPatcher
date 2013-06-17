@@ -1,4 +1,9 @@
-package com.prupe.mcpatcher;
+package com.prupe.mcpatcher.converter;
+
+import com.prupe.mcpatcher.Logger;
+import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.TileMapping;
+import com.prupe.mcpatcher.UserInterface;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -22,10 +27,10 @@ public class TexturePackConverter {
     private static final String COMPASS_OVERLAY_PNG = "/misc/compass_overlay.png";
     private static final String DEFAULT_COMPASS_PNG = "/textures/items/compass.png";
 
-    static final int BLOCK_ID_GLASS = 20;
-    static final int BLOCK_ID_GLASS_PANE = 102;
-    static final int BLOCK_ID_BOOKSHELF = 47;
-    static final int TILE_NUM_SANDSTONE_SIDE = 192;
+    private static final int BLOCK_ID_GLASS = 20;
+    private static final int BLOCK_ID_GLASS_PANE = 102;
+    private static final int BLOCK_ID_BOOKSHELF = 47;
+    private static final int TILE_NUM_SANDSTONE_SIDE = 192;
 
     private static final int NUM_PASSES = 4;
 
