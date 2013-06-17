@@ -578,7 +578,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
         new TextureEntry("misc/water\\.png", "misc/underwater\\.png"),
         new DeleteEntry("misc/watercolor\\.png"),
 
-        // Entities
+        // Non-mob entities
         new TextureEntry("item/arrows\\.png", "entity/arrow\\.png"),
         new TextureEntry("item/boat\\.png", "entity/boat\\.png"),
         new TextureEntry("item/book\\.png", "entity/enchanting_table_book\\.png"),
@@ -595,83 +595,85 @@ public class TexturePackConverter16 extends TexturePackConverter {
         new TextureEntry("item/sign\\.png", "entity/sign\\.png"),
         new DeleteEntry("item/skis\\.png"),
         new TextureEntry("item/xporb\\.png", "entity/experience_orb\\.png"),
-        new TextureEntry("mob/bat\\.png", "entity/bat\\.png"),
-        new TextureEntry("mob/cat_black\\.png", "entity/cat/black\\.png"),
-        new TextureEntry("mob/cat_red\\.png", "entity/cat/red\\.png"),
-        new TextureEntry("mob/cat_siamese\\.png", "entity/cat/siamese\\.png"),
-        new TextureEntry("mob/ozelot\\.png", "entity/cat/ocelot\\.png"),
-        new TextureEntry("mob/cavespider\\.png", "entity/spider/cave_spider\\.png"),
-        new TextureEntry("mob/spider\\.png", "entity/spider/spider\\.png"),
-        new TextureEntry("mob/spider_eyes\\.png", "entity/spider_eyes\\.png"),
-        new TextureEntry("mob/char\\.png", "entity/steve\\.png"),
-        new TextureEntry("mob/chicken\\.png", "entity/chicken\\.png"),
-        new TextureEntry("mob/cow\\.png", "entity/cow/cow\\.png"),
-        new TextureEntry("mob/redcow\\.png", "entity/cow/mooshroom\\.png"),
+
+        // Mob entities
+        new MobTextureEntry("bat", "bat"),
+        new MobTextureEntry("cat_black", "cat/black"),
+        new MobTextureEntry("cat_red", "cat/red"),
+        new MobTextureEntry("cat_siamese", "cat/siamese"),
+        new MobTextureEntry("ozelot", "cat/ocelot"),
+        new MobTextureEntry("cavespider", "spider/cave_spider"),
+        new MobTextureEntry("spider", "spider/spider"),
+        new MobTextureEntry("spider_eyes", "spider_eyes"),
+        new MobTextureEntry("char", "steve"),
+        new MobTextureEntry("chicken", "chicken"),
+        new MobTextureEntry("cow", "cow/cow"),
+        new MobTextureEntry("redcow", "cow/mooshroom"),
         new DeleteEntry("mob/enderdragon/body\\.png"),
-        new TextureEntry("mob/enderdragon/crystal\\.png", "entity/endercrystal/endercrystal\\.png"),
-        new TextureEntry("mob/enderdragon/beam\\.png", "entity/endercrystal/endercrystal_beam\\.png"),
+        new MobTextureEntry("enderdragon/crystal", "endercrystal/endercrystal"),
+        new MobTextureEntry("enderdragon/beam", "endercrystal/endercrystal_beam"),
         new DeleteEntry("mob/enderdragon/dragon\\.png"),
-        new TextureEntry("mob/enderdragon/ender\\.png", "entity/enderdragon/dragon\\.png"),
-        new TextureEntry("mob/enderdragon/ender_eyes\\.png", "entity/enderdragon/dragon_eyes\\.png"),
-        new TextureEntry("mob/enderdragon/shuffle\\.png", "entity/enderdragon/dragon_exploding\\.png"),
-        new TextureEntry("mob/enderman\\.png", "entity/enderman/enderman\\.png"),
-        new TextureEntry("mob/enderman_eyes\\.png", "entity/enderman/enderman_eyes\\.png"),
-        new TextureEntry("mob/fire\\.png", "entity/blaze\\.png"),
-        new TextureEntry("mob/ghast\\.png", "entity/ghast/ghast\\.png"),
-        new TextureEntry("mob/ghast_fire\\.png", "entity/ghast/ghast_shooting\\.png"),
-        new TextureEntry("mob/lava\\.png", "entity/slime/magmacube\\.png"),
-        new TextureEntry("mob/slime\\.png", "entity/slime/slime\\.png"),
-        new TextureEntry("mob/pig\\.png", "entity/pig/pig\\.png"),
-        new TextureEntry("mob/saddle\\.png", "entity/pig/pig_saddle\\.png"),
+        new MobTextureEntry("enderdragon/ender", "enderdragon/dragon"),
+        new MobTextureEntry("enderdragon/ender_eyes", "enderdragon/dragon_eyes"),
+        new MobTextureEntry("enderdragon/shuffle", "enderdragon/dragon_exploding"),
+        new MobTextureEntry("enderman", "enderman/enderman"),
+        new MobTextureEntry("enderman_eyes", "enderman/enderman_eyes"),
+        new MobTextureEntry("fire", "blaze"),
+        new MobTextureEntry("ghast", "ghast/ghast"),
+        new MobTextureEntry("ghast_fire", "ghast/ghast_shooting"),
+        new MobTextureEntry("lava", "slime/magmacube"),
+        new MobTextureEntry("slime", "slime/slime"),
+        new MobTextureEntry("pig", "pig/pig"),
+        new MobTextureEntry("saddle", "pig/pig_saddle"),
         new DeleteEntry("mob/pigman\\.png"),
-        new TextureEntry("mob/pigzombie\\.png", "entity/zombie_pigman\\.png"),
-        new TextureEntry("mob/sheep\\.png", "entity/sheep/sheep\\.png"),
-        new TextureEntry("mob/sheep_fur\\.png", "entity/sheep/sheep_fur\\.png"),
-        new TextureEntry("mob/silverfish\\.png", "entity/silverfish\\.png"),
-        new TextureEntry("mob/skeleton\\.png", "entity/skeleton/skeleton\\.png"),
-        new TextureEntry("mob/skeleton_wither\\.png", "entity/skeleton/wither_skeleton\\.png"),
-        new TextureEntry("mob/snowman\\.png", "entity/snowman\\.png"),
-        new TextureEntry("mob/squid\\.png", "entity/squid\\.png"),
-        new TextureEntry("mob/villager/butcher\\.png", "entity/villager/butcher\\.png"),
-        new TextureEntry("mob/villager/farmer\\.png", "entity/villager/farmer\\.png"),
-        new TextureEntry("mob/villager/librarian\\.png", "entity/villager/librarian\\.png"),
-        new TextureEntry("mob/villager/priest\\.png", "entity/villager/priest\\.png"),
-        new TextureEntry("mob/villager/smith\\.png", "entity/villager/smith\\.png"),
-        new TextureEntry("mob/villager/villager\\.png", "entity/villager/villager\\.png"),
-        new TextureEntry("mob/villager/witch\\.png", "entity/witch\\.png"),
+        new MobTextureEntry("pigzombie", "zombie_pigman"),
+        new MobTextureEntry("sheep", "sheep/sheep"),
+        new MobTextureEntry("sheep_fur", "sheep/sheep_fur"),
+        new MobTextureEntry("silverfish", "silverfish"),
+        new MobTextureEntry("skeleton", "skeleton/skeleton"),
+        new MobTextureEntry("skeleton_wither", "skeleton/wither_skeleton"),
+        new MobTextureEntry("snowman", "snowman"),
+        new MobTextureEntry("squid", "squid"),
+        new MobTextureEntry("villager/butcher", "villager/butcher"),
+        new MobTextureEntry("villager/farmer", "villager/farmer"),
+        new MobTextureEntry("villager/librarian", "villager/librarian"),
+        new MobTextureEntry("villager/priest", "villager/priest"),
+        new MobTextureEntry("villager/smith", "villager/smith"),
+        new MobTextureEntry("villager/villager", "villager/villager"),
+        new MobTextureEntry("villager/witch", "witch"),
         new DeleteEntry("mob/villager\\.png"),
-        new TextureEntry("mob/villager_golem\\.png", "entity/iron_golem\\.png"),
-        new TextureEntry("mob/wither\\.png", "entity/wither/wither\\.png"),
-        new TextureEntry("mob/wither_invul\\.png", "entity/wither/wither_invulnerable\\.png"),
-        new TextureEntry("mob/wolf\\.png", "entity/wolf/wolf\\.png"),
-        new TextureEntry("mob/wolf_angry\\.png", "entity/wolf/wolf_angry\\.png"),
-        new TextureEntry("mob/wolf_collar\\.png", "entity/wolf/wolf_collar\\.png"),
-        new TextureEntry("mob/wolf_tame\\.png", "entity/wolf/wolf_tame\\.png"),
-        new TextureEntry("mob/zombie\\.png", "entity/zombie/zombie\\.png"),
-        new TextureEntry("mob/zombie_villager\\.png", "entity/zombie/zombie_villager\\.png"),
-        new TextureEntry("mob/horse/armor_diamond\\.png", "entity/horse/armor/horse_armor_diamond\\.png"),
-        new TextureEntry("mob/horse/armor_gold\\.png", "entity/horse/armor/horse_armor_gold\\.png"),
-        new TextureEntry("mob/horse/armor_metal\\.png", "entity/horse/armor/horse_armor_iron\\.png"),
-        new TextureEntry("mob/horse/donkey\\.png", "entity/horse/donkey\\.png"),
-        new TextureEntry("mob/horse/horse_black\\.png", "entity/horse/horse_black\\.png"),
-        new TextureEntry("mob/horse/horse_brown\\.png", "entity/horse/horse_brown\\.png"),
-        new TextureEntry("mob/horse/horse_chestnut\\.png", "entity/horse/horse_chestnut\\.png"),
-        new TextureEntry("mob/horse/horse_creamy\\.png", "entity/horse/horse_creamy\\.png"),
-        new TextureEntry("mob/horse/horse_darkbrown\\.png", "entity/horse/horse_darkbrown\\.png"),
-        new TextureEntry("mob/horse/horse_gray\\.png", "entity/horse/horse_gray\\.png"),
-        new TextureEntry("mob/horse/horse_white\\.png", "entity/horse/horse_white\\.png"),
-        new TextureEntry("mob/horse/mark_blackdots\\.png", "entity/horse/horse_markings_blackdots\\.png"),
-        new TextureEntry("mob/horse/mark_white\\.png", "entity/horse/horse_markings_white\\.png"),
-        new TextureEntry("mob/horse/mark_whitedots\\.png", "entity/horse/horse_markings_whitedots\\.png"),
-        new TextureEntry("mob/horse/mark_whitefield\\.png", "entity/horse/horse_markings_whitefield\\.png"),
-        new TextureEntry("mob/horse/mule\\.png", "entity/horse/mule\\.png"),
-        new TextureEntry("mob/horse/skeleton\\.png", "entity/horse/horse_skeleton\\.png"),
-        new TextureEntry("mob/horse/undead\\.png", "entity/horse/horse_zombie\\.png"),
-        new TextureEntry("misc/beam\\.png", "entity/beacon_beam\\.png"),
-        new TextureEntry("armor/power\\.png", "entity/creeper/creeper_armor\\.png"),
-        new TextureEntry("armor/witherarmor\\.png", "entity/wither/wither_armor\\.png"),
-        new TextureEntry("mob/creeper\\.png", "entity/creeper/creeper\\.png"),
-        new TextureEntry("particles\\.png", "particle/particles\\.png"),
+        new MobTextureEntry("villager_golem", "iron_golem"),
+        new MobTextureEntry("wither", "wither/wither"),
+        new MobTextureEntry("wither_invul", "wither/wither_invulnerable"),
+        new MobTextureEntry("wolf", "wolf/wolf"),
+        new MobTextureEntry("wolf_angry", "wolf/wolf_angry"),
+        new MobTextureEntry("wolf_collar", "wolf/wolf_collar"),
+        new MobTextureEntry("wolf_tame", "wolf/wolf_tame"),
+        new MobTextureEntry("zombie", "zombie/zombie"),
+        new MobTextureEntry("zombie_villager", "zombie/zombie_villager"),
+        new MobTextureEntry("horse/armor_diamond", "horse/armor/horse_armor_diamond"),
+        new MobTextureEntry("horse/armor_gold", "horse/armor/horse_armor_gold"),
+        new MobTextureEntry("horse/armor_metal", "horse/armor/horse_armor_iron"),
+        new MobTextureEntry("horse/donkey", "horse/donkey"),
+        new MobTextureEntry("horse/horse_black", "horse/horse_black"),
+        new MobTextureEntry("horse/horse_brown", "horse/horse_brown"),
+        new MobTextureEntry("horse/horse_chestnut", "horse/horse_chestnut"),
+        new MobTextureEntry("horse/horse_creamy", "horse/horse_creamy"),
+        new MobTextureEntry("horse/horse_darkbrown", "horse/horse_darkbrown"),
+        new MobTextureEntry("horse/horse_gray", "horse/horse_gray"),
+        new MobTextureEntry("horse/horse_white", "horse/horse_white"),
+        new MobTextureEntry("horse/mark_blackdots", "horse/horse_markings_blackdots"),
+        new MobTextureEntry("horse/mark_white", "horse/horse_markings_white"),
+        new MobTextureEntry("horse/mark_whitedots", "horse/horse_markings_whitedots"),
+        new MobTextureEntry("horse/mark_whitefield", "horse/horse_markings_whitefield"),
+        new MobTextureEntry("horse/mule", "horse/mule"),
+        new MobTextureEntry("horse/skeleton", "horse/horse_skeleton"),
+        new MobTextureEntry("horse/undead", "horse/horse_zombie"),
+        new MobTextureEntry("creeper", "creeper/creeper"),
+        new TextureEntry("misc/beam\\.png", "entity/beacon_beam.png"),
+        new TextureEntry("armor/power\\.png", "entity/creeper/creeper_armor.png"),
+        new TextureEntry("armor/witherarmor\\.png", "entity/wither/wither_armor.png"),
+        new TextureEntry("particles\\.png", "particle/particles.png"),
 
         // Environment
         new TextureEntry("environment/clouds\\.png", "environment/clouds\\.png"),
@@ -687,6 +689,8 @@ public class TexturePackConverter16 extends TexturePackConverter {
         new TextureEntry("ctm/(.*)", "ctm/$1"),
         new TextureEntry("environment/(.*)", "environment/$1"),
         new TextureEntry("misc/(.*)", "misc/$1"),
+        new MobTextureEntry("redcow_overlay", "cow/mooshroom_overlay"),
+        new MobTextureEntry("snowman_overlay", "snowman_overlay"),
         new TextureEntry("color.properties", "color.properties"),
         new TextureEntry("renderpass.properties", "renderpass.properties"),
     };
@@ -819,8 +823,8 @@ public class TexturePackConverter16 extends TexturePackConverter {
         final String to;
 
         PlainEntry(String from, String to) {
-            this.from = getEntryName(from);
-            this.to = getEntryName(to);
+            this.from = from;
+            this.to = to;
         }
 
         boolean matches(String s) {
@@ -828,24 +832,30 @@ public class TexturePackConverter16 extends TexturePackConverter {
         }
 
         String replace(String s) {
-            return s.replaceFirst("^" + from, to);
+            return to == null ? null : s.replaceFirst("^" + from, to);
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "{" + from + "->" + to + "}";
         }
     }
     
     private static class TextureEntry extends PlainEntry {
         TextureEntry(String from, String to) {
-            super(from, "assets/minecraft/textures/" + getEntryName(to));
+            super(from, to == null ? null : "assets/minecraft/textures/" + to);
+        }
+    }
+
+    private static class MobTextureEntry extends TextureEntry {
+        MobTextureEntry(String from, String to) {
+            super("mob/" + from + "(\\d*\\..*)", to == null ? null : "entity/" + to + "$1");
         }
     }
 
     private static class DeleteEntry extends PlainEntry {
         DeleteEntry(String from) {
-            super(from, "");
-        }
-
-        @Override
-        String replace(String s) {
-            return null;
+            super(from, null);
         }
     }
 }
