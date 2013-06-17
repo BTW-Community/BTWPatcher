@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher;
 
 import com.prupe.mcpatcher.converter.TexturePackConverter15;
+import com.prupe.mcpatcher.converter.TexturePackConverter16;
 import javassist.bytecode.ClassFile;
 
 import java.io.*;
@@ -76,7 +77,8 @@ final public class MCPatcher {
      * -enableallmods: enable all valid mods instead of selected mods from last time<br>
      * -showinternal: show hidden "internal" mods<br>
      * -experimental: load mods considered "experimental"<br>
-     * -convert &lt;path&gt;: convert a texture pack<br>
+     * -convert15 &lt;path&gt;: convert a texture pack from 1.4 to 1.5<br>
+     * -convert16 &lt;path&gt;: convert a texture pack from 1.5 to 1.6<br>
      *
      * @param args command-line arguments
      */
@@ -116,10 +118,20 @@ final public class MCPatcher {
                 showInternal = true;
             } else if (args[i].equals("-experimental")) {
                 experimentalMods = true;
-            } else if (args[i].equals("-convert") && i + 1 < args.length) {
+            } else if (args[i].equals("-convert15") && i + 1 < args.length) {
                 i++;
                 try {
                     if (new TexturePackConverter15(new File(args[i])).convert(new UserInterface.CLI())) {
+                        System.exit(0);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                System.exit(1);
+            } else if (args[i].equals("-convert16") && i + 1 < args.length) {
+                i++;
+                try {
+                    if (new TexturePackConverter16(new File(args[i])).convert(new UserInterface.CLI())) {
                         System.exit(0);
                     }
                 } catch (Exception e) {
