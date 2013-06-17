@@ -132,7 +132,7 @@ abstract public class TexturePackConverter {
         addMessage(0, "    %d files", outEntries.size());
     }
 
-    abstract public void convertImpl(UserInterface ui) throws Exception;
+    abstract protected void convertImpl(UserInterface ui) throws Exception;
 
     protected static String getEntryName(String name) {
         return name.replaceFirst("^/", "");

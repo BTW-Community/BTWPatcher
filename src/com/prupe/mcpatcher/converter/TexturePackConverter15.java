@@ -63,7 +63,7 @@ public class TexturePackConverter15 extends TexturePackConverter {
     }
 
     @Override
-    public void convertImpl(UserInterface ui) throws Exception {
+    protected void convertImpl(UserInterface ui) throws Exception {
         int total = NUM_PASSES * inEntries.size();
         int progress = 0;
         outer:
