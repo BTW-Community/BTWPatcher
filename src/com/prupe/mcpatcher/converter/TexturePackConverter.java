@@ -16,6 +16,7 @@ abstract public class TexturePackConverter {
     protected final File input;
     protected File output;
     protected ZipFile inZip;
+    protected final List<ZipEntry> inEntries = new ArrayList<ZipEntry>();
     protected ZipOutputStream outZip;
     protected final Map<String, ByteArrayOutputStream> outData = new HashMap<String, ByteArrayOutputStream>();
     protected final List<String> messages = new ArrayList<String>();
@@ -32,7 +33,96 @@ abstract public class TexturePackConverter {
         return output;
     }
 
-    abstract public boolean convert(UserInterface ui);
+    final public boolean convert(UserInterface ui) {
+        if (this.input.equals(output)) {
+            addMessage(2, "ERROR: Input and output files are the same");
+            return false;
+        }
+        try {
+            preConvert(ui);
+            convertImpl(ui);
+            postConvert(ui);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            addMessage(2, "ERROR: %s", e);
+            MCPatcherUtils.close(outZip);
+            addMessage(0, "deleting %s", output.getPath());
+            output.delete();
+            return false;
+        } finally {
+            MCPatcherUtils.close(inZip);
+            MCPatcherUtils.close(outZip);
+        }
+        return true;
+    }
+
+    private void preConvert(UserInterface ui) throws IOException {
+        addMessage(0, "");
+        addMessage(0, "Converting texture pack");
+        ui.setStatusText("Reading %s...", input.getName());
+        inZip = new ZipFile(input);
+        inEntries.clear();
+        for (ZipEntry entry : Collections.list(inZip.entries())) {
+            inEntries.add(entry);
+        }
+        addMessage(0, "  input:  %s", input.getPath());
+        addMessage(0, "    %d bytes", input.length());
+        addMessage(0, "    %d files", inEntries.size());
+        addMessage(0, "  output: %s", output.getPath());
+    }
+
+    private void postConvert(UserInterface ui) throws IOException {
+        MCPatcherUtils.close(inZip);
+        inZip = null;
+
+        List<String> names = new ArrayList<String>();
+        names.addAll(outData.keySet());
+        for (String name : names) {
+            if (!name.endsWith("/") && !name.equals("/")) {
+                addDirectory(name.replaceAll("[^/]+$", ""));
+            }
+        }
+        removeEntry("");
+
+        List<Map.Entry<String, ByteArrayOutputStream>> outEntries = new ArrayList<Map.Entry<String, ByteArrayOutputStream>>();
+        ui.setStatusText("Writing %s...", output.getName());
+        Logger.log(Logger.LOG_JAR, "");
+        Logger.log(Logger.LOG_JAR, "Writing %s", output.getName());
+        outEntries.addAll(outData.entrySet());
+        Collections.sort(outEntries, new Comparator<Map.Entry<String, ByteArrayOutputStream>>() {
+            public int compare(Map.Entry<String, ByteArrayOutputStream> o1, Map.Entry<String, ByteArrayOutputStream> o2) {
+                return o1.getKey().compareTo(o2.getKey());
+            }
+        });
+        outZip = new ZipOutputStream(new FileOutputStream(output));
+        int total = outEntries.size();
+        int progress = 0;
+        for (Map.Entry<String, ByteArrayOutputStream> e : outEntries) {
+            ui.updateProgress(progress++, total);
+            String name = e.getKey();
+            ByteArrayOutputStream data = e.getValue();
+            outZip.putNextEntry(new ZipEntry(name));
+            Logger.log(Logger.LOG_JAR, "  %s", name);
+            if (data != null) {
+                outZip.write(data.toByteArray());
+                outZip.closeEntry();
+            }
+        }
+        outZip.close();
+        outZip = null;
+
+        ui.setStatusText("");
+        addMessage(0, "");
+        addMessage(0, "Conversion finished");
+        addMessage(0, "  input:  %s", input.getPath());
+        addMessage(0, "    %d bytes", input.length());
+        addMessage(0, "    %d files", inEntries.size());
+        addMessage(0, "  output: %s", output.getPath());
+        addMessage(0, "    %d bytes", output.length());
+        addMessage(0, "    %d files", outEntries.size());
+    }
+
+    abstract public void convertImpl(UserInterface ui) throws Exception;
 
     protected static String getEntryName(String name) {
         return name.replaceFirst("^/", "");

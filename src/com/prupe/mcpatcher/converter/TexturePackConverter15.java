@@ -1,19 +1,20 @@
 package com.prupe.mcpatcher.converter;
 
-import com.prupe.mcpatcher.Logger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TileMapping;
 import com.prupe.mcpatcher.UserInterface;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
 
 public class TexturePackConverter15 extends TexturePackConverter {
     private static final Pattern CUSTOM_BLOCK_PNG = Pattern.compile("(?:anim)?/custom_terrain_(\\d+).png");
@@ -63,179 +64,104 @@ public class TexturePackConverter15 extends TexturePackConverter {
     }
 
     @Override
-    public boolean convert(UserInterface ui) {
-        if (this.input.equals(output)) {
-            addMessage(2, "ERROR: Input and output files are the same");
-            return false;
-        }
-        try {
+    public void convertImpl(UserInterface ui) throws Exception {
+        int total = NUM_PASSES * inEntries.size();
+        int progress = 0;
+        outer:
+        for (int pass = 1; pass <= NUM_PASSES; pass++) {
             addMessage(0, "");
-            addMessage(0, "Converting texture pack");
-            ui.setStatusText("Reading %s...", input.getName());
-            inZip = new ZipFile(input);
-            final java.util.List<? extends ZipEntry> inEntries = Collections.list(inZip.entries());
-            addMessage(0, "  input:  %s", input.getPath());
-            addMessage(0, "    %d bytes", input.length());
-            addMessage(0, "    %d files", inEntries.size());
-            addMessage(0, "  output: %s", output.getPath());
-
-            int total = NUM_PASSES * inEntries.size();
-            int progress = 0;
-            outer:
-            for (int pass = 1; pass <= NUM_PASSES; pass++) {
-                addMessage(0, "");
-                addMessage(0, "Pass #%d", pass);
-                for (ZipEntry entry : inEntries) {
-                    ui.updateProgress(progress++, total);
-                    String name = entry.getName();
-                    if (entry.isDirectory()) {
-                        continue;
-                    }
-                    switch (pass) {
-                        case 1:
-                            copyEntry(entry);
-                            break;
-
-                        case 2:
-                            TileMapping tileMapping = TileMapping.getTileMapping("/" + name);
-                            if (tileMapping != null) {
-                                if (name.equals("terrain.png")) {
-                                    convertTilesheet(entry, tileMapping, skipBlockTiles);
-                                    for (int i = 0; i <= 2; i++) {
-                                        String carrot = getEntryName("/textures/blocks/carrots_" + i + ".png");
-                                        String potato = getEntryName("/textures/blocks/potatoes_" + i + ".png");
-                                        if (outData.containsKey(carrot) && !outData.containsKey(potato)) {
-                                            addMessage(0, "copy %s -> %s", carrot, potato);
-                                            outData.put(potato, outData.get(carrot));
-                                        }
-                                    }
-                                } else {
-                                    convertTilesheet(entry, tileMapping, null);
-                                }
-                                removeEntry(name);
-                            }
-                            if (name.matches("terrain/(sun|moon|sky).*")) {
-                                convertSky(entry);
-                                removeEntry(name);
-                            }
-                            if (name.matches("mob/(pig)?zombie\\d*.png")) {
-                                convertZombieSkin(entry);
-                            }
-                            if (name.matches("mob/.*_eyes\\d*\\.png")) {
-                                convertEyes(entry);
-                            }
-                            if (name.equals("misc/compass_dial.png")) {
-                                convertCompass(entry);
-                            }
-                            if (name.equals("ctm.png")) {
-                                convertDefaultCTM(entry);
-                            }
-                            if (name.startsWith("ctm/") && name.endsWith(".properties")) {
-                                convertCTM(entry);
-                            }
-                            break;
-
-                        case 3:
-                            if (name.endsWith("custom_water_still.png") && convertAnimation(entry, "water", "blocks")) {
-                                removeEntry(name);
-                            }
-                            if (name.endsWith("custom_water_flowing.png") && convertAnimation(entry, "water_flow", "blocks")) {
-                                removeEntry(name);
-                            }
-                            if (name.endsWith("custom_lava_still.png") && convertAnimation(entry, "lava", "blocks")) {
-                                removeEntry(name);
-                            }
-                            if (name.endsWith("custom_lava_flowing.png") && convertAnimation(entry, "lava_flow", "blocks")) {
-                                removeEntry(name);
-                            }
-                            if (name.endsWith("custom_portal.png") && convertAnimation(entry, "portal", "blocks")) {
-                                removeEntry(name);
-                            }
-                            if (name.endsWith("custom_fire_e_w.png") && convertAnimation(entry, "fire_0", "blocks")) {
-                                removeEntry(name);
-                            }
-                            if (name.endsWith("custom_fire_n_s.png") && convertAnimation(entry, "fire_1", "blocks")) {
-                                removeEntry(name);
-                            }
-                            break;
-
-                        case 4:
-                            if (convertAnimation(entry, CUSTOM_BLOCK_PNG, TileMapping.BLOCKS, "blocks")) {
-                                removeEntry(name);
-                                removeEntry(name.replace(".png", ".properties"));
-                            } else if (convertAnimation(entry, CUSTOM_ITEM_PNG, TileMapping.ITEMS, "items")) {
-                                removeEntry(name);
-                                removeEntry(name.replace(".png", ".properties"));
-                            } else if (name.startsWith("anim/") && name.endsWith(".properties") && convertCTMAnimation(entry)) {
-                                removeEntry(name);
-                            }
-                            break;
-
-                        default:
-                            break outer;
-                    }
-                }
-            }
-            MCPatcherUtils.close(inZip);
-            inZip = null;
-
-            java.util.List<String> names = new ArrayList<String>();
-            names.addAll(outData.keySet());
-            for (String name : names) {
-                if (!name.endsWith("/") && !name.equals("/")) {
-                    addDirectory(name.replaceAll("[^/]+$", ""));
-                }
-            }
-            removeEntry("");
-
-            java.util.List<Map.Entry<String, ByteArrayOutputStream>> outEntries = new ArrayList<Map.Entry<String, ByteArrayOutputStream>>();
-            ui.setStatusText("Writing %s...", output.getName());
-            Logger.log(Logger.LOG_JAR, "");
-            Logger.log(Logger.LOG_JAR, "Writing %s", output.getName());
-            outEntries.addAll(outData.entrySet());
-            Collections.sort(outEntries, new Comparator<Map.Entry<String, ByteArrayOutputStream>>() {
-                public int compare(Map.Entry<String, ByteArrayOutputStream> o1, Map.Entry<String, ByteArrayOutputStream> o2) {
-                    return o1.getKey().compareTo(o2.getKey());
-                }
-            });
-            outZip = new ZipOutputStream(new FileOutputStream(output));
-            total = outEntries.size();
-            progress = 0;
-            for (Map.Entry<String, ByteArrayOutputStream> e : outEntries) {
+            addMessage(0, "Pass #%d", pass);
+            for (ZipEntry entry : inEntries) {
                 ui.updateProgress(progress++, total);
-                String name = e.getKey();
-                ByteArrayOutputStream data = e.getValue();
-                outZip.putNextEntry(new ZipEntry(name));
-                Logger.log(Logger.LOG_JAR, "  %s", name);
-                if (data != null) {
-                    outZip.write(data.toByteArray());
-                    outZip.closeEntry();
+                String name = entry.getName();
+                if (entry.isDirectory()) {
+                    continue;
+                }
+                switch (pass) {
+                    case 1:
+                        copyEntry(entry);
+                        break;
+
+                    case 2:
+                        TileMapping tileMapping = TileMapping.getTileMapping("/" + name);
+                        if (tileMapping != null) {
+                            if (name.equals("terrain.png")) {
+                                convertTilesheet(entry, tileMapping, skipBlockTiles);
+                                for (int i = 0; i <= 2; i++) {
+                                    String carrot = getEntryName("/textures/blocks/carrots_" + i + ".png");
+                                    String potato = getEntryName("/textures/blocks/potatoes_" + i + ".png");
+                                    if (outData.containsKey(carrot) && !outData.containsKey(potato)) {
+                                        addMessage(0, "copy %s -> %s", carrot, potato);
+                                        outData.put(potato, outData.get(carrot));
+                                    }
+                                }
+                            } else {
+                                convertTilesheet(entry, tileMapping, null);
+                            }
+                            removeEntry(name);
+                        }
+                        if (name.matches("terrain/(sun|moon|sky).*")) {
+                            convertSky(entry);
+                            removeEntry(name);
+                        }
+                        if (name.matches("mob/(pig)?zombie\\d*.png")) {
+                            convertZombieSkin(entry);
+                        }
+                        if (name.matches("mob/.*_eyes\\d*\\.png")) {
+                            convertEyes(entry);
+                        }
+                        if (name.equals("misc/compass_dial.png")) {
+                            convertCompass(entry);
+                        }
+                        if (name.equals("ctm.png")) {
+                            convertDefaultCTM(entry);
+                        }
+                        if (name.startsWith("ctm/") && name.endsWith(".properties")) {
+                            convertCTM(entry);
+                        }
+                        break;
+
+                    case 3:
+                        if (name.endsWith("custom_water_still.png") && convertAnimation(entry, "water", "blocks")) {
+                            removeEntry(name);
+                        }
+                        if (name.endsWith("custom_water_flowing.png") && convertAnimation(entry, "water_flow", "blocks")) {
+                            removeEntry(name);
+                        }
+                        if (name.endsWith("custom_lava_still.png") && convertAnimation(entry, "lava", "blocks")) {
+                            removeEntry(name);
+                        }
+                        if (name.endsWith("custom_lava_flowing.png") && convertAnimation(entry, "lava_flow", "blocks")) {
+                            removeEntry(name);
+                        }
+                        if (name.endsWith("custom_portal.png") && convertAnimation(entry, "portal", "blocks")) {
+                            removeEntry(name);
+                        }
+                        if (name.endsWith("custom_fire_e_w.png") && convertAnimation(entry, "fire_0", "blocks")) {
+                            removeEntry(name);
+                        }
+                        if (name.endsWith("custom_fire_n_s.png") && convertAnimation(entry, "fire_1", "blocks")) {
+                            removeEntry(name);
+                        }
+                        break;
+
+                    case 4:
+                        if (convertAnimation(entry, CUSTOM_BLOCK_PNG, TileMapping.BLOCKS, "blocks")) {
+                            removeEntry(name);
+                            removeEntry(name.replace(".png", ".properties"));
+                        } else if (convertAnimation(entry, CUSTOM_ITEM_PNG, TileMapping.ITEMS, "items")) {
+                            removeEntry(name);
+                            removeEntry(name.replace(".png", ".properties"));
+                        } else if (name.startsWith("anim/") && name.endsWith(".properties") && convertCTMAnimation(entry)) {
+                            removeEntry(name);
+                        }
+                        break;
+
+                    default:
+                        break outer;
                 }
             }
-            outZip.close();
-            outZip = null;
-
-            ui.setStatusText("");
-            addMessage(0, "");
-            addMessage(0, "Conversion finished");
-            addMessage(0, "  input:  %s", input.getPath());
-            addMessage(0, "    %d bytes", input.length());
-            addMessage(0, "    %d files", inEntries.size());
-            addMessage(0, "  output: %s", output.getPath());
-            addMessage(0, "    %d bytes", output.length());
-            addMessage(0, "    %d files", outEntries.size());
-        } catch (IOException e) {
-            e.printStackTrace();
-            addMessage(2, "ERROR: %s", e);
-            MCPatcherUtils.close(outZip);
-            addMessage(0, "deleting %s", output.getPath());
-            output.delete();
-            return false;
-        } finally {
-            MCPatcherUtils.close(inZip);
-            MCPatcherUtils.close(outZip);
         }
-        return true;
     }
 
     private boolean convertAnimation(ZipEntry entry, Pattern pattern, String[] list, String type) {
