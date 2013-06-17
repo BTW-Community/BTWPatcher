@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher;
+package com.prupe.mcpatcher.converter;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -48,7 +48,6 @@ public class MCPatcherUtils {
     public static final String UTILS_CLASS = "com.prupe.mcpatcher.MCPatcherUtils";
     public static final String LOGGER_CLASS = "com.prupe.mcpatcher.MCLogger";
     public static final String CONFIG_CLASS = "com.prupe.mcpatcher.Config";
-    public static final String TILE_MAPPING_CLASS = "com.prupe.mcpatcher.TileMapping";
     public static final String PROFILER_API_CLASS = "com.prupe.mcpatcher.ProfilerAPI";
     public static final String INPUT_HANDLER_CLASS = "com.prupe.mcpatcher.InputHandler";
 

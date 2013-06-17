@@ -1,7 +1,6 @@
 package com.prupe.mcpatcher.converter;
 
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.TileMapping;
 import com.prupe.mcpatcher.UserInterface;
 
 import java.awt.*;

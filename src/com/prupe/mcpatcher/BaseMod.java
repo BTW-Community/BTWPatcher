@@ -46,7 +46,6 @@ public final class BaseMod extends Mod {
         addClassFile(MCPatcherUtils.LOGGER_CLASS + "$1$1");
         addClassFile(MCPatcherUtils.LOGGER_CLASS + "$ErrorLevel");
         addClassFile(MCPatcherUtils.CONFIG_CLASS);
-        addClassFile(MCPatcherUtils.TILE_MAPPING_CLASS);
         addClassFile(MCPatcherUtils.PROFILER_API_CLASS);
         addClassFile(MCPatcherUtils.INPUT_HANDLER_CLASS);
 
