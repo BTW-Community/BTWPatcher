@@ -1,6 +1,6 @@
 package com.prupe.mcpatcher;
 
-import com.prupe.mcpatcher.converter.TexturePackConverter;
+import com.prupe.mcpatcher.converter.TexturePackConverter15;
 import javassist.bytecode.ClassFile;
 
 import java.io.*;
@@ -119,7 +119,7 @@ final public class MCPatcher {
             } else if (args[i].equals("-convert") && i + 1 < args.length) {
                 i++;
                 try {
-                    if (new TexturePackConverter(new File(args[i])).convert(new UserInterface.CLI())) {
+                    if (new TexturePackConverter15(new File(args[i])).convert(new UserInterface.CLI())) {
                         System.exit(0);
                     }
                 } catch (Exception e) {

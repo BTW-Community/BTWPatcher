@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher;
 
 import com.prupe.mcpatcher.converter.TexturePackConverter;
+import com.prupe.mcpatcher.converter.TexturePackConverter15;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -632,7 +633,7 @@ class MainForm {
             setBusy(true);
             runWorker(new Runnable() {
                 public void run() {
-                    final TexturePackConverter converter = new TexturePackConverter(selectedFile);
+                    final TexturePackConverter converter = new TexturePackConverter15(selectedFile);
                     boolean result = converter.convert(MCPatcher.ui);
                     StringBuilder sb = new StringBuilder();
                     for (String s : converter.getMessages()) {
