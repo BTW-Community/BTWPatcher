@@ -237,15 +237,6 @@ abstract public class TexturePackConverter {
         }
     }
 
-    protected void copyEntry(String from, String to) {
-        ByteArrayOutputStream data = outData.get(getEntryName(from));
-        if (data == null) {
-            outData.remove(getEntryName(to));
-        } else {
-            outData.put(getEntryName(to), data);
-        }
-    }
-
     protected OutputStream getOutputStream(String name) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outData.put(getEntryName(name), outputStream);

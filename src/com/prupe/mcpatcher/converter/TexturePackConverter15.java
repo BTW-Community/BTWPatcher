@@ -91,7 +91,7 @@ public class TexturePackConverter15 extends TexturePackConverter {
                                     String potato = getEntryName("/textures/blocks/potatoes_" + i + ".png");
                                     if (hasEntry(carrot) && !hasEntry(potato)) {
                                         addMessage(0, "copy %s -> %s", carrot, potato);
-                                        copyEntry(carrot, potato);
+                                        copyEntry(entry, potato);
                                     }
                                 }
                             } else {
