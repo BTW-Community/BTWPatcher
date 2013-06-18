@@ -63,6 +63,11 @@ public class TexturePackConverter15 extends TexturePackConverter {
     }
 
     @Override
+    public String getOutputMessage() {
+        return "New texture pack is called " + getOutputFile().getName() + ".";
+    }
+
+    @Override
     protected void convertImpl(UserInterface ui) throws Exception {
         int total = NUM_PASSES * inEntries.size();
         int progress = 0;

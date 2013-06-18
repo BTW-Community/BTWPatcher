@@ -35,6 +35,10 @@ abstract public class TexturePackConverter {
         return output;
     }
 
+    abstract protected void convertImpl(UserInterface ui) throws Exception;
+
+    abstract public String getOutputMessage();
+
     final public boolean convert(UserInterface ui) {
         if (this.input.equals(output)) {
             addMessage(2, "ERROR: Input and output files are the same");
@@ -137,8 +141,6 @@ abstract public class TexturePackConverter {
         addMessage(0, "    %d bytes", output.length());
         addMessage(0, "    %d files", numOutFiles);
     }
-
-    abstract protected void convertImpl(UserInterface ui) throws Exception;
 
     protected static String getEntryName(String name) {
         return name.replaceFirst("^/", "");

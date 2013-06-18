@@ -725,6 +725,11 @@ public class TexturePackConverter16 extends TexturePackConverter {
     }
 
     @Override
+    public String getOutputMessage() {
+        return "New resource pack is " + new File(getOutputFile().getParentFile().getName(), getOutputFile().getName()) + ".";
+    }
+
+    @Override
     protected void convertImpl(UserInterface ui) throws Exception {
         textureMCMeta.clear();
         int progress = 0;

@@ -634,6 +634,7 @@ class MainForm {
             setBusy(true);
             runWorker(new Runnable() {
                 public void run() {
+                    tabbedPane.setSelectedIndex(TAB_LOG);
                     TexturePackConverter converter = (version == 16 ? new TexturePackConverter16(selectedFile) : new TexturePackConverter15(selectedFile));
                     boolean result = converter.convert(MCPatcher.ui);
                     StringBuilder sb = new StringBuilder();
@@ -646,17 +647,15 @@ class MainForm {
                             "Error converting " + selectedFile.getName(),
                             JOptionPane.ERROR_MESSAGE
                         );
-                        tabbedPane.setSelectedIndex(TAB_LOG);
                     } else if (sb.length() > 0) {
                         JOptionPane.showMessageDialog(frame, sb.toString(),
                             "Warnings while converting " + selectedFile.getName(),
                             JOptionPane.WARNING_MESSAGE
                         );
-                        tabbedPane.setSelectedIndex(TAB_LOG);
                     } else {
                         JOptionPane.showMessageDialog(frame,
-                            "Successfully converted " + selectedFile.getName() + "\n" +
-                                "New texture pack is called " + converter.getOutputFile().getName(),
+                            "Successfully converted " + selectedFile.getName() + ".\n" +
+                                converter.getOutputMessage(),
                             "Done",
                             JOptionPane.INFORMATION_MESSAGE
                         );
