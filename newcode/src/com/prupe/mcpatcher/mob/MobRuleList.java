@@ -11,7 +11,7 @@ import java.util.*;
 class MobRuleList {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.RANDOM_MOBS);
 
-    public static final String ALTERNATIVES_REGEX = "_(eyes|overlay|tame|angry|collar|fur|invul)\\.properties$";
+    public static final String ALTERNATIVES_REGEX = "_(eyes|overlay|tame|angry|collar|fur|invulnerable|shooting)\\.properties$";
 
     private static final Map<ResourceAddress, MobRuleList> allRules = new HashMap<ResourceAddress, MobRuleList>();
 
