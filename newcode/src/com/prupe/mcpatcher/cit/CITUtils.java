@@ -14,8 +14,8 @@ public class CITUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
     static final String CIT_PROPERTIES = "cit.properties";
-    private static final ResourceAddress CIT_PROPERTIES1 = new ResourceAddress("cit.properties");
-    private static final ResourceAddress CIT_PROPERTIES2 = new ResourceAddress("cit/cit.properties");
+    private static final ResourceAddress CIT_PROPERTIES1 = new ResourceAddress("textures/" + CIT_PROPERTIES);
+    private static final ResourceAddress CIT_PROPERTIES2 = new ResourceAddress("textures/cit/" + CIT_PROPERTIES);
 
     private static final int MAX_ITEMS = Item.itemsList.length;
     static final int MAX_ENCHANTMENTS = 256;
@@ -98,7 +98,7 @@ public class CITUtils {
                 EnchantmentList.setProperties(properties);
 
                 if (enableItems || enableEnchantments || enableArmor) {
-                    for (ResourceAddress resource : TexturePackAPI.listResources("cit", ".properties", true, false, true)) {
+                    for (ResourceAddress resource : TexturePackAPI.listResources("textures/cit", ".properties", true, false, true)) {
                         registerOverride(OverrideBase.create(resource));
                     }
                     if (enableItems) {

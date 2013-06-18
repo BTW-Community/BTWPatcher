@@ -88,7 +88,7 @@ class PotionReplacer {
     }
 
     private static ResourceAddress getPotionPath(String name, boolean splash) {
-        return new ResourceAddress("cit/potion/" + (splash ? "splash/" : "normal/") + name + ".png");
+        return new ResourceAddress("textures/cit/potion/" + (splash ? "splash/" : "normal/") + name + ".png");
     }
 
     private static ResourceAddress getOverrideName(int layer) {

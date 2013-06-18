@@ -111,7 +111,7 @@ public class FancyDial {
             logger.warning("ignoring custom animation for %s not compass or clock", icon.getIconName());
             return;
         }
-        Properties properties = TexturePackAPI.getProperties(new ResourceAddress("misc/" + name + ".properties"));
+        Properties properties = TexturePackAPI.getProperties(new ResourceAddress("textures/items/" + name + ".properties"));
         if (properties != null) {
             logger.fine("found custom %s", name);
             setupInfo.put(icon, properties);
@@ -234,7 +234,7 @@ public class FancyDial {
 
         boolean debug = false;
         for (int i = 0; ; i++) {
-            Layer layer = newLayer(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/" + name + ".properties", properties, "." + i);
+            Layer layer = newLayer("textures/items/" + name + ".properties", properties, "." + i);
             if (layer == null) {
                 if (i > 0) {
                     break;

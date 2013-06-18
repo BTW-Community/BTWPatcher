@@ -55,7 +55,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
             @Override
             public void afterChange() {
                 if (enable) {
-                    for (ResourceAddress resource : TexturePackAPI.listResources("anim", ".properties", true, false, false)) {
+                    for (ResourceAddress resource : TexturePackAPI.listResources("textures/anim", ".properties", true, false, false)) {
                         Properties properties = TexturePackAPI.getProperties(resource);
                         if (properties != null) {
                             pending.put(resource, properties);

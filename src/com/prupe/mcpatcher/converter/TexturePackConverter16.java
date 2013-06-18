@@ -693,13 +693,17 @@ public class TexturePackConverter16 extends TexturePackConverter {
 
         // MCPatcher
         new TextureEntry("anim/(.*)", "anim/$1"),
+        new TextureEntry("cit/(.*)", "cit/$1"),
         new TextureEntry("ctm/(.*)", "ctm/$1"),
         new TextureEntry("environment/(.*)", "environment/$1"),
+        new TextureEntry("misc/(clock|compass|fishingline|lead).properties", "items/$1.properties"),
         new TextureEntry("misc/(.*)", "misc/$1"),
         new MobTextureEntry("redcow_overlay", "cow/mooshroom_overlay"),
         new MobTextureEntry("snowman_overlay", "snowman_overlay"),
-        new TextureEntry("color.properties", "color.properties"),
-        new TextureEntry("renderpass.properties", "renderpass.properties"),
+        new TextureEntry("color.properties", "colormap/color.properties"),
+        new TextureEntry("mipmap.properties", "misc/mipmap.properties"),
+        new TextureEntry("particles.properties", "particle/particles.properties"),
+        new TextureEntry("renderpass.properties", "misc/renderpass.properties"),
     };
 
     private String lastFileMessage;

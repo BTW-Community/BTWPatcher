@@ -24,7 +24,7 @@ import java.util.*;
 public class MipmapHelper {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
 
-    private static final ResourceAddress MIPMAP_PROPERTIES = new ResourceAddress("mipmap.properties");
+    private static final ResourceAddress MIPMAP_PROPERTIES = new ResourceAddress("textures/mipmap.properties");
 
     private static final int TEX_FORMAT = GL12.GL_BGRA;
     private static final int TEX_DATA_TYPE = GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
@@ -207,16 +207,13 @@ public class MipmapHelper {
             return false;
         } else if (mipmapType.containsKey(texture)) {
             return mipmapType.get(texture);
-        } else if (texture.startsWith("%") ||
-            texture.startsWith("##") ||
-            texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "achievement/") ||
-            texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/") ||
-            texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "font/") ||
-            texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "gui/") ||
-            texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "misc/") ||
-            texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "terrain/") ||
-            texture.startsWith(MCPatcherUtils.TEXTURE_PACK_PREFIX + "title/") ||
-            texture.contains("item")) {
+        } else if (texture.contains("item") ||
+            texture.startsWith("textures/colormap/") ||
+            texture.startsWith("textures/environment/") ||
+            texture.startsWith("textures/font/") ||
+            texture.startsWith("textures/gui/") ||
+            texture.startsWith("textures/map/") ||
+            texture.startsWith("textures/misc/")) {
             return false;
         } else {
             return true;

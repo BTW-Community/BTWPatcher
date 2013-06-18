@@ -6,7 +6,7 @@ import net.minecraft.src.ResourceAddress;
 import net.minecraft.src.Tessellator;
 
 public class MobOverlay {
-    private static final ResourceAddress MOOSHROOM_OVERLAY = new ResourceAddress("textures/entity/redcow_overlay.png");
+    private static final ResourceAddress MOOSHROOM_OVERLAY = new ResourceAddress("textures/entity/cow/mooshroom_overlay.png");
     private static final ResourceAddress SNOWMAN_OVERLAY = new ResourceAddress("textures/entity/snowman_overlay.png");
 
     private static final double MOO_X0 = -0.45;

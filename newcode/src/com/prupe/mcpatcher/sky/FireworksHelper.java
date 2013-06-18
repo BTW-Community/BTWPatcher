@@ -12,7 +12,7 @@ import java.util.Properties;
 public class FireworksHelper {
     private static final int LIT_LAYER = 3;
     private static final int EXTRA_LAYER = LIT_LAYER + 1;
-    private static final ResourceAddress PARTICLES_PROPERTIES = new ResourceAddress("particles.properties");
+    private static final ResourceAddress PARTICLES_PROPERTIES = new ResourceAddress("textures/particle/particles.properties");
 
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.BETTER_SKIES);
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "brightenFireworks", true);

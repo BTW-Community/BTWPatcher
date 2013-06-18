@@ -17,17 +17,17 @@ import java.util.Properties;
 public class ColorizeBlock {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
-    private static final ResourceAddress REDSTONE_COLORS = new ResourceAddress("misc/redstonecolor.png");
-    private static final ResourceAddress STEM_COLORS = new ResourceAddress("misc/stemcolor.png");
-    private static final ResourceAddress SWAMPGRASSCOLOR = new ResourceAddress("misc/swampgrasscolor.png");
-    private static final ResourceAddress SWAMPFOLIAGECOLOR = new ResourceAddress("misc/swampfoliagecolor.png");
-    private static final ResourceAddress PINECOLOR = new ResourceAddress("misc/pinecolor.png");
-    private static final ResourceAddress BIRCHCOLOR = new ResourceAddress("misc/birchcolor.png");
-    private static final ResourceAddress FOLIAGECOLOR = new ResourceAddress("misc/foliagecolor.png");
-    private static final ResourceAddress WATERCOLOR = new ResourceAddress("misc/watercolorX.png");
-    private static final ResourceAddress UNDERWATERCOLOR = new ResourceAddress("misc/underwatercolor.png");
-    private static final ResourceAddress FOGCOLOR0 = new ResourceAddress("misc/fogcolor0.png");
-    private static final ResourceAddress SKYCOLOR0 = new ResourceAddress("misc/skycolor0.png");
+    private static final ResourceAddress REDSTONE_COLORS = new ResourceAddress("textures/colormaps/redstonecolor.png");
+    private static final ResourceAddress STEM_COLORS = new ResourceAddress("textures/colormaps/stemcolor.png");
+    private static final ResourceAddress SWAMPGRASSCOLOR = new ResourceAddress("textures/colormaps/swampgrasscolor.png");
+    private static final ResourceAddress SWAMPFOLIAGECOLOR = new ResourceAddress("textures/colormaps/swampfoliagecolor.png");
+    private static final ResourceAddress PINECOLOR = new ResourceAddress("textures/colormaps/pinecolor.png");
+    private static final ResourceAddress BIRCHCOLOR = new ResourceAddress("textures/colormaps/birchcolor.png");
+    private static final ResourceAddress FOLIAGECOLOR = new ResourceAddress("textures/colormaps/foliagecolor.png");
+    private static final ResourceAddress WATERCOLOR = new ResourceAddress("textures/colormaps/watercolorX.png");
+    private static final ResourceAddress UNDERWATERCOLOR = new ResourceAddress("textures/colormaps/underwatercolor.png");
+    private static final ResourceAddress FOGCOLOR0 = new ResourceAddress("textures/colormaps/fogcolor0.png");
+    private static final ResourceAddress SKYCOLOR0 = new ResourceAddress("textures/colormaps/skycolor0.png");
 
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
 

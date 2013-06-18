@@ -14,7 +14,7 @@ import java.util.HashMap;
 public final class Lightmap {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
-    private static final String LIGHTMAP_FORMAT = MCPatcherUtils.TEXTURE_PACK_PREFIX + "environment/lightmap%d.png";
+    private static final String LIGHTMAP_FORMAT = "textures/environment/lightmap%d.png";
     private static final int LIGHTMAP_SIZE = 16;
     private static final int HEIGHT_WITHOUT_NIGHTVISION = 2 * LIGHTMAP_SIZE;
     private static final int HEIGHT_WITH_NIGHTVISION = 4 * LIGHTMAP_SIZE;
