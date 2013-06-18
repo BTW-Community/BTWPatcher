@@ -10,9 +10,9 @@ import java.util.Properties;
 import java.util.Random;
 
 public class ColorizeEntity {
-    private static final ResourceAddress LAVA_DROP_COLORS = new ResourceAddress("textures/colormaps/lavadropcolor.png");
-    private static final ResourceAddress MYCELIUM_COLORS = new ResourceAddress("textures/colormaps/myceliumparticlecolor.png");
-    private static final ResourceAddress XPORB_COLORS = new ResourceAddress("textures/colormaps/xporbcolor.png");
+    private static final ResourceAddress LAVA_DROP_COLORS = new ResourceAddress("textures/colormap/lavadrop.png");
+    private static final ResourceAddress MYCELIUM_COLORS = new ResourceAddress("textures/colormap/myceliumparticle.png");
+    private static final ResourceAddress XPORB_COLORS = new ResourceAddress("textures/colormap/xporb.png");
 
     static float[] waterBaseColor; // particle.water
     private static float[] lavaDropColors; // misc/lavadropcolor.png

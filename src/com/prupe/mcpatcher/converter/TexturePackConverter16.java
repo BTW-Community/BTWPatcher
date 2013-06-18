@@ -697,6 +697,8 @@ public class TexturePackConverter16 extends TexturePackConverter {
         new TextureEntry("ctm/(.*)", "ctm/$1"),
         new TextureEntry("environment/(.*)", "environment/$1"),
         new TextureEntry("misc/(clock|compass|fishingline|lead).properties", "items/$1.properties"),
+        new TextureEntry("misc/watercolorX\\.png", "colormap/water.png"),
+        new TextureEntry("misc/(.*)color(-?\\d*\\.png)", "colormap/$1$2"),
         new TextureEntry("misc/(.*)", "misc/$1"),
         new MobTextureEntry("redcow_overlay", "cow/mooshroom_overlay"),
         new MobTextureEntry("snowman_overlay", "snowman_overlay"),
