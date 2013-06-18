@@ -222,10 +222,10 @@ public class CustomItemTextures extends Mod {
     }
 
     private void addGlintSignature(ClassMod classMod, MethodRef method) {
-        addGlintSignature(classMod, method, ALOAD_0);
+        addGlintSignature(classMod, method, build(ALOAD_0));
     }
 
-    private void addGlintSignature(ClassMod classMod, MethodRef method, final int opcode) {
+    private void addGlintSignature(ClassMod classMod, MethodRef method, final String opcode) {
         final FieldRef glint = new FieldRef(classMod.getDeobfClass(), "glint", "LResourceAddress;");
 
         classMod.addClassSignature(new BaseMod.ResourceAddressSignature(classMod, glint, GLINT_PNG));
@@ -262,7 +262,9 @@ public class CustomItemTextures extends Mod {
 
             addClassSignature(new ConstSignature("textures/map/map_background.png"));
             addClassSignature(new ConstSignature("textures/misc/underwater.png"));
-            addGlintSignature(this, renderItem);
+            // 13w24b: this.minecraft.getTextureManager.bindTexture(glint);
+            // 13w25a: var4 = this.minecraft.getTextureManager(); ... var4.bindTexture(glint);
+            addGlintSignature(this, renderItem, anyALOAD);
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -340,7 +342,7 @@ public class CustomItemTextures extends Mod {
 
             addClassSignature(new ConstSignature("missingno"));
             addGlintSignature(this, renderDroppedItem);
-            addGlintSignature(this, renderItemAndEffectIntoGUI, ALOAD_2);
+            addGlintSignature(this, renderItemAndEffectIntoGUI, build(ALOAD_2));
 
             addMemberMapper(new FieldMapper(zLevel).accessFlag(AccessFlag.STATIC, false));
 
