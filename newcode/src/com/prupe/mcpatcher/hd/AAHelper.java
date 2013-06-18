@@ -3,17 +3,32 @@ package com.prupe.mcpatcher.hd;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import net.minecraft.src.IResource;
 import net.minecraft.src.ResourceAddress;
+import net.minecraft.src.StreamedResource;
 import net.minecraft.src.TextureStitched;
 import org.lwjgl.opengl.PixelFormat;
 
 import java.awt.image.BufferedImage;
+import java.lang.reflect.Field;
 
 public class AAHelper {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
 
     private static final int debugColor = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "debugBorder", false) ? 0xff0000ff : 0;
     private static final int aaSamples = Config.getInt(MCPatcherUtils.EXTENDED_HD, "antiAliasing", 1);
+
+    private static Field addressField;
+
+    static {
+        for (Field f : StreamedResource.class.getDeclaredFields()) {
+            if (f.getType().isAssignableFrom(ResourceAddress.class)) {
+                f.setAccessible(true);
+                addressField = f;
+                break;
+            }
+        }
+    }
 
     public static PixelFormat setupPixelFormat(PixelFormat pixelFormat) {
         if (aaSamples > 1) {
@@ -24,8 +39,16 @@ public class AAHelper {
         }
     }
 
-    public static BufferedImage addBorder(TextureStitched stitched, ResourceAddress name, BufferedImage input) {
-        if (input == null || !(stitched instanceof BorderedTexture)) {
+    public static BufferedImage addBorder(TextureStitched stitched, IResource resource, BufferedImage input) {
+        if (input == null || !(stitched instanceof BorderedTexture) || !(resource instanceof StreamedResource) || addressField == null) {
+            return input;
+        }
+        ResourceAddress name;
+        try {
+            name = (ResourceAddress) addressField.get(resource);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            addressField = null;
             return input;
         }
         input = MipmapHelper.fixTransparency(name, input);

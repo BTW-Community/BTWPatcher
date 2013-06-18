@@ -187,7 +187,6 @@ public class BaseTexturePackMod extends Mod {
             final FieldRef texturesByName = new FieldRef(getDeobfClass(), "texturesByName", "Ljava/util/Map;");
             final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(LResourceAddress;)V");
             final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "(LResourceAddress;)LITexture;");
-            final MethodRef addTexture = new MethodRef(getDeobfClass(), "addTexture", "(LResourceAddress;LITexture;)V");
             final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "(LIResourceBundle;)V");
 
             addClassSignature(new ConstSignature("dynamic/%s_%d"));
@@ -195,7 +194,6 @@ public class BaseTexturePackMod extends Mod {
             addMemberMapper(new FieldMapper(texturesByName));
             addMemberMapper(new MethodMapper(bindTexture).accessFlag(AccessFlag.STATIC, false));
             addMemberMapper(new MethodMapper(getTexture).accessFlag(AccessFlag.STATIC, false));
-            addMemberMapper(new MethodMapper(addTexture));
             addMemberMapper(new MethodMapper(refreshTextures));
 
             addPatch(new MakeMemberPublicPatch(texturesByName));

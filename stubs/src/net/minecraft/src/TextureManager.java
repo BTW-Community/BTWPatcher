@@ -14,7 +14,4 @@ public class TextureManager {
 
     public void unloadTexture(ResourceAddress texture) {
     }
-
-    public void addTexture(ResourceAddress name, ITexture texture) {
-    }
 }

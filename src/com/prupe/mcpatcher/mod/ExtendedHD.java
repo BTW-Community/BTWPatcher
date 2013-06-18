@@ -47,6 +47,7 @@ public class ExtendedHD extends Mod {
         addClassMod(new TextureNamedMod());
         addClassMod(new TextureCompassMod());
         addClassMod(new TextureClockMod());
+        addClassMod(new StreamedResourceMod());
         HDFont.setupMod(this);
 
         addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS);
@@ -254,8 +255,7 @@ public class ExtendedHD extends Mod {
             final MethodRef copy = new MethodRef(getDeobfClass(), "copy", "(LTextureStitched;)V");
             final MethodRef updateAnimation = new MethodRef(getDeobfClass(), "updateAnimation", "()V");
             final MethodRef loadResource = new MethodRef(getDeobfClass(), "loadResource", "(LIResource;)V");
-            final InterfaceMethodRef getResourceAddress = new InterfaceMethodRef("IResource", "getAddress", "()LResourceAddress;");
-            final MethodRef addBorder = new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(LTextureStitched;LResourceAddress;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
+            final MethodRef addBorder = new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(LTextureStitched;LIResource;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -294,10 +294,9 @@ public class ExtendedHD extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // AAHelper.addBorder(stitched, resource.getAddress(), ...)
+                        // AAHelper.addBorder(stitched, resource, ...)
                         ALOAD_0,
                         ALOAD_1,
-                        reference(INVOKEINTERFACE, getResourceAddress),
                         getMatch(),
                         reference(INVOKESTATIC, addBorder)
                     );
@@ -501,6 +500,17 @@ public class ExtendedHD extends Mod {
         @Override
         protected MethodRef getUpdateMethod() {
             return new MethodRef(getDeobfClass(), "updateAnimation", "()V");
+        }
+    }
+
+    private class StreamedResourceMod extends ClassMod {
+        StreamedResourceMod() {
+            setInterfaces("IResource");
+
+            addClassSignature(new ConstSignature(new ClassRef("java/io/BufferedReader")));
+            addClassSignature(new ConstSignature(new ClassRef("java/io/InputStreamReader")));
+            addClassSignature(new ConstSignature(new MethodRef("com/google/gson/JsonElement", "getAsJsonObject", "()Lcom/google/gson/JsonObject;")));
+            addClassSignature(new ConstSignature("pack.mcmeta").negate(true));
         }
     }
 }

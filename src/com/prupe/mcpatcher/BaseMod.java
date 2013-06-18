@@ -783,7 +783,7 @@ public final class BaseMod extends Mod {
             super(mod);
 
             addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "getAddress", "()LResourceAddress;"),
+                getMinecraftVersion().compareTo("13w25a") >= 0 ? null : new InterfaceMethodRef(getDeobfClass(), "getAddress", "()LResourceAddress;"),
                 new InterfaceMethodRef(getDeobfClass(), "getInputStream", "()Ljava/io/InputStream;"),
                 new InterfaceMethodRef(getDeobfClass(), "isPresent", "()Z"),
                 new InterfaceMethodRef(getDeobfClass(), "getMCMeta", "(Ljava/lang/String;)LIMCMeta;")
