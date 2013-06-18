@@ -98,7 +98,7 @@ public class SkyRenderer {
             this.worldType = worldType;
             loadSkies();
             loadCelestialObject("sun", new ResourceAddress("textures/environment/sun.png"));
-            loadCelestialObject("moon", new ResourceAddress("textures/environment/moon_phases.png"));
+            loadCelestialObject("moon_phases", new ResourceAddress("textures/environment/moon_phases.png"));
         }
 
         private void loadSkies() {
