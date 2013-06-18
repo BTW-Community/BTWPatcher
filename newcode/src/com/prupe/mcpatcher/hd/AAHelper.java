@@ -22,7 +22,7 @@ public class AAHelper {
 
     static {
         for (Field f : StreamedResource.class.getDeclaredFields()) {
-            if (f.getType().isAssignableFrom(ResourceAddress.class)) {
+            if (ResourceAddress.class.isAssignableFrom(f.getType())) {
                 f.setAccessible(true);
                 addressField = f;
                 break;
