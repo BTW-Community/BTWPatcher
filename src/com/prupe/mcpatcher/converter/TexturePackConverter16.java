@@ -747,7 +747,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
             String key = (String) entry.getKey();
             String value = (String) entry.getValue();
             if (value.contains("/")) {
-                String newValue = mapPath(value);
+                String newValue = mapPathShort(value);
                 if (newValue == null) {
                     logFilename(name);
                     addMessage(0, "    remove property %s=%s", key, value);
@@ -778,7 +778,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
             String value = (String) entry.getValue();
             if (key.startsWith(PALETTE_BLOCK_KEY)) {
                 String path = key.substring(PALETTE_BLOCK_KEY.length());
-                String newPath = mapPath(path);
+                String newPath = mapPathShort(path);
                 if (!newPath.equals(path)) {
                     logFilename(name);
                     String newKey = PALETTE_BLOCK_KEY + newPath;
@@ -874,6 +874,11 @@ public class TexturePackConverter16 extends TexturePackConverter {
             }
         }
         return path;
+    }
+
+    private static String mapPathShort(String path) {
+        path = mapPath(path);
+        return path == null ? null : path.replaceFirst("^assets/minecraft/", "");
     }
 
     private void logFilename(String name) {
