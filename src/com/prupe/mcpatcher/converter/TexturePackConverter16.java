@@ -12,6 +12,10 @@ public class TexturePackConverter16 extends TexturePackConverter {
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
 
     private static final String MCMETA_SUFFIX = ".mcmeta";
+    private static final String GLINT_PNG = "misc/glint.png";
+    private static final String PUMPKINBLUR_PNG = "misc/pumpkinblur.png";
+    private static final String SHADOW_PNG = "misc/shadow.png";
+    private static final String VIGNETTE_PNG = "misc/vignette.png";
 
     private static final PlainEntry[] convertEntries = {
         // Blocks
@@ -741,6 +745,10 @@ public class TexturePackConverter16 extends TexturePackConverter {
                 handled = convertPackTxt(entry, name);
             } else if (name.endsWith(".txt")) {
                 handled = convertAnimation(entry, name);
+            } else if (name.equals(SHADOW_PNG)) {
+                handled = addPNGMCMeta(name, false, true);
+            } else if (name.equals(GLINT_PNG) || name.equals(PUMPKINBLUR_PNG) || name.equals(VIGNETTE_PNG)) {
+                handled = addPNGMCMeta(name, true, false);
             }
             if (!handled && newName != null) {
                 copyEntry(entry, newName);
@@ -872,6 +880,23 @@ public class TexturePackConverter16 extends TexturePackConverter {
         txtStream.println("}");
         addMessage(0, "    convert animation %s -> %s", name, newName);
         return true;
+    }
+
+    private boolean addPNGMCMeta(String name, boolean blur, boolean clamp) {
+        String mcMetaPath = mapPath(name) + MCMETA_SUFFIX;
+        PrintStream txtStream = new PrintStream(getOutputStream(mcMetaPath));
+        txtStream.println("{");
+        txtStream.println("  \"texture\": {");
+        if (blur) {
+            txtStream.printf("    \"blur\": true%s\n", clamp ? "," : "");
+        }
+        if (clamp) {
+            txtStream.println("    \"clamp\": true");
+        }
+        txtStream.println("  }");
+        txtStream.println("}");
+        addMessage(0, "    add %s", mcMetaPath);
+        return false; // always write original
     }
 
     private static String mapPath(String path) {
