@@ -4,9 +4,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.UserInterface;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.zip.ZipEntry;
 
 public class TexturePackConverter16 extends TexturePackConverter {
@@ -838,11 +836,34 @@ public class TexturePackConverter16 extends TexturePackConverter {
         txtStream.println("\"");
         txtStream.println("  }");
         txtStream.println("}");
+        addMessage(0, "    convert %s -> %s", name, newName);
         return true;
     }
 
-    private boolean convertAnimation(ZipEntry entry, String name) {
-        return false;
+    private boolean convertAnimation(ZipEntry entry, String name) throws IOException {
+        final String pngName = name.replaceFirst("\\.txt$", ".png");
+        if (inZip.getEntry(pngName) == null) {
+            return false;
+        }
+        AnimationData data;
+        try {
+            data = new AnimationData(inZip.getInputStream(entry));
+        } catch (NumberFormatException e) {
+            addMessage(1, "could not parse animation data in %s", name);
+            return false;
+        }
+        if (data.isEmpty()) {
+            return false;
+        }
+        String newName = mapPath(pngName) + MCMETA_SUFFIX;
+        PrintStream txtStream = new PrintStream(getOutputStream(newName));
+        txtStream.println("{");
+        txtStream.println("  \"animation\": {");
+        data.toJSON(txtStream, "    ");
+        txtStream.println("  }");
+        txtStream.println("}");
+        addMessage(0, "    convert %s -> %s", name, newName);
+        return true;
     }
 
     private static String mapPath(String path) {
@@ -900,6 +921,60 @@ public class TexturePackConverter16 extends TexturePackConverter {
     private static class DeleteEntry extends PlainEntry {
         DeleteEntry(String from) {
             super(from, null);
+        }
+    }
+
+    private static class AnimationData {
+        final List<Integer> frames = new ArrayList<Integer>();
+        final List<Integer> timing = new ArrayList<Integer>();
+        int defaultTiming;
+
+        AnimationData(InputStream input) throws IOException, NumberFormatException {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                for (String token : line.split("\\s+")) {
+                    String[] s = token.split("\\*");
+                    if (s.length > 0) {
+                        int a = Integer.parseInt(s[0]);
+                        int b = s.length > 1 ? Integer.parseInt(s[1]) : 1;
+                        frames.add(a);
+                        timing.add(b);
+                    }
+                }
+            }
+            defaultTiming = timing.get(0);
+            for (int i = 1; i < timing.size(); i++) {
+                if (timing.get(i) != defaultTiming) {
+                    defaultTiming = 1;
+                    break;
+                }
+            }
+        }
+
+        void toJSON(PrintStream txtStream, String indent) {
+            if (defaultTiming > 1) {
+                txtStream.printf("%s\"frametime\": %d,\n", indent, defaultTiming);
+            }
+            txtStream.printf("%s\"frames\": [\n", indent);
+            for (int i = 0; i < frames.size(); i++) {
+                String comma = i == frames.size() - 1 ? "" : ",";
+                int a = frames.get(i);
+                int b = timing.get(i);
+                if (b == defaultTiming) {
+                    txtStream.printf("%s  %d%s\n", indent, a, comma);
+                } else {
+                    txtStream.printf("%s  {\n", indent);
+                    txtStream.printf("%s    \"index\": %d,\n", indent, a);
+                    txtStream.printf("%s    \"time\": %d\n", indent, b);
+                    txtStream.printf("%s  }%s\n", indent, comma);
+                }
+            }
+            txtStream.printf("%s]\n", indent);
+        }
+
+        boolean isEmpty() {
+            return frames.isEmpty();
         }
     }
 }
