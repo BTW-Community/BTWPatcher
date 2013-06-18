@@ -264,7 +264,7 @@ public final class BaseMod extends Mod {
             super(mod);
 
             addClassSignature(new ConstSignature("Minecraft-Client"));
-            addClassSignature(new ConstSignature("assets"));
+            addClassSignature(new ConstSignature("textures/gui/title/mojang.png"));
 
             addMemberMapper(new MethodMapper(getInstance)
                 .accessFlag(AccessFlag.PUBLIC, true)
