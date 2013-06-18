@@ -90,16 +90,18 @@ abstract public class TexturePackConverter {
         List<String> names = new ArrayList<String>();
         names.addAll(outData.keySet());
         for (String name : names) {
-            if (!name.endsWith("/") && !name.equals("/")) {
-                addDirectory(name.replaceAll("[^/]+$", ""));
+            for (String s = name; !s.equals(""); ) {
+                s = s.replaceFirst("[^/]+$", "");
+                addDirectory(s);
+                s = s.replaceFirst("/$", "");
             }
         }
         removeEntry("");
 
         List<Map.Entry<String, ByteArrayOutputStream>> outEntries = new ArrayList<Map.Entry<String, ByteArrayOutputStream>>();
         ui.setStatusText("Writing %s...", output.getName());
-        Logger.log(Logger.LOG_JAR, "");
-        Logger.log(Logger.LOG_JAR, "Writing %s", output.getName());
+        addMessage(0, "");
+        addMessage(0, "Writing %s", output.getName());
         outEntries.addAll(outData.entrySet());
         Collections.sort(outEntries, new Comparator<Map.Entry<String, ByteArrayOutputStream>>() {
             public int compare(Map.Entry<String, ByteArrayOutputStream> o1, Map.Entry<String, ByteArrayOutputStream> o2) {
@@ -109,15 +111,17 @@ abstract public class TexturePackConverter {
         outZip = new ZipOutputStream(new FileOutputStream(output));
         int total = outEntries.size();
         int progress = 0;
+        int numOutFiles = 0;
         for (Map.Entry<String, ByteArrayOutputStream> e : outEntries) {
             ui.updateProgress(progress++, total);
             String name = e.getKey();
             ByteArrayOutputStream data = e.getValue();
             outZip.putNextEntry(new ZipEntry(name));
-            Logger.log(Logger.LOG_JAR, "  %s", name);
+            addMessage(0, "  %s", name);
             if (data != null) {
                 outZip.write(data.toByteArray());
                 outZip.closeEntry();
+                numOutFiles++;
             }
         }
         outZip.close();
@@ -131,7 +135,7 @@ abstract public class TexturePackConverter {
         addMessage(0, "    %d files", inEntries.size());
         addMessage(0, "  output: %s", output.getPath());
         addMessage(0, "    %d bytes", output.length());
-        addMessage(0, "    %d files", outEntries.size());
+        addMessage(0, "    %d files", numOutFiles);
     }
 
     abstract protected void convertImpl(UserInterface ui) throws Exception;

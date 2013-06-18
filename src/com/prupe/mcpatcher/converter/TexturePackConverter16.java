@@ -845,7 +845,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
     }
 
     private boolean convertAnimation(ZipEntry entry, String name) throws IOException {
-        final String pngName = name.replaceFirst("\\.txt$", ".png");
+        String pngName = name.replaceFirst("\\.txt$", ".png");
         if (inZip.getEntry(pngName) == null) {
             return false;
         }
@@ -857,6 +857,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
             return false;
         }
         if (data.isEmpty()) {
+            addMessage(1, "no animation data in %s", name);
             return false;
         }
         String newName = mapPath(pngName) + MCMETA_SUFFIX;
@@ -866,7 +867,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
         data.toJSON(txtStream, "    ");
         txtStream.println("  }");
         txtStream.println("}");
-        addMessage(0, "    convert %s -> %s", name, newName);
+        addMessage(0, "    convert animation %s -> %s", name, newName);
         return true;
     }
 
