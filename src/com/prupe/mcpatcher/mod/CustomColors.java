@@ -2762,10 +2762,9 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        or(
-                            build(push(205), anyISTORE),
-                            build(push("water"), anyReference(INVOKESTATIC), anyASTORE)
-                        )
+                        push("water_still"),
+                        anyReference(INVOKESTATIC),
+                        anyASTORE
                     );
                 }
 
