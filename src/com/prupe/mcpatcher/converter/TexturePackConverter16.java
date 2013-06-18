@@ -17,6 +17,8 @@ public class TexturePackConverter16 extends TexturePackConverter {
     private static final String SHADOW_PNG = "misc/shadow.png";
     private static final String VIGNETTE_PNG = "misc/vignette.png";
 
+    private static final Map<String, TextureMCMeta> textureMCMeta = new HashMap<String, TextureMCMeta>();
+
     private static final PlainEntry[] convertEntries = {
         // Blocks
         new TextureEntry("textures/blocks/activatorRail\\.png", "blocks/rail_activator.png"),
@@ -724,6 +726,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
 
     @Override
     protected void convertImpl(UserInterface ui) throws Exception {
+        textureMCMeta.clear();
         int progress = 0;
         for (ZipEntry entry : inEntries) {
             ui.updateProgress(++progress, inEntries.size());
@@ -746,13 +749,16 @@ public class TexturePackConverter16 extends TexturePackConverter {
             } else if (name.endsWith(".txt")) {
                 handled = convertAnimation(entry, name);
             } else if (name.equals(SHADOW_PNG)) {
-                handled = addPNGMCMeta(name, false, true);
+                handled = setPNGBlurClamp(name, false, true);
             } else if (name.equals(GLINT_PNG) || name.equals(PUMPKINBLUR_PNG) || name.equals(VIGNETTE_PNG)) {
-                handled = addPNGMCMeta(name, true, false);
+                handled = setPNGBlurClamp(name, true, false);
             }
             if (!handled && newName != null) {
                 copyEntry(entry, newName);
             }
+        }
+        for (TextureMCMeta meta : textureMCMeta.values()) {
+            meta.toJSON();
         }
     }
 
@@ -771,6 +777,13 @@ public class TexturePackConverter16 extends TexturePackConverter {
                     logFilename(name);
                     addMessage(0, "    change property %s=%s -> %s", key, value, newValue);
                     changes.put(key, newValue);
+                }
+                if (newValue != null && newValue.endsWith(".png")) {
+                    boolean blur = value.contains("%blur%");
+                    boolean clamp = value.contains("%clamp%");
+                    if (blur || clamp) {
+                        setPNGBlurClamp(value, blur, clamp);
+                    }
                 }
             }
         }
@@ -860,46 +873,36 @@ public class TexturePackConverter16 extends TexturePackConverter {
         if (inZip.getEntry(pngName) == null) {
             return false;
         }
-        AnimationData data;
+        TextureMCMeta meta = getTextureMCMeta(mapPath(pngName));
         try {
-            data = new AnimationData(inZip.getInputStream(entry));
+            meta.readAnimationTxt(inZip.getInputStream(entry));
         } catch (NumberFormatException e) {
             addMessage(1, "could not parse animation data in %s", name);
             return false;
         }
-        if (data.isEmpty()) {
+        if (meta.isEmpty()) {
             addMessage(1, "no animation data in %s", name);
             return false;
         }
-        String newName = mapPath(pngName) + MCMETA_SUFFIX;
-        PrintStream txtStream = new PrintStream(getOutputStream(newName));
-        txtStream.println("{");
-        txtStream.println("  \"animation\": {");
-        data.toJSON(txtStream, "    ");
-        txtStream.println("  }");
-        txtStream.println("}");
-        addMessage(0, "    convert animation %s -> %s", name, newName);
+        addMessage(0, "    convert animation %s -> %s", name, meta);
         return true;
     }
 
-    private boolean addPNGMCMeta(String name, boolean blur, boolean clamp) {
-        String mcMetaPath = mapPath(name) + MCMETA_SUFFIX;
-        PrintStream txtStream = new PrintStream(getOutputStream(mcMetaPath));
-        txtStream.println("{");
-        txtStream.println("  \"texture\": {");
-        if (blur) {
-            txtStream.printf("    \"blur\": true%s\n", clamp ? "," : "");
-        }
-        if (clamp) {
-            txtStream.println("    \"clamp\": true");
-        }
-        txtStream.println("  }");
-        txtStream.println("}");
-        addMessage(0, "    add %s", mcMetaPath);
+    private boolean setPNGBlurClamp(String name, boolean blur, boolean clamp) {
+        TextureMCMeta data = getTextureMCMeta(mapPath(name));
+        data.blur |= blur;
+        data.clamp |= clamp;
+        addMessage(0, "    set %s blur: %s, clamp: %s", data, data.blur, data.clamp);
         return false; // always write original
     }
 
     private static String mapPath(String path) {
+        if (path.startsWith("%blur%")) {
+            path = path.substring(6);
+        }
+        if (path.startsWith("%clamp%")) {
+            path = path.substring(7);
+        }
         path = getEntryName(path);
         for (PlainEntry entry : convertEntries) {
             if (entry.matches(path)) {
@@ -919,6 +922,15 @@ public class TexturePackConverter16 extends TexturePackConverter {
             addMessage(0, "  %s:", name);
             lastFileMessage = name;
         }
+    }
+
+    TextureMCMeta getTextureMCMeta(String pngName) {
+        TextureMCMeta data = textureMCMeta.get(pngName);
+        if (data == null) {
+            data = new TextureMCMeta(pngName);
+            textureMCMeta.put(pngName, data);
+        }
+        return data;
     }
 
     private static class PlainEntry {
@@ -962,12 +974,21 @@ public class TexturePackConverter16 extends TexturePackConverter {
         }
     }
 
-    private static class AnimationData {
+    private class TextureMCMeta {
+        final String pngName;
+        boolean blur;
+        boolean clamp;
+        int defaultTiming;
         final List<Integer> frames = new ArrayList<Integer>();
         final List<Integer> timing = new ArrayList<Integer>();
-        int defaultTiming;
 
-        AnimationData(InputStream input) throws IOException, NumberFormatException {
+        private TextureMCMeta(String pngName) {
+            this.pngName = pngName;
+        }
+
+        void readAnimationTxt(InputStream input) throws IOException, NumberFormatException {
+            frames.clear();
+            timing.clear();
             BufferedReader reader = new BufferedReader(new InputStreamReader(input));
             String line;
             while ((line = reader.readLine()) != null) {
@@ -981,38 +1002,69 @@ public class TexturePackConverter16 extends TexturePackConverter {
                     }
                 }
             }
-            defaultTiming = timing.get(0);
-            for (int i = 1; i < timing.size(); i++) {
-                if (timing.get(i) != defaultTiming) {
-                    defaultTiming = 1;
-                    break;
+            if (!frames.isEmpty()) {
+                defaultTiming = timing.get(0);
+                for (int i = 1; i < timing.size(); i++) {
+                    if (timing.get(i) != defaultTiming) {
+                        defaultTiming = 1;
+                        break;
+                    }
                 }
             }
         }
 
-        void toJSON(PrintStream txtStream, String indent) {
-            if (defaultTiming > 1) {
-                txtStream.printf("%s\"frametime\": %d,\n", indent, defaultTiming);
+        void toJSON() {
+            if (isEmpty()) {
+                return;
             }
-            txtStream.printf("%s\"frames\": [\n", indent);
-            for (int i = 0; i < frames.size(); i++) {
-                String comma = i == frames.size() - 1 ? "" : ",";
-                int a = frames.get(i);
-                int b = timing.get(i);
-                if (b == defaultTiming) {
-                    txtStream.printf("%s  %d%s\n", indent, a, comma);
-                } else {
-                    txtStream.printf("%s  {\n", indent);
-                    txtStream.printf("%s    \"index\": %d,\n", indent, a);
-                    txtStream.printf("%s    \"time\": %d\n", indent, b);
-                    txtStream.printf("%s  }%s\n", indent, comma);
+
+            PrintStream txtStream = new PrintStream(getOutputStream(toString()));
+            txtStream.println("{");
+
+            if (blur || clamp) {
+                txtStream.println("  \"texture\": {");
+                if (blur) {
+                    txtStream.printf("    \"blur\": true%s\n", clamp ? "," : "");
                 }
+                if (clamp) {
+                    txtStream.println("    \"clamp\": true");
+                }
+                txtStream.printf("  }%s\n", frames.isEmpty() ? "" : ",");
             }
-            txtStream.printf("%s]\n", indent);
+
+            if (!frames.isEmpty()) {
+                txtStream.println("  \"animation\": {");
+                if (defaultTiming > 1) {
+                    txtStream.printf("    \"frametime\": %d,\n", defaultTiming);
+                }
+                txtStream.println("    \"frames\": [");
+                for (int i = 0; i < frames.size(); i++) {
+                    String comma = i == frames.size() - 1 ? "" : ",";
+                    int a = frames.get(i);
+                    int b = timing.get(i);
+                    if (b == defaultTiming) {
+                        txtStream.printf("      %d%s\n", a, comma);
+                    } else {
+                        txtStream.println("      {");
+                        txtStream.printf("        \"index\": %d,\n", a);
+                        txtStream.printf("        \"time\": %d\n", b);
+                        txtStream.printf("      }%s\n", comma);
+                    }
+                }
+                txtStream.println("    ]");
+                txtStream.println("  }");
+            }
+
+            txtStream.println("}");
         }
 
         boolean isEmpty() {
-            return frames.isEmpty();
+            return !blur && !clamp && frames.isEmpty();
+        }
+
+        @Override
+        public String toString() {
+            return pngName + MCMETA_SUFFIX;
         }
     }
 }
