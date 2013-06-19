@@ -16,6 +16,8 @@ public class TileLoader {
 
     private static final List<TileLoader> loaders = new ArrayList<TileLoader>();
 
+    private static final ResourceAddress BLANK_RESOURCE = new ResourceAddress(MCPatcherUtils.BLANK_PNG);
+
     private static final boolean debugTextures = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "debugTextures", false);
     private static final int splitTextures = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "splitTextures", 1);
     private static final Map<String, String> specialTextures = new HashMap<String, String>();
@@ -222,6 +224,29 @@ public class TileLoader {
             size += getTextureSize(texture);
         }
         return size;
+    }
+
+    public static ResourceAddress getDefaultAddress(ResourceAddress propertiesAddress) {
+        return new ResourceAddress(propertiesAddress.getNamespace(), propertiesAddress.getPath().replaceFirst("\\.properties$", ".png"));
+    }
+
+    public static ResourceAddress parseTileAddress(ResourceAddress propertiesAddress, String value) {
+        if (value.equals("blank")) {
+            return BLANK_RESOURCE;
+        }
+        if (value.equals("null") || value.equals("none") || value.equals("default")) {
+            return null;
+        }
+        if (value.equals("")) {
+            return null;
+        }
+        if (!value.endsWith(".png")) {
+            value += ".png";
+        }
+        if (!value.contains("/")) {
+            value = propertiesAddress.getPath().replaceFirst("[^/]+$", "") + value;
+        }
+        return new ResourceAddress(propertiesAddress.getNamespace(), value);
     }
 
     public boolean preloadTile(ResourceAddress resource, boolean alternate, String special) {

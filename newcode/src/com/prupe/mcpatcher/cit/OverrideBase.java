@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.cit;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.TileLoader;
 import net.minecraft.src.*;
 
 import java.io.File;
@@ -73,12 +74,12 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             value = MCPatcherUtils.getStringProperty(properties, "tile", "");
         }
         if (value.equals("")) {
-            resource = getDefaultAddress(propertiesName);
+            resource = TileLoader.getDefaultAddress(propertiesName);
             if (!TexturePackAPI.hasResource(resource)) {
                 resource = null;
             }
         } else {
-            resource = parseTileAddress(propertiesName, value);
+            resource = TileLoader.parseTileAddress(propertiesName, value);
             if (!TexturePackAPI.hasResource(resource)) {
                 error("source texture %s not found", value);
                 resource = null;
@@ -146,29 +147,6 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             matchNBT(itemStack);
     }
 
-    public static ResourceAddress getDefaultAddress(ResourceAddress propertiesAddress) {
-        return new ResourceAddress(propertiesAddress.getNamespace(), propertiesAddress.getPath().replaceFirst("\\.properties$", ".png"));
-    }
-
-    public static ResourceAddress parseTileAddress(ResourceAddress propertiesAddress, String value) {
-        if (value.equals("blank")) {
-            return new ResourceAddress(MCPatcherUtils.BLANK_PNG);
-        }
-        if (value.equals("null") || value.equals("default")) {
-            return null;
-        }
-        if (value.equals("")) {
-            return null;
-        }
-        if (!value.endsWith(".png")) {
-            value += ".png";
-        }
-        if (!value.contains("/")) {
-            value = propertiesAddress.getPath().replaceFirst("[^/]+$", "") + value;
-        }
-        return new ResourceAddress(propertiesAddress.getNamespace(), value);
-    }
-
     private Map<String, ResourceAddress> getAlternateTextures(Properties properties) {
         Map<String, ResourceAddress> tmpMap = new HashMap<String, ResourceAddress>();
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
@@ -184,7 +162,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             } else {
                 continue;
             }
-            ResourceAddress resource = parseTileAddress(propertiesName, value);
+            ResourceAddress resource = TileLoader.parseTileAddress(propertiesName, value);
             if (resource != null) {
                 tmpMap.put(name, resource);
             }

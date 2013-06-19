@@ -320,11 +320,7 @@ abstract class TileOverride implements ITileOverride {
         weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
     }
 
-    private boolean addIcon(String path) {
-        if (!path.endsWith(".png")) {
-            path += ".png";
-        }
-        ResourceAddress resource = TexturePackAPI.parseResourceAddress(path);
+    private boolean addIcon(ResourceAddress resource) {
         tileNames.add(resource.getPath());
         return tileLoader.preloadTile(resource, renderPass > 2);
     }
@@ -334,11 +330,11 @@ abstract class TileOverride implements ITileOverride {
         String tileList = properties.getProperty("tiles", "").trim();
         if (tileList.equals("")) {
             for (int i = 0; ; i++) {
-                String name = texturesDirectory + "/" + i + ".png";
-                if (!TexturePackAPI.hasResource(new ResourceAddress(name))) {
+                ResourceAddress resource = TileLoader.parseTileAddress(propertiesFile, String.valueOf(i));
+                if (!TexturePackAPI.hasResource(resource)) {
                     break;
                 }
-                if (!addIcon(name)) {
+                if (!addIcon(resource)) {
                     break;
                 }
             }
@@ -348,28 +344,27 @@ abstract class TileOverride implements ITileOverride {
                 Matcher matcher = range.matcher(token);
                 if (token.equals("")) {
                     // nothing
-                } else if (token.equals("null") || token.equals("none") || token.equals("default")) {
-                    tileNames.add(null);
                 } else if (matcher.matches()) {
                     try {
                         int from = Integer.parseInt(matcher.group(1));
                         int to = Integer.parseInt(matcher.group(2));
                         for (int i = from; i <= to; i++) {
-                            String path = texturesDirectory + "/" + i + ".png";
-                            if (!addIcon(path)) {
-                                warn("could not find %s", path);
+                            ResourceAddress resource = TileLoader.parseTileAddress(propertiesFile, String.valueOf(i));
+                            if (!addIcon(resource)) {
+                                warn("could not find image %s", resource);
                             }
                         }
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
                     }
-                } else if (token.contains("/")) {
-                    if (!addIcon(token)) {
-                        warn("could not find image %s", token);
-                    }
                 } else {
-                    if (!addIcon(texturesDirectory + "/" + token)) {
-                        warn("could not find image %s in %s", token, texturesDirectory);
+                    ResourceAddress resource = TileLoader.parseTileAddress(propertiesFile, token);
+                    if (resource == null) {
+                        tileNames.add(null);
+                    } else if (TexturePackAPI.hasResource(resource)) {
+                        addIcon(resource);
+                    } else {
+                        warn("could not find image %s", resource);
                     }
                 }
             }
