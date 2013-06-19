@@ -96,7 +96,7 @@ class PotionReplacer {
         Properties properties = new Properties();
         properties.setProperty("type", "item");
         properties.setProperty("items", String.valueOf(itemID));
-        properties.setProperty("texture." + layer, path.toString());
+        properties.setProperty("texture." + layer, path.getPath());
         properties.setProperty("texture." + LAYER_POTION_CONTENTS, "blank");
         properties.setProperty("weight", "-1");
         return properties;
