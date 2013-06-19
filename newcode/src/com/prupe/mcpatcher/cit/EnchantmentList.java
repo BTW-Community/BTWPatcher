@@ -43,7 +43,7 @@ final class EnchantmentList {
         boolean hasEffect = itemStack.hasEffect();
         if (itemID >= 0 && itemID < enchantments.length && enchantments[itemID] != null) {
             for (Enchantment enchantment : enchantments[itemID]) {
-                if (enchantment.match(itemStack, null, enchantmentLevels, hasEffect)) {
+                if (enchantment.match(itemStack, enchantmentLevels, hasEffect)) {
                     int level = Math.max(enchantment.lastEnchantmentLevel, 1);
                     int layer = enchantment.layer;
                     if (!layersPresent.get(layer)) {

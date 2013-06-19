@@ -140,7 +140,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
         return propertiesName.getPath().compareTo(o.propertiesName.getPath());
     }
 
-    boolean match(ItemStack itemStack, Icon origIcon, int[] itemEnchantmentLevels, boolean hasEffect) {
+    boolean match(ItemStack itemStack, int[] itemEnchantmentLevels, boolean hasEffect) {
         return matchDamage(itemStack) &&
             matchStackSize(itemStack) &&
             matchEnchantment(itemEnchantmentLevels, hasEffect) &&

@@ -13,9 +13,9 @@ final class ItemOverride extends OverrideBase {
     private static final int ITEM_ID_COMPASS = 345;
     private static final int ITEM_ID_CLOCK = 347;
 
-    final ResourceAddress matchIconName;
-    Icon icon;
-    Icon matchIcon;
+    private final ResourceAddress matchIconName;
+    private Icon icon;
+    private Icon matchIcon;
 
     ItemOverride(ResourceAddress propertiesName, Properties properties) {
         super(propertiesName, properties);
@@ -31,9 +31,8 @@ final class ItemOverride extends OverrideBase {
         return "item";
     }
 
-    @Override
-    boolean match(ItemStack itemStack, Icon origIcon, int[] itemEnchantmentLevels, boolean hasEffect) {
-        return super.match(itemStack, origIcon, itemEnchantmentLevels, hasEffect) && matchOrigIcon(origIcon);
+    Icon getReplacementIcon(Icon origIcon) {
+        return icon;
     }
 
     private boolean matchOrigIcon(Icon origIcon) {

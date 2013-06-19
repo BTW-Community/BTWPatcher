@@ -200,7 +200,10 @@ public class CITUtils {
         if (enableItems) {
             OverrideBase override = findMatch(items, itemStack, icon, renderPass);
             if (override != null) {
-                lastIcon = ((ItemOverride) override).icon;
+                Icon newIcon = ((ItemOverride) override).getReplacementIcon(icon);
+                if (newIcon != null) {
+                    lastIcon = newIcon;
+                }
             }
         }
         return lastIcon;
@@ -238,7 +241,7 @@ public class CITUtils {
             int[] enchantmentLevels = getEnchantmentLevels(itemID, itemStack.stackTagCompound);
             boolean hasEffect = itemStack.hasEffect();
             for (OverrideBase override : overrides[itemID]) {
-                if (override.layer == renderPass && override.match(itemStack, origIcon, enchantmentLevels, hasEffect)) {
+                if (override.layer == renderPass && override.match(itemStack, enchantmentLevels, hasEffect)) {
                     return override;
                 }
             }
