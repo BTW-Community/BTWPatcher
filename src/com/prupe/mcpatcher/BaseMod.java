@@ -49,7 +49,7 @@ public final class BaseMod extends Mod {
         addClassFile(MCPatcherUtils.PROFILER_API_CLASS);
         addClassFile(MCPatcherUtils.INPUT_HANDLER_CLASS);
 
-        addFile(MCPatcherUtils.BLANK_PNG);
+        addFile("assets/minecraft/" + MCPatcherUtils.BLANK_PNG);
     }
 
     @Override
@@ -59,7 +59,7 @@ public final class BaseMod extends Mod {
 
     @Override
     public InputStream openFile(String name) throws IOException {
-        if (name.equals("/" + MCPatcherUtils.BLANK_PNG)) {
+        if (name.endsWith(MCPatcherUtils.BLANK_PNG)) {
             BufferedImage image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             ImageIO.write(image, "png", output);
