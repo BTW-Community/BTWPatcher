@@ -198,7 +198,7 @@ public class CITUtils {
     public static Icon getIcon(Icon icon, ItemStack itemStack, int renderPass) {
         lastIcon = icon;
         if (enableItems) {
-            OverrideBase override = findMatch(items, itemStack, icon, renderPass);
+            OverrideBase override = findMatch(items, itemStack, renderPass);
             if (override != null) {
                 Icon newIcon = ((ItemOverride) override).getReplacementIcon(icon);
                 if (newIcon != null) {
@@ -226,22 +226,25 @@ public class CITUtils {
     public static ResourceAddress getArmorTexture(ResourceAddress texture, EntityLiving entity, ItemStack itemStack) {
         if (enableArmor) {
             int layer = texture.getPath().endsWith("_overlay.png") ? 1 : 0;
-            OverrideBase override = findMatch(armors, itemStack, null, layer);
+            OverrideBase override = findMatch(armors, itemStack, layer);
             if (override != null) {
-                return override.textureName;
+                ResourceAddress newTexture = ((ArmorOverride) override).getReplacementTexture(texture);
+                if (newTexture != null) {
+                    return newTexture;
+                }
             }
         }
         return texture;
     }
 
-    private static OverrideBase findMatch(OverrideBase[][] overrides, ItemStack itemStack, Icon origIcon, int renderPass) {
+    private static OverrideBase findMatch(OverrideBase[][] overrides, ItemStack itemStack, int renderPass) {
         lastRenderPass = renderPass;
         int itemID = itemStack.itemID;
         if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
             int[] enchantmentLevels = getEnchantmentLevels(itemID, itemStack.stackTagCompound);
             boolean hasEffect = itemStack.hasEffect();
             for (OverrideBase override : overrides[itemID]) {
-                if (override.layer == renderPass && override.match(itemStack, enchantmentLevels, hasEffect)) {
+                if (override.match(itemStack, enchantmentLevels, hasEffect)) {
                     return override;
                 }
             }

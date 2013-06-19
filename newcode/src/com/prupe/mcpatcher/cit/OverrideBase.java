@@ -17,7 +17,6 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
     final ResourceAddress propertiesName;
     final ResourceAddress textureName;
     final Map<String, ResourceAddress> alternateTextures;
-    final int layer;
     final int weight;
     final BitSet itemsIDs;
     final BitSet damage;
@@ -88,7 +87,6 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
         textureName = resource;
         alternateTextures = getAlternateTextures(properties);
 
-        layer = MCPatcherUtils.getIntProperty(properties, "layer", 0);
         weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
 
         value = MCPatcherUtils.getStringProperty(properties, "matchItems", "");

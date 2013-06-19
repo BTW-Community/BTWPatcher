@@ -13,6 +13,7 @@ import java.util.Properties;
 final class Enchantment extends OverrideBase {
     private static final float ITEM_2D_THICKNESS = 0.0625f;
 
+    final int layer;
     private final BlendMethod blendMethod;
     private final float rotation;
     private final float speed;
@@ -57,6 +58,7 @@ final class Enchantment extends OverrideBase {
             error("no source texture specified");
         }
 
+        layer = MCPatcherUtils.getIntProperty(properties, "layer", 0);
         String value = MCPatcherUtils.getStringProperty(properties, "blend", "add");
         blendMethod = BlendMethod.parse(value);
         if (blendMethod == null) {
