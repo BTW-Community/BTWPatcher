@@ -89,11 +89,14 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
 
         weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
 
-        value = MCPatcherUtils.getStringProperty(properties, "matchItems", "");
+        value = MCPatcherUtils.getStringProperty(properties, "items", "");
+        if (value.equals("")) {
+            value = MCPatcherUtils.getStringProperty(properties, "matchItems", "");
+        }
         if (value.equals("")) {
             itemsIDs = null;
         } else {
-            BitSet ids = parseBitSet(properties, "matchItems", CITUtils.LOWEST_ITEM_ID, CITUtils.HIGHEST_ITEM_ID);
+            BitSet ids = parseBitSet(value, CITUtils.LOWEST_ITEM_ID, CITUtils.HIGHEST_ITEM_ID);
             boolean all = true;
             for (int i = CITUtils.LOWEST_ITEM_ID; i <= CITUtils.HIGHEST_ITEM_ID; i++) {
                 if (Item.itemsList[i] != null && !ids.get(i)) {
@@ -264,6 +267,10 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
 
     private static BitSet parseBitSet(Properties properties, String tag, int min, int max) {
         String value = MCPatcherUtils.getStringProperty(properties, tag, "");
+        return parseBitSet(value, min, max);
+    }
+
+    private static BitSet parseBitSet(String value, int min, int max) {
         if (value.equals("")) {
             return null;
         }

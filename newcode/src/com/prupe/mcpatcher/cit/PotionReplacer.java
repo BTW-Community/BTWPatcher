@@ -95,7 +95,7 @@ class PotionReplacer {
     private static Properties newProperties(ResourceAddress path, int itemID, String layer) {
         Properties properties = new Properties();
         properties.setProperty("type", "item");
-        properties.setProperty("matchItems", String.valueOf(itemID));
+        properties.setProperty("items", String.valueOf(itemID));
         properties.setProperty("texture." + layer, path.toString());
         properties.setProperty("texture." + LAYER_POTION_CONTENTS, "blank");
         properties.setProperty("weight", "-1");
