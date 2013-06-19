@@ -53,6 +53,10 @@ final class Enchantment extends OverrideBase {
     Enchantment(ResourceAddress propertiesName, Properties properties) {
         super(propertiesName, properties);
 
+        if (!error && textureName == null) {
+            error("no source texture specified");
+        }
+
         String value = MCPatcherUtils.getStringProperty(properties, "blend", "add");
         blendMethod = BlendMethod.parse(value);
         if (blendMethod == null) {

@@ -16,6 +16,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
 
     final ResourceAddress propertiesName;
     final ResourceAddress textureName;
+    final Map<String, ResourceAddress> alternateTextures;
     final int layer;
     final int weight;
     final BitSet itemsIDs;
@@ -65,6 +66,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
         this.propertiesName = propertiesName;
 
         String value = MCPatcherUtils.getStringProperty(properties, "source", "");
+        ResourceAddress resource;
         if (value.equals("")) {
             value = MCPatcherUtils.getStringProperty(properties, "texture", "");
         }
@@ -72,23 +74,19 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             value = MCPatcherUtils.getStringProperty(properties, "tile", "");
         }
         if (value.equals("")) {
-            value = propertiesName.getPath().replaceFirst("\\.properties$", ".png");
-        }
-        if (value.equals("blank")) {
-            value = MCPatcherUtils.BLANK_PNG;
-        }
-        if (!value.endsWith(".png")) {
-            value += ".png";
-        }
-        ResourceAddress resource = TexturePackAPI.parseResourceAddress(value);
-        if (resource == null) {
-            if (value.equals("")) {
-                error("no source texture name specified");
-            } else {
+            resource = getDefaultAddress(propertiesName);
+            if (!TexturePackAPI.hasResource(resource)) {
+                resource = null;
+            }
+        } else {
+            resource = parseTileAddress(propertiesName, value);
+            if (!TexturePackAPI.hasResource(resource)) {
                 error("source texture %s not found", value);
+                resource = null;
             }
         }
         textureName = resource;
+        alternateTextures = getAlternateTextures(properties);
 
         layer = MCPatcherUtils.getIntProperty(properties, "layer", 0);
         weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
@@ -145,6 +143,52 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             matchStackSize(itemStack) &&
             matchEnchantment(itemEnchantmentLevels, hasEffect) &&
             matchNBT(itemStack);
+    }
+
+    public static ResourceAddress getDefaultAddress(ResourceAddress propertiesAddress) {
+        return new ResourceAddress(propertiesAddress.getNamespace(), propertiesAddress.getPath().replaceFirst("\\.properties$", ".png"));
+    }
+
+    public static ResourceAddress parseTileAddress(ResourceAddress propertiesAddress, String value) {
+        if (value.equals("blank")) {
+            return new ResourceAddress(MCPatcherUtils.BLANK_PNG);
+        }
+        if (value.equals("null") || value.equals("default")) {
+            return null;
+        }
+        if (value.equals("")) {
+            return null;
+        }
+        if (!value.endsWith(".png")) {
+            value += ".png";
+        }
+        if (!value.contains("/")) {
+            value = propertiesAddress.getPath().replaceFirst("[^/]+$", "") + value;
+        }
+        return new ResourceAddress(propertiesAddress.getNamespace(), value);
+    }
+
+    private Map<String, ResourceAddress> getAlternateTextures(Properties properties) {
+        Map<String, ResourceAddress> tmpMap = new HashMap<String, ResourceAddress>();
+        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+            String key = (String) entry.getKey();
+            String value = (String) entry.getValue();
+            String name;
+            if (key.startsWith("source.")) {
+                name = key.substring(7);
+            } else if (key.startsWith("texture.")) {
+                name = key.substring(8);
+            } else if (key.startsWith("tile.")) {
+                name = key.substring(5);
+            } else {
+                continue;
+            }
+            ResourceAddress resource = parseTileAddress(propertiesName, value);
+            if (resource != null) {
+                tmpMap.put(name, resource);
+            }
+        }
+        return tmpMap.isEmpty() ? null : tmpMap;
     }
 
     private boolean matchDamage(ItemStack itemStack) {

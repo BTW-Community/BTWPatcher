@@ -1,21 +1,19 @@
 package com.prupe.mcpatcher.cit;
 
-import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.TileLoader;
 import net.minecraft.src.Icon;
-import net.minecraft.src.ItemStack;
 import net.minecraft.src.ResourceAddress;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 final class ItemOverride extends OverrideBase {
     private static final int ITEM_ID_COMPASS = 345;
     private static final int ITEM_ID_CLOCK = 347;
 
-    private final ResourceAddress matchIconName;
     private Icon icon;
-    private Icon matchIcon;
+    private final Map<Icon, Icon> iconMap;
 
     ItemOverride(ResourceAddress propertiesName, Properties properties) {
         super(propertiesName, properties);
@@ -23,7 +21,8 @@ final class ItemOverride extends OverrideBase {
         if (itemsIDs == null) {
             error("no matching items specified");
         }
-        matchIconName = TexturePackAPI.parseResourceAddress(MCPatcherUtils.getStringProperty(properties, "matchTile", ""));
+
+        iconMap = alternateTextures == null ? null : new HashMap<Icon, Icon>();
     }
 
     @Override
@@ -32,11 +31,13 @@ final class ItemOverride extends OverrideBase {
     }
 
     Icon getReplacementIcon(Icon origIcon) {
+        if (iconMap != null) {
+            Icon newIcon = iconMap.get(origIcon);
+            if (newIcon != null) {
+                return newIcon;
+            }
+        }
         return icon;
-    }
-
-    private boolean matchOrigIcon(Icon origIcon) {
-        return matchIcon == null || matchIcon == origIcon;
     }
 
     void preload(TileLoader tileLoader) {
@@ -49,12 +50,23 @@ final class ItemOverride extends OverrideBase {
             }
         }
         tileLoader.preloadTile(textureName, false, special);
+        if (alternateTextures != null) {
+            for (Map.Entry<String, ResourceAddress> entry : alternateTextures.entrySet()) {
+                tileLoader.preloadTile(entry.getValue(), false, special);
+            }
+        }
     }
 
     void registerIcon(TileLoader tileLoader) {
         icon = tileLoader.getIcon(textureName.getPath());
-        if (matchIconName != null) {
-            matchIcon = tileLoader.getIcon(matchIconName.getPath());
+        if (alternateTextures != null) {
+            for (Map.Entry<String, ResourceAddress> entry : alternateTextures.entrySet()) {
+                Icon from = tileLoader.getIcon(entry.getKey());
+                Icon to = tileLoader.getIcon(entry.getValue().getPath());
+                if (from != null && to != null) {
+                    iconMap.put(from, to);
+                }
+            }
         }
     }
 }
