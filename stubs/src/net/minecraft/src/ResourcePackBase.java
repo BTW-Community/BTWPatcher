@@ -4,7 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
+import java.util.Set;
 
 public class ResourcePackBase implements IResourcePack {
     public File file; // made public by __TexturePackBase
@@ -17,7 +17,7 @@ public class ResourcePackBase implements IResourcePack {
         return false;
     }
 
-    public List<String> getNamespaces() {
+    public Set<String> getNamespaces() {
         return null;
     }
 

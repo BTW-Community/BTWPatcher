@@ -305,10 +305,11 @@ public class BaseTexturePackMod extends Mod {
 
     private class IResourcePackMod extends ClassMod {
         IResourcePackMod() {
+            String nsType = getMinecraftVersion().compareTo("13w25c") >= 0 ? "Set" : "List";
             addClassSignature(new InterfaceSignature(
                 new InterfaceMethodRef(getDeobfClass(), "getInputStream", "(LResourceAddress;)Ljava/io/InputStream;"),
                 new InterfaceMethodRef(getDeobfClass(), "hasResource", "(LResourceAddress;)Z"),
-                new InterfaceMethodRef(getDeobfClass(), "getNamespaces", "()Ljava/util/List;"),
+                new InterfaceMethodRef(getDeobfClass(), "getNamespaces", "()Ljava/util/" + nsType + ";"),
                 new InterfaceMethodRef(getDeobfClass(), "getPackInfo", "(LMCMetaParser;)LMCMetaResourcePackInfo;"),
                 new InterfaceMethodRef(getDeobfClass(), "getPackIcon", "()Ljava/awt/image/BufferedImage;")
             ).setInterfaceOnly(true));
