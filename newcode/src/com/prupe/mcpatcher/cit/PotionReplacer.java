@@ -74,7 +74,7 @@ class PotionReplacer {
     PotionReplacer() {
         ResourceAddress path = getPotionPath("water", false);
         if (TexturePackAPI.hasResource(path)) {
-            registerVanillaPotion(path, 0, false, WATER_BITS);
+            registerVanillaPotion(path, 0, WATER_BITS, false);
         }
         path = getPotionPath("empty", false);
         if (TexturePackAPI.hasResource(path)) {
@@ -119,10 +119,10 @@ class PotionReplacer {
                     if (splash) {
                         damage |= SPLASH_BIT;
                     }
-                    registerVanillaPotion(path, damage, splash, EFFECT_BITS);
+                    registerVanillaPotion(path, damage, EFFECT_BITS, splash);
                 }
                 if (!splash) {
-                    registerCustomPotion(path, effect);
+                    registerCustomPotion(path, effect, splash);
                 }
             }
         }
@@ -141,7 +141,7 @@ class PotionReplacer {
     private void registerMundanePotion(String name, int damage, boolean splash) {
         ResourceAddress path = getPotionPath(name, splash);
         if (TexturePackAPI.hasResource(path)) {
-            registerVanillaPotion(path, damage, splash, MUNDANE_BITS);
+            registerVanillaPotion(path, damage, MUNDANE_BITS, splash);
         }
     }
 
@@ -162,15 +162,15 @@ class PotionReplacer {
         }
     }
 
-    private void registerVanillaPotion(ResourceAddress path, int damage, boolean splash, int mask) {
+    private void registerVanillaPotion(ResourceAddress path, int damage, int mask, boolean splash) {
         Properties properties = newProperties(path, ITEM_ID_POTION, splash);
         properties.setProperty("damage", String.valueOf(damage));
         properties.setProperty("damageMask", String.valueOf(mask));
         addOverride(path, properties);
     }
 
-    private void registerCustomPotion(ResourceAddress path, int effect) {
-        Properties properties = newProperties(path, ITEM_ID_POTION, false);
+    private void registerCustomPotion(ResourceAddress path, int effect, boolean splash) {
+        Properties properties = newProperties(path, ITEM_ID_POTION, splash);
         properties.setProperty("nbt.CustomPotionEffects.0.Id", String.valueOf(effect));
         addOverride(path, properties);
     }
