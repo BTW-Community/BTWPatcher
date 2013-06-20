@@ -4,9 +4,7 @@ import com.prupe.mcpatcher.*;
 import net.minecraft.src.FontRenderer;
 import net.minecraft.src.ResourceAddress;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
@@ -49,7 +47,7 @@ public class FontUtils {
     public static ResourceAddress getFontName(ResourceAddress font) {
         String path = font.getPath().replaceFirst("_hd\\.png$", ".png");
         String newPath = path.replaceFirst("\\.png$", "_hd.png");
-        ResourceAddress newFont = new ResourceAddress(font.getNamespace(), newPath);
+        ResourceAddress newFont = TexturePackAPI.newResourceAddress(font, newPath);
         if (enable && TexturePackAPI.hasResource(newFont)) {
             logger.fine("using %s instead of %s", newFont, font);
             return newFont;
@@ -196,7 +194,7 @@ public class FontUtils {
     }
 
     private static void getCharWidthOverrides(ResourceAddress font, float[] charWidthf, boolean[] isOverride) {
-        ResourceAddress textFile = new ResourceAddress(font.getNamespace(), font.getPath().replace(".png", ".properties"));
+        ResourceAddress textFile = TexturePackAPI.newResourceAddress(font, ".png", ".properties");
         Properties props = TexturePackAPI.getProperties(textFile);
         if (props == null) {
             return;

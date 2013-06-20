@@ -100,6 +100,9 @@ public class ColorizeBlock {
                 continue;
             }
             ResourceAddress address = TexturePackAPI.parseResourceAddress(key.substring(PALETTE_BLOCK_KEY.length()).trim());
+            if (address == null) {
+                continue;
+            }
             ColorMap colorMap = new ColorMap(0xffffff);
             colorMap.loadColorMap(true, address);
             if (!colorMap.isCustom()) {

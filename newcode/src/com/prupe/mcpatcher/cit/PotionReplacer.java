@@ -96,7 +96,7 @@ class PotionReplacer {
         Properties properties = new Properties();
         properties.setProperty("type", "item");
         properties.setProperty("items", String.valueOf(itemID));
-        properties.setProperty("texture." + layer, path.getPath());
+        properties.setProperty("texture." + layer, path.toString());
         properties.setProperty("texture." + LAYER_POTION_CONTENTS, "blank");
         properties.setProperty("weight", "-1");
         return properties;
@@ -181,7 +181,7 @@ class PotionReplacer {
     }
 
     private void addOverride(ResourceAddress path, Properties properties) {
-        ResourceAddress propertiesName = new ResourceAddress(path.getNamespace(), path.getPath().replaceFirst("\\.png$", ".properties"));
+        ResourceAddress propertiesName = TexturePackAPI.newResourceAddress(path, ".png", ".properties");
         ItemOverride override = new ItemOverride(propertiesName, properties);
         if (!override.error) {
             overrides.add(override);

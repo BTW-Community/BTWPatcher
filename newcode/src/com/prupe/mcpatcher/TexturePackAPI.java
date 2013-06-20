@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -77,7 +78,15 @@ public class TexturePackAPI {
         return instance.getPropertiesImpl(resource, properties);
     }
 
-    public static ResourceAddress parseResourceAddress(String path) {
+    public static ResourceAddress newResourceAddress(ResourceAddress resource, String path) {
+        return new ResourceAddress(resource.getNamespace(), path);
+    }
+
+    public static ResourceAddress newResourceAddress(ResourceAddress resource, String oldExt, String newExt) {
+        return new ResourceAddress(resource.getNamespace(), resource.getPath().replaceFirst(Pattern.quote(oldExt) + "$", newExt));
+    }
+
+    public static ResourceAddress parseResourceAddress(String defaultNamespace, String path) {
         if (path == null || path.equals("")) {
             return null;
         }
@@ -90,7 +99,16 @@ public class TexturePackAPI {
         if (path.startsWith("/")) {
             path = path.substring(1);
         }
-        return new ResourceAddress(path);
+        int colon = path.indexOf(':');
+        return colon >= 0 ? new ResourceAddress(path.substring(0, colon), path.substring(colon + 1)) : new ResourceAddress(defaultNamespace, path);
+    }
+
+    public static ResourceAddress parseResourceAddress(ResourceAddress resource, String path) {
+        return resource == null ? parseResourceAddress((String) null, path) : parseResourceAddress(resource.getNamespace(), path);
+    }
+
+    public static ResourceAddress parseResourceAddress(String path) {
+        return parseResourceAddress((String) null, path);
     }
 
     public static List<ResourceAddress> listResources(String directory, String suffix, boolean recursive, boolean directories, boolean sortByFilename) {

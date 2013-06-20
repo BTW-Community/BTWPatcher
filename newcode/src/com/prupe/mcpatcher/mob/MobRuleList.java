@@ -25,7 +25,7 @@ class MobRuleList {
         allSkins = new ArrayList<ResourceAddress>();
         allSkins.add(baseSkin);
         for (int i = 2; ; i++) {
-            ResourceAddress skin = new ResourceAddress(baseSkin.getNamespace(), baseSkin.getPath().replaceFirst("\\.png$", "" + i + ".png"));
+            ResourceAddress skin = TexturePackAPI.newResourceAddress(baseSkin, ".png", String.valueOf(i) + ".png");
             if (!TexturePackAPI.hasResource(skin)) {
                 break;
             }
@@ -38,8 +38,8 @@ class MobRuleList {
         }
         logger.fine("found %d variations for %s", skinCount, baseSkin);
 
-        ResourceAddress filename = new ResourceAddress(baseSkin.getNamespace(), baseSkin.getPath().replace(".png", ".properties"));
-        ResourceAddress altFilename = new ResourceAddress(baseSkin.getNamespace(), filename.getPath().replaceFirst(ALTERNATIVES_REGEX, ".properties"));
+        ResourceAddress filename = TexturePackAPI.newResourceAddress(baseSkin, ".png", ".properties");
+        ResourceAddress altFilename = TexturePackAPI.newResourceAddress(baseSkin, filename.getPath().replaceFirst(ALTERNATIVES_REGEX, ".properties"));
         Properties properties = TexturePackAPI.getProperties(filename);
         if (properties == null && !filename.equals(altFilename)) {
             properties = TexturePackAPI.getProperties(altFilename);

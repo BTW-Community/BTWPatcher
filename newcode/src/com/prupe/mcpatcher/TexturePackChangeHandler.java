@@ -1,11 +1,12 @@
 package com.prupe.mcpatcher;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.*;
+import net.minecraft.src.IResourcePack;
+import net.minecraft.src.ITexture;
+import net.minecraft.src.ResourceAddress;
+import net.minecraft.src.TextureManager;
 
-import java.io.*;
 import java.util.*;
-import java.util.zip.ZipFile;
 
 abstract public class TexturePackChangeHandler {
     private static final MCLogger logger = MCLogger.getLogger("Texture Pack");

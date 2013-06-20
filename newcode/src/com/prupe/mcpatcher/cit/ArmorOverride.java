@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher.cit;
 
+import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.ResourceAddress;
 
 import java.util.HashMap;
@@ -32,7 +33,7 @@ final class ArmorOverride extends OverrideBase {
                 if (!key.endsWith(".png")) {
                     key += ".png";
                 }
-                armorMap.put(new ResourceAddress(propertiesName.getNamespace(), key), value);
+                armorMap.put(TexturePackAPI.parseResourceAddress(propertiesName, key), value);
             }
         }
     }

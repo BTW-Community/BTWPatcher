@@ -2,7 +2,6 @@ package com.prupe.mcpatcher;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
-import net.minecraft.src.ResourceBundle;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -227,7 +226,7 @@ public class TileLoader {
     }
 
     public static ResourceAddress getDefaultAddress(ResourceAddress propertiesAddress) {
-        return new ResourceAddress(propertiesAddress.getNamespace(), propertiesAddress.getPath().replaceFirst("\\.properties$", ".png"));
+        return TexturePackAPI.newResourceAddress(propertiesAddress, ".properties", ".png");
     }
 
     public static ResourceAddress parseTileAddress(ResourceAddress propertiesAddress, String value) {
@@ -246,7 +245,7 @@ public class TileLoader {
         if (!value.contains("/")) {
             value = propertiesAddress.getPath().replaceFirst("[^/]+$", "") + value;
         }
-        return new ResourceAddress(propertiesAddress.getNamespace(), value);
+        return TexturePackAPI.parseResourceAddress(propertiesAddress, value);
     }
 
     public boolean preloadTile(ResourceAddress resource, boolean alternate, String special) {
