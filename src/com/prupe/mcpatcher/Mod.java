@@ -309,8 +309,8 @@ public abstract class Mod {
     }
 
     class Dependency {
-        String name;
-        boolean required;
+        final String name;
+        final boolean required;
 
         Dependency(String name, boolean required) {
             this.name = name;

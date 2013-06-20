@@ -890,7 +890,7 @@ public class Shaders {
     private static float[] sunPosition = new float[3];
     private static float[] moonPosition = new float[3];
 
-    private static float[] clearColor = new float[3];
+    private static final float[] clearColor = new float[3];
 
     private static boolean lightmapEnabled = false;
     private static boolean fogEnabled = true;
@@ -907,8 +907,8 @@ public class Shaders {
     private static FloatBuffer modelView = null;
     private static FloatBuffer modelViewInverse = null;
 
-    private static double[] previousCameraPosition = new double[3];
-    private static double[] cameraPosition = new double[3];
+    private static final double[] previousCameraPosition = new double[3];
+    private static final double[] cameraPosition = new double[3];
 
     // Shadow stuff
 
@@ -966,7 +966,7 @@ public class Shaders {
     public final static int ProgramFinal = 9;
     public final static int ProgramCount = 10;
 
-    private static String[] programNames = new String[]{
+    private static final String[] programNames = new String[]{
         "",
         "gbuffers_basic",
         "gbuffers_textured",
@@ -979,7 +979,7 @@ public class Shaders {
         "final",
     };
 
-    private static int[] programBackups = new int[]{
+    private static final int[] programBackups = new int[]{
         ProgramNone,            // none
         ProgramNone,            // basic
         ProgramBasic,           // textured
@@ -992,5 +992,5 @@ public class Shaders {
         ProgramNone,            // final
     };
 
-    private static int[] programs = new int[ProgramCount];
+    private static final int[] programs = new int[ProgramCount];
 }

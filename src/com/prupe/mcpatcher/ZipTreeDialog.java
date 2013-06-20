@@ -125,8 +125,8 @@ class ZipTreeDialog extends JDialog {
     }
 
     static class ZipTreeNode implements Comparable<ZipTreeNode> {
-        String label;
-        String path;
+        final String label;
+        final String path;
 
         ZipTreeNode(String label, String path) {
             this.label = label;

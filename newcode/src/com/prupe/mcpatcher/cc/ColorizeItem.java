@@ -15,7 +15,7 @@ public class ColorizeItem {
     private static final Map<Integer, Integer> spawnerEggSpotColors = new HashMap<Integer, Integer>(); // egg.spots.*
 
     private static int waterBottleColor; // potion.water
-    private static List<Potion> potions = new ArrayList<Potion>(); // potion.*
+    private static final List<Potion> potions = new ArrayList<Potion>(); // potion.*
 
     private static final String[] MAP_MATERIALS = new String[]{
         "air",

@@ -48,10 +48,10 @@ class MainForm {
     private static Image programIcon;
 
     private JPanel mainPanel;
-    JFrame frame;
+    final JFrame frame;
     private int frameWidth = 518;
 
-    private MainMenu mainMenu;
+    private final MainMenu mainMenu;
 
     private JTextField origField;
     JButton origBrowseButton;
@@ -942,8 +942,8 @@ class MainForm {
     }
 
     private class ModTextRenderer extends JLabel implements TableCellRenderer {
-        private HashMap<Integer, Integer> rowSizeFull = new HashMap<Integer, Integer>();
-        private HashMap<Integer, Integer> rowSizeShort = new HashMap<Integer, Integer>();
+        private final HashMap<Integer, Integer> rowSizeFull = new HashMap<Integer, Integer>();
+        private final HashMap<Integer, Integer> rowSizeShort = new HashMap<Integer, Integer>();
 
         private String htmlEscape(String s) {
             return s == null ? "" : s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
@@ -1037,7 +1037,7 @@ class MainForm {
     }
 
     private class CopyToClipboardListener implements ActionListener {
-        JTextArea textArea;
+        final JTextArea textArea;
 
         public CopyToClipboardListener(JTextArea textArea) {
             this.textArea = textArea;

@@ -10,7 +10,7 @@ class JTextAreaPrintStream extends PrintStream {
     }
 
     private static class JTextAreaOutputStream extends OutputStream {
-        private JTextArea textArea;
+        private final JTextArea textArea;
 
         private JTextAreaOutputStream(JTextArea textArea) {
             this.textArea = textArea;

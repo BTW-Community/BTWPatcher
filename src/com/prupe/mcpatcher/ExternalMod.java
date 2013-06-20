@@ -9,8 +9,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 class ExternalMod extends Mod {
-    ZipFile zipFile;
-    HashMap<String, String> fileMap;
+    final ZipFile zipFile;
+    final HashMap<String, String> fileMap = new HashMap<String, String>();
 
     private String defaultDescription;
 
@@ -58,7 +58,7 @@ class ExternalMod extends Mod {
     }
 
     void setFileMap(HashMap<String, String> newFileMap) {
-        fileMap = new HashMap<String, String>();
+        fileMap.clear();
         fileMap.putAll(newFileMap);
         filesToAdd.clear();
         filesToAdd.addAll(fileMap.keySet());

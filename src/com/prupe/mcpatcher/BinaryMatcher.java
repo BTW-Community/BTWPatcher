@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  * @see java.util.regex.Matcher
  */
 public class BinaryMatcher {
-    private String regex;
+    private final String regex;
     private Pattern pattern = null;
     private Matcher matcher = null;
     private String inputStr = null;

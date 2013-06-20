@@ -3,7 +3,7 @@ package com.prupe.mcpatcher;
 import javassist.bytecode.ClassFile;
 
 public class OrSignature extends ClassSignature {
-    private ClassSignature[] signatures;
+    private final ClassSignature[] signatures;
 
     public OrSignature(ClassMod classMod, ClassSignature... signatures) {
         super(classMod);

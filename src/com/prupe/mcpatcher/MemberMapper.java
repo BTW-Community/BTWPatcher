@@ -12,7 +12,7 @@ public abstract class MemberMapper {
     /**
      * Deobfuscated members.
      */
-    protected JavaRef[] refs;
+    protected final JavaRef[] refs;
     /**
      * Java type descriptor, e.g.,<br>
      * "[B" represents an array of bytes.<br>

@@ -9,7 +9,7 @@ import java.lang.reflect.Modifier;
  * behavior is to make the member public.
  */
 public class MakeMemberPublicPatch extends ClassPatch {
-    private JavaRef member;
+    private final JavaRef member;
     private String type;
     private int oldFlags;
     private int newFlags;

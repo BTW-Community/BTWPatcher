@@ -20,7 +20,7 @@ import java.util.jar.JarOutputStream;
 public class ClassMap {
     private static final String DESCRIPTOR_CHARS = BinaryRegex.subset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_$/.[<>;".getBytes(), true);
 
-    private HashMap<String, ClassMapEntry> classMap = new HashMap<String, ClassMapEntry>();
+    private final HashMap<String, ClassMapEntry> classMap = new HashMap<String, ClassMapEntry>();
 
     ClassMap() {
     }
@@ -896,8 +896,8 @@ public class ClassMap {
     }
 
     static class MemberEntry {
-        String name;
-        String type;
+        final String name;
+        final String type;
 
         MemberEntry(String name, String type) {
             this.name = name;
@@ -917,10 +917,10 @@ public class ClassMap {
     private static class ClassMapEntry {
         private String descName = null;
         private String obfName = null;
-        private HashMap<String, MemberEntry> methodMap = new HashMap<String, MemberEntry>();
-        private HashMap<String, MemberEntry> fieldMap = new HashMap<String, MemberEntry>();
+        private final HashMap<String, MemberEntry> methodMap = new HashMap<String, MemberEntry>();
+        private final HashMap<String, MemberEntry> fieldMap = new HashMap<String, MemberEntry>();
         private ClassMapEntry parent = null;
-        private ArrayList<ClassMapEntry> interfaces = new ArrayList<ClassMapEntry>();
+        private final ArrayList<ClassMapEntry> interfaces = new ArrayList<ClassMapEntry>();
         private ClassMapEntry aliasFor = null;
 
         private ClassMapEntry(String descName) {

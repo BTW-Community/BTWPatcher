@@ -9,8 +9,8 @@ import java.util.Arrays;
  * ClassPatch that adds a new method to a class file.  The added method is made public by default.
  */
 abstract public class AddMethodPatch extends ClassPatch {
-    private MethodRef methodRef;
-    private int accessFlags;
+    private final MethodRef methodRef;
+    private final int accessFlags;
     private boolean allowDuplicate;
 
     /**

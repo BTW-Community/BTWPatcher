@@ -233,8 +233,8 @@ abstract public class ClassMod implements PatchComponent {
     }
 
     final public static class Label {
-        String name;
-        boolean save;
+        final String name;
+        final boolean save;
         int from;
 
         Label(String name, boolean save) {

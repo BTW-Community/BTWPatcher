@@ -25,7 +25,7 @@ class AddModDialog extends JDialog {
     private final JPanel parent;
     private ZipFile zipFile;
     private ZipTreeDialog zipDialog;
-    private HashMap<String, String> fileMap;
+    private final HashMap<String, String> fileMap;
     private ExternalMod mod;
     private boolean editMode;
 

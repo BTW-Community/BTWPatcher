@@ -6,8 +6,8 @@ import javassist.bytecode.*;
  * ClassPatch that adds a new field to a class file.
  */
 public class AddFieldPatch extends ClassPatch {
-    private FieldRef fieldRef;
-    private int accessFlags;
+    private final FieldRef fieldRef;
+    private final int accessFlags;
     private boolean allowDuplicate;
 
     /**

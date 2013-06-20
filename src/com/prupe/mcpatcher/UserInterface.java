@@ -84,7 +84,7 @@ abstract public class UserInterface {
     }
 
     static class GUI extends UserInterface {
-        private MainForm mainForm = new MainForm();
+        private final MainForm mainForm = new MainForm();
 
         @Override
         boolean shouldExit() {

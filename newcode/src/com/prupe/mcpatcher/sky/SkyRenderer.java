@@ -174,8 +174,8 @@ public class SkyRenderer {
 
         private static final double SKY_DISTANCE = 100.0;
 
-        private String prefix;
-        private Properties properties;
+        private final String prefix;
+        private final Properties properties;
         private ResourceAddress texture;
         private boolean fade;
         private boolean rotate;

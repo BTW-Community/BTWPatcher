@@ -11,34 +11,34 @@ import java.util.Collections;
 import java.util.Comparator;
 
 class MainMenu {
-    private MainForm mainForm;
+    private final MainForm mainForm;
 
-    JMenuBar menuBar;
+    final JMenuBar menuBar;
 
-    JMenu file;
-    JMenuItem origFile;
-    JMenuItem outputFile;
-    JMenuItem exit;
+    private final JMenu file;
+    private final JMenuItem origFile;
+    private final JMenuItem outputFile;
+    private final JMenuItem exit;
 
-    JMenu mods;
-    JMenuItem addMod;
-    JMenuItem removeMod;
-    JMenuItem enableAll;
-    JMenuItem disableAll;
-    JMenuItem moveUp;
-    JMenuItem moveDown;
+    private final JMenu mods;
+    private final JMenuItem addMod;
+    private final JMenuItem removeMod;
+    private final JMenuItem enableAll;
+    private final JMenuItem disableAll;
+    private final JMenuItem moveUp;
+    private final JMenuItem moveDown;
 
-    JMenu profile;
-    JMenuItem save;
-    JMenuItem load;
-    JMenuItem delete;
+    private final JMenu profile;
+    private final JMenuItem save;
+    private final JMenuItem load;
+    private final JMenuItem delete;
 
-    JMenu game;
-    JMenuItem patch;
-    JMenuItem unpatch;
-    JMenuItem test;
+    private final JMenu game;
+    private final JMenuItem patch;
+    private final JMenuItem unpatch;
+    private final JMenuItem test;
 
-    JMenu convert;
+    private final JMenu convert;
     JMenuItem convertItem;
 
     MainMenu(MainForm mainForm1) {

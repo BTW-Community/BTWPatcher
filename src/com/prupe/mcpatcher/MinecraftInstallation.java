@@ -168,7 +168,7 @@ abstract class MinecraftInstallation {
         MinecraftVersion version;
         String md5;
         String origMD5;
-        int result;
+        final int result;
         IOException exception;
 
         Info(File minecraftJar, MinecraftVersion version) {

@@ -28,7 +28,7 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
     );
 
     private String versionNumberOnly;
-    private String versionString;
+    private final String versionString;
     private String profileString;
     private int[] parsedVersion;
     private int preRelease;

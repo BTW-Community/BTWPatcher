@@ -46,7 +46,7 @@ public class MipmapHelper {
     private static final int anisoMax;
 
     private static final boolean lodSupported;
-    private static int lodBias;
+    private static final int lodBias;
 
     private static final Map<String, Reference<BufferedImage>> imagePool = new HashMap<String, Reference<BufferedImage>>();
     private static final Map<Integer, Reference<ByteBuffer>> bufferPool = new HashMap<Integer, Reference<ByteBuffer>>();
@@ -69,6 +69,8 @@ public class MipmapHelper {
         lodSupported = GLContext.getCapabilities().GL_EXT_texture_lod_bias;
         if (lodSupported) {
             lodBias = Config.getInt(MCPatcherUtils.EXTENDED_HD, "lodBias", 0);
+        } else {
+            lodBias = 0;
         }
 
         logger.config("mipmap: supported=%s, enabled=%s, level=%d", mipmapSupported, mipmapEnabled, maxMipmapLevel);

@@ -6,7 +6,7 @@ import javassist.bytecode.ClassFile;
  * ClassSignature that matches by filename.
  */
 public class FilenameSignature extends ClassSignature {
-    protected String filename;
+    protected final String filename;
 
     public FilenameSignature(ClassMod classMod, String filename) {
         super(classMod);
