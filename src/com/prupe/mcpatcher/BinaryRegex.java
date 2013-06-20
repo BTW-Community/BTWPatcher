@@ -340,10 +340,10 @@ public class BinaryRegex {
     static String binToStr(final byte[] b) {
         final int l = b.length;
         final StringBuilder sb = new StringBuilder(BYTE_LEN * l);
-        for (int i = 0; i < l; i++) {
+        for (byte b1 : b) {
             sb.append(' ');
-            sb.append(HEX_DIGIT[(b[i] >> 4) & 0xf]);
-            sb.append(HEX_DIGIT[b[i] & 0xf]);
+            sb.append(HEX_DIGIT[(b1 >> 4) & 0xf]);
+            sb.append(HEX_DIGIT[b1 & 0xf]);
         }
         return sb.toString();
     }

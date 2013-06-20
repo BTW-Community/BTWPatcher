@@ -383,7 +383,6 @@ public class Shaders {
         glActiveTexture(GL_TEXTURE3);
         TexturePackAPI.bindTexture(new ResourceAddress("/terrain_s.png"));
         glActiveTexture(GL_TEXTURE0);
-        FloatBuffer projection = BufferUtils.createFloatBuffer(16);
     }
 
     public static void endTerrain() {

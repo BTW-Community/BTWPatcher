@@ -523,14 +523,13 @@ public class TexturePackConverter15 extends TexturePackConverter {
         int tileHeight = height / 16;
         BufferedImage subImage = new BufferedImage(tileWidth, tileHeight, BufferedImage.TYPE_INT_ARGB);
         int[] rgb = new int[tileWidth * tileHeight];
-        for (int i = 0; i < tiles.length; i++) {
-            int j = tiles[i];
-            image.getRGB((j % 16) * tileWidth, (j / 16) * tileHeight, tileWidth, tileHeight, rgb, 0, tileWidth);
+        for (int i : tiles) {
+            image.getRGB((i % 16) * tileWidth, (i / 16) * tileHeight, tileWidth, tileHeight, rgb, 0, tileWidth);
             subImage.setRGB(0, 0, tileWidth, tileHeight, rgb, 0, tileWidth);
-            String tileName = subdir + "/" + j + ".png";
+            String tileName = subdir + "/" + i + ".png";
             addEntry(tileName, subImage);
-            addMessage(0, "%s %d,%d -> %s", source, j % 16, j / 16, tileName);
-            ctmTiles.put(tileName, source + "#" + j);
+            addMessage(0, "%s %d,%d -> %s", source, i % 16, i / 16, tileName);
+            ctmTiles.put(tileName, source + "#" + i);
         }
 
         int[] tileIDs = MCPatcherUtils.parseIntegerList(properties.getProperty("tileIDs", ""), 0, 255);

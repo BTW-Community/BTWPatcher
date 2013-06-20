@@ -1257,8 +1257,6 @@ public final class BaseMod extends Mod {
             final InterfaceMethodRef getMaxV = new InterfaceMethodRef(getDeobfClass(), "getMaxV", "()F");
             final InterfaceMethodRef getInterpolatedV = new InterfaceMethodRef(getDeobfClass(), "getInterpolatedV", "(D)F");
             final InterfaceMethodRef getIconName = new InterfaceMethodRef(getDeobfClass(), "getIconName", "()Ljava/lang/String;");
-            final InterfaceMethodRef getSheetWidth = new InterfaceMethodRef(getDeobfClass(), "getSheetWidth", "()I");
-            final InterfaceMethodRef getSheetHeight = new InterfaceMethodRef(getDeobfClass(), "getSheetHeight", "()I");
 
             addClassSignature(new InterfaceSignature(
                 getWidth,
@@ -1269,9 +1267,7 @@ public final class BaseMod extends Mod {
                 getMinV,
                 getMaxV,
                 getInterpolatedV,
-                getIconName/*,
-                getSheetWidth,
-                getSheetHeight*/
+                getIconName
             ).setInterfaceOnly(true));
         }
     }
