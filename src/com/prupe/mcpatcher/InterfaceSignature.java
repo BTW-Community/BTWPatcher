@@ -4,6 +4,7 @@ import javassist.bytecode.ClassFile;
 import javassist.bytecode.MethodInfo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class InterfaceSignature extends ClassSignature {
@@ -13,6 +14,10 @@ public class InterfaceSignature extends ClassSignature {
     private boolean exactMatch;
 
     public InterfaceSignature(ClassMod classMod, JavaRef... methods) {
+        this(classMod, Arrays.asList(methods));
+    }
+
+    public InterfaceSignature(ClassMod classMod, List<JavaRef> methods) {
         super(classMod);
         List<JavaRef> tmpMethods = new ArrayList<JavaRef>();
         for (JavaRef method : methods) {

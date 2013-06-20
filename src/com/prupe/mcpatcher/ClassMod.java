@@ -391,6 +391,10 @@ abstract public class ClassMod implements PatchComponent {
         public InterfaceSignature(JavaRef... methods) {
             super(ClassMod.this, methods);
         }
+
+        public InterfaceSignature(List<JavaRef> methods) {
+            super(ClassMod.this, methods);
+        }
     }
 
     public class OrSignature extends com.prupe.mcpatcher.OrSignature {
