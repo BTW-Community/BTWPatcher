@@ -1,4 +1,4 @@
-MCVER ?= 13w24b
+MCVER ?= 13w25c
 EXT_OPTS ?=
 
 VERSIONSDIR = ../versions
@@ -25,7 +25,7 @@ GOOD_LOG = good.log
 TMPDIR = t.1
 FILTER = ./testfilter.pl
 
-.PHONY: default build release run runexp test testfilter control clean restore
+.PHONY: default build release run test testfilter control clean restore
 .PHONY: javadoc profile modjar
 
 default:
@@ -43,9 +43,6 @@ release: $(MCPATCHER)
 
 run: $(MCPATCHER)
 	java -jar $(MCPATCHER) $(EXT_OPTS)
-
-runexp: $(MCPATCHER)
-	java -jar $(MCPATCHER) $(EXT_OPTS) -experimental
 
 test: $(MCPATCHER)
 	time java -jar $(MCPATCHER) $(TEST_OPTS) -profile "$(MCPROFILE)" > $(TEST_LOG) 2>&1
