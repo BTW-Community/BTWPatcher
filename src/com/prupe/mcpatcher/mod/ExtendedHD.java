@@ -251,6 +251,7 @@ public class ExtendedHD extends Mod {
         TextureStitchedMod() {
             super(ExtendedHD.this);
 
+            final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(Ljava/lang/String;)V");
             final MethodRef init = new MethodRef(getDeobfClass(), "init", "(IIIIZ)V");
             final MethodRef copy = new MethodRef(getDeobfClass(), "copy", "(LTextureStitched;)V");
             final MethodRef updateAnimation = new MethodRef(getDeobfClass(), "updateAnimation", "()V");
@@ -273,6 +274,8 @@ public class ExtendedHD extends Mod {
             addMemberMapper(new MethodMapper(init));
             addMemberMapper(new MethodMapper(copy));
             addMemberMapper(new MethodMapper(loadResource));
+
+            addPatch(new MakeMemberPublicPatch(constructor)); // constructor was made protected in 13w25c
 
             addPatch(new TextureMipmapPatch(this, textureName));
 
