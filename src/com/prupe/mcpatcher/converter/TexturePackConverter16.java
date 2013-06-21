@@ -514,8 +514,8 @@ public class TexturePackConverter16 extends TexturePackConverter {
         new TextureEntry("textures/items/wheat\\.png", "items/wheat.png"),
 
         // Fonts
-        new TextureEntry("font/alternate\\.(.*)", "font/ascii_sga.$1"),
-        new TextureEntry("font/default\\.(.*)", "font/ascii.$1"),
+        new TextureEntry("font/alternate((_hd)?\\..*)", "font/ascii_sga$1"),
+        new TextureEntry("font/default((_hd)\\..*)", "font/ascii$1"),
         new TextureEntry("font/glyph_(..)\\.png", "font/unicode_page_$1.png"),
         new DeleteEntry("font/glyph_sizes.bin"),
 
