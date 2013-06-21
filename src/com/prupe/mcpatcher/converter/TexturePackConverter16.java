@@ -5,6 +5,7 @@ import com.prupe.mcpatcher.UserInterface;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 public class TexturePackConverter16 extends TexturePackConverter {
@@ -18,6 +19,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
     private static final String VIGNETTE_PNG = "misc/vignette.png";
 
     private static final Map<String, TextureMCMeta> textureMCMeta = new HashMap<String, TextureMCMeta>();
+    private static final Map<String, String> blockMap = new HashMap<String, String>();
 
     private static final PlainEntry[] convertEntries = {
         // Blocks
@@ -716,6 +718,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
     };
 
     private String lastFileMessage;
+    private String entryNewName;
 
     public TexturePackConverter16(File input) {
         super(input);
@@ -736,18 +739,23 @@ public class TexturePackConverter16 extends TexturePackConverter {
         for (ZipEntry entry : inEntries) {
             ui.updateProgress(++progress, inEntries.size());
             String name = entry.getName();
-            String newName = mapPath(name);
+            entryNewName = mapPath(name);
 
             boolean handled = false;
 
-            if (name.endsWith(".properties")) {
+            if (entryNewName == null) {
+                // nothing
+            } else if (name.endsWith(".properties")) {
                 Properties properties = getProperties(name);
                 handled = convertProperties(name, properties);
                 if (name.equals(COLOR_PROPERTIES)) {
                     handled |= convertColorProperties(name, properties);
                 }
-                if (handled) {
-                    addEntry(newName, properties);
+                if (name.startsWith("ctm/")) {
+                    handled |= convertCTMProperties(name, properties);
+                }
+                if (handled && entryNewName != null) {
+                    addEntry(entryNewName, properties);
                 }
             } else if (name.equals("pack.txt")) {
                 handled = convertPackTxt(entry, name);
@@ -758,8 +766,8 @@ public class TexturePackConverter16 extends TexturePackConverter {
             } else if (name.equals(GLINT_PNG) || name.equals(PUMPKINBLUR_PNG) || name.equals(VIGNETTE_PNG)) {
                 handled = setPNGBlurClamp(name, true, false);
             }
-            if (!handled && newName != null) {
-                copyEntry(entry, newName);
+            if (!handled && entryNewName != null) {
+                copyEntry(entry, entryNewName);
             }
         }
         for (TextureMCMeta meta : textureMCMeta.values()) {
@@ -831,6 +839,32 @@ public class TexturePackConverter16 extends TexturePackConverter {
             }
         }
         return !changes.isEmpty();
+    }
+
+    private boolean convertCTMProperties(String name, Properties properties) {
+        boolean changed = false;
+        String oldProp = properties.getProperty("matchTiles", "");
+        String newProp = oldProp;
+        for (String s : oldProp.split("\\s+")) {
+            String t = mapBlockName(s);
+            if (!t.equals(s)) {
+                newProp = newProp.replaceAll("\\b" + Pattern.quote(s) + "\\b", t);
+            }
+        }
+        if (!newProp.equals(oldProp)) {
+            logFilename(name);
+            addMessage(0, "    change property matchTiles=%s -> %s", oldProp, newProp);
+            properties.setProperty("matchTiles", newProp);
+            changed = true;
+        }
+        String oldName = name.replaceAll(".*/", "").replaceFirst("\\.properties$", "");
+        String newName = mapBlockName(oldName);
+        if (!newName.equals(oldName)) {
+            logFilename(name);
+            entryNewName = entryNewName.replace(oldName, newName);
+            addMessage(0, "    rename to %s", entryNewName);
+        }
+        return changed;
     }
 
     private boolean convertPackTxt(ZipEntry entry, String name) throws IOException {
@@ -920,6 +954,23 @@ public class TexturePackConverter16 extends TexturePackConverter {
     private static String mapPathShort(String path) {
         path = mapPath(path);
         return path == null ? null : path.replaceFirst("^assets/minecraft/", "");
+    }
+
+    private static String mapBlockName(String name) {
+        String newName = blockMap.get(name);
+        if (newName != null) {
+            return newName;
+        }
+        newName = name;
+        String key = "textures/blocks/" + name + ".png";
+        for (PlainEntry entry : convertEntries) {
+            if (entry instanceof TextureEntry && entry.matches(key)) {
+                newName = entry.replace(key).replaceAll(".*/", "").replaceFirst("\\.png$", "");
+                break;
+            }
+        }
+        blockMap.put(name, newName);
+        return newName;
     }
 
     private void logFilename(String name) {
