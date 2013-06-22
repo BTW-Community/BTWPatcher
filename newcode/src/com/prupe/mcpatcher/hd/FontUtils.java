@@ -48,6 +48,7 @@ public class FontUtils {
         String path = font.getPath().replaceFirst("_hd\\.png$", ".png");
         String newPath = path.replaceFirst("\\.png$", "_hd.png");
         ResourceAddress newFont = TexturePackAPI.newResourceAddress(font, newPath);
+        font = TexturePackAPI.newResourceAddress(font, path);
         if (enable && TexturePackAPI.hasResource(newFont)) {
             logger.fine("using %s instead of %s", newFont, font);
             return newFont;
