@@ -40,7 +40,7 @@ public class AAHelper {
     }
 
     public static BufferedImage addBorder(TextureStitched stitched, IResource resource, BufferedImage input) {
-        if (input == null || !(stitched instanceof BorderedTexture) || !(resource instanceof StreamedResource) || addressField == null) {
+        if (input == null || !(resource instanceof StreamedResource) || addressField == null) {
             return input;
         }
         ResourceAddress name;
@@ -52,6 +52,9 @@ public class AAHelper {
             return input;
         }
         input = MipmapHelper.fixTransparency(name, input);
+        if (!(stitched instanceof BorderedTexture)) {
+            return input;
+        }
         int width = input.getWidth();
         int height = input.getHeight();
         int numFrames = height / width;
