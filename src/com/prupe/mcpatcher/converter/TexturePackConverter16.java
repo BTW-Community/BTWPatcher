@@ -515,7 +515,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
 
         // Fonts
         new TextureEntry("font/alternate((_hd)?\\..*)", "font/ascii_sga$1"),
-        new TextureEntry("font/default((_hd)\\..*)", "font/ascii$1"),
+        new TextureEntry("font/default((_hd)?\\..*)", "font/ascii$1"),
         new TextureEntry("font/glyph_(..)\\.png", "font/unicode_page_$1.png"),
         new DeleteEntry("font/glyph_sizes.bin"),
 
@@ -705,7 +705,8 @@ public class TexturePackConverter16 extends TexturePackConverter {
         new TextureEntry("ctm/(.*)", "ctm/$1"),
         new TextureEntry("environment/moon.properties", "environment/moon_phases.properties"),
         new TextureEntry("environment/(.*)", "environment/$1"),
-        new TextureEntry("misc/(clock|compass|fishingline|lead).properties", "items/$1.properties"),
+        new TextureEntry("misc/(clock|compass)\\.properties", "items/$1.properties"),
+        new TextureEntry("item/(fishingline|lead)\\.(properties|png)", "items/$1.$2"),
         new TextureEntry("misc/watercolorX\\.png", "colormap/water.png"),
         new TextureEntry("misc/(.*)color(-?\\d*\\.png)", "colormap/$1$2"),
         new TextureEntry("misc/(.*)", "misc/$1"),
@@ -1050,7 +1051,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
             while ((line = reader.readLine()) != null) {
                 for (String token : line.split("\\s+")) {
                     String[] s = token.split("\\*");
-                    if (s.length > 0) {
+                    if (s.length > 0 && s[0].length() > 0) {
                         int a = Integer.parseInt(s[0]);
                         int b = s.length > 1 ? Integer.parseInt(s[1]) : 1;
                         frames.add(a);
