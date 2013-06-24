@@ -701,6 +701,8 @@ public class TexturePackConverter16 extends TexturePackConverter {
 
         // MCPatcher
         new TextureEntry("anim/(.*)", "anim/$1"),
+        new TextureEntry("cit/cit.properties", "cit.properties"),
+        new TextureEntry("cit.properties", "cit.properties"),
         new TextureEntry("cit/(.*)", "cit/$1"),
         new TextureEntry("ctm/(.*)", "ctm/$1"),
         new TextureEntry("environment/moon.properties", "environment/moon_phases.properties"),
