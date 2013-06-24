@@ -306,12 +306,17 @@ public class BaseTexturePackMod extends Mod {
     private class IResourcePackMod extends ClassMod {
         IResourcePackMod() {
             String nsType = getMinecraftVersion().compareTo("13w25c") >= 0 ? "Set" : "List";
+            boolean newMCMeta = getMinecraftVersion().compareTo("13w26a") >= 0;
             addClassSignature(new InterfaceSignature(
                 new InterfaceMethodRef(getDeobfClass(), "getInputStream", "(LResourceAddress;)Ljava/io/InputStream;"),
                 new InterfaceMethodRef(getDeobfClass(), "hasResource", "(LResourceAddress;)Z"),
                 new InterfaceMethodRef(getDeobfClass(), "getNamespaces", "()Ljava/util/" + nsType + ";"),
-                new InterfaceMethodRef(getDeobfClass(), "getPackInfo", "(LMCMetaParser;)LMCMetaResourcePackInfo;"),
-                new InterfaceMethodRef(getDeobfClass(), "getPackIcon", "()Ljava/awt/image/BufferedImage;")
+                newMCMeta ?
+                    new InterfaceMethodRef(getDeobfClass(), "getMCMeta", "(LMCMetaParser;Ljava/lang/String;)LMCMeta;") :
+                    new InterfaceMethodRef(getDeobfClass(), "getPackInfo", "(LMCMetaParser;)LMCMetaResourcePackInfo;"),
+                new InterfaceMethodRef(getDeobfClass(), "getPackIcon", "()Ljava/awt/image/BufferedImage;"),
+                newMCMeta ?
+                    new InterfaceMethodRef(getDeobfClass(), "getName", "()Ljava/lang/String;") : null
             ).setInterfaceOnly(true));
         }
     }
@@ -372,8 +377,13 @@ public class BaseTexturePackMod extends Mod {
 
     private class IResourceBundleMod extends ClassMod {
         IResourceBundleMod() {
+            boolean newMCMeta = getMinecraftVersion().compareTo("13w26a") >= 0;
             addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "getResource", "(LResourceAddress;)LIResource;")
+                newMCMeta ?
+                    new InterfaceMethodRef(getDeobfClass(), "getNamespaces", "()Ljava/util/Set;") : null,
+                new InterfaceMethodRef(getDeobfClass(), "getResource", "(LResourceAddress;)LIResource;"),
+                newMCMeta ?
+                    new InterfaceMethodRef(getDeobfClass(), "getMCMeta", "(LResourceAddress;)Ljava/util/List;") : null
             ).setInterfaceOnly(true));
         }
     }

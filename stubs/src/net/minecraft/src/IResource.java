@@ -7,5 +7,5 @@ public interface IResource {
 
     boolean isPresent();
 
-    IMCMeta getMCMeta(String var1);
+    IMCMeta getMCMeta(String path);
 }

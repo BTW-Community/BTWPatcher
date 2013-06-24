@@ -12,7 +12,9 @@ public interface IResourcePack {
 
     Set<String> getNamespaces(); // pre-13w25c: uses List<String> instead
 
-    MCMetaResourcePackInfo getPackInfo(MCMetaParser var1) throws IOException;
+    MCMetaResourcePackInfo getMCMeta(MCMetaParser var1, String path) throws IOException; // pre-13w26a: only one param
 
     BufferedImage getPackIcon() throws IOException;
+
+    String getName(); // added in 13w26a
 }

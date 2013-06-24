@@ -21,11 +21,16 @@ public class ResourcePackBase implements IResourcePack {
         return null;
     }
 
-    public MCMetaResourcePackInfo getPackInfo(MCMetaParser var1) throws IOException {
+    public MCMetaResourcePackInfo getMCMeta(MCMetaParser var1, String path) throws IOException {
         return null;
     }
 
     public BufferedImage getPackIcon() throws IOException {
+        return null;
+    }
+
+    @Override
+    public String getName() {
         return null;
     }
 }
