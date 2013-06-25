@@ -29,7 +29,7 @@ public class ExtendedHD extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
         if (getMinecraftVersion().compareTo("13w24b") < 0) {
-            addError("Requires Minecraft 13w24b or newer");
+            addError("Requires Minecraft 1.6 or newer");
             return;
         }
 
