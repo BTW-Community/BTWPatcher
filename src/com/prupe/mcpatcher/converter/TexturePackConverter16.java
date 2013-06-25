@@ -912,7 +912,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
         String newName = mapBlockName(oldName);
         if (!newName.equals(oldName)) {
             logFilename(name);
-            entryNewName = entryNewName.replace(oldName, newName);
+            entryNewName = entryNewName.replace(oldName + ".properties", newName + ".properties");
             addMessage(0, "    rename to %s", entryNewName);
         }
         return changed;
