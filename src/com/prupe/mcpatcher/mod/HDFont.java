@@ -286,6 +286,39 @@ public class HDFont extends Mod {
                     );
                 }
             });
+
+            setupUnicode();
+        }
+
+        private void setupUnicode() {
+            final MethodRef getUnicodePage = new MethodRef(getDeobfClass(), "getUnicodePage", "(I)LResourceAddress;");
+            final MethodRef getUnicodePage1 = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getUnicodePage", "(LResourceAddress;)LResourceAddress;");
+
+            addMemberMapper(new MethodMapper(getUnicodePage));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override unicode font name";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ARETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(INVOKESTATIC, getUnicodePage1)
+                    );
+                }
+            }
+                .setInsertBefore(true)
+                .targetMethod(getUnicodePage)
+            );
         }
     }
 }

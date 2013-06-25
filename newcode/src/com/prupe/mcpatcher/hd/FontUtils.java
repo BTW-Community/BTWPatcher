@@ -169,6 +169,17 @@ public class FontUtils {
         return totalWidth;
     }
 
+    public static ResourceAddress getUnicodePage(ResourceAddress resource) {
+        if (enable && resource != null) {
+            ResourceAddress newResource = new ResourceAddress(resource.getNamespace(), resource.getPath().replaceFirst("^textures/", "mcpatcher/"));
+            if (TexturePackAPI.hasResource(newResource)) {
+                logger.fine("using %s instead of %s", newResource, resource);
+                return newResource;
+            }
+        }
+        return resource;
+    }
+
     private static boolean isOpaque(int pixel) {
         for (int i : SPACERS) {
             if (pixel == i) {
