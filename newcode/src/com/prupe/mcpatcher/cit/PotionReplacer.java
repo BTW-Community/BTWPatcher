@@ -50,6 +50,7 @@ class PotionReplacer {
     };
 
     private static final Map<String, Integer> mundanePotionMap = new HashMap<String, Integer>();
+    private static int weight = -2;
 
     final List<ItemOverride> overrides = new ArrayList<ItemOverride>();
 
@@ -74,7 +75,9 @@ class PotionReplacer {
     PotionReplacer() {
         ResourceAddress path = getPotionPath("water", false);
         if (TexturePackAPI.hasResource(path)) {
+            weight++;
             registerVanillaPotion(path, 0, WATER_BITS, false);
+            weight--;
         }
         path = getPotionPath("empty", false);
         if (TexturePackAPI.hasResource(path)) {
@@ -98,7 +101,7 @@ class PotionReplacer {
         properties.setProperty("items", String.valueOf(itemID));
         properties.setProperty("texture." + layer, path.toString());
         properties.setProperty("texture." + LAYER_POTION_CONTENTS, "blank");
-        properties.setProperty("weight", "-1");
+        properties.setProperty("weight", String.valueOf(weight));
         return properties;
     }
 
