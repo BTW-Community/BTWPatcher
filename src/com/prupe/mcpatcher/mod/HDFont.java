@@ -34,12 +34,15 @@ public class HDFont extends Mod {
             final FieldRef charWidth = new FieldRef(getDeobfClass(), "charWidth", "[I");
             final FieldRef fontHeight = new FieldRef(getDeobfClass(), "fontHeight", "I");
             final FieldRef charWidthf = new FieldRef(getDeobfClass(), "charWidthf", "[F");
+            final FieldRef defaultFont = new FieldRef(getDeobfClass(), "defaultFont", "LResourceAddress;");
+            final FieldRef hdFont = new FieldRef(getDeobfClass(), "hdFont", "LResourceAddress;");
+            final FieldRef isHD = new FieldRef(getDeobfClass(), "isHD", "Z");
             final MethodRef readFontData = new MethodRef(getDeobfClass(), "readFontData", "()V");
             final MethodRef getStringWidth = new MethodRef(getDeobfClass(), "getStringWidth", "(Ljava/lang/String;)I");
             final MethodRef getCharWidth = new MethodRef(getDeobfClass(), "getCharWidth", "(C)I");
             final MethodRef computeCharWidths = new MethodRef(getDeobfClass(), "computeCharWidths", "()V");
             final MethodRef getImageWidth = new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I");
-            final MethodRef getFontName = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getFontName", "(LResourceAddress;)LResourceAddress;");
+            final MethodRef getFontName = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getFontName", "(LFontRenderer;LResourceAddress;)LResourceAddress;");
             final MethodRef computeCharWidthsf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "computeCharWidthsf", "(LFontRenderer;LResourceAddress;Ljava/awt/image/BufferedImage;[I[I)[F");
             final MethodRef getCharWidthf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getCharWidthf", "(LFontRenderer;[II)F");
             final MethodRef getStringWidthf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getStringWidthf", "(LFontRenderer;Ljava/lang/String;)F");
@@ -92,6 +95,9 @@ public class HDFont extends Mod {
             addMemberMapper(new MethodMapper(getCharWidth));
 
             addPatch(new AddFieldPatch(charWidthf));
+            addPatch(new AddFieldPatch(defaultFont));
+            addPatch(new AddFieldPatch(hdFont));
+            addPatch(new AddFieldPatch(isHD));
 
             addPatch(new MakeMemberPublicPatch(fontResource) {
                 @Override
@@ -116,6 +122,8 @@ public class HDFont extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // this.fontResource = FontUtils.getFontName(this, this.fontResource);
+                        ALOAD_0,
                         ALOAD_0,
                         ALOAD_0,
                         reference(GETFIELD, fontResource),

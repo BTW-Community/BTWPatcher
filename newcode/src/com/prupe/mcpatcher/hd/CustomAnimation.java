@@ -55,7 +55,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
             @Override
             public void afterChange() {
                 if (enable) {
-                    for (ResourceAddress resource : TexturePackAPI.listResources("textures/anim", ".properties", true, false, false)) {
+                    for (ResourceAddress resource : TexturePackAPI.listResources(TexturePackAPI.MCPATCHER_SUBDIR + "anim", ".properties", true, false, false)) {
                         Properties properties = TexturePackAPI.getProperties(resource);
                         if (properties != null) {
                             pending.put(resource, properties);
@@ -88,7 +88,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         for (Map.Entry<ResourceAddress, Properties> entry : pending.entrySet()) {
             ResourceAddress name = entry.getKey();
             Properties properties = entry.getValue();
-            ResourceAddress textureName = TexturePackAPI.parseResourceAddress(MCPatcherUtils.getStringProperty(properties, "to", ""));
+            ResourceAddress textureName = TexturePackAPI.parseResourceAddress(name, MCPatcherUtils.getStringProperty(properties, "to", ""));
             if (TexturePackAPI.isTextureLoaded(textureName)) {
                 addStrip(name, properties);
                 done.add(name);
@@ -103,12 +103,12 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
     }
 
     private static void addStrip(ResourceAddress propertiesName, Properties properties) {
-        ResourceAddress dstName = TexturePackAPI.parseResourceAddress(properties.getProperty("to", ""));
+        ResourceAddress dstName = TexturePackAPI.parseResourceAddress(propertiesName, properties.getProperty("to", ""));
         if (dstName == null) {
             logger.error("%s: missing to= property");
             return;
         }
-        ResourceAddress srcName = TexturePackAPI.parseResourceAddress(properties.getProperty("from", ""));
+        ResourceAddress srcName = TexturePackAPI.parseResourceAddress(propertiesName, properties.getProperty("from", ""));
         if (srcName == null) {
             logger.error("%s: missing from= property");
             return;

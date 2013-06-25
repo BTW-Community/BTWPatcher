@@ -12,7 +12,7 @@ import java.util.Properties;
 public class FireworksHelper {
     private static final int LIT_LAYER = 3;
     private static final int EXTRA_LAYER = LIT_LAYER + 1;
-    private static final ResourceAddress PARTICLES_PROPERTIES = new ResourceAddress("textures/particle/particles.properties");
+    private static final ResourceAddress PARTICLE_PROPERTIES = TexturePackAPI.newMCPatcherResourceAddress("particle.properties");
 
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.BETTER_SKIES);
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "brightenFireworks", true);
@@ -39,11 +39,11 @@ public class FireworksHelper {
     }
 
     static void reload() {
-        Properties properties = TexturePackAPI.getProperties(PARTICLES_PROPERTIES);
+        Properties properties = TexturePackAPI.getProperties(PARTICLE_PROPERTIES);
         String blend = MCPatcherUtils.getStringProperty(properties, "blend." + EXTRA_LAYER, "add");
         blendMethod = BlendMethod.parse(blend);
         if (blendMethod == null) {
-            logger.error("%s: unknown blend method %s", PARTICLES_PROPERTIES, blend);
+            logger.error("%s: unknown blend method %s", PARTICLE_PROPERTIES, blend);
         } else if (enable) {
             logger.config("using %s blending for fireworks particles", blendMethod);
         } else {

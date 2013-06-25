@@ -9,7 +9,11 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 public class TexturePackConverter16 extends TexturePackConverter {
+    private static final String MCPATCHER_BASEDIR = "assets/minecraft/mcpatcher";
+    private static final String MCPATCHER_SUBDIR = "mcpatcher/";
     private static final String COLOR_PROPERTIES = "color.properties";
+    private static final String COMPASS_PROPERTIES = "misc/compass.properties";
+    private static final String CLOCK_PROPERTIES = "misc/clock.properties";
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
 
     private static final String MCMETA_SUFFIX = ".mcmeta";
@@ -20,6 +24,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
 
     private static final Map<String, TextureMCMeta> textureMCMeta = new HashMap<String, TextureMCMeta>();
     private static final Map<String, String> blockMap = new HashMap<String, String>();
+    private static final Map<String, String> extraMap = new HashMap<String, String>();
 
     private static final PlainEntry[] convertEntries = {
         // Blocks
@@ -514,8 +519,8 @@ public class TexturePackConverter16 extends TexturePackConverter {
         new TextureEntry("textures/items/wheat\\.png", "items/wheat.png"),
 
         // Fonts
-        new TextureEntry("font/alternate((_hd)?\\..*)", "font/ascii_sga$1"),
-        new TextureEntry("font/default((_hd)?\\..*)", "font/ascii$1"),
+        new MCPatcherEntry("font/alternate(_hd)?(\\..*)", "font/ascii_sga$2"),
+        new MCPatcherEntry("font/default(_hd)?(\\..*)", "font/ascii$2"),
         new TextureEntry("font/glyph_(..)\\.png", "font/unicode_page_$1.png"),
         new DeleteEntry("font/glyph_sizes.bin"),
 
@@ -700,24 +705,25 @@ public class TexturePackConverter16 extends TexturePackConverter {
         new TextureEntry("environment/sun\\.png", "environment/sun.png"),
 
         // MCPatcher
-        new TextureEntry("anim/(.*)", "anim/$1"),
-        new TextureEntry("cit/cit.properties", "cit.properties"),
-        new TextureEntry("cit.properties", "cit.properties"),
-        new TextureEntry("cit/(.*)", "cit/$1"),
-        new TextureEntry("ctm/(.*)", "ctm/$1"),
-        new TextureEntry("environment/moon.properties", "environment/moon_phases.properties"),
-        new TextureEntry("environment/(.*)", "environment/$1"),
-        new TextureEntry("misc/(clock|compass)\\.properties", "items/$1.properties"),
-        new TextureEntry("item/(fishingline|lead)\\.(properties|png)", "items/$1.$2"),
-        new TextureEntry("misc/watercolorX\\.png", "colormap/water.png"),
-        new TextureEntry("misc/(.*)color(-?\\d*\\.png)", "colormap/$1$2"),
-        new TextureEntry("misc/(.*)", "misc/$1"),
-        new MobTextureEntry("redcow_overlay", "cow/mooshroom_overlay"),
-        new MobTextureEntry("snowman_overlay", "snowman_overlay"),
-        new TextureEntry("color.properties", "colormap/color.properties"),
-        new TextureEntry("mipmap.properties", "misc/mipmap.properties"),
-        new TextureEntry("particles.properties", "particle/particles.properties"),
-        new TextureEntry("renderpass.properties", "misc/renderpass.properties"),
+        new MCPatcherEntry("anim/(.*)", "anim/$1"),
+        new MCPatcherEntry("cit/cit.properties", "cit.properties"),
+        new MCPatcherEntry("cit.properties", "cit.properties"),
+        new MCPatcherEntry("cit/(.*)", "cit/$1"),
+        new MCPatcherEntry("ctm/(.*)", "ctm/$1"),
+        new MCPatcherEntry("environment/lightmap(.*)\\.png", "lightmap/world$1.png"),
+        new MCPatcherEntry("environment/moon.properties", "sky/world0/moon_phases.properties"),
+        new MCPatcherEntry("environment/sky(\\d+/.*)", "sky/world$1"),
+        new MCPatcherEntry("misc/(clock|compass)\\.properties", "dial/$1.properties"),
+        new MCPatcherEntry("item/(fishingline|lead)\\.(properties|png)", "line/$1.$2"),
+        new MCPatcherEntry("misc/watercolorX\\.png", "colormap/water.png"),
+        new MCPatcherEntry("misc/(.*)color(-?\\d*\\.png)", "colormap/$1$2"),
+        new MobTextureEntry("redcow_overlay", "cow/mooshroom_overlay", true),
+        new MobTextureEntry("snowman_overlay", "snowman_overlay", true),
+        new MCPatcherEntry("color.properties", "color.properties"),
+        new MCPatcherEntry("mipmap.properties", "mipmap.properties"),
+        new MCPatcherEntry("particles.properties", "particle.properties"),
+        new MCPatcherEntry("renderpass.properties", "renderpass.properties"),
+        new MCPatcherEntry("misc/(.*)", "misc/$1"),
     };
 
     private String lastFileMessage;
@@ -738,6 +744,19 @@ public class TexturePackConverter16 extends TexturePackConverter {
     @Override
     protected void convertImpl(UserInterface ui) throws Exception {
         textureMCMeta.clear();
+        extraMap.clear();
+
+        for (ZipEntry entry : inEntries) {
+            String name = entry.getName();
+            entryNewName = mapPath(name);
+            if (name.endsWith(".properties")) {
+                Properties properties = getProperties(name);
+                if (properties != null) {
+                    preprocessProperties(name, properties);
+                }
+            }
+        }
+
         int progress = 0;
         for (ZipEntry entry : inEntries) {
             ui.updateProgress(++progress, inEntries.size());
@@ -773,8 +792,37 @@ public class TexturePackConverter16 extends TexturePackConverter {
                 copyEntry(entry, entryNewName);
             }
         }
+
         for (TextureMCMeta meta : textureMCMeta.values()) {
             meta.toJSON();
+        }
+    }
+
+    private void preprocessProperties(String name, Properties properties) {
+        if (name.equals(COMPASS_PROPERTIES) || name.equals(CLOCK_PROPERTIES)) {
+            for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+                String path = (String) entry.getValue();
+                if (path.contains("/")) {
+                    path = mapPath(path);
+                    if (path.startsWith(MCPATCHER_BASEDIR + "/misc/")) {
+                        String newPath = path.replaceFirst("/misc/", "/dial/");
+                        addMessage(0, "  will rename %s -> %s", path, newPath);
+                        extraMap.put(path, newPath);
+                    }
+                }
+            }
+        } else if (name.equals(COLOR_PROPERTIES)) {
+            for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+                String key = (String) entry.getKey();
+                if (key.startsWith(PALETTE_BLOCK_KEY)) {
+                    String path = mapPath(key.substring(PALETTE_BLOCK_KEY.length()));
+                    if (path.startsWith(MCPATCHER_BASEDIR + "/misc/")) {
+                        String newPath = path.replaceFirst("/misc/", "/colormap/");
+                        addMessage(0, "  will rename %s -> %s", path, newPath);
+                        extraMap.put(path, newPath);
+                    }
+                }
+            }
         }
     }
 
@@ -784,7 +832,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
             String key = (String) entry.getKey();
             String value = (String) entry.getValue();
             if (value.contains("/")) {
-                String newValue = mapPathShort(value);
+                String newValue = mapPathShort(entryNewName, value);
                 if (newValue == null) {
                     logFilename(name);
                     addMessage(0, "    remove property %s=%s", key, value);
@@ -822,7 +870,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
             String value = (String) entry.getValue();
             if (key.startsWith(PALETTE_BLOCK_KEY)) {
                 String path = key.substring(PALETTE_BLOCK_KEY.length());
-                String newPath = mapPathShort(path);
+                String newPath = mapPathShort(entryNewName, path);
                 if (!newPath.equals(path)) {
                     logFilename(name);
                     String newKey = PALETTE_BLOCK_KEY + newPath;
@@ -948,15 +996,26 @@ public class TexturePackConverter16 extends TexturePackConverter {
         path = getEntryName(path);
         for (PlainEntry entry : convertEntries) {
             if (entry.matches(path)) {
-                return entry.replace(path);
+                path = entry.replace(path);
+                break;
             }
         }
-        return path;
+        return extraMap.containsKey(path) ? extraMap.get(path) : path;
     }
 
-    private static String mapPathShort(String path) {
+    private static String mapPathShort(String basePath, String path) {
         path = mapPath(path);
-        return path == null ? null : path.replaceFirst("^assets/minecraft/", "");
+        if (path == null) {
+            return null;
+        }
+        path = path.replaceFirst("^assets/minecraft/", "");
+        basePath = basePath.replaceFirst("^assets/minecraft/", "").replaceFirst("/[^/]+$", "/");
+        if (!basePath.equals(MCPATCHER_SUBDIR) && path.startsWith(basePath)) {
+            path = "./" + path.substring(basePath.length());
+        } else if (path.startsWith(MCPATCHER_SUBDIR)) {
+            path = "~/" + path.substring(MCPATCHER_SUBDIR.length());
+        }
+        return path;
     }
 
     private static String mapBlockName(String name) {
@@ -1021,9 +1080,41 @@ public class TexturePackConverter16 extends TexturePackConverter {
         }
     }
 
+    private static class MCPatcherEntry extends PlainEntry {
+        MCPatcherEntry(String from, String to) {
+            super(from, MCPATCHER_BASEDIR + "/" + to);
+        }
+    }
+
     private static class MobTextureEntry extends TextureEntry {
+        private final boolean alwaysAlternate;
+        private boolean alternate;
+
         MobTextureEntry(String from, String to) {
+            this(from, to, false);
+        }
+
+        MobTextureEntry(String from, String to, boolean alwaysAlternate) {
             super("mob/" + from + "(\\d*\\..*)", to == null ? null : "entity/" + to + "$1");
+            this.alwaysAlternate = alwaysAlternate;
+        }
+
+        @Override
+        boolean matches(String s) {
+            if (!super.matches(s)) {
+                return false;
+            }
+            alternate = alwaysAlternate || s.endsWith(".properties") || s.matches(".*\\d+\\.png$");
+            return true;
+        }
+
+        @Override
+        String replace(String s) {
+            String r = super.replace(s);
+            if (alternate) {
+                r = r.replace("/textures/entity", "/mcpatcher/mob");
+            }
+            return r;
         }
     }
 

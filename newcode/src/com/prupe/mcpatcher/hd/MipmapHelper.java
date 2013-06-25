@@ -27,7 +27,7 @@ import java.util.Properties;
 public class MipmapHelper {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
 
-    private static final ResourceAddress MIPMAP_PROPERTIES = new ResourceAddress("textures/mipmap.properties");
+    private static final ResourceAddress MIPMAP_PROPERTIES = TexturePackAPI.newMCPatcherResourceAddress("mipmap.properties");
 
     private static final int TEX_FORMAT = GL12.GL_BGRA;
     private static final int TEX_DATA_TYPE = GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
@@ -218,7 +218,13 @@ public class MipmapHelper {
             texture.startsWith("textures/font/") ||
             texture.startsWith("textures/gui/") ||
             texture.startsWith("textures/map/") ||
-            texture.startsWith("textures/misc/")) {
+            texture.startsWith("textures/misc/") ||
+            texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "colormap/") ||
+            texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "cit/") ||
+            texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "dial/") ||
+            texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "font/") ||
+            texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "lightmap/") ||
+            texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "sky/")) {
             return false;
         } else {
             return true;

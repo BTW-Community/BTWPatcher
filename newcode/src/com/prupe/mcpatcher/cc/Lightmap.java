@@ -14,7 +14,7 @@ import java.util.HashMap;
 public final class Lightmap {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
-    private static final String LIGHTMAP_FORMAT = "textures/environment/lightmap%d.png";
+    private static final String LIGHTMAP_FORMAT = "lightmap/world%d.png";
     private static final int LIGHTMAP_SIZE = 16;
     private static final int HEIGHT_WITHOUT_NIGHTVISION = 2 * LIGHTMAP_SIZE;
     private static final int HEIGHT_WITH_NIGHTVISION = 4 * LIGHTMAP_SIZE;
@@ -47,7 +47,7 @@ public final class Lightmap {
         if (lightmaps.containsKey(worldType)) {
             lightmap = lightmaps.get(worldType);
         } else {
-            ResourceAddress resource = new ResourceAddress(String.format(LIGHTMAP_FORMAT, worldType));
+            ResourceAddress resource = TexturePackAPI.newMCPatcherResourceAddress(String.format(LIGHTMAP_FORMAT, worldType));
             BufferedImage image = TexturePackAPI.getImage(resource);
             if (image != null) {
                 lightmap = new Lightmap(resource, image);

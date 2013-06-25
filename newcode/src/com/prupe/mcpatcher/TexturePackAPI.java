@@ -19,6 +19,7 @@ public class TexturePackAPI {
     private static final MCLogger logger = MCLogger.getLogger("Texture Pack");
 
     public static final String DEFAULT_NAMESPACE = "minecraft";
+    public static final String MCPATCHER_SUBDIR = "mcpatcher/";
 
     public static TexturePackAPI instance = new TexturePackAPI();
 
@@ -46,11 +47,13 @@ public class TexturePackAPI {
     }
 
     public static InputStream getInputStream(ResourceAddress resource) {
-        return instance.getInputStreamImpl(resource);
+        return resource == null ? null : instance.getInputStreamImpl(resource);
     }
 
     public static boolean hasResource(ResourceAddress resource) {
-        if (resource.getPath().endsWith(".png")) {
+        if (resource == null) {
+            return false;
+        } else if (resource.getPath().endsWith(".png")) {
             return getImage(resource) != null;
         } else if (resource.getPath().endsWith(".properties")) {
             return getProperties(resource) != null;
@@ -62,7 +65,7 @@ public class TexturePackAPI {
     }
 
     public static BufferedImage getImage(ResourceAddress resource) {
-        return instance.getImageImpl(resource);
+        return resource == null ? null : instance.getImageImpl(resource);
     }
 
     public static Properties getProperties(ResourceAddress resource) {
@@ -75,18 +78,14 @@ public class TexturePackAPI {
     }
 
     public static boolean getProperties(ResourceAddress resource, Properties properties) {
-        return instance.getPropertiesImpl(resource, properties);
+        return resource != null && instance.getPropertiesImpl(resource, properties);
     }
 
-    public static ResourceAddress newResourceAddress(ResourceAddress resource, String path) {
-        return new ResourceAddress(resource.getNamespace(), path);
-    }
-
-    public static ResourceAddress newResourceAddress(ResourceAddress resource, String oldExt, String newExt) {
+    public static ResourceAddress transformResourceAddress(ResourceAddress resource, String oldExt, String newExt) {
         return new ResourceAddress(resource.getNamespace(), resource.getPath().replaceFirst(Pattern.quote(oldExt) + "$", newExt));
     }
 
-    public static ResourceAddress parseResourceAddress(String defaultNamespace, String path) {
+    public static ResourceAddress parseResourceAddress(ResourceAddress baseResource, String path) {
         if (path == null || path.equals("")) {
             return null;
         }
@@ -99,16 +98,29 @@ public class TexturePackAPI {
         if (path.startsWith("/")) {
             path = path.substring(1);
         }
+        // Absolute path, including namespace:
+        // namespace:path/filename -> assets/namespace/path/filename
         int colon = path.indexOf(':');
-        return colon >= 0 ? new ResourceAddress(path.substring(0, colon), path.substring(colon + 1)) : new ResourceAddress(defaultNamespace, path);
+        if (colon >= 0) {
+            return new ResourceAddress(path.substring(0, colon), path.substring(colon + 1));
+        }
+        // Relative to namespace mcpatcher dir:
+        // ~/path -> assets/(namespace of properties file)/mcpatcher/path
+        if (path.startsWith("~/")) {
+            return new ResourceAddress(baseResource.getNamespace(), MCPATCHER_SUBDIR + path.substring(2));
+        }
+        // Relative to properties file:
+        // ./path -> (path of properties file)/path
+        if (path.startsWith("./")) {
+            return new ResourceAddress(baseResource.getNamespace(), baseResource.getPath().replaceFirst("/[^/]+$", "/") + path.substring(2));
+        }
+        // Absolute path, w/o namespace:
+        // path/filename -> assets/(namespace of properties file)/path/filename
+        return new ResourceAddress(baseResource.getNamespace(), path);
     }
 
-    public static ResourceAddress parseResourceAddress(ResourceAddress resource, String path) {
-        return resource == null ? parseResourceAddress((String) null, path) : parseResourceAddress(resource.getNamespace(), path);
-    }
-
-    public static ResourceAddress parseResourceAddress(String path) {
-        return parseResourceAddress((String) null, path);
+    public static ResourceAddress newMCPatcherResourceAddress(String path) {
+        return new ResourceAddress(MCPATCHER_SUBDIR + path);
     }
 
     public static List<ResourceAddress> listResources(String directory, String suffix, boolean recursive, boolean directories, boolean sortByFilename) {
@@ -215,6 +227,9 @@ public class TexturePackAPI {
     }
 
     public static int getTextureIfLoaded(ResourceAddress resource) {
+        if (resource == null) {
+            return -1;
+        }
         ITexture texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(resource);
         return texture instanceof TextureBase ? ((TextureBase) texture).glTextureId : -1;
     }

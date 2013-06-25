@@ -37,7 +37,7 @@ public class MobRandomizer {
     }
 
     public static ResourceAddress randomTexture(EntityLiving entity, ResourceAddress texture) {
-        if (texture == null || !texture.getPath().startsWith("textures/entity/") || !texture.getPath().endsWith(".png")) {
+        if (texture == null || !texture.getPath().endsWith(".png")) {
             return texture;
         }
         String key = texture.toString() + ":" + entity.entityId;

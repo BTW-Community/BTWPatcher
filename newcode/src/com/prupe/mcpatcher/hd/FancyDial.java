@@ -36,7 +36,7 @@ public class FancyDial {
 
     private static final Field subTexturesField;
 
-    private static final Map<TextureStitched, Properties> setupInfo = new WeakHashMap<TextureStitched, Properties>();
+    private static final Map<TextureStitched, ResourceAddress> setupInfo = new WeakHashMap<TextureStitched, ResourceAddress>();
     private static final Map<TextureStitched, FancyDial> instances = new WeakHashMap<TextureStitched, FancyDial>();
 
     private final TextureStitched icon;
@@ -111,10 +111,10 @@ public class FancyDial {
             logger.warning("ignoring custom animation for %s not compass or clock", icon.getIconName());
             return;
         }
-        Properties properties = TexturePackAPI.getProperties(new ResourceAddress("textures/items/" + name + ".properties"));
-        if (properties != null) {
-            logger.fine("found custom %s", name);
-            setupInfo.put(icon, properties);
+        ResourceAddress resource = TexturePackAPI.newMCPatcherResourceAddress("dial/" + name + ".properties");
+        if (TexturePackAPI.hasResource(resource)) {
+            logger.fine("found custom %s (%s)", name, resource);
+            setupInfo.put(icon, resource);
         }
     }
 
@@ -177,13 +177,14 @@ public class FancyDial {
     }
 
     private static FancyDial getInstance(TextureStitched icon) {
-        Properties properties = setupInfo.get(icon);
+        ResourceAddress resource = setupInfo.get(icon);
+        Properties properties = TexturePackAPI.getProperties(resource);
+        setupInfo.remove(icon);
         if (properties == null) {
             return null;
         }
-        setupInfo.remove(icon);
         try {
-            FancyDial instance = new FancyDial(icon, properties);
+            FancyDial instance = new FancyDial(icon, resource, properties);
             if (instance.ok) {
                 instances.put(icon, instance);
                 return instance;
@@ -195,7 +196,7 @@ public class FancyDial {
         return null;
     }
 
-    private FancyDial(TextureStitched icon, Properties properties) {
+    private FancyDial(TextureStitched icon, ResourceAddress resource, Properties properties) {
         this.icon = icon;
         name = icon.getIconName();
         x0 = icon.getX0();
@@ -214,7 +215,7 @@ public class FancyDial {
         if (useScratchTexture) {
             BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             scratchTexture = GL11.glGenTextures();
-            MipmapHelper.setupTexture(scratchTexture, image, false, false, new ResourceAddress("textures/items/" + name + "_scratch"));
+            MipmapHelper.setupTexture(scratchTexture, image, false, false, TexturePackAPI.transformResourceAddress(resource, ".properties", "_scratch"));
             targetTexture = scratchTexture;
             scratchTextureBuffer = ByteBuffer.allocateDirect(4 * width * height);
             logger.fine("rendering %s to %dx%d scratch texture %d", name, width, height, scratchTexture);
@@ -234,7 +235,7 @@ public class FancyDial {
 
         boolean debug = false;
         for (int i = 0; ; i++) {
-            Layer layer = newLayer("textures/items/" + name + ".properties", properties, "." + i);
+            Layer layer = newLayer(resource, properties, "." + i);
             if (layer == null) {
                 if (i > 0) {
                     break;
@@ -513,13 +514,17 @@ public class FancyDial {
         }
     }
 
-    Layer newLayer(String filename, Properties properties, String suffix) {
-        ResourceAddress textureName = TexturePackAPI.parseResourceAddress(MCPatcherUtils.getStringProperty(properties, "source" + suffix, ""));
-        if (textureName == null) {
+    Layer newLayer(ResourceAddress resource, Properties properties, String suffix) {
+        String textureName = MCPatcherUtils.getStringProperty(properties, "source" + suffix, "");
+        if (textureName.isEmpty()) {
             return null;
         }
-        if (!TexturePackAPI.hasResource(textureName)) {
-            logger.error("%s: could not read %s", filename, textureName);
+        ResourceAddress textureResource = TexturePackAPI.parseResourceAddress(resource, textureName);
+        if (textureResource == null) {
+            return null;
+        }
+        if (!TexturePackAPI.hasResource(textureResource)) {
+            logger.error("%s: could not read %s", resource, textureResource);
             return null;
         }
         float scaleX = MCPatcherUtils.getFloatProperty(properties, "scaleX" + suffix, 1.0f);
@@ -531,11 +536,11 @@ public class FancyDial {
         String blend = MCPatcherUtils.getStringProperty(properties, "blend" + suffix, "alpha");
         BlendMethod blendMethod = BlendMethod.parse(blend);
         if (blendMethod == null) {
-            logger.error("%s: unknown blend method %s", filename, blend);
+            logger.error("%s: unknown blend method %s", resource, blend);
             return null;
         }
         boolean debug = MCPatcherUtils.getBooleanProperty(properties, "debug" + suffix, false);
-        return new Layer(textureName, scaleX, scaleY, offsetX, offsetY, angleMultiplier, angleOffset, blendMethod, debug);
+        return new Layer(textureResource, scaleX, scaleY, offsetX, offsetY, angleMultiplier, angleOffset, blendMethod, debug);
     }
 
     private class Layer {

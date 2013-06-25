@@ -44,22 +44,29 @@ public class FontUtils {
         });
     }
 
-    public static ResourceAddress getFontName(ResourceAddress font) {
-        String path = font.getPath().replaceFirst("_hd\\.png$", ".png");
-        String newPath = path.replaceFirst("\\.png$", "_hd.png");
-        ResourceAddress newFont = TexturePackAPI.newResourceAddress(font, newPath);
-        font = TexturePackAPI.newResourceAddress(font, path);
-        if (enable && TexturePackAPI.hasResource(newFont)) {
-            logger.fine("using %s instead of %s", newFont, font);
-            return newFont;
+    public static ResourceAddress getFontName(FontRenderer fontRenderer, ResourceAddress font) {
+        if (fontRenderer.defaultFont == null) {
+            fontRenderer.defaultFont = font;
+        }
+        if (fontRenderer.hdFont == null) {
+            String namespace = fontRenderer.defaultFont.getNamespace();
+            String name = fontRenderer.defaultFont.getPath().replaceAll(".*/", "");
+            fontRenderer.hdFont = new ResourceAddress(namespace, TexturePackAPI.MCPATCHER_SUBDIR + "font/" + name);
+        }
+        if (enable && TexturePackAPI.hasResource(fontRenderer.hdFont)) {
+            logger.fine("using %s instead of %s", fontRenderer.hdFont, fontRenderer.defaultFont);
+            fontRenderer.isHD = true;
+            return fontRenderer.hdFont;
         } else {
-            return font;
+            logger.fine("using default %s", fontRenderer.defaultFont);
+            fontRenderer.isHD = false;
+            return fontRenderer.defaultFont;
         }
     }
 
     public static float[] computeCharWidthsf(FontRenderer fontRenderer, ResourceAddress filename, BufferedImage image, int[] rgb, int[] charWidth) {
         float[] charWidthf = new float[charWidth.length];
-        if (!enable) {
+        if (!fontRenderer.isHD) {
             for (int i = 0; i < charWidth.length; i++) {
                 charWidthf[i] = charWidth[i];
             }
@@ -133,7 +140,7 @@ public class FontUtils {
     }
 
     public static float getCharWidthf(FontRenderer fontRenderer, int[] charWidth, int ch) {
-        return enable ? fontRenderer.charWidthf[ch] * fontRenderer.fontHeight / 8.0f : (float) charWidth[ch];
+        return fontRenderer.isHD ? fontRenderer.charWidthf[ch] * fontRenderer.fontHeight / 8.0f : (float) charWidth[ch];
     }
 
     public static float getStringWidthf(FontRenderer fontRenderer, String s) {
@@ -195,7 +202,7 @@ public class FontUtils {
     }
 
     private static void getCharWidthOverrides(ResourceAddress font, float[] charWidthf, boolean[] isOverride) {
-        ResourceAddress textFile = TexturePackAPI.newResourceAddress(font, ".png", ".properties");
+        ResourceAddress textFile = TexturePackAPI.transformResourceAddress(font, ".png", ".properties");
         Properties props = TexturePackAPI.getProperties(textFile);
         if (props == null) {
             return;

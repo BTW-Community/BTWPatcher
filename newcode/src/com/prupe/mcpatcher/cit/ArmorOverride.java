@@ -27,9 +27,6 @@ final class ArmorOverride extends OverrideBase {
             for (Map.Entry<String, ResourceAddress> entry : alternateTextures.entrySet()) {
                 String key = entry.getKey();
                 ResourceAddress value = entry.getValue();
-                if (!key.contains("/")) {
-                    key = "textures/models/armor/" + key;
-                }
                 if (!key.endsWith(".png")) {
                     key += ".png";
                 }

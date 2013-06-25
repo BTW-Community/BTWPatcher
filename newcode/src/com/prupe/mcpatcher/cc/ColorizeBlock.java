@@ -17,17 +17,17 @@ import java.util.Properties;
 public class ColorizeBlock {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
-    private static final ResourceAddress REDSTONE_COLORS = new ResourceAddress("textures/colormap/redstone.png");
-    private static final ResourceAddress STEM_COLORS = new ResourceAddress("textures/colormap/stem.png");
-    private static final ResourceAddress SWAMPGRASSCOLOR = new ResourceAddress("textures/colormap/swampgrass.png");
-    private static final ResourceAddress SWAMPFOLIAGECOLOR = new ResourceAddress("textures/colormap/swampfoliage.png");
-    private static final ResourceAddress PINECOLOR = new ResourceAddress("textures/colormap/pine.png");
-    private static final ResourceAddress BIRCHCOLOR = new ResourceAddress("textures/colormap/birch.png");
-    private static final ResourceAddress FOLIAGECOLOR = new ResourceAddress("textures/colormap/foliage.png");
-    private static final ResourceAddress WATERCOLOR = new ResourceAddress("textures/colormap/water.png");
-    private static final ResourceAddress UNDERWATERCOLOR = new ResourceAddress("textures/colormap/underwater.png");
-    private static final ResourceAddress FOGCOLOR0 = new ResourceAddress("textures/colormap/fog0.png");
-    private static final ResourceAddress SKYCOLOR0 = new ResourceAddress("textures/colormap/sky0.png");
+    private static final ResourceAddress REDSTONE_COLORS = TexturePackAPI.newMCPatcherResourceAddress("colormap/redstone.png");
+    private static final ResourceAddress STEM_COLORS = TexturePackAPI.newMCPatcherResourceAddress("colormap/stem.png");
+    private static final ResourceAddress SWAMPGRASSCOLOR = TexturePackAPI.newMCPatcherResourceAddress("colormap/swampgrass.png");
+    private static final ResourceAddress SWAMPFOLIAGECOLOR = TexturePackAPI.newMCPatcherResourceAddress("colormap/swampfoliage.png");
+    private static final ResourceAddress PINECOLOR = TexturePackAPI.newMCPatcherResourceAddress("colormap/pine.png");
+    private static final ResourceAddress BIRCHCOLOR = TexturePackAPI.newMCPatcherResourceAddress("colormap/birch.png");
+    private static final ResourceAddress FOLIAGECOLOR = TexturePackAPI.newMCPatcherResourceAddress("colormap/foliage.png");
+    private static final ResourceAddress WATERCOLOR = TexturePackAPI.newMCPatcherResourceAddress("colormap/water.png");
+    private static final ResourceAddress UNDERWATERCOLOR = TexturePackAPI.newMCPatcherResourceAddress("colormap/underwater.png");
+    private static final ResourceAddress FOGCOLOR0 = TexturePackAPI.newMCPatcherResourceAddress("colormap/fog0.png");
+    private static final ResourceAddress SKYCOLOR0 = TexturePackAPI.newMCPatcherResourceAddress("colormap/sky0.png");
 
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
 
@@ -99,7 +99,7 @@ public class ColorizeBlock {
             if (!key.startsWith(PALETTE_BLOCK_KEY)) {
                 continue;
             }
-            ResourceAddress address = TexturePackAPI.parseResourceAddress(key.substring(PALETTE_BLOCK_KEY.length()).trim());
+            ResourceAddress address = TexturePackAPI.parseResourceAddress(Colorizer.COLOR_PROPERTIES, key.substring(PALETTE_BLOCK_KEY.length()).trim());
             if (address == null) {
                 continue;
             }

@@ -226,7 +226,7 @@ public class TileLoader {
     }
 
     public static ResourceAddress getDefaultAddress(ResourceAddress propertiesAddress) {
-        return TexturePackAPI.newResourceAddress(propertiesAddress, ".properties", ".png");
+        return TexturePackAPI.transformResourceAddress(propertiesAddress, ".properties", ".png");
     }
 
     public static ResourceAddress parseTileAddress(ResourceAddress propertiesAddress, String value) {

@@ -89,7 +89,7 @@ class PotionReplacer {
     }
 
     private static ResourceAddress getPotionPath(String name, boolean splash) {
-        return new ResourceAddress("textures/cit/potion/" + (splash ? "splash/" : "normal/") + name + ".png");
+        return TexturePackAPI.newMCPatcherResourceAddress("cit/potion/" + (splash ? "splash/" : "normal/") + name + ".png");
     }
 
     private static Properties newProperties(ResourceAddress path, int itemID, String layer) {
@@ -181,7 +181,7 @@ class PotionReplacer {
     }
 
     private void addOverride(ResourceAddress path, Properties properties) {
-        ResourceAddress propertiesName = TexturePackAPI.newResourceAddress(path, ".png", ".properties");
+        ResourceAddress propertiesName = TexturePackAPI.transformResourceAddress(path, ".png", ".properties");
         ItemOverride override = new ItemOverride(propertiesName, properties);
         if (!override.error) {
             overrides.add(override);

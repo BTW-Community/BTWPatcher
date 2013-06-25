@@ -97,35 +97,37 @@ public class SkyRenderer {
         WorldEntry(int worldType) {
             this.worldType = worldType;
             loadSkies();
-            loadCelestialObject("sun", new ResourceAddress("textures/environment/sun.png"));
-            loadCelestialObject("moon_phases", new ResourceAddress("textures/environment/moon_phases.png"));
+            loadCelestialObject("sun");
+            loadCelestialObject("moon_phases");
         }
 
         private void loadSkies() {
             for (int i = -1; ; i++) {
-                String prefix = "textures/environment/sky" + worldType + "/sky" + (i < 0 ? "" : "" + i);
-                Layer layer = Layer.create(prefix);
+                String path = "sky/world" + worldType + "/sky" + (i < 0 ? "" : String.valueOf(i)) + ".properties";
+                ResourceAddress resource = TexturePackAPI.newMCPatcherResourceAddress(path);
+                Layer layer = Layer.create(resource);
                 if (layer == null) {
                     if (i > 0) {
                         break;
                     }
                 } else if (layer.valid) {
-                    logger.fine("loaded %s.properties", prefix);
+                    logger.fine("loaded %s", resource);
                     skies.add(layer);
                     textures.add(layer.texture);
                 }
             }
         }
 
-        private void loadCelestialObject(String objName, ResourceAddress textureName) {
-            String prefix = "textures/environment/sky" + worldType + "/" + objName;
-            Properties properties = TexturePackAPI.getProperties(new ResourceAddress(prefix + ".properties"));
+        private void loadCelestialObject(String objName) {
+            ResourceAddress textureName = new ResourceAddress("textures/environment/" + objName + ".png");
+            ResourceAddress resource = TexturePackAPI.newMCPatcherResourceAddress("sky/world0/" + objName + ".properties");
+            Properties properties = TexturePackAPI.getProperties(resource);
             if (properties != null) {
                 properties.setProperty("fade", "false");
                 properties.setProperty("rotate", "true");
-                Layer layer = new Layer(prefix, properties);
+                Layer layer = new Layer(resource, properties);
                 if (layer.valid) {
-                    logger.fine("using %s.properties (%s) for the %s", prefix, layer.texture, objName);
+                    logger.fine("using %s (%s) for the %s", resource, layer.texture, objName);
                     objects.put(textureName, layer);
                 }
             }
@@ -174,7 +176,7 @@ public class SkyRenderer {
 
         private static final double SKY_DISTANCE = 100.0;
 
-        private final String prefix;
+        private final ResourceAddress propertiesName;
         private final Properties properties;
         private ResourceAddress texture;
         private boolean fade;
@@ -191,24 +193,24 @@ public class SkyRenderer {
 
         float brightness;
 
-        static Layer create(String prefix) {
-            Properties properties = TexturePackAPI.getProperties(new ResourceAddress(prefix + ".properties"));
+        static Layer create(ResourceAddress resource) {
+            Properties properties = TexturePackAPI.getProperties(resource);
             if (properties == null) {
                 return null;
             } else {
-                return new Layer(prefix, properties);
+                return new Layer(resource, properties);
             }
         }
 
-        Layer(String prefix, Properties properties) {
-            this.prefix = prefix;
+        Layer(ResourceAddress propertiesName, Properties properties) {
+            this.propertiesName = propertiesName;
             this.properties = properties;
             valid = true;
             valid = (readTexture() && readRotation() & readBlendingMethod() && readFadeTimers());
         }
 
         private boolean readTexture() {
-            texture = TexturePackAPI.parseResourceAddress(properties.getProperty("source", prefix + ".png"));
+            texture = TexturePackAPI.parseResourceAddress(propertiesName, properties.getProperty("source", propertiesName.getPath().replaceFirst("\\.properties$", ".png")));
             if (TexturePackAPI.hasResource(texture)) {
                 return true;
             } else {
@@ -298,7 +300,7 @@ public class SkyRenderer {
             b = (Math.cos(s0) - Math.cos(e1)) / det;
             c = (Math.cos(e1) * Math.sin(s0) - Math.cos(s0) * Math.sin(e1)) / det;
 
-            logger.finer("%s.properties: y = %f cos x + %f sin x + %f", prefix, a, b, c);
+            logger.finer("%s: y = %f cos x + %f sin x + %f", propertiesName, a, b, c);
             logger.finer("  at %f: %f", s0, f(s0));
             logger.finer("  at %f: %f", s1, f(s1));
             logger.finer("  at %f: %f", e0, f(e0));
@@ -307,7 +309,7 @@ public class SkyRenderer {
         }
 
         private boolean addError(String format, Object... params) {
-            logger.error(prefix + ".properties: " + format, params);
+            logger.error("" + propertiesName + ": " + format, params);
             valid = false;
             return false;
         }
