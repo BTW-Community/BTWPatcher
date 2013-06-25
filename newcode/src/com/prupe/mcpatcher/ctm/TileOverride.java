@@ -350,7 +350,9 @@ abstract class TileOverride implements ITileOverride {
                         int to = Integer.parseInt(matcher.group(2));
                         for (int i = from; i <= to; i++) {
                             ResourceAddress resource = TileLoader.parseTileAddress(propertiesFile, String.valueOf(i));
-                            if (!addIcon(resource)) {
+                            if (TexturePackAPI.hasResource(resource)) {
+                                addIcon(resource);
+                            } else {
                                 warn("could not find image %s", resource);
                             }
                         }

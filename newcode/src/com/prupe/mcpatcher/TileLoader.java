@@ -230,13 +230,13 @@ public class TileLoader {
     }
 
     public static ResourceAddress parseTileAddress(ResourceAddress propertiesAddress, String value) {
+        if (value == null) {
+            return null;
+        }
         if (value.equals("blank")) {
             return BLANK_RESOURCE;
         }
-        if (value.equals("null") || value.equals("none") || value.equals("default")) {
-            return null;
-        }
-        if (value.equals("")) {
+        if (value.equals("null") || value.equals("none") || value.equals("default") || value.equals("")) {
             return null;
         }
         if (!value.endsWith(".png")) {
