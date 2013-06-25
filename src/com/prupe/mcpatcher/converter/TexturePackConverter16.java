@@ -970,10 +970,6 @@ public class TexturePackConverter16 extends TexturePackConverter {
             addMessage(1, "could not parse animation data in %s", name);
             return false;
         }
-        if (meta.isEmpty()) {
-            addMessage(1, "no animation data in %s", name);
-            return false;
-        }
         addMessage(0, "    convert animation %s -> %s", name, meta);
         return true;
     }
@@ -1164,10 +1160,6 @@ public class TexturePackConverter16 extends TexturePackConverter {
         }
 
         void toJSON() {
-            if (isEmpty()) {
-                return;
-            }
-
             PrintStream txtStream = new PrintStream(getOutputStream(toString()));
             txtStream.println("{");
 
@@ -1179,10 +1171,12 @@ public class TexturePackConverter16 extends TexturePackConverter {
                 if (clamp) {
                     txtStream.println("    \"clamp\": true");
                 }
-                txtStream.printf("  }%s\n", frames.isEmpty() ? "" : ",");
+                txtStream.println("  },");
             }
 
-            if (!frames.isEmpty()) {
+            if (frames.isEmpty()) {
+                txtStream.println("  \"animation\": {}");
+            } else {
                 txtStream.println("  \"animation\": {");
                 if (defaultTiming > 1) {
                     txtStream.printf("    \"frametime\": %d,\n", defaultTiming);
@@ -1206,10 +1200,6 @@ public class TexturePackConverter16 extends TexturePackConverter {
             }
 
             txtStream.println("}");
-        }
-
-        boolean isEmpty() {
-            return !blur && !clamp && frames.isEmpty();
         }
 
         @Override
