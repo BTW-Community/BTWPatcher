@@ -634,8 +634,17 @@ class MainForm {
             setBusy(true);
             runWorker(new Runnable() {
                 public void run() {
-                    tabbedPane.setSelectedIndex(TAB_LOG);
                     TexturePackConverter converter = (version == 16 ? new TexturePackConverter16(selectedFile) : new TexturePackConverter15(selectedFile));
+                    if (converter.getOutputFile().exists()) {
+                        int result = JOptionPane.showConfirmDialog(frame,
+                            String.format("This will overwrite\n%s\n\nContinue?", converter.getOutputFile().getAbsolutePath()),
+                            "Confirm overwrite", JOptionPane.YES_NO_OPTION);
+                        if (result != JOptionPane.YES_OPTION) {
+                            setBusy(false);
+                            return;
+                        }
+                    }
+                    tabbedPane.setSelectedIndex(TAB_LOG);
                     boolean result = converter.convert(MCPatcher.ui);
                     StringBuilder sb = new StringBuilder();
                     for (String s : converter.getMessages()) {
