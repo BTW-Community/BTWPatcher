@@ -105,17 +105,17 @@ public class TexturePackAPI {
             return new ResourceAddress(path.substring(0, colon), path.substring(colon + 1));
         }
         // Relative to namespace mcpatcher dir:
-        // ~/path -> assets/(namespace of properties file)/mcpatcher/path
+        // ~/path -> assets/(namespace of base file)/mcpatcher/path
         if (path.startsWith("~/")) {
             return new ResourceAddress(baseResource.getNamespace(), MCPATCHER_SUBDIR + path.substring(2));
         }
         // Relative to properties file:
-        // ./path -> (path of properties file)/path
+        // ./path -> (dir of base file)/path
         if (path.startsWith("./")) {
-            return new ResourceAddress(baseResource.getNamespace(), baseResource.getPath().replaceFirst("/[^/]+$", "/") + path.substring(2));
+            return new ResourceAddress(baseResource.getNamespace(), baseResource.getPath().replaceFirst("[^/]+$", "") + path.substring(2));
         }
         // Absolute path, w/o namespace:
-        // path/filename -> assets/(namespace of properties file)/path/filename
+        // path/filename -> assets/(namespace of base file)/path/filename
         return new ResourceAddress(baseResource.getNamespace(), path);
     }
 
