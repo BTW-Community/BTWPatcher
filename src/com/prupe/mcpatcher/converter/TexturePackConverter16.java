@@ -734,6 +734,9 @@ public class TexturePackConverter16 extends TexturePackConverter {
         File dir = new File(input.getParentFile().getParentFile(), "resourcepacks");
         dir.mkdirs();
         output = new File(dir, input.getName());
+        if (output.equals(input)) {
+            output = new File(dir, MCPATCHER_CONVERT_PREFIX + input.getName());
+        }
     }
 
     @Override

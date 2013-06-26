@@ -59,7 +59,7 @@ public class TexturePackConverter15 extends TexturePackConverter {
 
     public TexturePackConverter15(File input) {
         super(input);
-        output = new File(input.getParentFile(), "mcpatcher-converted-" + input.getName().replaceFirst("^converted-", ""));
+        output = new File(input.getParentFile(), MCPATCHER_CONVERT_PREFIX + input.getName().replaceFirst("^converted-", ""));
     }
 
     @Override

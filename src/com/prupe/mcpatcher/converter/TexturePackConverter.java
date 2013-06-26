@@ -13,6 +13,8 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 abstract public class TexturePackConverter {
+    public static final String MCPATCHER_CONVERT_PREFIX = "mcpatcher-converted-";
+
     protected final File input;
     protected File output;
 

@@ -620,7 +620,7 @@ class MainForm {
             @Override
             public boolean accept(File f) {
                 String name = f.getName();
-                return f.isDirectory() || (name.endsWith(".zip") && !name.startsWith("mcpatcher-converted-"));
+                return f.isDirectory() || (name.endsWith(".zip") && !name.startsWith(TexturePackConverter.MCPATCHER_CONVERT_PREFIX));
             }
 
             @Override
