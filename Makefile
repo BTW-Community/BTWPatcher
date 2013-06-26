@@ -1,4 +1,4 @@
-MCVER ?= 13w25c
+MCVER ?= 1.6
 EXT_OPTS ?=
 
 VERSIONSDIR = ../versions
@@ -25,7 +25,7 @@ GOOD_LOG = good.log
 TMPDIR = t.1
 FILTER = ./testfilter.pl
 
-.PHONY: default build release run test testfilter control clean restore
+.PHONY: default build release run test testfilter control clean restore rmall
 .PHONY: javadoc profile modjar
 
 default:
@@ -67,6 +67,9 @@ clean: testclean
 
 restore:
 	rm -rf $(PATCHDIR)
+
+rmall:
+	rm -rf $(VERSIONSDIR)/*-mcpatcher
 
 javadoc:
 	rm -rf $(DOC_OUT)
