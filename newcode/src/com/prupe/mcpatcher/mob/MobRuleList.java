@@ -16,14 +16,14 @@ class MobRuleList {
     private static final Map<ResourceAddress, MobRuleList> allRules = new HashMap<ResourceAddress, MobRuleList>();
 
     private final ResourceAddress baseSkin;
-    private final ResourceAddress newSkin;
     private final List<ResourceAddress> allSkins;
     private final int skinCount;
     private final List<MobRuleEntry> entries;
 
     private MobRuleList(ResourceAddress baseSkin) {
         this.baseSkin = baseSkin;
-        newSkin = new ResourceAddress(baseSkin.getNamespace(), baseSkin.getPath().replaceFirst("^textures/entity/", TexturePackAPI.MCPATCHER_SUBDIR + "mob/"));
+        String newPath = baseSkin.getPath().replaceFirst("^textures/entity/", TexturePackAPI.MCPATCHER_SUBDIR + "mob/");
+        ResourceAddress newSkin = new ResourceAddress(baseSkin.getNamespace(), newPath);
         allSkins = new ArrayList<ResourceAddress>();
         allSkins.add(baseSkin);
         for (int i = 2; ; i++) {
