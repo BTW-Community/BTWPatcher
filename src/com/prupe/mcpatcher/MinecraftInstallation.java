@@ -243,7 +243,7 @@ abstract class MinecraftInstallation {
             if (origMD5.equals(md5)) {
                 return UNMODDED_JAR;
             }
-            return MODDED_JAR;
+            return MODDED_OR_UNMODDED_JAR;
         }
 
         static MinecraftVersion extractVersion(File file, String md5) {
