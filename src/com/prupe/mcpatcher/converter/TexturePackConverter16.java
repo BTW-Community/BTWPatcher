@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.converter;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.UserInterface;
 
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -21,6 +22,9 @@ public class TexturePackConverter16 extends TexturePackConverter {
     private static final String PUMPKINBLUR_PNG = "misc/pumpkinblur.png";
     private static final String SHADOW_PNG = "misc/shadow.png";
     private static final String VIGNETTE_PNG = "misc/vignette.png";
+
+    private static final int ASCII_FONT_SIZE = 128;
+    private static final int UNICODE_FONT_SIZE = 256;
 
     private static final Map<String, TextureMCMeta> textureMCMeta = new HashMap<String, TextureMCMeta>();
     private static final Map<String, String> blockMap = new HashMap<String, String>();
@@ -519,8 +523,8 @@ public class TexturePackConverter16 extends TexturePackConverter {
         new TextureEntry("textures/items/wheat\\.png", "items/wheat.png"),
 
         // Fonts
-        new MCPatcherEntry("font/alternate(_hd)?(\\..*)", "font/ascii_sga$2"),
-        new MCPatcherEntry("font/default(_hd)?(\\..*)", "font/ascii$2"),
+        new TextureEntry("font/alternate(_hd)?(\\..*)", "font/ascii_sga$2"),
+        new TextureEntry("font/default(_hd)?(\\..*)", "font/ascii$2"),
         new TextureEntry("font/glyph_(..)\\.png", "font/unicode_page_$1.png"),
         new DeleteEntry("font/glyph_sizes.bin"),
 
@@ -770,6 +774,8 @@ public class TexturePackConverter16 extends TexturePackConverter {
 
             if (entryNewName == null) {
                 // nothing
+            } else if (name.startsWith("font/")) {
+                moveFont(name);
             } else if (name.endsWith(".properties")) {
                 Properties properties = getProperties(name);
                 handled = convertProperties(name, properties);
@@ -827,6 +833,38 @@ public class TexturePackConverter16 extends TexturePackConverter {
                 }
             }
         }
+    }
+
+    private void moveFont(String name) {
+        if (name.endsWith(".png")) {
+            if (isFontHD(name)) {
+                entryNewName = entryNewName.replaceFirst("textures/", "mcpatcher/");
+                addMessage(0, "    move hd font %s -> %s", name, entryNewName);
+            }
+        } else if (name.endsWith(".properties")) {
+            entryNewName = entryNewName.replaceFirst("textures/", "mcpatcher/");
+            addMessage(0, "    move custom font metrics %s -> %s", name, entryNewName);
+        }
+    }
+
+    private boolean isFontHD(String name) {
+        int size;
+        String customSizes;
+        if (name.contains("glyph_")) {
+            size = UNICODE_FONT_SIZE;
+            customSizes = "font/glyph_sizes.bin";
+        } else {
+            if (name.endsWith("_hd.png")) {
+                return true;
+            }
+            size = ASCII_FONT_SIZE;
+            customSizes = name.replaceFirst("\\.png$", ".properties");
+        }
+        if (inZip.getEntry(customSizes) != null) {
+            return true;
+        }
+        BufferedImage image = getImage(name);
+        return image != null && (image.getWidth() != size || image.getHeight() != size);
     }
 
     private boolean convertProperties(String name, Properties properties) {
