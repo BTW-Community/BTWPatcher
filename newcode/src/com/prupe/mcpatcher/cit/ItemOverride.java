@@ -58,11 +58,11 @@ final class ItemOverride extends OverrideBase {
     }
 
     void registerIcon(TileLoader tileLoader) {
-        icon = tileLoader.getIcon(textureName.getPath());
+        icon = tileLoader.getIcon(textureName);
         if (alternateTextures != null) {
             for (Map.Entry<String, ResourceAddress> entry : alternateTextures.entrySet()) {
                 Icon from = tileLoader.getIcon(entry.getKey());
-                Icon to = tileLoader.getIcon(entry.getValue().getPath());
+                Icon to = tileLoader.getIcon(entry.getValue());
                 if (from != null && to != null) {
                     iconMap.put(from, to);
                 }

@@ -122,7 +122,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         int y = MCPatcherUtils.getIntProperty(properties, "y", 0);
         int w = MCPatcherUtils.getIntProperty(properties, "w", 0);
         int h = MCPatcherUtils.getIntProperty(properties, "h", 0);
-        if (dstName.getPath().startsWith("textures/atlas/")) {
+        if (dstName.toString().startsWith("minecraft:textures/atlas/")) {
             logger.error("%s: animations cannot have a target of %s", dstName);
             return;
         }
@@ -225,7 +225,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
     }
 
     public int compareTo(CustomAnimation o) {
-        return dstName.getPath().compareTo(o.dstName.getPath());
+        return dstName.toString().compareTo(o.dstName.toString());
     }
 
     @Override

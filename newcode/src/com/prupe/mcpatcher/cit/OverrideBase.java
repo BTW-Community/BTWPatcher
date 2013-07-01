@@ -137,7 +137,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
         if (result != 0) {
             return result;
         }
-        return propertiesName.getPath().compareTo(o.propertiesName.getPath());
+        return propertiesName.toString().compareTo(o.propertiesName.toString());
     }
 
     boolean match(ItemStack itemStack, int[] itemEnchantmentLevels, boolean hasEffect) {

@@ -265,7 +265,7 @@ public class TileLoader {
         tilesToRegister.add(resource);
         tileImages.put(resource, image);
         if (special != null) {
-            specialTextures.put(resource.getPath(), special);
+            specialTextures.put(resource.toString(), special);
         }
         return true;
     }
@@ -297,7 +297,7 @@ public class TileLoader {
 
     private boolean registerOneIcon(TextureMap textureMap, String mapName, Map<String, TextureStitched> map) {
         ResourceAddress resource = tilesToRegister.iterator().next();
-        String name = resource.getPath();
+        String name = resource.toString();
         if (registerDefaultIcon(name)) {
             tilesToRegister.remove(resource);
             return true;
@@ -349,6 +349,10 @@ public class TileLoader {
             icon = baseTexturesByName.get(name);
         }
         return icon;
+    }
+
+    public Icon getIcon(ResourceAddress resource) {
+        return resource == null ? null : getIcon(resource.toString());
     }
 
     public boolean setDefaultTextureMap(Tessellator tessellator) {

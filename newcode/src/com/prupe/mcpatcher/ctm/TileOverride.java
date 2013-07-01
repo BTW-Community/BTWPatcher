@@ -147,7 +147,7 @@ abstract class TileOverride implements ITileOverride {
 
     private final ResourceAddress propertiesFile;
     private final String texturesDirectory;
-    private final String propertiesName;
+    private final String baseFilename;
     private final TileLoader tileLoader;
     private final int renderPass;
     private final int weight;
@@ -161,7 +161,7 @@ abstract class TileOverride implements ITileOverride {
     private final int minHeight;
     private final int maxHeight;
 
-    private final List<String> tileNames = new ArrayList<String>();
+    private final List<ResourceAddress> tileNames = new ArrayList<ResourceAddress>();
     protected Icon[] icons;
     private boolean disabled;
     private int[] reorient;
@@ -232,7 +232,7 @@ abstract class TileOverride implements ITileOverride {
     protected TileOverride(ResourceAddress propertiesFile, Properties properties, TileLoader tileLoader) {
         this.propertiesFile = propertiesFile;
         texturesDirectory = propertiesFile.getPath().replaceFirst("/[^/]*$", "");
-        propertiesName = propertiesFile.getPath().replaceFirst(".*/", "").replaceFirst("\\.properties$", "");
+        baseFilename = propertiesFile.getPath().replaceFirst(".*/", "").replaceFirst("\\.properties$", "");
         this.tileLoader = tileLoader;
 
         loadIcons(properties);
@@ -250,7 +250,7 @@ abstract class TileOverride implements ITileOverride {
         matchBlocks = getIDList(properties, "matchBlocks", "block", mappings);
         matchTiles = getIDList(properties, "matchTiles");
         if (matchBlocks.isEmpty() && matchTiles.isEmpty()) {
-            matchTiles.add(propertiesName);
+            matchTiles.add(baseFilename);
         }
 
         int flags = 0;
@@ -321,7 +321,7 @@ abstract class TileOverride implements ITileOverride {
     }
 
     private boolean addIcon(ResourceAddress resource) {
-        tileNames.add(resource.getPath());
+        tileNames.add(resource);
         return tileLoader.preloadTile(resource, renderPass > 2);
     }
 
@@ -402,7 +402,7 @@ abstract class TileOverride implements ITileOverride {
             }
         }
         if (list.isEmpty()) {
-            Matcher m = Pattern.compile(type + "(\\d+)").matcher(propertiesName);
+            Matcher m = Pattern.compile(type + "(\\d+)").matcher(baseFilename);
             if (m.find()) {
                 try {
                     list.add(Integer.parseInt(m.group(1)));
@@ -418,7 +418,17 @@ abstract class TileOverride implements ITileOverride {
         Set<String> list = new HashSet<String>();
         String property = properties.getProperty(key, "");
         for (String token : property.split("\\s+")) {
-            if (!token.equals("")) {
+            if (token.equals("")) {
+                // nothing
+            } else if (token.contains("/")) {
+                if (!token.endsWith(".png")) {
+                    token += ".png";
+                }
+                ResourceAddress resource = TexturePackAPI.parseResourceAddress(propertiesFile, token);
+                if (resource != null) {
+                    list.add(resource.toString());
+                }
+            } else {
                 list.add(token);
             }
         }
@@ -499,7 +509,7 @@ abstract class TileOverride implements ITileOverride {
             return result;
         }
         if (o instanceof TileOverride) {
-            return propertiesName.compareTo(((TileOverride) o).propertiesName);
+            return baseFilename.compareTo(((TileOverride) o).baseFilename);
         } else {
             return -1;
         }
