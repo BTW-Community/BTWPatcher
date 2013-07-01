@@ -21,7 +21,7 @@ public class CustomColors extends Mod {
     private static final MethodRef colorizeBiome3 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBiome", "(IIIII)I");
     private static final MethodRef colorizeBiomeWithBlending = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBiomeWithBlending", "(IIIII)I");
     private static final MethodRef colorizeRedstoneWire = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeRedstoneWire", "(LIBlockAccess;IIII)I");
-    private static final MethodRef colorizeStem = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeStem", "(II)I");
+    private static final MethodRef colorizeStem = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeStem", "(ILBlock;I)I");
     private static final MethodRef colorizeWater = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeWater", "(Ljava/lang/Object;II)I");
     private static final MethodRef colorizeWaterBlockGL = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeWaterBlockGL", "(I)V");
     private static final MethodRef colorizeSpawnerEgg = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "colorizeSpawnerEgg", "(III)I");
@@ -3187,6 +3187,7 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        ALOAD_0,
                         ILOAD_1,
                         reference(INVOKESTATIC, colorizeStem)
                     );

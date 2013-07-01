@@ -19,6 +19,8 @@ public class ColorizeBlock {
 
     private static final ResourceAddress REDSTONE_COLORS = TexturePackAPI.newMCPatcherResourceAddress("colormap/redstone.png");
     private static final ResourceAddress STEM_COLORS = TexturePackAPI.newMCPatcherResourceAddress("colormap/stem.png");
+    private static final ResourceAddress PUMPKIN_STEM_COLORS = TexturePackAPI.newMCPatcherResourceAddress("colormap/pumpkinstem.png");
+    private static final ResourceAddress MELON_STEM_COLORS = TexturePackAPI.newMCPatcherResourceAddress("colormap/melonstem.png");
     private static final ResourceAddress SWAMPGRASSCOLOR = TexturePackAPI.newMCPatcherResourceAddress("colormap/swampgrass.png");
     private static final ResourceAddress SWAMPFOLIAGECOLOR = TexturePackAPI.newMCPatcherResourceAddress("colormap/swampfoliage.png");
     private static final ResourceAddress PINECOLOR = TexturePackAPI.newMCPatcherResourceAddress("colormap/pine.png");
@@ -31,11 +33,15 @@ public class ColorizeBlock {
 
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
 
+    private static final int BLOCK_ID_PUMPKIN_STEM = 104;
+    private static final int BLOCK_ID_MELON_STEM = 105;
+
     private static final ColorMap[] blockColorMaps = new ColorMap[Block.blocksList.length]; // bitmaps from palette.block.*
     private static final Map<Float, ColorMap> blockMetaColorMaps = new HashMap<Float, ColorMap>(); // bitmaps from palette.block.*
     private static int lilypadColor; // lilypad
-    private static float[][] redstoneColor; // misc/redstonecolor.png
-    private static int[] stemColors; // misc/stemcolor.png
+    private static float[][] redstoneColor; // colormap/redstone.png
+    private static int[] pumpkinStemColors; // colormap/pumpkinstem.png
+    private static int[] melonStemColors; // colormap/melonstem.png
 
     private static final int blockBlendRadius = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius", 1);
     private static final float blockBlendScale = (float) Math.pow(2 * blockBlendRadius + 1, -2);
@@ -67,7 +73,8 @@ public class ColorizeBlock {
         lilypadColor = 0x208030;
         waterColor = new float[]{0.2f, 0.3f, 1.0f};
         redstoneColor = null;
-        stemColors = null;
+        pumpkinStemColors = null;
+        melonStemColors = null;
     }
 
     static void reloadColorMaps(Properties properties) {
@@ -151,10 +158,20 @@ public class ColorizeBlock {
     }
 
     static void reloadStemColors(Properties properties) {
-        int[] rgb = MCPatcherUtils.getImageRGB(TexturePackAPI.getImage(STEM_COLORS));
-        if (rgb != null && rgb.length >= 8) {
-            stemColors = rgb;
+        int[] stemColors = getStemRGB(STEM_COLORS);
+        pumpkinStemColors = getStemRGB(PUMPKIN_STEM_COLORS);
+        if (pumpkinStemColors == null) {
+            pumpkinStemColors = stemColors;
         }
+        melonStemColors = getStemRGB(MELON_STEM_COLORS);
+        if (melonStemColors == null) {
+            melonStemColors = stemColors;
+        }
+    }
+
+    private static int[] getStemRGB(ResourceAddress resource) {
+        int[] rgb = MCPatcherUtils.getImageRGB(TexturePackAPI.getImage(resource));
+        return rgb == null || rgb.length < 8 ? null : rgb;
     }
 
     public static int colorizeBiome(int defaultColor, int index, double temperature, double rainfall) {
@@ -218,12 +235,21 @@ public class ColorizeBlock {
         }
     }
 
-    public static int colorizeStem(int defaultColor, int blockMetadata) {
-        if (stemColors == null) {
-            return defaultColor;
-        } else {
-            return stemColors[blockMetadata & 0x7];
+    public static int colorizeStem(int defaultColor, Block block, int blockMetadata) {
+        int[] colors;
+        switch (block.blockID) {
+            case BLOCK_ID_PUMPKIN_STEM:
+                colors = pumpkinStemColors;
+                break;
+
+            case BLOCK_ID_MELON_STEM:
+                colors = melonStemColors;
+                break;
+
+            default:
+                return defaultColor;
         }
+        return colors == null ? defaultColor : colors[blockMetadata & 0x7];
     }
 
     public static int getLilyPadColor() {
