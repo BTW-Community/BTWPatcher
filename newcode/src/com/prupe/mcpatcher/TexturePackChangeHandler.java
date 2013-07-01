@@ -1,10 +1,7 @@
 package com.prupe.mcpatcher;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.IResourcePack;
-import net.minecraft.src.ITexture;
-import net.minecraft.src.ResourceAddress;
-import net.minecraft.src.TextureManager;
+import net.minecraft.src.*;
 
 import java.util.*;
 
@@ -132,7 +129,8 @@ abstract public class TexturePackChangeHandler {
             Set<ResourceAddress> texturesToUnload = new HashSet<ResourceAddress>();
             for (Map.Entry<ResourceAddress, ITexture> entry : textureManager.texturesByName.entrySet()) {
                 ResourceAddress resource = entry.getKey();
-                if (!resource.getPath().startsWith("dynamic/") && !TexturePackAPI.hasResource(resource)) {
+                ITexture texture = entry.getValue();
+                if (texture instanceof TextureNamed && !TexturePackAPI.hasResource(resource)) {
                     texturesToUnload.add(resource);
                 }
             }
