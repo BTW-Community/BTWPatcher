@@ -3,7 +3,7 @@ package com.prupe.mcpatcher.cc;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
-import net.minecraft.src.ResourceAddress;
+import net.minecraft.src.ResourceLocation;
 
 final class ColorMap {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
@@ -30,7 +30,7 @@ final class ColorMap {
         mapDefault = defaultColor;
     }
 
-    void loadColorMap(boolean useCustom, ResourceAddress resource) {
+    void loadColorMap(boolean useCustom, ResourceLocation resource) {
         if (!useCustom) {
             return;
         }

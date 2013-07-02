@@ -2,7 +2,7 @@ package net.minecraft.src;
 
 import java.util.List;
 
-public class TextureStitched implements Icon {
+public class TextureAtlasSprite implements Icon {
     public int getWidth() {
         return 0;
     }
@@ -47,7 +47,7 @@ public class TextureStitched implements Icon {
         return 0;
     }
 
-    public TextureStitched(String name) {
+    public TextureAtlasSprite(String name) {
     }
 
     public void init(int tilesheetWidth, int tilesheetHeight, int x0, int y0, boolean flipped) {
@@ -64,6 +64,6 @@ public class TextureStitched implements Icon {
     public void updateAnimation() {
     }
 
-    public void copy(TextureStitched stitched) {
+    public void copy(TextureAtlasSprite stitched) {
     }
 }

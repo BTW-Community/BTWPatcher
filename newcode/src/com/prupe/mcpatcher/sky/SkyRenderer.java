@@ -1,7 +1,7 @@
 package com.prupe.mcpatcher.sky;
 
 import com.prupe.mcpatcher.*;
-import net.minecraft.src.ResourceAddress;
+import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.Tessellator;
 import net.minecraft.src.World;
 import org.lwjgl.opengl.GL11;
@@ -67,7 +67,7 @@ public class SkyRenderer {
         }
     }
 
-    public static ResourceAddress setupCelestialObject(ResourceAddress defaultTexture) {
+    public static ResourceLocation setupCelestialObject(ResourceLocation defaultTexture) {
         if (active) {
             Layer.clearBlendingMethod();
             Layer layer = currentWorld.getCelestialObject(defaultTexture);
@@ -91,8 +91,8 @@ public class SkyRenderer {
     private static class WorldEntry {
         private final int worldType;
         private final List<Layer> skies = new ArrayList<Layer>();
-        private final Map<ResourceAddress, Layer> objects = new HashMap<ResourceAddress, Layer>();
-        private final Set<ResourceAddress> textures = new HashSet<ResourceAddress>();
+        private final Map<ResourceLocation, Layer> objects = new HashMap<ResourceLocation, Layer>();
+        private final Set<ResourceLocation> textures = new HashSet<ResourceLocation>();
 
         WorldEntry(int worldType) {
             this.worldType = worldType;
@@ -104,7 +104,7 @@ public class SkyRenderer {
         private void loadSkies() {
             for (int i = -1; ; i++) {
                 String path = "sky/world" + worldType + "/sky" + (i < 0 ? "" : String.valueOf(i)) + ".properties";
-                ResourceAddress resource = TexturePackAPI.newMCPatcherResourceAddress(path);
+                ResourceLocation resource = TexturePackAPI.newMCPatcherResourceLocation(path);
                 Layer layer = Layer.create(resource);
                 if (layer == null) {
                     if (i > 0) {
@@ -119,8 +119,8 @@ public class SkyRenderer {
         }
 
         private void loadCelestialObject(String objName) {
-            ResourceAddress textureName = new ResourceAddress("textures/environment/" + objName + ".png");
-            ResourceAddress resource = TexturePackAPI.newMCPatcherResourceAddress("sky/world0/" + objName + ".properties");
+            ResourceLocation textureName = new ResourceLocation("textures/environment/" + objName + ".png");
+            ResourceLocation resource = TexturePackAPI.newMCPatcherResourceLocation("sky/world0/" + objName + ".properties");
             Properties properties = TexturePackAPI.getProperties(resource);
             if (properties != null) {
                 properties.setProperty("fade", "false");
@@ -138,16 +138,16 @@ public class SkyRenderer {
         }
 
         void renderAll(Tessellator tessellator) {
-            Set<ResourceAddress> texturesNeeded = new HashSet<ResourceAddress>();
+            Set<ResourceLocation> texturesNeeded = new HashSet<ResourceLocation>();
             for (Layer layer : skies) {
                 if (layer.prepare()) {
                     texturesNeeded.add(layer.texture);
                 }
             }
-            Set<ResourceAddress> texturesToUnload = new HashSet<ResourceAddress>();
+            Set<ResourceLocation> texturesToUnload = new HashSet<ResourceLocation>();
             texturesToUnload.addAll(textures);
             texturesToUnload.removeAll(texturesNeeded);
-            for (ResourceAddress resource : texturesToUnload) {
+            for (ResourceLocation resource : texturesToUnload) {
                 TexturePackAPI.unloadTexture(resource);
             }
             for (Layer layer : skies) {
@@ -158,7 +158,7 @@ public class SkyRenderer {
             }
         }
 
-        Layer getCelestialObject(ResourceAddress defaultTexture) {
+        Layer getCelestialObject(ResourceLocation defaultTexture) {
             return objects.get(defaultTexture);
         }
 
@@ -176,9 +176,9 @@ public class SkyRenderer {
 
         private static final double SKY_DISTANCE = 100.0;
 
-        private final ResourceAddress propertiesName;
+        private final ResourceLocation propertiesName;
         private final Properties properties;
-        private ResourceAddress texture;
+        private ResourceLocation texture;
         private boolean fade;
         private boolean rotate;
         private float[] axis;
@@ -193,7 +193,7 @@ public class SkyRenderer {
 
         float brightness;
 
-        static Layer create(ResourceAddress resource) {
+        static Layer create(ResourceLocation resource) {
             Properties properties = TexturePackAPI.getProperties(resource);
             if (properties == null) {
                 return null;
@@ -202,7 +202,7 @@ public class SkyRenderer {
             }
         }
 
-        Layer(ResourceAddress propertiesName, Properties properties) {
+        Layer(ResourceLocation propertiesName, Properties properties) {
             this.propertiesName = propertiesName;
             this.properties = properties;
             valid = true;
@@ -210,7 +210,7 @@ public class SkyRenderer {
         }
 
         private boolean readTexture() {
-            texture = TexturePackAPI.parseResourceAddress(propertiesName, properties.getProperty("source", propertiesName.getPath().replaceFirst("\\.properties$", ".png")));
+            texture = TexturePackAPI.parseResourceLocation(propertiesName, properties.getProperty("source", propertiesName.getPath().replaceFirst("\\.properties$", ".png")));
             if (TexturePackAPI.hasResource(texture)) {
                 return true;
             } else {

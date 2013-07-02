@@ -2,7 +2,7 @@ package com.prupe.mcpatcher;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
-import net.minecraft.src.ResourceBundle;
+import net.minecraft.src.FallbackResourceManager;
 import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
@@ -23,14 +23,14 @@ public class TexturePackAPI {
 
     public static TexturePackAPI instance = new TexturePackAPI();
 
-    public static List<IResourcePack> getResourcePacks(String namespace) {
-        List<IResourcePack> list = new ArrayList<IResourcePack>();
-        IResourceBundle resourceBundle = getResourceBundle();
-        if (resourceBundle instanceof TextureResourceBundle) {
-            for (Map.Entry<String, ResourceBundle> entry : ((TextureResourceBundle) resourceBundle).namespaceMap.entrySet()) {
+    public static List<ResourcePack> getResourcePacks(String namespace) {
+        List<ResourcePack> list = new ArrayList<ResourcePack>();
+        ResourceManager resourceManager = getResourceManager();
+        if (resourceManager instanceof SimpleReloadableResourceManager) {
+            for (Map.Entry<String, FallbackResourceManager> entry : ((SimpleReloadableResourceManager) resourceManager).namespaceMap.entrySet()) {
                 if (namespace == null || namespace.equals(entry.getKey())) {
-                    ResourceBundle bundle = entry.getValue();
-                    list.addAll(bundle.resourcePacks);
+                    FallbackResourceManager resourceManager1 = entry.getValue();
+                    list.addAll(resourceManager1.resourcePacks);
                 }
             }
         }
@@ -38,19 +38,19 @@ public class TexturePackAPI {
         return list;
     }
 
-    public static IResourceBundle getResourceBundle() {
-        return Minecraft.getInstance().getResourceBundle();
+    public static ResourceManager getResourceManager() {
+        return Minecraft.getInstance().getResourceManager();
     }
 
     public static boolean isDefaultTexturePack() {
         return getResourcePacks(DEFAULT_NAMESPACE).size() <= 1;
     }
 
-    public static InputStream getInputStream(ResourceAddress resource) {
+    public static InputStream getInputStream(ResourceLocation resource) {
         return resource == null ? null : instance.getInputStreamImpl(resource);
     }
 
-    public static boolean hasResource(ResourceAddress resource) {
+    public static boolean hasResource(ResourceLocation resource) {
         if (resource == null) {
             return false;
         } else if (resource.getPath().endsWith(".png")) {
@@ -64,11 +64,11 @@ public class TexturePackAPI {
         }
     }
 
-    public static BufferedImage getImage(ResourceAddress resource) {
+    public static BufferedImage getImage(ResourceLocation resource) {
         return resource == null ? null : instance.getImageImpl(resource);
     }
 
-    public static Properties getProperties(ResourceAddress resource) {
+    public static Properties getProperties(ResourceLocation resource) {
         Properties properties = new Properties();
         if (getProperties(resource, properties)) {
             return properties;
@@ -77,15 +77,15 @@ public class TexturePackAPI {
         }
     }
 
-    public static boolean getProperties(ResourceAddress resource, Properties properties) {
+    public static boolean getProperties(ResourceLocation resource, Properties properties) {
         return resource != null && instance.getPropertiesImpl(resource, properties);
     }
 
-    public static ResourceAddress transformResourceAddress(ResourceAddress resource, String oldExt, String newExt) {
-        return new ResourceAddress(resource.getNamespace(), resource.getPath().replaceFirst(Pattern.quote(oldExt) + "$", newExt));
+    public static ResourceLocation transformResourceLocation(ResourceLocation resource, String oldExt, String newExt) {
+        return new ResourceLocation(resource.getNamespace(), resource.getPath().replaceFirst(Pattern.quote(oldExt) + "$", newExt));
     }
 
-    public static ResourceAddress parseResourceAddress(ResourceAddress baseResource, String path) {
+    public static ResourceLocation parseResourceLocation(ResourceLocation baseResource, String path) {
         if (path == null || path.equals("")) {
             return null;
         }
@@ -102,36 +102,36 @@ public class TexturePackAPI {
         // namespace:path/filename -> assets/namespace/path/filename
         int colon = path.indexOf(':');
         if (colon >= 0) {
-            return new ResourceAddress(path.substring(0, colon), path.substring(colon + 1));
+            return new ResourceLocation(path.substring(0, colon), path.substring(colon + 1));
         }
         // Relative to namespace mcpatcher dir:
         // ~/path -> assets/(namespace of base file)/mcpatcher/path
         if (path.startsWith("~/")) {
-            return new ResourceAddress(baseResource.getNamespace(), MCPATCHER_SUBDIR + path.substring(2));
+            return new ResourceLocation(baseResource.getNamespace(), MCPATCHER_SUBDIR + path.substring(2));
         }
         // Relative to properties file:
         // ./path -> (dir of base file)/path
         if (path.startsWith("./")) {
-            return new ResourceAddress(baseResource.getNamespace(), baseResource.getPath().replaceFirst("[^/]+$", "") + path.substring(2));
+            return new ResourceLocation(baseResource.getNamespace(), baseResource.getPath().replaceFirst("[^/]+$", "") + path.substring(2));
         }
         // Absolute path, w/o namespace:
         // path/filename -> assets/(namespace of base file)/path/filename
-        return new ResourceAddress(baseResource.getNamespace(), path);
+        return new ResourceLocation(baseResource.getNamespace(), path);
     }
 
-    public static ResourceAddress newMCPatcherResourceAddress(String path) {
-        return new ResourceAddress(MCPATCHER_SUBDIR + path);
+    public static ResourceLocation newMCPatcherResourceLocation(String path) {
+        return new ResourceLocation(MCPATCHER_SUBDIR + path);
     }
 
-    public static List<ResourceAddress> listResources(String directory, String suffix, boolean recursive, boolean directories, boolean sortByFilename) {
+    public static List<ResourceLocation> listResources(String directory, String suffix, boolean recursive, boolean directories, boolean sortByFilename) {
         if (suffix == null) {
             suffix = "";
         }
-        List<ResourceAddress> resources = new ArrayList<ResourceAddress>();
+        List<ResourceLocation> resources = new ArrayList<ResourceLocation>();
         findResources(DEFAULT_NAMESPACE, directory, suffix, recursive, directories, resources);
         if (sortByFilename) {
-            Collections.sort(resources, new Comparator<ResourceAddress>() {
-                public int compare(ResourceAddress o1, ResourceAddress o2) {
+            Collections.sort(resources, new Comparator<ResourceLocation>() {
+                public int compare(ResourceLocation o1, ResourceLocation o2) {
                     String f1 = o1.getPath().replaceAll(".*/", "").replaceFirst("\\.properties", "");
                     String f2 = o2.getPath().replaceAll(".*/", "").replaceFirst("\\.properties", "");
                     int result = f1.compareTo(f2);
@@ -142,8 +142,8 @@ public class TexturePackAPI {
                 }
             });
         } else {
-            Collections.sort(resources, new Comparator<ResourceAddress>() {
-                public int compare(ResourceAddress o1, ResourceAddress o2) {
+            Collections.sort(resources, new Comparator<ResourceLocation>() {
+                public int compare(ResourceLocation o1, ResourceLocation o2) {
                     return o1.getPath().compareTo(o2.getPath());
                 }
             });
@@ -151,23 +151,23 @@ public class TexturePackAPI {
         return resources;
     }
 
-    private static void findResources(String namespace, String directory, String suffix, boolean recursive, boolean directories, Collection<ResourceAddress> resources) {
-        for (IResourcePack resourcePack : getResourcePacks(namespace)) {
-            if (resourcePack instanceof ResourcePackZip) {
-                ZipFile zipFile = ((ResourcePackZip) resourcePack).zipFile;
+    private static void findResources(String namespace, String directory, String suffix, boolean recursive, boolean directories, Collection<ResourceLocation> resources) {
+        for (ResourcePack resourcePack : getResourcePacks(namespace)) {
+            if (resourcePack instanceof FileResourcePack) {
+                ZipFile zipFile = ((FileResourcePack) resourcePack).zipFile;
                 if (zipFile != null) {
                     findResources(zipFile, namespace, "assets/" + namespace, directory, suffix, recursive, directories, resources);
                 }
-            } else if (resourcePack instanceof ResourcePackDefault) {
+            } else if (resourcePack instanceof DefaultResourcePack) {
                 if (!DEFAULT_NAMESPACE.equals(namespace)) {
                     continue;
                 }
-                File base = ((ResourcePackDefault) resourcePack).file;
+                File base = ((DefaultResourcePack) resourcePack).file;
                 if (base != null && base.isDirectory()) {
                     findResources(base, namespace, directory, suffix, recursive, directories, resources);
                 }
-            } else if (resourcePack instanceof ResourcePackBase) {
-                File base = ((ResourcePackBase) resourcePack).file;
+            } else if (resourcePack instanceof AbstractResourcePack) {
+                File base = ((AbstractResourcePack) resourcePack).file;
                 if (base == null || !base.isDirectory()) {
                     continue;
                 }
@@ -179,7 +179,7 @@ public class TexturePackAPI {
         }
     }
 
-    private static void findResources(ZipFile zipFile, String namespace, String root, String directory, String suffix, boolean recursive, boolean directories, Collection<ResourceAddress> resources) {
+    private static void findResources(ZipFile zipFile, String namespace, String root, String directory, String suffix, boolean recursive, boolean directories, Collection<ResourceLocation> resources) {
         String base = root + "/" + directory;
         for (ZipEntry entry : Collections.list(zipFile.entries())) {
             if (entry.isDirectory() != directories) {
@@ -191,20 +191,20 @@ public class TexturePackAPI {
             }
             if (directory.equals("")) {
                 if (recursive || !name.contains("/")) {
-                    resources.add(new ResourceAddress(namespace, name));
+                    resources.add(new ResourceLocation(namespace, name));
                 }
             } else {
                 String subpath = name.substring(base.length());
                 if (subpath.equals("") || subpath.startsWith("/")) {
                     if (recursive || subpath.equals("") || !subpath.substring(1).contains("/")) {
-                        resources.add(new ResourceAddress(namespace, name.substring(root.length() + 1)));
+                        resources.add(new ResourceLocation(namespace, name.substring(root.length() + 1)));
                     }
                 }
             }
         }
     }
 
-    private static void findResources(File base, String namespace, String directory, String suffix, boolean recursive, boolean directories, Collection<ResourceAddress> resources) {
+    private static void findResources(File base, String namespace, String directory, String suffix, boolean recursive, boolean directories, Collection<ResourceLocation> resources) {
         File subdirectory = new File(base, directory);
         String[] list = subdirectory.list();
         if (list != null) {
@@ -214,31 +214,31 @@ public class TexturePackAPI {
                 String resourceName = pathComponent + s;
                 if (entry.isDirectory()) {
                     if (directories && s.endsWith(suffix)) {
-                        resources.add(new ResourceAddress(namespace, resourceName));
+                        resources.add(new ResourceLocation(namespace, resourceName));
                     }
                     if (recursive) {
                         findResources(base, namespace, pathComponent + s, suffix, recursive, directories, resources);
                     }
                 } else if (s.endsWith(suffix) && !directories) {
-                    resources.add(new ResourceAddress(namespace, resourceName));
+                    resources.add(new ResourceLocation(namespace, resourceName));
                 }
             }
         }
     }
 
-    public static int getTextureIfLoaded(ResourceAddress resource) {
+    public static int getTextureIfLoaded(ResourceLocation resource) {
         if (resource == null) {
             return -1;
         }
-        ITexture texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(resource);
-        return texture instanceof TextureBase ? ((TextureBase) texture).glTextureId : -1;
+        TextureObject texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(resource);
+        return texture instanceof AbstractTexture ? ((AbstractTexture) texture).glTextureId : -1;
     }
 
-    public static boolean isTextureLoaded(ResourceAddress resource) {
+    public static boolean isTextureLoaded(ResourceLocation resource) {
         return getTextureIfLoaded(resource) >= 0;
     }
 
-    public static void bindTexture(ResourceAddress resource) {
+    public static void bindTexture(ResourceLocation resource) {
         MCPatcherUtils.getMinecraft().getTextureManager().bindTexture(resource);
     }
 
@@ -248,12 +248,12 @@ public class TexturePackAPI {
         }
     }
 
-    public static void unloadTexture(ResourceAddress resource) {
+    public static void unloadTexture(ResourceLocation resource) {
         TextureManager textureManager = MCPatcherUtils.getMinecraft().getTextureManager();
-        ITexture texture = textureManager.getTexture(resource);
-        if (texture != null && !(texture instanceof TextureMap) && !(texture instanceof TextureWithData)) {
-            if (texture instanceof TextureBase) {
-                ((TextureBase) texture).unloadGLTexture();
+        TextureObject texture = textureManager.getTexture(resource);
+        if (texture != null && !(texture instanceof TextureAtlas) && !(texture instanceof DynamicTexture)) {
+            if (texture instanceof AbstractTexture) {
+                ((AbstractTexture) texture).unloadGLTexture();
             }
             logger.finer("unloading texture %s", resource);
             textureManager.texturesByName.remove(resource);
@@ -266,15 +266,15 @@ public class TexturePackAPI {
         }
     }
 
-    protected InputStream getInputStreamImpl(ResourceAddress resource) {
+    protected InputStream getInputStreamImpl(ResourceLocation resource) {
         try {
-            return Minecraft.getInstance().getResourceBundle().getResource(resource).getInputStream();
+            return Minecraft.getInstance().getResourceManager().getResource(resource).getInputStream();
         } catch (IOException e) {
             return null;
         }
     }
 
-    protected BufferedImage getImageImpl(ResourceAddress resource) {
+    protected BufferedImage getImageImpl(ResourceLocation resource) {
         InputStream input = getInputStream(resource);
         BufferedImage image = null;
         if (input != null) {
@@ -290,7 +290,7 @@ public class TexturePackAPI {
         return image;
     }
 
-    protected boolean getPropertiesImpl(ResourceAddress resource, Properties properties) {
+    protected boolean getPropertiesImpl(ResourceLocation resource, Properties properties) {
         if (properties != null) {
             InputStream input = getInputStream(resource);
             try {

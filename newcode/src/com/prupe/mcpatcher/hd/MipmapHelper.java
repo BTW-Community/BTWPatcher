@@ -4,7 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
-import net.minecraft.src.ResourceAddress;
+import net.minecraft.src.ResourceLocation;
 import org.lwjgl.opengl.*;
 import org.lwjgl.util.glu.GLU;
 
@@ -27,7 +27,7 @@ import java.util.Properties;
 public class MipmapHelper {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
 
-    private static final ResourceAddress MIPMAP_PROPERTIES = TexturePackAPI.newMCPatcherResourceAddress("mipmap.properties");
+    private static final ResourceLocation MIPMAP_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("mipmap.properties");
 
     private static final int TEX_FORMAT = GL12.GL_BGRA;
     private static final int TEX_DATA_TYPE = GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
@@ -113,7 +113,7 @@ public class MipmapHelper {
         copySubTexture(rgb, width, height, x, y, textureName);
     }
 
-    public static int setupTexture(int glTexture, BufferedImage image, boolean blur, boolean clamp, ResourceAddress textureName) {
+    public static int setupTexture(int glTexture, BufferedImage image, boolean blur, boolean clamp, ResourceLocation textureName) {
         int width = image.getWidth();
         int height = image.getHeight();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTexture);
@@ -156,7 +156,7 @@ public class MipmapHelper {
         }
     }
 
-    static BufferedImage fixTransparency(ResourceAddress name, BufferedImage image) {
+    static BufferedImage fixTransparency(ResourceLocation name, BufferedImage image) {
         if (image == null) {
             return image;
         }

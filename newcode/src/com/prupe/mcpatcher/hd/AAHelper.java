@@ -3,10 +3,10 @@ package com.prupe.mcpatcher.hd;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import net.minecraft.src.IResource;
-import net.minecraft.src.ResourceAddress;
-import net.minecraft.src.StreamedResource;
-import net.minecraft.src.TextureStitched;
+import net.minecraft.src.Resource;
+import net.minecraft.src.ResourceLocation;
+import net.minecraft.src.SimpleResource;
+import net.minecraft.src.TextureAtlasSprite;
 import org.lwjgl.opengl.PixelFormat;
 
 import java.awt.image.BufferedImage;
@@ -21,8 +21,8 @@ public class AAHelper {
     private static Field addressField;
 
     static {
-        for (Field f : StreamedResource.class.getDeclaredFields()) {
-            if (ResourceAddress.class.isAssignableFrom(f.getType())) {
+        for (Field f : SimpleResource.class.getDeclaredFields()) {
+            if (ResourceLocation.class.isAssignableFrom(f.getType())) {
                 f.setAccessible(true);
                 addressField = f;
                 break;
@@ -39,13 +39,13 @@ public class AAHelper {
         }
     }
 
-    public static BufferedImage addBorder(TextureStitched stitched, IResource resource, BufferedImage input) {
-        if (input == null || !(resource instanceof StreamedResource) || addressField == null) {
+    public static BufferedImage addBorder(TextureAtlasSprite stitched, Resource resource, BufferedImage input) {
+        if (input == null || !(resource instanceof SimpleResource) || addressField == null) {
             return input;
         }
-        ResourceAddress name;
+        ResourceLocation name;
         try {
-            name = (ResourceAddress) addressField.get(resource);
+            name = (ResourceLocation) addressField.get(resource);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             addressField = null;

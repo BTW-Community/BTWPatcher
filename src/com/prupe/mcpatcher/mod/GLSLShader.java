@@ -24,9 +24,9 @@ public class GLSLShader extends Mod {
         addClassMod(new GLAllocationMod());
         addClassMod(new RenderEngineMod());
         addClassMod(new RenderGlobalMod());
-        addClassMod(new RenderLivingMod());
+        addClassMod(new RenderLivingEntityMod());
         addClassMod(new EntityRendererMod());
-        addClassMod(new EntityLivingMod());
+        addClassMod(new EntityLivingBaseMod());
         addClassMod(new BlockMod());
         addClassMod(new BaseMod.IconMod(this));
         addClassMod(new GameSettingsMod());
@@ -75,7 +75,7 @@ public class GLSLShader extends Mod {
             addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "renderEngine", "LRenderEngine;")));
             addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "gameSettings", "LGameSettings;")));
             addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "entityRenderer", "LEntityRenderer;")));
-            addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "renderViewEntity", "LEntityLiving;")));
+            addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "renderViewEntity", "LEntityLivingBase;")));
 
             addMemberMapper(new FieldMapper(
                 new FieldRef(getDeobfClass(), "displayWidth", "I"),
@@ -167,7 +167,7 @@ public class GLSLShader extends Mod {
                 }
             }.setMethod(renderSky));
 
-            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "sortAndRender", "(LEntityLiving;ID)I")));
+            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "sortAndRender", "(LEntityLivingBase;ID)I")));
             addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "renderAllRenderLists", "(ID)V")));
             addMemberMapper(new FieldMapper(worldObj));
 
@@ -230,8 +230,8 @@ public class GLSLShader extends Mod {
         }
     }
 
-    private class RenderLivingMod extends ClassMod {
-        RenderLivingMod() {
+    private class RenderLivingEntityMod extends ClassMod {
+        RenderLivingEntityMod() {
             addClassSignature(new ConstSignature("deadmau5"));
 
             addClassSignature(new BytecodeSignature() {
@@ -449,14 +449,14 @@ public class GLSLShader extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(INVOKEVIRTUAL, new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLiving;ID)I"))
+                        reference(INVOKEVIRTUAL, new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLivingBase;ID)I"))
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SHADERS_CLASS, "sortAndRenderWrapper", "(LRenderGlobal;LEntityLiving;ID)I"))
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SHADERS_CLASS, "sortAndRenderWrapper", "(LRenderGlobal;LEntityLivingBase;ID)I"))
                     );
                 }
             }.targetMethod(renderWorld));
@@ -581,8 +581,8 @@ public class GLSLShader extends Mod {
         }
     }
 
-    private class EntityLivingMod extends ClassMod {
-        EntityLivingMod() {
+    private class EntityLivingBaseMod extends ClassMod {
+        EntityLivingBaseMod() {
             setParentClass("Entity");
 
             addClassSignature(new ConstSignature("/mob/char.png"));

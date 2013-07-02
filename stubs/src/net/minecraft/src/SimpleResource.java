@@ -2,7 +2,7 @@ package net.minecraft.src;
 
 import java.io.InputStream;
 
-public class StreamedResource implements IResource {
+public class SimpleResource implements Resource {
     public InputStream getInputStream() {
         return null;
     }
@@ -11,7 +11,7 @@ public class StreamedResource implements IResource {
         return false;
     }
 
-    public IMCMeta getMCMeta(String var1) {
+    public MetadataSection getMCMeta(String var1) {
         return null;
     }
 }

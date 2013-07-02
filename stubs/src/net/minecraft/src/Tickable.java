@@ -1,5 +1,5 @@
 package net.minecraft.src;
 
-public interface IAnimatedTexture {
+public interface Tickable {
     void updateAnimations();
 }

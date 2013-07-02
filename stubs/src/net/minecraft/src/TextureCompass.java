@@ -1,6 +1,6 @@
 package net.minecraft.src;
 
-public class TextureCompass extends TextureStitched {
+public class TextureCompass extends TextureAtlasSprite {
     public double currentAngle;
     public double angleDelta;
 

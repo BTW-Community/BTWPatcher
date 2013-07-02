@@ -29,7 +29,7 @@ public class ConnectedTextures extends Mod {
         addClassMod(new BaseMod.IBlockAccessMod(this));
         addClassMod(new BaseMod.TessellatorMod(this));
         addClassMod(new BaseMod.IconMod(this));
-        addClassMod(new BaseMod.ResourceAddressMod(this));
+        addClassMod(new BaseMod.ResourceLocationMod(this));
         addClassMod(new BlockMod());
         addClassMod(new RenderBlocksMod());
         addClassMod(new WorldRendererMod());

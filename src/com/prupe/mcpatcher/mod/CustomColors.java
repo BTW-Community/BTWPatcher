@@ -104,7 +104,7 @@ public class CustomColors extends Mod {
         addClassMod(new EntityPortalFXMod());
         addClassMod(new EntityAuraFXMod());
 
-        addClassMod(new BaseMod.EntityLivingMod(this));
+        addClassMod(new BaseMod.EntityLivingBaseMod(this));
         addClassMod(new EntityRendererMod());
 
         addClassMod(new BlockLilyPadMod());
@@ -719,7 +719,7 @@ public class CustomColors extends Mod {
     private class ItemRendererMod extends ClassMod {
         ItemRendererMod() {
             final FieldRef itemID = new FieldRef("ItemStack", "itemID", "I");
-            final MethodRef renderItem = new MethodRef(getDeobfClass(), "renderItem", "(LEntityLiving;LItemStack;I)V");
+            final MethodRef renderItem = new MethodRef(getDeobfClass(), "renderItem", "(LEntityLivingBase;LItemStack;I)V");
             final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
 
             addClassSignature(new ConstSignature("textures/misc/enchanted_item_glint.png"));
@@ -2161,14 +2161,14 @@ public class CustomColors extends Mod {
             final FieldRef fogColorGreen = new FieldRef(getDeobfClass(), "fogColorGreen", "F");
             final FieldRef fogColorBlue = new FieldRef(getDeobfClass(), "fogColorBlue", "F");
             final FieldRef lightmapColors = new FieldRef(getDeobfClass(), "lightmapColors", "[I");
-            final FieldRef lightmapTexture = new FieldRef(getDeobfClass(), "lightmapTexture", "LTextureWithData;");
+            final FieldRef lightmapTexture = new FieldRef(getDeobfClass(), "lightmapTexture", "LDynamicTexture;");
             final FieldRef needLightmapUpdate = new FieldRef(getDeobfClass(), "needLightmapUpdate", "Z");
             final FieldRef thePlayer = new FieldRef("Minecraft", "thePlayer", "LEntityClientPlayerMP;");
             final FieldRef nightVision = new FieldRef("Potion", "nightVision", "LPotion;");
             final MethodRef isPotionActive = new MethodRef("EntityClientPlayerMP", "isPotionActive", "(LPotion;)Z");
             final MethodRef getNightVisionStrength1 = new MethodRef(getDeobfClass(), "getNightVisionStrength1", "(LEntityPlayer;F)F");
             final MethodRef getNightVisionStrength = new MethodRef(getDeobfClass(), "getNightVisionStrength", "(F)F");
-            final MethodRef reloadTexture = new MethodRef("TextureWithData", "reload", "()V");
+            final MethodRef reloadTexture = new MethodRef("DynamicTexture", "reload", "()V");
 
             addClassSignature(new ConstSignature("ambient.weather.rain"));
 
@@ -3201,7 +3201,7 @@ public class CustomColors extends Mod {
 
     private class RenderGlobalMod extends ClassMod {
         RenderGlobalMod() {
-            final FieldRef clouds = new FieldRef(getDeobfClass(), "clouds", "LResourceAddress;");
+            final FieldRef clouds = new FieldRef(getDeobfClass(), "clouds", "LResourceLocation;");
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final FieldRef gameSettings = new FieldRef("Minecraft", "gameSettings", "LGameSettings;");
             final FieldRef fancyGraphics = new FieldRef("GameSettings", "fancyGraphics", "Z");
@@ -3209,7 +3209,7 @@ public class CustomColors extends Mod {
             final MethodRef renderSky = new MethodRef(getDeobfClass(), "renderSky", "(F)V");
             final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
 
-            addClassSignature(new BaseMod.ResourceAddressSignature(this, clouds, "textures/environment/clouds.png"));
+            addClassSignature(new BaseMod.ResourceLocationSignature(this, clouds, "textures/environment/clouds.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -3600,7 +3600,7 @@ public class CustomColors extends Mod {
         RenderWolfMod() {
             final MethodRef glColor3f = new MethodRef(MCPatcherUtils.GL11_CLASS, "glColor3f", "(FFF)V");
 
-            setParentClass("RenderLiving");
+            setParentClass("RenderLivingEntity");
 
             addClassSignature(new ConstSignature("textures/entity/wolf/wolf_collar.png"));
             addClassSignature(new ConstSignature(glColor3f));
@@ -3783,11 +3783,11 @@ public class CustomColors extends Mod {
 
     private class TileEntitySignRendererMod extends ClassMod {
         TileEntitySignRendererMod() {
-            final FieldRef sign = new FieldRef(getDeobfClass(), "sign", "LResourceAddress;");
+            final FieldRef sign = new FieldRef(getDeobfClass(), "sign", "LResourceLocation;");
             final MethodRef glDepthMask = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthMask", "(Z)V");
 
             addClassSignature(new ConstSignature(glDepthMask));
-            addClassSignature(new BaseMod.ResourceAddressSignature(this, sign, "textures/entity/sign.png"));
+            addClassSignature(new BaseMod.ResourceLocationSignature(this, sign, "textures/entity/sign.png"));
 
             addPatch(new BytecodePatch() {
                 {

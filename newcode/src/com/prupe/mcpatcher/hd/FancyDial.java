@@ -20,7 +20,7 @@ import java.util.*;
 public class FancyDial {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ANIMATIONS, "Animation");
 
-    private static final ResourceAddress ITEMS_PNG = new ResourceAddress("textures/atlas/items.png");
+    private static final ResourceLocation ITEMS_PNG = new ResourceLocation("textures/atlas/items.png");
     private static final double ANGLE_UNSET = Double.MAX_VALUE;
 
     private static final boolean fboSupported = GLContext.getCapabilities().GL_EXT_framebuffer_object;
@@ -36,10 +36,10 @@ public class FancyDial {
 
     private static final Field subTexturesField;
 
-    private static final Map<TextureStitched, ResourceAddress> setupInfo = new WeakHashMap<TextureStitched, ResourceAddress>();
-    private static final Map<TextureStitched, FancyDial> instances = new WeakHashMap<TextureStitched, FancyDial>();
+    private static final Map<TextureAtlasSprite, ResourceLocation> setupInfo = new WeakHashMap<TextureAtlasSprite, ResourceLocation>();
+    private static final Map<TextureAtlasSprite, FancyDial> instances = new WeakHashMap<TextureAtlasSprite, FancyDial>();
 
-    private final TextureStitched icon;
+    private final TextureAtlasSprite icon;
     private final String name;
     private final int x0;
     private final int y0;
@@ -77,7 +77,7 @@ public class FancyDial {
 
         Field field = null;
         try {
-            for (Field f : TextureStitched.class.getDeclaredFields()) {
+            for (Field f : TextureAtlasSprite.class.getDeclaredFields()) {
                 if (List.class.isAssignableFrom(f.getType())) {
                     f.setAccessible(true);
                     field = f;
@@ -94,7 +94,7 @@ public class FancyDial {
         GL11.glEndList();
     }
 
-    public static void setup(TextureStitched icon) {
+    public static void setup(TextureAtlasSprite icon) {
         if (!fboSupported) {
             return;
         }
@@ -111,14 +111,14 @@ public class FancyDial {
             logger.warning("ignoring custom animation for %s not compass or clock", icon.getIconName());
             return;
         }
-        ResourceAddress resource = TexturePackAPI.newMCPatcherResourceAddress("dial/" + name + ".properties");
+        ResourceLocation resource = TexturePackAPI.newMCPatcherResourceLocation("dial/" + name + ".properties");
         if (TexturePackAPI.hasResource(resource)) {
             logger.fine("found custom %s (%s)", name, resource);
             setupInfo.put(icon, resource);
         }
     }
 
-    public static boolean update(TextureStitched icon) {
+    public static boolean update(TextureAtlasSprite icon) {
         if (!initialized) {
             logger.finer("deferring %s update until initialization finishes", icon.getIconName());
             return false;
@@ -139,9 +139,9 @@ public class FancyDial {
             return;
         }
         if (!setupInfo.isEmpty()) {
-            List<TextureStitched> keys = new ArrayList<TextureStitched>();
+            List<TextureAtlasSprite> keys = new ArrayList<TextureAtlasSprite>();
             keys.addAll(setupInfo.keySet());
-            for (TextureStitched icon : keys) {
+            for (TextureAtlasSprite icon : keys) {
                 getInstance(icon);
             }
         }
@@ -176,8 +176,8 @@ public class FancyDial {
         initialized = true;
     }
 
-    private static FancyDial getInstance(TextureStitched icon) {
-        ResourceAddress resource = setupInfo.get(icon);
+    private static FancyDial getInstance(TextureAtlasSprite icon) {
+        ResourceLocation resource = setupInfo.get(icon);
         Properties properties = TexturePackAPI.getProperties(resource);
         setupInfo.remove(icon);
         if (properties == null) {
@@ -196,7 +196,7 @@ public class FancyDial {
         return null;
     }
 
-    private FancyDial(TextureStitched icon, ResourceAddress resource, Properties properties) {
+    private FancyDial(TextureAtlasSprite icon, ResourceLocation resource, Properties properties) {
         this.icon = icon;
         name = icon.getIconName();
         x0 = icon.getX0();
@@ -215,7 +215,7 @@ public class FancyDial {
         if (useScratchTexture) {
             BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             scratchTexture = GL11.glGenTextures();
-            MipmapHelper.setupTexture(scratchTexture, image, false, false, TexturePackAPI.transformResourceAddress(resource, ".properties", "_scratch"));
+            MipmapHelper.setupTexture(scratchTexture, image, false, false, TexturePackAPI.transformResourceLocation(resource, ".properties", "_scratch"));
             targetTexture = scratchTexture;
             scratchTextureBuffer = ByteBuffer.allocateDirect(4 * width * height);
             logger.fine("rendering %s to %dx%d scratch texture %d", name, width, height, scratchTexture);
@@ -493,7 +493,7 @@ public class FancyDial {
     }
 
     private static boolean hasAnimation(Icon icon) {
-        if (icon instanceof TextureStitched && subTexturesField != null) {
+        if (icon instanceof TextureAtlasSprite && subTexturesField != null) {
             try {
                 List list = (List) subTexturesField.get(icon);
                 return list != null && list.size() > 1;
@@ -514,12 +514,12 @@ public class FancyDial {
         }
     }
 
-    Layer newLayer(ResourceAddress resource, Properties properties, String suffix) {
+    Layer newLayer(ResourceLocation resource, Properties properties, String suffix) {
         String textureName = MCPatcherUtils.getStringProperty(properties, "source" + suffix, "");
         if (textureName.isEmpty()) {
             return null;
         }
-        ResourceAddress textureResource = TexturePackAPI.parseResourceAddress(resource, textureName);
+        ResourceLocation textureResource = TexturePackAPI.parseResourceLocation(resource, textureName);
         if (textureResource == null) {
             return null;
         }
@@ -544,7 +544,7 @@ public class FancyDial {
     }
 
     private class Layer {
-        final ResourceAddress textureName;
+        final ResourceLocation textureName;
         final float scaleX;
         final float scaleY;
         final float offsetX;
@@ -554,7 +554,7 @@ public class FancyDial {
         final BlendMethod blendMethod;
         final boolean debug;
 
-        Layer(ResourceAddress textureName, float scaleX, float scaleY, float offsetX, float offsetY, float rotationMultiplier, float rotationOffset, BlendMethod blendMethod, boolean debug) {
+        Layer(ResourceLocation textureName, float scaleX, float scaleY, float offsetX, float offsetY, float rotationMultiplier, float rotationOffset, BlendMethod blendMethod, boolean debug) {
             this.textureName = textureName;
             this.scaleX = scaleX;
             this.scaleY = scaleY;

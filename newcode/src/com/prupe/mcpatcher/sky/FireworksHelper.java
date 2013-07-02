@@ -4,7 +4,7 @@ import com.prupe.mcpatcher.*;
 import net.minecraft.src.EntityFX;
 import net.minecraft.src.EntityFireworkOverlayFX;
 import net.minecraft.src.EntityFireworkSparkFX;
-import net.minecraft.src.ResourceAddress;
+import net.minecraft.src.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Properties;
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class FireworksHelper {
     private static final int LIT_LAYER = 3;
     private static final int EXTRA_LAYER = LIT_LAYER + 1;
-    private static final ResourceAddress PARTICLE_PROPERTIES = TexturePackAPI.newMCPatcherResourceAddress("particle.properties");
+    private static final ResourceLocation PARTICLE_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("particle.properties");
 
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.BETTER_SKIES);
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "brightenFireworks", true);

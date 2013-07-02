@@ -26,26 +26,26 @@ public class BaseTexturePackMod extends Mod {
 
         addClassMod(new MinecraftMod());
         addClassMod(new TextureManagerMod());
-        addClassMod(new BaseMod.TextureUtilsMod(this));
-        //addClassMod(new TexturePackListMod());
+        addClassMod(new BaseMod.TextureUtilMod(this));
+        //addClassMod(new ResourcePackRepositoryMod());
         //addClassMod(new BaseMod.ITexturePackMod(this));
-        //addClassMod(new BaseMod.ITextureMod(this));
-        addClassMod(new TextureBaseMod());
-        addClassMod(new BaseMod.TextureNamedMod(this));
+        //addClassMod(new BaseMod.TextureObjectMod(this));
+        addClassMod(new AbstractTextureMod());
+        addClassMod(new BaseMod.SimpleTextureMod(this));
         addClassMod(new BaseMod.IconMod(this));
-        addClassMod(new BaseMod.TextureMapMod(this));
-        addClassMod(new BaseMod.TextureWithDataMod(this));
-        addClassMod(new IResourcePackMod());
-        addClassMod(new ResourcePackDefaultMod());
-        addClassMod(new ResourcePackBaseMod());
-        addClassMod(new ResourcePackZipMod());
-        addClassMod(new ResourcePackFolderMod());
-        addClassMod(new IResourceBundleMod());
-        addClassMod(new ITextureResourceBundleMod());
-        addClassMod(new TextureResourceBundleMod());
-        addClassMod(new ResourceBundleMod());
-        addClassMod(new BaseMod.IResourceMod(this));
-        addClassMod(new BaseMod.ResourceAddressMod(this));
+        addClassMod(new BaseMod.TextureAtlasMod(this));
+        addClassMod(new BaseMod.DynamicTextureMod(this));
+        addClassMod(new ResourcePackMod());
+        addClassMod(new DefaultResourcePackMod());
+        addClassMod(new AbstractResourcePackMod());
+        addClassMod(new FileResourcePackMod());
+        addClassMod(new FolderResourcePackMod());
+        addClassMod(new ResourceManagerMod());
+        addClassMod(new ReloadableResourceManagerMod());
+        addClassMod(new SimpleReloadableResourceManagerMod());
+        addClassMod(new FallbackResourceManagerMod());
+        addClassMod(new BaseMod.ResourceMod(this));
+        addClassMod(new BaseMod.ResourceLocationMod(this));
 
         addClassFile(MCPatcherUtils.TEXTURE_PACK_API_CLASS);
         addClassFile(MCPatcherUtils.TEXTURE_PACK_API_CLASS + "$1");
@@ -91,9 +91,9 @@ public class BaseTexturePackMod extends Mod {
         MinecraftMod() {
             super(BaseTexturePackMod.this);
 
-            final ClassRef textureResourceBundleClass = new ClassRef("TextureResourceBundle");
+            final ClassRef textureResourceManagerClass = new ClassRef("SimpleReloadableResourceManager");
             final MethodRef getTextureManager = new MethodRef(getDeobfClass(), "getTextureManager", "()LTextureManager;");
-            final MethodRef getResourceBundle = new MethodRef(getDeobfClass(), "getResourceBundle", "()LIResourceBundle;");
+            final MethodRef getResourceManager = new MethodRef(getDeobfClass(), "getResourceManager", "()LResourceManager;");
             final MethodRef startGame = new MethodRef(getDeobfClass(), "startGame", "()V");
             final MethodRef runGameLoop = new MethodRef(getDeobfClass(), "runGameLoop", "()V");
             final MethodRef setTitle = new MethodRef("org/lwjgl/opengl/Display", "setTitle", "(Ljava/lang/String;)V");
@@ -118,7 +118,7 @@ public class BaseTexturePackMod extends Mod {
                 }
             }.setMethod(runGameLoop));
 
-            addMemberMapper(new MethodMapper(getResourceBundle));
+            addMemberMapper(new MethodMapper(getResourceManager));
             addMemberMapper(new MethodMapper(getTextureManager));
 
             addPatch(new BytecodePatch() {
@@ -130,7 +130,7 @@ public class BaseTexturePackMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(NEW, textureResourceBundleClass),
+                        reference(NEW, textureResourceManagerClass),
                         any(0, 500),
                         reference(INVOKESTATIC, glViewport)
                     );
@@ -185,9 +185,9 @@ public class BaseTexturePackMod extends Mod {
     private class TextureManagerMod extends ClassMod {
         TextureManagerMod() {
             final FieldRef texturesByName = new FieldRef(getDeobfClass(), "texturesByName", "Ljava/util/Map;");
-            final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(LResourceAddress;)V");
-            final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "(LResourceAddress;)LITexture;");
-            final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "(LIResourceBundle;)V");
+            final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(LResourceLocation;)V");
+            final MethodRef getTexture = new MethodRef(getDeobfClass(), "getTexture", "(LResourceLocation;)LTextureObject;");
+            final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "(LResourceManager;)V");
 
             addClassSignature(new ConstSignature("dynamic/%s_%d"));
 
@@ -200,8 +200,8 @@ public class BaseTexturePackMod extends Mod {
         }
     }
 
-    private class TextureBaseMod extends BaseMod.TextureBaseMod {
-        TextureBaseMod() {
+    private class AbstractTextureMod extends BaseMod.AbstractTextureMod {
+        AbstractTextureMod() {
             super(BaseTexturePackMod.this);
 
             final MethodRef unloadGLTexture = new MethodRef(getDeobfClass(), "unloadGLTexture", "()V");
@@ -247,8 +247,8 @@ public class BaseTexturePackMod extends Mod {
         }
     }
 
-    private class TexturePackListMod extends ClassMod {
-        TexturePackListMod() {
+    private class ResourcePackRepositoryMod extends ClassMod {
+        ResourcePackRepositoryMod() {
             final FieldRef selectedTexturePack = new FieldRef(getDeobfClass(), "selectedTexturePack", "LITexturePack;");
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final MethodRef getSelectedTexturePack = new MethodRef(getDeobfClass(), "getSelectedTexturePack", "()LITexturePack;");
@@ -303,17 +303,17 @@ public class BaseTexturePackMod extends Mod {
         }
     }
 
-    private class IResourcePackMod extends ClassMod {
-        IResourcePackMod() {
+    private class ResourcePackMod extends ClassMod {
+        ResourcePackMod() {
             String nsType = getMinecraftVersion().compareTo("13w25c") >= 0 ? "Set" : "List";
             boolean newMCMeta = getMinecraftVersion().compareTo("13w26a") >= 0;
             addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "getInputStream", "(LResourceAddress;)Ljava/io/InputStream;"),
-                new InterfaceMethodRef(getDeobfClass(), "hasResource", "(LResourceAddress;)Z"),
+                new InterfaceMethodRef(getDeobfClass(), "getInputStream", "(LResourceLocation;)Ljava/io/InputStream;"),
+                new InterfaceMethodRef(getDeobfClass(), "hasResource", "(LResourceLocation;)Z"),
                 new InterfaceMethodRef(getDeobfClass(), "getNamespaces", "()Ljava/util/" + nsType + ";"),
                 newMCMeta ?
-                    new InterfaceMethodRef(getDeobfClass(), "getMCMeta", "(LMCMetaParser;Ljava/lang/String;)LMCMeta;") :
-                    new InterfaceMethodRef(getDeobfClass(), "getPackInfo", "(LMCMetaParser;)LMCMetaResourcePackInfo;"),
+                    new InterfaceMethodRef(getDeobfClass(), "getMCMeta", "(LMetadataSectionSerializer;Ljava/lang/String;)LMCMeta;") :
+                    new InterfaceMethodRef(getDeobfClass(), "getPackInfo", "(LMetadataSectionSerializer;)LPackMetadataSection;"),
                 new InterfaceMethodRef(getDeobfClass(), "getPackIcon", "()Ljava/awt/image/BufferedImage;"),
                 newMCMeta ?
                     new InterfaceMethodRef(getDeobfClass(), "getName", "()Ljava/lang/String;") : null
@@ -321,9 +321,9 @@ public class BaseTexturePackMod extends Mod {
         }
     }
 
-    private class ResourcePackDefaultMod extends ClassMod {
-        ResourcePackDefaultMod() {
-            setInterfaces("IResourcePack");
+    private class DefaultResourcePackMod extends ClassMod {
+        DefaultResourcePackMod() {
+            setInterfaces("ResourcePack");
 
             final FieldRef file = new FieldRef(getDeobfClass(), "file", "Ljava/io/File;");
 
@@ -336,9 +336,9 @@ public class BaseTexturePackMod extends Mod {
         }
     }
 
-    private class ResourcePackBaseMod extends ClassMod {
-        ResourcePackBaseMod() {
-            setInterfaces("IResourcePack");
+    private class AbstractResourcePackMod extends ClassMod {
+        AbstractResourcePackMod() {
+            setInterfaces("ResourcePack");
 
             final FieldRef file = new FieldRef(getDeobfClass(), "file", "Ljava/io/File;");
 
@@ -351,9 +351,9 @@ public class BaseTexturePackMod extends Mod {
         }
     }
 
-    private class ResourcePackZipMod extends ClassMod {
-        ResourcePackZipMod() {
-            setParentClass("ResourcePackBase");
+    private class FileResourcePackMod extends ClassMod {
+        FileResourcePackMod() {
+            setParentClass("AbstractResourcePack");
 
             final FieldRef zipFile = new FieldRef(getDeobfClass(), "zipFile", "Ljava/util/zip/ZipFile;");
 
@@ -366,49 +366,49 @@ public class BaseTexturePackMod extends Mod {
         }
     }
 
-    private class ResourcePackFolderMod extends ClassMod {
-        ResourcePackFolderMod() {
-            setParentClass("ResourcePackBase");
+    private class FolderResourcePackMod extends ClassMod {
+        FolderResourcePackMod() {
+            setParentClass("AbstractResourcePack");
 
             addClassSignature(new ConstSignature("assets/"));
             addClassSignature(new ConstSignature(new ClassRef("java/io/FileInputStream")));
         }
     }
 
-    private class IResourceBundleMod extends ClassMod {
-        IResourceBundleMod() {
+    private class ResourceManagerMod extends ClassMod {
+        ResourceManagerMod() {
             boolean newMCMeta = getMinecraftVersion().compareTo("13w26a") >= 0;
             addClassSignature(new InterfaceSignature(
                 newMCMeta ?
                     new InterfaceMethodRef(getDeobfClass(), "getNamespaces", "()Ljava/util/Set;") : null,
-                new InterfaceMethodRef(getDeobfClass(), "getResource", "(LResourceAddress;)LIResource;"),
+                new InterfaceMethodRef(getDeobfClass(), "getResource", "(LResourceLocation;)LResource;"),
                 newMCMeta ?
-                    new InterfaceMethodRef(getDeobfClass(), "getMCMeta", "(LResourceAddress;)Ljava/util/List;") : null
+                    new InterfaceMethodRef(getDeobfClass(), "getMCMeta", "(LResourceLocation;)Ljava/util/List;") : null
             ).setInterfaceOnly(true));
         }
     }
 
-    private class ITextureResourceBundleMod extends ClassMod {
-        ITextureResourceBundleMod() {
-            setInterfaces("IResourceBundle");
+    private class ReloadableResourceManagerMod extends ClassMod {
+        ReloadableResourceManagerMod() {
+            setInterfaces("ResourceManager");
 
             addClassSignature(new InterfaceSignature(
                 new InterfaceMethodRef(getDeobfClass(), "method1", "(Ljava/util/List;)V"),
-                new InterfaceMethodRef(getDeobfClass(), "method2", "(LILoadableResource;)V")
+                new InterfaceMethodRef(getDeobfClass(), "method2", "(LResourceManagerReloadListener;)V")
             ).setInterfaceOnly(true));
         }
     }
 
-    private class TextureResourceBundleMod extends ClassMod {
-        TextureResourceBundleMod() {
-            setInterfaces("ITextureResourceBundle");
+    private class SimpleReloadableResourceManagerMod extends ClassMod {
+        SimpleReloadableResourceManagerMod() {
+            setInterfaces("ReloadableResourceManager");
 
             final ClassRef fnfException = new ClassRef("java/io/FileNotFoundException");
             final FieldRef namespaceMap = new FieldRef(getDeobfClass(), "namespaceMap", "Ljava/util/Map;");
             final MethodRef fnfInit = new MethodRef("java/io/FileNotFoundException", "<init>", "(Ljava/lang/String;)V");
-            final MethodRef getResource = new MethodRef(getDeobfClass(), "getResource", "(LResourceAddress;)LIResource;");
+            final MethodRef getResource = new MethodRef(getDeobfClass(), "getResource", "(LResourceLocation;)LResource;");
             final MethodRef loadResources = new MethodRef(getDeobfClass(), "loadResources", "()V");
-            final MethodRef addressToString = new MethodRef("ResourceAddress", "toString", "()Ljava/lang/String;");
+            final MethodRef addressToString = new MethodRef("ResourceLocation", "toString", "()Ljava/lang/String;");
             final InterfaceMethodRef mapClear = new InterfaceMethodRef("java/util/Map", "clear", "()V");
             final InterfaceMethodRef listIterator = new InterfaceMethodRef("java/util/List", "iterator", "()Ljava/util/Iterator;");
 
@@ -493,9 +493,9 @@ public class BaseTexturePackMod extends Mod {
         }
     }
 
-    private class ResourceBundleMod extends ClassMod {
-        ResourceBundleMod() {
-            setInterfaces("IResourceBundle");
+    private class FallbackResourceManagerMod extends ClassMod {
+        FallbackResourceManagerMod() {
+            setInterfaces("ResourceManager");
 
             final FieldRef resourcePacks = new FieldRef(getDeobfClass(), "resourcePacks", "Ljava/util/List;");
 

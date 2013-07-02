@@ -1,13 +1,13 @@
 package com.prupe.mcpatcher.mob;
 
 import com.prupe.mcpatcher.TexturePackAPI;
-import net.minecraft.src.EntityLiving;
-import net.minecraft.src.ResourceAddress;
+import net.minecraft.src.EntityLivingBase;
+import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.Tessellator;
 
 public class MobOverlay {
-    private static final ResourceAddress MOOSHROOM_OVERLAY = TexturePackAPI.newMCPatcherResourceAddress("mob/cow/mooshroom_overlay.png");
-    private static final ResourceAddress SNOWMAN_OVERLAY = TexturePackAPI.newMCPatcherResourceAddress("mob/snowman_overlay.png");
+    private static final ResourceLocation MOOSHROOM_OVERLAY = TexturePackAPI.newMCPatcherResourceLocation("mob/cow/mooshroom_overlay.png");
+    private static final ResourceLocation SNOWMAN_OVERLAY = TexturePackAPI.newMCPatcherResourceLocation("mob/snowman_overlay.png");
 
     private static final double MOO_X0 = -0.45;
     private static final double MOO_X1 = 0.45;
@@ -28,14 +28,14 @@ public class MobOverlay {
     private static boolean haveMooshroom;
     private static boolean haveSnowman;
 
-    public static ResourceAddress snowmanOverlayTexture;
+    public static ResourceLocation snowmanOverlayTexture;
 
     static void reset() {
         haveMooshroom = TexturePackAPI.hasResource(MOOSHROOM_OVERLAY);
         haveSnowman = TexturePackAPI.hasResource(SNOWMAN_OVERLAY);
     }
 
-    public static ResourceAddress setupMooshroom(EntityLiving entity, ResourceAddress defaultTexture) {
+    public static ResourceLocation setupMooshroom(EntityLivingBase entity, ResourceLocation defaultTexture) {
         overlayCounter = 0;
         if (haveMooshroom) {
             overlayActive = true;
@@ -79,7 +79,7 @@ public class MobOverlay {
         overlayActive = false;
     }
 
-    public static boolean setupSnowman(EntityLiving entity) {
+    public static boolean setupSnowman(EntityLivingBase entity) {
         if (haveSnowman) {
             snowmanOverlayTexture = MobRandomizer.randomTexture(entity, SNOWMAN_OVERLAY);
             return true;

@@ -15,7 +15,7 @@ public class TileLoader {
 
     private static final List<TileLoader> loaders = new ArrayList<TileLoader>();
 
-    private static final ResourceAddress BLANK_RESOURCE = new ResourceAddress(MCPatcherUtils.BLANK_PNG);
+    private static final ResourceLocation BLANK_RESOURCE = new ResourceLocation(MCPatcherUtils.BLANK_PNG);
 
     private static final boolean debugTextures = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "debugTextures", false);
     private static final int splitTextures = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "splitTextures", 1);
@@ -24,7 +24,7 @@ public class TileLoader {
     private static final TexturePackChangeHandler changeHandler;
     private static boolean changeHandlerCalled;
     private static boolean registerIconsCalled;
-    private static final Set<TextureMap> overflowMaps = new HashSet<TextureMap>();
+    private static final Set<TextureAtlas> overflowMaps = new HashSet<TextureAtlas>();
 
     private static final int OVERFLOW_TEXTURE_MAP_INDEX = 2;
     private static final long MAX_TILESHEET_SIZE;
@@ -34,10 +34,10 @@ public class TileLoader {
     protected final MCLogger subLogger;
 
     private int overflowIndex;
-    private TextureMap baseTextureMap;
-    private Map<String, TextureStitched> baseTexturesByName;
-    private final Set<ResourceAddress> tilesToRegister = new HashSet<ResourceAddress>();
-    private final Map<ResourceAddress, BufferedImage> tileImages = new HashMap<ResourceAddress, BufferedImage>();
+    private TextureAtlas baseTextureMap;
+    private Map<String, TextureAtlasSprite> baseTexturesByName;
+    private final Set<ResourceLocation> tilesToRegister = new HashSet<ResourceLocation>();
+    private final Map<ResourceLocation, BufferedImage> tileImages = new HashMap<ResourceLocation, BufferedImage>();
     private final Map<String, Icon> iconMap = new HashMap<String, Icon>();
 
     static {
@@ -59,7 +59,7 @@ public class TileLoader {
             public void beforeChange() {
                 changeHandlerCalled = true;
                 TessellatorUtils.clear(Tessellator.instance);
-                for (TextureMap textureMap : overflowMaps) {
+                for (TextureAtlas textureMap : overflowMaps) {
                     try {
                         textureMap.unloadGLTexture();
                     } catch (Throwable e) {
@@ -80,11 +80,11 @@ public class TileLoader {
                             if (loader.allowOverflow && splitTextures > 0) {
                                 registerIconsCalled = false;
                                 String mapName = loader.mapName + "_overflow" + (++loader.overflowIndex);
-                                logger.fine("new TextureMap(%s)", mapName);
-                                TextureMap map = new TextureMap(OVERFLOW_TEXTURE_MAP_INDEX, mapName);
-                                map.refreshTextures1(TexturePackAPI.getResourceBundle());
+                                logger.fine("new TextureAtlas(%s)", mapName);
+                                TextureAtlas map = new TextureAtlas(OVERFLOW_TEXTURE_MAP_INDEX, mapName);
+                                map.refreshTextures1(TexturePackAPI.getResourceManager());
                                 if (!registerIconsCalled) {
-                                    logger.severe("TileLoader.registerIcons was never called!  Possible conflict in TextureMap.class");
+                                    logger.severe("TileLoader.registerIcons was never called!  Possible conflict in TextureAtlas.class");
                                     break loop;
                                 }
                                 overflowMaps.add(map);
@@ -110,7 +110,7 @@ public class TileLoader {
         TexturePackChangeHandler.register(changeHandler);
     }
 
-    public static void registerIcons(TextureMap textureMap, String mapName, Map<String, TextureStitched> map) {
+    public static void registerIcons(TextureAtlas textureMap, String mapName, Map<String, TextureAtlasSprite> map) {
         logger.fine("before registerIcons(%s) %d icons", mapName, map.size());
         registerIconsCalled = true;
         if (!changeHandlerCalled) {
@@ -145,11 +145,11 @@ public class TileLoader {
         return path;
     }
 
-    public static boolean isSpecialTexture(TextureMap map, String texture, String special) {
+    public static boolean isSpecialTexture(TextureAtlas map, String texture, String special) {
         return special.equals(texture) || special.equals(specialTextures.get(texture));
     }
 
-    public static BufferedImage getOverrideImage(ResourceAddress resource) throws IOException {
+    public static BufferedImage getOverrideImage(ResourceLocation resource) throws IOException {
         BufferedImage image;
         for (TileLoader loader : loaders) {
             image = loader.tileImages.get(resource);
@@ -165,7 +165,7 @@ public class TileLoader {
     }
 
     public static void updateAnimations() {
-        for (TextureMap textureMap : overflowMaps) {
+        for (TextureAtlas textureMap : overflowMaps) {
             textureMap.updateAnimations();
         }
     }
@@ -198,12 +198,12 @@ public class TileLoader {
     static void init() {
     }
 
-    public static ResourceAddress getBlocksAtlas() {
-        return TextureMap.blocksAtlas;
+    public static ResourceLocation getBlocksAtlas() {
+        return TextureAtlas.blocksAtlas;
     }
 
-    public static ResourceAddress getItemsAtlas() {
-        return TextureMap.itemsAtlas;
+    public static ResourceLocation getItemsAtlas() {
+        return TextureAtlas.itemsAtlas;
     }
 
     public TileLoader(String mapName, boolean allowOverflow, MCLogger logger) {
@@ -213,23 +213,23 @@ public class TileLoader {
         loaders.add(this);
     }
 
-    private static long getTextureSize(TextureStitched texture) {
+    private static long getTextureSize(TextureAtlasSprite texture) {
         return texture == null ? 0 : 4 * texture.getWidth() * texture.getHeight();
     }
 
-    private static long getTextureSize(Collection<TextureStitched> textures) {
+    private static long getTextureSize(Collection<TextureAtlasSprite> textures) {
         long size = 0;
-        for (TextureStitched texture : textures) {
+        for (TextureAtlasSprite texture : textures) {
             size += getTextureSize(texture);
         }
         return size;
     }
 
-    public static ResourceAddress getDefaultAddress(ResourceAddress propertiesAddress) {
-        return TexturePackAPI.transformResourceAddress(propertiesAddress, ".properties", ".png");
+    public static ResourceLocation getDefaultAddress(ResourceLocation propertiesAddress) {
+        return TexturePackAPI.transformResourceLocation(propertiesAddress, ".properties", ".png");
     }
 
-    public static ResourceAddress parseTileAddress(ResourceAddress propertiesAddress, String value) {
+    public static ResourceLocation parseTileAddress(ResourceLocation propertiesAddress, String value) {
         if (value == null) {
             return null;
         }
@@ -245,10 +245,10 @@ public class TileLoader {
         if (!value.contains("/")) {
             value = propertiesAddress.getPath().replaceFirst("[^/]+$", "") + value;
         }
-        return TexturePackAPI.parseResourceAddress(propertiesAddress, value);
+        return TexturePackAPI.parseResourceLocation(propertiesAddress, value);
     }
 
-    public boolean preloadTile(ResourceAddress resource, boolean alternate, String special) {
+    public boolean preloadTile(ResourceLocation resource, boolean alternate, String special) {
         if (tileImages.containsKey(resource)) {
             return true;
         }
@@ -270,7 +270,7 @@ public class TileLoader {
         return true;
     }
 
-    public boolean preloadTile(ResourceAddress resource, boolean alternate) {
+    public boolean preloadTile(ResourceLocation resource, boolean alternate) {
         return preloadTile(resource, alternate, null);
     }
 
@@ -285,7 +285,7 @@ public class TileLoader {
     private boolean registerDefaultIcon(String name) {
         if (name.startsWith(mapName) && name.endsWith(".png") && baseTextureMap != null) {
             String defaultName = name.substring(mapName.length()).replaceFirst("\\.png$", "");
-            TextureStitched texture = baseTexturesByName.get(defaultName);
+            TextureAtlasSprite texture = baseTexturesByName.get(defaultName);
             if (texture != null) {
                 subLogger.finer("%s -> existing icon %s", name, defaultName);
                 iconMap.put(name, texture);
@@ -295,8 +295,8 @@ public class TileLoader {
         return false;
     }
 
-    private boolean registerOneIcon(TextureMap textureMap, String mapName, Map<String, TextureStitched> map) {
-        ResourceAddress resource = tilesToRegister.iterator().next();
+    private boolean registerOneIcon(TextureAtlas textureMap, String mapName, Map<String, TextureAtlasSprite> map) {
+        ResourceLocation resource = tilesToRegister.iterator().next();
         String name = resource.toString();
         if (registerDefaultIcon(name)) {
             tilesToRegister.remove(resource);
@@ -324,7 +324,7 @@ public class TileLoader {
             }
         }
         Icon icon = textureMap.registerIcon(name);
-        map.put(name, (TextureStitched) icon);
+        map.put(name, (TextureAtlasSprite) icon);
         if (mapName.contains("_overflow")) {
             TessellatorUtils.registerIcon(textureMap, icon);
         }
@@ -351,7 +351,7 @@ public class TileLoader {
         return icon;
     }
 
-    public Icon getIcon(ResourceAddress resource) {
+    public Icon getIcon(ResourceLocation resource) {
         return resource == null ? null : getIcon(resource.toString());
     }
 

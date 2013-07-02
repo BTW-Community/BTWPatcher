@@ -7,12 +7,12 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class ExtendedHD extends Mod {
-    private static final MethodRef copySubTexture1 = new MethodRef("TextureUtils", "copySubTexture1", "([IIIIIZZ)V");
-    private static final MethodRef copySubTexture2 = new MethodRef("TextureUtils", "copySubTexture2", "(Ljava/awt/image/BufferedImage;IIZZ)V");
-    private static final MethodRef setupTexture1 = new MethodRef("TextureUtils", "setupTexture1", "(ILjava/awt/image/BufferedImage;ZZ)I");
-    private static final MethodRef setupTexture2 = new MethodRef("TextureUtils", "setupTexture2", "(III)V");
+    private static final MethodRef copySubTexture1 = new MethodRef("TextureUtil", "copySubTexture1", "([IIIIIZZ)V");
+    private static final MethodRef copySubTexture2 = new MethodRef("TextureUtil", "copySubTexture2", "(Ljava/awt/image/BufferedImage;IIZZ)V");
+    private static final MethodRef setupTexture1 = new MethodRef("TextureUtil", "setupTexture1", "(ILjava/awt/image/BufferedImage;ZZ)I");
+    private static final MethodRef setupTexture2 = new MethodRef("TextureUtil", "setupTexture2", "(III)V");
 
-    private static final MethodRef setupTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(ILjava/awt/image/BufferedImage;ZZLResourceAddress;)I");
+    private static final MethodRef setupTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(ILjava/awt/image/BufferedImage;ZZLResourceLocation;)I");
     private static final MethodRef setupTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(IIILjava/lang/String;)V");
     private static final MethodRef copySubTextureMipmaps = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "([IIIIILjava/lang/String;)V");
 
@@ -34,20 +34,20 @@ public class ExtendedHD extends Mod {
         }
 
         addClassMod(new MinecraftMod());
-        addClassMod(new BaseMod.ResourceAddressMod(this));
-        addClassMod(new BaseMod.IResourceMod(this));
+        addClassMod(new BaseMod.ResourceLocationMod(this));
+        addClassMod(new BaseMod.ResourceMod(this));
         addClassMod(new BaseMod.IconMod(this));
-        addClassMod(new BaseMod.ITextureMod(this));
-        addClassMod(new BaseMod.TextureBaseMod(this));
+        addClassMod(new BaseMod.TextureObjectMod(this));
+        addClassMod(new BaseMod.AbstractTextureMod(this));
         addClassMod(new BaseMod.TextureMod(this));
-        addClassMod(new TextureUtilsMod());
+        addClassMod(new TextureUtilMod());
         addClassMod(new TextureManagerMod());
-        addClassMod(new TextureMapMod());
-        addClassMod(new TextureStitchedMod());
-        addClassMod(new TextureNamedMod());
+        addClassMod(new TextureAtlasMod());
+        addClassMod(new TextureAtlasSpriteMod());
+        addClassMod(new SimpleTextureMod());
         addClassMod(new TextureCompassMod());
         addClassMod(new TextureClockMod());
-        addClassMod(new StreamedResourceMod());
+        addClassMod(new SimpleResourceMod());
         HDFont.setupMod(this);
 
         addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS);
@@ -58,7 +58,7 @@ public class ExtendedHD extends Mod {
         addClassFile(MCPatcherUtils.FANCY_DIAL_CLASS);
         addClassFile(MCPatcherUtils.FANCY_DIAL_CLASS + "$Layer");
 
-        getClassMap().addInheritance("TextureStitched", MCPatcherUtils.BORDERED_TEXTURE_CLASS);
+        getClassMap().addInheritance("TextureAtlasSprite", MCPatcherUtils.BORDERED_TEXTURE_CLASS);
     }
 
     @Override
@@ -97,8 +97,8 @@ public class ExtendedHD extends Mod {
         }
     }
 
-    private class TextureUtilsMod extends BaseMod.TextureUtilsMod {
-        TextureUtilsMod() {
+    private class TextureUtilMod extends BaseMod.TextureUtilMod {
+        TextureUtilMod() {
             super(ExtendedHD.this);
 
             addMemberMapper(new MethodMapper(copySubTexture1));
@@ -158,19 +158,19 @@ public class ExtendedHD extends Mod {
         }
     }
 
-    private class TextureMapMod extends BaseMod.TextureMapMod {
-        TextureMapMod() {
+    private class TextureAtlasMod extends BaseMod.TextureAtlasMod {
+        TextureAtlasMod() {
             super(ExtendedHD.this);
 
-            final ClassRef textureStitched = new ClassRef("TextureStitched");
-            final MethodRef textureStitchedConstructor = new MethodRef("TextureStitched", "<init>", "(Ljava/lang/String;)V");
-            final MethodRef createTextureStitched = new MethodRef(MCPatcherUtils.BORDERED_TEXTURE_CLASS, "create", "(Ljava/lang/String;Ljava/lang/String;)LTextureStitched;");
+            final ClassRef textureStitched = new ClassRef("TextureAtlasSprite");
+            final MethodRef textureStitchedConstructor = new MethodRef("TextureAtlasSprite", "<init>", "(Ljava/lang/String;)V");
+            final MethodRef createTextureStitched = new MethodRef(MCPatcherUtils.BORDERED_TEXTURE_CLASS, "create", "(Ljava/lang/String;Ljava/lang/String;)LTextureAtlasSprite;");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // TextureUtils.setupTexture(t.getFrameRGB(0), t.getWidth(), t.getHeight(), t.getX0(), t.getY0(), false, false);
+                        // TextureUtil.setupTexture(t.getFrameRGB(0), t.getWidth(), t.getHeight(), t.getX0(), t.getY0(), false, false);
                         capture(anyALOAD),
                         push(0),
                         captureReference(INVOKEVIRTUAL),
@@ -188,9 +188,9 @@ public class ExtendedHD extends Mod {
                     );
                 }
             }
-                .addXref(2, new MethodRef("TextureStitched", "getFrameRGB", "(I)[I"))
-                .addXref(3, new MethodRef("TextureStitched", "getX0", "()I"))
-                .addXref(4, new MethodRef("TextureStitched", "getY0", "()I"))
+                .addXref(2, new MethodRef("TextureAtlasSprite", "getFrameRGB", "(I)[I"))
+                .addXref(3, new MethodRef("TextureAtlasSprite", "getX0", "()I"))
+                .addXref(4, new MethodRef("TextureAtlasSprite", "getY0", "()I"))
             );
 
             addPatch(new TextureMipmapPatch(this, basePath));
@@ -247,16 +247,16 @@ public class ExtendedHD extends Mod {
         }
     }
 
-    private class TextureStitchedMod extends BaseMod.TextureStitchedMod {
-        TextureStitchedMod() {
+    private class TextureAtlasSpriteMod extends BaseMod.TextureAtlasSpriteMod {
+        TextureAtlasSpriteMod() {
             super(ExtendedHD.this);
 
             final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(Ljava/lang/String;)V");
             final MethodRef init = new MethodRef(getDeobfClass(), "init", "(IIIIZ)V");
-            final MethodRef copy = new MethodRef(getDeobfClass(), "copy", "(LTextureStitched;)V");
+            final MethodRef copy = new MethodRef(getDeobfClass(), "copy", "(LTextureAtlasSprite;)V");
             final MethodRef updateAnimation = new MethodRef(getDeobfClass(), "updateAnimation", "()V");
-            final MethodRef loadResource = new MethodRef(getDeobfClass(), "loadResource", "(LIResource;)V");
-            final MethodRef addBorder = new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(LTextureStitched;LIResource;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
+            final MethodRef loadResource = new MethodRef(getDeobfClass(), "loadResource", "(LResource;)V");
+            final MethodRef addBorder = new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(LTextureAtlasSprite;LResource;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -340,8 +340,8 @@ public class ExtendedHD extends Mod {
         }
     }
 
-    private class TextureNamedMod extends BaseMod.TextureNamedMod {
-        TextureNamedMod() {
+    private class SimpleTextureMod extends BaseMod.SimpleTextureMod {
+        SimpleTextureMod() {
             super(ExtendedHD.this);
 
             addPatch(new BytecodePatch() {
@@ -374,7 +374,7 @@ public class ExtendedHD extends Mod {
         protected final MethodRef update = getUpdateMethod();
 
         TextureDialMod(final String name) {
-            setParentClass("TextureStitched");
+            setParentClass("TextureAtlasSprite");
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -393,7 +393,7 @@ public class ExtendedHD extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         ALOAD_0,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FANCY_DIAL_CLASS, "setup", "(LTextureStitched;)V"))
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FANCY_DIAL_CLASS, "setup", "(LTextureAtlasSprite;)V"))
                     );
                 }
             }
@@ -423,7 +423,7 @@ public class ExtendedHD extends Mod {
                     return buildCode(
                         // if (FancyDial.update(this)) {
                         ALOAD_0,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FANCY_DIAL_CLASS, "update", "(LTextureStitched;)Z")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FANCY_DIAL_CLASS, "update", "(LTextureAtlasSprite;)Z")),
                         IFEQ, branch("A"),
 
                         // return;
@@ -506,9 +506,9 @@ public class ExtendedHD extends Mod {
         }
     }
 
-    private class StreamedResourceMod extends ClassMod {
-        StreamedResourceMod() {
-            setInterfaces("IResource");
+    private class SimpleResourceMod extends ClassMod {
+        SimpleResourceMod() {
+            setInterfaces("Resource");
 
             addClassSignature(new ConstSignature(new ClassRef("java/io/BufferedReader")));
             addClassSignature(new ConstSignature(new ClassRef("java/io/InputStreamReader")));

@@ -2,9 +2,9 @@ package com.prupe.mcpatcher.hd;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import net.minecraft.src.TextureStitched;
+import net.minecraft.src.TextureAtlasSprite;
 
-public class BorderedTexture extends TextureStitched {
+public class BorderedTexture extends TextureAtlasSprite {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
 
     private float minU;
@@ -22,11 +22,11 @@ public class BorderedTexture extends TextureStitched {
     private String tilesheet;
     int border;
 
-    public static TextureStitched create(String tilesheet, String name) {
+    public static TextureAtlasSprite create(String tilesheet, String name) {
         if (AAHelper.useAAForTexture(tilesheet)) {
             return new BorderedTexture(tilesheet, name);
         } else {
-            return new TextureStitched(name);
+            return new TextureAtlasSprite(name);
         }
     }
 
@@ -76,7 +76,7 @@ public class BorderedTexture extends TextureStitched {
     }
 
     @Override
-    public void copy(TextureStitched stitched) {
+    public void copy(TextureAtlasSprite stitched) {
         if (stitched instanceof BorderedTexture) {
             BorderedTexture bordered = (BorderedTexture) stitched;
             tilesheetWidth = bordered.tilesheetWidth;

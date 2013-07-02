@@ -22,7 +22,7 @@ public class BetterSkies extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
         addClassMod(new BaseMod.MinecraftMod(this).mapWorldClient());
-        addClassMod(new BaseMod.ResourceAddressMod(this));
+        addClassMod(new BaseMod.ResourceLocationMod(this));
         addClassMod(new WorldMod());
         addClassMod(new BaseMod.WorldClientMod(this));
         addClassMod(new RenderGlobalMod());
@@ -363,9 +363,9 @@ public class BetterSkies extends Mod {
         }
 
         private void addCelestialObjectPatch(final String objName, String textureName) {
-            final FieldRef textureField = new FieldRef(getDeobfClass(), objName, "LResourceAddress;");
+            final FieldRef textureField = new FieldRef(getDeobfClass(), objName, "LResourceLocation;");
 
-            addClassSignature(new BaseMod.ResourceAddressSignature(this, textureField, "textures/environment/" + textureName));
+            addClassSignature(new BaseMod.ResourceLocationSignature(this, textureField, "textures/environment/" + textureName));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -383,7 +383,7 @@ public class BetterSkies extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setupCelestialObject", "(LResourceAddress;)LResourceAddress;"))
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setupCelestialObject", "(LResourceLocation;)LResourceLocation;"))
                     );
                 }
             }

@@ -2,7 +2,7 @@ package com.prupe.mcpatcher.hd;
 
 import com.prupe.mcpatcher.*;
 import net.minecraft.src.FontRenderer;
-import net.minecraft.src.ResourceAddress;
+import net.minecraft.src.ResourceLocation;
 
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
@@ -44,14 +44,14 @@ public class FontUtils {
         });
     }
 
-    public static ResourceAddress getFontName(FontRenderer fontRenderer, ResourceAddress font) {
+    public static ResourceLocation getFontName(FontRenderer fontRenderer, ResourceLocation font) {
         if (fontRenderer.defaultFont == null) {
             fontRenderer.defaultFont = font;
         }
         if (fontRenderer.hdFont == null) {
             String namespace = fontRenderer.defaultFont.getNamespace();
             String name = fontRenderer.defaultFont.getPath().replaceAll(".*/", "");
-            fontRenderer.hdFont = new ResourceAddress(namespace, TexturePackAPI.MCPATCHER_SUBDIR + "font/" + name);
+            fontRenderer.hdFont = new ResourceLocation(namespace, TexturePackAPI.MCPATCHER_SUBDIR + "font/" + name);
         }
         if (enable && TexturePackAPI.hasResource(fontRenderer.hdFont)) {
             logger.fine("using %s instead of %s", fontRenderer.hdFont, fontRenderer.defaultFont);
@@ -64,7 +64,7 @@ public class FontUtils {
         }
     }
 
-    public static float[] computeCharWidthsf(FontRenderer fontRenderer, ResourceAddress filename, BufferedImage image, int[] rgb, int[] charWidth) {
+    public static float[] computeCharWidthsf(FontRenderer fontRenderer, ResourceLocation filename, BufferedImage image, int[] rgb, int[] charWidth) {
         float[] charWidthf = new float[charWidth.length];
         if (!fontRenderer.isHD) {
             for (int i = 0; i < charWidth.length; i++) {
@@ -169,9 +169,9 @@ public class FontUtils {
         return totalWidth;
     }
 
-    public static ResourceAddress getUnicodePage(ResourceAddress resource) {
+    public static ResourceLocation getUnicodePage(ResourceLocation resource) {
         if (enable && resource != null) {
-            ResourceAddress newResource = new ResourceAddress(resource.getNamespace(), resource.getPath().replaceFirst("^textures/", "mcpatcher/"));
+            ResourceLocation newResource = new ResourceLocation(resource.getNamespace(), resource.getPath().replaceFirst("^textures/", "mcpatcher/"));
             if (TexturePackAPI.hasResource(newResource)) {
                 logger.fine("using %s instead of %s", newResource, resource);
                 return newResource;
@@ -212,8 +212,8 @@ public class FontUtils {
         }
     }
 
-    private static void getCharWidthOverrides(ResourceAddress font, float[] charWidthf, boolean[] isOverride) {
-        ResourceAddress textFile = TexturePackAPI.transformResourceAddress(font, ".png", ".properties");
+    private static void getCharWidthOverrides(ResourceLocation font, float[] charWidthf, boolean[] isOverride) {
+        ResourceLocation textFile = TexturePackAPI.transformResourceLocation(font, ".png", ".properties");
         Properties props = TexturePackAPI.getProperties(textFile);
         if (props == null) {
             return;

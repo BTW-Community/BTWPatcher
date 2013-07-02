@@ -4,15 +4,15 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.EntitySheep;
 import net.minecraft.src.ItemDye;
-import net.minecraft.src.ResourceAddress;
+import net.minecraft.src.ResourceLocation;
 
 import java.util.Properties;
 import java.util.Random;
 
 public class ColorizeEntity {
-    private static final ResourceAddress LAVA_DROP_COLORS = TexturePackAPI.newMCPatcherResourceAddress("colormap/lavadrop.png");
-    private static final ResourceAddress MYCELIUM_COLORS = TexturePackAPI.newMCPatcherResourceAddress("colormap/myceliumparticle.png");
-    private static final ResourceAddress XPORB_COLORS = TexturePackAPI.newMCPatcherResourceAddress("colormap/xporb.png");
+    private static final ResourceLocation LAVA_DROP_COLORS = TexturePackAPI.newMCPatcherResourceLocation("colormap/lavadrop.png");
+    private static final ResourceLocation MYCELIUM_COLORS = TexturePackAPI.newMCPatcherResourceLocation("colormap/myceliumparticle.png");
+    private static final ResourceLocation XPORB_COLORS = TexturePackAPI.newMCPatcherResourceLocation("colormap/xporb.png");
 
     static float[] waterBaseColor; // particle.water
     private static float[] lavaDropColors; // misc/lavadropcolor.png

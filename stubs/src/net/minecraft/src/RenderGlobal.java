@@ -3,7 +3,7 @@ package net.minecraft.src;
 public class RenderGlobal {
     public float damagePartialTime;
 
-    public int sortAndRender(EntityLiving entityLiving, int i, double d) {
+    public int sortAndRender(EntityLivingBase entityLiving, int i, double d) {
         return 0;
     }
 

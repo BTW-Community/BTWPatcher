@@ -51,7 +51,7 @@ abstract public class TexturePackChangeHandler {
 
     public static void register(TexturePackChangeHandler handler) {
         if (handler != null) {
-            if (Minecraft.getInstance().getResourceBundle() != null) {
+            if (Minecraft.getInstance().getResourceManager() != null) {
                 try {
                     logger.info("initializing %s...", handler.name);
                     handler.initialize();
@@ -108,9 +108,9 @@ abstract public class TexturePackChangeHandler {
         startTime = System.currentTimeMillis();
         Runtime runtime = Runtime.getRuntime();
         startMem = runtime.totalMemory() - runtime.freeMemory();
-        List<IResourcePack> resourcePacks = TexturePackAPI.getResourcePacks(null);
+        List<ResourcePack> resourcePacks = TexturePackAPI.getResourcePacks(null);
         logger.fine("%s resource packs (%d selected):", initializing ? "initializing" : "changing", resourcePacks.size());
-        for (IResourcePack pack : resourcePacks) {
+        for (ResourcePack pack : resourcePacks) {
             logger.fine("resource pack: %s", pack);
         }
 
@@ -126,15 +126,15 @@ abstract public class TexturePackChangeHandler {
 
         TextureManager textureManager = MCPatcherUtils.getMinecraft().getTextureManager();
         if (textureManager != null) {
-            Set<ResourceAddress> texturesToUnload = new HashSet<ResourceAddress>();
-            for (Map.Entry<ResourceAddress, ITexture> entry : textureManager.texturesByName.entrySet()) {
-                ResourceAddress resource = entry.getKey();
-                ITexture texture = entry.getValue();
-                if (texture instanceof TextureNamed && !TexturePackAPI.hasResource(resource)) {
+            Set<ResourceLocation> texturesToUnload = new HashSet<ResourceLocation>();
+            for (Map.Entry<ResourceLocation, TextureObject> entry : textureManager.texturesByName.entrySet()) {
+                ResourceLocation resource = entry.getKey();
+                TextureObject texture = entry.getValue();
+                if (texture instanceof SimpleTexture && !TexturePackAPI.hasResource(resource)) {
                     texturesToUnload.add(resource);
                 }
             }
-            for (ResourceAddress resource : texturesToUnload) {
+            for (ResourceLocation resource : texturesToUnload) {
                 TexturePackAPI.unloadTexture(resource);
             }
         }

@@ -1,4 +1,4 @@
 package net.minecraft.src;
 
-public class MCMetaParser {
+public class TextureUtil {
 }

@@ -15,9 +15,9 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
     private static final int MAX_DAMAGE = 65535;
     private static final int MAX_STACK_SIZE = 65535;
 
-    final ResourceAddress propertiesName;
-    final ResourceAddress textureName;
-    final Map<String, ResourceAddress> alternateTextures;
+    final ResourceLocation propertiesName;
+    final ResourceLocation textureName;
+    final Map<String, ResourceLocation> alternateTextures;
     final int weight;
     final BitSet itemsIDs;
     final BitSet damage;
@@ -30,7 +30,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
 
     int lastEnchantmentLevel;
 
-    static OverrideBase create(ResourceAddress filename) {
+    static OverrideBase create(ResourceLocation filename) {
         if (new File(filename.getPath()).getName().equals("cit.properties")) {
             return null;
         }
@@ -62,11 +62,11 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
         return override.error ? null : override;
     }
 
-    OverrideBase(ResourceAddress propertiesName, Properties properties) {
+    OverrideBase(ResourceLocation propertiesName, Properties properties) {
         this.propertiesName = propertiesName;
 
         String value = MCPatcherUtils.getStringProperty(properties, "source", "");
-        ResourceAddress resource;
+        ResourceLocation resource;
         if (value.equals("")) {
             value = MCPatcherUtils.getStringProperty(properties, "texture", "");
         }
@@ -147,8 +147,8 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             matchNBT(itemStack);
     }
 
-    private Map<String, ResourceAddress> getAlternateTextures(Properties properties) {
-        Map<String, ResourceAddress> tmpMap = new HashMap<String, ResourceAddress>();
+    private Map<String, ResourceLocation> getAlternateTextures(Properties properties) {
+        Map<String, ResourceLocation> tmpMap = new HashMap<String, ResourceLocation>();
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             String key = (String) entry.getKey();
             String value = (String) entry.getValue();
@@ -162,7 +162,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             } else {
                 continue;
             }
-            ResourceAddress resource = TileLoader.parseTileAddress(propertiesName, value);
+            ResourceLocation resource = TileLoader.parseTileAddress(propertiesName, value);
             if (resource != null) {
                 tmpMap.put(name, resource);
             }

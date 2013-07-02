@@ -16,14 +16,14 @@ public class BaseTilesheetMod extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
         addClassMod(new BaseMod.IconMod(this));
-        addClassMod(new BaseMod.ResourceAddressMod(this));
-        addClassMod(new BaseMod.TextureBaseMod(this));
+        addClassMod(new BaseMod.ResourceLocationMod(this));
+        addClassMod(new BaseMod.AbstractTextureMod(this));
         addClassMod(new BaseMod.TextureMod(this));
         addClassMod(new TessellatorMod());
         addClassMod(new IconRegisterMod());
-        addClassMod(new TextureMapMod());
+        addClassMod(new TextureAtlasMod());
         addClassMod(new TextureManagerMod());
-        addClassMod(new TextureStitchedMod());
+        addClassMod(new TextureAtlasSpriteMod());
 
         addClassFile(MCPatcherUtils.TILE_LOADER_CLASS);
         addClassFile(MCPatcherUtils.TILE_LOADER_CLASS + "$1");
@@ -45,7 +45,7 @@ public class BaseTilesheetMod extends Mod {
             final MethodRef reset = new MethodRef(getDeobfClass(), "reset", "()V");
             final FieldRef isDrawing = new FieldRef(getDeobfClass(), "isDrawing", "Z");
             final FieldRef drawMode = new FieldRef(getDeobfClass(), "drawMode", "I");
-            final FieldRef textureMap = new FieldRef(getDeobfClass(), "textureMap", "LTextureMap;");
+            final FieldRef textureMap = new FieldRef(getDeobfClass(), "textureMap", "LTextureAtlas;");
             final FieldRef bufferSize = new FieldRef(getDeobfClass(), "bufferSize", "I");
             final FieldRef addedVertices = new FieldRef(getDeobfClass(), "addedVertices", "I");
             final FieldRef vertexCount = new FieldRef(getDeobfClass(), "vertexCount", "I");
@@ -217,7 +217,7 @@ public class BaseTilesheetMod extends Mod {
                         push(3553), // GL11.GL_TEXTURE_2D
                         ALOAD_0,
                         reference(GETFIELD, textureMap),
-                        reference(INVOKEVIRTUAL, new MethodRef("TextureMap", "getGlTextureId", "()I")),
+                        reference(INVOKEVIRTUAL, new MethodRef("TextureAtlas", "getGlTextureId", "()I")),
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V")),
 
                         // }
@@ -316,12 +316,12 @@ public class BaseTilesheetMod extends Mod {
         }
     }
 
-    private class TextureMapMod extends BaseMod.TextureMapMod {
-        TextureMapMod() {
+    private class TextureAtlasMod extends BaseMod.TextureAtlasMod {
+        TextureAtlasMod() {
             super(BaseTilesheetMod.this);
 
-            final FieldRef blocksAtlas = new FieldRef(getDeobfClass(), "blocksAtlas", "LResourceAddress;");
-            final FieldRef itemsAtlas = new FieldRef(getDeobfClass(), "itemssAtlas", "LResourceAddress;");
+            final FieldRef blocksAtlas = new FieldRef(getDeobfClass(), "blocksAtlas", "LResourceLocation;");
+            final FieldRef itemsAtlas = new FieldRef(getDeobfClass(), "itemssAtlas", "LResourceLocation;");
             final MethodRef registerTiles = new MethodRef(getDeobfClass(), "registerTiles", "()V");
             final InterfaceMethodRef mapClear = new InterfaceMethodRef("java/util/Map", "clear", "()V");
             final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
@@ -335,8 +335,8 @@ public class BaseTilesheetMod extends Mod {
             final MethodRef strEquals = new MethodRef("java/lang/String", "equals", "(Ljava/lang/Object;)Z");
             final MethodRef readImage = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
 
-            addClassSignature(new BaseMod.ResourceAddressSignature(this, blocksAtlas, "textures/atlas/blocks.png"));
-            addClassSignature(new BaseMod.ResourceAddressSignature(this, itemsAtlas, "textures/atlas/items.png"));
+            addClassSignature(new BaseMod.ResourceLocationSignature(this, blocksAtlas, "textures/atlas/blocks.png"));
+            addClassSignature(new BaseMod.ResourceLocationSignature(this, itemsAtlas, "textures/atlas/items.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -408,7 +408,7 @@ public class BaseTilesheetMod extends Mod {
                         reference(GETFIELD, basePath),
                         ALOAD_0,
                         reference(GETFIELD, texturesByName),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "registerIcons", "(LTextureMap;Ljava/lang/String;Ljava/util/Map;)V"))
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "registerIcons", "(LTextureAtlas;Ljava/lang/String;Ljava/util/Map;)V"))
                     );
                 }
             }
@@ -487,7 +487,7 @@ public class BaseTilesheetMod extends Mod {
                         ALOAD_0,
                         ALOAD_1,
                         getCaptureGroup(1),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "isSpecialTexture", "(LTextureMap;Ljava/lang/String;Ljava/lang/String;)Z"))
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "isSpecialTexture", "(LTextureAtlas;Ljava/lang/String;Ljava/lang/String;)Z"))
                     );
                 }
             }.targetMethod(registerIcon));
@@ -546,8 +546,8 @@ public class BaseTilesheetMod extends Mod {
         }
     }
 
-    private class TextureStitchedMod extends BaseMod.TextureStitchedMod {
-        TextureStitchedMod() {
+    private class TextureAtlasSpriteMod extends BaseMod.TextureAtlasSpriteMod {
+        TextureAtlasSpriteMod() {
             super(BaseTilesheetMod.this);
 
             final InterfaceMethodRef listSize = new InterfaceMethodRef("java/util/List", "size", "()I");

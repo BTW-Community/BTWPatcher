@@ -4,7 +4,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.WeightedIndex;
-import net.minecraft.src.ResourceAddress;
+import net.minecraft.src.ResourceLocation;
 
 import java.util.*;
 
@@ -13,21 +13,21 @@ class MobRuleList {
 
     public static final String ALTERNATIVES_REGEX = "_(eyes|overlay|tame|angry|collar|fur|invulnerable|shooting)\\.properties$";
 
-    private static final Map<ResourceAddress, MobRuleList> allRules = new HashMap<ResourceAddress, MobRuleList>();
+    private static final Map<ResourceLocation, MobRuleList> allRules = new HashMap<ResourceLocation, MobRuleList>();
 
-    private final ResourceAddress baseSkin;
-    private final List<ResourceAddress> allSkins;
+    private final ResourceLocation baseSkin;
+    private final List<ResourceLocation> allSkins;
     private final int skinCount;
     private final List<MobRuleEntry> entries;
 
-    private MobRuleList(ResourceAddress baseSkin) {
+    private MobRuleList(ResourceLocation baseSkin) {
         this.baseSkin = baseSkin;
         String newPath = baseSkin.getPath().replaceFirst("^textures/entity/", TexturePackAPI.MCPATCHER_SUBDIR + "mob/");
-        ResourceAddress newSkin = new ResourceAddress(baseSkin.getNamespace(), newPath);
-        allSkins = new ArrayList<ResourceAddress>();
+        ResourceLocation newSkin = new ResourceLocation(baseSkin.getNamespace(), newPath);
+        allSkins = new ArrayList<ResourceLocation>();
         allSkins.add(baseSkin);
         for (int i = 2; ; i++) {
-            ResourceAddress skin = TexturePackAPI.transformResourceAddress(newSkin, ".png", String.valueOf(i) + ".png");
+            ResourceLocation skin = TexturePackAPI.transformResourceLocation(newSkin, ".png", String.valueOf(i) + ".png");
             if (!TexturePackAPI.hasResource(skin)) {
                 break;
             }
@@ -40,8 +40,8 @@ class MobRuleList {
         }
         logger.fine("found %d variations for %s", skinCount, baseSkin);
 
-        ResourceAddress filename = TexturePackAPI.transformResourceAddress(newSkin, ".png", ".properties");
-        ResourceAddress altFilename = new ResourceAddress(newSkin.getNamespace(), filename.getPath().replaceFirst(ALTERNATIVES_REGEX, ".properties"));
+        ResourceLocation filename = TexturePackAPI.transformResourceLocation(newSkin, ".png", ".properties");
+        ResourceLocation altFilename = new ResourceLocation(newSkin.getNamespace(), filename.getPath().replaceFirst(ALTERNATIVES_REGEX, ".properties"));
         Properties properties = TexturePackAPI.getProperties(filename);
         if (properties == null && !filename.equals(altFilename)) {
             properties = TexturePackAPI.getProperties(altFilename);
@@ -66,7 +66,7 @@ class MobRuleList {
         entries = tmpEntries.isEmpty() ? null : tmpEntries;
     }
 
-    ResourceAddress getSkin(long key, int i, int j, int k, String biome) {
+    ResourceLocation getSkin(long key, int i, int j, int k, String biome) {
         if (entries == null) {
             int index = (int) (key % skinCount);
             if (index < 0) {
@@ -84,7 +84,7 @@ class MobRuleList {
         return baseSkin;
     }
 
-    static MobRuleList get(ResourceAddress texture) {
+    static MobRuleList get(ResourceLocation texture) {
         MobRuleList list = allRules.get(texture);
         if (list == null) {
             list = new MobRuleList(texture);

@@ -3,15 +3,15 @@ package net.minecraft.src;
 import java.util.Map;
 
 public class TextureManager {
-    public Map<ResourceAddress, ITexture> texturesByName;
+    public Map<ResourceLocation, TextureObject> texturesByName;
 
-    public void bindTexture(ResourceAddress texture) {
+    public void bindTexture(ResourceLocation texture) {
     }
 
-    public ITexture getTexture(ResourceAddress texture) {
+    public TextureObject getTexture(ResourceLocation texture) {
         return null;
     }
 
-    public void unloadTexture(ResourceAddress texture) {
+    public void unloadTexture(ResourceLocation texture) {
     }
 }

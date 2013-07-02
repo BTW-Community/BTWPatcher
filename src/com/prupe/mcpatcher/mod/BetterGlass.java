@@ -29,7 +29,7 @@ public class BetterGlass extends Mod {
         addDependency(MCPatcherUtils.CONNECTED_TEXTURES);
 
         addClassMod(new BaseMod.MinecraftMod(this));
-        addClassMod(new BaseMod.ResourceAddressMod(this));
+        addClassMod(new BaseMod.ResourceLocationMod(this));
         addClassMod(new BaseMod.BlockMod(this));
         addClassMod(new BaseMod.IBlockAccessMod(this));
         addClassMod(new WorldRendererMod());
@@ -332,8 +332,8 @@ public class BetterGlass extends Mod {
         EntityRendererMod() {
             final MethodRef renderWorld = new MethodRef(getDeobfClass(), "renderWorld", "(FJ)V");
             final MethodRef renderRainSnow = new MethodRef(getDeobfClass(), "renderRainSnow", "(F)V");
-            final MethodRef sortAndRender = new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLiving;ID)I");
-            final MethodRef doRenderPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "doRenderPass", "(LRenderGlobal;LEntityLiving;ID)V");
+            final MethodRef sortAndRender = new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLivingBase;ID)I");
+            final MethodRef doRenderPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "doRenderPass", "(LRenderGlobal;LEntityLivingBase;ID)V");
 
             addClassSignature(new ConstSignature("textures/environment/snow.png"));
             addClassSignature(new ConstSignature("ambient.weather.rain"));

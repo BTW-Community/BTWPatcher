@@ -1,6 +1,6 @@
 package net.minecraft.src;
 
-public class TextureWithData extends TextureBase {
+public class DynamicTexture extends AbstractTexture {
     public int[] getRGB() {
         return null;
     }

@@ -1,6 +1,6 @@
 package net.minecraft.src;
 
-public class TextureClock extends TextureStitched {
+public class TextureClock extends TextureAtlasSprite {
     public double currentAngle;
     public double angleDelta;
 

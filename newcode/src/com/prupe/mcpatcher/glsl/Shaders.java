@@ -150,7 +150,7 @@ public class Shaders {
     }
 
     public static void setCamera(float f) {
-        EntityLiving viewEntity = mc.renderViewEntity;
+        EntityLivingBase viewEntity = mc.renderViewEntity;
 
         double x = viewEntity.lastTickPosX + (viewEntity.posX - viewEntity.lastTickPosX) * f;
         double y = viewEntity.lastTickPosY + (viewEntity.posY - viewEntity.lastTickPosY) * f;
@@ -379,9 +379,9 @@ public class Shaders {
     public static void beginTerrain() {
         useProgram(Shaders.ProgramTerrain);
         glActiveTexture(GL_TEXTURE2);
-        TexturePackAPI.bindTexture(new ResourceAddress("terrain_nh.png"));
+        TexturePackAPI.bindTexture(new ResourceLocation("terrain_nh.png"));
         glActiveTexture(GL_TEXTURE3);
-        TexturePackAPI.bindTexture(new ResourceAddress("/terrain_s.png"));
+        TexturePackAPI.bindTexture(new ResourceLocation("/terrain_s.png"));
         glActiveTexture(GL_TEXTURE0);
     }
 
@@ -392,9 +392,9 @@ public class Shaders {
     public static void beginWater() {
         useProgram(Shaders.ProgramWater);
         glActiveTexture(GL_TEXTURE2);
-        TexturePackAPI.bindTexture(new ResourceAddress("terrain_nh.png"));
+        TexturePackAPI.bindTexture(new ResourceLocation("terrain_nh.png"));
         glActiveTexture(GL_TEXTURE3);
-        TexturePackAPI.bindTexture(new ResourceAddress("terrain_s.png"));
+        TexturePackAPI.bindTexture(new ResourceLocation("terrain_s.png"));
         glActiveTexture(GL_TEXTURE0);
     }
 
@@ -589,7 +589,7 @@ public class Shaders {
         }
     }
 
-    public static int sortAndRenderWrapper(RenderGlobal renderGlobal, EntityLiving entityLiving, int i, double d) {
+    public static int sortAndRenderWrapper(RenderGlobal renderGlobal, EntityLivingBase entityLiving, int i, double d) {
         if (i == 0) {
             beginTerrain();
         } else if (i == 1) {

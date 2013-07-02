@@ -16,8 +16,8 @@ public class Tessellator {
     public boolean isDrawing;
 
     // added by ctm
-    public TextureMap textureMap;
-    public Map<TextureMap, Tessellator> children;
+    public TextureAtlas textureMap;
+    public Map<TextureAtlas, Tessellator> children;
 
     public Tessellator(int bufferSize) {
     }

@@ -2,7 +2,7 @@ package com.prupe.mcpatcher;
 
 import net.minecraft.src.Icon;
 import net.minecraft.src.Tessellator;
-import net.minecraft.src.TextureMap;
+import net.minecraft.src.TextureAtlas;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -16,8 +16,8 @@ public class TessellatorUtils {
 
     private static final Integer MAGIC_VALUE = 0x12345678;
 
-    private static final Map<TextureMap, String> textureMapNames = new WeakHashMap<TextureMap, String>();
-    private static final Map<Icon, TextureMap> iconMap = new HashMap<Icon, TextureMap>();
+    private static final Map<TextureAtlas, String> textureMapNames = new WeakHashMap<TextureAtlas, String>();
+    private static final Map<Icon, TextureAtlas> iconMap = new HashMap<Icon, TextureAtlas>();
     private static Field[] fieldsToCopy;
 
     public static boolean haveBufferSize;
@@ -27,7 +27,7 @@ public class TessellatorUtils {
     }
 
     public static Tessellator getTessellator(Tessellator tessellator, Icon icon) {
-        TextureMap textureMap = iconMap.get(icon);
+        TextureAtlas textureMap = iconMap.get(icon);
         if (textureMap == null) {
             return tessellator;
         }
@@ -48,11 +48,11 @@ public class TessellatorUtils {
         return newTessellator;
     }
 
-    static void registerTextureMap(TextureMap textureMap, String name) {
+    static void registerTextureMap(TextureAtlas textureMap, String name) {
         textureMapNames.put(textureMap, name);
     }
 
-    static void registerIcon(TextureMap textureMap, Icon icon) {
+    static void registerIcon(TextureAtlas textureMap, Icon icon) {
         iconMap.put(icon, textureMap);
     }
 
@@ -151,7 +151,7 @@ public class TessellatorUtils {
             return "Tessellator{null}";
         }
         String desc = tessellator.toString();
-        TextureMap textureMap = tessellator.textureMap;
+        TextureAtlas textureMap = tessellator.textureMap;
         if (textureMap != null) {
             String mapName = textureMapNames.get(textureMap);
             if (mapName == null) {

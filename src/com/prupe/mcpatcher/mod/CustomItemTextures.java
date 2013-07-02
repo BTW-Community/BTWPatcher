@@ -32,7 +32,7 @@ public class CustomItemTextures extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
 
-        addClassMod(new BaseMod.ResourceAddressMod(this));
+        addClassMod(new BaseMod.ResourceLocationMod(this));
         addClassMod(new BaseMod.TessellatorMod(this));
         addClassMod(new BaseMod.NBTTagCompoundMod(this).mapGetTagList());
         addClassMod(new BaseMod.NBTTagListMod(this));
@@ -43,12 +43,12 @@ public class CustomItemTextures extends Mod {
         addClassMod(new EntityItemMod());
         addClassMod(new ItemRendererMod());
         addClassMod(new RenderItemMod());
-        addClassMod(new RenderLivingMod());
+        addClassMod(new RenderLivingEntityMod());
         addClassMod(new RenderBipedMod());
         addClassMod(new RenderPlayerMod());
         addClassMod(new RenderSnowballMod());
-        addClassMod(new EntityLivingMod());
-        addClassMod(new BaseMod.EntityLivingSubMod(this));
+        addClassMod(new EntityLivingBaseMod());
+        addClassMod(new BaseMod.EntityLivingMod(this));
         addClassMod(new EntityPlayerMod());
         addClassMod(new PotionMod());
         addClassMod(new PotionHelperMod());
@@ -226,9 +226,9 @@ public class CustomItemTextures extends Mod {
     }
 
     private void addGlintSignature(ClassMod classMod, MethodRef method, final String opcode) {
-        final FieldRef glint = new FieldRef(classMod.getDeobfClass(), "glint", "LResourceAddress;");
+        final FieldRef glint = new FieldRef(classMod.getDeobfClass(), "glint", "LResourceLocation;");
 
-        classMod.addClassSignature(new BaseMod.ResourceAddressSignature(classMod, glint, GLINT_PNG));
+        classMod.addClassSignature(new BaseMod.ResourceLocationSignature(classMod, glint, GLINT_PNG));
 
         classMod.addClassSignature(new BytecodeSignature(classMod) {
             @Override
@@ -257,7 +257,7 @@ public class CustomItemTextures extends Mod {
 
     private class ItemRendererMod extends ClassMod {
         ItemRendererMod() {
-            final MethodRef renderItem = new MethodRef(getDeobfClass(), "renderItem", "(LEntityLiving;LItemStack;I)V");
+            final MethodRef renderItem = new MethodRef(getDeobfClass(), "renderItem", "(LEntityLivingBase;LItemStack;I)V");
             final MethodRef renderItemIn2D = new MethodRef(getDeobfClass(), "renderItemIn2D", "(LTessellator;FFFFIIF)V");
 
             addClassSignature(new ConstSignature("textures/map/map_background.png"));
@@ -477,9 +477,9 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private class RenderLivingMod extends ClassMod {
-        RenderLivingMod() {
-            final MethodRef doRenderLiving = new MethodRef(getDeobfClass(), "doRenderLiving", "(LEntityLiving;DDDFF)V");
+    private class RenderLivingEntityMod extends ClassMod {
+        RenderLivingEntityMod() {
+            final MethodRef doRenderLiving = new MethodRef(getDeobfClass(), "doRenderLiving", "(LEntityLivingBase;DDDFF)V");
 
             addClassSignature(new ConstSignature("deadmau5"));
             addGlintSignature(this, doRenderLiving);
@@ -568,7 +568,7 @@ public class CustomItemTextures extends Mod {
                         // if (CITUtils.setupArmorEnchantments(entityLiving, pass)) {
                         ALOAD_1,
                         ILOAD, passRegister,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "setupArmorEnchantments", "(LEntityLiving;I)Z")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "setupArmorEnchantments", "(LEntityLivingBase;I)Z")),
                         IFEQ, branch("A"),
 
                         // while (CITUtils.preRenderArmorEnchantment()) {
@@ -600,10 +600,10 @@ public class CustomItemTextures extends Mod {
 
     private class RenderBipedMod extends RenderArmorMod {
         RenderBipedMod() {
-            setParentClass("RenderLivingSub");
+            setParentClass("RenderLiving");
 
-            final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(LEntityLivingSub;IF)V");
-            final MethodRef getCurrentArmor = new MethodRef("EntityLivingSub", "getCurrentArmor", "(I)LItemStack;");
+            final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(LEntityLiving;IF)V");
+            final MethodRef getCurrentArmor = new MethodRef("EntityLiving", "getCurrentArmor", "(I)LItemStack;");
 
             addClassSignature(new ConstSignature("textures/models/armor/%s_layer_%d%s.png"));
 
@@ -629,13 +629,13 @@ public class CustomItemTextures extends Mod {
 
         @Override
         String getEntityClass() {
-            return "EntityLivingSub";
+            return "EntityLiving";
         }
     }
 
     private class RenderPlayerMod extends RenderArmorMod {
         RenderPlayerMod() {
-            setParentClass("RenderLiving");
+            setParentClass("RenderLivingEntity");
 
             addClassSignature(new ConstSignature("textures/entity/steve.png"));
         }
@@ -647,12 +647,12 @@ public class CustomItemTextures extends Mod {
     }
 
     abstract private class RenderArmorMod extends ClassMod {
-        protected final MethodRef getArmorTexture2 = new MethodRef("RenderBiped", "getArmorTexture2", "(LItemArmor;I)LResourceAddress;");
-        protected final MethodRef getArmorTexture3 = new MethodRef("RenderBiped", "getArmorTexture3", "(LItemArmor;ILjava/lang/String;)LResourceAddress;");
+        protected final MethodRef getArmorTexture2 = new MethodRef("RenderBiped", "getArmorTexture2", "(LItemArmor;I)LResourceLocation;");
+        protected final MethodRef getArmorTexture3 = new MethodRef("RenderBiped", "getArmorTexture3", "(LItemArmor;ILjava/lang/String;)LResourceLocation;");
 
         RenderArmorMod() {
             final MethodRef renderArmor = new MethodRef(getDeobfClass(), "renderArmor", "(L" + getEntityClass() + ";IF)V");
-            final MethodRef getArmorTexture = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getArmorTexture", "(LResourceAddress;LEntityLiving;LItemStack;)LResourceAddress;");
+            final MethodRef getArmorTexture = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getArmorTexture", "(LResourceLocation;LEntityLivingBase;LItemStack;)LResourceLocation;");
 
             final com.prupe.mcpatcher.BytecodeSignature signature = new BytecodeSignature() {
                 @Override
@@ -782,8 +782,8 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private class EntityLivingMod extends BaseMod.EntityLivingMod {
-        EntityLivingMod() {
+    private class EntityLivingBaseMod extends BaseMod.EntityLivingBaseMod {
+        EntityLivingBaseMod() {
             super(CustomItemTextures.this);
 
             final MethodRef getCurrentItemOrArmor = new MethodRef(getDeobfClass(), "getCurrentItemOrArmor", "(I)LItemStack;");
@@ -796,7 +796,7 @@ public class CustomItemTextures extends Mod {
         EntityPlayerMod() {
             final MethodRef getCurrentArmor = new MethodRef(getDeobfClass(), "getCurrentArmor", "(I)LItemStack;");
 
-            setParentClass("EntityLiving");
+            setParentClass("EntityLivingBase");
 
             addClassSignature(new ConstSignature("random.eat"));
 

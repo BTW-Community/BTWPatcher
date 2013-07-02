@@ -5,9 +5,9 @@ import net.minecraft.src.*;
 import java.io.File;
 
 public class Minecraft {
-    public TexturePackList texturePackList;
+    public ResourcePackRepository texturePackList;
     public GameSettings gameSettings;
-    public EntityLiving renderViewEntity;
+    public EntityLivingBase renderViewEntity;
     public EntityRenderer entityRenderer;
     public int displayWidth;
     public int displayHeight;
@@ -42,7 +42,7 @@ public class Minecraft {
         return null;
     }
 
-    public IResourceBundle getResourceBundle() {
+    public ResourceManager getResourceManager() {
         return null;
     }
 }

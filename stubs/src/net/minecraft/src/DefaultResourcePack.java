@@ -6,14 +6,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
 
-public class ResourcePackBase implements IResourcePack {
+public class DefaultResourcePack implements ResourcePack {
     public File file; // made public by __TexturePackBase
 
-    public InputStream getInputStream(ResourceAddress var1) throws IOException {
+    public InputStream getInputStream(ResourceLocation var1) throws IOException {
         return null;
     }
 
-    public boolean hasResource(ResourceAddress var1) {
+    public boolean hasResource(ResourceLocation var1) {
         return false;
     }
 
@@ -21,7 +21,7 @@ public class ResourcePackBase implements IResourcePack {
         return null;
     }
 
-    public MCMetaResourcePackInfo getMCMeta(MCMetaParser var1, String path) throws IOException {
+    public PackMetadataSection getMCMeta(MetadataSectionSerializer var1, String path) throws IOException {
         return null;
     }
 

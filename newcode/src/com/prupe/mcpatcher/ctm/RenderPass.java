@@ -10,7 +10,7 @@ import java.util.Properties;
 public class RenderPass {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.BETTER_GLASS);
 
-    private static final ResourceAddress RENDERPASS_PROPERTIES = TexturePackAPI.newMCPatcherResourceAddress("renderpass.properties");
+    private static final ResourceLocation RENDERPASS_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("renderpass.properties");
 
     private static final int[] baseRenderPass = new int[Block.blocksList.length];
     private static final int[] extraRenderPass = new int[Block.blocksList.length];
@@ -144,7 +144,7 @@ public class RenderPass {
         return renderPass > 2 && !enableLightmap ? 1.0f : multiplier;
     }
 
-    public static void doRenderPass(RenderGlobal renderer, EntityLiving camera, int pass, double partialTick) {
+    public static void doRenderPass(RenderGlobal renderer, EntityLivingBase camera, int pass, double partialTick) {
         if (pass > maxRenderPass) {
             return;
         }

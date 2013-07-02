@@ -7,7 +7,7 @@ import com.prupe.mcpatcher.TileLoader;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.Icon;
-import net.minecraft.src.ResourceAddress;
+import net.minecraft.src.ResourceLocation;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -145,7 +145,7 @@ abstract class TileOverride implements ITileOverride {
 
     private static Method getBiomeNameAt;
 
-    private final ResourceAddress propertiesFile;
+    private final ResourceLocation propertiesFile;
     private final String texturesDirectory;
     private final String baseFilename;
     private final TileLoader tileLoader;
@@ -161,7 +161,7 @@ abstract class TileOverride implements ITileOverride {
     private final int minHeight;
     private final int maxHeight;
 
-    private final List<ResourceAddress> tileNames = new ArrayList<ResourceAddress>();
+    private final List<ResourceLocation> tileNames = new ArrayList<ResourceLocation>();
     protected Icon[] icons;
     private boolean disabled;
     private int[] reorient;
@@ -182,7 +182,7 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    static TileOverride create(ResourceAddress propertiesFile, TileLoader tileLoader) {
+    static TileOverride create(ResourceLocation propertiesFile, TileLoader tileLoader) {
         if (propertiesFile == null) {
             return null;
         }
@@ -229,7 +229,7 @@ abstract class TileOverride implements ITileOverride {
         return override == null || override.disabled ? null : override;
     }
 
-    protected TileOverride(ResourceAddress propertiesFile, Properties properties, TileLoader tileLoader) {
+    protected TileOverride(ResourceLocation propertiesFile, Properties properties, TileLoader tileLoader) {
         this.propertiesFile = propertiesFile;
         texturesDirectory = propertiesFile.getPath().replaceFirst("/[^/]*$", "");
         baseFilename = propertiesFile.getPath().replaceFirst(".*/", "").replaceFirst("\\.properties$", "");
@@ -320,7 +320,7 @@ abstract class TileOverride implements ITileOverride {
         weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
     }
 
-    private boolean addIcon(ResourceAddress resource) {
+    private boolean addIcon(ResourceLocation resource) {
         tileNames.add(resource);
         return tileLoader.preloadTile(resource, renderPass > 2);
     }
@@ -330,7 +330,7 @@ abstract class TileOverride implements ITileOverride {
         String tileList = properties.getProperty("tiles", "").trim();
         if (tileList.equals("")) {
             for (int i = 0; ; i++) {
-                ResourceAddress resource = TileLoader.parseTileAddress(propertiesFile, String.valueOf(i));
+                ResourceLocation resource = TileLoader.parseTileAddress(propertiesFile, String.valueOf(i));
                 if (!TexturePackAPI.hasResource(resource)) {
                     break;
                 }
@@ -349,7 +349,7 @@ abstract class TileOverride implements ITileOverride {
                         int from = Integer.parseInt(matcher.group(1));
                         int to = Integer.parseInt(matcher.group(2));
                         for (int i = from; i <= to; i++) {
-                            ResourceAddress resource = TileLoader.parseTileAddress(propertiesFile, String.valueOf(i));
+                            ResourceLocation resource = TileLoader.parseTileAddress(propertiesFile, String.valueOf(i));
                             if (TexturePackAPI.hasResource(resource)) {
                                 addIcon(resource);
                             } else {
@@ -360,7 +360,7 @@ abstract class TileOverride implements ITileOverride {
                         e.printStackTrace();
                     }
                 } else {
-                    ResourceAddress resource = TileLoader.parseTileAddress(propertiesFile, token);
+                    ResourceLocation resource = TileLoader.parseTileAddress(propertiesFile, token);
                     if (resource == null) {
                         tileNames.add(null);
                     } else if (TexturePackAPI.hasResource(resource)) {
@@ -424,7 +424,7 @@ abstract class TileOverride implements ITileOverride {
                 if (!token.endsWith(".png")) {
                     token += ".png";
                 }
-                ResourceAddress resource = TexturePackAPI.parseResourceAddress(propertiesFile, token);
+                ResourceLocation resource = TexturePackAPI.parseResourceLocation(propertiesFile, token);
                 if (resource != null) {
                     list.add(resource.toString());
                 }

@@ -1,7 +1,7 @@
 package com.prupe.mcpatcher.mob;
 
 import com.prupe.mcpatcher.*;
-import net.minecraft.src.ResourceAddress;
+import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.Tessellator;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -17,7 +17,7 @@ public class LineRenderer {
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.RANDOM_MOBS, "leashLine", true);
     private static final LineRenderer[] renderers = new LineRenderer[2];
 
-    private final ResourceAddress texture;
+    private final ResourceLocation texture;
     private final double width;
     private final double a;
     private final double b;
@@ -59,9 +59,9 @@ public class LineRenderer {
     }
 
     private LineRenderer(String name, double width, double a, double b, int segments) {
-        texture = TexturePackAPI.newMCPatcherResourceAddress("line/" + name + ".png");
+        texture = TexturePackAPI.newMCPatcherResourceLocation("line/" + name + ".png");
         active = TexturePackAPI.hasResource(texture);
-        Properties properties = TexturePackAPI.getProperties(TexturePackAPI.transformResourceAddress(texture, ".png", ".properties"));
+        Properties properties = TexturePackAPI.getProperties(TexturePackAPI.transformResourceLocation(texture, ".png", ".properties"));
         this.width = MCPatcherUtils.getDoubleProperty(properties, "width", width);
         this.a = MCPatcherUtils.getDoubleProperty(properties, "a", a);
         this.b = MCPatcherUtils.getDoubleProperty(properties, "b", b);

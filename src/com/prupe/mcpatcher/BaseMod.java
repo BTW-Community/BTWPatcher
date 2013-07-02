@@ -694,8 +694,8 @@ public final class BaseMod extends Mod {
         }
     }
 
-    public static class EntityLivingMod extends com.prupe.mcpatcher.ClassMod {
-        public EntityLivingMod(Mod mod) {
+    public static class EntityLivingBaseMod extends com.prupe.mcpatcher.ClassMod {
+        public EntityLivingBaseMod(Mod mod) {
             super(mod);
             setParentClass("Entity");
 
@@ -705,10 +705,10 @@ public final class BaseMod extends Mod {
         }
     }
 
-    public static class EntityLivingSubMod extends com.prupe.mcpatcher.ClassMod {
-        public EntityLivingSubMod(Mod mod) {
+    public static class EntityLivingMod extends com.prupe.mcpatcher.ClassMod {
+        public EntityLivingMod(Mod mod) {
             super(mod);
-            setParentClass("EntityLiving");
+            setParentClass("EntityLivingBase");
 
             addClassSignature(new ConstSignature("explode"));
             addClassSignature(new ConstSignature("CanPickUpLoot"));
@@ -717,11 +717,11 @@ public final class BaseMod extends Mod {
         }
     }
 
-    public static class ResourceAddressMod extends com.prupe.mcpatcher.ClassMod {
+    public static class ResourceLocationMod extends com.prupe.mcpatcher.ClassMod {
         protected final MethodRef getNamespace = new MethodRef(getDeobfClass(), "getNamespace", "()Ljava/lang/String;");
         protected final MethodRef getPath = new MethodRef(getDeobfClass(), "getPath", "()Ljava/lang/String;");
 
-        public ResourceAddressMod(Mod mod) {
+        public ResourceLocationMod(Mod mod) {
             super(mod);
 
             final MethodRef indexOf = new MethodRef("java/lang/String", "indexOf", "(I)I");
@@ -745,20 +745,20 @@ public final class BaseMod extends Mod {
         }
     }
 
-    public static class ResourceAddressSignature extends BytecodeSignature {
-        protected static final ClassRef resourceAddressClass = new ClassRef("ResourceAddress");
-        protected static final MethodRef resourceAddressInit1 = new MethodRef("ResourceAddress", "<init>", "(Ljava/lang/String;)V");
+    public static class ResourceLocationSignature extends BytecodeSignature {
+        protected static final ClassRef resourceLocationClass = new ClassRef("ResourceLocation");
+        protected static final MethodRef resourceLocationInit1 = new MethodRef("ResourceLocation", "<init>", "(Ljava/lang/String;)V");
         protected final FieldRef mappedField;
         protected final String path;
 
-        public ResourceAddressSignature(com.prupe.mcpatcher.ClassMod classMod, FieldRef mappedField, String path) {
+        public ResourceLocationSignature(com.prupe.mcpatcher.ClassMod classMod, FieldRef mappedField, String path) {
             super(classMod);
             this.mappedField = mappedField;
             this.path = path;
 
             matchStaticInitializerOnly(true);
-            addXref(1, resourceAddressClass);
-            addXref(2, resourceAddressInit1);
+            addXref(1, resourceLocationClass);
+            addXref(2, resourceLocationInit1);
             addXref(3, mappedField);
         }
 
@@ -778,15 +778,15 @@ public final class BaseMod extends Mod {
         }
     }
 
-    public static class IResourceMod extends com.prupe.mcpatcher.ClassMod {
-        public IResourceMod(Mod mod) {
+    public static class ResourceMod extends com.prupe.mcpatcher.ClassMod {
+        public ResourceMod(Mod mod) {
             super(mod);
 
             addClassSignature(new InterfaceSignature(
-                getMinecraftVersion().compareTo("13w25a") >= 0 ? null : new InterfaceMethodRef(getDeobfClass(), "getAddress", "()LResourceAddress;"),
+                getMinecraftVersion().compareTo("13w25a") >= 0 ? null : new InterfaceMethodRef(getDeobfClass(), "getAddress", "()LResourceLocation;"),
                 new InterfaceMethodRef(getDeobfClass(), "getInputStream", "()Ljava/io/InputStream;"),
                 new InterfaceMethodRef(getDeobfClass(), "isPresent", "()Z"),
-                new InterfaceMethodRef(getDeobfClass(), "getMCMeta", "(Ljava/lang/String;)LIMCMeta;")
+                new InterfaceMethodRef(getDeobfClass(), "getMCMeta", "(Ljava/lang/String;)LMetadataSection;")
             ));
         }
     }
@@ -976,13 +976,13 @@ public final class BaseMod extends Mod {
     /**
      * Maps TextureUtilsClass (1.6).
      */
-    public static class TextureUtilsMod extends com.prupe.mcpatcher.ClassMod {
+    public static class TextureUtilMod extends com.prupe.mcpatcher.ClassMod {
         protected final MethodRef glTexSubImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
         protected final MethodRef glTexParameteri = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexParameteri", "(III)V");
         protected final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
         protected final MethodRef glGenTextures = new MethodRef(MCPatcherUtils.GL11_CLASS, "glGenTextures", "()I");
 
-        public TextureUtilsMod(Mod mod) {
+        public TextureUtilMod(Mod mod) {
             super(mod);
 
             addClassSignature(new ConstSignature(glTexSubImage2D));
@@ -993,29 +993,29 @@ public final class BaseMod extends Mod {
     }
 
     /**
-     * Maps ITexture interface (1.6+).
+     * Maps TextureObject interface (1.6+).
      */
-    public static class ITextureMod extends com.prupe.mcpatcher.ClassMod {
-        public ITextureMod(Mod mod) {
+    public static class TextureObjectMod extends com.prupe.mcpatcher.ClassMod {
+        public TextureObjectMod(Mod mod) {
             super(mod);
 
             addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "load", "(LIResourceBundle;)V"),
+                new InterfaceMethodRef(getDeobfClass(), "load", "(LResourceManager;)V"),
                 new InterfaceMethodRef(getDeobfClass(), "getGLTexture", "()I")
             ).setInterfaceOnly(true));
         }
     }
 
     /**
-     * Maps TextureBase class (1.6+).
+     * Maps AbstractTexture class (1.6+).
      */
-    public static class TextureBaseMod extends com.prupe.mcpatcher.ClassMod {
+    public static class AbstractTextureMod extends com.prupe.mcpatcher.ClassMod {
         protected final FieldRef glTextureId = new FieldRef(getDeobfClass(), "glTextureId", "I");
         protected final MethodRef getGLTextureId = new MethodRef(getDeobfClass(), "getGlTextureId", "()I");
 
-        public TextureBaseMod(Mod mod) {
+        public AbstractTextureMod(Mod mod) {
             super(mod);
-            setInterfaces("ITexture");
+            setInterfaces("TextureObject");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -1045,7 +1045,7 @@ public final class BaseMod extends Mod {
                 }
             }
                 .setMethod(getGLTextureId)
-                .addXref(2, new MethodRef("TextureUtils", "newGLTexture", "()I"))
+                .addXref(2, new MethodRef("TextureUtil", "newGLTexture", "()I"))
             );
 
             addMemberMapper(new FieldMapper(glTextureId));
@@ -1074,7 +1074,7 @@ public final class BaseMod extends Mod {
 
         public TextureMod(Mod mod) {
             super(mod);
-            setParentClass("TextureBase");
+            setParentClass("AbstractTexture");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -1098,15 +1098,15 @@ public final class BaseMod extends Mod {
     }
 
     /**
-     * Maps TextureNamed class (1.6+).
+     * Maps SimpleTexture class (1.6+).
      */
-    public static class TextureNamedMod extends com.prupe.mcpatcher.ClassMod {
-        protected final FieldRef textureName = new FieldRef(getDeobfClass(), "address", "LResourceAddress;");
-        protected final MethodRef load = new MethodRef(getDeobfClass(), "load", "(LIResourceBundle;)V");
+    public static class SimpleTextureMod extends com.prupe.mcpatcher.ClassMod {
+        protected final FieldRef textureName = new FieldRef(getDeobfClass(), "address", "LResourceLocation;");
+        protected final MethodRef load = new MethodRef(getDeobfClass(), "load", "(LResourceManager;)V");
 
-        public TextureNamedMod(Mod mod) {
+        public SimpleTextureMod(Mod mod) {
             super(mod);
-            setParentClass("TextureBase");
+            setParentClass("AbstractTexture");
 
             final MethodRef imageRead = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
 
@@ -1127,12 +1127,12 @@ public final class BaseMod extends Mod {
     }
 
     /**
-     * Maps TextureStitched class.
+     * Maps TextureAtlasSprite class.
      */
-    public static class TextureStitchedMod extends com.prupe.mcpatcher.ClassMod {
+    public static class TextureAtlasSpriteMod extends com.prupe.mcpatcher.ClassMod {
         protected final FieldRef textureName = new FieldRef(getDeobfClass(), "textureName", "Ljava/lang/String;");
 
-        public TextureStitchedMod(Mod mod) {
+        public TextureAtlasSpriteMod(Mod mod) {
             super(mod);
             setInterfaces("Icon");
 
@@ -1155,14 +1155,14 @@ public final class BaseMod extends Mod {
     }
 
     /**
-     * Maps TextureWithData class.
+     * Maps DynamicTexture class.
      */
-    public static class TextureWithDataMod extends com.prupe.mcpatcher.ClassMod {
+    public static class DynamicTextureMod extends com.prupe.mcpatcher.ClassMod {
         protected final MethodRef getRGB = new MethodRef(getDeobfClass(), "getRGB", "()[I");
 
-        public TextureWithDataMod(Mod mod) {
+        public DynamicTextureMod(Mod mod) {
             super(mod);
-            setParentClass("TextureBase");
+            setParentClass("AbstractTexture");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -1186,19 +1186,19 @@ public final class BaseMod extends Mod {
     }
 
     /**
-     * Maps TextureMap class.
+     * Maps TextureAtlas class.
      */
-    public static class TextureMapMod extends com.prupe.mcpatcher.ClassMod {
+    public static class TextureAtlasMod extends com.prupe.mcpatcher.ClassMod {
         protected final FieldRef basePath = new FieldRef(getDeobfClass(), "basePath", "Ljava/lang/String;");
         protected final FieldRef texturesByName = new FieldRef(getDeobfClass(), "texturesByName", "Ljava/util/Map;");
-        protected final MethodRef refreshTextures1 = new MethodRef(getDeobfClass(), "refreshTextures1", "(LIResourceBundle;)V");
-        protected final MethodRef refreshTextures2 = new MethodRef(getDeobfClass(), "refreshTextures2", "(LIResourceBundle;)V");
+        protected final MethodRef refreshTextures1 = new MethodRef(getDeobfClass(), "refreshTextures1", "(LResourceManager;)V");
+        protected final MethodRef refreshTextures2 = new MethodRef(getDeobfClass(), "refreshTextures2", "(LResourceManager;)V");
         protected final MethodRef registerIcon = new MethodRef(getDeobfClass(), "registerIcon", "(Ljava/lang/String;)LIcon;");
 
-        public TextureMapMod(Mod mod) {
+        public TextureAtlasMod(Mod mod) {
             super(mod);
-            setParentClass("TextureBase");
-            setInterfaces("IStitchedTexture", "IconRegister");
+            setParentClass("AbstractTexture");
+            setInterfaces("TickableTextureObject", "IconRegister");
 
             final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
             final InterfaceMethodRef setIterator = new InterfaceMethodRef("java/util/Set", "iterator", "()Ljava/util/Iterator;");

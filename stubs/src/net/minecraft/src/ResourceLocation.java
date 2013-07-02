@@ -1,10 +1,10 @@
 package net.minecraft.src;
 
-public class ResourceAddress {
-    public ResourceAddress(String namespace, String path) {
+public class ResourceLocation {
+    public ResourceLocation(String namespace, String path) {
     }
 
-    public ResourceAddress(String path) {
+    public ResourceLocation(String path) {
     }
 
     public String getNamespace() {

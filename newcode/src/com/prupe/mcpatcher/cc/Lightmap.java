@@ -5,7 +5,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.EntityRenderer;
-import net.minecraft.src.ResourceAddress;
+import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.World;
 
 import java.awt.image.BufferedImage;
@@ -47,7 +47,7 @@ public final class Lightmap {
         if (lightmaps.containsKey(worldType)) {
             lightmap = lightmaps.get(worldType);
         } else {
-            ResourceAddress resource = TexturePackAPI.newMCPatcherResourceAddress(String.format(LIGHTMAP_FORMAT, worldType));
+            ResourceLocation resource = TexturePackAPI.newMCPatcherResourceLocation(String.format(LIGHTMAP_FORMAT, worldType));
             BufferedImage image = TexturePackAPI.getImage(resource);
             if (image != null) {
                 lightmap = new Lightmap(resource, image);
@@ -60,7 +60,7 @@ public final class Lightmap {
         return lightmap != null && lightmap.compute(renderer, world, mapRGB, partialTick);
     }
 
-    private Lightmap(ResourceAddress resource, BufferedImage image) {
+    private Lightmap(ResourceLocation resource, BufferedImage image) {
         width = image.getWidth();
         int height = image.getHeight();
         customNightvision = (height == HEIGHT_WITH_NIGHTVISION);

@@ -2,7 +2,7 @@ package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.TileLoader;
 import net.minecraft.src.Icon;
-import net.minecraft.src.ResourceAddress;
+import net.minecraft.src.ResourceLocation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +15,7 @@ final class ItemOverride extends OverrideBase {
     private Icon icon;
     private final Map<Icon, Icon> iconMap;
 
-    ItemOverride(ResourceAddress propertiesName, Properties properties) {
+    ItemOverride(ResourceLocation propertiesName, Properties properties) {
         super(propertiesName, properties);
 
         if (itemsIDs == null) {
@@ -51,7 +51,7 @@ final class ItemOverride extends OverrideBase {
         }
         tileLoader.preloadTile(textureName, false, special);
         if (alternateTextures != null) {
-            for (Map.Entry<String, ResourceAddress> entry : alternateTextures.entrySet()) {
+            for (Map.Entry<String, ResourceLocation> entry : alternateTextures.entrySet()) {
                 tileLoader.preloadTile(entry.getValue(), false, special);
             }
         }
@@ -60,7 +60,7 @@ final class ItemOverride extends OverrideBase {
     void registerIcon(TileLoader tileLoader) {
         icon = tileLoader.getIcon(textureName);
         if (alternateTextures != null) {
-            for (Map.Entry<String, ResourceAddress> entry : alternateTextures.entrySet()) {
+            for (Map.Entry<String, ResourceLocation> entry : alternateTextures.entrySet()) {
                 Icon from = tileLoader.getIcon(entry.getKey());
                 Icon to = tileLoader.getIcon(entry.getValue());
                 if (from != null && to != null) {

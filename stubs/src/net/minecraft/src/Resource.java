@@ -2,10 +2,10 @@ package net.minecraft.src;
 
 import java.io.InputStream;
 
-public interface IResource {
+public interface Resource {
     InputStream getInputStream();
 
     boolean isPresent();
 
-    IMCMeta getMCMeta(String path);
+    MetadataSection getMCMeta(String path);
 }

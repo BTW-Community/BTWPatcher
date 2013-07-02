@@ -14,8 +14,8 @@ public class CITUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
     static final String CIT_PROPERTIES = "cit.properties";
-    private static final ResourceAddress CIT_PROPERTIES1 = TexturePackAPI.newMCPatcherResourceAddress(CIT_PROPERTIES);
-    private static final ResourceAddress CIT_PROPERTIES2 = TexturePackAPI.newMCPatcherResourceAddress("cit/" + CIT_PROPERTIES);
+    private static final ResourceLocation CIT_PROPERTIES1 = TexturePackAPI.newMCPatcherResourceLocation(CIT_PROPERTIES);
+    private static final ResourceLocation CIT_PROPERTIES2 = TexturePackAPI.newMCPatcherResourceLocation("cit/" + CIT_PROPERTIES);
 
     private static final int MAX_ITEMS = Item.itemsList.length;
     static final int MAX_ENCHANTMENTS = 256;
@@ -98,7 +98,7 @@ public class CITUtils {
                 EnchantmentList.setProperties(properties);
 
                 if (enableItems || enableEnchantments || enableArmor) {
-                    for (ResourceAddress resource : TexturePackAPI.listResources(TexturePackAPI.MCPATCHER_SUBDIR + "cit", ".properties", true, false, true)) {
+                    for (ResourceLocation resource : TexturePackAPI.listResources(TexturePackAPI.MCPATCHER_SUBDIR + "cit", ".properties", true, false, true)) {
                         registerOverride(OverrideBase.create(resource));
                     }
                     if (enableItems) {
@@ -224,11 +224,11 @@ public class CITUtils {
         return icon;
     }
 
-    public static ResourceAddress getArmorTexture(ResourceAddress texture, EntityLiving entity, ItemStack itemStack) {
+    public static ResourceLocation getArmorTexture(ResourceLocation texture, EntityLivingBase entity, ItemStack itemStack) {
         if (enableArmor) {
             ArmorOverride override = findMatch(armors, itemStack);
             if (override != null) {
-                ResourceAddress newTexture = override.getReplacementTexture(texture);
+                ResourceLocation newTexture = override.getReplacementTexture(texture);
                 if (newTexture != null) {
                     return newTexture;
                 }
@@ -298,7 +298,7 @@ public class CITUtils {
         return !useGlint;
     }
 
-    public static boolean setupArmorEnchantments(EntityLiving entity, int pass) {
+    public static boolean setupArmorEnchantments(EntityLivingBase entity, int pass) {
         if (!enableEnchantments) {
             return false;
         }

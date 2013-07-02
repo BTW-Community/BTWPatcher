@@ -53,7 +53,7 @@ public class CTMUtils {
                 betterGrass = null;
 
                 if (enableStandard || enableNonStandard) {
-                    for (ResourceAddress resource : TexturePackAPI.listResources(TexturePackAPI.MCPATCHER_SUBDIR + "ctm", ".properties", true, false, true)) {
+                    for (ResourceLocation resource : TexturePackAPI.listResources(TexturePackAPI.MCPATCHER_SUBDIR + "ctm", ".properties", true, false, true)) {
                         registerOverride(TileOverride.create(resource, tileLoader));
                     }
                 }

@@ -22,14 +22,14 @@ public class RandomMobs extends Mod {
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
-        addClassMod(new BaseMod.ResourceAddressMod(this));
+        addClassMod(new BaseMod.ResourceLocationMod(this));
         addClassMod(new BaseMod.NBTTagCompoundMod(this));
         addClassMod(new BaseMod.TessellatorMod(this));
         addClassMod(new EntityMod());
-        addClassMod(new EntityLivingMod());
+        addClassMod(new EntityLivingBaseMod());
         addClassMod(new RenderMod());
+        addClassMod(new RenderLivingEntityMod());
         addClassMod(new RenderLivingMod());
-        addClassMod(new RenderLivingSubMod());
         addClassMod(new RenderMiscMod("Spider", "textures/entity/spider_eyes.png"));
         addClassMod(new RenderMiscMod("Enderman", "textures/entity/enderman/enderman_eyes.png"));
         addClassMod(new RenderMiscMod("Sheep", "textures/entity/sheep/sheep_fur.png"));
@@ -106,8 +106,8 @@ public class RandomMobs extends Mod {
         }
     }
 
-    private class EntityLivingMod extends BaseMod.EntityLivingMod {
-        EntityLivingMod() {
+    private class EntityLivingBaseMod extends BaseMod.EntityLivingBaseMod {
+        EntityLivingBaseMod() {
             super(RandomMobs.this);
 
             final MethodRef getEntityTexture = new MethodRef(getDeobfClass(), "getEntityTexture", "()Ljava/lang/String;");
@@ -138,7 +138,7 @@ public class RandomMobs extends Mod {
                         // MobRandomizer.ExtraInfo.writeToNBT(this, nbttagcompound);
                         ALOAD_0,
                         ALOAD_1,
-                        reference(INVOKESTATIC, new MethodRef(EXTRA_INFO_CLASS, "writeToNBT", "(LEntityLiving;LNBTTagCompound;)V"))
+                        reference(INVOKESTATIC, new MethodRef(EXTRA_INFO_CLASS, "writeToNBT", "(LEntityLivingBase;LNBTTagCompound;)V"))
                     );
                 }
             }.targetMethod(writeToNBT));
@@ -162,7 +162,7 @@ public class RandomMobs extends Mod {
                         // MobRandomizer.ExtraInfo.readFromNBT(this, nbttagcompound);
                         ALOAD_0,
                         ALOAD_1,
-                        reference(INVOKESTATIC, new MethodRef(EXTRA_INFO_CLASS, "readFromNBT", "(LEntityLiving;LNBTTagCompound;)V"))
+                        reference(INVOKESTATIC, new MethodRef(EXTRA_INFO_CLASS, "readFromNBT", "(LEntityLivingBase;LNBTTagCompound;)V"))
                     );
                 }
             }.targetMethod(readFromNBT));
@@ -174,9 +174,9 @@ public class RandomMobs extends Mod {
             addClassSignature(new ConstSignature("textures/misc/shadow.png"));
             addClassSignature(new ConstSignature(0.45f));
 
-            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceAddress;)V");
-            final MethodRef getEntityTexture = new MethodRef(getDeobfClass(), "getEntityTexture", "(LEntity;)LResourceAddress;");
-            final MethodRef randomTexture = new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(LEntity;LResourceAddress;)LResourceAddress;");
+            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceLocation;)V");
+            final MethodRef getEntityTexture = new MethodRef(getDeobfClass(), "getEntityTexture", "(LEntity;)LResourceLocation;");
+            final MethodRef randomTexture = new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(LEntity;LResourceLocation;)LResourceLocation;");
 
             addMemberMapper(new MethodMapper(loadTexture)
                 .accessFlag(AccessFlag.PROTECTED, true)
@@ -215,11 +215,11 @@ public class RandomMobs extends Mod {
         }
     }
 
-    private class RenderLivingMod extends ClassMod {
-        RenderLivingMod() {
+    private class RenderLivingEntityMod extends ClassMod {
+        RenderLivingEntityMod() {
             setParentClass("Render");
 
-            final MethodRef doRenderLiving = new MethodRef(getDeobfClass(), "doRenderLiving", "(LEntityLiving;DDDFF)V");
+            final MethodRef doRenderLiving = new MethodRef(getDeobfClass(), "doRenderLiving", "(LEntityLivingBase;DDDFF)V");
             final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
 
             addClassSignature(new ConstSignature(180.0f));
@@ -242,9 +242,9 @@ public class RandomMobs extends Mod {
         }
     }
 
-    private class RenderLivingSubMod extends ClassMod {
-        RenderLivingSubMod() {
-            setParentClass("RenderLiving");
+    private class RenderLivingMod extends ClassMod {
+        RenderLivingMod() {
+            setParentClass("RenderLivingEntity");
 
             addClassSignature(new ConstSignature(1.6));
             addClassSignature(new ConstSignature(0.5));
@@ -259,10 +259,10 @@ public class RandomMobs extends Mod {
         RenderMiscMod(String mob, final String texture) {
             this.mob = mob;
 
-            final FieldRef miscSkin = new FieldRef(getDeobfClass(), mob.toLowerCase() + "MiscSkin", "LResourceAddress;");
-            final MethodRef randomTexture = new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(LEntityLiving;LResourceAddress;)LResourceAddress;");
+            final FieldRef miscSkin = new FieldRef(getDeobfClass(), mob.toLowerCase() + "MiscSkin", "LResourceLocation;");
+            final MethodRef randomTexture = new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(LEntityLivingBase;LResourceLocation;)LResourceLocation;");
 
-            addClassSignature(new BaseMod.ResourceAddressSignature(this, miscSkin, texture));
+            addClassSignature(new BaseMod.ResourceLocationSignature(this, miscSkin, texture));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -301,13 +301,13 @@ public class RandomMobs extends Mod {
 
     private class RenderSnowmanMod extends ClassMod {
         RenderSnowmanMod() {
-            setParentClass("RenderLivingSub");
+            setParentClass("RenderLiving");
 
             final MethodRef renderEquippedItems = new MethodRef(getDeobfClass(), "renderEquippedItems1", "(LEntitySnowman;F)V");
-            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceAddress;)V");
+            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceLocation;)V");
             final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
-            final FieldRef snowmanOverlayTexture = new FieldRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "snowmanOverlayTexture", "LResourceAddress;");
-            final MethodRef setupSnowman = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "setupSnowman", "(LEntityLiving;)Z");
+            final FieldRef snowmanOverlayTexture = new FieldRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "snowmanOverlayTexture", "LResourceLocation;");
+            final MethodRef setupSnowman = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "setupSnowman", "(LEntityLivingBase;)Z");
             final MethodRef renderSnowmanOverlay = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "renderSnowmanOverlay", "()V");
 
             addClassSignature(new BytecodeSignature() {
@@ -380,13 +380,13 @@ public class RandomMobs extends Mod {
 
     private class RenderMooshroomMod extends ClassMod {
         RenderMooshroomMod() {
-            setParentClass("RenderLivingSub");
+            setParentClass("RenderLiving");
 
             final FieldRef renderBlocks = new FieldRef(getDeobfClass(), "renderBlocks", "LRenderBlocks;");
             final FieldRef mushroomRed = new FieldRef("Block", "mushroomRed", "LBlockFlower;");
-            final FieldRef blocksAtlas = new FieldRef("TextureMap", "blocks", "LResourceAddress;");
+            final FieldRef blocksAtlas = new FieldRef("TextureAtlas", "blocks", "LResourceLocation;");
             final MethodRef renderEquippedItems = new MethodRef(getDeobfClass(), "renderEquippedItems1", "(LEntityMooshroom;F)V");
-            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceAddress;)V");
+            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceLocation;)V");
             final MethodRef glPushMatrix = new MethodRef(MCPatcherUtils.GL11_CLASS, "glPushMatrix", "()V");
             final MethodRef renderBlockAsItem = new MethodRef("RenderBlocks", "renderBlockAsItem", "(LBlock;IF)V");
 
@@ -396,7 +396,7 @@ public class RandomMobs extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // loadTexture(TextureMap.blocks);
+                        // loadTexture(TextureAtlas.blocks);
                         ALOAD_0,
                         captureReference(GETSTATIC),
                         captureReference(INVOKEVIRTUAL),
@@ -447,7 +447,7 @@ public class RandomMobs extends Mod {
                     return buildCode(
                         ALOAD_1,
                         getMatch(),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "setupMooshroom", "(LEntityLiving;LResourceAddress;)LResourceAddress;"))
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "setupMooshroom", "(LEntityLivingBase;LResourceLocation;)LResourceLocation;"))
                     );
                 }
             }.targetMethod(renderEquippedItems));
@@ -623,7 +623,7 @@ public class RandomMobs extends Mod {
         RenderLeashMod() {
             super("leash", 1);
 
-            setParentClass("RenderLiving");
+            setParentClass("RenderLivingEntity");
 
             addClassSignature(new ConstSignature(0.01745329238474369));
             addClassSignature(new ConstSignature(1.5707963267948966));
@@ -631,7 +631,7 @@ public class RandomMobs extends Mod {
 
         @Override
         MethodRef getRenderMethod() {
-            return new MethodRef(getDeobfClass(), "renderLeash", "(LEntityLivingSub;DDDFF)V");
+            return new MethodRef(getDeobfClass(), "renderLeash", "(LEntityLiving;DDDFF)V");
         }
     }
 }
