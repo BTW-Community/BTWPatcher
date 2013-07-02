@@ -47,7 +47,7 @@ public class CustomItemTextures extends Mod {
         addClassMod(new RenderBipedMod());
         addClassMod(new RenderPlayerMod());
         addClassMod(new RenderSnowballMod());
-        addClassMod(new BaseMod.EntityLivingMod(this));
+        addClassMod(new EntityLivingMod());
         addClassMod(new BaseMod.EntityLivingSubMod(this));
         addClassMod(new EntityPlayerMod());
         addClassMod(new PotionMod());
@@ -779,6 +779,16 @@ public class CustomItemTextures extends Mod {
                     );
                 }
             }.targetMethod(doRender));
+        }
+    }
+
+    private class EntityLivingMod extends BaseMod.EntityLivingMod {
+        EntityLivingMod() {
+            super(CustomItemTextures.this);
+
+            final MethodRef getCurrentItemOrArmor = new MethodRef(getDeobfClass(), "getCurrentItemOrArmor", "(I)LItemStack;");
+
+            addMemberMapper(new MethodMapper(getCurrentItemOrArmor));
         }
     }
 

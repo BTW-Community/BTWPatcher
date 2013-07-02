@@ -299,10 +299,10 @@ public class CITUtils {
     }
 
     public static boolean setupArmorEnchantments(EntityLiving entity, int pass) {
-        if (!enableEnchantments || !(entity instanceof EntityLivingSub)) {
+        if (!enableEnchantments) {
             return false;
         }
-        ItemStack itemStack = ((EntityLivingSub) entity).getCurrentArmor(3 - pass);
+        ItemStack itemStack = entity.getCurrentItemOrArmor(4 - pass);
         if (itemStack == null) {
             return false;
         }

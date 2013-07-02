@@ -1,8 +1,6 @@
 package net.minecraft.src;
 
 public class EntityLiving extends Entity {
-    protected int health;
-
     public EntityLiving(World worldObj) {
         super(worldObj);
     }
@@ -17,5 +15,9 @@ public class EntityLiving extends Entity {
 
     @Override
     public void writeEntityToNBT(NBTTagCompound var1) {
+    }
+
+    public ItemStack getCurrentItemOrArmor(int slot) {
+        return null;
     }
 }
