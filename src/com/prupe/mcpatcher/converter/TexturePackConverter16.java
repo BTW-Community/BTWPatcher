@@ -18,6 +18,9 @@ public class TexturePackConverter16 extends TexturePackConverter {
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
 
     private static final String MCMETA_SUFFIX = ".mcmeta";
+    private static final String PACK_MCMETA = "pack" + MCMETA_SUFFIX;
+
+    private static final String PACK_TXT = "pack.txt";
     private static final String GLINT_PNG = "misc/glint.png";
     private static final String PUMPKINBLUR_PNG = "misc/pumpkinblur.png";
     private static final String SHADOW_PNG = "misc/shadow.png";
@@ -788,7 +791,7 @@ public class TexturePackConverter16 extends TexturePackConverter {
                 if (handled && entryNewName != null) {
                     addEntry(entryNewName, properties);
                 }
-            } else if (name.equals("pack.txt")) {
+            } else if (name.equals(PACK_TXT)) {
                 handled = convertPackTxt(entry, name);
             } else if (name.endsWith(".txt")) {
                 handled = convertAnimation(entry, name);
@@ -804,6 +807,16 @@ public class TexturePackConverter16 extends TexturePackConverter {
 
         for (TextureMCMeta meta : textureMCMeta.values()) {
             meta.toJSON();
+        }
+        if (!hasEntry(PACK_MCMETA)) {
+            PrintWriter writer = new PrintWriter(getOutputStream(PACK_MCMETA));
+            writer.println("{");
+            writer.println("  \"pack\": {");
+            writer.println("    \"pack_format\": 1,");
+            writer.println("    \"description\": \"Converted by MCPatcher\"");
+            writer.println("  }");
+            writer.println("}");
+            writer.flush();
         }
     }
 
