@@ -98,4 +98,8 @@ public class BlendMethod {
     public boolean isColorBased() {
         return fadeRGB;
     }
+
+    public boolean canFade() {
+        return fadeAlpha || fadeRGB;
+    }
 }
