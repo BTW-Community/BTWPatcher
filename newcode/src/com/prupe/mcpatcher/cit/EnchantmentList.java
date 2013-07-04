@@ -105,7 +105,11 @@ final class EnchantmentList {
         protected void scaleIntensities(EnchantmentList enchantments, int denominator) {
             if (denominator > 0) {
                 for (Layer layer : enchantments.layers) {
-                    layer.intensity = (float) layer.level / (float) denominator;
+                    if (layer.enchantment.blendMethod.canFade()) {
+                        layer.intensity = (float) layer.level / (float) denominator;
+                    } else {
+                        layer.intensity = layer.level > 0 ? 1.0f : 0.0f;
+                    }
                 }
             } else {
                 for (Layer layer : enchantments.layers) {
@@ -120,7 +124,9 @@ final class EnchantmentList {
         void computeIntensities(EnchantmentList enchantments) {
             int total = 0;
             for (Layer layer : enchantments.layers) {
-                total += layer.level;
+                if (layer.enchantment.blendMethod.canFade()) {
+                    total += layer.level;
+                }
             }
             scaleIntensities(enchantments, total);
         }
@@ -131,7 +137,9 @@ final class EnchantmentList {
         void computeIntensities(EnchantmentList enchantments) {
             int max = 0;
             for (Layer layer : enchantments.layers) {
-                Math.max(max, layer.level);
+                if (layer.enchantment.blendMethod.canFade()) {
+                    Math.max(max, layer.level);
+                }
             }
             scaleIntensities(enchantments, max);
         }
@@ -142,10 +150,15 @@ final class EnchantmentList {
         void computeIntensities(EnchantmentList enchantments) {
             float total = 0.0f;
             for (Layer layer : enchantments.layers) {
-                total += layer.getEffectiveDuration();
+                if (layer.enchantment.blendMethod.canFade()) {
+                    total += layer.getEffectiveDuration();
+                }
             }
             float timestamp = (float) ((System.currentTimeMillis() / 1000.0) % total);
             for (Layer layer : enchantments.layers) {
+                if (!layer.enchantment.blendMethod.canFade()) {
+                    continue;
+                }
                 if (timestamp <= 0.0f) {
                     break;
                 }

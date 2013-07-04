@@ -14,7 +14,7 @@ final class Enchantment extends OverrideBase {
     private static final float ITEM_2D_THICKNESS = 0.0625f;
 
     final int layer;
-    private final BlendMethod blendMethod;
+    final BlendMethod blendMethod;
     private final float rotation;
     private final float speed;
     final float duration;
