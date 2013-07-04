@@ -99,7 +99,7 @@ final class Enchantment extends OverrideBase {
             intensity = 1.0f;
         }
         begin(intensity);
-        ItemRenderer.renderItemIn2D(tessellator, 0.0f, 0.0f, 1.0f, 1.0f, width, height, ITEM_2D_THICKNESS);
+        ItemRenderer.renderItemIn2D(tessellator, 1.0f, 0.0f, 0.0f, 1.0f, width, height, ITEM_2D_THICKNESS);
         end();
     }
 
