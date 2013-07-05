@@ -75,6 +75,18 @@ final class Enchantment extends OverrideBase {
         rotation = MCPatcherUtils.getFloatProperty(properties, "rotation", 0.0f);
         speed = MCPatcherUtils.getFloatProperty(properties, "speed", 0.0f);
         duration = MCPatcherUtils.getFloatProperty(properties, "duration", 1.0f);
+
+        String valueX = MCPatcherUtils.getStringProperty(properties, "armorScaleX", "");
+        String valueY = MCPatcherUtils.getStringProperty(properties, "armorScaleY", "");
+        if (!valueX.isEmpty() && !valueY.isEmpty()) {
+            try {
+                armorScaleX = Float.parseFloat(valueX);
+                armorScaleY = Float.parseFloat(valueY);
+                armorScaleSet = true;
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
