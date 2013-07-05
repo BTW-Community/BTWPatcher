@@ -143,6 +143,8 @@ public class CustomColors extends Mod {
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS);
         addClassFile(MCPatcherUtils.LIGHTMAP_CLASS);
         addClassFile(MCPatcherUtils.BIOME_HELPER_CLASS);
+
+        BaseTexturePackMod.earlyInitialize(3, MCPatcherUtils.COLORIZER_CLASS, "init");
     }
 
     private class ConfigPanel extends ModConfigPanel {

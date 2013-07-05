@@ -44,6 +44,9 @@ public class FontUtils {
         });
     }
 
+    static void init() {
+    }
+
     public static ResourceLocation getFontName(FontRenderer fontRenderer, ResourceLocation font) {
         if (fontRenderer.defaultFont == null) {
             fontRenderer.defaultFont = font;

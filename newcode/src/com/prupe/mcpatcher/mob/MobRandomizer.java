@@ -36,6 +36,9 @@ public class MobRandomizer {
         });
     }
 
+    static void init() {
+    }
+
     public static ResourceLocation randomTexture(EntityLivingBase entity, ResourceLocation texture) {
         if (texture == null || !texture.getPath().endsWith(".png")) {
             return texture;

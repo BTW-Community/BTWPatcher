@@ -46,6 +46,8 @@ public class RandomMobs extends Mod {
         addClassFile(MCPatcherUtils.MOB_RULE_LIST_CLASS + "$MobRuleEntry");
         addClassFile(MCPatcherUtils.MOB_OVERLAY_CLASS);
         addClassFile(MCPatcherUtils.LINE_RENDERER_CLASS);
+
+        BaseTexturePackMod.earlyInitialize(3, MCPatcherUtils.RANDOM_MOBS_CLASS, "init");
     }
 
     private class EntityMod extends ClassMod {

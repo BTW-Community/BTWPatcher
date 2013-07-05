@@ -28,6 +28,8 @@ public class HDFont extends Mod {
 
         mod.addClassFile(MCPatcherUtils.FONT_UTILS_CLASS);
         mod.addClassFile(MCPatcherUtils.FONT_UTILS_CLASS + "$1");
+
+        BaseTexturePackMod.earlyInitialize(3, MCPatcherUtils.FONT_UTILS_CLASS, "init");
     }
 
     private static class FontRendererMod extends BaseMod.FontRendererMod {

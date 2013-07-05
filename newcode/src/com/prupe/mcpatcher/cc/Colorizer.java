@@ -103,6 +103,9 @@ public class Colorizer {
         intToFloat3(color, setColor);
     }
 
+    static void init() {
+    }
+
     private static void reset() {
         properties = new Properties();
 
