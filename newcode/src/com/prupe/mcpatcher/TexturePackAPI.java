@@ -2,7 +2,6 @@ package com.prupe.mcpatcher;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
-import net.minecraft.src.FallbackResourceManager;
 import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;

@@ -1,6 +1,8 @@
 package com.prupe.mcpatcher;
 
-import javassist.bytecode.*;
+import javassist.bytecode.ClassFile;
+import javassist.bytecode.MethodInfo;
+import javassist.bytecode.Mnemonic;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -430,7 +432,7 @@ abstract public class ClassMod implements PatchComponent {
             super(ClassMod.this);
         }
     }
-    
+
     public class AddFieldPatch extends com.prupe.mcpatcher.AddFieldPatch {
         public AddFieldPatch(FieldRef fieldRef) {
             super(ClassMod.this, fieldRef);
@@ -448,7 +450,7 @@ abstract public class ClassMod implements PatchComponent {
             super(ClassMod.this, name, accessFlags);
         }
     }
-    
+
     abstract public class AddMethodPatch extends com.prupe.mcpatcher.AddMethodPatch {
         public AddMethodPatch(MethodRef methodRef) {
             super(ClassMod.this, methodRef);

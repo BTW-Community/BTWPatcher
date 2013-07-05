@@ -1,7 +1,5 @@
 package net.minecraft.src;
 
-import java.util.List;
-
 public class TextureAtlasSprite implements Icon {
     public int getWidth() {
         return 0;
