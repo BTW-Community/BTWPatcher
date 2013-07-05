@@ -20,7 +20,7 @@ final class Enchantment extends OverrideBase {
     final int layer;
     final BlendMethod blendMethod;
     private final float rotation;
-    private final float speed;
+    private final double speed;
     final float duration;
 
     private boolean armorScaleSet;
@@ -73,7 +73,7 @@ final class Enchantment extends OverrideBase {
             error("unknown blend type %s", value);
         }
         rotation = MCPatcherUtils.getFloatProperty(properties, "rotation", 0.0f);
-        speed = MCPatcherUtils.getFloatProperty(properties, "speed", 0.0f);
+        speed = MCPatcherUtils.getDoubleProperty(properties, "speed", 0.0);
         duration = MCPatcherUtils.getFloatProperty(properties, "duration", 1.0f);
 
         String valueX = MCPatcherUtils.getStringProperty(properties, "armorScaleX", "");
@@ -154,9 +154,10 @@ final class Enchantment extends OverrideBase {
         blendMethod.applyBlending();
         blendMethod.applyFade(intensity);
         GL11.glPushMatrix();
-        if (speed != 0.0f) {
-            float offset = (float) (System.currentTimeMillis() % 3000L) / 3000.0f * 8.0f;
-            GL11.glTranslatef(offset * speed, 0.0f, 0.0f);
+        if (speed != 0.0) {
+            double offset = ((double) System.currentTimeMillis() * speed) / 3000.0;
+            offset -= Math.floor(offset);
+            GL11.glTranslatef((float) offset * 8.0f, 0.0f, 0.0f);
         }
         GL11.glRotatef(rotation, 0.0f, 0.0f, 1.0f);
     }
