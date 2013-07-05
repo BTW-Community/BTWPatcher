@@ -8,16 +8,24 @@ import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.Tessellator;
 import org.lwjgl.opengl.GL11;
 
+import java.awt.image.BufferedImage;
 import java.util.Properties;
 
 final class Enchantment extends OverrideBase {
     private static final float ITEM_2D_THICKNESS = 0.0625f;
+
+    static float baseArmorWidth;
+    static float baseArmorHeight;
 
     final int layer;
     final BlendMethod blendMethod;
     private final float rotation;
     private final float speed;
     final float duration;
+
+    private boolean armorScaleSet;
+    private float armorScaleX;
+    private float armorScaleY;
 
     static void beginOuter2D() {
         GL11.glEnable(GL11.GL_BLEND);
@@ -110,6 +118,10 @@ final class Enchantment extends OverrideBase {
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glMatrixMode(GL11.GL_TEXTURE);
         begin(intensity);
+        if (!armorScaleSet) {
+            setArmorScale();
+        }
+        GL11.glScalef(armorScaleX, armorScaleY, 1.0f);
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
     }
 
@@ -139,5 +151,21 @@ final class Enchantment extends OverrideBase {
 
     private void end() {
         GL11.glPopMatrix();
+    }
+
+    private void setArmorScale() {
+        armorScaleSet = true;
+        armorScaleX = 1.0f;
+        armorScaleY = 0.5f;
+        BufferedImage overlayImage = TexturePackAPI.getImage(textureName);
+        if (overlayImage != null) {
+            if (overlayImage.getWidth() < baseArmorWidth) {
+                armorScaleX *= baseArmorWidth / (float) overlayImage.getWidth();
+            }
+            if (overlayImage.getHeight() < baseArmorHeight) {
+                armorScaleY *= baseArmorHeight / (float) overlayImage.getHeight();
+            }
+        }
+        logger.finer("%s: scaling by %.3fx%.3f for armor model", this, armorScaleX, armorScaleY);
     }
 }

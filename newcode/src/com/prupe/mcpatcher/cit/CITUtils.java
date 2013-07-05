@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.cit;
 import com.prupe.mcpatcher.*;
 import net.minecraft.src.*;
 
+import java.awt.image.BufferedImage;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -16,6 +17,7 @@ public class CITUtils {
     static final String CIT_PROPERTIES = "cit.properties";
     private static final ResourceLocation CIT_PROPERTIES1 = TexturePackAPI.newMCPatcherResourceLocation(CIT_PROPERTIES);
     private static final ResourceLocation CIT_PROPERTIES2 = TexturePackAPI.newMCPatcherResourceLocation("cit/" + CIT_PROPERTIES);
+    private static final ResourceLocation FIXED_ARMOR_RESOURCE = new ResourceLocation("textures/models/armor/iron_layer_1.png");
 
     private static final int MAX_ITEMS = Item.itemsList.length;
     static final int MAX_ENCHANTMENTS = 256;
@@ -88,6 +90,15 @@ public class CITUtils {
                         LOWEST_ITEM_ID, getItemName(LOWEST_ITEM_ID),
                         HIGHEST_ITEM_ID, getItemName(HIGHEST_ITEM_ID)
                     );
+                }
+
+                BufferedImage image = TexturePackAPI.getImage(FIXED_ARMOR_RESOURCE);
+                if (image == null) {
+                    Enchantment.baseArmorWidth = 64.0f;
+                    Enchantment.baseArmorHeight = 32.0f;
+                } else {
+                    Enchantment.baseArmorWidth = image.getWidth();
+                    Enchantment.baseArmorHeight = image.getHeight();
                 }
 
                 Properties properties = TexturePackAPI.getProperties(CIT_PROPERTIES1);
