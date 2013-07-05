@@ -48,7 +48,7 @@ public class ExtendedHD extends Mod {
         addClassMod(new TextureCompassMod());
         addClassMod(new TextureClockMod());
         addClassMod(new SimpleResourceMod());
-        HDFont.setupMod(this);
+        HDFont.setupMod(this, getMinecraftVersion());
 
         addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS);
         addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS + "$1");

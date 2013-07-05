@@ -8,6 +8,8 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class HDFont extends Mod {
+    private static boolean haveReadFontData;
+
     public HDFont() {
         name = MCPatcherUtils.HD_FONT;
         author = "MCPatcher";
@@ -16,10 +18,12 @@ public class HDFont extends Mod {
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
-        setupMod(this);
+        setupMod(this, getMinecraftVersion());
     }
 
-    static void setupMod(Mod mod) {
+    static void setupMod(Mod mod, MinecraftVersion minecraftVersion) {
+        haveReadFontData = minecraftVersion.compareTo("1.6.2") < 0;
+
         mod.addClassMod(new FontRendererMod(mod));
 
         mod.addClassFile(MCPatcherUtils.FONT_UTILS_CLASS);
@@ -40,7 +44,7 @@ public class HDFont extends Mod {
             final MethodRef readFontData = new MethodRef(getDeobfClass(), "readFontData", "()V");
             final MethodRef getStringWidth = new MethodRef(getDeobfClass(), "getStringWidth", "(Ljava/lang/String;)I");
             final MethodRef getCharWidth = new MethodRef(getDeobfClass(), "getCharWidth", "(C)I");
-            final MethodRef computeCharWidths = new MethodRef(getDeobfClass(), "computeCharWidths", "()V");
+            final MethodRef computeCharWidths = haveReadFontData ? new MethodRef(getDeobfClass(), "computeCharWidths", "()V") : readFontData;
             final MethodRef getImageWidth = new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I");
             final MethodRef getFontName = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getFontName", "(LFontRenderer;LResourceLocation;)LResourceLocation;");
             final MethodRef computeCharWidthsf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "computeCharWidthsf", "(LFontRenderer;LResourceLocation;Ljava/awt/image/BufferedImage;[I[I)[F");
@@ -69,18 +73,20 @@ public class HDFont extends Mod {
                 .addXref(2, fontResource)
             );
 
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        begin(),
-                        ALOAD_0,
-                        anyReference(INVOKESPECIAL),
-                        ALOAD_0,
-                        anyReference(INVOKESPECIAL)
-                    );
-                }
-            }.setMethod(readFontData));
+            if (haveReadFontData) {
+                addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            begin(),
+                            ALOAD_0,
+                            anyReference(INVOKESPECIAL),
+                            ALOAD_0,
+                            anyReference(INVOKESPECIAL)
+                        );
+                    }
+                }.setMethod(readFontData));
+            }
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -99,6 +105,7 @@ public class HDFont extends Mod {
             addPatch(new AddFieldPatch(hdFont));
             addPatch(new AddFieldPatch(isHD));
 
+            addPatch(new MakeMemberPublicPatch(readFontData));
             addPatch(new MakeMemberPublicPatch(fontResource) {
                 @Override
                 public int getNewFlags(int oldFlags) {
