@@ -100,6 +100,6 @@ public class BlendMethod {
     }
 
     public boolean canFade() {
-        return fadeAlpha || fadeRGB;
+        return blend && (fadeAlpha || fadeRGB);
     }
 }

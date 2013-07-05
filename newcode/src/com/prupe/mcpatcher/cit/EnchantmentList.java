@@ -157,6 +157,7 @@ final class EnchantmentList {
             float timestamp = (float) ((System.currentTimeMillis() / 1000.0) % total);
             for (Layer layer : enchantments.layers) {
                 if (!layer.enchantment.blendMethod.canFade()) {
+                    layer.intensity = layer.level > 0 ? 1.0f : 0.0f;
                     continue;
                 }
                 if (timestamp <= 0.0f) {
