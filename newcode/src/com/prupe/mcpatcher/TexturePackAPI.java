@@ -98,6 +98,9 @@ public class TexturePackAPI {
         if (path.startsWith("/")) {
             path = path.substring(1);
         }
+        if (path.startsWith("assets/minecraft/")) {
+            path = path.substring(17);
+        }
         // Absolute path, including namespace:
         // namespace:path/filename -> assets/namespace/path/filename
         int colon = path.indexOf(':');
