@@ -52,7 +52,6 @@ public class HDFont extends Mod {
             final MethodRef computeCharWidthsf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "computeCharWidthsf", "(LFontRenderer;LResourceLocation;Ljava/awt/image/BufferedImage;[I[I)[F");
             final MethodRef getCharWidthf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getCharWidthf", "(LFontRenderer;[II)F");
             final MethodRef getStringWidthf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getStringWidthf", "(LFontRenderer;Ljava/lang/String;)F");
-            final FieldRef enableFont = new FieldRef(MCPatcherUtils.FONT_UTILS_CLASS, "enable", "Z");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -253,8 +252,9 @@ public class HDFont extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (FontUtils.enable) {
-                        reference(GETSTATIC, enableFont),
+                        // if (this.isHD) {
+                        ALOAD_0,
+                        reference(GETFIELD, isHD),
                         IFEQ, branch("A"),
 
                         // return FontUtils.getStringWidthf(this, string);

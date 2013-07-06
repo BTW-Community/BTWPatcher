@@ -13,7 +13,7 @@ import java.util.Set;
 public class FontUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.HD_FONT);
 
-    public static final boolean enable = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "hdFont", true);
+    private static final boolean enable = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "hdFont", true);
 
     private static final int ROWS = 16;
     private static final int COLS = 16;
@@ -73,6 +73,7 @@ public class FontUtils {
             for (int i = 0; i < charWidth.length; i++) {
                 charWidthf[i] = charWidth[i];
             }
+            charWidthf[32] = 4.0f;
             return charWidthf;
         }
         allRenderers.add(fontRenderer);
