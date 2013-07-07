@@ -17,7 +17,7 @@ public class CITUtils {
     static final String CIT_PROPERTIES = "cit.properties";
     private static final ResourceLocation CIT_PROPERTIES1 = TexturePackAPI.newMCPatcherResourceLocation(CIT_PROPERTIES);
     private static final ResourceLocation CIT_PROPERTIES2 = TexturePackAPI.newMCPatcherResourceLocation("cit/" + CIT_PROPERTIES);
-    private static final ResourceLocation FIXED_ARMOR_RESOURCE = new ResourceLocation("textures/models/armor/iron_layer_1.png");
+    static final ResourceLocation FIXED_ARMOR_RESOURCE = new ResourceLocation("textures/models/armor/iron_layer_1.png");
 
     private static final int MAX_ITEMS = Item.itemsList.length;
     static final int MAX_ENCHANTMENTS = 256;

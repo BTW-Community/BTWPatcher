@@ -30,7 +30,10 @@ final class ArmorOverride extends OverrideBase {
                 if (!key.endsWith(".png")) {
                     key += ".png";
                 }
-                armorMap.put(TexturePackAPI.parseResourceLocation(propertiesName, key), value);
+                if (!key.contains("/")) {
+                    key = "./" + key;
+                }
+                armorMap.put(TexturePackAPI.parseResourceLocation(CITUtils.FIXED_ARMOR_RESOURCE, key), value);
             }
         }
     }
