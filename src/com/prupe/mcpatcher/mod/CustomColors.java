@@ -2167,6 +2167,7 @@ public class CustomColors extends Mod {
             final FieldRef fogColorRed = new FieldRef(getDeobfClass(), "fogColorRed", "F");
             final FieldRef fogColorGreen = new FieldRef(getDeobfClass(), "fogColorGreen", "F");
             final FieldRef fogColorBlue = new FieldRef(getDeobfClass(), "fogColorBlue", "F");
+            final FieldRef lightmapColors = new FieldRef(getDeobfClass(), "lightmapColors", "[I");
             final FieldRef thePlayer = new FieldRef("Minecraft", "thePlayer", "LEntityClientPlayerMP;");
             final FieldRef nightVision = new FieldRef("Potion", "nightVision", "LPotion;");
             final MethodRef isPotionActive = new MethodRef("EntityClientPlayerMP", "isPotionActive", "(LPotion;)Z");
@@ -2268,7 +2269,7 @@ public class CustomColors extends Mod {
                 .addXref(8, new FieldRef("Minecraft", "gameSettings", "LGameSettings;"))
                 .addXref(9, new FieldRef("GameSettings", "gammaSetting", "F"))
                 .addXref(10, new FieldRef("Minecraft", "renderEngine", "LRenderEngine;"))
-                .addXref(11, new FieldRef(getDeobfClass(), "lightmapColors", "[I"))
+                .addXref(11, lightmapColors)
                 .addXref(12, new FieldRef(getDeobfClass(), "lightmapTexture", "I"))
                 .addXref(13, new MethodRef("RenderEngine", "createTextureFromBytes", "([IIII)V"))
             );
@@ -2362,6 +2363,7 @@ public class CustomColors extends Mod {
             });
 
             addPatch(new MakeMemberPublicPatch(new FieldRef(getDeobfClass(), "torchFlickerX", "F")));
+            addPatch(new MakeMemberPublicPatch(lightmapColors));
 
             addPatch(new BytecodePatch() {
                 @Override

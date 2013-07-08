@@ -8,6 +8,7 @@ import net.minecraft.src.EntityRenderer;
 import net.minecraft.src.World;
 
 import java.awt.image.BufferedImage;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 
 public final class Lightmap {
@@ -27,12 +28,23 @@ public final class Lightmap {
     private final int[] origMap;
     private final boolean valid;
 
-    private final int[] newMap = new int[LIGHTMAP_SIZE * LIGHTMAP_SIZE];
     private final float[] sunrgb = new float[3 * LIGHTMAP_SIZE];
     private final float[] torchrgb = new float[3 * LIGHTMAP_SIZE];
     private final float[] sunrgbnv = new float[3 * LIGHTMAP_SIZE];
     private final float[] torchrgbnv = new float[3 * LIGHTMAP_SIZE];
     private final float[] rgb = new float[3];
+
+    private static Method postProcessLightmap;
+
+    static {
+        try {
+            postProcessLightmap = EntityRenderer.class.getDeclaredMethod("ModPostProcessLightMap");
+            postProcessLightmap.setAccessible(true);
+            logger.info("found %s", postProcessLightmap);
+        } catch (Throwable e) {
+            postProcessLightmap = null;
+        }
+    }
 
     static void reset() {
         lightmaps.clear();
@@ -112,10 +124,18 @@ public final class Lightmap {
                         rgb[k] = gamma * tmp + (1.0f - gamma) * rgb[k];
                     }
                 }
-                newMap[s * LIGHTMAP_SIZE + t] = 0xff000000 | Colorizer.float3ToInt(rgb);
+                renderer.lightmapColors[s * LIGHTMAP_SIZE + t] = 0xff000000 | Colorizer.float3ToInt(rgb);
             }
         }
-        MCPatcherUtils.getMinecraft().renderEngine.createTextureFromBytes(newMap, LIGHTMAP_SIZE, LIGHTMAP_SIZE, renderer.lightmapTexture);
+        if (postProcessLightmap != null) {
+            try {
+                postProcessLightmap.invoke(renderer);
+            } catch (Throwable e) {
+                e.printStackTrace();
+                postProcessLightmap = null;
+            }
+        }
+        MCPatcherUtils.getMinecraft().renderEngine.createTextureFromBytes(renderer.lightmapColors, LIGHTMAP_SIZE, LIGHTMAP_SIZE, renderer.lightmapTexture);
         return true;
     }
 
