@@ -114,7 +114,7 @@ public class Config {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         boolean save = false;
-        if (xmlFile.exists()) {
+        if (xmlFile.exists() && xmlFile.length() > 0) {
             try {
                 xml = builder.parse(xmlFile);
             } catch (Exception e) {
