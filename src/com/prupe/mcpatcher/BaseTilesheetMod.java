@@ -327,7 +327,9 @@ public class BaseTilesheetMod extends Mod {
             final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
             final InterfaceMethodRef setIterator = new InterfaceMethodRef("java/util/Set", "iterator", "()Ljava/util/Iterator;");
             final ClassRef sbClass = new ClassRef("java/lang/StringBuilder");
-            final MethodRef strValueOf = new MethodRef("java/lang/String", "valueOf", "(Ljava/lang/Object;)Ljava/lang/String;");
+            final ClassRef objClass = new ClassRef("java/lang/Object");
+            final MethodRef stringValueOf = new MethodRef("java/lang/String", "valueOf", "(Ljava/lang/Object;)Ljava/lang/String;");
+            final MethodRef stringFormat = new MethodRef("java/lang/String", "format", "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;");
             final MethodRef sbInit0 = new MethodRef("java/lang/StringBuilder", "<init>", "()V");
             final MethodRef sbInit1 = new MethodRef("java/lang/StringBuilder", "<init>", "(Ljava/lang/String;)V");
             final MethodRef sbAppend = new MethodRef("java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;");
@@ -424,7 +426,14 @@ public class BaseTilesheetMod extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    return buildExpression(
+                    return buildExpression(or(
+                        getMatchExpressionSB(),
+                        getMatchExpressionSprintf()
+                    ));
+                }
+
+                private String getMatchExpressionSB() {
+                    return build(
                         // this.basePath + name + extension
                         reference(NEW, sbClass),
                         DUP,
@@ -438,7 +447,7 @@ public class BaseTilesheetMod extends Mod {
                             build( // mcp
                                 ALOAD_0,
                                 reference(GETFIELD, basePath),
-                                optional(build(reference(INVOKESTATIC, strValueOf))), // useless, but added by mcp
+                                optional(build(reference(INVOKESTATIC, stringValueOf))), // useless, but added by mcp
                                 reference(INVOKESPECIAL, sbInit1)
                             )
                         ),
@@ -450,14 +459,45 @@ public class BaseTilesheetMod extends Mod {
                     );
                 }
 
+                private String getMatchExpressionSprintf() {
+                    return build(
+                        // String.format("%s/%s%s", this.basePath, name, extension)
+                        push("%s/%s%s"),
+                        push(3),
+                        reference(ANEWARRAY, objClass),
+                        DUP,
+                        push(0),
+                        ALOAD_0,
+                        reference(GETFIELD, basePath),
+                        AASTORE,
+                        DUP,
+                        push(1),
+                        capture(any(1, 5)),
+                        AASTORE,
+                        DUP,
+                        push(2),
+                        capture(anyLDC),
+                        AASTORE,
+                        reference(INVOKESTATIC, stringFormat)
+                    );
+                }
+
                 @Override
                 public byte[] getReplacementBytes() {
+                    byte[] name = getCaptureGroup(1);
+                    byte[] extension = getCaptureGroup(2);
+                    if (name == null) {
+                        name = getCaptureGroup(3);
+                    }
+                    if (extension == null) {
+                        extension = getCaptureGroup(4);
+                    }
                     return buildCode(
                         // TileLoader.getOverridePath(this.basePath, name, extension)
                         ALOAD_0,
                         reference(GETFIELD, basePath),
-                        getCaptureGroup(1),
-                        getCaptureGroup(2),
+                        name,
+                        extension,
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverridePath", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"))
                     );
                 }
