@@ -690,7 +690,8 @@ public class Config {
     boolean saveProperties() {
         boolean saved = false;
         if (xml != null && xmlFile != null) {
-            FileOutputStream os = null;
+            File tmpFile = new File(xmlFile.getParentFile(), xmlFile.getName() + ".tmp");
+            FileOutputStream output = null;
             try {
                 TransformerFactory factory = TransformerFactory.newInstance();
                 Transformer trans;
@@ -703,13 +704,15 @@ public class Config {
                     trans = factory.newTransformer();
                 }
                 DOMSource source = new DOMSource(xml);
-                os = new FileOutputStream(xmlFile);
-                trans.transform(source, new StreamResult(new OutputStreamWriter(os, "UTF-8")));
-                saved = true;
-            } catch (Exception e) {
+                output = new FileOutputStream(tmpFile);
+                trans.transform(source, new StreamResult(new OutputStreamWriter(output, "UTF-8")));
+                xmlFile.delete();
+                saved = tmpFile.renameTo(xmlFile);
+            } catch (Throwable e) {
                 e.printStackTrace();
             } finally {
-                MCPatcherUtils.close(os);
+                MCPatcherUtils.close(output);
+                tmpFile.delete();
             }
         }
         return saved;
