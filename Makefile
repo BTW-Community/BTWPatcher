@@ -1,4 +1,4 @@
-MCVER ?= 1.6.1
+MCVER ?= 1.6.2
 EXT_OPTS ?=
 
 VERSIONSDIR = ../versions
