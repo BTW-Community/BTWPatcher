@@ -49,7 +49,7 @@ public class CTMUtils {
                 allOverrides.clear();
                 Arrays.fill(blockOverrides, null);
                 tileOverrides.clear();
-                tileLoader = new TileLoader("textures/blocks/", true, logger);
+                tileLoader = new TileLoader("textures/blocks", true, logger);
                 betterGrass = null;
 
                 if (enableStandard || enableNonStandard) {

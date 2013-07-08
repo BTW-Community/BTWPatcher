@@ -112,6 +112,7 @@ public class TileLoader {
 
     public static void registerIcons(TextureAtlas textureMap, String mapName, Map<String, TextureAtlasSprite> map) {
         logger.fine("before registerIcons(%s) %d icons", mapName, map.size());
+        mapName = mapName.replaceFirst("/$", "");
         registerIconsCalled = true;
         if (!changeHandlerCalled) {
             logger.severe("beforeChange was not called, invoking directly");
@@ -139,7 +140,12 @@ public class TileLoader {
         if (name.endsWith(".png")) {
             path = name.replaceFirst("\\.[^.]+$", "") + ext;
         } else {
-            path = prefix + name + ext;
+            path = prefix;
+            if (!prefix.endsWith("/")) {
+                path += "/";
+            }
+            path += name;
+            path += ext;
         }
         logger.finer("getOverridePath(%s, %s, %s) -> %s", prefix, name, ext, path);
         return path;
