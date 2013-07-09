@@ -59,21 +59,24 @@ public class FontUtils {
         if (enable && TexturePackAPI.hasResource(fontRenderer.hdFont)) {
             logger.fine("using %s instead of %s", fontRenderer.hdFont, fontRenderer.defaultFont);
             fontRenderer.isHD = true;
+            fontRenderer.fontAdj = 0.0f;
             return fontRenderer.hdFont;
         } else {
             logger.fine("using default %s", fontRenderer.defaultFont);
             fontRenderer.isHD = false;
+            fontRenderer.fontAdj = 1.0f;
             return fontRenderer.defaultFont;
         }
     }
 
-    public static float[] computeCharWidthsf(FontRenderer fontRenderer, ResourceLocation filename, BufferedImage image, int[] rgb, int[] charWidth) {
+    public static float[] computeCharWidthsf(FontRenderer fontRenderer, ResourceLocation filename, BufferedImage image, int[] rgb, int[] charWidth, float fontAdj) {
         float[] charWidthf = new float[charWidth.length];
         if (!fontRenderer.isHD) {
+            fontRenderer.fontAdj = fontAdj;
             for (int i = 0; i < charWidth.length; i++) {
-                charWidthf[i] = charWidth[i];
+                charWidthf[i] = charWidth[i] + fontAdj;
             }
-            charWidthf[32] = 4.0f;
+            charWidthf[32] = 4.0f + fontAdj;
             return charWidthf;
         }
         allRenderers.add(fontRenderer);

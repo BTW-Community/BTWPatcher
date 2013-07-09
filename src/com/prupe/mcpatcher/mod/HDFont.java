@@ -9,6 +9,7 @@ import static javassist.bytecode.Opcode.*;
 
 public class HDFont extends Mod {
     private static boolean haveReadFontData;
+    private static boolean haveFontWidthHack;
 
     public HDFont() {
         name = MCPatcherUtils.HD_FONT;
@@ -23,6 +24,7 @@ public class HDFont extends Mod {
 
     static void setupMod(Mod mod, MinecraftVersion minecraftVersion) {
         haveReadFontData = minecraftVersion.compareTo("1.6.2") < 0;
+        haveFontWidthHack = minecraftVersion.compareTo("1.6.2") >= 0;
 
         mod.addClassMod(new FontRendererMod(mod));
 
@@ -33,6 +35,8 @@ public class HDFont extends Mod {
     }
 
     private static class FontRendererMod extends BaseMod.FontRendererMod {
+        private final FieldRef fontAdj = new FieldRef(getDeobfClass(), "fontAdj", "F");
+
         FontRendererMod(Mod mod) {
             super(mod);
 
@@ -49,7 +53,7 @@ public class HDFont extends Mod {
             final MethodRef computeCharWidths = haveReadFontData ? new MethodRef(getDeobfClass(), "computeCharWidths", "()V") : readFontData;
             final MethodRef getImageWidth = new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I");
             final MethodRef getFontName = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getFontName", "(LFontRenderer;LResourceLocation;)LResourceLocation;");
-            final MethodRef computeCharWidthsf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "computeCharWidthsf", "(LFontRenderer;LResourceLocation;Ljava/awt/image/BufferedImage;[I[I)[F");
+            final MethodRef computeCharWidthsf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "computeCharWidthsf", "(LFontRenderer;LResourceLocation;Ljava/awt/image/BufferedImage;[I[IF)[F");
             final MethodRef getCharWidthf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getCharWidthf", "(LFontRenderer;[II)F");
             final MethodRef getStringWidthf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getStringWidthf", "(LFontRenderer;Ljava/lang/String;)F");
 
@@ -105,6 +109,7 @@ public class HDFont extends Mod {
             addPatch(new AddFieldPatch(defaultFont));
             addPatch(new AddFieldPatch(hdFont));
             addPatch(new AddFieldPatch(isHD));
+            addPatch(new AddFieldPatch(fontAdj));
 
             addPatch(new MakeMemberPublicPatch(readFontData));
             addPatch(new MakeMemberPublicPatch(fontResource) {
@@ -185,7 +190,7 @@ public class HDFont extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // this.charWidthf = FontUtils.computeCharWidthsf(this, filename, image, rgb, this.charWidth);
+                        // this.charWidthf = FontUtils.computeCharWidthsf(this, filename, image, rgb, this.charWidth, fontAdj);
                         ALOAD_0,
                         ALOAD_0,
                         ALOAD_0,
@@ -194,6 +199,7 @@ public class HDFont extends Mod {
                         ALOAD, rgbRegister,
                         ALOAD_0,
                         reference(GETFIELD, charWidth),
+                        push(haveFontWidthHack ? 1.0f : 0.0f),
                         reference(INVOKESTATIC, computeCharWidthsf),
                         reference(PUTFIELD, charWidthf)
                     );
@@ -297,6 +303,9 @@ public class HDFont extends Mod {
             });
 
             setupUnicode();
+            if (haveFontWidthHack) {
+                setupFontHack();
+            }
         }
 
         private void setupUnicode() {
@@ -328,6 +337,45 @@ public class HDFont extends Mod {
                 .setInsertBefore(true)
                 .targetMethod(getUnicodePage)
             );
+        }
+
+        private void setupFontHack() {
+            final MethodRef renderDefaultChar = new MethodRef(getDeobfClass(), "renderDefaultChar", "(IZ)F");
+            final MethodRef glTexCoord2f = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexCoord2f", "(FF)V");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKESTATIC, glTexCoord2f)
+                    );
+                }
+            }.setMethod(renderDefaultChar));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "undo font adjustment";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(1.0f),
+                        FSUB
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_0,
+                        reference(GETFIELD, fontAdj),
+                        FSUB
+                    );
+                }
+            }.targetMethod(renderDefaultChar));
+
         }
     }
 }
