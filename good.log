@@ -1,8 +1,8 @@
-MCPatcher version is 4.1.0_03
+MCPatcher version is 4.1.0_04
 OS: Linux 3.9.6-200.fc18.x86_64 amd64
 JVM: Sun Microsystems Inc. 1.6.0_45 (64 bit)
 Classpath: out/artifacts/mcpatcher/mcpatcher.jar
-Minecraft version is 1.6.2 (md5 349e373456ea2a97fab42dd9d938e784)
+Minecraft version is 1.6.2 (md5 1d43cdba8b9752d7f557ab7d3e365964)
 
 Analyzing /home/prupe/.minecraft/versions/1.6.2/1.6.2.jar (2445 files)
   Minecraft matches ats.class
