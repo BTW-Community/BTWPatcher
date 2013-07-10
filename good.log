@@ -1,5 +1,5 @@
-MCPatcher version is 3.0.4_01
-OS: Linux 3.9.4-200.fc18.x86_64 amd64
+MCPatcher version is 3.0.4_02
+OS: Linux 3.9.6-200.fc18.x86_64 amd64
 JVM: Sun Microsystems Inc. 1.6.0_45 (64 bit)
 Classpath: out/artifacts/mcpatcher/mcpatcher.jar
 Minecraft version is 1.5.2 (md5 6897c3287fb971c9f362eb3ab20f5ddd)
@@ -4350,6 +4350,7 @@ Patching...
      branch offset IFEQ A -> +16 @13
     insert method getNightVisionStrength (F)F stack size 3, local vars 2
     make field torchFlickerX public
+    make field lightmapColors public
     override lightmap h(F)V@7
      label A -> instruction 17
      branch offset IFEQ A -> +4 @13
@@ -6210,29 +6211,34 @@ Patching...
    method signature (Lnet/minecraft/src/EntityRenderer;Lnet/minecraft/src/World;F)Z -> (Lbfq;Laab;F)Z
    method signature (Lnet/minecraft/src/EntityRenderer;Lnet/minecraft/src/World;F)Z -> (Lbfq;Laab;F)Z
     field ref net/minecraft/src/World.worldProvider Lnet/minecraft/src/WorldProvider; -> aab.t Lacn; computeLightmap(Lbfq;Laab;F)Z@15
-     GETFIELD 0x00 0x04        GETFIELD 0x01 0x1b
+     GETFIELD 0x00 0x04        GETFIELD 0x01 0x3d
     field ref net/minecraft/src/WorldProvider.worldType I -> acn.h I computeLightmap(Lbfq;Laab;F)Z@18
-     GETFIELD 0x00 0x05        GETFIELD 0x01 0x20
+     GETFIELD 0x00 0x05        GETFIELD 0x01 0x42
     method ref com/prupe/mcpatcher/mod/Lightmap.compute (Lnet/minecraft/src/EntityRenderer;Lnet/minecraft/src/World;F)Z -> com/prupe/mcpatcher/mod/Lightmap.compute (Lbfq;Laab;F)Z computeLightmap(Lbfq;Laab;F)Z@128
-     INVOKESPECIAL 0x00 0x11   INVOKESPECIAL 0x01 0x22
+     INVOKESPECIAL 0x00 0x11   INVOKESPECIAL 0x01 0x44
     field ref net/minecraft/src/World.lightningFlash I -> aab.q I compute(Lbfq;Laab;F)Z@1
-     GETFIELD 0x00 0x22        GETFIELD 0x01 0x25
+     GETFIELD 0x00 0x21        GETFIELD 0x01 0x47
     method ref net/minecraft/src/World.getSunAngle (F)F -> aab.b (F)F compute(Lbfq;Laab;F)Z@15
-     INVOKEVIRTUAL 0x00 0x24   INVOKEVIRTUAL 0x01 0x28
+     INVOKEVIRTUAL 0x00 0x23   INVOKEVIRTUAL 0x01 0x4a
     field ref net/minecraft/src/EntityRenderer.torchFlickerX F -> bfq.e F compute(Lbfq;Laab;F)Z@36
-     GETFIELD 0x00 0x27        GETFIELD 0x01 0x2d
+     GETFIELD 0x00 0x26        GETFIELD 0x01 0x4e
     method ref net/minecraft/src/EntityRenderer.getNightVisionStrength (F)F -> bfq.getNightVisionStrength (F)F compute(Lbfq;Laab;F)Z@57
-     INVOKEVIRTUAL 0x00 0x29   INVOKEVIRTUAL 0x01 0x2e
+     INVOKEVIRTUAL 0x00 0x28   INVOKEVIRTUAL 0x01 0x4f
     field ref net/minecraft/client/Minecraft.gameSettings Lnet/minecraft/src/GameSettings; -> net/minecraft/client/Minecraft.z Lavy; compute(Lbfq;Laab;F)Z@65
-     GETFIELD 0x00 0x2b        GETFIELD 0x01 0x32
+     GETFIELD 0x00 0x2a        GETFIELD 0x01 0x53
     field ref net/minecraft/src/GameSettings.gammaSetting F -> avy.ak F compute(Lbfq;Laab;F)Z@68
-     GETFIELD 0x00 0x2c        GETFIELD 0x01 0x37
-    field ref net/minecraft/client/Minecraft.renderEngine Lnet/minecraft/src/RenderEngine; -> net/minecraft/client/Minecraft.p Lbge; compute(Lbfq;Laab;F)Z@555
-     GETFIELD 0x00 0x31        GETFIELD 0x01 0x3b
-    field ref net/minecraft/src/EntityRenderer.lightmapTexture I -> bfq.d I compute(Lbfq;Laab;F)Z@567
-     GETFIELD 0x00 0x32        GETFIELD 0x01 0x3e
-    method ref net/minecraft/src/RenderEngine.createTextureFromBytes ([IIII)V -> bge.a ([IIII)V compute(Lbfq;Laab;F)Z@570
-     INVOKEVIRTUAL 0x00 0x33   INVOKEVIRTUAL 0x01 0x43
+     GETFIELD 0x00 0x2b        GETFIELD 0x01 0x58
+    field ref net/minecraft/src/EntityRenderer.lightmapColors [I -> bfq.Q [I compute(Lbfq;Laab;F)Z@518
+     GETFIELD 0x00 0x2e        GETFIELD 0x01 0x5b
+    field ref net/minecraft/src/EntityRenderer.lightmapColors [I -> bfq.Q [I compute(Lbfq;Laab;F)Z@591
+     GETFIELD 0x00 0x2e        GETFIELD 0x01 0x5b
+    field ref net/minecraft/client/Minecraft.renderEngine Lnet/minecraft/src/RenderEngine; -> net/minecraft/client/Minecraft.p Lbge; compute(Lbfq;Laab;F)Z@587
+     GETFIELD 0x00 0x35        GETFIELD 0x01 0x5f
+    field ref net/minecraft/src/EntityRenderer.lightmapTexture I -> bfq.d I compute(Lbfq;Laab;F)Z@599
+     GETFIELD 0x00 0x36        GETFIELD 0x01 0x62
+    method ref net/minecraft/src/RenderEngine.createTextureFromBytes ([IIII)V -> bge.a ([IIII)V compute(Lbfq;Laab;F)Z@602
+     INVOKEVIRTUAL 0x00 0x37   INVOKEVIRTUAL 0x01 0x67
+   string replace net/minecraft/src/EntityRenderer -> bfq @2943
    string replace Lnet/minecraft/src/EntityRenderer; -> Lbfq; @331
    string replace Lnet/minecraft/src/World; -> Laab; @347
   adding com/prupe/mcpatcher/mod/BiomeHelper.class for Custom Colors
@@ -7550,6 +7556,7 @@ Custom Colors
         [1] override redstone particle color
     EntityRenderer (bfq.class)
         [1] insert method getNightVisionStrength (F)F
+        [1] make field lightmapColors public
         [1] make field torchFlickerX public
         [1] override fog color
         [1] override lightmap
