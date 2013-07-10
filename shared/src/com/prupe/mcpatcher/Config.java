@@ -490,6 +490,9 @@ public class Config {
     }
 
     void selectProfile(String profileName) {
+        if (profileName == null) {
+            profileName = "";
+        }
         selectedProfile = findProfileByName(profileName, true);
         setConfigValue(TAG_SELECTED_PROFILE, profileName);
     }
@@ -706,6 +709,7 @@ public class Config {
                 DOMSource source = new DOMSource(xml);
                 output = new FileOutputStream(tmpFile);
                 trans.transform(source, new StreamResult(new OutputStreamWriter(output, "UTF-8")));
+                output.close();
                 xmlFile.delete();
                 saved = tmpFile.renameTo(xmlFile);
             } catch (Throwable e) {
