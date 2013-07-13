@@ -198,11 +198,40 @@ class AddModDialog extends JDialog {
         return zipFile != null && !fileMap.isEmpty();
     }
 
+    private boolean confirmSelection(File path, ZipFile zip) {
+        if (zip.getEntry("pack.png") == null && zip.getEntry("pack.mcmeta") == null) {
+            return true;
+        } else {
+            String message = String.format(
+                "The file %s\n" +
+                    "appears to be a resource pack, not a mod.\n" +
+                    "Only mods should be added to MCPatcher this way.\n\n" +
+                    "To install a resource pack, copy it to the folder\n" +
+                    "%s\n" +
+                    "and select it in the Options, Resource Packs menu\n" +
+                    "in the game.\n\n" +
+                    "Do you want to add this file as a mod anyway?",
+                path.getName(),
+                MCPatcherUtils.getMinecraftPath("resourcepacks").getAbsolutePath()
+            );
+            int result = JOptionPane.showConfirmDialog(parent,
+                message,
+                "Resource pack detected",
+                JOptionPane.YES_NO_OPTION);
+            return result == JOptionPane.YES_OPTION;
+        }
+    }
+
     private void showZipDialog(boolean addMode) {
         hideZipDialog();
         File inputFile = new File(inputField.getText());
         try {
             zipFile = new ZipFile(inputFile);
+            if (!confirmSelection(inputFile, zipFile)) {
+                MCPatcherUtils.close(zipFile);
+                zipFile = null;
+                return;
+            }
             zipDialog = new ZipTreeDialog(zipFile);
             if (addMode || zipDialog.hasSubfolders()) {
                 zipDialog.setLocationRelativeTo(parent);
