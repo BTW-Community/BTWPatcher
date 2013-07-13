@@ -49,7 +49,9 @@ final class ItemOverride extends OverrideBase {
                 special = "clock";
             }
         }
-        tileLoader.preloadTile(textureName, false, special);
+        if (textureName != null) {
+            tileLoader.preloadTile(textureName, false, special);
+        }
         if (alternateTextures != null) {
             for (Map.Entry<String, ResourceLocation> entry : alternateTextures.entrySet()) {
                 tileLoader.preloadTile(entry.getValue(), false, special);
@@ -58,7 +60,9 @@ final class ItemOverride extends OverrideBase {
     }
 
     void registerIcon(TileLoader tileLoader) {
-        icon = tileLoader.getIcon(textureName);
+        if (textureName != null) {
+            icon = tileLoader.getIcon(textureName);
+        }
         if (alternateTextures != null) {
             for (Map.Entry<String, ResourceLocation> entry : alternateTextures.entrySet()) {
                 Icon from = tileLoader.getIcon(entry.getKey());
