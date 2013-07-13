@@ -260,6 +260,7 @@ public class CustomItemTextures extends Mod {
         ItemRendererMod() {
             final MethodRef renderItem = new MethodRef(getDeobfClass(), "renderItem", "(LEntityLivingBase;LItemStack;I)V");
             final MethodRef renderItemIn2D = new MethodRef(getDeobfClass(), "renderItemIn2D", "(LTessellator;FFFFIIF)V");
+            final MethodRef getEntityItemIcon = new MethodRef("EntityLivingBase", "getItemIcon", "(LItemStack;I)LIcon;");
 
             addClassSignature(new ConstSignature("textures/map/map_background.png"));
             addClassSignature(new ConstSignature("textures/misc/underwater.png"));
@@ -289,6 +290,33 @@ public class CustomItemTextures extends Mod {
             );
 
             addMemberMapper(new MethodMapper(renderItemIn2D).accessFlag(AccessFlag.STATIC, true));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override item texture (held)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKEVIRTUAL, getEntityItemIcon)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // CITUtils.getIcon(..., itemStack, renderPass);
+                        ALOAD_2,
+                        ILOAD_3,
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getIcon", "(LIcon;LItemStack;I)LIcon;"))
+                    );
+                }
+            }
+                .setInsertAfter(true)
+                .targetMethod(renderItem)
+            );
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -788,8 +816,10 @@ public class CustomItemTextures extends Mod {
             super(CustomItemTextures.this);
 
             final MethodRef getCurrentItemOrArmor = new MethodRef(getDeobfClass(), "getCurrentItemOrArmor", "(I)LItemStack;");
+            final MethodRef getItemIcon = new MethodRef(getDeobfClass(), "getItemIcon", "(LItemStack;I)LIcon;");
 
             addMemberMapper(new MethodMapper(getCurrentItemOrArmor));
+            addMemberMapper(new MethodMapper(getItemIcon));
         }
     }
 
@@ -815,8 +845,6 @@ public class CustomItemTextures extends Mod {
                     );
                 }
             }.setMethod(getCurrentArmor));
-
-            addPatch(new ItemStackRenderPassPatch(this, "player held"));
         }
     }
 
