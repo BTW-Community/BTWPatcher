@@ -207,6 +207,9 @@ public class CITUtils {
     }
 
     public static Icon getIcon(Icon icon, ItemStack itemStack, int renderPass) {
+        if (icon == lastIcon && renderPass == lastRenderPass) {
+            return icon;
+        }
         lastRenderPass = renderPass;
         lastIcon = icon;
         if (enableItems) {
