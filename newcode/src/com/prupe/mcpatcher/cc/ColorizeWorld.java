@@ -15,7 +15,6 @@ public class ColorizeWorld {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
     private static final int fogBlendRadius = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "fogBlendRadius", 7);
-    private static final float fogBlendScale = (float) Math.pow(2 * fogBlendRadius + 1, -2);
 
     private static final String TEXT_KEY = "text.";
     private static final String TEXT_CODE_KEY = TEXT_KEY + "code.";
@@ -132,25 +131,10 @@ public class ColorizeWorld {
         if (index < 0 || index >= fixedColorMaps.length || fogCamera == null || !fixedColorMaps[index].isCustom()) {
             return false;
         }
-        float[] f = new float[3];
         int x = (int) fogCamera.posX;
         int y = (int) fogCamera.posY;
         int z = (int) fogCamera.posZ;
-        setColor[0] = 0.0f;
-        setColor[1] = 0.0f;
-        setColor[2] = 0.0f;
-        for (int i = -fogBlendRadius; i <= fogBlendRadius; i++) {
-            for (int j = -fogBlendRadius; j <= fogBlendRadius; j++) {
-                int rgb = ColorizeBlock.colorizeBiome(0xffffff, index, x + i, y, z + j);
-                intToFloat3(rgb, f);
-                setColor[0] += f[0];
-                setColor[1] += f[1];
-                setColor[2] += f[2];
-            }
-        }
-        setColor[0] *= fogBlendScale;
-        setColor[1] *= fogBlendScale;
-        setColor[2] *= fogBlendScale;
+        fixedColorMaps[index].colorizeWithBlending(x, y, z, fogBlendRadius, setColor);
         return true;
     }
 
