@@ -103,12 +103,7 @@ public class RenderPass {
     }
 
     public static boolean skipAllRenderPasses(boolean[] skipRenderPass) {
-        for (boolean b : skipRenderPass) {
-            if (!b) {
-                return false;
-            }
-        }
-        return true;
+        return skipRenderPass[0] && skipRenderPass[1] && skipRenderPass[2] && skipRenderPass[3];
     }
 
     public static int getBlockRenderPass(Block block) {
