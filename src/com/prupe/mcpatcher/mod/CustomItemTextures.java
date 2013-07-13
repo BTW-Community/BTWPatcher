@@ -472,8 +472,6 @@ public class CustomItemTextures extends Mod {
                 }
             }.targetMethod(renderItemAndEffectIntoGUI));
 
-            addPatch(new ItemStackRenderPassPatch(this, "other"));
-
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
@@ -845,44 +843,6 @@ public class CustomItemTextures extends Mod {
                     );
                 }
             }.setMethod(getCurrentArmor));
-        }
-    }
-
-    private class ItemStackRenderPassPatch extends BytecodePatch {
-        private final String desc;
-
-        ItemStackRenderPassPatch(ClassMod classMod, String desc) {
-            super(classMod);
-            this.desc = desc;
-            setInsertAfter(true);
-        }
-
-        @Override
-        public String getDescription() {
-            return "handle items with multiple render passes (" + desc + ")";
-        }
-
-        @Override
-        public String getMatchExpression() {
-            return buildExpression(
-                // itemStack.getItem().getIconFromDamageForRenderPass(itemStack.getItemDamage(), renderPass)
-                capture(anyALOAD),
-                reference(INVOKEVIRTUAL, getItem),
-                backReference(1),
-                anyReference(INVOKEVIRTUAL),
-                capture(anyILOAD),
-                reference(INVOKEVIRTUAL, getIconFromDamageForRenderPass)
-            );
-        }
-
-        @Override
-        public byte[] getReplacementBytes() {
-            return buildCode(
-                // CITUtils.getIcon(..., itemStack, renderPass)
-                getCaptureGroup(1),
-                getCaptureGroup(2),
-                reference(INVOKESTATIC, getCITIcon)
-            );
         }
     }
 
