@@ -74,9 +74,9 @@ public class FontUtils {
         if (!fontRenderer.isHD) {
             fontRenderer.fontAdj = fontAdj;
             for (int i = 0; i < charWidth.length; i++) {
-                charWidthf[i] = charWidth[i] + fontAdj;
+                charWidthf[i] = charWidth[i];
             }
-            charWidthf[32] = 4.0f + fontAdj;
+            charWidthf[32] = 4.0f;
             return charWidthf;
         }
         allRenderers.add(fontRenderer);

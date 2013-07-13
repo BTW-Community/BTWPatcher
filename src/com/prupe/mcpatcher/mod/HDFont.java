@@ -375,7 +375,6 @@ public class HDFont extends Mod {
                     );
                 }
             }.targetMethod(renderDefaultChar));
-
         }
     }
 }
