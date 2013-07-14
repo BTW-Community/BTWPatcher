@@ -15,13 +15,12 @@ public class CTMUtils {
 
     static final int BLOCK_ID_LOG = 17;
     static final int BLOCK_ID_QUARTZ = 155;
-    static final int BLOCK_ID_GLASS = 20;
-    static final int BLOCK_ID_GLASS_PANE = 102;
-    static final int BLOCK_ID_BOOKSHELF = 47;
     static final int BLOCK_ID_GRASS = 2;
     static final int BLOCK_ID_MYCELIUM = 110;
     static final int BLOCK_ID_SNOW = 78;
     static final int BLOCK_ID_CRAFTED_SNOW = 80;
+    static final int BLOCK_ID_VINE = 106;
+    static final int BLOCK_ID_LADDER = 65;
 
     private static final List<ITileOverride> allOverrides = new ArrayList<ITileOverride>();
     private static final ITileOverride blockOverrides[][] = new ITileOverride[Block.blocksList.length][];

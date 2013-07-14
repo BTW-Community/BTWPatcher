@@ -665,6 +665,46 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
+    private int remapFace(int blockID, int metadata, int face) {
+        switch (blockID) {
+            case CTMUtils.BLOCK_ID_VINE:
+                switch (metadata) {
+                    case 1:
+                        return NORTH_FACE;
+
+                    case 2:
+                        return EAST_FACE;
+
+                    case 4:
+                        return SOUTH_FACE;
+
+                    case 8:
+                        return WEST_FACE;
+
+                    default:
+                        break;
+                }
+                break;
+
+            case CTMUtils.BLOCK_ID_LADDER:
+                switch (metadata) {
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 5:
+                        return metadata;
+
+                    default:
+                        break;
+                }
+                break;
+
+            default:
+                break;
+        }
+        return face;
+    }
+
     public final Icon getTile(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int face) {
         if (icons == null) {
             error("no images loaded, disabling");
@@ -679,6 +719,7 @@ abstract class TileOverride implements ITileOverride {
         }
         int metadata = blockAccess.getBlockMetadata(i, j, k);
         setupOrientation(getOrientationFromMetadata(block.blockID, metadata), face);
+        face = remapFace(block.blockID, metadata, face);
         if (exclude(block, face, metadata)) {
             return null;
         }
