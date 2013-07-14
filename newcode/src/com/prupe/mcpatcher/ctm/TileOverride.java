@@ -354,6 +354,7 @@ abstract class TileOverride implements ITileOverride {
                                 addIcon(resource);
                             } else {
                                 warn("could not find image %s", resource);
+                                tileNames.add(null);
                             }
                         }
                     } catch (NumberFormatException e) {
@@ -367,6 +368,7 @@ abstract class TileOverride implements ITileOverride {
                         addIcon(resource);
                     } else {
                         warn("could not find image %s", resource);
+                        tileNames.add(null);
                     }
                 }
             }
