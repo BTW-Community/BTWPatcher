@@ -8,8 +8,18 @@ public class MCLogger {
 
     public static final Level ERROR = new ErrorLevel();
 
+    private static final long FLOOD_INTERVAL = 1000L;
+    private static final long FLOOD_REPORT_INTERVAL = 5000L;
+    private static final int FLOOD_LIMIT = 100;
+    private static final int FLOOD_LEVEL = Level.CONFIG.intValue();
+
     private final String logPrefix;
     private final Logger logger;
+
+    private boolean flooding;
+    private long lastFloodReport;
+    private int floodCount;
+    private long lastMessage = System.currentTimeMillis();
 
     public static MCLogger getLogger(String category) {
         return getLogger(category, category);
@@ -63,6 +73,42 @@ public class MCLogger {
         });
     }
 
+    private boolean checkFlood() {
+        long now = System.currentTimeMillis();
+        boolean showFloodMessage = false;
+        if (now - lastMessage > FLOOD_INTERVAL) {
+            if (flooding) {
+                reportFlooding(now);
+                flooding = false;
+            }
+        } else if (flooding && now - lastFloodReport > FLOOD_REPORT_INTERVAL) {
+            reportFlooding(now);
+            showFloodMessage = true;
+        }
+        lastMessage = now;
+        floodCount++;
+        if (flooding) {
+            return showFloodMessage;
+        } else if (floodCount > FLOOD_LIMIT) {
+            flooding = true;
+            lastFloodReport = now;
+            reportFlooding(now);
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private void reportFlooding(long now) {
+        if (floodCount > 0) {
+            logger.log(Level.WARNING, String.format(
+                "%d flood messages dropped in the last %ds", floodCount, (now - lastFloodReport) / 1000L
+            ));
+        }
+        floodCount = 0;
+        lastFloodReport = now;
+    }
+
     public boolean isLoggable(Level level) {
         return logger.isLoggable(level);
     }
@@ -73,6 +119,9 @@ public class MCLogger {
 
     public void log(Level level, String format, Object... params) {
         if (isLoggable(level)) {
+            if (level.intValue() >= FLOOD_LEVEL && !checkFlood()) {
+                return;
+            }
             logger.log(level, String.format(format, params));
         }
     }
