@@ -131,6 +131,10 @@ public class MipmapHelper {
     }
 
     public static void copySubTexture(int[] rgb, int width, int height, int x, int y, String textureName) {
+        if (rgb == null) {
+            logger.error("copySubTexture %s %d,%d %dx%d: rgb data is null", textureName, x, y, width, height);
+            return;
+        }
         IntBuffer buffer = getPooledBuffer(width * height * 4).asIntBuffer();
         buffer.put(rgb).position(0);
         int mipmaps = getMipmapLevelsForCurrentTexture();
