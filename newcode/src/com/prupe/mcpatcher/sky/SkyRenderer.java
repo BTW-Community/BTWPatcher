@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.sky;
 
 import com.prupe.mcpatcher.*;
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.Tessellator;
 import net.minecraft.src.World;
@@ -32,7 +33,7 @@ public class SkyRenderer {
             @Override
             public void afterChange() {
                 if (enable) {
-                    World world = MCPatcherUtils.getMinecraft().theWorld;
+                    World world = Minecraft.getInstance().theWorld;
                     if (world != null) {
                         getWorldEntry(world.worldProvider.worldType);
                     }
@@ -46,7 +47,7 @@ public class SkyRenderer {
         if (TexturePackAPI.isDefaultTexturePack()) {
             active = false;
         } else {
-            int worldType = MCPatcherUtils.getMinecraft().theWorld.worldProvider.worldType;
+            int worldType = Minecraft.getInstance().theWorld.worldProvider.worldType;
             WorldEntry newEntry = getWorldEntry(worldType);
             if (newEntry != currentWorld && currentWorld != null) {
                 currentWorld.unloadTextures();

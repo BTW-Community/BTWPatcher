@@ -46,7 +46,7 @@ abstract public class TexturePackChangeHandler {
     }
 
     public static void scheduleTexturePackRefresh() {
-        MCPatcherUtils.getMinecraft().scheduleTexturePackRefresh();
+        Minecraft.getInstance().scheduleTexturePackRefresh();
     }
 
     public static void register(TexturePackChangeHandler handler) {
@@ -124,7 +124,7 @@ abstract public class TexturePackChangeHandler {
             }
         }
 
-        TextureManager textureManager = MCPatcherUtils.getMinecraft().getTextureManager();
+        TextureManager textureManager = Minecraft.getInstance().getTextureManager();
         if (textureManager != null) {
             Set<ResourceLocation> texturesToUnload = new HashSet<ResourceLocation>();
             for (Map.Entry<ResourceLocation, TextureObject> entry : textureManager.texturesByName.entrySet()) {

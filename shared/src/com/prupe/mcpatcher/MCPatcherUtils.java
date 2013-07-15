@@ -22,8 +22,6 @@ import java.util.zip.ZipFile;
 public class MCPatcherUtils {
     private static File minecraftDir = null;
     private static boolean isGame;
-
-    private static Minecraft minecraft;
     private static String minecraftVersion;
     private static String patcherVersion;
 
@@ -282,9 +280,8 @@ public class MCPatcherUtils {
         }
     }
 
-    public static void setMinecraft(Minecraft minecraft, File minecraftDir, String minecraftVersion, String patcherVersion) {
+    public static void setMinecraft(File minecraftDir, String minecraftVersion, String patcherVersion) {
         isGame = true;
-        MCPatcherUtils.minecraft = minecraft;
         MCPatcherUtils.minecraftDir = minecraftDir.getAbsoluteFile();
         MCPatcherUtils.minecraftVersion = minecraftVersion;
         MCPatcherUtils.patcherVersion = patcherVersion;
@@ -304,15 +301,6 @@ public class MCPatcherUtils {
         }
         System.out.println();
         Config.load(minecraftDir);
-    }
-
-    /**
-     * Get minecraft object.
-     *
-     * @return minecraft
-     */
-    public static Minecraft getMinecraft() {
-        return minecraft;
     }
 
     /**

@@ -232,7 +232,7 @@ public class TexturePackAPI {
         if (resource == null) {
             return -1;
         }
-        TextureObject texture = MCPatcherUtils.getMinecraft().getTextureManager().getTexture(resource);
+        TextureObject texture = Minecraft.getInstance().getTextureManager().getTexture(resource);
         return texture instanceof AbstractTexture ? ((AbstractTexture) texture).glTextureId : -1;
     }
 
@@ -241,7 +241,7 @@ public class TexturePackAPI {
     }
 
     public static void bindTexture(ResourceLocation resource) {
-        MCPatcherUtils.getMinecraft().getTextureManager().bindTexture(resource);
+        Minecraft.getInstance().getTextureManager().bindTexture(resource);
     }
 
     public static void bindTexture(int texture) {
@@ -251,7 +251,7 @@ public class TexturePackAPI {
     }
 
     public static void unloadTexture(ResourceLocation resource) {
-        TextureManager textureManager = MCPatcherUtils.getMinecraft().getTextureManager();
+        TextureManager textureManager = Minecraft.getInstance().getTextureManager();
         TextureObject texture = textureManager.getTexture(resource);
         if (texture != null && !(texture instanceof TextureAtlas) && !(texture instanceof DynamicTexture)) {
             if (texture instanceof AbstractTexture) {

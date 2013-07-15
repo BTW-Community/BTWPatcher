@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.BiomeGenBase;
 
 import java.lang.reflect.Method;
@@ -39,7 +40,7 @@ class BiomeHelper {
         if (lastBiome == null || i != lastI || k != lastK) {
             lastI = i;
             lastK = k;
-            lastBiome = MCPatcherUtils.getMinecraft().theWorld.getBiomeGenAt(i, k);
+            lastBiome = Minecraft.getInstance().theWorld.getBiomeGenAt(i, k);
         }
         return lastBiome;
     }

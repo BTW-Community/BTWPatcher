@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.EntityRenderer;
 import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.World;
@@ -76,7 +77,7 @@ public final class Lightmap {
         float sun = Colorizer.clamp(world.lightningFlash > 0 ? 1.0f : 7.0f / 6.0f * (world.getSunAngle(1.0f) - 0.2f)) * (width - 1);
         float torch = Colorizer.clamp(renderer.torchFlickerX + 0.5f) * (width - 1);
         float nightVisionStrength = renderer.getNightVisionStrength(partialTick);
-        float gamma = Colorizer.clamp(MCPatcherUtils.getMinecraft().gameSettings.gammaSetting);
+        float gamma = Colorizer.clamp(Minecraft.getInstance().gameSettings.gammaSetting);
         for (int i = 0; i < LIGHTMAP_SIZE; i++) {
             interpolate(origMap, i * width, sun, sunrgb, 3 * i);
             interpolate(origMap, (i + LIGHTMAP_SIZE) * width, torch, torchrgb, 3 * i);
