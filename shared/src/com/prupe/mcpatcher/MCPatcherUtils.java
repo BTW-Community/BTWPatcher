@@ -280,6 +280,16 @@ public class MCPatcherUtils {
         }
     }
 
+    /**
+     * Returns true if string is null or consists only of whitespace.
+     *
+     * @param s possibly null string
+     * @return true if null or empty
+     */
+    public static boolean isNullOrEmpty(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
     public static void setMinecraft(File minecraftDir, String minecraftVersion, String patcherVersion) {
         isGame = true;
         MCPatcherUtils.minecraftDir = minecraftDir.getAbsoluteFile();
