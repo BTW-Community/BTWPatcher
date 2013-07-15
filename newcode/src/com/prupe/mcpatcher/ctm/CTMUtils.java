@@ -19,8 +19,6 @@ public class CTMUtils {
     static final int BLOCK_ID_MYCELIUM = 110;
     static final int BLOCK_ID_SNOW = 78;
     static final int BLOCK_ID_CRAFTED_SNOW = 80;
-    static final int BLOCK_ID_VINE = 106;
-    static final int BLOCK_ID_LADDER = 65;
 
     private static final List<ITileOverride> allOverrides = new ArrayList<ITileOverride>();
     private static final ITileOverride blockOverrides[][] = new ITileOverride[Block.blocksList.length][];

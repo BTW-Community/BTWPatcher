@@ -665,9 +665,9 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    private int remapFace(int blockID, int metadata, int face) {
-        switch (blockID) {
-            case CTMUtils.BLOCK_ID_VINE:
+    private int remapFaceByRenderType(Block block, int metadata, int face) {
+        switch (block.getRenderType()) {
+            case 20: // renderBlockVine
                 switch (metadata) {
                     case 1:
                         return NORTH_FACE;
@@ -686,7 +686,7 @@ abstract class TileOverride implements ITileOverride {
                 }
                 break;
 
-            case CTMUtils.BLOCK_ID_LADDER:
+            case 8: // renderBlockLadder
                 switch (metadata) {
                     case 2:
                     case 3:
@@ -719,7 +719,7 @@ abstract class TileOverride implements ITileOverride {
         }
         int metadata = blockAccess.getBlockMetadata(i, j, k);
         setupOrientation(getOrientationFromMetadata(block.blockID, metadata), face);
-        face = remapFace(block.blockID, metadata, face);
+        face = remapFaceByRenderType(block, metadata, face);
         if (exclude(block, face, metadata)) {
             return null;
         }
