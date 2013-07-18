@@ -8,8 +8,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="javassist" level="project" />
     <orderEntry type="module" module-name="shared" />
+    <orderEntry type="library" name="org.javassist:javassist:3.18.0-GA" level="project" />
   </component>
 </module>
 

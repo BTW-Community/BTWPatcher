@@ -6,12 +6,12 @@
         <element id="file-copy" path="$PROJECT_DIR$/src/META-INF/MANIFEST.MF" />
       </element>
       <element id="module-output" name="mcpatcher" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/lib/javassist.jar" path-in-jar="/" />
       <element id="module-output" name="newcode" />
       <element id="module-output" name="shared" />
       <element id="directory" name="resources">
         <element id="dir-copy" path="$PROJECT_DIR$/src/resources" />
       </element>
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/javassist-3.18.0-GA.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

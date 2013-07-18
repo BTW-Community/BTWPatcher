@@ -1,4 +1,5 @@
 doc/javadoc
+lib/*
 out
 .idea/workspace.xml
 Notes
