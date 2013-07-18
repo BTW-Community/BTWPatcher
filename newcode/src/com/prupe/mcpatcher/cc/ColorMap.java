@@ -86,11 +86,12 @@ final class ColorMap {
     void colorizeWithBlending(int i, int j, int k, int radius, float[] result) {
         if (i == lastBlendI && k == lastBlendK) {
             System.arraycopy(lastBlendResult, 0, result, 0, 3);
+            return;
         }
         Arrays.fill(result, 0.0f);
         for (int offsetI = -radius; offsetI <= radius; offsetI++) {
             for (int offsetK = -radius; offsetK <= radius; offsetK++) {
-                int rgb = colorize(mapDefault, i + offsetI, j, k + offsetI);
+                int rgb = colorize(mapDefault, i + offsetI, j, k + offsetK);
                 intToFloat3(rgb, lastBlendResult);
                 result[0] += lastBlendResult[0];
                 result[1] += lastBlendResult[1];
