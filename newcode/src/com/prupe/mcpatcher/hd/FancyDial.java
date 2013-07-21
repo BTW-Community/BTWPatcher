@@ -48,6 +48,7 @@ public class FancyDial {
     private final ByteBuffer scratchBuffer;
     private final int[] frameBuffer = new int[NUM_SCRATCH_TEXTURES];
     private int scratchIndex;
+    private Map<Double, ByteBuffer> itemFrames = new TreeMap<Double, ByteBuffer>();
     private int outputFrames;
 
     private boolean ok;
@@ -254,68 +255,83 @@ public class FancyDial {
             return false;
         }
 
-        boolean changed = true;
-        if (!keyboard.isEnabled()) {
-            changed = false;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD2)) {
-            scaleYDelta -= STEP;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD8)) {
-            scaleYDelta += STEP;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD4)) {
-            scaleXDelta -= STEP;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD6)) {
-            scaleXDelta += STEP;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_DOWN)) {
-            offsetYDelta += STEP;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_UP)) {
-            offsetYDelta -= STEP;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_LEFT)) {
-            offsetXDelta -= STEP;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_RIGHT)) {
-            offsetXDelta += STEP;
-        } else if (keyboard.isKeyPressed(Keyboard.KEY_MULTIPLY)) {
-            scaleXDelta = scaleYDelta = offsetXDelta = offsetYDelta = 0.0f;
-        } else {
-            changed = false;
-        }
-        if (changed) {
-            logger.info("");
-            logger.info("scaleX  %+f", scaleXDelta);
-            logger.info("scaleY  %+f", scaleYDelta);
-            logger.info("offsetX %+f", offsetXDelta);
-            logger.info("offsetY %+f", offsetYDelta);
-            lastAngle = ANGLE_UNSET;
-        }
+        if (!itemFrameRenderer) {
+            boolean changed = true;
+            if (!keyboard.isEnabled()) {
+                changed = false;
+            } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD2)) {
+                scaleYDelta -= STEP;
+            } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD8)) {
+                scaleYDelta += STEP;
+            } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD4)) {
+                scaleXDelta -= STEP;
+            } else if (keyboard.isKeyPressed(Keyboard.KEY_NUMPAD6)) {
+                scaleXDelta += STEP;
+            } else if (keyboard.isKeyPressed(Keyboard.KEY_DOWN)) {
+                offsetYDelta += STEP;
+            } else if (keyboard.isKeyPressed(Keyboard.KEY_UP)) {
+                offsetYDelta -= STEP;
+            } else if (keyboard.isKeyPressed(Keyboard.KEY_LEFT)) {
+                offsetXDelta -= STEP;
+            } else if (keyboard.isKeyPressed(Keyboard.KEY_RIGHT)) {
+                offsetXDelta += STEP;
+            } else if (keyboard.isKeyPressed(Keyboard.KEY_MULTIPLY)) {
+                scaleXDelta = scaleYDelta = offsetXDelta = offsetYDelta = 0.0f;
+            } else {
+                changed = false;
+            }
+            if (changed) {
+                logger.info("");
+                logger.info("scaleX  %+f", scaleXDelta);
+                logger.info("scaleY  %+f", scaleYDelta);
+                logger.info("offsetX %+f", offsetXDelta);
+                logger.info("offsetY %+f", offsetYDelta);
+                lastAngle = ANGLE_UNSET;
+            }
 
-        if (outputFrames > 0) {
-            writeCustomImage();
-            outputFrames = 0;
+            if (outputFrames > 0) {
+                writeCustomImage();
+                outputFrames = 0;
+            }
         }
 
         double angle = getAngle(icon);
-        if (useScratchTexture && lastAngle == ANGLE_UNSET) {
-            for (int i = 0; i < NUM_SCRATCH_TEXTURES; i++) {
-                renderToFB(angle, frameBuffer[i]);
+        if (useScratchTexture && itemFrameRenderer) {
+            ByteBuffer buffer = itemFrames.get(angle);
+            if (buffer == null) {
+                logger.fine("rendering %s at angle %f for item frame", name, angle);
+                buffer = ByteBuffer.allocateDirect(width * height * 4);
+                renderToFB(angle, 0);
+                GL11.glReadPixels(x0, y0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+                itemFrames.put(angle, buffer);
             }
-            readTextureToBuffer(scratchTexture[scratchIndex], scratchBuffer);
-            copyBufferToItemsTexture(scratchBuffer);
-            lastAngle = angle;
-            scratchIndex = 0;
-        }
-
-        if (angle != lastAngle) {
-            renderToFB(angle, frameBuffer[(scratchIndex + NUM_SCRATCH_TEXTURES - 1) % NUM_SCRATCH_TEXTURES]);
-            lastAngle = angle;
-            if (useScratchTexture) {
+            copyBufferToItemsTexture(buffer);
+        } else {
+            if (useScratchTexture && lastAngle == ANGLE_UNSET) {
+                for (int i = 0; i < NUM_SCRATCH_TEXTURES; i++) {
+                    renderToFB(angle, frameBuffer[i]);
+                }
                 readTextureToBuffer(scratchTexture[scratchIndex], scratchBuffer);
                 copyBufferToItemsTexture(scratchBuffer);
-                scratchIndex = (scratchIndex + 1) % NUM_SCRATCH_TEXTURES;
+                lastAngle = angle;
+                scratchIndex = 0;
             }
-            int glError = GL11.glGetError();
-            if (glError != 0) {
-                logger.severe("%s during %s update", GLU.gluErrorString(glError), icon.getIconName());
-                ok = false;
+
+            if (angle != lastAngle) {
+                renderToFB(angle, frameBuffer[(scratchIndex + NUM_SCRATCH_TEXTURES - 1) % NUM_SCRATCH_TEXTURES]);
+                lastAngle = angle;
+                if (useScratchTexture) {
+                    readTextureToBuffer(scratchTexture[scratchIndex], scratchBuffer);
+                    copyBufferToItemsTexture(scratchBuffer);
+                    scratchIndex = (scratchIndex + 1) % NUM_SCRATCH_TEXTURES;
+                }
             }
+        }
+
+        int glError = GL11.glGetError();
+        if (glError != 0) {
+            logger.severe("%s during %s update", GLU.gluErrorString(glError), icon.getIconName());
+            ok = false;
         }
         return ok;
     }
@@ -349,7 +365,7 @@ public class FancyDial {
 
     private void renderToFB(double angle, int bindFB) {
         GL11.glPushAttrib(glAttributes);
-        if (useScratchTexture) {
+        if (bindFB > 0) {
             GL11.glViewport(0, 0, width, height);
         } else {
             GL11.glViewport(x0, y0, width, height);
