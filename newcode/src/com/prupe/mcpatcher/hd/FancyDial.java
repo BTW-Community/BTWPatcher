@@ -296,7 +296,14 @@ public class FancyDial {
         }
 
         double angle = getAngle(icon);
-        if (useScratchTexture && itemFrameRenderer) {
+        if (!useScratchTexture) {
+            // render directly to items.png
+            if (angle != lastAngle) {
+                renderToFB(angle, 0);
+                lastAngle = angle;
+            }
+        } else if (itemFrameRenderer) {
+            // look in itemFrames cache first
             ByteBuffer buffer = itemFrames.get(angle);
             if (buffer == null) {
                 logger.fine("rendering %s at angle %f for item frame", name, angle);
@@ -304,33 +311,32 @@ public class FancyDial {
                 renderToFB(angle, 0);
                 GL11.glReadPixels(x0, y0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
                 itemFrames.put(angle, buffer);
+                lastAngle = angle;
             }
             copyBufferToItemsTexture(buffer);
-        } else {
-            if (useScratchTexture && lastAngle == ANGLE_UNSET) {
-                for (int i = 0; i < NUM_SCRATCH_TEXTURES; i++) {
-                    renderToFB(angle, frameBuffer[i]);
-                }
-                readTextureToBuffer(scratchTexture[scratchIndex], scratchBuffer);
-                copyBufferToItemsTexture(scratchBuffer);
-                lastAngle = angle;
-                scratchIndex = 0;
+        } else if (lastAngle == ANGLE_UNSET) {
+            // first time rendering - render all N copies
+            for (int i = 0; i < NUM_SCRATCH_TEXTURES; i++) {
+                renderToFB(angle, frameBuffer[i]);
             }
-
-            if (angle != lastAngle) {
-                renderToFB(angle, frameBuffer[(scratchIndex + NUM_SCRATCH_TEXTURES - 1) % NUM_SCRATCH_TEXTURES]);
-                lastAngle = angle;
-                if (useScratchTexture) {
-                    readTextureToBuffer(scratchTexture[scratchIndex], scratchBuffer);
-                    copyBufferToItemsTexture(scratchBuffer);
-                    scratchIndex = (scratchIndex + 1) % NUM_SCRATCH_TEXTURES;
-                }
-            }
+            readTextureToBuffer(scratchTexture[0], scratchBuffer);
+            copyBufferToItemsTexture(scratchBuffer);
+            lastAngle = angle;
+            scratchIndex = 0;
+        } else if (angle != lastAngle) {
+            // render to buffer i + 1
+            // update items.png from buffer i
+            int nextIndex = (scratchIndex + 1) % NUM_SCRATCH_TEXTURES;
+            renderToFB(angle, frameBuffer[nextIndex]);
+            readTextureToBuffer(scratchTexture[scratchIndex], scratchBuffer);
+            copyBufferToItemsTexture(scratchBuffer);
+            lastAngle = angle;
+            scratchIndex = nextIndex;
         }
 
         int glError = GL11.glGetError();
         if (glError != 0) {
-            logger.severe("%s during %s update", GLU.gluErrorString(glError), icon.getIconName());
+            logger.severe("%s during %s update", GLU.gluErrorString(glError), name);
             ok = false;
         }
         return ok;
