@@ -240,6 +240,10 @@ public class TexturePackAPI {
         return getTextureIfLoaded(resource) >= 0;
     }
 
+    public static TextureObject getTextureObject(ResourceLocation resource) {
+        return Minecraft.getInstance().getTextureManager().getTexture(resource);
+    }
+
     public static void bindTexture(ResourceLocation resource) {
         Minecraft.getInstance().getTextureManager().bindTexture(resource);
     }

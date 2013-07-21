@@ -164,6 +164,7 @@ public class ExtendedHD extends Mod {
             super(ExtendedHD.this);
 
             final ClassRef textureStitched = new ClassRef("TextureAtlasSprite");
+            final FieldRef animations = new FieldRef(getDeobfClass(), "animations", "Ljava/util/List;");
             final MethodRef textureStitchedConstructor = new MethodRef("TextureAtlasSprite", "<init>", "(Ljava/lang/String;)V");
             final MethodRef createTextureStitched = new MethodRef(MCPatcherUtils.BORDERED_TEXTURE_CLASS, "create", "(Ljava/lang/String;Ljava/lang/String;)LTextureAtlasSprite;");
 
@@ -194,6 +195,9 @@ public class ExtendedHD extends Mod {
                 .addXref(4, new MethodRef("TextureAtlasSprite", "getY0", "()I"))
             );
 
+            addMemberMapper(new FieldMapper(animations));
+
+            addPatch(new MakeMemberPublicPatch(animations));
             addPatch(new TextureMipmapPatch(this, basePath));
 
             addPatch(new BytecodePatch() {

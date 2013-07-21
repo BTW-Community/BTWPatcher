@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.hd;
 
 import com.prupe.mcpatcher.*;
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.EXTFramebufferObject;
@@ -32,7 +33,6 @@ public class FancyDial {
     private static final boolean useScratchTexture = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "useScratchTexture", true);
     private static final int glAttributes;
     private static boolean initialized;
-    private static boolean inUpdateAll;
     private static final int drawList = GL11.glGenLists(1);
 
     private static final Map<TextureAtlasSprite, ResourceLocation> setupInfo = new WeakHashMap<TextureAtlasSprite, ResourceLocation>();
@@ -45,7 +45,6 @@ public class FancyDial {
     private final int y0;
     private final int width;
     private final int height;
-    private final boolean needExtraUpdate;
     private final int itemsTexture;
     private final int[] scratchTexture = new int[NUM_SCRATCH_TEXTURES];
     private final ByteBuffer scratchBuffer;
@@ -134,30 +133,10 @@ public class FancyDial {
                 getInstance(icon);
             }
         }
-        inUpdateAll = true;
-        for (FancyDial instance : instances.values()) {
-            if (instance != null && instance.needExtraUpdate) {
-                instance.icon.updateAnimation();
-            }
-        }
-        inUpdateAll = false;
     }
 
-    static void postUpdateAll() {
-        /*
-        if (!initialized) {
-            return;
-        }
-        for (FancyDial instance : instances.values()) {
-            if (instance != null) {
-                instance.postRender();
-            }
-        }
-        */
-    }
-
-    static void refresh() {
-        logger.finer("FancyDial.refresh");
+    static void clear() {
+        logger.finer("FancyDial.clear");
         for (FancyDial instance : instances.values()) {
             if (instance != null) {
                 instance.finish();
@@ -165,6 +144,19 @@ public class FancyDial {
         }
         instances.clear();
         initialized = true;
+    }
+
+    static void registerAnimations() {
+        TextureObject texture = TexturePackAPI.getTextureObject(ITEMS_PNG);
+        if (texture instanceof TextureAtlas) {
+            List<TextureAtlasSprite> animations = ((TextureAtlas) texture).animations;
+            for (FancyDial instance : instances.values()) {
+                if (!animations.contains(instance.icon)) {
+                    logger.fine("registered %s animation", instance.name);
+                    animations.add(instance.icon);
+                }
+            }
+        }
     }
 
     private static FancyDial getInstance(TextureAtlasSprite icon) {
@@ -195,11 +187,7 @@ public class FancyDial {
         y0 = icon.getY0();
         width = icon.getWidth();
         height = icon.getHeight();
-        needExtraUpdate = !hasAnimation(icon);
         scratchBuffer = ByteBuffer.allocateDirect(4 * width * height);
-        if (needExtraUpdate) {
-            logger.fine("%s needs direct .update() call", icon.getIconName());
-        }
 
         TexturePackAPI.bindTexture(ITEMS_PNG);
         itemsTexture = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);

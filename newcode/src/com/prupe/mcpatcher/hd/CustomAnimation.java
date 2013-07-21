@@ -49,7 +49,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
                 }
                 animations.clear();
                 MipmapHelper.reset();
-                FancyDial.refresh();
+                FancyDial.clear();
             }
 
             @Override
@@ -62,6 +62,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
                         }
                     }
                 }
+                FancyDial.registerAnimations();
             }
         });
     }
@@ -80,7 +81,6 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         for (CustomAnimation animation : animations) {
             animation.update();
         }
-        FancyDial.postUpdateAll();
     }
 
     private static void checkPendingAnimations() {
