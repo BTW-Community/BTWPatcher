@@ -503,9 +503,10 @@ public class ExtendedHD extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (FancyDial.update(this)) {
+                        // if (FancyDial.update(this, renderItemFlag)) {
                         ALOAD_0,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FANCY_DIAL_CLASS, "update", "(LTextureAtlasSprite;)Z")),
+                        getRenderItemFrameFlag(),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FANCY_DIAL_CLASS, "update", "(LTextureAtlasSprite;Z)Z")),
                         IFEQ, branch("A"),
 
                         // return;
@@ -522,6 +523,12 @@ public class ExtendedHD extends Mod {
         }
 
         abstract protected MethodRef getUpdateMethod();
+
+        protected byte[] getRenderItemFrameFlag() {
+            return buildCode(
+                push(0)
+            );
+        }
     }
 
     private class TextureCompassMod extends TextureDialMod {
@@ -551,6 +558,13 @@ public class ExtendedHD extends Mod {
         @Override
         protected MethodRef getUpdateMethod() {
             return new MethodRef(getDeobfClass(), "updateNeedle", "(LWorld;DDDZZ)V");
+        }
+
+        @Override
+        protected byte[] getRenderItemFrameFlag() {
+            return buildCode(
+                ILOAD, 9
+            );
         }
     }
 

@@ -103,7 +103,7 @@ public class FancyDial {
         }
     }
 
-    public static boolean update(TextureAtlasSprite icon) {
+    public static boolean update(TextureAtlasSprite icon, boolean itemFrameRenderer) {
         if (!initialized) {
             logger.finer("deferring %s update until initialization finishes", icon.getIconName());
             return false;
@@ -115,7 +115,7 @@ public class FancyDial {
                 return false;
             }
         }
-        return instance.render();
+        return instance.render(itemFrameRenderer);
     }
 
     static void clearAll() {
@@ -134,12 +134,23 @@ public class FancyDial {
         if (texture instanceof TextureAtlas) {
             List<TextureAtlasSprite> animations = ((TextureAtlas) texture).animations;
             for (FancyDial instance : instances.values()) {
-                if (!animations.contains(instance.icon)) {
-                    logger.fine("registered %s animation", instance.name);
-                    animations.add(instance.icon);
-                }
+                instance.registerAnimation(animations);
             }
         }
+    }
+
+    void registerAnimation(List<TextureAtlasSprite> animations) {
+        if (animations.contains(icon)) {
+            return;
+        }
+        animations.add(icon);
+        if (icon.animationFrames == null) {
+            icon.animationFrames = new ArrayList<int[]>();
+        }
+        if (icon.animationFrames.isEmpty()) {
+            icon.animationFrames.add(new int[width * height]);
+        }
+        logger.fine("registered %s animation", name);
     }
 
     private static FancyDial getInstance(TextureAtlasSprite icon) {
@@ -238,7 +249,7 @@ public class FancyDial {
         EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
     }
 
-    private boolean render() {
+    private boolean render(boolean itemFrameRenderer) {
         if (!ok) {
             return false;
         }
@@ -467,10 +478,6 @@ public class FancyDial {
     protected void finalize() throws Throwable {
         finish();
         super.finalize();
-    }
-
-    private static boolean hasAnimation(TextureAtlasSprite icon) {
-        return icon.animationFrames.size() <= 1;
     }
 
     private static double getAngle(Icon icon) {
