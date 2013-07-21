@@ -261,6 +261,7 @@ public class ExtendedHD extends Mod {
             final MethodRef loadResource = new MethodRef(getDeobfClass(), "loadResource", "(LResource;)V");
             final MethodRef addBorder = new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(LTextureAtlasSprite;LResource;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
             final InterfaceMethodRef listGet = new InterfaceMethodRef("java/util/List", "get", "(I)Ljava/lang/Object;");
+            final InterfaceMethodRef listClear = new InterfaceMethodRef("java/util/List", "clear", "()V");
             final ClassRef intArray = new ClassRef("[I");
 
             addClassSignature(new BytecodeSignature() {
@@ -284,7 +285,6 @@ public class ExtendedHD extends Mod {
             addPatch(new MakeMemberPublicPatch(constructor)); // constructor was made protected in 13w25c
             addPatch(new MakeMemberPublicPatch(animationFrames));
             addPatch(new AddFieldPatch(mipmaps));
-            //addPatch(new TextureMipmapPatch(this, textureName));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -350,6 +350,39 @@ public class ExtendedHD extends Mod {
                     );
                 }
             }.targetMethod(updateAnimation));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "update mipmaps with tile animation data";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(or(
+                        build(
+                            // this.animationFrames.clear();
+                            ALOAD_0,
+                            reference(GETFIELD, animationFrames),
+                            reference(INVOKEINTERFACE, listClear)
+                        ),
+                        build(
+                            // this.animationFrames = ...;
+                            reference(PUTFIELD, animationFrames)
+                        )
+                    ));
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // this.mipmaps = null;
+                        ALOAD_0,
+                        ACONST_NULL,
+                        reference(PUTFIELD, mipmaps)
+                    );
+                }
+            }.setInsertAfter(true));
         }
     }
 

@@ -175,9 +175,7 @@ public class MipmapHelper {
         int height = texture.getHeight();
         IntBuffer[] mipmapData = texture.mipmaps.get(index);
         for (int level = 0; level < mipmapData.length; level++) {
-            if (mipmapData[level] != null) {
-                GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, level, x, y, width, height, TEX_FORMAT, TEX_DATA_TYPE, mipmapData[level]);
-            }
+            GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, level, x, y, width, height, TEX_FORMAT, TEX_DATA_TYPE, mipmapData[level]);
             x >>= 1;
             y >>= 1;
             width >>= 1;
