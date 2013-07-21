@@ -1,6 +1,12 @@
 package net.minecraft.src;
 
+import java.nio.IntBuffer;
+import java.util.List;
+
 public class TextureAtlasSprite implements Icon {
+    public List<int[]> animationFrames; // made public by Extended HD
+    public List<IntBuffer[]> mipmaps; // added by Extended HD
+
     public int getWidth() {
         return 0;
     }

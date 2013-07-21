@@ -5,6 +5,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.ResourceLocation;
+import net.minecraft.src.TextureAtlasSprite;
 import org.lwjgl.opengl.*;
 import org.lwjgl.util.glu.GLU;
 
@@ -19,10 +20,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public class MipmapHelper {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
@@ -160,6 +158,52 @@ public class MipmapHelper {
         }
     }
 
+    public static void copySubTexture(TextureAtlasSprite texture, int index) {
+        if (texture.mipmaps == null || texture.mipmaps.size() != texture.animationFrames.size()) {
+            texture.mipmaps = new ArrayList<IntBuffer[]>(texture.animationFrames.size());
+            int mipmaps = getMipmapLevelsForCurrentTexture();
+            logger.fine("generating %d mipmaps for tile %s", mipmaps, texture.getIconName());
+            for (int i = 0; i < texture.animationFrames.size(); i++) {
+                texture.mipmaps.add(generateMipmaps(texture.animationFrames.get(i), texture.getWidth(), texture.getHeight(), mipmaps));
+                texture.animationFrames.set(i, new int[0]);
+            }
+        }
+        int x = texture.getX0();
+        int y = texture.getY0();
+        int width = texture.getWidth();
+        int height = texture.getHeight();
+        IntBuffer[] mipmapData = texture.mipmaps.get(index);
+        for (int level = 0; level < mipmapData.length; level++) {
+            if (mipmapData[level] != null) {
+                GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, level, x, y, width, height, TEX_FORMAT, TEX_DATA_TYPE, mipmapData[level]);
+            }
+            x >>= 1;
+            y >>= 1;
+            width >>= 1;
+            height >>= 1;
+        }
+    }
+
+    private static IntBuffer[] generateMipmaps(int[] rgb, int width, int height, int mipmaps) {
+        ArrayList<IntBuffer> mipmapData = new ArrayList<IntBuffer>();
+        IntBuffer buffer = newIntBuffer(width * height * 4);
+        buffer.put(rgb).position(0);
+        IntBuffer newBuffer;
+        for (int level = 0; ; ) {
+            mipmapData.add(buffer);
+            if (width <= 0 || height <= 0 || level >= mipmaps) {
+                break;
+            }
+            newBuffer = newIntBuffer(width * height);
+            scaleHalf(buffer, width, height, newBuffer, 0);
+            buffer = newBuffer;
+            level++;
+            width >>= 1;
+            height >>= 1;
+        }
+        return mipmapData.toArray(new IntBuffer[mipmapData.size()]);
+    }
+
     static BufferedImage fixTransparency(ResourceLocation name, BufferedImage image) {
         if (image == null) {
             return image;
@@ -264,6 +308,12 @@ public class MipmapHelper {
             imagePool.put(key, new SoftReference<BufferedImage>(image));
         }
         return image;
+    }
+
+    private static IntBuffer newIntBuffer(int size) {
+        ByteBuffer buffer = ByteBuffer.allocateDirect(size);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        return buffer.asIntBuffer();
     }
 
     private static ByteBuffer getPooledBuffer(int size) {

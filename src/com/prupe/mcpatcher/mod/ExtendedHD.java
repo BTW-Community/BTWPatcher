@@ -14,7 +14,8 @@ public class ExtendedHD extends Mod {
 
     private static final MethodRef setupTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(ILjava/awt/image/BufferedImage;ZZLResourceLocation;)I");
     private static final MethodRef setupTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(IIILjava/lang/String;)V");
-    private static final MethodRef copySubTextureMipmaps = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "([IIIIILjava/lang/String;)V");
+    private static final MethodRef copySubTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "([IIIIILjava/lang/String;)V");
+    private static final MethodRef copySubTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "(LTextureAtlasSprite;I)V");
 
     private static final MethodRef imageRead = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
 
@@ -251,12 +252,16 @@ public class ExtendedHD extends Mod {
         TextureAtlasSpriteMod() {
             super(ExtendedHD.this);
 
+            final FieldRef mipmaps = new FieldRef(getDeobfClass(), "mipmaps", "Ljava/util/List;");
+            final FieldRef animationFrames = new FieldRef(getDeobfClass(), "animationFrames", "Ljava/util/List;");
             final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(Ljava/lang/String;)V");
             final MethodRef init = new MethodRef(getDeobfClass(), "init", "(IIIIZ)V");
             final MethodRef copy = new MethodRef(getDeobfClass(), "copy", "(LTextureAtlasSprite;)V");
             final MethodRef updateAnimation = new MethodRef(getDeobfClass(), "updateAnimation", "()V");
             final MethodRef loadResource = new MethodRef(getDeobfClass(), "loadResource", "(LResource;)V");
             final MethodRef addBorder = new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(LTextureAtlasSprite;LResource;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
+            final InterfaceMethodRef listGet = new InterfaceMethodRef("java/util/List", "get", "(I)Ljava/lang/Object;");
+            final ClassRef intArray = new ClassRef("[I");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -274,10 +279,12 @@ public class ExtendedHD extends Mod {
             addMemberMapper(new MethodMapper(init));
             addMemberMapper(new MethodMapper(copy));
             addMemberMapper(new MethodMapper(loadResource));
+            addMemberMapper(new FieldMapper(animationFrames));
 
             addPatch(new MakeMemberPublicPatch(constructor)); // constructor was made protected in 13w25c
-
-            addPatch(new TextureMipmapPatch(this, textureName));
+            addPatch(new MakeMemberPublicPatch(animationFrames));
+            addPatch(new AddFieldPatch(mipmaps));
+            //addPatch(new TextureMipmapPatch(this, textureName));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -305,6 +312,44 @@ public class ExtendedHD extends Mod {
                     );
                 }
             }.targetMethod(loadResource));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "update mipmaps (tile animations)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        reference(GETFIELD, animationFrames),
+                        capture(anyILOAD),
+                        reference(INVOKEINTERFACE, listGet),
+                        reference(CHECKCAST, intArray),
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        push(0),
+                        push(0),
+                        reference(INVOKESTATIC, copySubTexture1)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_0,
+                        getCaptureGroup(1),
+                        reference(INVOKESTATIC, copySubTextureMipmaps2)
+                    );
+                }
+            }.targetMethod(updateAnimation));
         }
     }
 
@@ -335,7 +380,7 @@ public class ExtendedHD extends Mod {
                 POP,
                 ALOAD_0,
                 reference(GETFIELD, textureNameField),
-                reference(INVOKESTATIC, copySubTextureMipmaps)
+                reference(INVOKESTATIC, copySubTextureMipmaps1)
             );
         }
     }
