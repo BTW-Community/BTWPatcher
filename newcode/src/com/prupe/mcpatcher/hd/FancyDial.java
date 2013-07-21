@@ -1,7 +1,6 @@
 package com.prupe.mcpatcher.hd;
 
 import com.prupe.mcpatcher.*;
-import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.EXTFramebufferObject;
@@ -13,7 +12,6 @@ import org.lwjgl.util.glu.GLU;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.*;
@@ -54,7 +52,6 @@ public class FancyDial {
 
     private boolean ok;
     private double lastAngle = ANGLE_UNSET;
-    private boolean skipPostRender;
 
     private final List<Layer> layers = new ArrayList<Layer>();
 
@@ -121,22 +118,8 @@ public class FancyDial {
         return instance.render();
     }
 
-    static void updateAll() {
-        if (!initialized) {
-            logger.finer("deferring %s update until initialization finishes", FancyDial.class.getSimpleName());
-            return;
-        }
-        if (!setupInfo.isEmpty()) {
-            List<TextureAtlasSprite> keys = new ArrayList<TextureAtlasSprite>();
-            keys.addAll(setupInfo.keySet());
-            for (TextureAtlasSprite icon : keys) {
-                getInstance(icon);
-            }
-        }
-    }
-
-    static void clear() {
-        logger.finer("FancyDial.clear");
+    static void clearAll() {
+        logger.finer("FancyDial.clearAll");
         for (FancyDial instance : instances.values()) {
             if (instance != null) {
                 instance.finish();
@@ -294,45 +277,66 @@ public class FancyDial {
         }
 
         if (outputFrames > 0) {
-            try {
-                BufferedImage image = new BufferedImage(width, outputFrames * height, BufferedImage.TYPE_INT_ARGB);
-                IntBuffer intBuffer = scratchBuffer.asIntBuffer();
-                int[] argb = new int[width * height];
-                EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer[0]);
-                File path = MCPatcherUtils.getMinecraftPath("custom_" + name + ".png");
-                logger.info("generating %d %s frames", outputFrames, name);
-                for (int i = 0; i < outputFrames; i++) {
-                    render(i * (360.0 / outputFrames), false);
-                    if (scratchTexture[0] < 0) {
-                        intBuffer.position(0);
-                        GL11.glReadPixels(x0, y0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, intBuffer);
-                    }
-                    intBuffer.position(0);
-                    for (int j = 0; j < argb.length; j++) {
-                        argb[j] = Integer.rotateRight(intBuffer.get(j), 8);
-                    }
-                    image.setRGB(0, i * height, width, height, argb, 0, width);
-                }
-                ImageIO.write(image, "png", path);
-                logger.info("wrote %dx%d %s", image.getWidth(), image.getHeight(), path.getPath());
-            } catch (Throwable e) {
-                e.printStackTrace();
-            } finally {
-                EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
-            }
+            writeCustomImage();
             outputFrames = 0;
         }
 
-        return render(getAngle(icon), true);
+        double angle = getAngle(icon);
+        if (useScratchTexture && lastAngle == ANGLE_UNSET) {
+            for (int i = 0; i < NUM_SCRATCH_TEXTURES; i++) {
+                renderToFB(angle, frameBuffer[i]);
+            }
+            readTextureToBuffer(scratchTexture[scratchIndex], scratchBuffer);
+            copyBufferToItemsTexture(scratchBuffer);
+            lastAngle = angle;
+            scratchIndex = 0;
+        }
+
+        if (angle != lastAngle) {
+            renderToFB(angle, frameBuffer[(scratchIndex + NUM_SCRATCH_TEXTURES - 1) % NUM_SCRATCH_TEXTURES]);
+            lastAngle = angle;
+            if (useScratchTexture) {
+                readTextureToBuffer(scratchTexture[scratchIndex], scratchBuffer);
+                copyBufferToItemsTexture(scratchBuffer);
+                scratchIndex = (scratchIndex + 1) % NUM_SCRATCH_TEXTURES;
+            }
+            int glError = GL11.glGetError();
+            if (glError != 0) {
+                logger.severe("%s during %s update", GLU.gluErrorString(glError), icon.getIconName());
+                ok = false;
+            }
+        }
+        return ok;
     }
 
-    private boolean render(double angle, boolean bindFB) {
-        if (angle == lastAngle) {
-            skipPostRender = true;
-            return true;
+    private void writeCustomImage() {
+        try {
+            BufferedImage image = new BufferedImage(width, outputFrames * height, BufferedImage.TYPE_INT_ARGB);
+            IntBuffer intBuffer = scratchBuffer.asIntBuffer();
+            int[] argb = new int[width * height];
+            File path = MCPatcherUtils.getMinecraftPath("custom_" + name + ".png");
+            logger.info("generating %d %s frames", outputFrames, name);
+            for (int i = 0; i < outputFrames; i++) {
+                renderToFB(i * (360.0 / outputFrames), frameBuffer[0]);
+                if (useScratchTexture) {
+                    readTextureToBuffer(scratchTexture[0], scratchBuffer);
+                } else {
+                    GL11.glReadPixels(x0, y0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, scratchBuffer);
+                }
+                intBuffer.position(0);
+                for (int j = 0; j < argb.length; j++) {
+                    argb[j] = Integer.rotateRight(intBuffer.get(j), 8);
+                }
+                image.setRGB(0, i * height, width, height, argb, 0, width);
+            }
+            ImageIO.write(image, "png", path);
+            logger.info("wrote %dx%d %s", image.getWidth(), image.getHeight(), path.getPath());
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
-        skipPostRender = false;
-        lastAngle = angle;
+    }
+
+    private void renderToFB(double angle, int bindFB) {
         GL11.glPushAttrib(glAttributes);
         if (useScratchTexture) {
             GL11.glViewport(0, 0, width, height);
@@ -342,9 +346,7 @@ public class FancyDial {
             GL11.glScissor(x0, y0, width, height);
         }
 
-        if (bindFB) {
-            EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer[(scratchIndex + NUM_SCRATCH_TEXTURES - 1) % NUM_SCRATCH_TEXTURES]);
-        }
+        EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, bindFB);
 
         boolean lightmapEnabled = false;
         if (gl13Supported) {
@@ -398,9 +400,7 @@ public class FancyDial {
             GL11.glPopMatrix();
         }
 
-        if (bindFB) {
-            EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
-        }
+        EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
         GL11.glPopAttrib();
 
         GL11.glMatrixMode(GL11.GL_PROJECTION);
@@ -416,28 +416,18 @@ public class FancyDial {
         }
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-        int glError = GL11.glGetError();
-        if (glError != 0) {
-            logger.severe("%s during %s update", GLU.gluErrorString(glError), icon.getIconName());
-            ok = false;
-        } else {
-            postRender();
-        }
-        return ok;
     }
 
-    private void postRender() {
-        int texture = scratchTexture[scratchIndex];
-        if (ok && !skipPostRender && texture >= 0) {
-            TexturePackAPI.bindTexture(texture);
-            scratchBuffer.position(0);
-            GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, scratchBuffer);
-            scratchBuffer.position(0);
-            TexturePackAPI.bindTexture(itemsTexture);
-            GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, x0, y0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, scratchBuffer);
-        }
-        scratchIndex = (scratchIndex + 1) % NUM_SCRATCH_TEXTURES;
+    private void readTextureToBuffer(int texture, ByteBuffer buffer) {
+        TexturePackAPI.bindTexture(texture);
+        buffer.position(0);
+        GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+    }
+
+    private void copyBufferToItemsTexture(ByteBuffer buffer) {
+        TexturePackAPI.bindTexture(itemsTexture);
+        buffer.position(0);
+        GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, x0, y0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
     }
 
     private static void drawBox() {
