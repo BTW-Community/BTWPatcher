@@ -44,15 +44,16 @@ public class FancyDial {
     private final int width;
     private final int height;
     private final int itemsTexture;
-    private final int[] scratchTexture = new int[NUM_SCRATCH_TEXTURES];
+    private final int[] scratchTexture = new int[NUM_SCRATCH_TEXTURES + 1]; // +1 for RenderItemFrame
     private final ByteBuffer scratchBuffer;
-    private final int[] frameBuffer = new int[NUM_SCRATCH_TEXTURES];
+    private final int[] frameBuffer = new int[NUM_SCRATCH_TEXTURES + 1];  // +1 for RenderItemFrame
     private int scratchIndex;
     private Map<Double, ByteBuffer> itemFrames = new TreeMap<Double, ByteBuffer>();
     private int outputFrames;
 
     private boolean ok;
     private double lastAngle = ANGLE_UNSET;
+    private boolean lastItemFrameRenderer;
 
     private final List<Layer> layers = new ArrayList<Layer>();
 
@@ -149,7 +150,9 @@ public class FancyDial {
             icon.animationFrames = new ArrayList<int[]>();
         }
         if (icon.animationFrames.isEmpty()) {
-            icon.animationFrames.add(new int[width * height]);
+            int[] dummyRGB = new int[width * height];
+            Arrays.fill(dummyRGB, 0xffff00ff);
+            icon.animationFrames.add(dummyRGB);
         }
         logger.fine("registered %s animation", name);
     }
@@ -184,16 +187,20 @@ public class FancyDial {
         height = icon.getHeight();
         scratchBuffer = ByteBuffer.allocateDirect(4 * width * height);
 
-        TexturePackAPI.bindTexture(ITEMS_PNG);
-        itemsTexture = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
+        itemsTexture = TexturePackAPI.getTextureIfLoaded(ITEMS_PNG);
         if (itemsTexture < 0) {
             logger.severe("could not get items texture");
             return;
         }
 
-        logger.fine("setting up %s", this);
-        for (int i = 0; i < NUM_SCRATCH_TEXTURES; i++) {
-            setupFrameBuffer(i);
+        if (useScratchTexture) {
+            logger.fine("rendering %s to %dx%d scratch texture", name, width, height);
+        } else {
+            logger.fine("rendering %s directly to %s", name, ITEMS_PNG);
+        }
+        for (int i = 0; i < scratchTexture.length; i++) {
+            scratchTexture[i] = i == NUM_SCRATCH_TEXTURES ? itemsTexture : setupScratchTexture(i);
+            frameBuffer[i] = setupFrameBuffer(scratchTexture[i]);
         }
 
         boolean debug = false;
@@ -225,29 +232,31 @@ public class FancyDial {
         ok = true;
     }
 
-    private void setupFrameBuffer(int i) {
+    private int setupScratchTexture(int i) {
         int targetTexture;
         if (useScratchTexture) {
-            targetTexture = scratchTexture[i] = GL11.glGenTextures();
-            MipmapHelper.setupTexture(scratchTexture[i], width, height, TexturePackAPI.transformResourceLocation(resource, ".properties", "_scratch" + i).getPath());
-            if (i == 0) {
-                logger.fine("rendering %s to %dx%d scratch texture %d", name, width, height, scratchTexture[i]);
-            }
+            targetTexture = GL11.glGenTextures();
+            MipmapHelper.setupTexture(targetTexture, width, height, TexturePackAPI.transformResourceLocation(resource, ".properties", "_scratch" + i).getPath());
         } else {
-            scratchTexture[i] = -1;
-            targetTexture = itemsTexture;
-            if (i == 0) {
-                logger.fine("rendering %s directly to %s", name, ITEMS_PNG);
-            }
+            targetTexture = -1;
         }
-        frameBuffer[i] = EXTFramebufferObject.glGenFramebuffersEXT();
-        if (frameBuffer[i] < 0) {
+        return targetTexture;
+    }
+
+    private int setupFrameBuffer(int texture) {
+        if (texture < 0) {
+            return -1;
+        }
+        int frameBuffer = EXTFramebufferObject.glGenFramebuffersEXT();
+        if (frameBuffer < 0) {
             logger.severe("could not get framebuffer object");
-            return;
+            ok = false;
+            return -1;
         }
-        EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer[i]);
-        EXTFramebufferObject.glFramebufferTexture2DEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT, GL11.GL_TEXTURE_2D, targetTexture, 0);
+        EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer);
+        EXTFramebufferObject.glFramebufferTexture2DEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT, GL11.GL_TEXTURE_2D, texture, 0);
         EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
+        return frameBuffer;
     }
 
     private boolean render(boolean itemFrameRenderer) {
@@ -299,7 +308,7 @@ public class FancyDial {
         if (!useScratchTexture) {
             // render directly to items.png
             if (angle != lastAngle) {
-                renderToFB(angle, 0);
+                renderToItems(angle);
                 lastAngle = angle;
             }
         } else if (itemFrameRenderer) {
@@ -308,12 +317,13 @@ public class FancyDial {
             if (buffer == null) {
                 logger.fine("rendering %s at angle %f for item frame", name, angle);
                 buffer = ByteBuffer.allocateDirect(width * height * 4);
-                renderToFB(angle, 0);
-                GL11.glReadPixels(x0, y0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+                renderToItems(angle);
+                readTextureToBuffer(buffer);
                 itemFrames.put(angle, buffer);
-                lastAngle = angle;
+            } else {
+                copyBufferToItemsTexture(buffer);
             }
-            copyBufferToItemsTexture(buffer);
+            lastItemFrameRenderer = true;
         } else if (lastAngle == ANGLE_UNSET) {
             // first time rendering - render all N copies
             for (int i = 0; i < NUM_SCRATCH_TEXTURES; i++) {
@@ -323,15 +333,18 @@ public class FancyDial {
             copyBufferToItemsTexture(scratchBuffer);
             lastAngle = angle;
             scratchIndex = 0;
-        } else if (angle != lastAngle) {
+        } else if (lastItemFrameRenderer || angle != lastAngle) {
             // render to buffer i + 1
             // update items.png from buffer i
             int nextIndex = (scratchIndex + 1) % NUM_SCRATCH_TEXTURES;
-            renderToFB(angle, frameBuffer[nextIndex]);
+            if (angle != lastAngle) {
+                renderToFB(angle, frameBuffer[nextIndex]);
+            }
             readTextureToBuffer(scratchTexture[scratchIndex], scratchBuffer);
             copyBufferToItemsTexture(scratchBuffer);
             lastAngle = angle;
             scratchIndex = nextIndex;
+            lastItemFrameRenderer = false;
         }
 
         int glError = GL11.glGetError();
@@ -350,12 +363,8 @@ public class FancyDial {
             File path = MCPatcherUtils.getMinecraftPath("custom_" + name + ".png");
             logger.info("generating %d %s frames", outputFrames, name);
             for (int i = 0; i < outputFrames; i++) {
-                renderToFB(i * (360.0 / outputFrames), frameBuffer[0]);
-                if (useScratchTexture) {
-                    readTextureToBuffer(scratchTexture[0], scratchBuffer);
-                } else {
-                    GL11.glReadPixels(x0, y0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, scratchBuffer);
-                }
+                renderToItems(i * (360.0 / outputFrames));
+                readTextureToBuffer(scratchBuffer);
                 intBuffer.position(0);
                 for (int j = 0; j < argb.length; j++) {
                     argb[j] = Integer.rotateRight(intBuffer.get(j), 8);
@@ -369,18 +378,23 @@ public class FancyDial {
         }
     }
 
+    private void renderToItems(double angle) {
+        GL11.glPushAttrib(glAttributes);
+        GL11.glViewport(x0, y0, width, height);
+        GL11.glEnable(GL11.GL_SCISSOR_TEST);
+        GL11.glScissor(x0, y0, width, height);
+        EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer[NUM_SCRATCH_TEXTURES]);
+        renderImpl(angle);
+    }
+
     private void renderToFB(double angle, int bindFB) {
         GL11.glPushAttrib(glAttributes);
-        if (bindFB > 0) {
-            GL11.glViewport(0, 0, width, height);
-        } else {
-            GL11.glViewport(x0, y0, width, height);
-            GL11.glEnable(GL11.GL_SCISSOR_TEST);
-            GL11.glScissor(x0, y0, width, height);
-        }
-
+        GL11.glViewport(0, 0, width, height);
         EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, bindFB);
+        renderImpl(angle);
+    }
 
+    private void renderImpl(double angle) {
         boolean lightmapEnabled = false;
         if (gl13Supported) {
             GL13.glActiveTexture(GL13.GL_TEXTURE1);
@@ -395,7 +409,7 @@ public class FancyDial {
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
         GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
         GL11.glDisable(GL11.GL_LIGHTING);
-        if (gl13Supported && useGL13) {
+        if (useGL13) {
             GL11.glDisable(GL13.GL_MULTISAMPLE);
         }
 
@@ -457,6 +471,13 @@ public class FancyDial {
         GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
     }
 
+    private void readTextureToBuffer(ByteBuffer buffer) {
+        EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer[NUM_SCRATCH_TEXTURES]);
+        buffer.position(0);
+        GL11.glReadPixels(x0, y0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+        EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
+    }
+
     private void copyBufferToItemsTexture(ByteBuffer buffer) {
         TexturePackAPI.bindTexture(itemsTexture);
         buffer.position(0);
@@ -477,16 +498,17 @@ public class FancyDial {
     }
 
     private void finish() {
-        for (int i = 0; i < NUM_SCRATCH_TEXTURES; i++) {
+        for (int i = 0; i < frameBuffer.length; i++) {
             if (frameBuffer[i] >= 0) {
                 EXTFramebufferObject.glDeleteFramebuffersEXT(frameBuffer[i]);
                 frameBuffer[i] = -1;
             }
-            if (scratchTexture[i] >= 0) {
+            if (i < NUM_SCRATCH_TEXTURES && scratchTexture[i] >= 0) {
                 TexturePackAPI.deleteTexture(scratchTexture[i]);
                 scratchTexture[i] = -1;
             }
         }
+        itemFrames.clear();
         layers.clear();
         ok = false;
     }
