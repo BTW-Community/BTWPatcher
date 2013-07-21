@@ -27,7 +27,7 @@ public class FancyDial {
     private static final boolean gl13Supported = GLContext.getCapabilities().OpenGL13;
     private static final boolean enableCompass = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "fancyCompass", true);
     private static final boolean enableClock = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "fancyClock", true);
-    private static final boolean useGL13;
+    private static final boolean useGL13 = gl13Supported && Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "useGL13", true);
     private static final boolean useScratchTexture = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "useScratchTexture", true);
     private static final int glAttributes;
     private static boolean initialized;
@@ -65,13 +65,11 @@ public class FancyDial {
     private float offsetYDelta;
 
     static {
-        useGL13 = gl13Supported && Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "useGL13", true);
-
         logger.config("fbo: supported=%s", fboSupported);
         logger.config("GL13: supported=%s, enabled=%s", gl13Supported, useGL13);
 
         int bits = GL11.GL_VIEWPORT_BIT | GL11.GL_SCISSOR_BIT | GL11.GL_DEPTH_BITS | GL11.GL_LIGHTING_BIT;
-        if (gl13Supported && useGL13) {
+        if (useGL13) {
             bits |= GL13.GL_MULTISAMPLE_BIT;
         }
         glAttributes = bits;
@@ -339,8 +337,8 @@ public class FancyDial {
             int nextIndex = (scratchIndex + 1) % NUM_SCRATCH_TEXTURES;
             if (angle != lastAngle) {
                 renderToFB(angle, frameBuffer[nextIndex]);
+                readTextureToBuffer(scratchTexture[scratchIndex], scratchBuffer);
             }
-            readTextureToBuffer(scratchTexture[scratchIndex], scratchBuffer);
             copyBufferToItemsTexture(scratchBuffer);
             lastAngle = angle;
             scratchIndex = nextIndex;
