@@ -162,10 +162,11 @@ public class MipmapHelper {
         if (texture.mipmaps == null || texture.mipmaps.size() != texture.animationFrames.size()) {
             texture.mipmaps = new ArrayList<IntBuffer[]>(texture.animationFrames.size());
             int mipmaps = getMipmapLevelsForCurrentTexture();
-            logger.fine("generating %d mipmaps for tile %s", mipmaps, texture.getIconName());
+            if (mipmaps > 0) {
+                logger.fine("generating %d mipmaps for tile %s", mipmaps, texture.getIconName());
+            }
             for (int i = 0; i < texture.animationFrames.size(); i++) {
                 texture.mipmaps.add(generateMipmaps(texture.animationFrames.get(i), texture.getWidth(), texture.getHeight(), mipmaps));
-                texture.animationFrames.set(i, new int[0]);
             }
         }
         int x = texture.getX0();
