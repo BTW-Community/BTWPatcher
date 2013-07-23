@@ -159,6 +159,8 @@ public class MipmapHelper {
     }
 
     public static void copySubTexture(TextureAtlasSprite texture, int index) {
+        int width = texture.getWidth();
+        int height = texture.getHeight();
         if (texture.mipmaps == null || texture.mipmaps.size() != texture.animationFrames.size()) {
             texture.mipmaps = new ArrayList<IntBuffer[]>(texture.animationFrames.size());
             int mipmaps = getMipmapLevelsForCurrentTexture();
@@ -166,14 +168,15 @@ public class MipmapHelper {
                 logger.fine("generating %d mipmaps for tile %s", mipmaps, texture.getIconName());
             }
             for (int i = 0; i < texture.animationFrames.size(); i++) {
-                texture.mipmaps.add(generateMipmaps(texture.animationFrames.get(i), texture.getWidth(), texture.getHeight(), mipmaps));
+                texture.mipmaps.add(generateMipmaps(texture.animationFrames.get(i), width, height, mipmaps));
             }
         }
         int x = texture.getX0();
         int y = texture.getY0();
-        int width = texture.getWidth();
-        int height = texture.getHeight();
         IntBuffer[] mipmapData = texture.mipmaps.get(index);
+        if (mipmapData == null) {
+            return;
+        }
         for (int level = 0; level < mipmapData.length; level++) {
             GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, level, x, y, width, height, TEX_FORMAT, TEX_DATA_TYPE, mipmapData[level]);
             x >>= 1;
@@ -184,6 +187,9 @@ public class MipmapHelper {
     }
 
     private static IntBuffer[] generateMipmaps(int[] rgb, int width, int height, int mipmaps) {
+        if (rgb == null) {
+            return null;
+        }
         ArrayList<IntBuffer> mipmapData = new ArrayList<IntBuffer>();
         IntBuffer buffer = newIntBuffer(width * height * 4);
         buffer.put(rgb).position(0);
