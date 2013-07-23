@@ -1,7 +1,5 @@
 package com.prupe.mcpatcher;
 
-import net.minecraft.client.Minecraft;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.Closeable;
