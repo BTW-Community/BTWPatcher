@@ -131,7 +131,7 @@ public class BaseTexturePackMod extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         reference(NEW, textureResourceManagerClass),
-                        any(0, 500),
+                        any(0, 700),
                         reference(INVOKESTATIC, glViewport)
                     );
                 }
