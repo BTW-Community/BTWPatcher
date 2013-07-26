@@ -41,6 +41,7 @@ public class CITUtils {
     private static EnchantmentList armorMatches;
     private static int armorMatchIndex;
 
+    private static ItemStack lastItemStack;
     private static int lastRenderPass;
     private static Icon lastIcon;
 
@@ -207,11 +208,12 @@ public class CITUtils {
     }
 
     public static Icon getIcon(Icon icon, ItemStack itemStack, int renderPass) {
-        if (icon == lastIcon && renderPass == lastRenderPass) {
+        if (icon == lastIcon && itemStack == lastItemStack && renderPass == lastRenderPass) {
             return icon;
         }
-        lastRenderPass = renderPass;
         lastIcon = icon;
+        lastItemStack = itemStack;
+        lastRenderPass = renderPass;
         if (enableItems) {
             ItemOverride override = findMatch(items, itemStack);
             if (override != null) {
