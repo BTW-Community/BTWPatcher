@@ -501,6 +501,36 @@ public class CustomItemTextures extends Mod {
                     );
                 }
             }.setInsertAfter(true));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "handle items with multiple render passes (dropped)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // icon = itemStack.getItem().getIconFromDamageForRenderPass(itemStack.getItemDamage(), renderPass);
+                        capture(anyALOAD),
+                        reference(INVOKEVIRTUAL, getItem),
+                        backReference(1),
+                        anyReference(INVOKEVIRTUAL),
+                        capture(anyILOAD),
+                        reference(INVOKEVIRTUAL, getIconFromDamageForRenderPass)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // CITUtils.getIcon(..., itemStack, renderPass
+                        getCaptureGroup(1),
+                        getCaptureGroup(2),
+                        reference(INVOKESTATIC, getCITIcon)
+                    );
+                }
+            }.setInsertAfter(true));
         }
     }
 
