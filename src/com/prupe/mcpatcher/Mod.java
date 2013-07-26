@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -248,6 +249,22 @@ public abstract class Mod {
      */
     public InputStream openFile(String name) throws IOException {
         InputStream inputStream = null;
+        try {
+            // workaround to allow running from IDE
+            File devPath = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
+            if (devPath.isDirectory()) {
+                devPath = devPath.getParentFile();
+                for (String s : new String[]{"newcode", "shared"}) {
+                    File path = new File(devPath, s);
+                    path = new File(path, name);
+                    if (path.isFile()) {
+                        return new FileInputStream(path);
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            // nothing
+        }
         URL url = getClass().getResource(name);
         if (url != null) {
             url = new URL(url.toString().replaceAll("!(?=.*!)", "%21"));
