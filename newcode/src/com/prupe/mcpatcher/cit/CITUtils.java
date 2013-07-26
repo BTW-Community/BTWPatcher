@@ -308,7 +308,7 @@ public class CITUtils {
         }
         Enchantment.beginOuter2D();
         for (int i = 0; i < matches.size(); i++) {
-            matches.getEnchantment(i).render2D(Tessellator.instance, matches.getIntensity(i), x - 2, y - 2, x + 18, y + 18, z - 50.0f);
+            matches.getEnchantment(i).render2D(Tessellator.instance, matches.getIntensity(i), x, y, x + 16, y + 16, z - 50.0f);
         }
         Enchantment.endOuter2D();
         return !useGlint;
