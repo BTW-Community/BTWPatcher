@@ -358,7 +358,7 @@ public class FancyDial {
             BufferedImage image = new BufferedImage(width, outputFrames * height, BufferedImage.TYPE_INT_ARGB);
             IntBuffer intBuffer = scratchBuffer.asIntBuffer();
             int[] argb = new int[width * height];
-            File path = MCPatcherUtils.getMinecraftPath("custom_" + name + ".png");
+            File path = MCPatcherUtils.getGamePath("custom_" + name + ".png");
             logger.info("generating %d %s frames", outputFrames, name);
             for (int i = 0; i < outputFrames; i++) {
                 renderToItems(i * (360.0 / outputFrames));

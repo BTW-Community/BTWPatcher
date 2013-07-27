@@ -18,7 +18,8 @@ import java.util.zip.ZipFile;
  * the output minecraft jar.
  */
 public class MCPatcherUtils {
-    private static File minecraftDir = null;
+    private static File minecraftDir;
+    private static File gameDir;
     private static boolean isGame;
     private static String minecraftVersion;
     private static String patcherVersion;
@@ -124,6 +125,7 @@ public class MCPatcherUtils {
         } else {
             minecraftDir = null;
         }
+        gameDir = minecraftDir;
         return Config.load(minecraftDir);
     }
 
@@ -135,6 +137,21 @@ public class MCPatcherUtils {
      */
     public static File getMinecraftPath(String... subdirs) {
         File f = minecraftDir;
+        for (String s : subdirs) {
+            f = new File(f, s);
+        }
+        return f;
+    }
+
+    /**
+     * Get the path to a file/directory within the game folder.  The game folder is usually the same as the minecraft
+     * folder, but can be overridden via a launcher profile setting.
+     *
+     * @param subdirs zero or more path components
+     * @return combined path
+     */
+    public static File getGamePath(String... subdirs) {
+        File f = gameDir;
         for (String s : subdirs) {
             f = new File(f, s);
         }
@@ -288,17 +305,21 @@ public class MCPatcherUtils {
         return s == null || s.trim().isEmpty();
     }
 
-    public static void setMinecraft(File minecraftDir, String minecraftVersion, String patcherVersion) {
+    public static void setMinecraft(File gameDir, File assetsDir, String minecraftVersion, String patcherVersion) {
         isGame = true;
-        MCPatcherUtils.minecraftDir = minecraftDir.getAbsoluteFile();
+        minecraftDir = assetsDir.getParentFile().getAbsoluteFile();
+        MCPatcherUtils.gameDir = gameDir.getAbsoluteFile();
         MCPatcherUtils.minecraftVersion = minecraftVersion;
         MCPatcherUtils.patcherVersion = patcherVersion;
         System.out.println();
         System.out.printf("MCPatcherUtils initialized:\n");
-        System.out.printf("Game directory:    %s\n", MCPatcherUtils.minecraftDir);
-        System.out.printf("Minecraft version: %s\n", minecraftVersion);
-        System.out.printf("MCPatcher version: %s\n", patcherVersion);
-        System.out.printf("Max heap memory:   %.1fMB\n", Runtime.getRuntime().maxMemory() / 1048576.0f);
+        System.out.printf("Minecraft directory: %s\n", minecraftDir);
+        System.out.printf("  (assets, libraries, versions)\n");
+        System.out.printf("Game directory:      %s\n", MCPatcherUtils.gameDir);
+        System.out.printf("  (resourcepacks, saves)\n");
+        System.out.printf("Minecraft version:   %s\n", minecraftVersion);
+        System.out.printf("MCPatcher version:   %s\n", patcherVersion);
+        System.out.printf("Max heap memory:     %.1fMB\n", Runtime.getRuntime().maxMemory() / 1048576.0f);
         try {
             Class<?> vm = Class.forName("sun.misc.VM");
             Method method = vm.getDeclaredMethod("maxDirectMemory");
