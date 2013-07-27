@@ -898,8 +898,30 @@ public class CustomColors extends Mod {
         private static final int MAGIC = 0x385dc6;
 
         PotionHelperMod() {
+            final FieldRef potionColorCache = new FieldRef(getDeobfClass(), "potionColorCache", "Ljava/util/HashMap;");
+            final MethodRef getPotionColor = new MethodRef(getDeobfClass(), "getPotionColor", "(IZ)I");
+            final MethodRef integerValueOf = new MethodRef("java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
+            final MethodRef hashMapContains = new MethodRef("java/util/HashMap", "containsKey", "(Ljava/lang/Object;)Z");
+
             addClassSignature(new ConstSignature("potion.prefix.mundane"));
             addClassSignature(new ConstSignature(MAGIC));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        captureReference(GETSTATIC),
+                        ILOAD_0,
+                        reference(INVOKESTATIC, integerValueOf),
+                        reference(INVOKEVIRTUAL, hashMapContains)
+                    );
+                }
+            }
+                .setMethod(getPotionColor)
+                .addXref(1, potionColorCache)
+            );
+
+            addPatch(new MakeMemberPublicPatch(potionColorCache));
 
             addPatch(new BytecodePatch() {
                 @Override

@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.MapColor;
 import net.minecraft.src.Potion;
+import net.minecraft.src.PotionHelper;
 
 import java.util.*;
 
@@ -46,6 +47,9 @@ public class ColorizeItem {
         spawnerEggShellColors.clear();
         spawnerEggSpotColors.clear();
 
+        if (PotionHelper.potionColorCache != null) {
+            PotionHelper.potionColorCache.clear();
+        }
         waterBottleColor = 0x385dc6;
         for (Potion potion : potions) {
             potion.color = potion.origColor;
