@@ -147,6 +147,10 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             matchNBT(itemStack);
     }
 
+    String preprocessAltTextureKey(String name) {
+        return name;
+    }
+
     private Map<String, ResourceLocation> getAlternateTextures(Properties properties) {
         Map<String, ResourceLocation> tmpMap = new HashMap<String, ResourceLocation>();
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
@@ -160,6 +164,10 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             } else if (key.startsWith("tile.")) {
                 name = key.substring(5);
             } else {
+                continue;
+            }
+            name = preprocessAltTextureKey(name);
+            if (MCPatcherUtils.isNullOrEmpty(name)) {
                 continue;
             }
             ResourceLocation resource = TileLoader.parseTileAddress(propertiesName, value);

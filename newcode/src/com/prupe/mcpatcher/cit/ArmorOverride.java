@@ -27,12 +27,6 @@ final class ArmorOverride extends OverrideBase {
             for (Map.Entry<String, ResourceLocation> entry : alternateTextures.entrySet()) {
                 String key = entry.getKey();
                 ResourceLocation value = entry.getValue();
-                if (!key.endsWith(".png")) {
-                    key += ".png";
-                }
-                if (!key.contains("/")) {
-                    key = "./" + key;
-                }
                 armorMap.put(TexturePackAPI.parseResourceLocation(CITUtils.FIXED_ARMOR_RESOURCE, key), value);
             }
         }
@@ -51,5 +45,16 @@ final class ArmorOverride extends OverrideBase {
             }
         }
         return textureName;
+    }
+
+    @Override
+    String preprocessAltTextureKey(String name) {
+        if (!name.endsWith(".png")) {
+            name += ".png";
+        }
+        if (!name.contains("/")) {
+            name = "./" + name;
+        }
+        return TexturePackAPI.parseResourceLocation(CITUtils.FIXED_ARMOR_RESOURCE, name).toString();
     }
 }

@@ -73,4 +73,15 @@ final class ItemOverride extends OverrideBase {
             }
         }
     }
+
+    @Override
+    String preprocessAltTextureKey(String name) {
+        if (name.startsWith("textures/items/")) {
+            name = name.substring(15);
+            if (name.endsWith(".png")) {
+                name = name.substring(0, name.length() - 4);
+            }
+        }
+        return name;
+    }
 }
