@@ -13,8 +13,6 @@ public class CTMUtils {
     private static final boolean enableGrass = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "grass", false);
     private static final int maxRecursion = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "maxRecursion", 4);
 
-    static final int BLOCK_ID_LOG = 17;
-    static final int BLOCK_ID_QUARTZ = 155;
     static final int BLOCK_ID_GRASS = 2;
     static final int BLOCK_ID_MYCELIUM = 110;
     static final int BLOCK_ID_SNOW = 78;

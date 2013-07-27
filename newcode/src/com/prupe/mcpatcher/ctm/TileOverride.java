@@ -529,8 +529,8 @@ abstract class TileOverride implements ITileOverride {
         if (exclude(neighbor, face, neighborMeta)) {
             return false;
         }
-        int orientation = getOrientationFromMetadata(blockID, metadata);
-        int neighborOrientation = getOrientationFromMetadata(neighborID, neighborMeta);
+        int orientation = getOrientationFromMetadata(block, metadata);
+        int neighborOrientation = getOrientationFromMetadata(neighbor, neighborMeta);
         if ((orientation & ~META_MASK) != (neighborOrientation & ~META_MASK)) {
             return false;
         }
@@ -578,7 +578,7 @@ abstract class TileOverride implements ITileOverride {
         } else if ((faces & (1 << reorient(face))) == 0) {
             return true;
         } else if (this.metadata != -1 && metadata >= 0 && metadata < 32) {
-            int altMetadata = getOrientationFromMetadata(block.blockID, metadata) & META_MASK;
+            int altMetadata = getOrientationFromMetadata(block, metadata) & META_MASK;
             if ((this.metadata & ((1 << metadata) | (1 << altMetadata))) == 0) {
                 return true;
             }
@@ -586,12 +586,12 @@ abstract class TileOverride implements ITileOverride {
         return false;
     }
 
-    private static int getOrientationFromMetadata(int blockID, int metadata) {
+    private static int getOrientationFromMetadata(Block block, int metadata) {
         int newMeta = metadata;
         int orientation = ORIENTATION_U_D;
 
-        switch (blockID) {
-            case CTMUtils.BLOCK_ID_LOG:
+        switch (block.getRenderType()) {
+            case 31: // renderBlockLog (also applies to hay)
                 switch (metadata & 0xc) {
                     case 0:
                         newMeta = metadata & ~0xc;
@@ -612,7 +612,7 @@ abstract class TileOverride implements ITileOverride {
                 }
                 break;
 
-            case CTMUtils.BLOCK_ID_QUARTZ:
+            case 39: // renderBlockQuartz
                 switch (metadata) {
                     case 3:
                         newMeta = 2;
@@ -670,7 +670,7 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    private int remapFaceByRenderType(Block block, int metadata, int face) {
+    private static int remapFaceByRenderType(Block block, int metadata, int face) {
         switch (block.getRenderType()) {
             case 20: // renderBlockVine
                 switch (metadata) {
@@ -723,7 +723,7 @@ abstract class TileOverride implements ITileOverride {
             return null;
         }
         int metadata = blockAccess.getBlockMetadata(i, j, k);
-        setupOrientation(getOrientationFromMetadata(block.blockID, metadata), face);
+        setupOrientation(getOrientationFromMetadata(block, metadata), face);
         face = remapFaceByRenderType(block, metadata, face);
         if (exclude(block, face, metadata)) {
             return null;
@@ -756,7 +756,7 @@ abstract class TileOverride implements ITileOverride {
         if (minHeight >= 0 || maxHeight < Integer.MAX_VALUE || biomes != null) {
             return null;
         }
-        setupOrientation(getOrientationFromMetadata(block.blockID, metadata), face);
+        setupOrientation(getOrientationFromMetadata(block, metadata), face);
         if (exclude(block, face, metadata)) {
             return null;
         } else {
