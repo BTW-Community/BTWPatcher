@@ -1,6 +1,8 @@
 package net.minecraft.src;
 
 public class EntityLivingBase extends Entity {
+    public int overridePotionColor; // added by Custom Colors
+
     public EntityLivingBase(World worldObj) {
         super(worldObj);
     }

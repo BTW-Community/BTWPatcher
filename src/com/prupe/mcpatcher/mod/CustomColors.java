@@ -104,7 +104,7 @@ public class CustomColors extends Mod {
         addClassMod(new EntityPortalFXMod());
         addClassMod(new EntityAuraFXMod());
 
-        addClassMod(new BaseMod.EntityLivingBaseMod(this));
+        addClassMod(new EntityLivingBaseMod());
         addClassMod(new EntityRendererMod());
 
         addClassMod(new BlockLilyPadMod());
@@ -2151,6 +2151,123 @@ public class CustomColors extends Mod {
                     );
                 }
             });
+        }
+    }
+
+    private class EntityLivingBaseMod extends BaseMod.EntityLivingBaseMod {
+        public EntityLivingBaseMod() {
+            super(CustomColors.this);
+
+            final FieldRef worldObj = new FieldRef(getDeobfClass(), "worldObj", "LWorld;");
+            final FieldRef overridePotionColor = new FieldRef(getDeobfClass(), "overridePotionColor", "I");
+            final MethodRef updatePotionEffects = new MethodRef(getDeobfClass(), "updatePotionEffects", "()V");
+            final MethodRef integerValueOf = new MethodRef("java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(600),
+                        IREM
+                    );
+                }
+            }.setMethod(updatePotionEffects));
+
+            addPatch(new AddFieldPatch(overridePotionColor));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override potion effect colors around players (part 1)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // if (this.potionsNeedUpdate) {
+                        lookBehind(build(
+                            ALOAD_0,
+                            GETFIELD, capture(any(2)),
+                            IFEQ, any(2)
+                        ), true),
+
+                        // if (!this.worldObj.isRemote) {
+                        ALOAD_0,
+                        reference(GETFIELD, worldObj),
+                        captureReference(GETFIELD),
+                        IFNE, any(2)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                    );
+                }
+            }.targetMethod(updatePotionEffects));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override potion effect colors around players (part 2)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.dataWatcher.updateObject(7, Integer.valueOf(...));
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        push(7),
+                        capture(any(1, 3)),
+                        reference(INVOKESTATIC, integerValueOf),
+                        anyReference(INVOKEVIRTUAL)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // this.overridePotionColor = ...;
+                        ALOAD_0,
+                        getCaptureGroup(1),
+                        reference(PUTFIELD, overridePotionColor)
+                    );
+                }
+            }
+                .targetMethod(updatePotionEffects)
+                .setInsertAfter(true)
+            );
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override potion effect colors around players (part 3)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.dataWatcher.getWatchableObjectInt(7)
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        push(7),
+                        anyReference(INVOKEVIRTUAL)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // ColorizeEntity.getPotionEffectColor(..., this)
+                        ALOAD_0,
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "getPotionEffectColor", "(ILEntityLivingBase;)I"))
+                    );
+                }
+            }
+                .setInsertAfter(true)
+                .targetMethod(updatePotionEffects)
+            );
         }
     }
 
