@@ -592,13 +592,18 @@ abstract class TileOverride implements ITileOverride {
 
         switch (blockID) {
             case CTMUtils.BLOCK_ID_LOG:
-                newMeta = metadata & ~0xc;
                 switch (metadata & 0xc) {
+                    case 0:
+                        newMeta = metadata & ~0xc;
+                        break;
+
                     case 4:
+                        newMeta = metadata & ~0xc;
                         orientation = ORIENTATION_E_W;
                         break;
 
                     case 8:
+                        newMeta = metadata & ~0xc;
                         orientation = ORIENTATION_N_S;
                         break;
 
