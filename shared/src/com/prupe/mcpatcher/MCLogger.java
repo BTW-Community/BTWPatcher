@@ -80,6 +80,8 @@ public class MCLogger {
             if (flooding) {
                 reportFlooding(now);
                 flooding = false;
+            } else {
+                floodCount = 0;
             }
         } else if (flooding && now - lastFloodReport > FLOOD_REPORT_INTERVAL) {
             reportFlooding(now);
