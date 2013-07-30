@@ -330,7 +330,7 @@ public class ExtendedHD extends Mod {
                         reference(GETFIELD, animationFrames),
                         capture(anyILOAD),
                         reference(INVOKEINTERFACE, listGet),
-                        reference(CHECKCAST, intArray),
+                        repeat(build(reference(CHECKCAST, intArray)), 1, 2), // mcp adds a second (int[]) cast
                         ALOAD_0,
                         anyReference(GETFIELD),
                         ALOAD_0,

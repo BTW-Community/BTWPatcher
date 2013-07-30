@@ -282,7 +282,36 @@ class MainForm {
                     if (path == null) {
                         return;
                     }
-                    if (ExternalMod.isValidPath(path)) {
+                    if (ForgeAdapter.isValidPath(path)) {
+                        setBusy(true);
+                        runWorker(new UIWorker() {
+                            Mod forgeMod;
+
+                            @Override
+                            void runImpl() throws Exception {
+                                try {
+                                    forgeMod = new ForgeAdapter(MCPatcher.ui, path);
+                                } catch (Exception e) {
+                                    JOptionPane.showMessageDialog(frame,
+                                        "An error occurred while loading forge:\n\n" +
+                                            e.getMessage() + "\n\n" +
+                                            "More information may be found in the Log tab.",
+                                        "Error loading forge",
+                                        JOptionPane.ERROR_MESSAGE
+                                    );
+                                    throw e;
+                                }
+                            }
+
+                            @Override
+                            void updateUI() {
+                                if (forgeMod != null) {
+                                    addMod(forgeMod);
+                                }
+                                super.updateUI();
+                            }
+                        });
+                    } else if (ExternalMod.isValidPath(path)) {
                         if (addModDialog.showFileListDialog()) {
                             addMod(addModDialog.getMod());
                         }
@@ -320,7 +349,7 @@ class MainForm {
             public void actionPerformed(ActionEvent e) {
                 int row = modTable.getSelectedRow();
                 Mod mod = (Mod) modTable.getModel().getValueAt(row, 0);
-                if (mod instanceof ExternalMod) {
+                if (mod instanceof ExternalMod || mod instanceof ForgeAdapter) {
                     MCPatcher.modList.remove(mod);
                     modTable.clearSelection();
                     AbstractTableModel model = (AbstractTableModel) modTable.getModel();

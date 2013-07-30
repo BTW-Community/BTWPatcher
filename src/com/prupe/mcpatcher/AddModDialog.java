@@ -175,7 +175,7 @@ class AddModDialog extends JDialog {
         fd.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(File f) {
-                return f.isDirectory() || ExternalMod.isValidPath(f);
+                return f.isDirectory() || ExternalMod.isValidPath(f) || (!editMode && ForgeAdapter.isValidPath(f));
             }
 
             @Override

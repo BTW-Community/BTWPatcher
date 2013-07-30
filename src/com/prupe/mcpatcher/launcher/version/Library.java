@@ -104,9 +104,6 @@ public class Library {
     }
 
     boolean exclude() {
-        if (isServer()) {
-            return true;
-        }
         boolean allow = rules.isEmpty();
         for (Rule rule : rules) {
             allow = rule.evaluate(allow);

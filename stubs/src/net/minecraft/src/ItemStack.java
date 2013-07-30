@@ -13,7 +13,7 @@ public class ItemStack {
         return 0;
     }
 
-    public boolean hasEffect() {
+    public boolean hasEffectVanilla() {
         return false;
     }
 }

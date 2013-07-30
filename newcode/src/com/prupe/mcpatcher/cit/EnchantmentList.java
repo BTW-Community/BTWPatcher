@@ -40,7 +40,7 @@ final class EnchantmentList {
         Map<Integer, Layer> tmpLayers = new HashMap<Integer, Layer>();
         int itemID = itemStack.itemID;
         int[] enchantmentLevels = CITUtils.getEnchantmentLevels(itemID, itemStack.stackTagCompound);
-        boolean hasEffect = itemStack.hasEffect();
+        boolean hasEffect = itemStack.hasEffectVanilla();
         if (itemID >= 0 && itemID < enchantments.length && enchantments[itemID] != null) {
             for (Enchantment enchantment : enchantments[itemID]) {
                 if (enchantment.match(itemStack, enchantmentLevels, hasEffect)) {

@@ -817,6 +817,9 @@ public class ConnectedTextures extends Mod {
         }
 
         private void setupGlassPanes() {
+            final FieldRef forgeEast = new FieldRef("net/minecraftforge/common/ForgeDirection", "EAST", "Lnet/minecraftforge/common/ForgeDirection;");
+            final MethodRef canPaneConnectToForge = new MethodRef("BlockPane", "canPaneConnectTo", "(LIBlockAccess;IIILnet/minecraftforge/common/ForgeDirection;)Z");
+
             mapRenderTypeMethod(18, renderBlockPane);
 
             addPatch(new BytecodePatch() {
@@ -848,24 +851,37 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // connectEast = par1BlockPane.canThisPaneConnectToThisBlockID(this.blockAccess.getBlockId(i + 1, j, k));
                         ALOAD_1,
                         ALOAD_0,
                         reference(GETFIELD, blockAccess),
                         ILOAD_2,
-                        push(1),
-                        IADD,
-                        ILOAD_3,
-                        ILOAD, 4,
-                        anyReference(INVOKEINTERFACE),
-                        anyReference(INVOKEVIRTUAL),
-                        ISTORE, capture(any())
+                        or(
+                            build(
+                                // vanilla:
+                                // connectEast = par1BlockPane.canThisPaneConnectToThisBlockID(this.blockAccess.getBlockId(i + 1, j, k));
+                                push(1),
+                                IADD,
+                                ILOAD_3,
+                                ILOAD, 4,
+                                anyReference(INVOKEINTERFACE),
+                                anyReference(INVOKEVIRTUAL)
+                            ),
+                            build (
+                                // forge:
+                                // connectEast = par1BlockPane.canPaneConnectTo(this.blockAccess, i, j, k, ForgeDirection.EAST);
+                                ILOAD_3,
+                                ILOAD, 4,
+                                reference(GETSTATIC, forgeEast),
+                                reference(INVOKEVIRTUAL, canPaneConnectToForge)
+                            )
+                        ),
+                        capture(anyISTORE)
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    int reg = getCaptureGroup(1)[0] & 0xff;
+                    int reg = extractRegisterNum(getCaptureGroup(1));
                     Logger.log(Logger.LOG_BYTECODE, "glass side connect flags (%d %d %d %d)",
                         reg - 3, reg - 2, reg - 1, reg
                     );

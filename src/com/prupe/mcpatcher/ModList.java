@@ -532,6 +532,18 @@ class ModList {
                         }
                     }
                 }
+            } else if (type.equals(Config.VAL_EXTERNAL_FORGE)) {
+                String path = modEntry.path;
+                if (!MCPatcherUtils.isNullOrEmpty(path)) {
+                    File file = new File(path);
+                    if (file.exists()) {
+                        try {
+                            mod = new ForgeAdapter(MCPatcher.ui, file);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
             if (mod == null) {
                 invalidEntries.add(name);
@@ -560,6 +572,9 @@ class ModList {
                 files.add(new Config.FileEntry(entry.getKey(), entry.getValue()));
             }
             modEntry.files = files;
+        } else if (mod instanceof ForgeAdapter) {
+            modEntry.type = Config.VAL_EXTERNAL_FORGE;
+            modEntry.path = ((ForgeAdapter) mod).getPath().getAbsolutePath();
         } else if (mod.customJar == null) {
             modEntry.type = Config.VAL_BUILTIN;
             modEntry.path = null;

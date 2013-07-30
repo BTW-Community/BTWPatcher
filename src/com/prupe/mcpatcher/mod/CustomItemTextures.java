@@ -17,7 +17,8 @@ public class CustomItemTextures extends Mod {
     private static final FieldRef itemsList = new FieldRef("Item", "itemsList", "[LItem;");
     private static final MethodRef glDepthFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthFunc", "(I)V");
     private static final MethodRef getEntityItem = new MethodRef("EntityItem", "getEntityItem", "()LItemStack;");
-    private static final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffect", "()Z");
+    private static final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffectVanilla", "()Z");
+    private static final MethodRef hasEffectForge = new MethodRef("ItemStack", "hasEffect", "(I)Z");
     private static final MethodRef getIconFromDamageForRenderPass = new MethodRef("Item", "getIconFromDamageForRenderPass", "(II)LIcon;");
     private static final MethodRef getItem = new MethodRef("ItemStack", "getItem", "()LItem;");
     private static final MethodRef getCITIcon = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getIcon", "(LIcon;LItemStack;I)LIcon;");
@@ -111,11 +112,37 @@ public class CustomItemTextures extends Mod {
         }
     }
 
+    private static String getHasEffectSignature(BytecodePatch patch, int itemStackRegister, int renderPassRegister, String extraVanilla, String extraForge) {
+        return patch.buildExpression(
+            registerLoadStore(ALOAD, itemStackRegister),
+            or(
+                build(
+                    // vanilla:
+                    // itemStack.hasEffect()
+                    patch.reference(INVOKEVIRTUAL, hasEffect),
+                    extraVanilla
+                ),
+                build(
+                    // forge:
+                    // itemStack.hasEffectForge(renderPass)
+                    registerLoadStore(ILOAD, renderPassRegister),
+                    patch.reference(INVOKEVIRTUAL, hasEffectForge),
+                    extraForge
+                )
+            )
+        );
+    }
+
+    private static String getHasEffectSignature(BytecodePatch patch, int itemStackRegister, int renderPassRegister) {
+        return getHasEffectSignature(patch, itemStackRegister, renderPassRegister, "", "");
+    }
+
     private class ItemMod extends BaseMod.ItemMod {
         ItemMod() {
             super(CustomItemTextures.this);
 
             final MethodRef getIconIndex = new MethodRef(getDeobfClass(), "getIconIndex", "(LItemStack;)LIcon;");
+            final MethodRef getIconForge = new MethodRef(getDeobfClass(), "getIcon", "(LItemStack;I)LIcon;");
 
             addMemberMapper(new MethodMapper(getIconIndex));
 
@@ -143,6 +170,32 @@ public class CustomItemTextures extends Mod {
             }
                 .setInsertBefore(true)
                 .targetMethod(getIconIndex)
+            );
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override item texture (forge)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ARETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_1,
+                        ILOAD_2,
+                        reference(INVOKESTATIC, getCITIcon)
+                    );
+                }
+            }
+                .setInsertBefore(true)
+                .targetMethod(getIconForge)
             );
 
             addMemberMapper(new MethodMapper(getIconFromDamageForRenderPass));
@@ -258,9 +311,10 @@ public class CustomItemTextures extends Mod {
 
     private class ItemRendererMod extends ClassMod {
         ItemRendererMod() {
-            final MethodRef renderItem = new MethodRef(getDeobfClass(), "renderItem", "(LEntityLivingBase;LItemStack;I)V");
+            final MethodRef renderItem = new MethodRef(getDeobfClass(), "renderItemVanilla", "(LEntityLivingBase;LItemStack;I)V");
             final MethodRef renderItemIn2D = new MethodRef(getDeobfClass(), "renderItemIn2D", "(LTessellator;FFFFIIF)V");
             final MethodRef getEntityItemIcon = new MethodRef("EntityLivingBase", "getItemIcon", "(LItemStack;I)LIcon;");
+            final MethodRef renderItemForge = new MethodRef(getDeobfClass(), "renderItem", "(LEntityLivingBase;LItemStack;ILnet/minecraftforge/client/IItemRenderer$ItemRenderType;)V");
 
             addClassSignature(new ConstSignature("textures/map/map_background.png"));
             addClassSignature(new ConstSignature("textures/misc/underwater.png"));
@@ -315,7 +369,7 @@ public class CustomItemTextures extends Mod {
                 }
             }
                 .setInsertAfter(true)
-                .targetMethod(renderItem)
+                .targetMethod(renderItem, renderItemForge)
             );
 
             addPatch(new BytecodePatch() {
@@ -327,16 +381,20 @@ public class CustomItemTextures extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // if (itemStack != null && itemStack.hasEffect() && renderPass == 0)
-                        optional(build(
-                            ALOAD_2,
-                            IFNULL, any(2)
-                        )),
-                        ALOAD_2,
-                        reference(INVOKEVIRTUAL, hasEffect),
-                        IFEQ, any(2),
-                        ILOAD_3,
-                        IFNE, any(2),
+                        getHasEffectSignature(this, 2, 3,
+                            // vanilla:
+                            // if (itemStack.hasEffect() && renderPass == 0)
+                            build(
+                                IFEQ, any(2),
+                                ILOAD_3,
+                                IFNE, any(2)
+                            ),
+                            // forge:
+                            // if (itemStack.hasEffect(renderPass))
+                            build(
+                                IFEQ, any(2)
+                            )
+                        ),
                         nonGreedy(any(0, 400)),
                         push(515), // GL11.GL_LEQUAL
                         reference(INVOKESTATIC, glDepthFunc)
@@ -359,15 +417,18 @@ public class CustomItemTextures extends Mod {
                         label("A")
                     );
                 }
-            }.targetMethod(renderItem));
+            }.targetMethod(renderItem, renderItemForge));
         }
     }
 
     private class RenderItemMod extends ClassMod {
         RenderItemMod() {
             final FieldRef zLevel = new FieldRef(getDeobfClass(), "zLevel", "F");
-            final MethodRef renderDroppedItem = new MethodRef(getDeobfClass(), "renderDroppedItem", "(LEntityItem;LIcon;IFFFF)V");
+            final MethodRef renderDroppedItem = new MethodRef(getDeobfClass(), "renderDroppedItemVanilla", "(LEntityItem;LIcon;IFFFF)V");
+            final MethodRef renderDroppedItemForge = new MethodRef(getDeobfClass(), "renderDroppedItem", "(LEntityItem;LIcon;IFFFFI)V");
             final MethodRef renderItemAndEffectIntoGUI = new MethodRef(getDeobfClass(), "renderItemAndEffectIntoGUI", "(LFontRenderer;LTextureManager;LItemStack;II)V");
+            final MethodRef renderItemIntoGUIForge = new MethodRef(getDeobfClass(), "renderItemIntoGUI", "(LFontRenderer;LTextureManager;LItemStack;IIZ)V");
+            final MethodRef renderEffectForge = new MethodRef(getDeobfClass(), "renderEffect", "(LTextureManager;II)V");
 
             addClassSignature(new ConstSignature("missingno"));
             addGlintSignature(this, renderDroppedItem);
@@ -406,8 +467,7 @@ public class CustomItemTextures extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         // if (itemStack.hasEffect() ...)
-                        ALOAD, itemStackRegister,
-                        reference(INVOKEVIRTUAL, hasEffect),
+                        getHasEffectSignature(this, itemStackRegister, 8),
                         IFEQ, any(2),
                         nonGreedy(any(0, 400)),
                         push(515), // GL11.GL_LEQUAL
@@ -430,7 +490,7 @@ public class CustomItemTextures extends Mod {
                         label("A")
                     );
                 }
-            }.targetMethod(renderDroppedItem));
+            }.targetMethod(renderDroppedItem, renderDroppedItemForge));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -471,6 +531,56 @@ public class CustomItemTextures extends Mod {
                     );
                 }
             }.targetMethod(renderItemAndEffectIntoGUI));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "render item enchantment (gui) (forge)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // if (itemStack.hasEffect(...)) {
+                        ALOAD_3,
+                        capture(any(1, 2)),
+                        reference(INVOKEVIRTUAL, hasEffectForge),
+                        IFEQ, any(2),
+
+                        // this.renderEffect(textureManager, x, y);
+                        ALOAD_0,
+                        ALOAD_2,
+                        ILOAD, 4,
+                        ILOAD, 5,
+                        reference(INVOKESPECIAL, renderEffectForge)
+
+                        // }
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // if (... == 0 && !CITUtils.renderEnchantmentGUI(itemStack, x, y, this.zLevel)) {
+                        getCaptureGroup(1),
+                        IFNE, branch("A"),
+
+                        ALOAD_3,
+                        ILOAD, 4,
+                        ILOAD, 5,
+                        ALOAD_0,
+                        reference(GETFIELD, zLevel),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "renderEnchantmentGUI", "(LItemStack;IIF)Z")),
+                        IFNE, branch("A"),
+
+                        // ...
+                        getMatch(),
+
+                        // }
+                        label("A")
+                    );
+                }
+            }.targetMethod(renderItemIntoGUIForge));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -524,7 +634,7 @@ public class CustomItemTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // CITUtils.getIcon(..., itemStack, renderPass
+                        // CITUtils.getIcon(..., itemStack, renderPass);
                         getCaptureGroup(1),
                         getCaptureGroup(2),
                         reference(INVOKESTATIC, getCITIcon)
@@ -706,6 +816,7 @@ public class CustomItemTextures extends Mod {
     abstract private class RenderArmorMod extends ClassMod {
         protected final MethodRef getArmorTexture2 = new MethodRef("RenderBiped", "getArmorTexture2", "(LItemArmor;I)LResourceLocation;");
         protected final MethodRef getArmorTexture3 = new MethodRef("RenderBiped", "getArmorTexture3", "(LItemArmor;ILjava/lang/String;)LResourceLocation;");
+        protected final MethodRef getArmorResourceForge = new MethodRef("RenderBiped", "getArmorResource", "(LEntity;LItemStack;ILjava/lang/String;)LResourceLocation;");
 
         RenderArmorMod() {
             final MethodRef renderArmor = new MethodRef(getDeobfClass(), "renderArmor", "(L" + getEntityClass() + ";IF)V");
@@ -764,7 +875,8 @@ public class CustomItemTextures extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(or(
                         build(reference(INVOKESTATIC, getArmorTexture2)),
-                        build(reference(INVOKESTATIC, getArmorTexture3))
+                        build(reference(INVOKESTATIC, getArmorTexture3)),
+                        build(reference(INVOKESTATIC, getArmorResourceForge))
                     ));
                 }
 
