@@ -866,7 +866,7 @@ public class ConnectedTextures extends Mod {
                                 anyReference(INVOKEINTERFACE),
                                 anyReference(INVOKEVIRTUAL)
                             ),
-                            build (
+                            build(
                                 // forge:
                                 // connectEast = par1BlockPane.canPaneConnectTo(this.blockAccess, i, j, k, ForgeDirection.EAST);
                                 ILOAD_3,
