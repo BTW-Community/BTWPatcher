@@ -3,7 +3,7 @@ package com.prupe.mcpatcher;
 import net.minecraft.client.Minecraft;
 
 public class ProfilerAPI {
-    private static final boolean enable = Config.getBoolean("extraProfiling", false);
+    private static final boolean enable = Config.getInstance().extraProfiling;
 
     public static void startSection(String name) {
         if (enable) {

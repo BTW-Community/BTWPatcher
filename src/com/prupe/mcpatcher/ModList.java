@@ -1,9 +1,7 @@
 package com.prupe.mcpatcher;
 
+import com.google.gson.JsonObject;
 import com.prupe.mcpatcher.mod.*;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -109,7 +107,7 @@ class ModList {
         final JarFile jar = new JarFile(file);
         URLClassLoader loader = new URLClassLoader(new URL[]{file.toURI().toURL()}, getClass().getClassLoader());
         for (JarEntry entry : Collections.list(jar.entries())) {
-            if (!entry.isDirectory() && MinecraftInstallation.isClassFile(entry.getName())) {
+            if (!entry.isDirectory() && MinecraftJar.isClassFile(entry.getName())) {
                 Mod mod = loadCustomMod(loader, ClassMap.filenameToClassName(entry.getName()));
                 if (addNoReplace(mod)) {
                     Logger.log(Logger.LOG_MOD, "new %s()", mod.getClass().getName());
@@ -490,44 +488,30 @@ class ModList {
     }
 
     void loadSavedMods() {
-        Config config = Config.instance;
-        Element mods = config.getMods();
-        if (mods == null) {
-            return;
-        }
-        NodeList list = mods.getElementsByTagName(Config.TAG_MOD);
-        ArrayList<Element> invalidEntries = new ArrayList<Element>();
-        for (int i = 0; i < list.getLength(); i++) {
-            Element element = (Element) list.item(i);
-            String name = config.getText(element, Config.TAG_NAME);
-            String type = config.getText(element, Config.TAG_TYPE);
-            String enabled = config.getText(element, Config.TAG_ENABLED);
+        Config config = Config.getInstance();
+        List<String> invalidEntries = new ArrayList<String>();
+        for (Map.Entry<String, Config.ModEntry> entry : config.getSelectedVersion().mods.entrySet()) {
+            String name = entry.getKey();
+            Config.ModEntry modEntry = entry.getValue();
+            String type = modEntry.type;
+            boolean enabled = modEntry.enabled;
             Mod mod = null;
             if (name == null || type == null) {
-                invalidEntries.add(element);
+                // nothing
             } else if (type.equals(Config.VAL_BUILTIN)) {
                 BuiltInMod builtInMod = builtInMods.get(name);
                 if (builtInMod != null && (MCPatcher.experimentalMods || !builtInMod.experimental)) {
                     mod = newModInstance(builtInMod);
                 }
-                if (mod == null) {
-                    invalidEntries.add(element);
-                }
             } else if (type.equals(Config.VAL_EXTERNAL_ZIP)) {
-                String path = config.getText(element, Config.TAG_PATH);
-                Element files = config.getElement(element, Config.TAG_FILES);
+                String path = modEntry.path;
+                List<Config.FileEntry> files = modEntry.files;
                 if (path != null && files != null) {
                     File file = new File(path);
                     if (file.isFile()) {
-                        HashMap<String, String> fileMap = new HashMap<String, String>();
-                        NodeList fileNodes = files.getElementsByTagName(Config.TAG_FILE);
-                        for (int j = 0; j < fileNodes.getLength(); j++) {
-                            Element fileElem = (Element) fileNodes.item(j);
-                            String from = config.getText(fileElem, Config.TAG_FROM);
-                            String to = config.getText(fileElem, Config.TAG_TO);
-                            if (from != null && to != null) {
-                                fileMap.put(to, from);
-                            }
+                        Map<String, String> fileMap = new LinkedHashMap<String, String>();
+                        for (Config.FileEntry entry1 : files) {
+                            fileMap.put(entry1.from, entry1.to);
                         }
                         try {
                             mod = new ExternalMod(new ZipFile(file), fileMap);
@@ -535,12 +519,10 @@ class ModList {
                             Logger.log(e);
                         }
                     }
-                } else {
-                    invalidEntries.add(element);
                 }
             } else if (type.equals(Config.VAL_EXTERNAL_JAR)) {
-                String path = config.getText(element, Config.TAG_PATH);
-                String className = config.getText(element, Config.TAG_CLASS);
+                String path = modEntry.path;
+                String className = modEntry.className;
                 if (path != null && className != null) {
                     File file = new File(path);
                     if (file.exists()) {
@@ -549,98 +531,63 @@ class ModList {
                             mod.customJar = file;
                         }
                     }
-                } else {
-                    invalidEntries.add(element);
                 }
-            } else {
-                invalidEntries.add(element);
             }
-            if (mod != null) {
-                if (addNoReplace(mod)) {
-                    if (enabled != null) {
-                        mod.setEnabled(Boolean.parseBoolean(enabled));
-                    }
-                }
+            if (mod == null) {
+                invalidEntries.add(name);
+            } else {
+                addNoReplace(mod);
+                mod.setEnabled(enabled);
             }
         }
-        for (Element element : invalidEntries) {
-            mods.removeChild(element);
+
+        for (String name : invalidEntries) {
+            config.getSelectedVersion().mods.remove(name);
         }
         refreshInternalMods();
     }
 
-    private void updateModElement(Mod mod, Element element) {
-        Config config = Config.instance;
+    private void updateModElement(Mod mod, Config.ModEntry modEntry) {
+        modEntry.enabled = mod.okToApply() && mod.isEnabled();
         if (mod instanceof ExternalMod) {
             ExternalMod extmod = (ExternalMod) mod;
-            config.setText(element, Config.TAG_TYPE, Config.VAL_EXTERNAL_ZIP);
-            config.setText(element, Config.TAG_PATH, extmod.zipFile.getName());
-            Element files = config.getElement(element, Config.TAG_FILES);
-            while (files.hasChildNodes()) {
-                files.removeChild(files.getFirstChild());
-            }
+            modEntry.type = Config.VAL_EXTERNAL_ZIP;
+            modEntry.path = extmod.zipFile.getName();
+            modEntry.className = null;
+            List<Config.FileEntry> files = new ArrayList<Config.FileEntry>();
+            files.clear();
             for (Map.Entry<String, String> entry : extmod.fileMap.entrySet()) {
-                Element fileElem = config.xml.createElement(Config.TAG_FILE);
-                Element pathElem = config.xml.createElement(Config.TAG_FROM);
-                pathElem.appendChild(config.xml.createTextNode(entry.getValue()));
-                fileElem.appendChild(pathElem);
-                pathElem = config.xml.createElement(Config.TAG_TO);
-                pathElem.appendChild(config.xml.createTextNode(entry.getKey()));
-                fileElem.appendChild(pathElem);
-                files.appendChild(fileElem);
+                files.add(new Config.FileEntry(entry.getKey(), entry.getValue()));
             }
+            modEntry.files = files;
         } else if (mod.customJar == null) {
-            config.setText(element, Config.TAG_TYPE, Config.VAL_BUILTIN);
+            modEntry.type = Config.VAL_BUILTIN;
+            modEntry.path = null;
+            modEntry.className = null;
+            modEntry.files = null;
         } else {
-            config.setText(element, Config.TAG_TYPE, Config.VAL_EXTERNAL_JAR);
-            config.setText(element, Config.TAG_PATH, mod.customJar.getPath());
-            config.setText(element, Config.TAG_CLASS, mod.getClass().getCanonicalName());
+            modEntry.type = Config.VAL_EXTERNAL_JAR;
+            modEntry.path = mod.customJar.getPath();
+            modEntry.className = mod.getClass().getCanonicalName();
+            modEntry.files = null;
         }
-    }
-
-    private Element defaultModElement(Mod mod) {
-        Config config = Config.instance;
-        Element mods = config.getMods();
-        if (mods == null) {
-            return null;
-        }
-        Element element = config.getMod(mod.getName());
-        config.setText(element, Config.TAG_ENABLED, Boolean.toString(mod.defaultEnabled));
-        updateModElement(mod, element);
-        return element;
     }
 
     void updateProperties() {
-        Config config = Config.instance;
-        Element mods = config.getMods();
-        if (mods == null) {
-            return;
-        }
-        HashMap<String, Element> oldElements = new HashMap<String, Element>();
-        while (mods.hasChildNodes()) {
-            Node node = mods.getFirstChild();
-            if (node instanceof Element) {
-                Element element = (Element) node;
-                String name = config.getText(element, Config.TAG_NAME);
-                if (name != null) {
-                    oldElements.put(name, element);
-                }
-            }
-            mods.removeChild(node);
-        }
+        Config.VersionEntry versionEntry = Config.getInstance().getSelectedVersion();
+        Map<String, Config.ModEntry> oldEntries = new HashMap<String, Config.ModEntry>();
+        oldEntries.putAll(versionEntry.mods);
+        versionEntry.mods.clear();
         for (Mod mod : modsByIndex) {
             if (mod.internal) {
                 continue;
             }
-            Element element = oldElements.get(mod.getName());
-            if (element == null) {
-                defaultModElement(mod);
-            } else {
-                config.setText(element, Config.TAG_ENABLED, Boolean.toString(mod.isEnabled() && mod.okToApply()));
-                updateModElement(mod, element);
-                mods.appendChild(element);
-                oldElements.remove(mod.getName());
+            Config.ModEntry modEntry = oldEntries.get(mod.getName());
+            if (modEntry == null) {
+                modEntry = new Config.ModEntry();
             }
+            updateModElement(mod, modEntry);
+            versionEntry.mods.put(mod.getName(), modEntry);
         }
     }
 
@@ -676,5 +623,31 @@ class ModList {
             mod.experimental = builtInMod.experimental;
         }
         return mod;
+    }
+
+    JsonObject getOverrideVersionJson() {
+        JsonObject json = null;
+        for (Mod mod : getSelected()) {
+            JsonObject json1 = mod.getOverrideVersionJson();
+            if (json1 != null) {
+                json = json1;
+            }
+        }
+        return json;
+    }
+
+    String getExtraJavaArguments() {
+        List<String> cmdLine = new ArrayList<String>();
+        for (Mod mod : getSelected()) {
+            mod.addExtraJavaArguments(cmdLine);
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String s : cmdLine) {
+            if (sb.length() > 0) {
+                sb.append(' ');
+            }
+            sb.append(s);
+        }
+        return sb.toString();
     }
 }

@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,6 +47,7 @@ public class MCPatcherUtils {
     public static final String UTILS_CLASS = "com.prupe.mcpatcher.MCPatcherUtils";
     public static final String LOGGER_CLASS = "com.prupe.mcpatcher.MCLogger";
     public static final String CONFIG_CLASS = "com.prupe.mcpatcher.Config";
+    public static final String JSON_UTILS_CLASS = "com.prupe.mcpatcher.JsonUtils";
     public static final String PROFILER_API_CLASS = "com.prupe.mcpatcher.ProfilerAPI";
     public static final String INPUT_HANDLER_CLASS = "com.prupe.mcpatcher.InputHandler";
 
@@ -305,8 +308,29 @@ public class MCPatcherUtils {
         return s == null || s.trim().isEmpty();
     }
 
+    /**
+     * Returns true if collection is null or empty.
+     *
+     * @param c possibly null collection
+     * @return true if null or empty
+     */
+    public static boolean isNullOrEmpty(Collection<?> c) {
+        return c == null || c.isEmpty();
+    }
+
+    /**
+     * Returns true if map is null or empty.
+     *
+     * @param m possibly null map
+     * @return true if null or empty
+     */
+    public static boolean isNullOrEmpty(Map<?, ?> m) {
+        return m == null || m.isEmpty();
+    }
+
     public static void setMinecraft(File gameDir, File assetsDir, String minecraftVersion, String patcherVersion) {
         isGame = true;
+        Config.setReadOnly(true);
         minecraftDir = assetsDir.getParentFile().getAbsoluteFile();
         MCPatcherUtils.gameDir = gameDir.getAbsoluteFile();
         MCPatcherUtils.minecraftVersion = minecraftVersion;
@@ -328,8 +352,9 @@ public class MCPatcherUtils {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-        System.out.println();
         Config.load(minecraftDir);
+        System.out.printf("Launcher profile:  %s\n", Config.getInstance().getSelectedProfileName());
+        System.out.println();
     }
 
     /**

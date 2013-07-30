@@ -3,18 +3,19 @@ package com.prupe.mcpatcher;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 class ExternalMod extends Mod {
     final ZipFile zipFile;
-    final HashMap<String, String> fileMap = new HashMap<String, String>();
+    final Map<String, String> fileMap = new LinkedHashMap<String, String>();
 
     private String defaultDescription;
 
-    ExternalMod(ZipFile zipFile, HashMap<String, String> fileMap) {
+    ExternalMod(ZipFile zipFile, Map<String, String> fileMap) {
         dependencies.clear();
         this.zipFile = zipFile;
         setFileMap(fileMap);
@@ -57,7 +58,11 @@ class ExternalMod extends Mod {
         }
     }
 
-    void setFileMap(HashMap<String, String> newFileMap) {
+    static boolean isValidPath(File path) {
+        return path.getName().toLowerCase().endsWith(".zip");
+    }
+
+    void setFileMap(Map<String, String> newFileMap) {
         fileMap.clear();
         fileMap.putAll(newFileMap);
         filesToAdd.clear();

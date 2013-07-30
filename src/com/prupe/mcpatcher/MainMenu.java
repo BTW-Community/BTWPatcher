@@ -5,10 +5,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 class MainMenu {
     private final MainForm mainForm;
@@ -16,8 +14,7 @@ class MainMenu {
     final JMenuBar menuBar;
 
     private final JMenu file;
-    private final JMenuItem origFile;
-    private final JMenuItem outputFile;
+    private final JMenuItem refresh;
     private final JMenuItem exit;
 
     private final JMenu mods;
@@ -29,8 +26,7 @@ class MainMenu {
     private final JMenuItem moveDown;
 
     private final JMenu profile;
-    private final JMenuItem save;
-    private final JMenuItem load;
+    private final JMenuItem select;
     private final JMenuItem delete;
 
     private final JMenu game;
@@ -50,15 +46,15 @@ class MainMenu {
         file.setMnemonic('F');
         menuBar.add(file);
 
-        origFile = new JMenuItem("Select input file...");
-        origFile.setMnemonic('i');
-        copyActionListener(origFile, mainForm.origBrowseButton);
-        file.add(origFile);
-
-        outputFile = new JMenuItem("Select output file...");
-        outputFile.setMnemonic('o');
-        copyActionListener(outputFile, mainForm.outputBrowseButton);
-        file.add(outputFile);
+        refresh = new JMenuItem("Refresh profile list");
+        refresh.setMnemonic('R');
+        refresh.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mainForm.refreshProfileManager();
+            }
+        });
+        file.add(refresh);
 
         file.addSeparator();
 
@@ -133,60 +129,11 @@ class MainMenu {
         profile.setMnemonic('r');
         menuBar.add(profile);
 
-        save = new JMenuItem("Save profile...");
-        save.setMnemonic('S');
-        save.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String profileName;
-                for (int i = 0; ; i++) {
-                    profileName = "Custom Profile";
-                    if (i > 0) {
-                        profileName += " " + i;
-                    }
-                    if (Config.instance.findProfileByName(profileName, false) == null) {
-                        break;
-                    }
-                }
-                Object result = JOptionPane.showInputDialog(
-                    mainForm.frame,
-                    "Enter a name for this profile:",
-                    "Profile name",
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    null,
-                    profileName
-                );
-                if (result != null && result instanceof String && !result.equals("")) {
-                    profileName = (String) result;
-                    String currentProfile = Config.instance.getConfigValue(Config.TAG_SELECTED_PROFILE);
-                    if (profileName.equals(currentProfile)) {
-                        return;
-                    }
-                    if (Config.instance.findProfileByName(profileName, false) != null) {
-                        int confirm = JOptionPane.showConfirmDialog(
-                            mainForm.frame,
-                            String.format("Profile \"%s\" exists.  Overwrite?", profileName),
-                            "Confirm overwrite",
-                            JOptionPane.YES_NO_OPTION
-                        );
-                        if (confirm != JOptionPane.YES_OPTION) {
-                            return;
-                        }
-                        Config.instance.deleteProfile(profileName);
-                    }
-                    MCPatcher.modList.updateProperties();
-                    Config.instance.selectProfile(profileName);
-                    mainForm.updateControls();
-                }
-            }
-        });
-        profile.add(save);
+        select = new JMenu("Select input profile");
+        select.setMnemonic('S');
+        profile.add(select);
 
-        load = new JMenu("Select profile");
-        load.setMnemonic('e');
-        profile.add(load);
-
-        delete = new JMenu("Delete profile");
+        delete = new JMenu("Delete output profile");
         delete.setMnemonic('D');
         profile.add(delete);
 
@@ -256,8 +203,6 @@ class MainMenu {
         game.setEnabled(!busy);
         convert.setEnabled(!busy);
 
-        origFile.setEnabled(mainForm.origBrowseButton.isEnabled());
-        outputFile.setEnabled(mainForm.outputBrowseButton.isEnabled());
         addMod.setEnabled(mainForm.addButton.isEnabled());
         removeMod.setEnabled(mainForm.removeButton.isEnabled());
         moveUp.setEnabled(mainForm.upButton.isEnabled());
@@ -266,70 +211,53 @@ class MainMenu {
         unpatch.setEnabled(mainForm.undoButton.isEnabled());
         test.setEnabled(mainForm.testButton.isEnabled());
 
-        load.removeAll();
-        delete.removeAll();
-        if (!busy && Config.instance != null) {
-            ArrayList<String> profiles = Config.instance.getProfiles();
-            Collections.sort(profiles, new Comparator<String>() {
-                public int compare(String o1, String o2) {
-                    MinecraftVersion v1 = null;
-                    MinecraftVersion v2 = null;
-                    if (Config.isDefaultProfile(o1)) {
-                        v1 = MinecraftVersion.parseVersion(o1);
-                    }
-                    if (Config.isDefaultProfile(o2)) {
-                        v2 = MinecraftVersion.parseVersion(o2);
-                    }
-                    if (v1 == null && v2 == null) {
-                        return o1.compareTo(o2);
-                    } else if (v1 == null) {
-                        return 1;
-                    } else if (v2 == null) {
-                        return -1;
-                    } else {
-                        return v1.compareTo(v2);
-                    }
-                }
-            });
+        Config config = Config.getInstance();
+        final ProfileManager profileManager = MCPatcher.profileManager;
+
+        select.removeAll();
+        if (!busy) {
+            java.util.List<String> profiles = new ArrayList<String>();
+            profiles.addAll(profileManager.getInputProfiles());
+            Collections.sort(profiles);
+
             ButtonGroup buttonGroup = new ButtonGroup();
-            final String currentProfile = Config.instance.getConfigValue(Config.TAG_SELECTED_PROFILE);
             for (final String profile : profiles) {
-                JRadioButtonMenuItem item = new JRadioButtonMenuItem(profile, profile.equals(currentProfile));
+                JRadioButtonMenuItem item = new JRadioButtonMenuItem(profile);
+                item.setSelected(profile.equals(profileManager.getInputProfile()));
+                item.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        profileManager.selectInputProfile(profile);
+                    }
+                });
+                select.add(item);
+                buttonGroup.add(item);
+            }
+        }
+        addIfEmpty(select);
+
+        delete.removeAll();
+        if (!busy) {
+            java.util.List<String> profiles = new ArrayList<String>();
+            profiles.addAll(profileManager.getOutputProfiles());
+            Collections.sort(profiles);
+            final String currentProfile = profileManager.getOutputProfile();
+            final DeleteProfileDialog dialog = new DeleteProfileDialog(profileManager);
+
+            for (final String profile : profiles) {
+                final Config.ProfileEntry profileEntry = config.profiles.get(profile);
+                if (profileEntry == null) {
+                    continue;
+                }
+                JMenuItem item = new JMenuItem(profile);
                 item.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         if (profile.equals(currentProfile)) {
                             return;
                         }
-                        MCPatcher.modList.updateProperties();
-                        Config.instance.selectProfile(profile);
-                        boolean modsOk = false;
-                        String version = Config.getVersionForDefaultProfile(profile);
-                        if (version != null && !version.equals(MCPatcher.minecraft.getVersion().getProfileString())) {
-                            File jar = MinecraftInstallation.getJarPathForVersion(version);
-                            if (jar != null && jar.isFile()) {
-                                try {
-                                    modsOk = MCPatcher.setMinecraft(jar, false);
-                                } catch (Exception e1) {
-                                    e1.printStackTrace();
-                                }
-                            }
-                        }
-                        if (!modsOk) {
-                            MCPatcher.getAllMods();
-                        }
-                        mainForm.updateModList();
-                    }
-                });
-                buttonGroup.add(item);
-                load.add(item);
-
-                JMenuItem item1 = new JMenuItem(profile);
-                item1.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        if (profile.equals(currentProfile)) {
-                            return;
-                        }
-                        DeleteProfileDialog dialog = new DeleteProfileDialog(profile);
+                        ArrayList<String> versions = new ArrayList<String>();
+                        versions.addAll(profileEntry.versions.keySet());
+                        dialog.setProfile(profile, versions);
                         int result = JOptionPane.showConfirmDialog(
                             mainForm.frame,
                             dialog.getPanel(),
@@ -337,29 +265,26 @@ class MainMenu {
                             JOptionPane.YES_NO_OPTION
                         );
                         if (result == JOptionPane.YES_OPTION) {
-                            Config.instance.deleteProfile(profile);
+                            profileManager.deleteProfile(profile, false);
                             dialog.deleteInstallations();
+                            mainForm.updateProfileLists(profileManager);
                             mainForm.updateControls();
                         }
                     }
                 });
-                item1.setEnabled(!profile.equals(currentProfile));
-                delete.add(item1);
+                item.setEnabled(!profile.equals(Config.MCPATCHER_PROFILE_NAME) && !profile.equals(currentProfile));
+                delete.add(item);
             }
         }
-        if (load.getSubElements().length == 0) {
+        addIfEmpty(delete);
+    }
+
+    private static void addIfEmpty(JMenuItem menu) {
+        MenuElement[] subElements = menu.getSubElements();
+        if (subElements == null || subElements.length == 0 || subElements[0].getSubElements().length == 0) {
             JMenuItem item = new JMenuItem("(none)");
             item.setEnabled(false);
-            load.add(item);
-        } else {
-            load.setEnabled(true);
-        }
-        if (delete.getSubElements().length == 0) {
-            JMenuItem item = new JMenuItem("(none)");
-            item.setEnabled(false);
-            delete.add(item);
-        } else {
-            delete.setEnabled(true);
+            menu.add(item);
         }
     }
 }

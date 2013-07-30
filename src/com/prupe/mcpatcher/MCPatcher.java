@@ -23,11 +23,11 @@ final public class MCPatcher {
     /**
      * Minor MCPatcher version number
      */
-    public static final int MINOR_VERSION = 1;
+    public static final int MINOR_VERSION = 2;
     /**
      * MCPatcher release number
      */
-    public static final int RELEASE_VERSION = 1;
+    public static final int RELEASE_VERSION = 0;
     /**
      * MCPatcher patch level
      */
@@ -44,7 +44,8 @@ final public class MCPatcher {
             (PATCH_VERSION > 0 ? String.format("_%02d", PATCH_VERSION) : "") +
             (BETA_VERSION > 0 ? "-beta" + BETA_VERSION : "");
 
-    static MinecraftInstallation.MinecraftJar minecraft = null;
+    static ProfileManager profileManager;
+    static MinecraftJar minecraft = null;
     static ModList modList;
     private static final Set<String> modifiedClasses = new HashSet<String>();
     private static final Set<String> addedClasses = new HashSet<String>();
@@ -77,6 +78,7 @@ final public class MCPatcher {
      * -enableallmods: enable all valid mods instead of selected mods from last time<br>
      * -showinternal: show hidden "internal" mods<br>
      * -experimental: load mods considered "experimental"<br>
+     * -dumpjson: read contents of .json files and exit<br>
      * -convert15 &lt;path&gt;: convert a texture pack from 1.4 to 1.5<br>
      * -convert16 &lt;path&gt;: convert a texture pack from 1.5 to 1.6<br>
      *
@@ -87,6 +89,8 @@ final public class MCPatcher {
         boolean guiEnabled = true;
         String enteredMCDir = null;
         String profile = null;
+        String mcVersion = null;
+        boolean dumpJson = false;
 
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-loglevel") && i + 1 < args.length) {
@@ -106,6 +110,9 @@ final public class MCPatcher {
             } else if (args[i].equals("-profile") && i + 1 < args.length) {
                 i++;
                 profile = args[i].trim();
+            } else if (args[i].equals("-mcversion") && i + 1 < args.length) {
+                i++;
+                mcVersion = args[i].trim();
             } else if (args[i].equals("-ignoresavedmods")) {
                 ignoreSavedMods = true;
             } else if (args[i].equals("-ignorebuiltinmods")) {
@@ -118,6 +125,9 @@ final public class MCPatcher {
                 showInternal = true;
             } else if (args[i].equals("-experimental")) {
                 experimentalMods = true;
+            } else if (args[i].equals("-dumpjson")) {
+                guiEnabled = false;
+                dumpJson = true;
             } else if (args[i].equals("-convert15") && i + 1 < args.length) {
                 i++;
                 try {
@@ -150,34 +160,59 @@ final public class MCPatcher {
         if (!ui.locateMinecraftDir(enteredMCDir)) {
             System.exit(exitStatus);
         }
+        Config config = Config.getInstance();
+        profileManager = new ProfileManager(config);
+        profileManager.setRemote(guiEnabled && config.fetchRemoteVersionList);
 
-        MinecraftInstallation.setBaseDir(MCPatcherUtils.getMinecraftPath());
+        if (dumpJson) {
+            try {
+                profileManager.refresh();
+                profileManager.dumpJson(System.out);
+                exitStatus = 0;
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+            System.exit(exitStatus);
+        }
+
         ui.show();
 
         Util.logOSInfo();
 
-        if (profile != null && !profile.equals("")) {
-            if (Config.instance.findProfileByName(profile, false) == null) {
-                if (ui.shouldExit()) {
-                    System.out.printf("ERROR: profile '%s' not found\n", profile);
-                    System.exit(exitStatus);
+        if (!MCPatcherUtils.isNullOrEmpty(profile)) {
+            if (config.profiles.containsKey(profile)) {
+                config.selectedProfile = profile;
+            } else if (ui.shouldExit()) {
+                System.out.printf("ERROR: profile '%s' not found\n", profile);
+                System.exit(exitStatus);
+            }
+            if (!MCPatcherUtils.isNullOrEmpty(mcVersion)) {
+                try {
+                    profileManager.refresh();
+                    if (profileManager.getInputVersions().contains(mcVersion)) {
+                        profileManager.selectInputVersion(mcVersion);
+                    } else if (ui.shouldExit()) {
+                        System.out.printf("ERROR: local version '%s' not found\n", mcVersion);
+                        System.exit(exitStatus);
+                    }
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    if (ui.shouldExit()) {
+                        System.exit(exitStatus);
+                    }
                 }
-            } else {
-                Config.instance.selectProfile(profile);
             }
         }
-        String lastVersion = Config.getString(Config.TAG_LAST_VERSION, "");
-        if (!lastVersion.equals(VERSION_STRING)) {
-            Config.set(Config.TAG_LAST_VERSION, VERSION_STRING);
-            Config.set(Config.TAG_BETA_WARNING_SHOWN, false);
-            Config.set(Config.TAG_DEBUG, BETA_VERSION > 0);
+        if (!VERSION_STRING.equals(config.patcherVersion)) {
+            config.patcherVersion = VERSION_STRING;
+            config.betaWarningShown = false;
         }
-        if (BETA_VERSION > 0 && !Config.getBoolean(Config.TAG_BETA_WARNING_SHOWN, false)) {
+        if (BETA_VERSION > 0 && !config.betaWarningShown) {
             ui.showBetaWarning();
-            Config.set(Config.TAG_BETA_WARNING_SHOWN, true);
+            config.betaWarningShown = true;
         }
 
-        if (ui.go()) {
+        if (ui.go(profileManager)) {
             exitStatus = 0;
         }
 
@@ -188,9 +223,9 @@ final public class MCPatcher {
     }
 
     static void saveProperties() {
-        if (!ignoreSavedMods && modList != null && Config.instance.selectedProfile != null) {
+        if (!ignoreSavedMods && modList != null) {
             modList.updateProperties();
-            Config.instance.saveProperties();
+            Config.save();
         }
     }
 
@@ -198,44 +233,24 @@ final public class MCPatcher {
         Thread.sleep(0);
     }
 
-    static boolean setMinecraft(File file, boolean createBackup) {
+    static boolean refreshMinecraftPath() {
         if (minecraft != null) {
             minecraft.closeStreams();
-        }
-        if (file == null) {
             minecraft = null;
-            return false;
         }
         try {
-            minecraft = MinecraftInstallation.openMinecraftJar(file);
-            if (minecraft == null) {
-                return false;
-            }
-            if (createBackup) {
-                minecraft.createBackup();
-            }
+            minecraft = new MinecraftJar(profileManager);
             minecraft.logVersion();
-            String defaultProfile = Config.getDefaultProfileName(minecraft.getVersion().getProfileString());
-            Config.instance.setDefaultProfileName(defaultProfile);
-            String selectedProfile = Config.instance.getConfigValue(Config.TAG_SELECTED_PROFILE);
-            if (Config.instance.selectedProfile == null) {
-                Config.instance.selectProfile(selectedProfile);
-            }
-            if (Config.isDefaultProfile(selectedProfile)) {
-                Config.instance.selectProfile(defaultProfile);
-            } else {
-                Config.instance.selectProfile();
-            }
-            getAllMods();
         } catch (IOException e) {
             minecraft = null;
             Logger.log(e);
             return false;
         }
+        refreshModList();
         return true;
     }
 
-    static void getAllMods() {
+    static void refreshModList() {
         if (modList != null) {
             modList.close();
         }
@@ -250,9 +265,10 @@ final public class MCPatcher {
             modList.loadCustomMods(MCPatcherUtils.getMinecraftPath("mcpatcher-mods"));
         }
         ui.setModList(modList);
+        ui.updateModList();
     }
 
-    static void getApplicableMods() throws IOException, InterruptedException {
+    static void checkModApplicability() throws IOException, InterruptedException {
         JarFile origJar = minecraft.getInputJar();
         mapModClasses(origJar);
         mapModDependentClasses(origJar);
@@ -273,7 +289,7 @@ final public class MCPatcher {
             ui.updateProgress(++procFiles, origJar.size());
             String name = entry.getName();
 
-            if (MinecraftInstallation.isClassFile(name)) {
+            if (MinecraftJar.isClassFile(name)) {
                 ClassFile classFile = new ClassFile(new DataInputStream(origJar.getInputStream(entry)));
 
                 for (Mod mod : modList.getAll()) {
@@ -365,7 +381,7 @@ final public class MCPatcher {
                 candidateEntries.add(entry);
             }
             for (JarEntry entry : candidateEntries) {
-                if (!MinecraftInstallation.isClassFile(entry.getName())) {
+                if (!MinecraftJar.isClassFile(entry.getName())) {
                     continue;
                 }
                 ClassFile classFile = new ClassFile(new DataInputStream(origJar.getInputStream(entry)));
@@ -642,7 +658,7 @@ final public class MCPatcher {
                     modArray = new ArrayList<Mod>();
                     conflicts.put(filename, modArray);
                 }
-                if (MinecraftInstallation.isClassFile(filename)) {
+                if (MinecraftJar.isClassFile(filename)) {
                     String className = ClassMap.filenameToClassName(filename);
                     for (Mod conflictMod : mods) {
                         if (conflictMod == mod) {
@@ -692,10 +708,12 @@ final public class MCPatcher {
                 Logger.log(Logger.LOG_MAIN);
             }
 
+            profileManager.getOutputJar().getParentFile().mkdirs();
             applyMods();
             writeProperties();
             minecraft.checkOutput();
             minecraft.closeStreams();
+            profileManager.createOutputProfile(modList.getOverrideVersionJson(), modList.getExtraJavaArguments());
 
             Logger.log(Logger.LOG_MAIN);
             Logger.log(Logger.LOG_MAIN, "Done!");
@@ -703,12 +721,10 @@ final public class MCPatcher {
         } catch (Throwable e) {
             Logger.log(e);
             Logger.log(Logger.LOG_MAIN);
-            Logger.log(Logger.LOG_MAIN, "Restoring original minecraft.jar due to previous error");
-            try {
-                minecraft.restoreBackup();
-            } catch (IOException e1) {
-                Logger.log(e1);
-            }
+            Logger.log(Logger.LOG_MAIN, "Restoring original profile due to previous error");
+            profileManager.deleteProfile(profileManager.getOutputProfile(), true);
+        } finally {
+            saveProperties();
         }
         return patchOk;
     }
@@ -724,7 +740,7 @@ final public class MCPatcher {
             String name = entry.getName();
             boolean patched = false;
 
-            if (MinecraftInstallation.isGarbageFile(name)) {
+            if (MinecraftJar.isGarbageFile(name)) {
                 continue;
             }
             if (entry.isDirectory()) {
@@ -752,7 +768,7 @@ final public class MCPatcher {
                 fromMod.filesAdded.put(name, "replaced");
             }
 
-            if (MinecraftInstallation.isClassFile(name)) {
+            if (MinecraftJar.isClassFile(name)) {
                 ArrayList<ClassMod> classMods = new ArrayList<ClassMod>();
                 ClassFile classFile = new ClassFile(new DataInputStream(inputStream));
                 String className = ClassMap.filenameToClassName(name);
@@ -829,7 +845,7 @@ final public class MCPatcher {
             outputJar.putNextEntry(new ZipEntry(filename));
             ClassMap classMap = mod.classMap;
             boolean directCopy = true;
-            if (MinecraftInstallation.isClassFile(filename)) {
+            if (MinecraftJar.isClassFile(filename)) {
                 ClassFile classFile = new ClassFile(new DataInputStream(inputStream));
                 for (Mod mod1 : modList.getSelected()) {
                     for (ClassMod classMod : mod1.getClassMods()) {

@@ -37,7 +37,7 @@ class ZipTreeDialog extends JDialog {
         final ArrayList<String> dirs = new ArrayList<String>();
         for (ZipEntry entry : Collections.list(zipFile.entries())) {
             String name = entry.getName();
-            if (MinecraftInstallation.isGarbageFile(name)) {
+            if (MinecraftJar.isGarbageFile(name)) {
                 continue;
             }
             if (!entry.isDirectory()) {

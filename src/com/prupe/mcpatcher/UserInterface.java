@@ -1,5 +1,8 @@
 package com.prupe.mcpatcher;
 
+import com.prupe.mcpatcher.launcher.version.VersionList;
+
+import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -42,24 +45,7 @@ abstract public class UserInterface {
         }
     }
 
-    boolean go() {
-        File defaultMinecraft = MinecraftInstallation.getJarPathForVersion(Config.instance.getConfigValue(Config.TAG_SELECTED_PROFILE));
-        if (defaultMinecraft == null || !defaultMinecraft.isFile()) {
-            defaultMinecraft = MinecraftInstallation.getDefaultJarPath();
-        }
-        if (defaultMinecraft == null || !defaultMinecraft.isFile()) {
-            showCorruptJarError(defaultMinecraft);
-            setBusy(false);
-            return false;
-        } else if (MCPatcher.setMinecraft(defaultMinecraft, true)) {
-            updateModList();
-            return true;
-        } else {
-            showCorruptJarError(defaultMinecraft);
-            setBusy(false);
-            return false;
-        }
-    }
+    abstract boolean go(ProfileManager profileManager);
 
     public void updateProgress(int value, int max) {
     }
@@ -97,6 +83,25 @@ abstract public class UserInterface {
         }
 
         @Override
+        boolean go(ProfileManager profileManager) {
+            setBusy(true);
+            if (profileManager.isRemote()) {
+                setStatusText("Getting version list from %s...", VersionList.VERSION_LIST.getHost());
+            }
+            try {
+                profileManager.refresh();
+                MCPatcher.refreshMinecraftPath();
+            } catch (Throwable e) {
+                e.printStackTrace();
+                mainForm.showLauncherError(e);
+                setBusy(false);
+                return false;
+            }
+            mainForm.updateProfileLists(profileManager);
+            return true;
+        }
+
+        @Override
         File chooseMinecraftDir(File enteredMCDir) {
             return mainForm.chooseMinecraftDir(enteredMCDir);
         }
@@ -117,13 +122,23 @@ abstract public class UserInterface {
         }
 
         @Override
-        public void setStatusText(String format, Object... params) {
-            mainForm.setStatusText(format, params);
+        public void setStatusText(final String format, final Object... params) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    mainForm.setStatusText(format, params);
+                }
+            });
         }
 
         @Override
-        public void setBusy(boolean busy) {
-            mainForm.setBusy(busy);
+        public void setBusy(final boolean busy) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    mainForm.setBusy(busy);
+                }
+            });
         }
 
         @Override
@@ -139,25 +154,27 @@ abstract public class UserInterface {
     }
 
     static class CLI extends UserInterface {
+        CLI() {
+            Config.setReadOnly(true);
+            Config.getInstance().selectPatchedProfile = false;
+        }
+
         @Override
         boolean shouldExit() {
             return true;
         }
 
         @Override
-        boolean go() {
-            if (!super.go()) {
-                return false;
-            }
+        boolean go(ProfileManager profileManager) {
             boolean ok = false;
             try {
-                MCPatcher.getApplicableMods();
+                profileManager.refresh();
+                MCPatcher.refreshMinecraftPath();
+                MCPatcher.checkModApplicability();
                 System.out.println();
                 System.out.println("#### Class map:");
                 MCPatcher.showClassMaps(System.out);
-                if (MCPatcher.patch()) {
-                    ok = true;
-                }
+                ok = MCPatcher.patch();
                 System.out.println();
                 System.out.println("#### Patch summary:");
                 MCPatcher.showPatchResults(System.out);

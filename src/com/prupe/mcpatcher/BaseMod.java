@@ -46,6 +46,11 @@ public final class BaseMod extends Mod {
         addClassFile(MCPatcherUtils.LOGGER_CLASS + "$1$1");
         addClassFile(MCPatcherUtils.LOGGER_CLASS + "$ErrorLevel");
         addClassFile(MCPatcherUtils.CONFIG_CLASS);
+        addClassFile(MCPatcherUtils.CONFIG_CLASS + "$ProfileEntry");
+        addClassFile(MCPatcherUtils.CONFIG_CLASS + "$VersionEntry");
+        addClassFile(MCPatcherUtils.CONFIG_CLASS + "$ModEntry");
+        addClassFile(MCPatcherUtils.CONFIG_CLASS + "$FileEntry");
+        addClassFile(MCPatcherUtils.JSON_UTILS_CLASS);
         addClassFile(MCPatcherUtils.PROFILER_API_CLASS);
         addClassFile(MCPatcherUtils.INPUT_HANDLER_CLASS);
 
@@ -71,15 +76,21 @@ public final class BaseMod extends Mod {
 
     class ConfigPanel extends ModConfigPanel {
         private JPanel panel;
-        private JTextField heapSizeText;
-        private JTextField directSizeText;
+        private JCheckBox fetchURLCheckBox;
         private JCheckBox profilingCheckBox;
         private JTable logTable;
 
         ConfigPanel() {
+            fetchURLCheckBox.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Config.getInstance().fetchRemoteVersionList = fetchURLCheckBox.isSelected();
+                }
+            });
+
             profilingCheckBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    Config.set("extraProfiling", profilingCheckBox.isSelected());
+                    Config.getInstance().extraProfiling = profilingCheckBox.isSelected();
                 }
             });
 
@@ -176,39 +187,14 @@ public final class BaseMod extends Mod {
 
         @Override
         public void load() {
-            loadIntConfig(Config.TAG_JAVA_HEAP_SIZE, heapSizeText, 1024);
-            loadIntConfig(Config.TAG_DIRECT_MEMORY_SIZE, directSizeText, 0);
-            profilingCheckBox.setSelected(Config.getBoolean("extraProfiling", false));
+            fetchURLCheckBox.setSelected(Config.getInstance().fetchRemoteVersionList);
+            profilingCheckBox.setSelected(Config.getInstance().extraProfiling);
 
             showAdvancedOption(profilingCheckBox);
         }
 
         @Override
         public void save() {
-            saveIntConfig(Config.TAG_JAVA_HEAP_SIZE, heapSizeText);
-            saveIntConfig(Config.TAG_DIRECT_MEMORY_SIZE, directSizeText);
-            Config.remove("autoRefreshTextures");
-        }
-
-        private void loadIntConfig(String tag, JTextField field, int defaultValue) {
-            int value = Config.getInt(tag, defaultValue);
-            if (value > 0) {
-                field.setText("" + value);
-            } else {
-                field.setText("");
-            }
-        }
-
-        private void saveIntConfig(String tag, JTextField field) {
-            String value = field.getText().trim();
-            int num = 0;
-            if (!value.isEmpty()) {
-                try {
-                    num = Integer.parseInt(value);
-                } catch (NumberFormatException e) {
-                }
-            }
-            Config.set(tag, num);
         }
     }
 

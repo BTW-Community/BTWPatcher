@@ -1,5 +1,7 @@
 package com.prupe.mcpatcher;
 
+import com.google.gson.JsonObject;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -121,6 +123,13 @@ public abstract class Mod {
 
     public String[] getLoggingCategories() {
         return new String[]{getName()};
+    }
+
+    JsonObject getOverrideVersionJson() {
+        return null;
+    }
+
+    void addExtraJavaArguments(List<String> cmdLine) {
     }
 
     /**

@@ -3,6 +3,7 @@ package com.prupe.mcpatcher;
 import com.prupe.mcpatcher.converter.TexturePackConverter;
 import com.prupe.mcpatcher.converter.TexturePackConverter15;
 import com.prupe.mcpatcher.converter.TexturePackConverter16;
+import com.prupe.mcpatcher.launcher.version.VersionList;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -43,7 +44,6 @@ class MainForm {
         "</table>" +
             "</html>";
     private static final String FORCE_CONTINUE_TEXT = "I WILL NOT COMPLAIN IF THIS DOESN'T WORK.";
-    private static final String PADDING = "                                                                  ";
 
     private static Image programIcon;
 
@@ -53,16 +53,11 @@ class MainForm {
 
     private final MainMenu mainMenu;
 
-    private JTextField origField;
-    JButton origBrowseButton;
-    private JTextField outputField;
-    JButton outputBrowseButton;
     JButton testButton;
     JButton patchButton;
     JButton undoButton;
     private JTable modTable;
     private JLabel statusText;
-    private JButton refreshButton;
     private JProgressBar progressBar;
     private JTabbedPane tabbedPane;
     private JTextArea logText;
@@ -81,13 +76,17 @@ class MainForm {
     JButton addButton;
     JButton downButton;
     JButton removeButton;
+    JCheckBox setSelectedCheckBox;
+    private JComboBox origVersionComboBox;
+    private JComboBox outputProfileComboBox;
 
     private AddModDialog addModDialog;
 
     static boolean shift;
 
     private boolean busy = true;
-    private Thread workerThread = null;
+    private boolean updatingProfiles;
+    private UIWorker workerThread = null;
 
     MainForm() {
         Toolkit.getDefaultToolkit().getSystemEventQueue().push(new EventQueue() {
@@ -171,108 +170,45 @@ class MainForm {
         frame.setMinimumSize(new Dimension(470, 488));
         frame.pack();
 
-        origBrowseButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setStatusText("");
-                File selectedFile = null;
-                if (shift) {
-                    String text = (String) JOptionPane.showInputDialog(
-                        frame, "Enter path to new input file:" + PADDING, "Input file", JOptionPane.QUESTION_MESSAGE,
-                        null, null, origField.getText()
-                    );
-                    if (text != null && !text.equals("")) {
-                        selectedFile = new File(text);
-                        if (!selectedFile.isFile()) {
-                            selectedFile = null;
-                        }
-                    }
-                } else {
-                    JFileChooser fd = new JFileChooser();
-                    fd.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                    fd.setFileHidingEnabled(false);
-                    fd.setDialogTitle("Select input file");
-                    MinecraftInstallation.MinecraftJar minecraft = MCPatcher.minecraft;
-                    if (minecraft == null || minecraft.getInputFile() == null) {
-                        fd.setCurrentDirectory(MinecraftInstallation.getDefaultJarDirectory());
+        outputProfileComboBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (updatingProfiles || e.getStateChange() != ItemEvent.SELECTED) {
+                    return;
+                }
+                String profile = e.getItem().toString();
+                ProfileManager profileManager = MCPatcher.profileManager;
+                if (profileManager != null && !MCPatcherUtils.isNullOrEmpty(profile)) {
+                    if (profileManager.getOutputProfiles().contains(profile)) {
+                        profileManager.selectOutputProfile(profile);
                     } else {
-                        fd.setCurrentDirectory(minecraft.getInputFile().getParentFile());
-                        fd.setSelectedFile(minecraft.getInputFile());
-                    }
-                    fd.setAcceptAllFileFilterUsed(false);
-                    fd.setFileFilter(new FileFilter() {
-                        @Override
-                        public boolean accept(File f) {
-                            return (f.isDirectory() && !f.getName().endsWith(MinecraftInstallationV2.MCPATCHER_SUFFIX)) || f.getName().toLowerCase().endsWith(".jar");
-                        }
-
-                        @Override
-                        public String getDescription() {
-                            return "*.jar";
-                        }
-                    });
-                    if (fd.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
-                        selectedFile = fd.getSelectedFile();
+                        profileManager.copyCurrentProfile(profile);
                     }
                 }
-                if (selectedFile != null) {
-                    if (MCPatcher.setMinecraft(selectedFile, false)) {
-                        MCPatcher.saveProperties();
-                        updateModList();
-                    } else {
-                        showCorruptJarError(selectedFile);
-                    }
-                }
-                updateControls();
+                updateProfileLists(profileManager);
+                MCPatcher.refreshMinecraftPath();
             }
         });
 
-        outputBrowseButton.addActionListener(new ActionListener() {
+        origVersionComboBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                setStatusText("");
-                MinecraftInstallation.MinecraftJar minecraft = MCPatcher.minecraft;
-                File selectedFile = null;
-                if (shift) {
-                    String text = (String) JOptionPane.showInputDialog(
-                        frame, "Enter path to new output file:" + PADDING, "Output file", JOptionPane.QUESTION_MESSAGE,
-                        null, null, outputField.getText()
-                    );
-                    if (text != null && !text.equals("")) {
-                        selectedFile = new File(text);
-                        if (selectedFile.getParentFile() == null || !selectedFile.getParentFile().isDirectory()) {
-                            selectedFile = null;
-                        }
-                    }
-                } else {
-                    JFileChooser fd = new JFileChooser();
-                    fd.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                    fd.setFileHidingEnabled(false);
-                    fd.setDialogTitle("Select output file");
-                    if (minecraft.getOutputFile() == null) {
-                        fd.setCurrentDirectory(MinecraftInstallation.getDefaultJarDirectory());
-                    } else {
-                        fd.setCurrentDirectory(minecraft.getOutputFile().getParentFile());
-                        fd.setSelectedFile(minecraft.getOutputFile());
-                    }
-                    fd.setAcceptAllFileFilterUsed(false);
-                    fd.setFileFilter(new FileFilter() {
-                        @Override
-                        public boolean accept(File f) {
-                            return (f.isDirectory() && !f.getName().endsWith(MinecraftInstallationV2.MCPATCHER_SUFFIX)) || f.getName().toLowerCase().endsWith(".jar");
-                        }
+                if (updatingProfiles) {
+                    return;
+                }
+                ProfileManager profileManager = MCPatcher.profileManager;
+                int index = origVersionComboBox.getSelectedIndex();
+                java.util.List<String> versions = profileManager.getInputVersions();
+                profileManager.selectInputVersion(versions.get(index));
+                updateProfileLists(profileManager);
+                MCPatcher.refreshMinecraftPath();
+            }
+        });
 
-                        @Override
-                        public String getDescription() {
-                            return "*.jar";
-                        }
-                    });
-                    if (fd.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
-                        selectedFile = fd.getSelectedFile();
-                    }
-                }
-                if (selectedFile != null) {
-                    minecraft.setOutputFile(selectedFile);
-                }
-                updateControls();
+        setSelectedCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Config.getInstance().selectPatchedProfile = setSelectedCheckBox.isSelected();
             }
         });
 
@@ -296,9 +232,7 @@ class MainForm {
                     if (e.getClickCount() == 2 && mod instanceof ExternalMod) {
                         ExternalMod extMod = (ExternalMod) mod;
                         addModDialog = new AddModDialog(mainPanel, extMod);
-                        addModDialog.setLocationRelativeTo(frame);
-                        addModDialog.setVisible(true);
-                        if (addModDialog.getMod() == extMod) {
+                        if (addModDialog.showFileListDialog() && addModDialog.getMod() == extMod) {
                             modTable.addRowSelectionInterval(row, row);
                             ModTextRenderer renderer = (ModTextRenderer) modTable.getColumnModel().getColumn(1).getCellRenderer();
                             renderer.resetRowHeights();
@@ -344,20 +278,14 @@ class MainForm {
             public void actionPerformed(ActionEvent e) {
                 try {
                     addModDialog = new AddModDialog(mainPanel);
-                    if (!addModDialog.showBrowseDialog(mainPanel)) {
+                    final File path = addModDialog.showBrowseDialog();
+                    if (path == null) {
                         return;
                     }
-                    addModDialog.setLocationRelativeTo(frame);
-                    addModDialog.setVisible(true);
-                    Mod mod = addModDialog.getMod();
-                    if (mod != null) {
-                        int row = MCPatcher.modList.addFirstBuiltin(mod);
-                        mod.setEnabled(true);
-                        modTable.clearSelection();
-                        AbstractTableModel model = (AbstractTableModel) modTable.getModel();
-                        model.fireTableRowsInserted(row, row);
-                        ModTextRenderer renderer = (ModTextRenderer) modTable.getColumnModel().getColumn(1).getCellRenderer();
-                        renderer.resetRowHeights();
+                    if (ExternalMod.isValidPath(path)) {
+                        if (addModDialog.showFileListDialog()) {
+                            addMod(addModDialog.getMod());
+                        }
                     }
                 } catch (Throwable e1) {
                     Logger.log(e1);
@@ -372,6 +300,18 @@ class MainForm {
                     addModDialog.setVisible(false);
                     addModDialog.dispose();
                     addModDialog = null;
+                }
+            }
+
+            private void addMod(Mod mod) {
+                if (mod != null) {
+                    int row = MCPatcher.modList.addFirstBuiltin(mod);
+                    mod.setEnabled(true);
+                    modTable.clearSelection();
+                    AbstractTableModel model = (AbstractTableModel) modTable.getModel();
+                    model.fireTableRowsInserted(row, row);
+                    ModTextRenderer renderer = (ModTextRenderer) modTable.getColumnModel().getColumn(1).getCellRenderer();
+                    renderer.resetRowHeights();
                 }
             }
         });
@@ -396,24 +336,25 @@ class MainForm {
         });
 
         patchButton.addActionListener(new ActionListener() {
-            class PatchThread implements Runnable {
-                public void run() {
-                    try {
-                        if (!MCPatcher.patch()) {
-                            tabbedPane.setSelectedIndex(TAB_LOG);
-                            JOptionPane.showMessageDialog(frame,
-                                "There was an error during patching.  " +
-                                    "See log for more information.  " +
-                                    "Your original minecraft.jar has been restored.",
-                                "Error", JOptionPane.ERROR_MESSAGE
-                            );
-                        }
-                    } catch (Throwable e) {
-                        Logger.log(e);
-                        tabbedPane.setSelectedIndex(TAB_LOG);
-                    } finally {
-                        setBusy(false);
+            class PatchThread extends UIWorker {
+                private boolean patchStatus;
+
+                @Override
+                void runImpl() {
+                    patchStatus = MCPatcher.patch();
+                }
+
+                @Override
+                void updateUI() {
+                    if (!patchStatus) {
+                        JOptionPane.showMessageDialog(frame,
+                            "There was an error during patching.  " +
+                                "See log for more information.  " +
+                                "Your original minecraft.jar has been restored.",
+                            "Error", JOptionPane.ERROR_MESSAGE
+                        );
                     }
+                    super.updateUI();
                 }
             }
 
@@ -452,31 +393,22 @@ class MainForm {
         undoButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setStatusText("");
-                try {
-                    MCPatcher.minecraft.restoreBackup();
-                    MinecraftInstallation.setDefaultTexturePack();
-                    JOptionPane.showMessageDialog(frame, "Restored original minecraft jar and reset texture pack to default.", "", JOptionPane.INFORMATION_MESSAGE);
-                } catch (IOException e1) {
-                    Logger.log(e1);
-                    JOptionPane.showMessageDialog(frame, "Failed to restore minecraft jar from backup:\n\n" + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                ProfileManager profileManager = MCPatcher.profileManager;
+                profileManager.deleteProfile(profileManager.getOutputProfile(), true);
+                MinecraftJar.setDefaultTexturePack();
+                JOptionPane.showMessageDialog(frame,
+                    String.format("Removed %s\nand reset texture pack to default.", profileManager.getOutputJar().getParentFile()),
+                    "", JOptionPane.INFORMATION_MESSAGE);
                 updateControls();
             }
         });
 
-        refreshButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setStatusText("");
-                MCPatcher.getAllMods();
-                updateModList();
-            }
-        });
-
         testButton.addActionListener(new ActionListener() {
-            class MinecraftThread implements Runnable {
-                public void run() {
+            class MinecraftThread extends UIWorker {
+                @Override
+                public void runImpl() {
+                    MCPatcher.saveProperties();
                     MCPatcher.minecraft.run();
-                    setBusy(false);
                 }
             }
 
@@ -515,6 +447,7 @@ class MainForm {
 
         mainMenu = new MainMenu(this);
         frame.setJMenuBar(mainMenu.menuBar);
+        setSelectedCheckBox.requestFocusInWindow();
     }
 
     private static String getModWarningText(MinecraftVersion version) {
@@ -540,6 +473,7 @@ class MainForm {
     }
 
     void show() {
+        setSelectedCheckBox.setSelected(Config.getInstance().selectPatchedProfile);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
@@ -551,7 +485,7 @@ class MainForm {
                 "This version of MCPatcher supports the new Minecraft launcher only.\n" +
                 "You must run the game from the new Minecraft launcher at least once before\n" +
                 "starting MCPatcher.  The new launcher can be downloaded from Mojang at\n" +
-                "http://mojang.com/2013/04/minecraft-snapshot-13w16a-and-new-launcher/\n\n" +
+                "https://mojang.com/2013/07/minecraft-1-6-2-pre-release/\n\n" +
                 "For the old launcher, use MCPatcher 3.x (for Minecraft 1.5.2) or MCPatcher 2.x\n" +
                 "(for Minecraft 1.4.7 and earlier) available from\n" +
                 FORUM_URL + "\n\n" +
@@ -609,6 +543,20 @@ class MainForm {
         }
     }
 
+    void showLauncherError(Throwable e) {
+        tabbedPane.setSelectedIndex(TAB_LOG);
+        JOptionPane.showMessageDialog(frame,
+            "There was an error with your Minecraft installation.\n\n" +
+                e.getMessage() + "\n\n" +
+                "Please re-run the game from the Minecraft Launcher.  If the problem persists, try\n" +
+                "deleting both " + Config.MCPATCHER_JSON + " and " + Config.LAUNCHER_JSON + " from\n" +
+                MCPatcherUtils.getMinecraftPath().getAbsolutePath() + "\n" +
+                "and run the launcher again.",
+            "Configuration error",
+            JOptionPane.ERROR_MESSAGE
+        );
+    }
+
     void showTexturePackConverter(final int version) {
         JFileChooser fd = new JFileChooser();
         fd.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -632,25 +580,32 @@ class MainForm {
             final File selectedFile = fd.getSelectedFile();
             cancelWorker();
             setBusy(true);
-            runWorker(new Runnable() {
-                public void run() {
-                    TexturePackConverter converter = (version == 16 ? new TexturePackConverter16(selectedFile) : new TexturePackConverter15(selectedFile));
-                    if (converter.getOutputFile().exists()) {
-                        int result = JOptionPane.showConfirmDialog(frame,
-                            String.format("This will overwrite\n%s\n\nContinue?", converter.getOutputFile().getAbsolutePath()),
-                            "Confirm overwrite", JOptionPane.YES_NO_OPTION);
-                        if (result != JOptionPane.YES_OPTION) {
-                            setBusy(false);
-                            return;
-                        }
-                    }
-                    tabbedPane.setSelectedIndex(TAB_LOG);
-                    boolean result = converter.convert(MCPatcher.ui);
+            final TexturePackConverter converter = (version == 16 ? new TexturePackConverter16(selectedFile) : new TexturePackConverter15(selectedFile));
+            if (converter.getOutputFile().exists()) {
+                int result = JOptionPane.showConfirmDialog(frame,
+                    String.format("This will overwrite\n%s\n\nContinue?", converter.getOutputFile().getAbsolutePath()),
+                    "Confirm overwrite", JOptionPane.YES_NO_OPTION);
+                if (result != JOptionPane.YES_OPTION) {
+                    setBusy(false);
+                    return;
+                }
+            }
+            tabbedPane.setSelectedIndex(TAB_LOG);
+            runWorker(new UIWorker() {
+                private boolean result;
+
+                @Override
+                void runImpl() {
+                    result = converter.convert(MCPatcher.ui);
+                }
+
+                @Override
+                void updateUI() {
+                    super.updateUI();
                     StringBuilder sb = new StringBuilder();
                     for (String s : converter.getMessages()) {
                         sb.append(s).append('\n');
                     }
-                    setBusy(false);
                     if (!result) {
                         JOptionPane.showMessageDialog(frame, sb.toString(),
                             "Error converting " + selectedFile.getName(),
@@ -674,6 +629,29 @@ class MainForm {
         }
     }
 
+    void refreshProfileManager() {
+        final ProfileManager profileManager = MCPatcher.profileManager;
+        if (profileManager == null) {
+            return;
+        }
+        setStatusText("Getting version list from %s...", VersionList.VERSION_LIST.getHost());
+        runWorker(new UIWorker() {
+            @Override
+            void runImpl() throws Exception {
+                profileManager.refresh(true);
+                MCPatcher.refreshMinecraftPath();
+            }
+
+            @Override
+            void updateUI() {
+                if (error != null) {
+                    showLauncherError(error);
+                }
+                super.updateUI();
+            }
+        });
+    }
+
     private void cancelWorker() {
         if (workerThread != null && workerThread.isAlive()) {
             try {
@@ -688,9 +666,9 @@ class MainForm {
         workerThread = null;
     }
 
-    private void runWorker(Runnable runnable) {
+    private void runWorker(UIWorker worker) {
         cancelWorker();
-        workerThread = new Thread(runnable);
+        workerThread = worker;
         workerThread.start();
     }
 
@@ -721,38 +699,83 @@ class MainForm {
         }
     }
 
+    void updateProfileLists(ProfileManager profileManager) {
+        try {
+            File path;
+            updatingProfiles = true;
+
+            StringBuilder sb = new StringBuilder();
+
+            outputProfileComboBox.removeAllItems();
+            if (profileManager != null) {
+                for (String s : profileManager.getOutputProfiles()) {
+                    outputProfileComboBox.addItem(s);
+                }
+                outputProfileComboBox.setSelectedIndex(profileManager.getSelectedOutputProfileIndex());
+            }
+
+            origVersionComboBox.removeAllItems();
+            if (profileManager != null) {
+                for (String s : profileManager.getInputVersions()) {
+                    origVersionComboBox.addItem(s);
+                }
+                origVersionComboBox.setSelectedIndex(profileManager.getSelectedInputVersionIndex());
+                path = profileManager.getInputJar();
+                if (path != null) {
+                    sb.append("<b>Input file:</b> ");
+                    sb.append(path.getAbsolutePath());
+                }
+                path = profileManager.getOutputJar();
+                if (path != null) {
+                    if (sb.length() > 0) {
+                        sb.append("<br>");
+                    }
+                    sb.append("<b>Output file:</b> ");
+                    sb.append(path.getAbsolutePath());
+                }
+            }
+
+            if (sb.length() > 0) {
+                origVersionComboBox.setToolTipText("<html>" + sb.toString());
+            } else {
+                origVersionComboBox.setToolTipText(null);
+            }
+        } finally {
+            updatingProfiles = false;
+        }
+    }
+
     void updateControls() {
-        String currentProfile = Config.instance.getConfigValue(Config.TAG_SELECTED_PROFILE);
-        if (currentProfile == null || currentProfile.equals("")) {
+        ProfileManager profileManager = MCPatcher.profileManager;
+        String currentVersion = null;
+        if (profileManager != null && profileManager.isReady()) {
+            currentVersion = profileManager.getInputVersion();
+        }
+        if (MCPatcherUtils.isNullOrEmpty(currentVersion)) {
             frame.setTitle("MCPatcher " + MCPatcher.VERSION_STRING);
         } else {
-            frame.setTitle("MCPatcher " + MCPatcher.VERSION_STRING + " [" + currentProfile + "]");
+            frame.setTitle("MCPatcher " + MCPatcher.VERSION_STRING + " [Minecraft " + currentVersion + "]");
         }
-        if (MCPatcher.minecraft == null) {
-            origField.setText("");
-            outputField.setText("");
-        } else {
-            origField.setText(MCPatcher.minecraft.getInputFile().getPath());
-            outputField.setText(MCPatcher.minecraft.getOutputFile().getPath());
+        boolean inputOk = false;
+        boolean outputOk = false;
+        if (profileManager != null && profileManager.isReady()) {
+            File path = profileManager.getInputJar();
+            inputOk = path != null && path.isFile();
+            path = profileManager.getOutputJar();
+            outputOk = path != null && path.isFile();
         }
-        origField.setToolTipText(origField.getText());
-        outputField.setToolTipText(outputField.getText());
-        boolean outputSet = !outputField.getText().equals("");
-        File orig = new File(origField.getText());
-        File output = new File(outputField.getText());
-        boolean origOk = orig.isFile();
-        boolean outputOk = output.isFile();
-        origBrowseButton.setEnabled(!busy);
-        outputBrowseButton.setEnabled(!busy && origOk);
-        modTable.setEnabled(!busy && origOk && outputSet);
-        upButton.setEnabled(!busy && origOk);
-        downButton.setEnabled(!busy && origOk);
-        addButton.setEnabled(!busy && origOk);
-        removeButton.setEnabled(!busy && origOk);
-        refreshButton.setEnabled(!busy && origOk);
+        outputProfileComboBox.setEnabled(!busy);
+        origVersionComboBox.setEnabled(!busy);
+        setSelectedCheckBox.setEnabled(!busy);
+        setSelectedCheckBox.setSelected(Config.getInstance().selectPatchedProfile);
+        modTable.setEnabled(!busy && inputOk);
+        upButton.setEnabled(!busy && inputOk);
+        downButton.setEnabled(!busy && inputOk);
+        addButton.setEnabled(!busy && inputOk);
+        removeButton.setEnabled(!busy && inputOk);
         testButton.setEnabled(!busy && outputOk && MCPatcherUtils.getMinecraftPath().equals(MCPatcherUtils.getDefaultGameDir()));
-        patchButton.setEnabled(!busy && origOk && !output.equals(orig));
-        undoButton.setEnabled(!busy && origOk && !output.equals(orig));
+        patchButton.setEnabled(!busy && inputOk);
+        undoButton.setEnabled(!busy && outputOk);
         tabbedPane.setEnabled(!busy);
 
         updateActiveTab();
@@ -882,23 +905,24 @@ class MainForm {
     void updateModList() {
         setBusy(true);
         setStatusText("Analyzing %s...", MCPatcher.minecraft.getInputFile().getName());
-        runWorker(new Runnable() {
-            public void run() {
-                try {
-                    MCPatcher.getApplicableMods();
-                    if (MCPatcher.minecraft.isModded()) {
-                        JOptionPane.showMessageDialog(frame,
-                            getModWarningText(MCPatcher.minecraft.getVersion()),
-                            "Warning", JOptionPane.WARNING_MESSAGE
-                        );
-                    }
-                } catch (InterruptedException e) {
-                } catch (IOException e) {
-                    Logger.log(e);
-                    showCorruptJarError(MCPatcher.minecraft.getInputFile());
-                }
+        runWorker(new UIWorker() {
+            @Override
+            void runImpl() throws IOException, InterruptedException {
+                MCPatcher.checkModApplicability();
+            }
+
+            @Override
+            void updateUI() {
                 redrawModList();
-                setBusy(false);
+                super.updateUI();
+                if (error != null) {
+                    showCorruptJarError(MCPatcher.minecraft.getInputFile());
+                } else if (MCPatcher.minecraft.isModded()) {
+                    JOptionPane.showMessageDialog(frame,
+                        getModWarningText(MCPatcher.minecraft.getVersion()),
+                        "Warning", JOptionPane.WARNING_MESSAGE
+                    );
+                }
             }
         });
     }
@@ -1057,5 +1081,40 @@ class MainForm {
                 new StringSelection("[spoiler][code]\n" + textArea.getText() + "[/code][/spoiler]\n"), null
             );
         }
+    }
+
+    abstract private class UIWorker extends Thread {
+        protected Throwable error;
+        protected boolean interrupted;
+
+        @Override
+        final public void run() {
+            error = null;
+            interrupted = false;
+            try {
+                runImpl();
+            } catch (InterruptedException e) {
+                interrupted = true;
+            } catch (Throwable e) {
+                Logger.log(e);
+                error = e;
+            } finally {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateUI();
+                    }
+                });
+            }
+        }
+
+        void updateUI() {
+            setBusy(false);
+            if (error != null) {
+                tabbedPane.setSelectedIndex(TAB_LOG);
+            }
+        }
+
+        abstract void runImpl() throws Exception;
     }
 }

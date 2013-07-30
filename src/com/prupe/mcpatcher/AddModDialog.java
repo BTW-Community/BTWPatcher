@@ -23,6 +23,8 @@ class AddModDialog extends JDialog {
     private JScrollPane fileTableScrollPane;
 
     private final JPanel parent;
+    private final File defaultModDir;
+    private File file;
     private ZipFile zipFile;
     private ZipTreeDialog zipDialog;
     private final HashMap<String, String> fileMap;
@@ -33,13 +35,16 @@ class AddModDialog extends JDialog {
         this(parent, null);
     }
 
-    AddModDialog(final JPanel parent, ExternalMod mod) {
+    AddModDialog(JPanel parent, ExternalMod mod) {
         this.parent = parent;
+        String version = MCPatcher.minecraft.getVersion().getVersionString();
+        defaultModDir = MCPatcherUtils.getMinecraftPath("mods", version);
         this.fileMap = new HashMap<String, String>();
         if (mod != null) {
             this.mod = mod;
             editMode = true;
             zipFile = mod.zipFile;
+            file = new File(zipFile.getName());
             inputField.setText(zipFile.getName());
             fileMap.putAll(mod.fileMap);
         }
@@ -81,7 +86,7 @@ class AddModDialog extends JDialog {
 
         browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                showBrowseDialog(parent);
+                showBrowseDialog();
             }
         });
 
@@ -146,17 +151,17 @@ class AddModDialog extends JDialog {
         removeButton.setEnabled(exists);
     }
 
-    boolean showBrowseDialog(JPanel parent) {
+    File showBrowseDialog() {
         JFileChooser fd = new JFileChooser();
         fd.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fd.setFileHidingEnabled(false);
         fd.setDialogTitle("Select mod zip file");
-        File defaultModDir = null;
         try {
-            String modDirString = Config.getString(Config.TAG_LAST_MOD_DIRECTORY, "");
+            String modDirString = Config.getInstance().lastModDirectory;
+            if (modDirString == null) {
+                modDirString = "";
+            }
             File lastModDir = new File(modDirString);
-            String version = MCPatcher.minecraft.getVersion().getVersionString();
-            defaultModDir = MCPatcherUtils.getMinecraftPath("mods", version);
             if (modDirString.equals("")) {
                 defaultModDir.mkdirs();
                 fd.setCurrentDirectory(defaultModDir);
@@ -170,8 +175,7 @@ class AddModDialog extends JDialog {
         fd.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(File f) {
-                String filename = f.getName().toLowerCase();
-                return f.isDirectory() || filename.endsWith(".zip");
+                return f.isDirectory() || ExternalMod.isValidPath(f);
             }
 
             @Override
@@ -180,22 +184,31 @@ class AddModDialog extends JDialog {
             }
         });
         if (fd.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
-            File file = fd.getSelectedFile();
-            inputField.setText(file.getPath());
-            File lastModDir = file.getParentFile();
-            if (lastModDir.equals(defaultModDir)) {
-                Config.set(Config.TAG_LAST_MOD_DIRECTORY, "");
-            } else {
-                Config.set(Config.TAG_LAST_MOD_DIRECTORY, lastModDir.getAbsolutePath());
-            }
-            fileMap.clear();
-            MCPatcherUtils.close(zipFile);
-            zipFile = null;
-            ((FileTableModel) fileTable.getModel()).fireTableDataChanged();
-            showZipDialog(false);
+            file = fd.getSelectedFile();
+        } else {
+            file = null;
         }
+        return file;
+    }
+
+    boolean showFileListDialog() {
+        if (file == null || !file.isFile()) {
+            return false;
+        }
+        inputField.setText(file.getPath());
+        File lastModDir = file.getParentFile();
+        if (lastModDir.equals(defaultModDir)) {
+            Config.getInstance().lastModDirectory = null;
+        } else {
+            Config.getInstance().lastModDirectory = lastModDir.getAbsolutePath();
+        }
+        fileMap.clear();
+        ((FileTableModel) fileTable.getModel()).fireTableDataChanged();
+        showZipDialog(false);
         updateControls();
-        return zipFile != null && !fileMap.isEmpty();
+        setLocationRelativeTo(parent);
+        setVisible(true);
+        return !fileMap.isEmpty();
     }
 
     private boolean confirmSelection(File path, ZipFile zip) {
@@ -223,11 +236,13 @@ class AddModDialog extends JDialog {
     }
 
     private void showZipDialog(boolean addMode) {
+        if (file == null || !file.isFile()) {
+            return;
+        }
         hideZipDialog();
-        File inputFile = new File(inputField.getText());
         try {
-            zipFile = new ZipFile(inputFile);
-            if (!confirmSelection(inputFile, zipFile)) {
+            zipFile = new ZipFile(file);
+            if (!confirmSelection(file, zipFile)) {
                 MCPatcherUtils.close(zipFile);
                 zipFile = null;
                 return;
@@ -245,7 +260,7 @@ class AddModDialog extends JDialog {
             inputField.setText("");
             JOptionPane.showMessageDialog(null,
                 "There was an error reading\n" +
-                    inputFile.getPath() + "\n" +
+                    file.getPath() + "\n" +
                     e.toString(),
                 "Error reading zip file", JOptionPane.ERROR_MESSAGE
             );
@@ -270,7 +285,7 @@ class AddModDialog extends JDialog {
             String name = entry.getName();
             if (!entry.isDirectory() && name.startsWith(prefix)) {
                 String suffix = name.substring(prefix.length());
-                if (!MinecraftInstallation.isGarbageFile(suffix)) {
+                if (!MinecraftJar.isGarbageFile(suffix)) {
                     fileMap.put(suffix, name);
                     changed = true;
                 }
@@ -281,7 +296,11 @@ class AddModDialog extends JDialog {
         }
     }
 
-    ExternalMod getMod() {
+    Mod getMod() {
+        if (mod == null || mod.zipFile != zipFile) {
+            MCPatcherUtils.close(zipFile);
+            zipFile = null;
+        }
         return mod;
     }
 

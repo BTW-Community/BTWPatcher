@@ -2,55 +2,58 @@ package com.prupe.mcpatcher;
 
 import javax.swing.*;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 class DeleteProfileDialog {
     private JLabel textLabel;
-    private JCheckBox v1CheckBox;
-    private JCheckBox v2CheckBox;
     private JPanel panel;
+    private JPanel checkBoxPanel;
 
-    private final MinecraftVersion version;
-    private final File v1File;
-    private final File v2File;
+    private final List<String> versions = new ArrayList<String>();
+    private final List<JCheckBox> checkBoxes = new ArrayList<JCheckBox>();
 
-    DeleteProfileDialog(final String profile) {
-        if (Config.isDefaultProfile(profile)) {
-            version = MinecraftVersion.parseVersion(profile);
-            v1File = MinecraftInstallation.v1.getPatchedInstallation(version);
-            v2File = MinecraftInstallation.v2.getPatchedInstallation(version);
-        } else {
-            version = null;
-            v1File = null;
-            v2File = null;
-        }
+    private final ProfileManager profileManager;
 
-        textLabel.setText("Delete saved profile \"" + profile + "\"?");
-
-        if (v1File == null || !v1File.isFile()) {
-            v1CheckBox.setVisible(false);
-        } else {
-            v1CheckBox.setText("Also delete file " + v1File);
-            v1CheckBox.setSelected(MainForm.shift);
-        }
-
-        if (v2File == null || !v2File.isDirectory()) {
-            v2CheckBox.setVisible(false);
-        } else {
-            v2CheckBox.setText("Also delete folder " + v2File);
-            v2CheckBox.setSelected(MainForm.shift);
-        }
+    DeleteProfileDialog(ProfileManager profileManager) {
+        this.profileManager = profileManager;
     }
 
     JPanel getPanel() {
         return panel;
     }
 
-    void deleteInstallations() {
-        if (v1CheckBox.isSelected() && v1File != null) {
-            MinecraftInstallation.v1.deletePatchedInstallation(version);
+    void setProfile(String profileName, List<String> versions) {
+        this.versions.clear();
+        checkBoxes.clear();
+        checkBoxPanel.removeAll();
+        checkBoxPanel.setLayout(new BoxLayout(checkBoxPanel, BoxLayout.Y_AXIS));
+        checkBoxPanel.add(new JLabel("Also remove the following version directories:"));
+
+        for (String s : versions) {
+            File dir = profileManager.getLocalVersionPath(s);
+            if (dir != null && dir.isDirectory()) {
+                this.versions.add(s);
+                JCheckBox box = new JCheckBox(dir.toString(), false);
+                checkBoxes.add(box);
+                checkBoxPanel.add(box);
+            }
         }
-        if (v2CheckBox.isSelected() && v2File != null) {
-            MinecraftInstallation.v2.deletePatchedInstallation(version);
+
+        textLabel.setText("Delete saved profile \"" + profileName + "\"?");
+
+        if (checkBoxes.isEmpty()) {
+            checkBoxPanel.setVisible(false);
+        } else {
+            checkBoxPanel.setVisible(true);
+        }
+    }
+
+    void deleteInstallations() {
+        for (int i = 0; i < checkBoxes.size(); i++) {
+            if (checkBoxes.get(i).isSelected()) {
+                profileManager.deleteLocalVersion(versions.get(i));
+            }
         }
     }
 }

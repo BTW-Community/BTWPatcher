@@ -4,7 +4,7 @@ EXT_OPTS ?=
 VERSIONSDIR = ../versions
 MCJAR = $(VERSIONSDIR)/$(MCVER)/$(MCVER).jar
 PATCHDIR = $(VERSIONSDIR)/$(MCVER)-mcpatcher
-MCPROFILE = Minecraft $(MCVER)
+MCPROFILE = MCPatcher
 
 MCPATCHER = out/artifacts/mcpatcher/mcpatcher.jar
 MODJAR = ../mcpatcher-mods/mcpatcher-builtin.jar
@@ -20,6 +20,7 @@ DOC_SRC = $(PACKAGE)
 DOC_SRCPATH = shared/src:stubs/src:newcode/src:src:
 
 TEST_OPTS = -ignoresavedmods -ignorecustommods -enableallmods -auto -loglevel 5 $(EXT_OPTS)
+TEST_CMD = java -jar $(MCPATCHER) $(TEST_OPTS) -profile "$(MCPROFILE)" -mcversion "$(MCVER)"
 TEST_LOG = test.log
 GOOD_LOG = good.log
 TMPDIR = t.1
@@ -45,12 +46,12 @@ run: $(MCPATCHER)
 	java -jar $(MCPATCHER) $(EXT_OPTS)
 
 test: $(MCPATCHER)
-	time java -jar $(MCPATCHER) $(TEST_OPTS) -profile "$(MCPROFILE)" > $(TEST_LOG) 2>&1
+	time $(TEST_CMD) > $(TEST_LOG) 2>&1
 	diff -c $(GOOD_LOG) $(TEST_LOG)
 	rm -f $(TEST_LOG)
 
 testfilter: $(MCPATCHER)
-	time java -jar $(MCPATCHER) $(TEST_OPTS) -profile "$(MCPROFILE)" > $(TEST_LOG) 2>&1
+	time $(TEST_CMD) > $(TEST_LOG) 2>&1
 	@$(FILTER) $(TEST_LOG) > $(TEST_LOG).1
 	@$(FILTER) $(GOOD_LOG) > $(GOOD_LOG).1
 	diff -c $(GOOD_LOG).1 $(TEST_LOG).1
@@ -69,7 +70,7 @@ restore:
 	rm -rf $(PATCHDIR)
 
 rmall:
-	rm -rf $(VERSIONSDIR)/*-mcpatcher
+	rm -rf $(VERSIONSDIR)/1*-*
 
 javadoc:
 	rm -rf $(DOC_OUT)
