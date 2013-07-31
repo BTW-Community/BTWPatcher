@@ -180,7 +180,11 @@ class AddModDialog extends JDialog {
 
             @Override
             public String getDescription() {
-                return "*.zip";
+                if (editMode) {
+                    return ExternalMod.getFileTypePattern();
+                } else {
+                    return ExternalMod.getFileTypePattern() + "; " + ForgeAdapter.getFileTypePattern();
+                }
             }
         });
         if (fd.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {

@@ -127,6 +127,10 @@ class ForgeAdapter extends Mod {
         return name.startsWith(UNIVERSAL_PREFIX) && name.endsWith(UNIVERSAL_SUFFIX);
     }
 
+    static String getFileTypePattern() {
+        return UNIVERSAL_PREFIX + "*" + UNIVERSAL_SUFFIX;
+    }
+
     File getPath() {
         return universalJar;
     }

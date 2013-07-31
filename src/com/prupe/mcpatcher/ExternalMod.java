@@ -62,6 +62,10 @@ class ExternalMod extends Mod {
         return path.getName().toLowerCase().endsWith(".zip");
     }
 
+    static String getFileTypePattern() {
+        return "*.zip";
+    }
+
     void setFileMap(Map<String, String> newFileMap) {
         fileMap.clear();
         fileMap.putAll(newFileMap);
