@@ -123,13 +123,15 @@ public class MCPatcherUtils {
 
     static boolean setGameDir(File dir) {
         if (dir != null && dir.isDirectory() &&
-            ((new File(dir, "libraries").isDirectory() && new File(dir, "versions").isDirectory()))) { // new launcher (13w16a+) only
+            new File(dir, "assets").isDirectory() &&
+            new File(dir, "libraries").isDirectory() &&
+            new File(dir, "versions").isDirectory()) { // new launcher (13w16a+) only
             minecraftDir = dir.getAbsoluteFile();
         } else {
             minecraftDir = null;
         }
         gameDir = minecraftDir;
-        return Config.load(minecraftDir);
+        return minecraftDir != null && Config.load(minecraftDir);
     }
 
     /**
