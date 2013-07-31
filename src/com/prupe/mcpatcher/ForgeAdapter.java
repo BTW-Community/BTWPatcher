@@ -45,6 +45,7 @@ class ForgeAdapter extends Mod {
     private static final String BINPATCH_SUFFIX = ".binpatch";
 
     private final File universalJar;
+    private File forgeLibPath;
     private final Map<String, Binpatch> patches = new HashMap<String, Binpatch>();
     private JsonObject versionJson;
     private ZipFile universalZip;
@@ -101,25 +102,24 @@ class ForgeAdapter extends Mod {
 
         ui.setStatusText("Analyzing %s...", universalJar.getName());
         ui.updateProgress(0, 5);
-        setupClassLoader();
+        copyToLibraries();
         ui.updateProgress(1, 5);
+        setupClassLoader();
+        ui.updateProgress(2, 5);
 
         try {
             universalZip = new ZipFile(universalJar);
-            ui.updateProgress(2, 5);
-            loadVersionJson(universalZip, VERSION_JSON);
             ui.updateProgress(3, 5);
-            loadBinPatches(universalZip, BINPATCHES_PACK);
+            loadVersionJson(universalZip, VERSION_JSON);
             ui.updateProgress(4, 5);
+            loadBinPatches(universalZip, BINPATCHES_PACK);
+            ui.updateProgress(5, 5);
         } finally {
             MCPatcherUtils.close(universalZip);
             ui.setStatusText("");
         }
 
         description = String.format("%d classes modified", patches.size());
-
-        copyToLibraries();
-        ui.updateProgress(5, 5);
     }
 
     static boolean isValidPath(File path) {
@@ -165,6 +165,16 @@ class ForgeAdapter extends Mod {
         cmdLine.add("-Dfml.ignoreInvalidMinecraftCertificates=true");
     }
 
+    private void copyToLibraries() throws IOException {
+        Library forgeLib = new Library(FORGE_MAVEN + version, FORGE_URL);
+        forgeLibPath = forgeLib.getPath(MCPatcherUtils.getMinecraftPath("libraries"));
+        if (!forgeLibPath.isFile()) {
+            Logger.log(Logger.LOG_MAIN, "copying %s to %s", universalJar, forgeLibPath);
+            forgeLibPath.getParentFile().mkdirs();
+            Util.copyFile(universalJar, forgeLibPath);
+        }
+    }
+
     private void setupClassLoader() throws Exception {
         File libDir = MCPatcherUtils.getMinecraftPath("libraries");
         Library lzmaLib = new Library(LZMA_MAVEN, null);
@@ -173,7 +183,7 @@ class ForgeAdapter extends Mod {
         }
         classLoader = URLClassLoader.newInstance(new URL[]{
             lzmaLib.getPath(libDir).toURI().toURL(),
-            universalJar.toURI().toURL()
+            forgeLibPath.toURI().toURL()
         }, getClass().getClassLoader());
 
         Class<?> gdiffClass = classLoader.loadClass(GDIFF_CLASS);
@@ -237,16 +247,6 @@ class ForgeAdapter extends Mod {
             MCPatcherUtils.close(zipStream);
             MCPatcherUtils.close(lzma);
             MCPatcherUtils.close(raw);
-        }
-    }
-
-    private void copyToLibraries() throws IOException {
-        Library forgeLib = new Library(FORGE_MAVEN + version, FORGE_URL);
-        File dest = forgeLib.getPath(MCPatcherUtils.getMinecraftPath("libraries"));
-        if (!dest.isFile()) {
-            Logger.log(Logger.LOG_MAIN, "copying %s to %s", universalJar, dest);
-            dest.getParentFile().mkdirs();
-            Util.copyFile(universalJar, dest);
         }
     }
 
