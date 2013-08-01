@@ -22,7 +22,8 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 class ForgeAdapter extends Mod {
-    private static final String UNIVERSAL_PREFIX = "minecraftforge-universal-";
+    private static final String UNIVERSAL_PREFIX1 = "minecraftforge-universal-";
+    private static final String UNIVERSAL_PREFIX2 = "minecraftforge-";
     private static final String UNIVERSAL_SUFFIX = ".jar";
     private static final String FORGE_MAVEN = "net.minecraftforge:minecraftforge:";
     private static final String FORGE_URL = "http://files.minecraftforge.net/maven/";
@@ -59,7 +60,11 @@ class ForgeAdapter extends Mod {
 
     private Constructor<? extends InputStream> lzmaConstructor;
 
-    ForgeAdapter(UserInterface ui, File universalJar) throws Exception {
+    ForgeAdapter(ProfileManager profileManager, UserInterface ui, Library forgeLibrary) throws Exception {
+        this(profileManager, ui, forgeLibrary.getPath(MCPatcherUtils.getMinecraftPath("libraries")));
+    }
+
+    ForgeAdapter(ProfileManager profileManager, UserInterface ui, File universalJar) throws Exception {
         this.universalJar = universalJar;
         name = "Minecraft Forge";
         author = "Minecraft Forge team";
@@ -69,19 +74,30 @@ class ForgeAdapter extends Mod {
         clearDependencies();
 
         // e.g., minecraftforge-universal-1.6.2-9.10.0.804.jar
-        if (!isValidPath(universalJar)) {
-            throw new IOException("Invalid filename");
+        String baseName = universalJar.getName().toLowerCase();
+        if (!baseName.startsWith(UNIVERSAL_PREFIX2) || !baseName.endsWith(UNIVERSAL_SUFFIX)) {
+            throw new IOException("Invalid filename " + universalJar.getName());
         }
-        String baseName = universalJar.getName();
-        baseName = baseName.substring(UNIVERSAL_PREFIX.length(), baseName.length() - UNIVERSAL_SUFFIX.length());
+        if (baseName.startsWith(UNIVERSAL_PREFIX1)) {
+            baseName = baseName.substring(UNIVERSAL_PREFIX1.length());
+        } else if (baseName.startsWith(UNIVERSAL_PREFIX2)) {
+            baseName = baseName.substring(UNIVERSAL_PREFIX2.length());
+        }
+        if (baseName.endsWith(UNIVERSAL_SUFFIX)) {
+            baseName = baseName.substring(0, baseName.length() - UNIVERSAL_SUFFIX.length());
+        }
 
         String[] token = baseName.split("-");
-        if (token.length < 2 || token[0].isEmpty() || token[1].isEmpty()) {
-            addError("Could not determine forge version");
-            return;
+        if (token.length > 1) {
+            String mcVersion = token[0];
+            if (!mcVersion.equals(getMinecraftVersion().getVersionString())) {
+                addError("Requires Minecraft " + mcVersion);
+                return;
+            }
+            version = token[1];
+        } else {
+            version = token[0];
         }
-        String mcVersion = token[0];
-        version = token[1];
         String temp = version.replaceAll(".*[^0-9](\\d+)$", "$1");
         if (!MCPatcherUtils.isNullOrEmpty(temp)) {
             try {
@@ -91,10 +107,6 @@ class ForgeAdapter extends Mod {
             }
         }
 
-        if (!mcVersion.equals(getMinecraftVersion().getVersionString())) {
-            addError("Requires Minecraft " + mcVersion);
-            return;
-        }
         if (buildNumber != 0 && buildNumber < FORGE_MIN_VERSION) {
             addError("Requires forge " + FORGE_MIN_VERSION_STR + " or newer");
             return;
@@ -110,8 +122,10 @@ class ForgeAdapter extends Mod {
         try {
             universalZip = new ZipFile(universalJar);
             ui.updateProgress(3, 5);
-            loadVersionJson(universalZip, VERSION_JSON);
-            ui.updateProgress(4, 5);
+            if (profileManager.getForgeLibrary() == null) {
+                loadVersionJson(universalZip, VERSION_JSON);
+                ui.updateProgress(4, 5);
+            }
             loadBinPatches(universalZip, BINPATCHES_PACK);
             ui.updateProgress(5, 5);
         } finally {
@@ -123,12 +137,12 @@ class ForgeAdapter extends Mod {
     }
 
     static boolean isValidPath(File path) {
-        String name = path.getName();
-        return name.startsWith(UNIVERSAL_PREFIX) && name.endsWith(UNIVERSAL_SUFFIX);
+        String name = path.getName().toLowerCase();
+        return name.startsWith(UNIVERSAL_PREFIX1) && name.endsWith(UNIVERSAL_SUFFIX);
     }
 
     static String getFileTypePattern() {
-        return UNIVERSAL_PREFIX + "*" + UNIVERSAL_SUFFIX;
+        return UNIVERSAL_PREFIX1 + "*" + UNIVERSAL_SUFFIX;
     }
 
     File getPath() {
@@ -168,7 +182,7 @@ class ForgeAdapter extends Mod {
     private void copyToLibraries() throws IOException {
         Library forgeLib = new Library(FORGE_MAVEN + version, FORGE_URL);
         forgeLibPath = forgeLib.getPath(MCPatcherUtils.getMinecraftPath("libraries"));
-        if (!forgeLibPath.isFile()) {
+        if (!forgeLibPath.isFile() && !universalJar.equals(forgeLibPath)) {
             Logger.log(Logger.LOG_MAIN, "copying %s to %s", universalJar, forgeLibPath);
             forgeLibPath.getParentFile().mkdirs();
             Util.copyFile(universalJar, forgeLibPath);

@@ -25,7 +25,6 @@ public class Library {
     Map<String, String> natives;
     Extract extract;
     String url;
-    boolean serverreq;
 
     static {
         String os = System.getProperty("os.name").toLowerCase();
@@ -63,8 +62,19 @@ public class Library {
         return !MCPatcherUtils.isNullOrEmpty(natives);
     }
 
-    public boolean isServer() {
-        return serverreq;
+    public String getPackageName() {
+        String[] split = splitName(name, null);
+        return split == null ? null : split[0];
+    }
+
+    public String getName() {
+        String[] split = splitName(name, null);
+        return split == null ? null : split[1];
+    }
+
+    public String getVersion() {
+        String[] split = splitName(name, null);
+        return split == null ? null : split[2];
     }
 
     private static File getPath(File libDir, String packageName, String library, String version, String suffix) {
@@ -103,7 +113,7 @@ public class Library {
         }
     }
 
-    boolean exclude() {
+    public boolean exclude() {
         boolean allow = rules.isEmpty();
         for (Rule rule : rules) {
             allow = rule.evaluate(allow);

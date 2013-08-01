@@ -2,6 +2,7 @@ package com.prupe.mcpatcher;
 
 import com.prupe.mcpatcher.converter.TexturePackConverter15;
 import com.prupe.mcpatcher.converter.TexturePackConverter16;
+import com.prupe.mcpatcher.launcher.version.Library;
 import javassist.bytecode.ClassFile;
 
 import java.io.*;
@@ -263,6 +264,23 @@ final public class MCPatcher {
         }
         if (!ignoreCustomMods) {
             modList.loadCustomMods(MCPatcherUtils.getMinecraftPath("mcpatcher-mods"));
+        }
+        Library forgeLibrary = profileManager.getForgeLibrary();
+        if (forgeLibrary != null) {
+            try {
+                boolean found = false;
+                for (Mod mod : modList.getAll()) {
+                    if (mod instanceof ForgeAdapter) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    modList.addFirstBuiltin(new ForgeAdapter(profileManager, ui, forgeLibrary));
+                }
+            } catch (Throwable e) {
+                Logger.log(e);
+            }
         }
         ui.setModList(modList);
         ui.updateModList();

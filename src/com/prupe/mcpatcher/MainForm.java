@@ -290,7 +290,7 @@ class MainForm {
                             @Override
                             void runImpl() throws Exception {
                                 try {
-                                    forgeMod = new ForgeAdapter(MCPatcher.ui, path);
+                                    forgeMod = new ForgeAdapter(MCPatcher.profileManager, MCPatcher.ui, path);
                                 } catch (Exception e) {
                                     JOptionPane.showMessageDialog(frame,
                                         "An error occurred while loading forge:\n\n" +

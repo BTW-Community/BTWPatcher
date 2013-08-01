@@ -3,6 +3,7 @@ package com.prupe.mcpatcher;
 import com.google.gson.JsonObject;
 import com.prupe.mcpatcher.launcher.profile.Profile;
 import com.prupe.mcpatcher.launcher.profile.ProfileList;
+import com.prupe.mcpatcher.launcher.version.Library;
 import com.prupe.mcpatcher.launcher.version.Version;
 import com.prupe.mcpatcher.launcher.version.VersionList;
 
@@ -397,6 +398,19 @@ class ProfileManager {
         } else {
             return Version.getLocalVersion(outputVersion);
         }
+    }
+
+    Library getForgeLibrary() {
+        Version local = Version.getLocalVersion(getInputVersion());
+        if (local == null) {
+            return null;
+        }
+        for (Library library : local.getLibraries()) {
+            if (!library.exclude() && library.getName().equalsIgnoreCase("minecraftforge")) {
+                return library;
+            }
+        }
+        return null;
     }
 
     private void addLauncherProfile(String profile, String version, String javaArgs) {

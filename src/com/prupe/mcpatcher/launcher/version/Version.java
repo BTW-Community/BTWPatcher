@@ -134,6 +134,10 @@ public class Version {
         return getJarPath(id);
     }
 
+    public List<Library> getLibraries() {
+        return libraries;
+    }
+
     public boolean isComplete() {
         return getJsonPath().isFile() && getJarPath().isFile();
     }

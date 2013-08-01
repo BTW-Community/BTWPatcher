@@ -538,7 +538,7 @@ class ModList {
                     File file = new File(path);
                     if (file.exists()) {
                         try {
-                            mod = new ForgeAdapter(MCPatcher.ui, file);
+                            mod = new ForgeAdapter(MCPatcher.profileManager, MCPatcher.ui, file);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
