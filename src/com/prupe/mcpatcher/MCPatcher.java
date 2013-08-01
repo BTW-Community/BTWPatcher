@@ -276,7 +276,9 @@ final public class MCPatcher {
                     }
                 }
                 if (!found) {
-                    modList.addFirstBuiltin(new ForgeAdapter(profileManager, ui, forgeLibrary));
+                    ForgeAdapter forgeMod = new ForgeAdapter(profileManager, ui, forgeLibrary);
+                    forgeMod.setEnabled(true);
+                    modList.addFirstBuiltin(forgeMod);
                 }
             } catch (Throwable e) {
                 Logger.log(e);
