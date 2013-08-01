@@ -53,6 +53,7 @@ class ProfileManager {
 
         rebuildRemoteVersionList(forceRemote);
         rebuildLocalVersionList();
+        rebuildLocalVersionList2();
         rebuildProfileList();
 
         String profile = profiles.getSelectedProfile();
@@ -77,6 +78,7 @@ class ProfileManager {
     private void rebuildLocalVersionList() throws IOException {
         unmoddedVersions.clear();
         releaseVersions.clear();
+        OriginalVersion.clear();
 
         for (Version remote : remoteVersions.getVersions()) {
             Version local = Version.getLocalVersion(remote.getId());
@@ -85,10 +87,37 @@ class ProfileManager {
                 if (!local.isSnapshot()) {
                     releaseVersions.add(0, local.getId());
                 }
+                OriginalVersion.add(local);
             }
         }
         if (unmoddedVersions.isEmpty()) {
             throw new IOException("No installed unmodded versions found");
+        }
+    }
+
+    private void rebuildLocalVersionList2() throws IOException {
+        File[] files = MCPatcherUtils.getMinecraftPath("versions").listFiles();
+        if (files == null) {
+            return;
+        }
+        for (File subdir : files) {
+            if (!subdir.isDirectory()) {
+                continue;
+            }
+            String id = subdir.getName();
+            if (unmoddedVersions.contains(id)) {
+                continue;
+            }
+            Version local = Version.getLocalVersion(id);
+            if (local == null || !local.isComplete()) {
+                continue;
+            }
+            String md5sum = Util.computeMD5(local.getJarPath());
+            OriginalVersion orig = OriginalVersion.allVersions.get(md5sum);
+            if (orig != null) {
+                unmoddedVersions.add(id);
+                OriginalVersion.baseVersionMap.put(id, orig.version);
+            }
         }
     }
 
@@ -245,6 +274,11 @@ class ProfileManager {
         return inputVersion;
     }
 
+    String getInputBaseVersion() {
+        String baseVersion = OriginalVersion.baseVersionMap.get(inputVersion);
+        return baseVersion == null ? inputVersion : baseVersion;
+    }
+
     String getOutputVersion() {
         return outputVersion;
     }
@@ -385,11 +419,10 @@ class ProfileManager {
     }
 
     void createOutputProfile(JsonObject baseVersion, String javaArgs) {
-        if (inputVersion != null && outputVersion != null) {
-            for (Version version : remoteVersions.getVersions()) {
-                if (inputVersion.equals(version.getId())) {
-                    version.copyToNewVersion(baseVersion, outputVersion);
-                }
+        if (!MCPatcherUtils.isNullOrEmpty(inputVersion) && !MCPatcherUtils.isNullOrEmpty(outputVersion)) {
+            Version version = Version.getLocalVersion(inputVersion);
+            if (version != null && version.isComplete()) {
+                version.copyToNewVersion(baseVersion, outputVersion);
             }
         }
         addLauncherProfile(outputProfile, outputVersion, javaArgs);
@@ -474,6 +507,32 @@ class ProfileManager {
         out.printf("%s%s: (%d versions)\n", Config.VERSIONS_JSON, remote ? "" : " (local copy)", unmoddedVersions.size());
         for (Version version : remoteVersions.getVersions()) {
             out.printf("  %1s %s%s\n", version.isComplete() ? "*" : "", version.getId(), version.isSnapshot() ? " (snapshot)" : "");
+        }
+    }
+
+    private static class OriginalVersion {
+        static final Map<String, OriginalVersion> allVersions = new HashMap<String, OriginalVersion>();
+        static final Map<String, String> baseVersionMap = new HashMap<String, String>();
+
+        final String version;
+        final String md5sum;
+
+        static void add(Version version) throws IOException {
+            OriginalVersion o = new OriginalVersion(version);
+            allVersions.put(o.md5sum, o);
+        }
+
+        static void clear() {
+            allVersions.clear();
+            baseVersionMap.clear();
+        }
+
+        OriginalVersion(Version version) throws IOException {
+            this.version = version.getId();
+            md5sum = Util.computeMD5(version.getJarPath());
+            if (MCPatcherUtils.isNullOrEmpty(md5sum)) {
+                throw new IOException("Could not determine md5sum of " + version.getJarPath());
+            }
         }
     }
 }

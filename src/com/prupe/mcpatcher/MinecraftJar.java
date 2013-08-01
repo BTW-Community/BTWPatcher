@@ -26,7 +26,7 @@ class MinecraftJar {
         this.profileManager = profileManager;
         origFile = profileManager.getInputJar();
         outputFile = profileManager.getOutputJar();
-        info = new Info(origFile);
+        info = new Info(origFile, profileManager.getInputBaseVersion());
     }
 
     static boolean isGarbageFile(String filename) {
@@ -285,18 +285,22 @@ class MinecraftJar {
         String origMD5;
         final int result;
 
-        Info(File minecraftJar) throws IOException {
-            result = initialize(minecraftJar);
+        Info(File minecraftJar, String versionString) throws IOException {
+            result = initialize(minecraftJar, versionString);
         }
 
-        private int initialize(File minecraftJar) throws IOException {
-            if (!minecraftJar.exists()) {
+        private int initialize(File minecraftJar, String versionString) throws IOException {
+            if (!minecraftJar.isFile()) {
                 throw new FileNotFoundException(minecraftJar.getPath() + " does not exist");
             }
 
             md5 = Util.computeMD5(minecraftJar);
             if (md5 == null) {
                 throw new IOException("could not open " + minecraftJar.getPath());
+            }
+
+            if (!MCPatcherUtils.isNullOrEmpty(versionString)) {
+                version = MinecraftVersion.parseShortVersion(versionString);
             }
 
             boolean haveMetaInf = false;
