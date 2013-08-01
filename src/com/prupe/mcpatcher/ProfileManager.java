@@ -53,7 +53,7 @@ class ProfileManager {
 
         rebuildRemoteVersionList(forceRemote);
         rebuildLocalVersionList();
-        rebuildLocalVersionList2();
+        addUnmoddedCustomVersions();
         rebuildProfileList();
 
         String profile = profiles.getSelectedProfile();
@@ -87,7 +87,7 @@ class ProfileManager {
                 if (!local.isSnapshot()) {
                     releaseVersions.add(0, local.getId());
                 }
-                OriginalVersion.add(local);
+                OriginalVersion.register(local);
             }
         }
         if (unmoddedVersions.isEmpty()) {
@@ -95,7 +95,7 @@ class ProfileManager {
         }
     }
 
-    private void rebuildLocalVersionList2() throws IOException {
+    private void addUnmoddedCustomVersions() {
         File[] files = MCPatcherUtils.getMinecraftPath("versions").listFiles();
         if (files == null) {
             return;
@@ -113,10 +113,10 @@ class ProfileManager {
                 continue;
             }
             String md5sum = Util.computeMD5(local.getJarPath());
-            OriginalVersion orig = OriginalVersion.allVersions.get(md5sum);
+            OriginalVersion orig = OriginalVersion.get(md5sum);
             if (orig != null) {
                 unmoddedVersions.add(id);
-                OriginalVersion.baseVersionMap.put(id, orig.version);
+                OriginalVersion.addVersionMap(id, orig);
             }
         }
     }
@@ -275,8 +275,7 @@ class ProfileManager {
     }
 
     String getInputBaseVersion() {
-        String baseVersion = OriginalVersion.baseVersionMap.get(inputVersion);
-        return baseVersion == null ? inputVersion : baseVersion;
+        return OriginalVersion.getBaseVersion(inputVersion);
     }
 
     String getOutputVersion() {
@@ -511,23 +510,36 @@ class ProfileManager {
     }
 
     private static class OriginalVersion {
-        static final Map<String, OriginalVersion> allVersions = new HashMap<String, OriginalVersion>();
-        static final Map<String, String> baseVersionMap = new HashMap<String, String>();
+        private static final Map<String, OriginalVersion> md5Map = new HashMap<String, OriginalVersion>();
+        private static final Map<String, String> baseVersionMap = new HashMap<String, String>();
 
         final String version;
         final String md5sum;
 
-        static void add(Version version) throws IOException {
+        static void register(Version version) throws IOException {
             OriginalVersion o = new OriginalVersion(version);
-            allVersions.put(o.md5sum, o);
+            md5Map.put(o.md5sum, o);
+        }
+
+        static OriginalVersion get(String md5sum) {
+            return md5Map.get(md5sum);
+        }
+
+        static void addVersionMap(String customVersion, OriginalVersion baseVersion) {
+            baseVersionMap.put(customVersion, baseVersion.version);
+        }
+
+        static String getBaseVersion(String inputVersion) {
+            String baseVersion = baseVersionMap.get(inputVersion);
+            return MCPatcherUtils.isNullOrEmpty(baseVersion) ? inputVersion : baseVersion;
         }
 
         static void clear() {
-            allVersions.clear();
+            md5Map.clear();
             baseVersionMap.clear();
         }
 
-        OriginalVersion(Version version) throws IOException {
+        private OriginalVersion(Version version) throws IOException {
             this.version = version.getId();
             md5sum = Util.computeMD5(version.getJarPath());
             if (MCPatcherUtils.isNullOrEmpty(md5sum)) {
