@@ -324,6 +324,7 @@ class ProfileManager {
             inputVersion = versionEntry.original;
             outputVersion = makePatchedVersionString();
         } else {
+            inputVersion = unmoddedVersions.get(0);
             versionEntry = new Config.VersionEntry();
             versionEntry.original = inputVersion;
             outputVersion = makePatchedVersionString();
