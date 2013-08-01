@@ -577,9 +577,12 @@ class MainForm {
         JOptionPane.showMessageDialog(frame,
             "There was an error with your Minecraft installation.\n\n" +
                 e.getMessage() + "\n\n" +
-                "Please re-run the game from the Minecraft Launcher.  If the problem persists, try\n" +
-                "deleting both " + Config.MCPATCHER_JSON + " and " + Config.LAUNCHER_JSON + " from\n" +
-                MCPatcherUtils.getMinecraftPath().getAbsolutePath() + "\n" +
+                "Please re-run the game from the Minecraft Launcher.  If the problem persists,\n" +
+                "try manually downloading the list from\n" +
+                VersionList.VERSION_LIST + "\n" +
+                "and copying it to " + MCPatcherUtils.getMinecraftPath("versions") + "\n\n" +
+                "Or try deleting both " + Config.MCPATCHER_JSON + " and " + Config.LAUNCHER_JSON + " from\n" +
+                MCPatcherUtils.getMinecraftPath() + "\n" +
                 "and run the launcher again.",
             "Configuration error",
             JOptionPane.ERROR_MESSAGE
