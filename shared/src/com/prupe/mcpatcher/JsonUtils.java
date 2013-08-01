@@ -3,11 +3,15 @@ package com.prupe.mcpatcher;
 import com.google.gson.*;
 
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.URL;
 import java.util.*;
 
 public class JsonUtils {
+    static Proxy proxy = Proxy.NO_PROXY;
+
     public static Gson newGson() {
         GsonBuilder builder = new GsonBuilder();
         builder.setPrettyPrinting();
@@ -30,7 +34,7 @@ public class JsonUtils {
             OutputStream output = null;
             try {
                 System.out.printf("Fetching %s...\n", url);
-                input = new BufferedInputStream(url.openStream());
+                input = new BufferedInputStream(url.openConnection(proxy).getInputStream());
                 if (checkSignature(input, signature)) {
                     output = new FileOutputStream(local);
                     copyStream(input, output);

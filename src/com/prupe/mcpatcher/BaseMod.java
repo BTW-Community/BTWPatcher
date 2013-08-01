@@ -79,6 +79,8 @@ public final class BaseMod extends Mod {
         private JCheckBox fetchURLCheckBox;
         private JCheckBox profilingCheckBox;
         private JTable logTable;
+        private JTextField proxyHostTextField;
+        private JTextField proxyPortTextField;
 
         ConfigPanel() {
             fetchURLCheckBox.addActionListener(new ActionListener() {
@@ -187,14 +189,18 @@ public final class BaseMod extends Mod {
 
         @Override
         public void load() {
-            fetchURLCheckBox.setSelected(Config.getInstance().fetchRemoteVersionList);
-            profilingCheckBox.setSelected(Config.getInstance().extraProfiling);
+            Config config = Config.getInstance();
+            fetchURLCheckBox.setSelected(config.fetchRemoteVersionList);
+            proxyHostTextField.setText(config.proxyHost);
+            proxyPortTextField.setText(config.proxyPort == null ? "" : String.valueOf(config.proxyPort));
+            profilingCheckBox.setSelected(config.extraProfiling);
 
             showAdvancedOption(profilingCheckBox);
         }
 
         @Override
         public void save() {
+            Config.getInstance().setProxy(proxyHostTextField.getText(), proxyPortTextField.getText());
         }
     }
 

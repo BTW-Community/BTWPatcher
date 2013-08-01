@@ -4,6 +4,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.io.File;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -41,6 +43,8 @@ public class Config {
 
     int format = VAL_FORMAT_CURRENT;
     String patcherVersion;
+    String proxyHost;
+    Integer proxyPort;
     boolean betaWarningShown;
     boolean selectPatchedProfile = true;
     boolean fetchRemoteVersionList = true;
@@ -62,6 +66,7 @@ public class Config {
             setReadOnly(true); // don't overwrite newer file
         }
         instance.selectedProfile = getSelectedLauncherProfile(minecraftDir);
+        instance.setProxy();
         return true;
     }
 
@@ -71,6 +76,33 @@ public class Config {
             JsonUtils.writeJson(instance, jsonFile);
         }
         return success;
+    }
+
+    void setProxy() {
+        setProxy(proxyHost, proxyPort == null ? null : proxyPort.toString());
+    }
+
+    void setProxy(String host, String port) {
+        int portNum = 0;
+        if (!MCPatcherUtils.isNullOrEmpty(port)) {
+            try {
+                portNum = Integer.parseInt(port);
+            } catch (NumberFormatException e) {
+            }
+        }
+        if (!MCPatcherUtils.isNullOrEmpty(host) && portNum > 0 && portNum < 65536) {
+            try {
+                JsonUtils.proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(host, portNum));
+                proxyHost = host;
+                proxyPort = portNum;
+                return;
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+        JsonUtils.proxy = Proxy.NO_PROXY;
+        proxyHost = null;
+        proxyPort = null;
     }
 
     private static String getSelectedLauncherProfile(File minecraftDir) {
