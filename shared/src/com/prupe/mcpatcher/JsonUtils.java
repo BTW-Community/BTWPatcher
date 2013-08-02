@@ -3,7 +3,6 @@ package com.prupe.mcpatcher;
 import com.google.gson.*;
 
 import java.io.*;
-import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
@@ -11,6 +10,9 @@ import java.util.*;
 
 public class JsonUtils {
     static Proxy proxy = Proxy.NO_PROXY;
+
+    public static final byte[] JSON_SIGNATURE = "{".getBytes();
+    public static final byte[] JAR_SIGNATURE = "PK".getBytes();
 
     public static Gson newGson() {
         GsonBuilder builder = new GsonBuilder();

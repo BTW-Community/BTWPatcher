@@ -67,7 +67,7 @@ public class Version {
     }
 
     public static boolean fetchJson(String id, boolean forceRemote) {
-        return JsonUtils.fetchURL(getJsonURL(id), getJsonPath(id), forceRemote, "{".getBytes());
+        return JsonUtils.fetchURL(getJsonURL(id), getJsonPath(id), forceRemote, JsonUtils.JSON_SIGNATURE);
     }
 
     public static File getJsonPath(String id) {
@@ -79,7 +79,7 @@ public class Version {
     }
 
     public static boolean fetchJar(String id, boolean forceRemote) {
-        return JsonUtils.fetchURL(getJarURL(id), getJarPath(id), forceRemote, "PK".getBytes());
+        return JsonUtils.fetchURL(getJarURL(id), getJarPath(id), forceRemote, JsonUtils.JAR_SIGNATURE);
     }
 
     public static File getJarPath(String id) {

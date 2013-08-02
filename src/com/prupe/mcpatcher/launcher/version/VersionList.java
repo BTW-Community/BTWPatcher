@@ -19,7 +19,6 @@ public class VersionList {
         VERSION_LIST,
         JsonUtils.newURL(VERSION_LIST.toString().replaceFirst("^https", "http")),
     };
-    private static final byte[] JSON_SIGNATURE = "{".getBytes();
 
     List<Version> versions = new ArrayList<Version>();
     LatestVersion latest;
@@ -27,7 +26,7 @@ public class VersionList {
     public static VersionList getVersionList(boolean remote) {
         File local = MCPatcherUtils.getMinecraftPath("versions", Config.VERSIONS_JSON);
         for (URL url : VERSIONS_URLS) {
-            if (JsonUtils.fetchURL(url, local, remote, JSON_SIGNATURE)) {
+            if (JsonUtils.fetchURL(url, local, remote, JsonUtils.JSON_SIGNATURE)) {
                 break;
             }
         }
