@@ -100,7 +100,7 @@ public class JsonUtils {
     }
 
     public static <T> T parseJson(File path, Class<T> cl) {
-        if (!path.isFile() || path.length() <= 0) {
+        if (path == null || !path.isFile() || path.length() <= 0) {
             return null;
         }
         InputStream input = null;

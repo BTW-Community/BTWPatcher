@@ -2,6 +2,8 @@ MCVER ?= 1.6.2
 EXT_OPTS ?=
 
 VERSIONSDIR = ../versions
+VERSIONSURL = https://s3.amazonaws.com/Minecraft.Download/versions/versions.json
+VERSIONSLCL = src/resources/versions.json
 MCJAR = $(VERSIONSDIR)/$(MCVER)/$(MCVER).jar
 PATCHDIR = $(VERSIONSDIR)/$(MCVER)-mcpatcher
 MCPROFILE = MCPatcher
@@ -27,7 +29,7 @@ TMPDIR = t.1
 FILTER = ./testfilter.pl
 
 .PHONY: default build release run test testfilter control clean restore rmall
-.PHONY: javadoc profile modjar
+.PHONY: javadoc profile modjar updversions
 
 default:
 
@@ -87,3 +89,6 @@ modjar: $(MCPATCHER)
 	cd $(TMPDIR) && rm -rf javassist META-INF *.class com/intellij com/prupe/mcpatcher/*.class
 	cd $(TMPDIR) && jar -cf ../$(MODJAR) *
 	rm -rf $(TMPDIR)
+
+updversions:
+	wget -O $(VERSIONSLCL) $(VERSIONSURL)
