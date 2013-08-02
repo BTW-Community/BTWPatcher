@@ -23,7 +23,7 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
         Pattern.CASE_INSENSITIVE
     );
     private static final Pattern SHORT_PATTERN = Pattern.compile(
-        "^(alpha-|beta-|rc)?([0-9][-_.0-9a-zA-Z]*)(pre(\\d+))?$",
+        "^(alpha-|a|beta-|b|rc)?([0-9][-_.0-9a-zA-Z]*)(pre(\\d+))?$",
         Pattern.CASE_INSENSITIVE
     );
 
@@ -341,9 +341,9 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
         versionNumberOnly = elements[1];
         String[] tokens = versionNumberOnly.split("[^0-9a-zA-Z]+");
         parsedVersion = new int[tokens.length + 1];
-        if (elements[0].startsWith("alpha")) {
+        if (elements[0].startsWith("a")) {
             parsedVersion[0] = ALPHA;
-        } else if (elements[0].startsWith("beta")) {
+        } else if (elements[0].startsWith("b")) {
             parsedVersion[0] = BETA;
         } else if (elements[0].startsWith("rc")) {
             parsedVersion[0] = RC;
