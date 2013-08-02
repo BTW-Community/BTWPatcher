@@ -125,7 +125,8 @@ public class MCPatcherUtils {
         if (dir != null && dir.isDirectory() &&
             new File(dir, "assets").isDirectory() &&
             new File(dir, "libraries").isDirectory() &&
-            new File(dir, "versions").isDirectory()) { // new launcher (13w16a+) only
+            new File(dir, "versions").isDirectory() &&
+            new File(dir, Config.LAUNCHER_JSON).isFile()) {
             minecraftDir = dir.getAbsoluteFile();
         } else {
             minecraftDir = null;
