@@ -48,10 +48,10 @@ public class Config {
 
     private static final String HEX_CHARS = "0123456789abcdef";
     private static final String PROXY_CIPHER = "Blowfish";
-    private static final SecretKeySpec PROXY_KEY = new SecretKeySpec("2a879c8687a13de8".getBytes(), PROXY_CIPHER);
     private static final String PROXY_ENC_PREFIX = "enc:";
 
     transient String selectedProfile = MCPATCHER_PROFILE_NAME;
+    transient SecretKeySpec key;
     transient Cipher cipher;
 
     int format = VAL_FORMAT_CURRENT;
@@ -140,7 +140,10 @@ public class Config {
         if (cipher == null) {
             cipher = Cipher.getInstance(PROXY_CIPHER);
         }
-        cipher.init(mode, PROXY_KEY);
+        if (key == null) {
+            key = new SecretKeySpec("mOwRtHYFtdxHBcbq".getBytes(), PROXY_CIPHER);
+        }
+        cipher.init(mode, key);
         return cipher;
     }
 
