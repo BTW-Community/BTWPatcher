@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher;
 
 import com.google.gson.JsonObject;
+import com.prupe.mcpatcher.launcher.version.Library;
 import com.prupe.mcpatcher.mod.*;
 
 import java.io.File;
@@ -141,6 +142,24 @@ class ModList {
             }
         }
         return null;
+    }
+
+    void loadImpliedMods(ProfileManager profileManager, UserInterface ui) throws Exception {
+        Library forgeLibrary = profileManager.getForgeLibrary();
+        if (forgeLibrary != null && !hasModSubclass(ForgeAdapter.class)) {
+            ForgeAdapter forgeMod = new ForgeAdapter(profileManager, ui, forgeLibrary);
+            forgeMod.setEnabled(true);
+            addFirstBuiltin(forgeMod);
+        }
+    }
+
+    boolean hasModSubclass(Class<? extends Mod> modClass) {
+        for (Mod mod : getAll()) {
+            if (modClass.isAssignableFrom(mod.getClass())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     List<Mod> getAll() {

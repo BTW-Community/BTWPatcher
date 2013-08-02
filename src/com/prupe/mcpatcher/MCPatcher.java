@@ -52,12 +52,13 @@ final public class MCPatcher {
     private static final Set<String> addedClasses = new HashSet<String>();
     private static final Set<String> conflictClasses = new HashSet<String>();
 
-    private static boolean ignoreSavedMods = false;
-    private static boolean ignoreBuiltInMods = false;
-    private static boolean ignoreCustomMods = false;
-    private static boolean enableAllMods = false;
-    static boolean showInternal = false;
-    static boolean experimentalMods = false;
+    private static boolean ignoreSavedMods;
+    private static boolean ignoreBuiltInMods;
+    private static boolean ignoreCustomMods;
+    private static boolean ignoreImpliedMods;
+    private static boolean enableAllMods;
+    static boolean showInternal;
+    static boolean experimentalMods;
 
     static UserInterface ui;
 
@@ -80,6 +81,7 @@ final public class MCPatcher {
      * -ignoresavedmods: do not load mods from mcpatcher.xml<br>
      * -ignorebuiltinmods: do not load mods built into mcpatcher<br>
      * -ignorecustommods: do not load mods from the mcpatcher-mods directory<br>
+     * -ignoreimpliedmods: do not load handlers for special mods like forge<br>
      * -enableallmods: enable all valid mods instead of selected mods from last time<br>
      * -showinternal: show hidden "internal" mods<br>
      * -experimental: load mods considered "experimental"<br>
@@ -140,6 +142,8 @@ final public class MCPatcher {
                 ignoreBuiltInMods = true;
             } else if (args[i].equals("-ignorecustommods")) {
                 ignoreCustomMods = true;
+            } else if (args[i].equals("-ignoreimpliedmods")) {
+                ignoreImpliedMods = true;
             } else if (args[i].equals("-enableallmods")) {
                 enableAllMods = true;
             } else if (args[i].equals("-showinternal")) {
@@ -290,21 +294,9 @@ final public class MCPatcher {
         if (!ignoreCustomMods) {
             modList.loadCustomMods(MCPatcherUtils.getMinecraftPath("mcpatcher-mods"));
         }
-        Library forgeLibrary = profileManager.getForgeLibrary();
-        if (forgeLibrary != null) {
+        if (!ignoreImpliedMods) {
             try {
-                boolean found = false;
-                for (Mod mod : modList.getAll()) {
-                    if (mod instanceof ForgeAdapter) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    ForgeAdapter forgeMod = new ForgeAdapter(profileManager, ui, forgeLibrary);
-                    forgeMod.setEnabled(true);
-                    modList.addFirstBuiltin(forgeMod);
-                }
+                modList.loadImpliedMods(profileManager, ui);
             } catch (Throwable e) {
                 Logger.log(e);
             }
