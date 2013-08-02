@@ -2,20 +2,17 @@ package com.prupe.mcpatcher.launcher.version;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.prupe.mcpatcher.JsonUtils;
-import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.zip.ZipFile;
 
-public class Version {
+public class Version implements Comparable<Version> {
     private static final String BASE_URL = "http://s3.amazonaws.com/Minecraft.Download/versions/";
 
     private static final String TAG_ID = "id";
@@ -142,6 +139,22 @@ public class Version {
         return getJsonPath().isFile() && getJarPath().isFile();
     }
 
+    public boolean isPatched() {
+        File jar = getJarPath();
+        ZipFile zip = null;
+        try {
+            zip = new ZipFile(jar);
+            if (zip.getEntry(Config.MCPATCHER_PROPERTIES) != null) {
+                return true;
+            }
+        } catch (IOException e) {
+            Logger.log(e);
+        } finally {
+            MCPatcherUtils.close(zip);
+        }
+        return false;
+    }
+
     public Version copyToNewVersion(JsonObject base, String newid) {
         JsonObject json = JsonUtils.parseJson(getJsonPath());
         if (json == null) {
@@ -249,5 +262,20 @@ public class Version {
 
     public String getMainClass() {
         return mainClass;
+    }
+
+    @Override
+    public int compareTo(Version o) {
+        MinecraftVersion v1 = MinecraftVersion.parseShortVersion(getId());
+        MinecraftVersion v2 = MinecraftVersion.parseShortVersion(o.getId());
+        if (v1 != null && v2 != null) {
+            return v1.compareTo(v2);
+        } else if (v1 != null) {
+            return 1;
+        } else if (v2 != null) {
+            return -1;
+        } else {
+            return getId().compareTo(o.getId());
+        }
     }
 }
