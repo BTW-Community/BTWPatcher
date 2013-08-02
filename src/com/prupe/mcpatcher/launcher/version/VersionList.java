@@ -45,7 +45,11 @@ public class VersionList {
                 MCPatcherUtils.close(outputStream);
             }
         }
-        return JsonUtils.parseJson(local, VersionList.class);
+        VersionList list = JsonUtils.parseJson(local, VersionList.class);
+        if (list != null) {
+            Collections.sort(list.versions);
+        }
+        return list;
     }
 
     private VersionList() {
