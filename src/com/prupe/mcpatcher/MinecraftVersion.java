@@ -19,11 +19,11 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
     private static final int NOT_PRERELEASE = 9999;
 
     private static final Pattern LONG_PATTERN = Pattern.compile(
-        "Minecraft\\s+(Alpha|Beta|RC)?\\s*v?([0-9][-_.0-9a-zA-Z]*)\\s*((?:Pre\\S*|Beta)\\s*(\\d+)?)?",
+        "Minecraft\\s+(Alpha|Beta|RC)?\\s*v?([0-9][_.0-9a-zA-Z]*)\\s*((?:Pre\\S*|Beta)\\s*(\\d+)?)?",
         Pattern.CASE_INSENSITIVE
     );
     private static final Pattern SHORT_PATTERN = Pattern.compile(
-        "^(alpha-|a|beta-|b|rc)?([0-9][-_.0-9a-zA-Z]*)(pre(\\d+))?$",
+        "^(alpha-|a|beta-|b|rc)?([0-9][_.0-9a-zA-Z]*)(pre(\\d+))?$",
         Pattern.CASE_INSENSITIVE
     );
 
