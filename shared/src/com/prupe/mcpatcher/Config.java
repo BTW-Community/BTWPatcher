@@ -3,11 +3,16 @@ package com.prupe.mcpatcher;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.net.Authenticator;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -41,7 +46,12 @@ public class Config {
     private static final int VAL_FORMAT_MIN = 1;
     private static final int VAL_FORMAT_MAX = 1;
 
+    private static final String HEX_CHARS = "0123456789abcdef";
+    private static final String PROXY_CIPHER = "Blowfish";
+    private static final SecretKeySpec PROXY_KEY = new SecretKeySpec("2a879c8687a13de8".getBytes(), PROXY_CIPHER);
+
     transient String selectedProfile = MCPATCHER_PROFILE_NAME;
+    transient Cipher cipher;
 
     int format = VAL_FORMAT_CURRENT;
     String patcherVersion;
@@ -125,12 +135,52 @@ public class Config {
         Authenticator.setDefault(null);
     }
 
+    private Cipher initCipher(int mode) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException {
+        if (cipher == null) {
+            cipher = Cipher.getInstance(PROXY_CIPHER);
+        }
+        cipher.init(mode, PROXY_KEY);
+        return cipher;
+    }
+
     String getProxyPassword() {
-        return proxyPassword;
+        if (MCPatcherUtils.isNullOrEmpty(proxyPassword)) {
+            setProxyPassword(null);
+            return null;
+        }
+        try {
+            Cipher cipher = initCipher(Cipher.DECRYPT_MODE);
+            byte[] data = new byte[proxyPassword.length() / 2];
+            for (int i = 0; i < data.length; i++) {
+                String tmp = proxyPassword.substring(2 * i, 2 * i + 2);
+                data[i] = (byte) Integer.parseInt(tmp, 16);
+            }
+            return new String(cipher.doFinal(data));
+        } catch (Throwable e) {
+            e.printStackTrace();
+            setProxyPassword(null);
+            return null;
+        }
     }
 
     void setProxyPassword(String proxyPassword) {
-        this.proxyPassword = proxyPassword;
+        if (MCPatcherUtils.isNullOrEmpty(proxyPassword)) {
+            this.proxyPassword = null;
+            return;
+        }
+        try {
+            Cipher cipher = initCipher(Cipher.ENCRYPT_MODE);
+            byte[] in = cipher.doFinal(proxyPassword.getBytes());
+            char[] out = new char[2 * in.length];
+            for (int i = 0; i < out.length; i += 2) {
+                out[i] = HEX_CHARS.charAt((in[i / 2] >> 4) & 0xf);
+                out[i + 1] = HEX_CHARS.charAt(in[i / 2] & 0xf);
+            }
+            this.proxyPassword = new String(out);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            this.proxyPassword = null;
+        }
     }
 
     private static String getSelectedLauncherProfile(File minecraftDir) {
