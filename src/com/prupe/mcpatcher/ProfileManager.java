@@ -70,7 +70,7 @@ class ProfileManager {
     }
 
     private void rebuildRemoteVersionList(boolean forceRemote) throws IOException {
-        remoteVersions = VersionList.getVersionList(forceRemote || remote);
+        remoteVersions = VersionList.getVersionList(forceRemote || remote, forceRemote ? JsonUtils.LONG_TIMEOUT / 2 : JsonUtils.SHORT_TIMEOUT);
         if (remoteVersions == null || remoteVersions.getVersions().isEmpty()) {
             throw new IOException("Could not get list of Minecraft versions");
         }

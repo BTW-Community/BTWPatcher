@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.*;
 
 public class JsonUtils {
@@ -13,6 +14,9 @@ public class JsonUtils {
 
     public static final byte[] JSON_SIGNATURE = "{".getBytes();
     public static final byte[] JAR_SIGNATURE = "PK".getBytes();
+
+    public static final int SHORT_TIMEOUT = 6000;
+    public static final int LONG_TIMEOUT = 30000;
 
     public static Gson newGson() {
         GsonBuilder builder = new GsonBuilder();
@@ -29,14 +33,17 @@ public class JsonUtils {
         }
     }
 
-    public static boolean fetchURL(URL url, File local, boolean forceRemote, byte[] signature) {
+    public static boolean fetchURL(URL url, File local, boolean forceRemote, int timeoutMS, byte[] signature) {
         boolean success = true;
         if (forceRemote || !local.isFile() || local.length() <= 0) {
             BufferedInputStream input = null;
             OutputStream output = null;
             try {
                 System.out.printf("Fetching %s...\n", url);
-                input = new BufferedInputStream(url.openConnection(proxy).getInputStream());
+                URLConnection connection = url.openConnection(proxy);
+                connection.setConnectTimeout(timeoutMS);
+                connection.setReadTimeout(timeoutMS / 2);
+                input = new BufferedInputStream(connection.getInputStream());
                 if (checkSignature(input, signature)) {
                     output = new FileOutputStream(local);
                     copyStream(input, output);

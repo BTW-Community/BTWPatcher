@@ -164,7 +164,7 @@ public class Library {
             return true;
         }
         local.getParentFile().mkdirs();
-        return JsonUtils.fetchURL(remote, local, false, JsonUtils.JAR_SIGNATURE);
+        return JsonUtils.fetchURL(remote, local, false, JsonUtils.LONG_TIMEOUT, JsonUtils.JAR_SIGNATURE);
     }
 
     public void addToClassPath(File libDir, List<File> jars) {

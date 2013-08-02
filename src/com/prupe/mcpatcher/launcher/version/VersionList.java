@@ -23,10 +23,10 @@ public class VersionList {
     List<Version> versions = new ArrayList<Version>();
     LatestVersion latest;
 
-    public static VersionList getVersionList(boolean remote) {
+    public static VersionList getVersionList(boolean remote, int timeoutMS) {
         File local = MCPatcherUtils.getMinecraftPath("versions", Config.VERSIONS_JSON);
         for (URL url : VERSIONS_URLS) {
-            if (JsonUtils.fetchURL(url, local, remote, JsonUtils.JSON_SIGNATURE)) {
+            if (JsonUtils.fetchURL(url, local, remote, timeoutMS, JsonUtils.JSON_SIGNATURE)) {
                 break;
             }
         }
