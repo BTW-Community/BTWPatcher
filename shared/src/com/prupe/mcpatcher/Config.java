@@ -49,6 +49,7 @@ public class Config {
     private static final String HEX_CHARS = "0123456789abcdef";
     private static final String PROXY_CIPHER = "Blowfish";
     private static final SecretKeySpec PROXY_KEY = new SecretKeySpec("2a879c8687a13de8".getBytes(), PROXY_CIPHER);
+    private static final String PROXY_ENC_PREFIX = "enc:";
 
     transient String selectedProfile = MCPATCHER_PROFILE_NAME;
     transient Cipher cipher;
@@ -148,11 +149,16 @@ public class Config {
             setProxyPassword(null);
             return null;
         }
+        if (!proxyPassword.startsWith(PROXY_ENC_PREFIX)) {
+            setProxyPassword(proxyPassword);
+            return getProxyPassword();
+        }
         try {
             Cipher cipher = initCipher(Cipher.DECRYPT_MODE);
-            byte[] data = new byte[proxyPassword.length() / 2];
+            String enc = proxyPassword.substring(PROXY_ENC_PREFIX.length());
+            byte[] data = new byte[enc.length() / 2];
             for (int i = 0; i < data.length; i++) {
-                String tmp = proxyPassword.substring(2 * i, 2 * i + 2);
+                String tmp = enc.substring(2 * i, 2 * i + 2);
                 data[i] = (byte) Integer.parseInt(tmp, 16);
             }
             return new String(cipher.doFinal(data));
@@ -176,7 +182,7 @@ public class Config {
                 out[i] = HEX_CHARS.charAt((in[i / 2] >> 4) & 0xf);
                 out[i + 1] = HEX_CHARS.charAt(in[i / 2] & 0xf);
             }
-            this.proxyPassword = new String(out);
+            this.proxyPassword = PROXY_ENC_PREFIX + new String(out);
         } catch (Throwable e) {
             e.printStackTrace();
             this.proxyPassword = null;
