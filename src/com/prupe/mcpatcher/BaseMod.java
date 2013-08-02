@@ -46,6 +46,7 @@ public final class BaseMod extends Mod {
         addClassFile(MCPatcherUtils.LOGGER_CLASS + "$1$1");
         addClassFile(MCPatcherUtils.LOGGER_CLASS + "$ErrorLevel");
         addClassFile(MCPatcherUtils.CONFIG_CLASS);
+        addClassFile(MCPatcherUtils.CONFIG_CLASS + "$1");
         addClassFile(MCPatcherUtils.CONFIG_CLASS + "$ProfileEntry");
         addClassFile(MCPatcherUtils.CONFIG_CLASS + "$VersionEntry");
         addClassFile(MCPatcherUtils.CONFIG_CLASS + "$ModEntry");
@@ -81,6 +82,8 @@ public final class BaseMod extends Mod {
         private JTable logTable;
         private JTextField proxyHostTextField;
         private JTextField proxyPortTextField;
+        private JTextField proxyUserTextField;
+        private JPasswordField proxyPasswordField;
 
         ConfigPanel() {
             fetchURLCheckBox.addActionListener(new ActionListener() {
@@ -193,6 +196,8 @@ public final class BaseMod extends Mod {
             fetchURLCheckBox.setSelected(config.fetchRemoteVersionList);
             proxyHostTextField.setText(config.proxyHost);
             proxyPortTextField.setText(config.proxyPort == null ? "" : String.valueOf(config.proxyPort));
+            proxyUserTextField.setText(config.proxyUser);
+            proxyPasswordField.setText(config.getProxyPassword());
             profilingCheckBox.setSelected(config.extraProfiling);
 
             showAdvancedOption(profilingCheckBox);
@@ -200,7 +205,10 @@ public final class BaseMod extends Mod {
 
         @Override
         public void save() {
-            Config.getInstance().setProxy(proxyHostTextField.getText(), proxyPortTextField.getText());
+            Config.getInstance().setProxy(
+                proxyHostTextField.getText(), proxyPortTextField.getText(),
+                proxyUserTextField.getText(), new String(proxyPasswordField.getPassword())
+            );
         }
     }
 

@@ -4,7 +4,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.io.File;
+import java.net.Authenticator;
 import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.util.*;
 import java.util.logging.Level;
@@ -45,6 +47,8 @@ public class Config {
     String patcherVersion;
     String proxyHost;
     Integer proxyPort;
+    String proxyUser;
+    private String proxyPassword;
     boolean betaWarningShown;
     boolean selectPatchedProfile = true;
     boolean fetchRemoteVersionList = true;
@@ -66,7 +70,6 @@ public class Config {
             setReadOnly(true); // don't overwrite newer file
         }
         instance.selectedProfile = getSelectedLauncherProfile(minecraftDir);
-        instance.setProxy();
         return true;
     }
 
@@ -79,10 +82,10 @@ public class Config {
     }
 
     void setProxy() {
-        setProxy(proxyHost, proxyPort == null ? null : proxyPort.toString());
+        setProxy(proxyHost, proxyPort == null ? null : proxyPort.toString(), proxyUser, getProxyPassword());
     }
 
-    void setProxy(String host, String port) {
+    void setProxy(String host, String port, final String user, final String pw) {
         int portNum = 0;
         if (!MCPatcherUtils.isNullOrEmpty(port)) {
             try {
@@ -95,6 +98,20 @@ public class Config {
                 JsonUtils.proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(host, portNum));
                 proxyHost = host;
                 proxyPort = portNum;
+                if (MCPatcherUtils.isNullOrEmpty(user) || MCPatcherUtils.isNullOrEmpty(pw)) {
+                    proxyUser = null;
+                    setProxyPassword(null);
+                    Authenticator.setDefault(null);
+                } else {
+                    proxyUser = user;
+                    setProxyPassword(pw);
+                    Authenticator.setDefault(new Authenticator() {
+                        @Override
+                        protected PasswordAuthentication getPasswordAuthentication() {
+                            return new PasswordAuthentication(user, pw.toCharArray());
+                        }
+                    });
+                }
                 return;
             } catch (Throwable e) {
                 e.printStackTrace();
@@ -103,6 +120,17 @@ public class Config {
         JsonUtils.proxy = Proxy.NO_PROXY;
         proxyHost = null;
         proxyPort = null;
+        proxyUser = null;
+        setProxyPassword(null);
+        Authenticator.setDefault(null);
+    }
+
+    String getProxyPassword() {
+        return proxyPassword;
+    }
+
+    void setProxyPassword(String proxyPassword) {
+        this.proxyPassword = proxyPassword;
     }
 
     private static String getSelectedLauncherProfile(File minecraftDir) {

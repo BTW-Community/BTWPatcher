@@ -73,6 +73,8 @@ final public class MCPatcher {
      * -mcdir path: specify path to minecraft<br>
      * -proxyhost host: proxy host or IP<br>
      * -proxyport port: proxy port number<br>
+     * -proxyuser user: proxy username<br>
+     * -proxypass pw: proxy password<br>
      * -auto: apply all applicable mods to the default minecraft.jar and exit (no GUI)<br>
      * -profile: select specified profile<br>
      * -ignoresavedmods: do not load mods from mcpatcher.xml<br>
@@ -93,6 +95,8 @@ final public class MCPatcher {
         String enteredMCDir = null;
         String proxyHost = null;
         String proxyPort = null;
+        String proxyUser = null;
+        String proxyPass = null;
         String profile = null;
         String mcVersion = null;
         boolean dumpJson = false;
@@ -116,6 +120,12 @@ final public class MCPatcher {
             } else if (args[i].equals("-proxyport") && i + 1 < args.length) {
                 i++;
                 proxyPort = args[i];
+            } else if (args[i].equals("-proxyuser") && i + 1 < args.length) {
+                i++;
+                proxyUser = args[i];
+            } else if (args[i].equals("-proxypass") && i + 1 < args.length) {
+                i++;
+                proxyPass = args[i];
             } else if (args[i].equals("-auto")) {
                 guiEnabled = false;
             } else if (args[i].equals("-profile") && i + 1 < args.length) {
@@ -173,7 +183,9 @@ final public class MCPatcher {
         }
         Config config = Config.getInstance();
         if (proxyHost != null && proxyPort != null) {
-            config.setProxy(proxyHost, proxyPort);
+            config.setProxy(proxyHost, proxyPort, proxyUser, proxyPass);
+        } else {
+            config.setProxy();
         }
         profileManager = new ProfileManager(config);
         profileManager.setRemote(guiEnabled && config.fetchRemoteVersionList);
