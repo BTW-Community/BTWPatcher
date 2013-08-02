@@ -65,8 +65,10 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
     OverrideBase(ResourceLocation propertiesName, Properties properties) {
         this.propertiesName = propertiesName;
 
+        alternateTextures = getAlternateTextures(properties);
+
         String value = MCPatcherUtils.getStringProperty(properties, "source", "");
-        ResourceLocation resource;
+        ResourceLocation resource = null;
         if (value.equals("")) {
             value = MCPatcherUtils.getStringProperty(properties, "texture", "");
         }
@@ -74,9 +76,11 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             value = MCPatcherUtils.getStringProperty(properties, "tile", "");
         }
         if (value.equals("")) {
-            resource = TileLoader.getDefaultAddress(propertiesName);
-            if (!TexturePackAPI.hasResource(resource)) {
-                resource = null;
+            if (MCPatcherUtils.isNullOrEmpty(alternateTextures)) {
+                resource = TileLoader.getDefaultAddress(propertiesName);
+                if (!TexturePackAPI.hasResource(resource)) {
+                    resource = null;
+                }
             }
         } else {
             resource = TileLoader.parseTileAddress(propertiesName, value);
@@ -86,7 +90,6 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             }
         }
         textureName = resource;
-        alternateTextures = getAlternateTextures(properties);
 
         weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
 
