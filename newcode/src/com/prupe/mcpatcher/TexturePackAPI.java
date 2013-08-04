@@ -88,6 +88,7 @@ public class TexturePackAPI {
         if (path == null || path.equals("")) {
             return null;
         }
+        boolean absolute = false;
         if (path.startsWith("%blur%")) {
             path = path.substring(6);
         }
@@ -96,9 +97,11 @@ public class TexturePackAPI {
         }
         if (path.startsWith("/")) {
             path = path.substring(1);
+            absolute = true;
         }
         if (path.startsWith("assets/minecraft/")) {
             path = path.substring(17);
+            absolute = true;
         }
         // Absolute path, including namespace:
         // namespace:path/filename -> assets/namespace/path/filename
@@ -115,6 +118,11 @@ public class TexturePackAPI {
         // ./path -> (dir of base file)/path
         if (path.startsWith("./")) {
             return new ResourceLocation(baseResource.getNamespace(), baseResource.getPath().replaceFirst("[^/]+$", "") + path.substring(2));
+        }
+        // Relative to properties file:
+        // filename -> (dir of base file)/filename
+        if (!absolute && !path.contains("/")) {
+            return new ResourceLocation(baseResource.getNamespace(), baseResource.getPath().replaceFirst("[^/]+$", "") + path);
         }
         // Absolute path, w/o namespace:
         // path/filename -> assets/(namespace of base file)/path/filename

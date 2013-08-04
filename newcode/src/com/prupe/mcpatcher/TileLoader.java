@@ -248,9 +248,6 @@ public class TileLoader {
         if (!value.endsWith(".png")) {
             value += ".png";
         }
-        if (!value.contains("/")) {
-            value = propertiesAddress.getPath().replaceFirst("[^/]+$", "") + value;
-        }
         return TexturePackAPI.parseResourceLocation(propertiesAddress, value);
     }
 
