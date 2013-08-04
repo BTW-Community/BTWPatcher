@@ -68,11 +68,14 @@ public class Config {
     LinkedHashMap<String, String> logging = new LinkedHashMap<String, String>();
     LinkedHashMap<String, ProfileEntry> profiles = new LinkedHashMap<String, ProfileEntry>();
 
-    static boolean load(File minecraftDir) {
+    static boolean load(File minecraftDir, boolean isGame) {
         jsonFile = new File(minecraftDir, MCPATCHER_JSON);
         instance = JsonUtils.parseJson(jsonFile, Config.class);
         if (instance == null || instance.format <= 0) {
             instance = new Config();
+            if (isGame) {
+                System.out.printf("WARNING: configuration file %s not found, using defaults\n", jsonFile);
+            }
             save();
         } else if (instance.format < VAL_FORMAT_MIN) {
             instance.format = VAL_FORMAT_CURRENT;
@@ -80,7 +83,18 @@ public class Config {
         } else if (instance.format > VAL_FORMAT_MAX) {
             setReadOnly(true); // don't overwrite newer file
         }
-        instance.selectedProfile = getSelectedLauncherProfile(minecraftDir);
+        String profile = getSelectedLauncherProfile(minecraftDir);
+        if (MCPatcherUtils.isNullOrEmpty(profile)) {
+            if (isGame) {
+                System.out.printf("WARNING: could not determine selected profile, defaulting to %s\n", MCPATCHER_PROFILE_NAME);
+            }
+            profile = MCPATCHER_PROFILE_NAME;
+        } else if (!instance.profiles.containsKey(profile)) {
+            if (isGame) {
+                System.out.printf("WARNING: selected profile '%s' not found, using defaults\n", profile);
+            }
+        }
+        instance.selectedProfile = profile;
         return true;
     }
 
@@ -193,20 +207,15 @@ public class Config {
     }
 
     private static String getSelectedLauncherProfile(File minecraftDir) {
-        String value = null;
         File path = new File(minecraftDir, LAUNCHER_JSON);
         JsonObject json = JsonUtils.parseJson(path);
         if (json != null) {
             JsonElement element = json.get(TAG_SELECTED_PROFILE);
             if (element != null && element.isJsonPrimitive()) {
-                value = element.getAsString();
+                return element.getAsString();
             }
         }
-        if (MCPatcherUtils.isNullOrEmpty(value)) {
-            return MCPATCHER_PROFILE_NAME;
-        } else {
-            return value;
-        }
+        return null;
     }
 
     public static Config getInstance() {

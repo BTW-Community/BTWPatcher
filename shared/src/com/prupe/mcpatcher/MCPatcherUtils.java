@@ -132,7 +132,7 @@ public class MCPatcherUtils {
             minecraftDir = null;
         }
         gameDir = minecraftDir;
-        return minecraftDir != null && Config.load(minecraftDir);
+        return minecraftDir != null && Config.load(minecraftDir, false);
     }
 
     /**
@@ -355,7 +355,7 @@ public class MCPatcherUtils {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-        Config.load(minecraftDir);
+        Config.load(minecraftDir, true);
         System.out.printf("Launcher profile:  %s\n", Config.getInstance().getSelectedProfileName());
         System.out.println();
     }
