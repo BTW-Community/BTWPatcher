@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 
 public class HDConfig extends ModConfigPanel {
     private static final String TAG_FONT = "hdFont";
+    private static final String TAG_NON_FONT_WIDTH = "nonHDFontWidth";
     private static final String TAG_ANIMATIONS = "animations";
     private static final String TAG_COMPASS = "fancyCompass";
     private static final String TAG_CLOCK = "fancyClock";
@@ -26,6 +27,7 @@ public class HDConfig extends ModConfigPanel {
 
     private JPanel panel;
     private JCheckBox fontCheckBox;
+    private JCheckBox fontWidthCheckBox;
     private JCheckBox animationCheckBox;
     private JCheckBox compassCheckBox;
     private JCheckBox clockCheckBox;
@@ -41,7 +43,16 @@ public class HDConfig extends ModConfigPanel {
     HDConfig() {
         fontCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Config.set(MCPatcherUtils.EXTENDED_HD, TAG_FONT, fontCheckBox.isSelected());
+                boolean selected = fontCheckBox.isSelected();
+                Config.set(MCPatcherUtils.EXTENDED_HD, TAG_FONT, selected);
+                fontWidthCheckBox.setEnabled(selected);
+            }
+        });
+
+        fontWidthCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Config.set(MCPatcherUtils.EXTENDED_HD, TAG_NON_FONT_WIDTH, fontWidthCheckBox.isSelected());
             }
         });
 
@@ -173,7 +184,10 @@ public class HDConfig extends ModConfigPanel {
 
     @Override
     public void load() {
-        fontCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_FONT, true));
+        boolean hdFont = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_FONT, true);
+        fontCheckBox.setSelected(hdFont);
+        fontWidthCheckBox.setEnabled(hdFont);
+        fontWidthCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_NON_FONT_WIDTH, false));
         animationCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_ANIMATIONS, true));
         compassCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_COMPASS, true));
         clockCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_CLOCK, true));

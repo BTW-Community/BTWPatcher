@@ -14,6 +14,7 @@ public class FontUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.HD_FONT);
 
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "hdFont", true);
+    private static final boolean enableNonHD = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "nonHDFontWidth", false);
 
     private static final int ROWS = 16;
     private static final int COLS = 16;
@@ -56,17 +57,18 @@ public class FontUtils {
             String name = fontRenderer.defaultFont.getPath().replaceAll(".*/", "");
             fontRenderer.hdFont = new ResourceLocation(namespace, TexturePackAPI.MCPATCHER_SUBDIR + "font/" + name);
         }
+        ResourceLocation newFont;
         if (enable && TexturePackAPI.hasResource(fontRenderer.hdFont)) {
             logger.fine("using %s instead of %s", fontRenderer.hdFont, fontRenderer.defaultFont);
             fontRenderer.isHD = true;
-            fontRenderer.fontAdj = 0.0f;
-            return fontRenderer.hdFont;
+            newFont = fontRenderer.hdFont;
         } else {
             logger.fine("using default %s", fontRenderer.defaultFont);
-            fontRenderer.isHD = false;
-            fontRenderer.fontAdj = 1.0f;
-            return fontRenderer.defaultFont;
+            fontRenderer.isHD = enable && enableNonHD;
+            newFont = fontRenderer.defaultFont;
         }
+        fontRenderer.fontAdj = fontRenderer.isHD ? 0.0f : 1.0f;
+        return newFont;
     }
 
     public static float[] computeCharWidthsf(FontRenderer fontRenderer, ResourceLocation filename, BufferedImage image, int[] rgb, int[] charWidth, float fontAdj) {
