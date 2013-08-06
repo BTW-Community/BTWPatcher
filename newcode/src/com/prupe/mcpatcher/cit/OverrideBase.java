@@ -1,10 +1,9 @@
 package com.prupe.mcpatcher.cit;
 
-import com.prupe.mcpatcher.MCLogger;
-import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.TexturePackAPI;
-import com.prupe.mcpatcher.TileLoader;
-import net.minecraft.src.*;
+import com.prupe.mcpatcher.*;
+import net.minecraft.src.Item;
+import net.minecraft.src.ItemStack;
+import net.minecraft.src.ResourceLocation;
 
 import java.io.File;
 import java.util.*;
@@ -25,7 +24,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
     final BitSet stackSize;
     final BitSet enchantmentIDs;
     final BitSet enchantmentLevels;
-    final List<String[]> nbtRules = new ArrayList<String[]>();
+    private final List<NBTRule> nbtRules = new ArrayList<NBTRule>();
     boolean error;
 
     int lastEnchantmentLevel;
@@ -119,16 +118,10 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
 
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             String name = (String) entry.getKey();
-            value = (String) entry.getValue();
-            if (name.startsWith("nbt.")) {
-                String[] rule = name.split("\\.");
-                if (rule.length > 1) {
-                    rule[0] = value;
-                    for (int i = 1; i < rule.length; i++) {
-                        if ("*".equals(rule[i])) {
-                            rule[i] = null;
-                        }
-                    }
+            if (name.startsWith(NBTRule.NBT_RULE_PREFIX)) {
+                value = (String) entry.getValue();
+                NBTRule rule = NBTRule.create(name, value);
+                if (rule != null) {
                     nbtRules.add(rule);
                 }
             }
@@ -234,8 +227,8 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
     }
 
     private boolean matchNBT(ItemStack itemStack) {
-        for (String[] rule : nbtRules) {
-            if (!matchNBTTagCompound(rule, 1, rule[0], itemStack.stackTagCompound)) {
+        for (NBTRule rule : nbtRules) {
+            if (!rule.match(itemStack.stackTagCompound)) {
                 return false;
             }
         }
@@ -268,117 +261,5 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             bits.set(i);
         }
         return bits;
-    }
-
-    private static boolean matchNBT(String[] rule, int index, String value, NBTBase nbt) {
-        if (nbt instanceof NBTTagByte) {
-            return matchNBTTagByte(rule, index, value, (NBTTagByte) nbt);
-        } else if (nbt instanceof NBTTagCompound) {
-            return matchNBTTagCompound(rule, index, value, (NBTTagCompound) nbt);
-        } else if (nbt instanceof NBTTagList) {
-            return matchNBTTagList(rule, index, value, (NBTTagList) nbt);
-        } else if (nbt instanceof NBTTagDouble) {
-            return matchNBTTagDouble(rule, index, value, (NBTTagDouble) nbt);
-        } else if (nbt instanceof NBTTagFloat) {
-            return matchNBTTagFloat(rule, index, value, (NBTTagFloat) nbt);
-        } else if (nbt instanceof NBTTagInteger) {
-            return matchNBTTagInteger(rule, index, value, (NBTTagInteger) nbt);
-        } else if (nbt instanceof NBTTagLong) {
-            return matchNBTTagLong(rule, index, value, (NBTTagLong) nbt);
-        } else if (nbt instanceof NBTTagShort) {
-            return matchNBTTagShort(rule, index, value, (NBTTagShort) nbt);
-        } else if (nbt instanceof NBTTagString) {
-            return matchNBTTagString(rule, index, value, (NBTTagString) nbt);
-        } else {
-            return false;
-        }
-    }
-
-    private static boolean matchNBTTagCompound(String[] rule, int index, String value, NBTTagCompound nbt) {
-        if (nbt == null || index >= rule.length) {
-            return false;
-        }
-        if (rule[index] == null) {
-            for (NBTBase nbtBase : nbt.getTags()) {
-                if (matchNBT(rule, index + 1, value, nbtBase)) {
-                    return true;
-                }
-            }
-        } else {
-            return matchNBT(rule, index + 1, value, nbt.getTag(rule[index]));
-        }
-        return false;
-    }
-
-    private static boolean matchNBTTagList(String[] rule, int index, String value, NBTTagList nbt) {
-        if (index >= rule.length) {
-            return false;
-        }
-        if (rule[index] == null) {
-            for (int i = 0; i < nbt.tagCount(); i++) {
-                if (matchNBT(rule, index + 1, value, nbt.tagAt(i))) {
-                    return true;
-                }
-            }
-        } else {
-            try {
-                int tagNum = Integer.parseInt(rule[index]);
-                return tagNum >= 0 && tagNum < nbt.tagCount() && matchNBT(rule, index + 1, value, nbt.tagAt(tagNum));
-            } catch (NumberFormatException e) {
-            }
-        }
-        return false;
-    }
-
-    private static boolean matchNBTTagByte(String[] rule, int index, String value, NBTTagByte nbt) {
-        try {
-            return nbt.data == Byte.parseByte(value);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    private static boolean matchNBTTagDouble(String[] rule, int index, String value, NBTTagDouble nbt) {
-        try {
-            return nbt.data == Double.parseDouble(value);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    private static boolean matchNBTTagFloat(String[] rule, int index, String value, NBTTagFloat nbt) {
-        try {
-            return nbt.data == Float.parseFloat(value);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    private static boolean matchNBTTagInteger(String[] rule, int index, String value, NBTTagInteger nbt) {
-        try {
-            return nbt.data == Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    private static boolean matchNBTTagLong(String[] rule, int index, String value, NBTTagLong nbt) {
-        try {
-            return nbt.data == Long.parseLong(value);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    private static boolean matchNBTTagShort(String[] rule, int index, String value, NBTTagShort nbt) {
-        try {
-            return nbt.data == Short.parseShort(value);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    private static boolean matchNBTTagString(String[] rule, int index, String value, NBTTagString nbt) {
-        return value.equals(nbt.data);
     }
 }

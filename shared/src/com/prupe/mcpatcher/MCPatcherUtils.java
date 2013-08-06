@@ -66,6 +66,8 @@ public class MCPatcherUtils {
     public static final String FONT_UTILS_CLASS = "com.prupe.mcpatcher.hd.FontUtils";
     public static final String MIPMAP_HELPER_CLASS = "com.prupe.mcpatcher.hd.MipmapHelper";
 
+    public static final String NBT_RULE_CLASS = "com.prupe.mcpatcher.NBTRule";
+
     public static final String RANDOM_MOBS_CLASS = "com.prupe.mcpatcher.mob.MobRandomizer";
     public static final String MOB_RULE_LIST_CLASS = "com.prupe.mcpatcher.mob.MobRuleList";
     public static final String MOB_OVERLAY_CLASS = "com.prupe.mcpatcher.mob.MobOverlay";
