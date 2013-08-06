@@ -70,7 +70,16 @@ class ProfileManager {
     }
 
     private void rebuildRemoteVersionList(boolean forceRemote) throws IOException {
-        remoteVersions = VersionList.getVersionList(forceRemote || remote, forceRemote ? JsonUtils.LONG_TIMEOUT / 2 : JsonUtils.SHORT_TIMEOUT);
+        int timeout = forceRemote ? JsonUtils.LONG_TIMEOUT / 2 : JsonUtils.SHORT_TIMEOUT;
+        remoteVersions = VersionList.getRemoteVersionList(forceRemote || remote, timeout);
+        if (remoteVersions != null && !remoteVersions.getVersions().isEmpty()) {
+            return;
+        }
+        if (!forceRemote) {
+            Logger.log(Logger.LOG_MAIN, "WARNING: using included copy of versions.json, may be out of date");
+            remoteVersions = VersionList.getBuiltInVersionList();
+            config.fetchRemoteVersionList = false;
+        }
         if (remoteVersions == null || remoteVersions.getVersions().isEmpty()) {
             throw new IOException("Could not get list of Minecraft versions");
         }

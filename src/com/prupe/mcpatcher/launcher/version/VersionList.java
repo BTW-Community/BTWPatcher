@@ -23,18 +23,26 @@ public class VersionList {
     List<Version> versions = new ArrayList<Version>();
     LatestVersion latest;
 
-    public static VersionList getVersionList(boolean remote, int timeoutMS) {
+    public static VersionList getRemoteVersionList(boolean remote, int timeoutMS) {
         File local = MCPatcherUtils.getMinecraftPath("versions", Config.VERSIONS_JSON);
         for (URL url : VERSIONS_URLS) {
             if (JsonUtils.fetchURL(url, local, remote, timeoutMS, JsonUtils.JSON_SIGNATURE)) {
                 break;
             }
         }
+        VersionList list = JsonUtils.parseJson(local, VersionList.class);
+        if (list != null) {
+            Collections.sort(list.versions);
+        }
+        return list;
+    }
+
+    public static VersionList getBuiltInVersionList() {
+        File local = MCPatcherUtils.getMinecraftPath("versions", Config.VERSIONS_JSON);
         if (!local.isFile()) {
             InputStream inputStream = null;
             OutputStream outputStream = null;
             try {
-                Logger.log(Logger.LOG_MAIN, "WARNING: using included copy of versions.json, may be out of date");
                 inputStream = VersionList.class.getResourceAsStream("/resources/versions.json");
                 outputStream = new FileOutputStream(local);
                 JsonUtils.copyStream(inputStream, outputStream);
