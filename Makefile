@@ -92,3 +92,4 @@ modjar: $(MCPATCHER)
 
 updversions:
 	wget -O $(VERSIONSLCL) $(VERSIONSURL)
+	dos2unix $(VERSIONSLCL)
