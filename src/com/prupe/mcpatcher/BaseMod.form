@@ -60,7 +60,7 @@
           <component id="641d7" class="javax.swing.JTextField" binding="proxyHostTextField">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
+                <preferred-size width="75" height="-1"/>
               </grid>
             </constraints>
             <properties/>
@@ -68,7 +68,7 @@
           <component id="28c33" class="javax.swing.JTextField" binding="proxyPortTextField">
             <constraints>
               <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
+                <preferred-size width="75" height="-1"/>
               </grid>
             </constraints>
             <properties/>
@@ -92,7 +92,7 @@
           <component id="67b99" class="javax.swing.JTextField" binding="proxyUserTextField">
             <constraints>
               <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
+                <preferred-size width="75" height="-1"/>
               </grid>
             </constraints>
             <properties/>
@@ -108,7 +108,7 @@
           <component id="9fdcd" class="javax.swing.JPasswordField" binding="proxyPasswordField">
             <constraints>
               <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
+                <preferred-size width="75" height="-1"/>
               </grid>
             </constraints>
             <properties/>
