@@ -45,14 +45,14 @@ class ProfileManager {
         return config.selectPatchedProfile;
     }
 
-    void refresh() throws IOException {
-        refresh(false);
+    void refresh(UserInterface ui) throws IOException {
+        refresh(ui, false);
     }
 
-    void refresh(boolean forceRemote) throws IOException {
+    void refresh(UserInterface ui, boolean forceRemote) throws IOException {
         ready = false;
 
-        rebuildRemoteVersionList(forceRemote);
+        rebuildRemoteVersionList(ui, forceRemote);
         rebuildLocalVersionList();
         addUnmoddedCustomVersions();
         rebuildProfileList();
@@ -67,11 +67,15 @@ class ProfileManager {
         }
 
         ready = true;
+        ui.setStatusText("");
     }
 
-    private void rebuildRemoteVersionList(boolean forceRemote) throws IOException {
+    private void rebuildRemoteVersionList(UserInterface ui, boolean forceRemote) throws IOException {
+        if (isRemote() || forceRemote) {
+            ui.setStatusText("Getting version list from %s...", VersionList.VERSION_LIST.getHost());
+        }
         int timeout = forceRemote ? JsonUtils.LONG_TIMEOUT / 2 : JsonUtils.SHORT_TIMEOUT;
-        remoteVersions = VersionList.getRemoteVersionList(forceRemote || remote, timeout);
+        remoteVersions = VersionList.getRemoteVersionList(forceRemote || isRemote(), timeout);
         if (remoteVersions != null && !remoteVersions.getVersions().isEmpty()) {
             return;
         }

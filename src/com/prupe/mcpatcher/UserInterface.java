@@ -1,7 +1,5 @@
 package com.prupe.mcpatcher;
 
-import com.prupe.mcpatcher.launcher.version.VersionList;
-
 import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
@@ -84,20 +82,7 @@ abstract public class UserInterface {
 
         @Override
         boolean go(ProfileManager profileManager) {
-            setBusy(true);
-            if (profileManager.isRemote()) {
-                setStatusText("Getting version list from %s...", VersionList.VERSION_LIST.getHost());
-            }
-            try {
-                profileManager.refresh();
-                MCPatcher.refreshMinecraftPath();
-            } catch (Throwable e) {
-                e.printStackTrace();
-                mainForm.showLauncherError(e);
-                setBusy(false);
-                return false;
-            }
-            mainForm.updateProfileLists(profileManager);
+            mainForm.refreshProfileManager(false);
             return true;
         }
 
@@ -168,7 +153,7 @@ abstract public class UserInterface {
         boolean go(ProfileManager profileManager) {
             boolean ok = false;
             try {
-                profileManager.refresh();
+                profileManager.refresh(this);
                 MCPatcher.refreshMinecraftPath();
                 MCPatcher.checkModApplicability();
                 System.out.println();

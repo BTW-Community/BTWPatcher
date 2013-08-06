@@ -283,7 +283,6 @@ class MainForm {
                         return;
                     }
                     if (ForgeAdapter.isValidPath(path)) {
-                        setBusy(true);
                         runWorker(new UIWorker() {
                             Mod forgeMod;
 
@@ -413,7 +412,6 @@ class MainForm {
                         return;
                     }
                 }
-                setBusy(true);
                 setStatusText("Patching %s...", MCPatcher.minecraft.getOutputFile().getName());
                 runWorker(new PatchThread());
             }
@@ -443,7 +441,6 @@ class MainForm {
 
             public void actionPerformed(ActionEvent e) {
                 tabbedPane.setSelectedIndex(TAB_LOG);
-                setBusy(true);
                 setStatusText("Launching %s...", MCPatcher.minecraft.getOutputFile().getName());
                 MCPatcher.saveProperties();
                 runWorker(new MinecraftThread());
@@ -611,7 +608,6 @@ class MainForm {
         if (fd.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
             final File selectedFile = fd.getSelectedFile();
             cancelWorker();
-            setBusy(true);
             final TexturePackConverter converter = (version == 16 ? new TexturePackConverter16(selectedFile) : new TexturePackConverter15(selectedFile));
             if (converter.getOutputFile().exists()) {
                 int result = JOptionPane.showConfirmDialog(frame,
@@ -661,16 +657,15 @@ class MainForm {
         }
     }
 
-    void refreshProfileManager() {
+    void refreshProfileManager(final boolean forceRemote) {
         final ProfileManager profileManager = MCPatcher.profileManager;
         if (profileManager == null) {
             return;
         }
-        setStatusText("Getting version list from %s...", VersionList.VERSION_LIST.getHost());
         runWorker(new UIWorker() {
             @Override
             void runImpl() throws Exception {
-                profileManager.refresh(true);
+                profileManager.refresh(MCPatcher.ui, forceRemote);
                 MCPatcher.refreshMinecraftPath();
             }
 
@@ -679,6 +674,7 @@ class MainForm {
                 if (error != null) {
                     showLauncherError(error);
                 }
+                updateProfileLists(profileManager);
                 super.updateUI();
             }
         });
@@ -699,9 +695,14 @@ class MainForm {
     }
 
     private void runWorker(UIWorker worker) {
-        cancelWorker();
-        workerThread = worker;
-        workerThread.start();
+        setBusy(true);
+        if (Thread.currentThread().equals(workerThread)) {
+            worker.run();
+        } else {
+            cancelWorker();
+            workerThread = worker;
+            workerThread.start();
+        }
     }
 
     synchronized void setBusy(boolean busy) {
@@ -935,7 +936,6 @@ class MainForm {
     }
 
     void updateModList() {
-        setBusy(true);
         setStatusText("Analyzing %s...", MCPatcher.minecraft.getInputFile().getName());
         runWorker(new UIWorker() {
             @Override
@@ -1131,12 +1131,16 @@ class MainForm {
                 Logger.log(e);
                 error = e;
             } finally {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateUI();
-                    }
-                });
+                if (Thread.currentThread().equals(workerThread)) {
+                    updateUI();
+                } else {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateUI();
+                        }
+                    });
+                }
             }
         }
 

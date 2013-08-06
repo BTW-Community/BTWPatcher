@@ -2,7 +2,6 @@ package com.prupe.mcpatcher;
 
 import com.prupe.mcpatcher.converter.TexturePackConverter15;
 import com.prupe.mcpatcher.converter.TexturePackConverter16;
-import com.prupe.mcpatcher.launcher.version.Library;
 import javassist.bytecode.ClassFile;
 
 import java.io.*;
@@ -196,7 +195,7 @@ final public class MCPatcher {
 
         if (dumpJson) {
             try {
-                profileManager.refresh();
+                profileManager.refresh(ui);
                 profileManager.dumpJson(System.out);
                 exitStatus = 0;
             } catch (Throwable e) {
@@ -218,7 +217,7 @@ final public class MCPatcher {
             }
             if (!MCPatcherUtils.isNullOrEmpty(mcVersion)) {
                 try {
-                    profileManager.refresh();
+                    profileManager.refresh(ui);
                     if (profileManager.getInputVersions().contains(mcVersion)) {
                         profileManager.selectInputVersion(mcVersion);
                     } else if (ui.shouldExit()) {
@@ -280,7 +279,7 @@ final public class MCPatcher {
         return true;
     }
 
-    static void refreshModList() {
+    private static void refreshModList() {
         if (modList != null) {
             modList.close();
         }

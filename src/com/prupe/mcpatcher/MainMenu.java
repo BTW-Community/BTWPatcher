@@ -51,7 +51,7 @@ class MainMenu {
         refresh.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainForm.refreshProfileManager();
+                mainForm.refreshProfileManager(true);
             }
         });
         file.add(refresh);
