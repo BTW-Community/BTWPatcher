@@ -59,6 +59,7 @@ public class CustomItemTextures extends Mod {
         addClassFile(MCPatcherUtils.NBT_RULE_CLASS);
         addClassFile(MCPatcherUtils.NBT_RULE_CLASS + "$Exact");
         addClassFile(MCPatcherUtils.NBT_RULE_CLASS + "$Regex");
+        addClassFile(MCPatcherUtils.NBT_RULE_CLASS + "$Glob");
         addClassFile(MCPatcherUtils.OVERRIDE_BASE_CLASS);
         addClassFile(MCPatcherUtils.ITEM_OVERRIDE_CLASS);
         addClassFile(MCPatcherUtils.ENCHANTMENT_CLASS);

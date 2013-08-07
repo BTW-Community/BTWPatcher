@@ -11,6 +11,8 @@ abstract public class NBTRule {
     public static final String NBT_RULE_WILDCARD = "*";
     public static final String NBT_REGEX_PREFIX = "regex:";
     public static final String NBT_IREGEX_PREFIX = "iregex:";
+    public static final String NBT_GLOB_PREFIX = "pattern:";
+    public static final String NBT_IGLOB_PREFIX = "ipattern:";
 
     private final String[] tagName;
     private final Integer[] tagIndex;
@@ -25,6 +27,10 @@ abstract public class NBTRule {
                 return new Regex(tag, value.substring(NBT_REGEX_PREFIX.length()), true);
             } else if (value.startsWith(NBT_IREGEX_PREFIX)) {
                 return new Regex(tag, value.substring(NBT_IREGEX_PREFIX.length()), false);
+            } else if (value.startsWith(NBT_GLOB_PREFIX)) {
+                return new Glob(tag, value.substring(NBT_GLOB_PREFIX.length()), true);
+            } else if (value.startsWith(NBT_IGLOB_PREFIX)) {
+                return new Glob(tag, value.substring(NBT_IGLOB_PREFIX.length()), false);
             } else {
                 return new Exact(tag, value);
             }
@@ -234,6 +240,64 @@ abstract public class NBTRule {
         @Override
         protected boolean match(NBTTagString nbt) {
             return pattern.matcher(nbt.data).find();
+        }
+    }
+
+    private static final class Glob extends NBTRule {
+        private static final char STAR = '*';
+        private static final char SINGLE = '?';
+        private static final char ESCAPE = '\\';
+
+        private final String glob;
+        private final boolean caseSensitive;
+
+        protected Glob(String tag, String value, boolean caseSensitive) {
+            super(tag, value);
+            this.caseSensitive = caseSensitive;
+            if (!caseSensitive) {
+                value = value.toLowerCase();
+            }
+            glob = value;
+        }
+
+        @Override
+        protected boolean match(NBTTagString nbt) {
+            String value = nbt.data;
+            return matchPartial(value, 0, value.length(), 0, glob.length());
+        }
+
+        private boolean matchPartial(String value, int curV, int maxV, int curG, int maxG) {
+            for (; curG < maxG; curG++, curV++) {
+                char g = glob.charAt(curG);
+                if (g == STAR) {
+                    while (true) {
+                        if (matchPartial(value, curV, maxV, curG + 1, maxG)) {
+                            return true;
+                        }
+                        if (curV >= maxV) {
+                            break;
+                        }
+                        curV++;
+                    }
+                    return false;
+                } else if (curV >= maxV) {
+                    break;
+                } else if (g == SINGLE) {
+                    continue;
+                }
+                if (g == ESCAPE && curG + 1 < maxG) {
+                    curG++;
+                    g = glob.charAt(curG);
+                }
+                if (!matchChar(g, value.charAt(curV))) {
+                    return false;
+                }
+            }
+            return curG == maxG && curV == maxV;
+        }
+
+        private boolean matchChar(char a, char b) {
+            return a == (caseSensitive ? b : Character.toLowerCase(b));
         }
     }
 }
