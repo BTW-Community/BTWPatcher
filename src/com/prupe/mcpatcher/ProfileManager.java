@@ -70,15 +70,19 @@ class ProfileManager {
     }
 
     private void rebuildRemoteVersionList(UserInterface ui, boolean forceRemote) throws IOException {
+        remoteVersions = null;
+        File path = VersionList.getPath();
         if (isRemote() || forceRemote) {
             ui.setStatusText("Getting version list from %s...", VersionList.VERSION_LIST.getHost());
-        } else {
-            ui.setStatusText("Reading version list...");
+            int timeout = forceRemote ? JsonUtils.LONG_TIMEOUT / 2 : JsonUtils.SHORT_TIMEOUT;
+            VersionList.fetchRemoteVersionList(timeout);
         }
-        int timeout = forceRemote ? JsonUtils.LONG_TIMEOUT / 2 : JsonUtils.SHORT_TIMEOUT;
-        remoteVersions = VersionList.getRemoteVersionList(forceRemote || isRemote(), timeout);
-        if (remoteVersions != null && !remoteVersions.getVersions().isEmpty()) {
-            return;
+        if (path.isFile()) {
+            ui.setStatusText("Reading version list...");
+            remoteVersions = VersionList.getLocalVersionList();
+            if (remoteVersions != null && !remoteVersions.getVersions().isEmpty()) {
+                return;
+            }
         }
         if (!forceRemote) {
             Logger.log(Logger.LOG_MAIN, "WARNING: using included copy of versions.json, may be out of date");

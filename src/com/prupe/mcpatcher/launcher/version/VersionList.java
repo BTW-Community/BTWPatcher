@@ -23,14 +23,22 @@ public class VersionList {
     List<Version> versions = new ArrayList<Version>();
     LatestVersion latest;
 
-    public static VersionList getRemoteVersionList(boolean remote, int timeoutMS) {
-        File local = MCPatcherUtils.getMinecraftPath("versions", Config.VERSIONS_JSON);
+    public static File getPath() {
+        return MCPatcherUtils.getMinecraftPath("versions", Config.VERSIONS_JSON);
+    }
+
+    public static boolean fetchRemoteVersionList(int timeoutMS) {
+        File local = getPath();
         for (URL url : VERSIONS_URLS) {
-            if (JsonUtils.fetchURL(url, local, remote, timeoutMS, JsonUtils.JSON_SIGNATURE)) {
-                break;
+            if (JsonUtils.fetchURL(url, local, true, timeoutMS, JsonUtils.JSON_SIGNATURE)) {
+                return true;
             }
         }
-        VersionList list = JsonUtils.parseJson(local, VersionList.class);
+        return false;
+    }
+
+    public static VersionList getLocalVersionList() {
+        VersionList list = JsonUtils.parseJson(getPath(), VersionList.class);
         if (list != null) {
             Collections.sort(list.versions);
         }
@@ -38,24 +46,16 @@ public class VersionList {
     }
 
     public static VersionList getBuiltInVersionList() {
-        File local = MCPatcherUtils.getMinecraftPath("versions", Config.VERSIONS_JSON);
-        if (!local.isFile()) {
-            InputStream inputStream = null;
-            OutputStream outputStream = null;
-            try {
-                inputStream = VersionList.class.getResourceAsStream("/resources/versions.json");
-                outputStream = new FileOutputStream(local);
-                JsonUtils.copyStream(inputStream, outputStream);
-            } catch (IOException e) {
-                Logger.log(e);
-            } finally {
-                MCPatcherUtils.close(inputStream);
-                MCPatcherUtils.close(outputStream);
+        VersionList list = null;
+        InputStream inputStream = null;
+        try {
+            inputStream = VersionList.class.getResourceAsStream("/resources/versions.json");
+            list = JsonUtils.parseJson(inputStream, VersionList.class);
+            if (list != null) {
+                Collections.sort(list.versions);
             }
-        }
-        VersionList list = JsonUtils.parseJson(local, VersionList.class);
-        if (list != null) {
-            Collections.sort(list.versions);
+        } finally {
+            MCPatcherUtils.close(inputStream);
         }
         return list;
     }

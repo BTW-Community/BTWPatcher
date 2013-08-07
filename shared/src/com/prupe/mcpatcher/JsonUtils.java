@@ -115,13 +115,25 @@ public class JsonUtils {
         InputStream input = null;
         try {
             input = new FileInputStream(path);
-            InputStreamReader reader = new InputStreamReader(input);
-            return JsonUtils.newGson().fromJson(reader, cl);
+            return parseJson(input, cl);
         } catch (Throwable e) {
             e.printStackTrace();
             return null;
         } finally {
             MCPatcherUtils.close(input);
+        }
+    }
+
+    public static <T> T parseJson(InputStream input, Class<T> cl) {
+        if (input == null) {
+            return null;
+        }
+        try {
+            InputStreamReader reader = new InputStreamReader(input);
+            return JsonUtils.newGson().fromJson(reader, cl);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
