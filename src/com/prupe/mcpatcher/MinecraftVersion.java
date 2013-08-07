@@ -32,11 +32,11 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
         Pattern.CASE_INSENSITIVE
     );
     private static final Pattern ALPHA_PATTERN = Pattern.compile(
-        "(?:a|alpha[- ])" + VERSION_PATTERN,
+        "a" + VERSION_PATTERN,
         Pattern.CASE_INSENSITIVE
     );
     private static final Pattern BETA_PATTERN = Pattern.compile(
-        "(?:b|beta[- ])" + VERSION_PATTERN,
+        "b" + VERSION_PATTERN,
         Pattern.CASE_INSENSITIVE
     );
     private static final Pattern RC_PATTERN = Pattern.compile(
@@ -334,7 +334,7 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
         if (versionString == null) {
             return null;
         }
-        versionString = versionString.replaceFirst("^[Mm]inecraft\\s*", "");
+        versionString = shortenVersionString(versionString);
         int preRelease = NOT_PRERELEASE;
         Matcher preMatcher = PRERELEASE_PATTERN.matcher(versionString);
         if (preMatcher.find()) {
@@ -359,6 +359,16 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             }
         }
         return null;
+    }
+
+    private static String shortenVersionString(String versionString) {
+        versionString = versionString.toLowerCase();
+        versionString = versionString.replaceFirst("^minecraft", "");
+        versionString = versionString.replaceFirst("prerelease", "pre");
+        versionString = versionString.replaceAll("\\s", "");
+        versionString = versionString.replaceFirst("^alpha[- ]", "a");
+        versionString = versionString.replaceFirst("^beta[- ]", "b");
+        return versionString;
     }
 
     private static int[] splitVersionString(int era, String versionString) {
