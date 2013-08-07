@@ -667,7 +667,7 @@ public final class BaseMod extends Mod {
     public static class WorldMod extends com.prupe.mcpatcher.ClassMod {
         public WorldMod(Mod mod) {
             super(mod);
-            interfaces = new String[]{"IBlockAccess"};
+            setInterfaces("IBlockAccess");
 
             addClassSignature(new ConstSignature("ambient.cave.cave"));
             addClassSignature(new ConstSignature(0x3c6ef35f));
@@ -688,7 +688,7 @@ public final class BaseMod extends Mod {
     public static class WorldClientMod extends com.prupe.mcpatcher.ClassMod {
         public WorldClientMod(Mod mod) {
             super(mod);
-            parentClass = "World";
+            setParentClass("World");
 
             addClassSignature(new ConstSignature("MpServer"));
         }

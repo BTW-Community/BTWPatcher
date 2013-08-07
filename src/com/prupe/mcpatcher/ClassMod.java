@@ -37,9 +37,9 @@ abstract public class ClassMod implements PatchComponent {
     final List<com.prupe.mcpatcher.ClassSignature> classSignatures = new ArrayList<com.prupe.mcpatcher.ClassSignature>();
     final List<com.prupe.mcpatcher.ClassPatch> patches = new ArrayList<com.prupe.mcpatcher.ClassPatch>();
     final List<com.prupe.mcpatcher.MemberMapper> memberMappers = new ArrayList<com.prupe.mcpatcher.MemberMapper>();
-    boolean global = false;
-    String parentClass;
-    String[] interfaces;
+    boolean global;
+    private String parentClass;
+    private String[] interfaces;
     final Collection<String> targetClasses = new HashSet<String>();
     final List<String> errors = new ArrayList<String>();
     boolean addToConstPool = false;
@@ -51,7 +51,7 @@ abstract public class ClassMod implements PatchComponent {
     private final Map<String, Integer> labelPositions = new HashMap<String, Integer>();
     boolean matchAddedFiles;
 
-    ClassMod(Mod mod) {
+    public ClassMod(Mod mod) {
         this.mod = mod;
     }
 
