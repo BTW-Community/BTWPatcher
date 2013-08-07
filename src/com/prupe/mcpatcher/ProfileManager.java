@@ -531,7 +531,10 @@ class ProfileManager {
             }
         }
 
-        out.printf("%s%s: (%d versions)\n", Config.VERSIONS_JSON, remote ? "" : " (local copy)", unmoddedVersions.size());
+        out.printf("%s%s: (%d/%d versions)\n",
+            Config.VERSIONS_JSON, remote ? "" : " (local copy)",
+            unmoddedVersions.size(), remoteVersions.getVersions().size()
+        );
         for (Version version : remoteVersions.getVersions()) {
             out.printf("  %1s %s%s\n", version.isComplete() ? "*" : "", version.getId(), version.isSnapshot() ? " (snapshot)" : "");
         }
