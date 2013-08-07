@@ -38,6 +38,7 @@ public class MCPatcherUtils {
     public static final String BASE_MOD = "__Base";
     public static final String BASE_TEXTURE_PACK_MOD = "__TexturePackBase";
     public static final String BASE_TILESHEET_MOD = "__TilesheetBase";
+    public static final String NBT_MOD = "__NBT";
 
     public static final String CUSTOM_ANIMATIONS = "Custom Animations";
     public static final String MIPMAP = "Mipmap";

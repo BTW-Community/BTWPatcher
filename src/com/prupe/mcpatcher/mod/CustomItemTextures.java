@@ -32,10 +32,11 @@ public class CustomItemTextures extends Mod {
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
+        addDependency(MCPatcherUtils.NBT_MOD);
 
         addClassMod(new BaseMod.ResourceLocationMod(this));
         addClassMod(new BaseMod.TessellatorMod(this));
-        addClassMod(new BaseMod.NBTTagCompoundMod(this).mapGetTagList());
+        addClassMod(new BaseMod.NBTTagCompoundMod(this));
         addClassMod(new BaseMod.NBTTagListMod(this));
         addClassMod(new BaseMod.IconMod(this));
         addClassMod(new ItemMod());
@@ -56,10 +57,6 @@ public class CustomItemTextures extends Mod {
 
         addClassFile(MCPatcherUtils.CIT_UTILS_CLASS);
         addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$1");
-        addClassFile(MCPatcherUtils.NBT_RULE_CLASS);
-        addClassFile(MCPatcherUtils.NBT_RULE_CLASS + "$Exact");
-        addClassFile(MCPatcherUtils.NBT_RULE_CLASS + "$Regex");
-        addClassFile(MCPatcherUtils.NBT_RULE_CLASS + "$Glob");
         addClassFile(MCPatcherUtils.OVERRIDE_BASE_CLASS);
         addClassFile(MCPatcherUtils.ITEM_OVERRIDE_CLASS);
         addClassFile(MCPatcherUtils.ENCHANTMENT_CLASS);
