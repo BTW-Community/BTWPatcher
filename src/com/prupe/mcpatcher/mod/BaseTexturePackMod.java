@@ -1,5 +1,6 @@
-package com.prupe.mcpatcher;
+package com.prupe.mcpatcher.mod;
 
+import com.prupe.mcpatcher.*;
 import javassist.bytecode.AccessFlag;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class BaseTexturePackMod extends Mod {
     protected final MethodRef beforeChange1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "beforeChange1", "(Z)V");
     protected final MethodRef afterChange1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "afterChange1", "(Z)V");
 
-    protected BaseTexturePackMod() {
+    public BaseTexturePackMod() {
         name = MCPatcherUtils.BASE_TEXTURE_PACK_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
@@ -63,7 +64,7 @@ public class BaseTexturePackMod extends Mod {
         return new String[]{"Texture Pack"};
     }
 
-    static void clearEarlyInitializeMethods() {
+    public static void clearEarlyInitializeMethods() {
         earlyInitMethods.clear();
     }
 

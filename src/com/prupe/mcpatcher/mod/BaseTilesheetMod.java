@@ -1,5 +1,6 @@
-package com.prupe.mcpatcher;
+package com.prupe.mcpatcher.mod;
 
+import com.prupe.mcpatcher.*;
 import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -7,7 +8,7 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class BaseTilesheetMod extends Mod {
-    protected BaseTilesheetMod() {
+    public BaseTilesheetMod() {
         name = MCPatcherUtils.BASE_TILESHEET_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
