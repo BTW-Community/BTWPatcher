@@ -266,8 +266,8 @@ public class Version implements Comparable<Version> {
 
     @Override
     public int compareTo(Version o) {
-        MinecraftVersion v1 = MinecraftVersion.parseShortVersion(getId());
-        MinecraftVersion v2 = MinecraftVersion.parseShortVersion(o.getId());
+        MinecraftVersion v1 = MinecraftVersion.parseVersion(getId());
+        MinecraftVersion v2 = MinecraftVersion.parseVersion(o.getId());
         if (v1 != null && v2 != null) {
             return v1.compareTo(v2);
         } else if (v1 != null) {

@@ -96,6 +96,9 @@ class ProfileManager {
         OriginalVersion.clear();
 
         for (Version remote : remoteVersions.getVersions()) {
+            if (MinecraftVersion.parseVersion(remote.getId()) == null) {
+                continue;
+            }
             Version local = Version.getLocalVersion(remote.getId());
             if (local != null && local.isComplete()) {
                 unmoddedVersions.add(0, local.getId());

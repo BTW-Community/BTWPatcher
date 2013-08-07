@@ -300,7 +300,7 @@ class MinecraftJar {
             }
 
             if (!MCPatcherUtils.isNullOrEmpty(versionString)) {
-                version = MinecraftVersion.parseShortVersion(versionString);
+                version = MinecraftVersion.parseVersion(versionString);
             }
 
             boolean haveMetaInf = false;
@@ -359,7 +359,7 @@ class MinecraftJar {
         }
 
         private static MinecraftVersion extractVersion(File path) {
-            return MinecraftVersion.parseShortVersion(path.getParentFile().getName());
+            return MinecraftVersion.parseVersion(path.getParentFile().getName());
         }
 
         private static MinecraftVersion extractVersion(JarFile jar) {
@@ -373,7 +373,7 @@ class MinecraftJar {
                     properties.load(inputStream);
                     String value = properties.getProperty("minecraftVersion", "");
                     if (!value.equals("")) {
-                        return MinecraftVersion.parseShortVersion(value);
+                        return MinecraftVersion.parseVersion(value);
                     }
                 }
             } catch (IOException e) {
