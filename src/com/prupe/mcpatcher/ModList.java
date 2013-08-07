@@ -393,7 +393,7 @@ class ModList {
             for (int i = 0; i < modsByIndex.size() - 1; i++) {
                 Mod mod1 = modsByIndex.get(i);
                 Mod mod2 = modsByIndex.get(i + 1);
-                if (mod1.internal && !dependsOn(mod2, mod1)) {
+                if (mod1.internal && !mod2.internal && !dependsOn(mod2, mod1)) {
                     modsByIndex.set(i, mod2);
                     modsByIndex.set(i + 1, mod1);
                     continue outer;
