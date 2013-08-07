@@ -53,9 +53,9 @@ class ProfileManager {
         ready = false;
 
         rebuildRemoteVersionList(ui, forceRemote);
-        rebuildLocalVersionList();
-        addUnmoddedCustomVersions();
-        rebuildProfileList();
+        rebuildLocalVersionList(ui);
+        addUnmoddedCustomVersions(ui);
+        rebuildProfileList(ui);
 
         String profile = profiles.getSelectedProfile();
         if (moddedProfiles.contains(profile)) {
@@ -67,12 +67,13 @@ class ProfileManager {
         }
 
         ready = true;
-        ui.setStatusText("");
     }
 
     private void rebuildRemoteVersionList(UserInterface ui, boolean forceRemote) throws IOException {
         if (isRemote() || forceRemote) {
             ui.setStatusText("Getting version list from %s...", VersionList.VERSION_LIST.getHost());
+        } else {
+            ui.setStatusText("Reading version list...");
         }
         int timeout = forceRemote ? JsonUtils.LONG_TIMEOUT / 2 : JsonUtils.SHORT_TIMEOUT;
         remoteVersions = VersionList.getRemoteVersionList(forceRemote || isRemote(), timeout);
@@ -89,7 +90,7 @@ class ProfileManager {
         }
     }
 
-    private void rebuildLocalVersionList() throws IOException {
+    private void rebuildLocalVersionList(UserInterface ui) throws IOException {
         unmoddedVersions.clear();
         releaseVersions.clear();
         OriginalVersion.clear();
@@ -102,6 +103,7 @@ class ProfileManager {
                     releaseVersions.add(0, local.getId());
                 }
                 OriginalVersion.register(local);
+                ui.setStatusText("Found %d installed versions...", unmoddedVersions.size());
             }
         }
         if (unmoddedVersions.isEmpty()) {
@@ -109,7 +111,7 @@ class ProfileManager {
         }
     }
 
-    private void addUnmoddedCustomVersions() {
+    private void addUnmoddedCustomVersions(UserInterface ui) {
         File[] files = MCPatcherUtils.getMinecraftPath("versions").listFiles();
         if (files == null) {
             return;
@@ -126,6 +128,7 @@ class ProfileManager {
             if (local == null || !local.isComplete()) {
                 continue;
             }
+            ui.setStatusText("Comparing %s...", id);
             String md5sum = Util.computeMD5(local.getJarPath());
             OriginalVersion orig = OriginalVersion.get(md5sum);
             if (orig != null) {
@@ -135,7 +138,8 @@ class ProfileManager {
         }
     }
 
-    private void rebuildProfileList() throws IOException {
+    private void rebuildProfileList(UserInterface ui) throws IOException {
+        ui.setStatusText("Reading launcher profiles...");
         unmoddedProfiles.clear();
         moddedProfiles.clear();
         moddedProfiles.add(Config.MCPATCHER_PROFILE_NAME);

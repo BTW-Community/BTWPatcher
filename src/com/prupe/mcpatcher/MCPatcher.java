@@ -268,6 +268,7 @@ final public class MCPatcher {
             minecraft = null;
         }
         try {
+            ui.setStatusText("Opening %s", profileManager.getInputJar().getName());
             minecraft = new MinecraftJar(profileManager);
             minecraft.logVersion();
         } catch (IOException e) {
@@ -280,6 +281,7 @@ final public class MCPatcher {
     }
 
     private static void refreshModList() {
+        ui.setStatusText("Loading mods...");
         if (modList != null) {
             modList.close();
         }
