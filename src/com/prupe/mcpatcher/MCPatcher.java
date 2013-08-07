@@ -102,6 +102,8 @@ final public class MCPatcher {
         String mcVersion = null;
         boolean dumpJson = false;
 
+        System.setProperty("java.net.useSystemProxies", "true");
+
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-loglevel") && i + 1 < args.length) {
                 i++;

@@ -3,14 +3,11 @@ package com.prupe.mcpatcher;
 import com.google.gson.*;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.Proxy;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.util.*;
 
 public class JsonUtils {
-    static Proxy proxy = Proxy.NO_PROXY;
+    static Proxy proxy = null;
 
     public static final byte[] JSON_SIGNATURE = "{".getBytes();
     public static final byte[] JAR_SIGNATURE = "PK".getBytes();
@@ -40,7 +37,7 @@ public class JsonUtils {
             OutputStream output = null;
             try {
                 System.out.printf("Fetching %s...\n", url);
-                URLConnection connection = url.openConnection(proxy);
+                URLConnection connection = proxy == null ? url.openConnection() : url.openConnection(proxy);
                 connection.setConnectTimeout(timeoutMS);
                 connection.setReadTimeout(timeoutMS / 2);
                 input = new BufferedInputStream(connection.getInputStream());

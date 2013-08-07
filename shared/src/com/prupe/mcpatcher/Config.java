@@ -142,7 +142,7 @@ public class Config {
                 e.printStackTrace();
             }
         }
-        JsonUtils.proxy = Proxy.NO_PROXY;
+        JsonUtils.proxy = null;
         proxyHost = null;
         proxyPort = null;
         proxyUser = null;
