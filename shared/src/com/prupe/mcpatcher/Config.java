@@ -46,20 +46,10 @@ public class Config {
     private static final int VAL_FORMAT_MIN = 1;
     private static final int VAL_FORMAT_MAX = 1;
 
-    private static final String HEX_CHARS = "0123456789abcdef";
-    private static final String PROXY_CIPHER = "Blowfish";
-    private static final String PROXY_ENC_PREFIX = "enc:";
-
     transient String selectedProfile = MCPATCHER_PROFILE_NAME;
-    transient SecretKeySpec key;
-    transient Cipher cipher;
 
     int format = VAL_FORMAT_CURRENT;
     String patcherVersion;
-    String proxyHost;
-    Integer proxyPort;
-    String proxyUser;
-    private String proxyPassword;
     boolean betaWarningShown;
     boolean selectPatchedProfile = true;
     boolean fetchRemoteVersionList = true;
@@ -104,106 +94,6 @@ public class Config {
             JsonUtils.writeJson(instance, jsonFile);
         }
         return success;
-    }
-
-    void setProxy() {
-        setProxy(proxyHost, proxyPort == null ? null : proxyPort.toString(), proxyUser, getProxyPassword());
-    }
-
-    void setProxy(String host, String port, final String user, final String pw) {
-        int portNum = 0;
-        if (!MCPatcherUtils.isNullOrEmpty(port)) {
-            try {
-                portNum = Integer.parseInt(port);
-            } catch (NumberFormatException e) {
-            }
-        }
-        if (!MCPatcherUtils.isNullOrEmpty(host) && portNum > 0 && portNum < 65536) {
-            try {
-                JsonUtils.proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(host, portNum));
-                proxyHost = host;
-                proxyPort = portNum;
-                if (MCPatcherUtils.isNullOrEmpty(user) || MCPatcherUtils.isNullOrEmpty(pw)) {
-                    proxyUser = null;
-                    setProxyPassword(null);
-                    Authenticator.setDefault(null);
-                } else {
-                    proxyUser = user;
-                    setProxyPassword(pw);
-                    Authenticator.setDefault(new Authenticator() {
-                        @Override
-                        protected PasswordAuthentication getPasswordAuthentication() {
-                            return new PasswordAuthentication(user, pw.toCharArray());
-                        }
-                    });
-                }
-                return;
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
-        JsonUtils.proxy = null;
-        proxyHost = null;
-        proxyPort = null;
-        proxyUser = null;
-        setProxyPassword(null);
-        Authenticator.setDefault(null);
-    }
-
-    private Cipher initCipher(int mode) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException {
-        if (cipher == null) {
-            cipher = Cipher.getInstance(PROXY_CIPHER);
-        }
-        if (key == null) {
-            key = new SecretKeySpec("mOwRtHYFtdxHBcbq".getBytes(), PROXY_CIPHER);
-        }
-        cipher.init(mode, key);
-        return cipher;
-    }
-
-    String getProxyPassword() {
-        if (MCPatcherUtils.isNullOrEmpty(proxyPassword)) {
-            setProxyPassword(null);
-            return null;
-        }
-        if (!proxyPassword.startsWith(PROXY_ENC_PREFIX)) {
-            setProxyPassword(proxyPassword);
-            return getProxyPassword();
-        }
-        try {
-            Cipher cipher = initCipher(Cipher.DECRYPT_MODE);
-            String enc = proxyPassword.substring(PROXY_ENC_PREFIX.length());
-            byte[] data = new byte[enc.length() / 2];
-            for (int i = 0; i < data.length; i++) {
-                String tmp = enc.substring(2 * i, 2 * i + 2);
-                data[i] = (byte) Integer.parseInt(tmp, 16);
-            }
-            return new String(cipher.doFinal(data));
-        } catch (Throwable e) {
-            e.printStackTrace();
-            setProxyPassword(null);
-            return null;
-        }
-    }
-
-    void setProxyPassword(String proxyPassword) {
-        if (MCPatcherUtils.isNullOrEmpty(proxyPassword)) {
-            this.proxyPassword = null;
-            return;
-        }
-        try {
-            Cipher cipher = initCipher(Cipher.ENCRYPT_MODE);
-            byte[] in = cipher.doFinal(proxyPassword.getBytes());
-            char[] out = new char[2 * in.length];
-            for (int i = 0; i < out.length; i += 2) {
-                out[i] = HEX_CHARS.charAt((in[i / 2] >> 4) & 0xf);
-                out[i + 1] = HEX_CHARS.charAt(in[i / 2] & 0xf);
-            }
-            this.proxyPassword = PROXY_ENC_PREFIX + new String(out);
-        } catch (Throwable e) {
-            e.printStackTrace();
-            this.proxyPassword = null;
-        }
     }
 
     private static String getSelectedLauncherProfile(File minecraftDir) {

@@ -7,8 +7,6 @@ import java.net.*;
 import java.util.*;
 
 public class JsonUtils {
-    static Proxy proxy = null;
-
     public static final byte[] JSON_SIGNATURE = "{".getBytes();
     public static final byte[] JAR_SIGNATURE = "PK".getBytes();
 
@@ -37,7 +35,7 @@ public class JsonUtils {
             OutputStream output = null;
             try {
                 System.out.printf("Fetching %s...\n", url);
-                URLConnection connection = proxy == null ? url.openConnection() : url.openConnection(proxy);
+                URLConnection connection = url.openConnection();
                 connection.setConnectTimeout(timeoutMS);
                 connection.setReadTimeout(timeoutMS / 2);
                 input = new BufferedInputStream(connection.getInputStream());
