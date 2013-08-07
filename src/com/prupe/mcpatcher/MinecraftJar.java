@@ -6,31 +6,38 @@ import com.prupe.mcpatcher.launcher.version.Version;
 
 import java.io.*;
 import java.util.*;
-import java.util.jar.JarException;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 
 class MinecraftJar {
     private final ProfileManager profileManager;
-    private final File origFile;
+    private final File inputFile;
     private final File outputFile;
-    private final Info info;
-    private JarFile origJar;
+    private final String inputMD5;
+    private final String origMD5;
+    private final MinecraftVersion inputVersion;
+
+    private JarFile inputJar;
     private JarOutputStream outputJar;
 
     MinecraftJar(ProfileManager profileManager) throws IOException {
         this.profileManager = profileManager;
-        origFile = profileManager.getInputJar();
+        inputFile = profileManager.getInputJar();
         outputFile = profileManager.getOutputJar();
-        info = new Info(origFile, profileManager.getInputBaseVersion());
+        inputMD5 = Util.computeMD5(inputFile);
+        inputVersion = MinecraftVersion.parseVersion(profileManager.getInputBaseVersion());
+        if (inputVersion == null) {
+            throw new IOException("Could not determine version of " + inputFile.getName());
+        }
+        origMD5 = MinecraftVersion.getOriginalMD5(inputVersion);
     }
 
     static boolean isGarbageFile(String filename) {
-        return filename.startsWith("META-INF") || filename.startsWith("__MACOSX") || filename.endsWith(".DS_Store") || filename.equals("mod.properties");
+        return filename.startsWith("META-INF") || filename.startsWith("__MACOSX") ||
+            filename.endsWith(".DS_Store") || filename.equals("mod.properties");
     }
 
     static boolean isClassFile(String filename) {
@@ -43,23 +50,23 @@ class MinecraftJar {
             return;
         }
         File output = MCPatcherUtils.getMinecraftPath("options.txt.tmp");
-        BufferedReader br = null;
-        PrintWriter pw = null;
+        BufferedReader reader = null;
+        PrintWriter writer = null;
         try {
-            br = new BufferedReader(new FileReader(input));
-            pw = new PrintWriter(new FileWriter(output));
+            reader = new BufferedReader(new FileReader(input));
+            writer = new PrintWriter(new FileWriter(output));
             String line;
-            while ((line = br.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 if (line.startsWith("skin:")) {
                     line = "skin:Default";
                 }
-                pw.println(line);
+                writer.println(line);
             }
         } catch (IOException e) {
             Logger.log(e);
         } finally {
-            MCPatcherUtils.close(br);
-            MCPatcherUtils.close(pw);
+            MCPatcherUtils.close(reader);
+            MCPatcherUtils.close(writer);
         }
         try {
             Util.copyFile(output, input);
@@ -76,27 +83,29 @@ class MinecraftJar {
     }
 
     MinecraftVersion getVersion() {
-        return info.version;
+        return inputVersion;
     }
 
     boolean isModded() {
-        return info.result == Info.MODDED_JAR;
+        return !MinecraftVersion.isKnownMD5(inputMD5) && origMD5 != null && !origMD5.equals(inputMD5);
     }
 
     void logVersion() {
-        Logger.log(Logger.LOG_MAIN, "Minecraft version is %s (md5 %s)", info.version, info.md5);
-        if (info.origMD5 == null) {
+        Logger.log(Logger.LOG_MAIN, "Minecraft version is %s (md5 %s)", inputVersion, inputMD5);
+        if (inputVersion.isNewerThanAnyKnownVersion()) {
+            Logger.log(Logger.LOG_MAIN, "WARNING: version is newer than any known version");
+        } else if (origMD5 == null) {
             Logger.log(Logger.LOG_MAIN, "WARNING: could not determine original md5 sum");
-        } else if (info.result == Info.MODDED_JAR) {
-            Logger.log(Logger.LOG_MAIN, "WARNING: possibly modded minecraft.jar (orig md5 %s)", info.origMD5);
+        } else if (isModded()) {
+            Logger.log(Logger.LOG_MAIN, "WARNING: possibly modded minecraft.jar (orig md5 %s)", origMD5);
         }
     }
 
     JarFile getInputJar() throws IOException {
-        if (origJar == null) {
-            origJar = new JarFile(origFile, false);
+        if (inputJar == null) {
+            inputJar = new JarFile(inputFile, false);
         }
-        return origJar;
+        return inputJar;
     }
 
     JarOutputStream getOutputJar() throws IOException {
@@ -107,7 +116,7 @@ class MinecraftJar {
     }
 
     File getInputFile() {
-        return origFile;
+        return inputFile;
     }
 
     File getOutputFile() {
@@ -115,17 +124,8 @@ class MinecraftJar {
     }
 
     void writeProperties(Properties properties) throws IOException {
-        switch (info.result) {
-            case Info.UNMODDED_JAR:
-                properties.setProperty(Config.TAG_PRE_PATCH_STATE, "unmodded");
-                break;
-
-            case Info.MODDED_JAR:
-                properties.setProperty(Config.TAG_PRE_PATCH_STATE, "modded");
-                break;
-
-            default:
-                break;
+        if (origMD5 != null) {
+            properties.setProperty(Config.TAG_PRE_PATCH_STATE, isModded() ? "modded" : "unmodded");
         }
         try {
             outputJar.putNextEntry(new ZipEntry(Config.MCPATCHER_PROPERTIES));
@@ -148,9 +148,9 @@ class MinecraftJar {
     }
 
     void closeStreams() {
-        MCPatcherUtils.close(origJar);
+        MCPatcherUtils.close(inputJar);
         MCPatcherUtils.close(outputJar);
-        origJar = null;
+        inputJar = null;
         outputJar = null;
     }
 
@@ -161,8 +161,8 @@ class MinecraftJar {
             Logger.log(Logger.LOG_MAIN, "Output profile '%s' unexpectedly missing", profileManager.getOutputProfile());
             return;
         }
-        Version version1 = profileManager.getOutputVersionData();
-        if (version1 == null || !version1.isComplete()) {
+        Version version = profileManager.getOutputVersionData();
+        if (version == null || !version.isComplete()) {
             Logger.log(Logger.LOG_MAIN, "Output version '%s' unexpectedly missing", profileManager.getOutputVersion());
             return;
         }
@@ -188,7 +188,7 @@ class MinecraftJar {
         }
 
         profile.setGameArguments(gameArgs, profileManager.getProfileList());
-        version1.setGameArguments(gameArgs);
+        version.setGameArguments(gameArgs);
 
         File libDir = MCPatcherUtils.getMinecraftPath("libraries");
         File nativesDir = new File(jarFile.getParentFile(), profileManager.getOutputVersion() + "-natives-1");
@@ -203,12 +203,12 @@ class MinecraftJar {
             oldNativesDir.delete();
         }
 
-        version1.fetchLibraries(libDir);
+        version.fetchLibraries(libDir);
 
         cmdLine.add("-cp");
         StringBuilder sb = new StringBuilder();
         List<File> classPath = new ArrayList<File>();
-        version1.addToClassPath(libDir, classPath);
+        version.addToClassPath(libDir, classPath);
         classPath.add(jarFile);
         for (File f : classPath) {
             if (sb.length() > 0) {
@@ -217,12 +217,12 @@ class MinecraftJar {
             sb.append(f.getAbsolutePath());
         }
         cmdLine.add(sb.toString());
-        version1.unpackNatives(libDir, nativesDir);
+        version.unpackNatives(libDir, nativesDir);
         cmdLine.add("-Djava.library.path=" + nativesDir.getPath());
 
-        cmdLine.add(version1.getMainClass());
+        cmdLine.add(version.getMainClass());
         profile.addGameArguments(gameArgs, cmdLine);
-        version1.addGameArguments(gameArgs, cmdLine);
+        version.addGameArguments(gameArgs, cmdLine);
 
         ProcessBuilder pb = new ProcessBuilder(cmdLine.toArray(new String[cmdLine.size()]));
         pb.redirectErrorStream(true);
@@ -272,120 +272,6 @@ class MinecraftJar {
         } catch (InterruptedException e) {
         } catch (IOException e) {
             Logger.log(e);
-        }
-    }
-
-    static class Info {
-        static final int MODDED_JAR = 0;
-        static final int MODDED_OR_UNMODDED_JAR = 1;
-        static final int UNMODDED_JAR = 2;
-
-        MinecraftVersion version;
-        String md5;
-        String origMD5;
-        final int result;
-
-        Info(File minecraftJar, String versionString) throws IOException {
-            result = initialize(minecraftJar, versionString);
-        }
-
-        private int initialize(File minecraftJar, String versionString) throws IOException {
-            if (!minecraftJar.isFile()) {
-                throw new FileNotFoundException(minecraftJar.getPath() + " does not exist");
-            }
-
-            md5 = Util.computeMD5(minecraftJar);
-            if (md5 == null) {
-                throw new IOException("could not open " + minecraftJar.getPath());
-            }
-
-            if (!MCPatcherUtils.isNullOrEmpty(versionString)) {
-                version = MinecraftVersion.parseVersion(versionString);
-            }
-
-            boolean haveMetaInf = false;
-            boolean havePatcherProperties = false;
-            JarFile jar = null;
-            try {
-                HashSet<String> entries = new HashSet<String>();
-                jar = new JarFile(minecraftJar);
-                for (ZipEntry entry : Collections.list(jar.entries())) {
-                    String name = entry.getName();
-                    if (entries.contains(name)) {
-                        throw new ZipException("duplicate zip entry " + name);
-                    }
-                    if (name.startsWith("META-INF")) {
-                        haveMetaInf = true;
-                    } else if (name.equals("mcpatcher.properties")) {
-                        havePatcherProperties = true;
-                    }
-                    entries.add(name);
-                }
-                if (version == null) {
-                    version = extractVersion(minecraftJar, jar, md5);
-                }
-            } finally {
-                MCPatcherUtils.close(jar);
-            }
-
-            if (version == null) {
-                throw new JarException("Could not determine version of " + minecraftJar.getPath());
-            }
-            origMD5 = getOrigMD5(version);
-            if (!haveMetaInf || havePatcherProperties) {
-                return MODDED_JAR;
-            }
-            if (origMD5 == null) {
-                return MODDED_OR_UNMODDED_JAR;
-            }
-            if (MinecraftVersion.isKnownMD5(md5)) {
-                return UNMODDED_JAR;
-            }
-            if (version.isNewerThanAnyKnownVersion()) {
-                return MODDED_OR_UNMODDED_JAR;
-            }
-            if (origMD5.equals(md5)) {
-                return UNMODDED_JAR;
-            }
-            return MODDED_OR_UNMODDED_JAR;
-        }
-
-        private static MinecraftVersion extractVersion(File path, JarFile jar, String md5) {
-            MinecraftVersion version = extractVersion(jar);
-            if (version != null) {
-                return version;
-            }
-            return extractVersion(path);
-        }
-
-        private static MinecraftVersion extractVersion(File path) {
-            return MinecraftVersion.parseVersion(path.getParentFile().getName());
-        }
-
-        private static MinecraftVersion extractVersion(JarFile jar) {
-            MinecraftVersion version = null;
-            InputStream inputStream = null;
-            try {
-                ZipEntry entry = jar.getEntry("mcpatcher.properties");
-                if (entry != null) {
-                    inputStream = jar.getInputStream(entry);
-                    Properties properties = new Properties();
-                    properties.load(inputStream);
-                    String value = properties.getProperty("minecraftVersion", "");
-                    if (!value.equals("")) {
-                        return MinecraftVersion.parseVersion(value);
-                    }
-                }
-            } catch (IOException e) {
-                Logger.log(e);
-            } finally {
-                MCPatcherUtils.close(inputStream);
-            }
-            return version;
-        }
-
-        private static String getOrigMD5(MinecraftVersion version) {
-            return MinecraftVersion.knownMD5s.get(version.getVersionString());
         }
     }
 }

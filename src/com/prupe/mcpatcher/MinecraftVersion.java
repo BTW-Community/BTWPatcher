@@ -59,8 +59,8 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
     private final boolean snapshot;
     private final int preRelease;
 
-    static final Map<String, String> knownMD5s = new HashMap<String, String>();
-    private static final Map<String, String> alternateMD5s = new HashMap<String, String>();
+    private static final Map<MinecraftVersion, String> knownMD5s = new HashMap<MinecraftVersion, String>();
+    private static final Map<String, MinecraftVersion> alternateMD5s = new HashMap<String, MinecraftVersion>();
     private static final List<MinecraftVersion> versionOrdering = new ArrayList<MinecraftVersion>();
 
     static {
@@ -306,8 +306,8 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             }
             versionOrdering.remove(version);
             versionOrdering.add(version);
-            knownMD5s.put(versionString, md5);
-            alternateMD5s.put(md5, versionString);
+            knownMD5s.put(version, md5);
+            alternateMD5s.put(md5, version);
         } catch (Throwable e) {
             Logger.log(e);
         }
@@ -474,6 +474,15 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
     @Override
     public boolean equals(Object that) {
         return that instanceof MinecraftVersion && compareTo((MinecraftVersion) that) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return versionString.hashCode();
+    }
+
+    static String getOriginalMD5(MinecraftVersion version) {
+        return knownMD5s.get(version);
     }
 
     boolean isNewerThanAnyKnownVersion() {
