@@ -361,28 +361,6 @@ class MainForm {
         });
 
         patchButton.addActionListener(new ActionListener() {
-            class PatchThread extends UIWorker {
-                private boolean patchStatus;
-
-                @Override
-                void runImpl() {
-                    patchStatus = MCPatcher.patch();
-                }
-
-                @Override
-                void updateUI() {
-                    if (!patchStatus) {
-                        JOptionPane.showMessageDialog(frame,
-                            "There was an error during patching.  " +
-                                "See log for more information.  " +
-                                "Your original minecraft.jar has been restored.",
-                            "Error", JOptionPane.ERROR_MESSAGE
-                        );
-                    }
-                    super.updateUI();
-                }
-            }
-
             public void actionPerformed(ActionEvent e) {
                 if (MCPatcher.minecraft.isModded()) {
                     while (true) {
@@ -410,7 +388,27 @@ class MainForm {
                     }
                 }
                 setStatusText("Patching %s...", MCPatcher.minecraft.getOutputFile().getName());
-                runWorker(new PatchThread());
+                runWorker(new UIWorker() {
+                    private boolean patchStatus;
+
+                    @Override
+                    void runImpl() {
+                        patchStatus = MCPatcher.patch();
+                    }
+
+                    @Override
+                    void updateUI() {
+                        if (!patchStatus) {
+                            JOptionPane.showMessageDialog(frame,
+                                "There was an error during patching.  " +
+                                    "See log for more information.  " +
+                                    "Your original minecraft.jar has been restored.",
+                                "Error", JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                        super.updateUI();
+                    }
+                });
             }
         });
 
@@ -428,19 +426,17 @@ class MainForm {
         });
 
         testButton.addActionListener(new ActionListener() {
-            class MinecraftThread extends UIWorker {
-                @Override
-                public void runImpl() {
-                    MCPatcher.saveProperties();
-                    MCPatcher.minecraft.run();
-                }
-            }
-
             public void actionPerformed(ActionEvent e) {
                 tabbedPane.setSelectedIndex(TAB_LOG);
                 setStatusText("Launching %s...", MCPatcher.minecraft.getOutputFile().getName());
                 MCPatcher.saveProperties();
-                runWorker(new MinecraftThread());
+                runWorker(new UIWorker() {
+                    @Override
+                    public void runImpl() {
+                        MCPatcher.saveProperties();
+                        MCPatcher.minecraft.run();
+                    }
+                });
             }
         });
 
