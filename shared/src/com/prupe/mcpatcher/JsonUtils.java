@@ -30,7 +30,8 @@ public class JsonUtils {
 
     public static boolean fetchURL(URL url, File local, boolean forceRemote, int timeoutMS, byte[] signature) {
         boolean success = true;
-        if (forceRemote || !local.isFile() || local.length() <= 0) {
+        boolean alreadyExists = checkSignature(local, signature);
+        if (forceRemote || !alreadyExists) {
             BufferedInputStream input = null;
             OutputStream output = null;
             try {
@@ -54,7 +55,9 @@ public class JsonUtils {
         if (success && checkSignature(local, signature)) {
             return true;
         } else {
-            local.delete();
+            if (!alreadyExists) {
+                local.delete();
+            }
             return false;
         }
     }
