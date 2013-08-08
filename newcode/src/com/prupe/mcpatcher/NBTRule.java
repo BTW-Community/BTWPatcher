@@ -239,7 +239,7 @@ abstract public class NBTRule {
 
         @Override
         protected boolean match(NBTTagString nbt) {
-            return pattern.matcher(nbt.data).find();
+            return pattern.matcher(nbt.data).matches();
         }
     }
 
