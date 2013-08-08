@@ -1,6 +1,5 @@
 package com.prupe.mcpatcher;
 
-import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -57,9 +56,6 @@ abstract public class UserInterface {
     public void setStatusText(String format, Object... params) {
     }
 
-    public void setBusy(boolean busy) {
-    }
-
     void showBetaWarning() {
     }
 
@@ -107,23 +103,8 @@ abstract public class UserInterface {
         }
 
         @Override
-        public void setStatusText(final String format, final Object... params) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    mainForm.setStatusText(format, params);
-                }
-            });
-        }
-
-        @Override
-        public void setBusy(final boolean busy) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    mainForm.setBusy(busy);
-                }
-            });
+        public void setStatusText(String format, Object... params) {
+            mainForm.setStatusText(format, params);
         }
 
         @Override

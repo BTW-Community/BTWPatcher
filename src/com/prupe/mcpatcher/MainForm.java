@@ -603,7 +603,6 @@ class MainForm {
                     String.format("This will overwrite\n%s\n\nContinue?", converter.getOutputFile().getAbsolutePath()),
                     "Confirm overwrite", JOptionPane.YES_NO_OPTION);
                 if (result != JOptionPane.YES_OPTION) {
-                    setBusy(false);
                     return;
                 }
             }
@@ -698,31 +697,54 @@ class MainForm {
         }
     }
 
-    synchronized void setBusy(boolean busy) {
-        this.busy = busy;
-        if (!busy) {
-            setStatusText("");
-            updateProgress(0, 0);
-        }
-        updateControls();
-    }
-
-    synchronized void setStatusText(String format, Object... params) {
-        statusText.setText(String.format(format, params));
-    }
-
-    synchronized void updateProgress(int value, int max) {
-        if (max > 0) {
-            progressBar.setVisible(true);
-            progressBar.setMinimum(0);
-            progressBar.setMaximum(max);
-            progressBar.setValue(value);
+    private static void runInEventThread(Runnable task) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            task.run();
         } else {
-            progressBar.setVisible(false);
-            progressBar.setMinimum(0);
-            progressBar.setMaximum(1);
-            progressBar.setValue(0);
+            SwingUtilities.invokeLater(task);
         }
+    }
+
+    void setBusy(final boolean busy) {
+        this.busy = busy;
+        runInEventThread(new Runnable() {
+            @Override
+            public void run() {
+                if (!busy) {
+                    setStatusText("");
+                    updateProgress(0, 0);
+                }
+                updateControls();
+            }
+        });
+    }
+
+    void setStatusText(final String format, final Object... params) {
+        runInEventThread(new Runnable() {
+            @Override
+            public void run() {
+                statusText.setText(String.format(format, params));
+            }
+        });
+    }
+
+    void updateProgress(final int value, final int max) {
+        runInEventThread(new Runnable() {
+            @Override
+            public void run() {
+                if (max > 0) {
+                    progressBar.setVisible(true);
+                    progressBar.setMinimum(0);
+                    progressBar.setMaximum(max);
+                    progressBar.setValue(value);
+                } else {
+                    progressBar.setVisible(false);
+                    progressBar.setMinimum(0);
+                    progressBar.setMaximum(1);
+                    progressBar.setValue(0);
+                }
+            }
+        });
     }
 
     void updateProfileLists(ProfileManager profileManager) {
