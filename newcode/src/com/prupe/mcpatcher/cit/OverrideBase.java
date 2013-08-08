@@ -121,7 +121,9 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             if (name.startsWith(NBTRule.NBT_RULE_PREFIX)) {
                 value = (String) entry.getValue();
                 NBTRule rule = NBTRule.create(name, value);
-                if (rule != null) {
+                if (rule == null) {
+                    error("invalid nbt rule: %s", value);
+                } else {
                     nbtRules.add(rule);
                 }
             }
