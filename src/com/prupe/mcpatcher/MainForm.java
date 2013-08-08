@@ -386,7 +386,6 @@ class MainForm {
                         return;
                     }
                 }
-                setStatusText("Patching %s...", MCPatcher.minecraft.getOutputFile().getName());
                 runWorker(new UIWorker() {
                     private boolean patchStatus;
 
@@ -426,11 +425,11 @@ class MainForm {
         testButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 tabbedPane.setSelectedIndex(TAB_LOG);
-                setStatusText("Launching %s...", MCPatcher.minecraft.getOutputFile().getName());
                 MCPatcher.saveProperties();
                 runWorker(new UIWorker() {
                     @Override
                     public void runImpl() {
+                        setStatusText("Launching %s...", MCPatcher.minecraft.getOutputFile().getName());
                         MCPatcher.saveProperties();
                         MCPatcher.minecraft.run();
                     }
@@ -655,7 +654,6 @@ class MainForm {
             @Override
             void runImpl() throws Exception {
                 profileManager.refresh(MCPatcher.ui, forceRemote);
-                MCPatcher.refreshMinecraftPath();
             }
 
             @Override
@@ -664,6 +662,13 @@ class MainForm {
                     showLauncherError(error);
                 }
                 updateProfileLists(profileManager);
+            }
+
+            @Override
+            void nextTask() {
+                if (error == null) {
+                    MCPatcher.refreshMinecraftPath();
+                }
             }
         });
     }
@@ -924,7 +929,6 @@ class MainForm {
     }
 
     void updateModList() {
-        setStatusText("Analyzing %s...", MCPatcher.minecraft.getInputFile().getName());
         runWorker(new UIWorker() {
             @Override
             void runImpl() throws IOException, InterruptedException {
@@ -1118,7 +1122,7 @@ class MainForm {
                 Logger.log(e);
                 error = e;
             } finally {
-                if (Thread.currentThread().equals(workerThread)) {
+                if (SwingUtilities.isEventDispatchThread()) {
                     finish();
                 } else {
                     SwingUtilities.invokeLater(new Runnable() {
@@ -1137,11 +1141,15 @@ class MainForm {
             if (error != null) {
                 tabbedPane.setSelectedIndex(TAB_LOG);
             }
+            nextTask();
         }
 
         void updateUI() {
         }
 
         abstract void runImpl() throws Exception;
+
+        void nextTask() {
+        }
     }
 }

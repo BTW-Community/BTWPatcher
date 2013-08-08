@@ -298,6 +298,7 @@ final public class MCPatcher {
         int totalFiles = origJar.size();
         Logger.log(Logger.LOG_JAR);
         Logger.log(Logger.LOG_JAR, "Analyzing %s (%d files)", origJar.getName(), totalFiles);
+        ui.setStatusText("Analyzing %s...", minecraft.getInputFile().getName());
 
         int procFiles = 0;
         for (JarEntry entry : Collections.list(origJar.entries())) {
@@ -711,6 +712,7 @@ final public class MCPatcher {
         try {
             Logger.log(Logger.LOG_MAIN);
             Logger.log(Logger.LOG_MAIN, "Patching...");
+            ui.setStatusText("Patching %s...", MCPatcher.minecraft.getOutputFile().getName());
 
             for (Mod mod : modList.getAll()) {
                 mod.resetCounts();
