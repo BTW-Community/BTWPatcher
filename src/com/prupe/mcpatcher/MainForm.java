@@ -304,7 +304,6 @@ class MainForm {
                                 } else if (forgeMod != null) {
                                     addMod(forgeMod);
                                 }
-                                super.updateUI();
                             }
                         });
                     } else if (ExternalMod.isValidPath(path)) {
@@ -406,7 +405,6 @@ class MainForm {
                                 "Error", JOptionPane.ERROR_MESSAGE
                             );
                         }
-                        super.updateUI();
                     }
                 });
             }
@@ -600,7 +598,6 @@ class MainForm {
         });
         if (fd.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
             final File selectedFile = fd.getSelectedFile();
-            cancelWorker();
             final TexturePackConverter converter = (version == 16 ? new TexturePackConverter16(selectedFile) : new TexturePackConverter15(selectedFile));
             if (converter.getOutputFile().exists()) {
                 int result = JOptionPane.showConfirmDialog(frame,
@@ -622,7 +619,6 @@ class MainForm {
 
                 @Override
                 void updateUI() {
-                    super.updateUI();
                     StringBuilder sb = new StringBuilder();
                     for (String s : converter.getMessages()) {
                         sb.append(s).append('\n');
@@ -668,7 +664,6 @@ class MainForm {
                     showLauncherError(error);
                 }
                 updateProfileLists(profileManager);
-                super.updateUI();
             }
         });
     }
@@ -939,7 +934,6 @@ class MainForm {
             @Override
             void updateUI() {
                 redrawModList();
-                super.updateUI();
                 if (error != null) {
                     showCorruptJarError(MCPatcher.minecraft.getInputFile());
                 } else if (MCPatcher.minecraft.isModded()) {
@@ -1125,23 +1119,27 @@ class MainForm {
                 error = e;
             } finally {
                 if (Thread.currentThread().equals(workerThread)) {
-                    updateUI();
+                    finish();
                 } else {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            updateUI();
+                            finish();
                         }
                     });
                 }
             }
         }
 
-        void updateUI() {
+        final void finish() {
+            updateUI();
             setBusy(false);
             if (error != null) {
                 tabbedPane.setSelectedIndex(TAB_LOG);
             }
+        }
+
+        void updateUI() {
         }
 
         abstract void runImpl() throws Exception;
