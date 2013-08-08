@@ -288,23 +288,20 @@ class MainForm {
 
                             @Override
                             void runImpl() throws Exception {
-                                try {
-                                    forgeMod = new ForgeAdapter(MCPatcher.profileManager, MCPatcher.ui, path);
-                                } catch (Exception e) {
-                                    JOptionPane.showMessageDialog(frame,
-                                        "An error occurred while loading forge:\n\n" +
-                                            e.getMessage() + "\n\n" +
-                                            "More information may be found in the Log tab.",
-                                        "Error loading forge",
-                                        JOptionPane.ERROR_MESSAGE
-                                    );
-                                    throw e;
-                                }
+                                forgeMod = new ForgeAdapter(MCPatcher.profileManager, MCPatcher.ui, path);
                             }
 
                             @Override
                             void updateUI() {
-                                if (forgeMod != null) {
+                                if (error != null) {
+                                    JOptionPane.showMessageDialog(frame,
+                                        "An error occurred while loading forge:\n\n" +
+                                            error.getMessage() + "\n\n" +
+                                            "More information may be found in the Log tab.",
+                                        "Error loading forge",
+                                        JOptionPane.ERROR_MESSAGE
+                                    );
+                                } else if (forgeMod != null) {
                                     addMod(forgeMod);
                                 }
                                 super.updateUI();
