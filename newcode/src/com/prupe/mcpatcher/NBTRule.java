@@ -58,7 +58,7 @@ abstract public class NBTRule {
     }
 
     public final boolean match(NBTTagCompound nbt) {
-        return match(nbt, 0);
+        return nbt != null && match(nbt, 0);
     }
 
     private boolean match(NBTTagCompound nbt, int index) {
