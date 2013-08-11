@@ -148,7 +148,7 @@ class ModList {
     void loadImpliedMods(ProfileManager profileManager, UserInterface ui) throws Exception {
         Library forgeLibrary = profileManager.getForgeLibrary();
         if (forgeLibrary != null && !hasModSubclass(ForgeAdapter.class)) {
-            ForgeAdapter forgeMod = new ForgeAdapter(profileManager, ui, forgeLibrary);
+            ForgeAdapter forgeMod = new ForgeAdapter(ui, forgeLibrary);
             forgeMod.setEnabled(true);
             addFirstBuiltin(forgeMod);
         }

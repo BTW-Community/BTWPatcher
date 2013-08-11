@@ -1,7 +1,5 @@
 package com.prupe.mcpatcher;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.prupe.mcpatcher.launcher.version.Library;
 
 import java.io.*;
@@ -35,8 +33,6 @@ class ForgeAdapter extends Mod {
     private static final String LZMA_MAVEN = LZMA_PACKAGE + ":" + LZMA_NAME + ":" + LZMA_VERSION;
     private static final String LZMA_CLASS = "LZMA.LzmaInputStream";
 
-    private static final String VERSION_JSON = "version.json";
-
     private static final String BINPATCHES_PACK = "binpatches.pack.lzma";
     private static final String BINPATCH_PREFIX = "binpatch/client/";
     private static final String BINPATCH_SUFFIX = ".binpatch";
@@ -44,11 +40,7 @@ class ForgeAdapter extends Mod {
     private final File mcLibDir;
     private final File forgeJarPath;
     private final Map<String, Binpatch> patches = new HashMap<String, Binpatch>();
-    private JsonObject versionJson;
-    private ZipFile forgeZip;
     private int buildNumber;
-
-    private ClassLoader classLoader;
 
     private Constructor<?> gdiffConstructor1;
     private Constructor<?> gdiffConstructor2;
@@ -56,7 +48,7 @@ class ForgeAdapter extends Mod {
 
     private Constructor<? extends InputStream> lzmaConstructor;
 
-    ForgeAdapter(ProfileManager profileManager, UserInterface ui, Library forgeLibrary) throws Exception {
+    ForgeAdapter(UserInterface ui, Library forgeLibrary) throws Exception {
         mcLibDir = MCPatcherUtils.getMinecraftPath("libraries");
         forgeJarPath = forgeLibrary.getPath(mcLibDir);
         name = "Minecraft Forge";
@@ -85,21 +77,19 @@ class ForgeAdapter extends Mod {
         }
 
         ui.setStatusText("Analyzing %s...", forgeJarPath.getName());
-        ui.updateProgress(0, 4);
+        ui.updateProgress(0, 3);
         setupClassLoader();
-        ui.updateProgress(1, 4);
 
+        ZipFile forgeZip = null;
         try {
+            ui.updateProgress(1, 3);
             forgeZip = new ZipFile(forgeJarPath);
-            ui.updateProgress(2, 4);
-            if (profileManager.getForgeLibrary() == null) {
-                loadVersionJson(forgeZip, VERSION_JSON);
-                ui.updateProgress(3, 4);
-            }
+            ui.updateProgress(2, 3);
             loadBinPatches(forgeZip, BINPATCHES_PACK);
-            ui.updateProgress(4, 4);
+            ui.updateProgress(3, 3);
         } finally {
             MCPatcherUtils.close(forgeZip);
+            ui.updateProgress(0, 0);
             ui.setStatusText("");
         }
 
@@ -126,11 +116,6 @@ class ForgeAdapter extends Mod {
     }
 
     @Override
-    JsonObject getOverrideVersionJson() {
-        return versionJson;
-    }
-
-    @Override
     void addExtraJavaArguments(List<String> cmdLine) {
         cmdLine.add("-Dfml.ignorePatchDiscrepancies=true");
         cmdLine.add("-Dfml.ignoreInvalidMinecraftCertificates=true");
@@ -141,7 +126,7 @@ class ForgeAdapter extends Mod {
         if (!lzmaLib.fetch(mcLibDir)) {
             throw new IOException("Could not get LZMA library " + lzmaLib.getPath(mcLibDir).getName());
         }
-        classLoader = URLClassLoader.newInstance(new URL[]{
+        ClassLoader classLoader = URLClassLoader.newInstance(new URL[]{
             lzmaLib.getPath(mcLibDir).toURI().toURL(),
             forgeJarPath.toURI().toURL()
         }, getClass().getClassLoader());
@@ -156,20 +141,6 @@ class ForgeAdapter extends Mod {
 
         Class<? extends InputStream> lzmaClass = classLoader.loadClass(LZMA_CLASS).asSubclass(InputStream.class);
         lzmaConstructor = lzmaClass.getConstructor(InputStream.class);
-    }
-
-    private void loadVersionJson(ZipFile zip, String name) throws IOException {
-        ZipEntry entry = zip.getEntry(name);
-        if (entry == null) {
-            throw new IOException("Could not load " + name + " from " + forgeJarPath.getName());
-        }
-        InputStream input = null;
-        try {
-            input = zip.getInputStream(entry);
-            versionJson = new JsonParser().parse(new InputStreamReader(input)).getAsJsonObject();
-        } finally {
-            MCPatcherUtils.close(input);
-        }
     }
 
     private void loadBinPatches(ZipFile zip, String name) throws Exception {
