@@ -287,8 +287,9 @@ class MainForm {
                             Mod forgeMod;
 
                             @Override
-                            void runImpl() throws Exception {
+                            boolean runImpl() throws Exception {
                                 forgeMod = new ForgeAdapter(MCPatcher.profileManager, MCPatcher.ui, path);
+                                return true;
                             }
 
                             @Override
@@ -301,7 +302,7 @@ class MainForm {
                                         "Error loading forge",
                                         JOptionPane.ERROR_MESSAGE
                                     );
-                                } else if (forgeMod != null) {
+                                } else {
                                     addMod(forgeMod);
                                 }
                             }
@@ -387,16 +388,14 @@ class MainForm {
                     }
                 }
                 runWorker(new UIWorker() {
-                    private boolean patchStatus;
-
                     @Override
-                    void runImpl() {
-                        patchStatus = MCPatcher.patch();
+                    boolean runImpl() {
+                        return MCPatcher.patch();
                     }
 
                     @Override
                     void updateUI() {
-                        if (!patchStatus) {
+                        if (!success()) {
                             JOptionPane.showMessageDialog(frame,
                                 "There was an error during patching.  " +
                                     "See log for more information.  " +
@@ -428,10 +427,11 @@ class MainForm {
                 MCPatcher.saveProperties();
                 runWorker(new UIWorker() {
                     @Override
-                    public void runImpl() {
+                    boolean runImpl() {
                         setStatusText("Launching %s...", MCPatcher.minecraft.getOutputFile().getName());
                         MCPatcher.saveProperties();
                         MCPatcher.minecraft.run();
+                        return true;
                     }
                 });
             }
@@ -608,11 +608,9 @@ class MainForm {
             }
             tabbedPane.setSelectedIndex(TAB_LOG);
             runWorker(new UIWorker() {
-                private boolean result;
-
                 @Override
-                void runImpl() {
-                    result = converter.convert(MCPatcher.ui);
+                boolean runImpl() {
+                    return converter.convert(MCPatcher.ui);
                 }
 
                 @Override
@@ -621,7 +619,7 @@ class MainForm {
                     for (String s : converter.getMessages()) {
                         sb.append(s).append('\n');
                     }
-                    if (!result) {
+                    if (!success()) {
                         JOptionPane.showMessageDialog(frame, sb.toString(),
                             "Error converting " + selectedFile.getName(),
                             JOptionPane.ERROR_MESSAGE
@@ -651,8 +649,9 @@ class MainForm {
         }
         runWorker(new UIWorker() {
             @Override
-            void runImpl() throws Exception {
+            boolean runImpl() throws Exception {
                 profileManager.refresh(MCPatcher.ui, forceRemote);
+                return true;
             }
 
             @Override
@@ -953,8 +952,9 @@ class MainForm {
     void updateModList() {
         runWorker(new UIWorker() {
             @Override
-            void runImpl() throws IOException, InterruptedException {
+            boolean runImpl() throws IOException, InterruptedException {
                 MCPatcher.checkModApplicability();
+                return true;
             }
 
             @Override
@@ -1130,14 +1130,16 @@ class MainForm {
 
     abstract private class UIWorker extends Thread {
         protected Throwable error;
+        protected boolean status;
         protected boolean interrupted;
 
         @Override
         final public void run() {
             error = null;
+            status = false;
             interrupted = false;
             try {
-                runImpl();
+                status = runImpl();
             } catch (InterruptedException e) {
                 interrupted = true;
             } catch (Throwable e) {
@@ -1160,16 +1162,20 @@ class MainForm {
         final void finish() {
             updateUI();
             setBusy(false);
-            if (error != null) {
+            if (!success()) {
                 tabbedPane.setSelectedIndex(TAB_LOG);
             }
             nextTask();
         }
 
+        boolean success() {
+            return status && error == null;
+        }
+
         void updateUI() {
         }
 
-        abstract void runImpl() throws Exception;
+        abstract boolean runImpl() throws Exception;
 
         void nextTask() {
         }
