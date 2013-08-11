@@ -22,11 +22,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 class ForgeAdapter extends Mod {
-    private static final String UNIVERSAL_PREFIX1 = "minecraftforge-universal-";
-    private static final String UNIVERSAL_PREFIX2 = "minecraftforge-";
-    private static final String UNIVERSAL_SUFFIX = ".jar";
-    private static final String FORGE_MAVEN = "net.minecraftforge:minecraftforge:";
-    private static final String FORGE_URL = "http://files.minecraftforge.net/maven/";
+    static final String FORGE_LIB_NAME = "minecraftforge";
     private static final int FORGE_MIN_VERSION = 804;
     private static final String FORGE_MIN_VERSION_STR = "9.10.0.804";
 
@@ -45,11 +41,11 @@ class ForgeAdapter extends Mod {
     private static final String BINPATCH_PREFIX = "binpatch/client/";
     private static final String BINPATCH_SUFFIX = ".binpatch";
 
-    private final File universalJar;
-    private File forgeLibPath;
+    private final File mcLibDir;
+    private final File forgeJarPath;
     private final Map<String, Binpatch> patches = new HashMap<String, Binpatch>();
     private JsonObject versionJson;
-    private ZipFile universalZip;
+    private ZipFile forgeZip;
     private int buildNumber;
 
     private ClassLoader classLoader;
@@ -61,43 +57,19 @@ class ForgeAdapter extends Mod {
     private Constructor<? extends InputStream> lzmaConstructor;
 
     ForgeAdapter(ProfileManager profileManager, UserInterface ui, Library forgeLibrary) throws Exception {
-        this(profileManager, ui, forgeLibrary.getPath(MCPatcherUtils.getMinecraftPath("libraries")));
-    }
-
-    ForgeAdapter(ProfileManager profileManager, UserInterface ui, File universalJar) throws Exception {
-        this.universalJar = universalJar;
+        mcLibDir = MCPatcherUtils.getMinecraftPath("libraries");
+        forgeJarPath = forgeLibrary.getPath(mcLibDir);
         name = "Minecraft Forge";
         author = "Minecraft Forge team";
         description = "Minecraft Forge";
-        version = "";
+        version = forgeLibrary.getVersion();
         website = "http://minecraftforge.net/";
         clearDependencies();
 
-        // e.g., minecraftforge-universal-1.6.2-9.10.0.804.jar
-        String baseName = universalJar.getName().toLowerCase();
-        if (!baseName.startsWith(UNIVERSAL_PREFIX2) || !baseName.endsWith(UNIVERSAL_SUFFIX)) {
-            throw new IOException("Invalid filename " + universalJar.getName());
-        }
-        if (baseName.startsWith(UNIVERSAL_PREFIX1)) {
-            baseName = baseName.substring(UNIVERSAL_PREFIX1.length());
-        } else if (baseName.startsWith(UNIVERSAL_PREFIX2)) {
-            baseName = baseName.substring(UNIVERSAL_PREFIX2.length());
-        }
-        if (baseName.endsWith(UNIVERSAL_SUFFIX)) {
-            baseName = baseName.substring(0, baseName.length() - UNIVERSAL_SUFFIX.length());
+        if (!FORGE_LIB_NAME.equalsIgnoreCase(forgeLibrary.getName())) {
+            throw new IOException("Invalid filename " + forgeJarPath.getName());
         }
 
-        String[] token = baseName.split("-");
-        if (token.length > 1) {
-            String mcVersion = token[0];
-            if (!mcVersion.equals(getMinecraftVersion().getVersionString())) {
-                addError("Requires Minecraft " + mcVersion);
-                return;
-            }
-            version = token[1];
-        } else {
-            version = token[0];
-        }
         String temp = version.replaceAll(".*[^0-9](\\d+)$", "$1");
         if (!MCPatcherUtils.isNullOrEmpty(temp)) {
             try {
@@ -108,45 +80,30 @@ class ForgeAdapter extends Mod {
         }
 
         if (buildNumber != 0 && buildNumber < FORGE_MIN_VERSION) {
-            addError("Requires forge " + FORGE_MIN_VERSION_STR + " or newer");
+            addError("Requires Forge " + FORGE_MIN_VERSION_STR + " or newer");
             return;
         }
 
-        ui.setStatusText("Analyzing %s...", universalJar.getName());
-        ui.updateProgress(0, 5);
-        copyToLibraries();
-        ui.updateProgress(1, 5);
+        ui.setStatusText("Analyzing %s...", forgeJarPath.getName());
+        ui.updateProgress(0, 4);
         setupClassLoader();
-        ui.updateProgress(2, 5);
+        ui.updateProgress(1, 4);
 
         try {
-            universalZip = new ZipFile(universalJar);
-            ui.updateProgress(3, 5);
+            forgeZip = new ZipFile(forgeJarPath);
+            ui.updateProgress(2, 4);
             if (profileManager.getForgeLibrary() == null) {
-                loadVersionJson(universalZip, VERSION_JSON);
-                ui.updateProgress(4, 5);
+                loadVersionJson(forgeZip, VERSION_JSON);
+                ui.updateProgress(3, 4);
             }
-            loadBinPatches(universalZip, BINPATCHES_PACK);
-            ui.updateProgress(5, 5);
+            loadBinPatches(forgeZip, BINPATCHES_PACK);
+            ui.updateProgress(4, 4);
         } finally {
-            MCPatcherUtils.close(universalZip);
+            MCPatcherUtils.close(forgeZip);
             ui.setStatusText("");
         }
 
         description = String.format("%d classes modified", patches.size());
-    }
-
-    static boolean isValidPath(File path) {
-        String name = path.getName().toLowerCase();
-        return name.startsWith(UNIVERSAL_PREFIX1) && name.endsWith(UNIVERSAL_SUFFIX);
-    }
-
-    static String getFileTypePattern() {
-        return UNIVERSAL_PREFIX1 + "*" + UNIVERSAL_SUFFIX;
-    }
-
-    File getPath() {
-        return universalJar;
     }
 
     @Override
@@ -179,25 +136,14 @@ class ForgeAdapter extends Mod {
         cmdLine.add("-Dfml.ignoreInvalidMinecraftCertificates=true");
     }
 
-    private void copyToLibraries() throws IOException {
-        Library forgeLib = new Library(FORGE_MAVEN + version, FORGE_URL);
-        forgeLibPath = forgeLib.getPath(MCPatcherUtils.getMinecraftPath("libraries"));
-        if (!forgeLibPath.isFile() && !universalJar.equals(forgeLibPath)) {
-            Logger.log(Logger.LOG_MAIN, "copying %s to %s", universalJar, forgeLibPath);
-            forgeLibPath.getParentFile().mkdirs();
-            Util.copyFile(universalJar, forgeLibPath);
-        }
-    }
-
     private void setupClassLoader() throws Exception {
-        File libDir = MCPatcherUtils.getMinecraftPath("libraries");
         Library lzmaLib = new Library(LZMA_MAVEN, null);
-        if (!lzmaLib.fetch(libDir)) {
-            throw new IOException("Could not get LZMA library " + lzmaLib.getPath(libDir).getName());
+        if (!lzmaLib.fetch(mcLibDir)) {
+            throw new IOException("Could not get LZMA library " + lzmaLib.getPath(mcLibDir).getName());
         }
         classLoader = URLClassLoader.newInstance(new URL[]{
-            lzmaLib.getPath(libDir).toURI().toURL(),
-            forgeLibPath.toURI().toURL()
+            lzmaLib.getPath(mcLibDir).toURI().toURL(),
+            forgeJarPath.toURI().toURL()
         }, getClass().getClassLoader());
 
         Class<?> gdiffClass = classLoader.loadClass(GDIFF_CLASS);
@@ -215,7 +161,7 @@ class ForgeAdapter extends Mod {
     private void loadVersionJson(ZipFile zip, String name) throws IOException {
         ZipEntry entry = zip.getEntry(name);
         if (entry == null) {
-            throw new IOException("Could not load " + name + " from " + universalJar.getName());
+            throw new IOException("Could not load " + name + " from " + forgeJarPath.getName());
         }
         InputStream input = null;
         try {
@@ -229,7 +175,7 @@ class ForgeAdapter extends Mod {
     private void loadBinPatches(ZipFile zip, String name) throws Exception {
         ZipEntry entry = zip.getEntry(name);
         if (entry == null) {
-            throw new IOException("Could not load " + name + " from " + universalJar.getName());
+            throw new IOException("Could not load " + name + " from " + forgeJarPath.getName());
         }
         InputStream raw = null;
         InputStream lzma = null;

@@ -431,7 +431,7 @@ class ProfileManager {
             return null;
         }
         for (Library library : local.getLibraries()) {
-            if (!library.exclude() && library.getName().equalsIgnoreCase("minecraftforge")) {
+            if (!library.exclude() && library.getName().equalsIgnoreCase(ForgeAdapter.FORGE_LIB_NAME)) {
                 return library;
             }
         }

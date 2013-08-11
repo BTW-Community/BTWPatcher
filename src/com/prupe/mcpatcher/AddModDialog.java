@@ -175,16 +175,12 @@ class AddModDialog extends JDialog {
         fd.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(File f) {
-                return f.isDirectory() || ExternalMod.isValidPath(f) || (!editMode && ForgeAdapter.isValidPath(f));
+                return f.isDirectory() || ExternalMod.isValidPath(f);
             }
 
             @Override
             public String getDescription() {
-                if (editMode) {
-                    return ExternalMod.getFileTypePattern();
-                } else {
-                    return ExternalMod.getFileTypePattern() + "; " + ForgeAdapter.getFileTypePattern();
-                }
+                return ExternalMod.getFileTypePattern();
             }
         });
         if (fd.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {

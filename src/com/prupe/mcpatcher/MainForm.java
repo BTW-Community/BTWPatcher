@@ -282,32 +282,7 @@ class MainForm {
                     if (path == null) {
                         return;
                     }
-                    if (ForgeAdapter.isValidPath(path)) {
-                        runWorker(new UIWorker() {
-                            Mod forgeMod;
-
-                            @Override
-                            boolean runImpl() throws Exception {
-                                forgeMod = new ForgeAdapter(MCPatcher.profileManager, MCPatcher.ui, path);
-                                return true;
-                            }
-
-                            @Override
-                            void updateUI() {
-                                if (error != null) {
-                                    JOptionPane.showMessageDialog(frame,
-                                        "An error occurred while loading forge:\n\n" +
-                                            error.getMessage() + "\n\n" +
-                                            "More information may be found in the Log tab.",
-                                        "Error loading forge",
-                                        JOptionPane.ERROR_MESSAGE
-                                    );
-                                } else {
-                                    addMod(forgeMod);
-                                }
-                            }
-                        });
-                    } else if (ExternalMod.isValidPath(path)) {
+                    if (ExternalMod.isValidPath(path)) {
                         if (addModDialog.showFileListDialog()) {
                             addMod(addModDialog.getMod());
                         }
