@@ -1,5 +1,5 @@
-MCPatcher version is 4.2.0
-OS: Linux 3.9.11-200.fc18.x86_64 amd64
+MCPatcher version is 4.2.1
+OS: Linux 3.10.5-201.fc19.x86_64 amd64
 JVM: Sun Microsystems Inc. 1.6.0_45 (64 bit)
 Classpath: out/artifacts/mcpatcher/mcpatcher.jar
 Minecraft version is 1.6.2 (md5 1d43cdba8b9752d7f557ab7d3e365964)
@@ -293,6 +293,31 @@ Analyzing /home/prupe/.minecraft/versions/1.6.2/1.6.2.jar (2445 files)
    getString matches i (Ljava/lang/String;)Ljava/lang/String;
    setLong matches a (Ljava/lang/String;J)V
    getFloat matches g (Ljava/lang/String;)F
+  NBTTagCompound matches bx.class
+   setFloat matches a (Ljava/lang/String;F)V
+   getShort matches d (Ljava/lang/String;)S
+   getDouble matches h (Ljava/lang/String;)D
+   getIntArray matches k (Ljava/lang/String;)[I
+   removeTag matches o (Ljava/lang/String;)V
+   getByteArray matches j (Ljava/lang/String;)[B
+   getByte matches c (Ljava/lang/String;)B
+   setString matches a (Ljava/lang/String;Ljava/lang/String;)V
+   hasKey matches b (Ljava/lang/String;)Z
+   getLong matches f (Ljava/lang/String;)J
+   setByteArray matches a (Ljava/lang/String;[B)V
+   setDouble matches a (Ljava/lang/String;D)V
+   setShort matches a (Ljava/lang/String;S)V
+   setByte matches a (Ljava/lang/String;B)V
+   getInteger matches e (Ljava/lang/String;)I
+   setIntArray matches a (Ljava/lang/String;[I)V
+   setInteger matches a (Ljava/lang/String;I)V
+   getString matches i (Ljava/lang/String;)Ljava/lang/String;
+   setLong matches a (Ljava/lang/String;J)V
+   getFloat matches g (Ljava/lang/String;)F
+  NBTTagList matches cf.class
+   tagAt matches b (I)Lck;
+   removeTag matches a (I)Lck;
+   tagCount matches c ()I
   NBTTagList matches cf.class
    tagAt matches b (I)Lck;
    removeTag matches a (I)Lck;
@@ -550,6 +575,14 @@ Analyzing /home/prupe/.minecraft/versions/1.6.2/1.6.2.jar (methods and fields)
   TextureManager (bij.class)
   TextureAtlasSprite (bii.class)
    field textureName matches i Ljava/lang/String;
+  NBTTagCompound (bx.class)
+   method getBoolean matches n (Ljava/lang/String;)Z
+   method setBoolean matches a (Ljava/lang/String;Z)V
+   method getCompoundTag matches l (Ljava/lang/String;)Lbx;
+   method setCompoundTag matches a (Ljava/lang/String;Lbx;)V
+   method getTag matches a (Ljava/lang/String;)Lck;
+   method getTags matches c ()Ljava/util/Collection;
+  NBTTagList (cf.class)
   Minecraft (ats.class)
    method getInstance matches w ()Lats;
   ResourceLocation (bjl.class)
@@ -760,7 +793,6 @@ Analyzing /home/prupe/.minecraft/versions/1.6.2/1.6.2.jar (methods and fields)
    method setCompoundTag matches a (Ljava/lang/String;Lbx;)V
    method getTag matches a (Ljava/lang/String;)Lck;
    method getTags matches c ()Ljava/util/Collection;
-   method getTagList matches m (Ljava/lang/String;)Lcf;
   NBTTagList (cf.class)
   Icon (mr.class)
   Item (yb.class)
@@ -796,10 +828,11 @@ Analyzing /home/prupe/.minecraft/versions/1.6.2/1.6.2.jar (methods and fields)
   PotionHelper (zo.class)
    method getMundaneName matches c (I)Ljava/lang/String;
 
-10 available mods:
+11 available mods:
 [YES] __Base 1.2 - Internal mod required by the patcher.
 [YES] __TexturePackBase 4.0 - Internal mod required by the patcher.
 [YES] __TilesheetBase 2.1 - Internal mod required by the patcher.
+[YES] __NBT 1.0 - Internal mod required by the patcher.
 [YES] Extended HD 3.1 - Provides support for custom animations, HD fonts, mipmapping, and other graphical features.
 [YES] Random Mobs 1.6 - Randomize mob skins if texture pack supports it. Based on Balthichou's mod.
 [YES] Custom Colors 1.6 - Gives texture packs control over hardcoded colors in the game.
@@ -2035,6 +2068,71 @@ Better Skies
     class net.minecraft.src.WorldClient alias for WorldClient
     class net.minecraft.src.WorldProvider alias for WorldProvider
 
+__NBT
+    class NBTBase (ck.class)
+    class NBTTagByte (bw.class)
+        field data -> a B
+    class NBTTagByteArray (bv.class)
+        field data -> a [B
+    class NBTTagCompound (bx.class) extends NBTBase
+        method getBoolean -> n (Ljava/lang/String;)Z
+        method getByte -> c (Ljava/lang/String;)B
+        method getByteArray -> j (Ljava/lang/String;)[B
+        method getCompoundTag -> l (Ljava/lang/String;)Lbx;
+        method getDouble -> h (Ljava/lang/String;)D
+        method getFloat -> g (Ljava/lang/String;)F
+        method getIntArray -> k (Ljava/lang/String;)[I
+        method getInteger -> e (Ljava/lang/String;)I
+        method getLong -> f (Ljava/lang/String;)J
+        method getShort -> d (Ljava/lang/String;)S
+        method getString -> i (Ljava/lang/String;)Ljava/lang/String;
+        method getTag -> a (Ljava/lang/String;)Lck;
+        method getTags -> c ()Ljava/util/Collection;
+        method hasKey -> b (Ljava/lang/String;)Z
+        method removeTag -> o (Ljava/lang/String;)V
+        method setBoolean -> a (Ljava/lang/String;Z)V
+        method setByte -> a (Ljava/lang/String;B)V
+        method setByteArray -> a (Ljava/lang/String;[B)V
+        method setCompoundTag -> a (Ljava/lang/String;Lbx;)V
+        method setDouble -> a (Ljava/lang/String;D)V
+        method setFloat -> a (Ljava/lang/String;F)V
+        method setIntArray -> a (Ljava/lang/String;[I)V
+        method setInteger -> a (Ljava/lang/String;I)V
+        method setLong -> a (Ljava/lang/String;J)V
+        method setShort -> a (Ljava/lang/String;S)V
+        method setString -> a (Ljava/lang/String;Ljava/lang/String;)V
+        field tagMap -> a Ljava/util/Map;
+    class NBTTagDouble (ca.class)
+        field data -> a D
+    class NBTTagFloat (cc.class)
+        field data -> a F
+    class NBTTagIntArray (cd.class)
+        field data -> a [I
+    class NBTTagInteger (ce.class)
+        field data -> a I
+    class NBTTagList (cf.class) extends NBTBase
+        method removeTag -> a (I)Lck;
+        method tagAt -> b (I)Lck;
+        method tagCount -> c ()I
+    class NBTTagLong (cg.class)
+        field data -> a J
+    class NBTTagShort (ci.class)
+        field data -> a S
+    class NBTTagString (cj.class)
+        field data -> a Ljava/lang/String;
+    class net.minecraft.src.NBTBase alias for NBTBase
+    class net.minecraft.src.NBTTagByte alias for NBTTagByte
+    class net.minecraft.src.NBTTagByteArray alias for NBTTagByteArray
+    class net.minecraft.src.NBTTagCompound alias for NBTTagCompound
+    class net.minecraft.src.NBTTagDouble alias for NBTTagDouble
+    class net.minecraft.src.NBTTagFloat alias for NBTTagFloat
+    class net.minecraft.src.NBTTagIntArray alias for NBTTagIntArray
+    class net.minecraft.src.NBTTagInteger alias for NBTTagInteger
+    class net.minecraft.src.NBTTagList alias for NBTTagList
+    class net.minecraft.src.NBTTagLong alias for NBTTagLong
+    class net.minecraft.src.NBTTagShort alias for NBTTagShort
+    class net.minecraft.src.NBTTagString alias for NBTTagString
+
 Custom Item Textures
     class Entity (nm.class)
     class EntityItem (sr.class)
@@ -2100,7 +2198,6 @@ Custom Item Textures
         method getShort -> d (Ljava/lang/String;)S
         method getString -> i (Ljava/lang/String;)Ljava/lang/String;
         method getTag -> a (Ljava/lang/String;)Lck;
-        method getTagList -> m (Ljava/lang/String;)Lcf;
         method getTags -> c ()Ljava/util/Collection;
         method hasKey -> b (Ljava/lang/String;)Z
         method removeTag -> o (Ljava/lang/String;)V
@@ -2221,6 +2318,7 @@ Patching...
 [*] Connected Textures 2.4 - Enables support for connected, randomized, and other custom terrain textures.
 [*] Better Glass 2.2 - Enables partial transparency for glass blocks.
 [*] Better Skies 1.5 - Adds support for custom skyboxes.
+[*] __NBT 1.0 - Internal mod required by the patcher.
 [*] Custom Item Textures 0.5 - Enables support for custom item textures, enchantments, and armor.
 
  applying Minecraft patch to ats.class for mod __Base
@@ -6799,180 +6897,188 @@ Patching...
    method signature (Lnet/minecraft/src/ResourceLocation;)Ljava/awt/image/BufferedImage; -> (Lbjl;)Ljava/awt/image/BufferedImage;
    method signature (Lnet/minecraft/src/ResourceLocation;Ljava/util/Properties;)Z -> (Lbjl;Ljava/util/Properties;)Z
     method ref com/prupe/mcpatcher/TexturePackAPI.getResourceManager ()Lnet/minecraft/src/ResourceManager; -> com/prupe/mcpatcher/TexturePackAPI.getResourceManager ()Lbjm; getResourcePacks(Ljava/lang/String;)Ljava/util/List;@8
-     INVOKESTATIC 0x00 0x04    INVOKESTATIC 0x02 0x02
+     INVOKESTATIC 0x00 0x04    INVOKESTATIC 0x02 0x03
     class ref net/minecraft/src/SimpleReloadableResourceManager -> bjt getResourcePacks(Ljava/lang/String;)Ljava/util/List;@13
-     INSTANCEOF 0x00 0x05      INSTANCEOF 0x02 0x04
+     INSTANCEOF 0x00 0x05      INSTANCEOF 0x02 0x05
     class ref net/minecraft/src/SimpleReloadableResourceManager -> bjt getResourcePacks(Ljava/lang/String;)Ljava/util/List;@20
-     CHECKCAST 0x00 0x05       CHECKCAST 0x02 0x04
+     CHECKCAST 0x00 0x05       CHECKCAST 0x02 0x05
     field ref net/minecraft/src/SimpleReloadableResourceManager.namespaceMap Ljava/util/Map; -> bjt.b Ljava/util/Map; getResourcePacks(Ljava/lang/String;)Ljava/util/List;@23
-     GETFIELD 0x00 0x06        GETFIELD 0x02 0x07
+     GETFIELD 0x00 0x06        GETFIELD 0x02 0x08
     class ref net/minecraft/src/FallbackResourceManager -> bje getResourcePacks(Ljava/lang/String;)Ljava/util/List;@82
-     CHECKCAST 0x00 0x0f       CHECKCAST 0x02 0x09
+     CHECKCAST 0x00 0x0f       CHECKCAST 0x02 0x0a
     field ref net/minecraft/src/FallbackResourceManager.resourcePacks Ljava/util/List; -> bje.a Ljava/util/List; getResourcePacks(Ljava/lang/String;)Ljava/util/List;@90
-     GETFIELD 0x00 0x10        GETFIELD 0x02 0x0c
+     GETFIELD 0x00 0x10        GETFIELD 0x02 0x0d
     method ref net/minecraft/client/Minecraft.getInstance ()Lnet/minecraft/client/Minecraft; -> ats.w ()Lats; getResourceManager()Lbjm;@0
-     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x02 0x12
+     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x02 0x13
     method ref net/minecraft/client/Minecraft.getInstance ()Lnet/minecraft/client/Minecraft; -> ats.w ()Lats; getTextureIfLoaded(Lbjl;)I@6
-     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x02 0x12
+     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x02 0x13
     method ref net/minecraft/client/Minecraft.getInstance ()Lnet/minecraft/client/Minecraft; -> ats.w ()Lats; getTextureObject(Lbjl;)Lbil;@0
-     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x02 0x12
+     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x02 0x13
     method ref net/minecraft/client/Minecraft.getInstance ()Lnet/minecraft/client/Minecraft; -> ats.w ()Lats; bindTexture(Lbjl;)V@0
-     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x02 0x12
+     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x02 0x13
     method ref net/minecraft/client/Minecraft.getInstance ()Lnet/minecraft/client/Minecraft; -> ats.w ()Lats; unloadTexture(Lbjl;)V@0
-     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x02 0x12
+     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x02 0x13
     method ref net/minecraft/client/Minecraft.getInstance ()Lnet/minecraft/client/Minecraft; -> ats.w ()Lats; getInputStreamImpl(Lbjl;)Ljava/io/InputStream;@0
-     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x02 0x12
+     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x02 0x13
     method ref net/minecraft/client/Minecraft.getResourceManager ()Lnet/minecraft/src/ResourceManager; -> ats.K ()Lbjm; getResourceManager()Lbjm;@3
-     INVOKEVIRTUAL 0x00 0x14   INVOKEVIRTUAL 0x02 0x15
+     INVOKEVIRTUAL 0x00 0x14   INVOKEVIRTUAL 0x02 0x16
     method ref net/minecraft/client/Minecraft.getResourceManager ()Lnet/minecraft/src/ResourceManager; -> ats.K ()Lbjm; getInputStreamImpl(Lbjl;)Ljava/io/InputStream;@3
-     INVOKEVIRTUAL 0x00 0x14   INVOKEVIRTUAL 0x02 0x15
+     INVOKEVIRTUAL 0x00 0x14   INVOKEVIRTUAL 0x02 0x16
     method ref com/prupe/mcpatcher/TexturePackAPI.getInputStreamImpl (Lnet/minecraft/src/ResourceLocation;)Ljava/io/InputStream; -> com/prupe/mcpatcher/TexturePackAPI.getInputStreamImpl (Lbjl;)Ljava/io/InputStream; getInputStream(Lbjl;)Ljava/io/InputStream;@12
-     INVOKEVIRTUAL 0x00 0x19   INVOKEVIRTUAL 0x02 0x17
+     INVOKEVIRTUAL 0x00 0x19   INVOKEVIRTUAL 0x02 0x18
     method ref net/minecraft/src/ResourceLocation.getPath ()Ljava/lang/String; -> bjl.a ()Ljava/lang/String; hasResource(Lbjl;)Z@7
-     INVOKEVIRTUAL 0x00 0x1a   INVOKEVIRTUAL 0x02 0x1b
+     INVOKEVIRTUAL 0x00 0x1a   INVOKEVIRTUAL 0x02 0x1c
     method ref net/minecraft/src/ResourceLocation.getPath ()Ljava/lang/String; -> bjl.a ()Ljava/lang/String; hasResource(Lbjl;)Z@32
-     INVOKEVIRTUAL 0x00 0x1a   INVOKEVIRTUAL 0x02 0x1b
+     INVOKEVIRTUAL 0x00 0x1a   INVOKEVIRTUAL 0x02 0x1c
     method ref net/minecraft/src/ResourceLocation.getPath ()Ljava/lang/String; -> bjl.a ()Ljava/lang/String; transformResourceLocation(Lbjl;Ljava/lang/String;Ljava/lang/String;)Lbjl;@9
-     INVOKEVIRTUAL 0x00 0x1a   INVOKEVIRTUAL 0x02 0x1b
-    method ref net/minecraft/src/ResourceLocation.getPath ()Ljava/lang/String; -> bjl.a ()Ljava/lang/String; parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@179
-     INVOKEVIRTUAL 0x00 0x1a   INVOKEVIRTUAL 0x02 0x1b
+     INVOKEVIRTUAL 0x00 0x1a   INVOKEVIRTUAL 0x02 0x1c
+    method ref net/minecraft/src/ResourceLocation.getPath ()Ljava/lang/String; -> bjl.a ()Ljava/lang/String; parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@185
+     INVOKEVIRTUAL 0x00 0x1a   INVOKEVIRTUAL 0x02 0x1c
+    method ref net/minecraft/src/ResourceLocation.getPath ()Ljava/lang/String; -> bjl.a ()Ljava/lang/String; parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@242
+     INVOKEVIRTUAL 0x00 0x1a   INVOKEVIRTUAL 0x02 0x1c
     method ref com/prupe/mcpatcher/TexturePackAPI.getImage (Lnet/minecraft/src/ResourceLocation;)Ljava/awt/image/BufferedImage; -> com/prupe/mcpatcher/TexturePackAPI.getImage (Lbjl;)Ljava/awt/image/BufferedImage; hasResource(Lbjl;)Z@19
-     INVOKESTATIC 0x00 0x1d    INVOKESTATIC 0x02 0x1d
+     INVOKESTATIC 0x00 0x1d    INVOKESTATIC 0x02 0x1e
     method ref com/prupe/mcpatcher/TexturePackAPI.getProperties (Lnet/minecraft/src/ResourceLocation;)Ljava/util/Properties; -> com/prupe/mcpatcher/TexturePackAPI.getProperties (Lbjl;)Ljava/util/Properties; hasResource(Lbjl;)Z@44
-     INVOKESTATIC 0x00 0x1f    INVOKESTATIC 0x02 0x1f
+     INVOKESTATIC 0x00 0x1f    INVOKESTATIC 0x02 0x20
     method ref com/prupe/mcpatcher/TexturePackAPI.getInputStream (Lnet/minecraft/src/ResourceLocation;)Ljava/io/InputStream; -> com/prupe/mcpatcher/TexturePackAPI.getInputStream (Lbjl;)Ljava/io/InputStream; hasResource(Lbjl;)Z@57
-     INVOKESTATIC 0x00 0x20    INVOKESTATIC 0x02 0x21
+     INVOKESTATIC 0x00 0x20    INVOKESTATIC 0x02 0x22
     method ref com/prupe/mcpatcher/TexturePackAPI.getInputStream (Lnet/minecraft/src/ResourceLocation;)Ljava/io/InputStream; -> com/prupe/mcpatcher/TexturePackAPI.getInputStream (Lbjl;)Ljava/io/InputStream; getImageImpl(Lbjl;)Ljava/awt/image/BufferedImage;@1
-     INVOKESTATIC 0x00 0x20    INVOKESTATIC 0x02 0x21
+     INVOKESTATIC 0x00 0x20    INVOKESTATIC 0x02 0x22
     method ref com/prupe/mcpatcher/TexturePackAPI.getInputStream (Lnet/minecraft/src/ResourceLocation;)Ljava/io/InputStream; -> com/prupe/mcpatcher/TexturePackAPI.getInputStream (Lbjl;)Ljava/io/InputStream; getPropertiesImpl(Lbjl;Ljava/util/Properties;)Z@5
-     INVOKESTATIC 0x00 0x20    INVOKESTATIC 0x02 0x21
+     INVOKESTATIC 0x00 0x20    INVOKESTATIC 0x02 0x22
     method ref com/prupe/mcpatcher/TexturePackAPI.getImageImpl (Lnet/minecraft/src/ResourceLocation;)Ljava/awt/image/BufferedImage; -> com/prupe/mcpatcher/TexturePackAPI.getImageImpl (Lbjl;)Ljava/awt/image/BufferedImage; getImage(Lbjl;)Ljava/awt/image/BufferedImage;@12
-     INVOKEVIRTUAL 0x00 0x22   INVOKEVIRTUAL 0x02 0x23
+     INVOKEVIRTUAL 0x00 0x22   INVOKEVIRTUAL 0x02 0x24
     method ref com/prupe/mcpatcher/TexturePackAPI.getProperties (Lnet/minecraft/src/ResourceLocation;Ljava/util/Properties;)Z -> com/prupe/mcpatcher/TexturePackAPI.getProperties (Lbjl;Ljava/util/Properties;)Z getProperties(Lbjl;)Ljava/util/Properties;@10
-     INVOKESTATIC 0x00 0x25    INVOKESTATIC 0x02 0x25
+     INVOKESTATIC 0x00 0x25    INVOKESTATIC 0x02 0x26
     method ref com/prupe/mcpatcher/TexturePackAPI.getPropertiesImpl (Lnet/minecraft/src/ResourceLocation;Ljava/util/Properties;)Z -> com/prupe/mcpatcher/TexturePackAPI.getPropertiesImpl (Lbjl;Ljava/util/Properties;)Z getProperties(Lbjl;Ljava/util/Properties;)Z@9
-     INVOKEVIRTUAL 0x00 0x26   INVOKEVIRTUAL 0x02 0x27
+     INVOKEVIRTUAL 0x00 0x26   INVOKEVIRTUAL 0x02 0x28
     class ref net/minecraft/src/ResourceLocation -> bjl transformResourceLocation(Lbjl;Ljava/lang/String;Ljava/lang/String;)Lbjl;@0
-     NEW 0x00 0x27             NEW 0x02 0x19
-    class ref net/minecraft/src/ResourceLocation -> bjl parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@89
-     NEW 0x00 0x27             NEW 0x02 0x19
-    class ref net/minecraft/src/ResourceLocation -> bjl parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@119
-     NEW 0x00 0x27             NEW 0x02 0x19
-    class ref net/minecraft/src/ResourceLocation -> bjl parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@163
-     NEW 0x00 0x27             NEW 0x02 0x19
-    class ref net/minecraft/src/ResourceLocation -> bjl parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@207
-     NEW 0x00 0x27             NEW 0x02 0x19
+     NEW 0x00 0x27             NEW 0x02 0x1a
+    class ref net/minecraft/src/ResourceLocation -> bjl parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@95
+     NEW 0x00 0x27             NEW 0x02 0x1a
+    class ref net/minecraft/src/ResourceLocation -> bjl parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@125
+     NEW 0x00 0x27             NEW 0x02 0x1a
+    class ref net/minecraft/src/ResourceLocation -> bjl parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@169
+     NEW 0x00 0x27             NEW 0x02 0x1a
+    class ref net/minecraft/src/ResourceLocation -> bjl parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@226
+     NEW 0x00 0x27             NEW 0x02 0x1a
+    class ref net/minecraft/src/ResourceLocation -> bjl parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@266
+     NEW 0x00 0x27             NEW 0x02 0x1a
     class ref net/minecraft/src/ResourceLocation -> bjl newMCPatcherResourceLocation(Ljava/lang/String;)Lbjl;@0
-     NEW 0x00 0x27             NEW 0x02 0x19
+     NEW 0x00 0x27             NEW 0x02 0x1a
     class ref net/minecraft/src/ResourceLocation -> bjl findResources(Ljava/util/zip/ZipFile;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@135
-     NEW 0x00 0x27             NEW 0x02 0x19
+     NEW 0x00 0x27             NEW 0x02 0x1a
     class ref net/minecraft/src/ResourceLocation -> bjl findResources(Ljava/util/zip/ZipFile;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@217
-     NEW 0x00 0x27             NEW 0x02 0x19
+     NEW 0x00 0x27             NEW 0x02 0x1a
     class ref net/minecraft/src/ResourceLocation -> bjl findResources(Ljava/io/File;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@143
-     NEW 0x00 0x27             NEW 0x02 0x19
+     NEW 0x00 0x27             NEW 0x02 0x1a
     class ref net/minecraft/src/ResourceLocation -> bjl findResources(Ljava/io/File;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@215
-     NEW 0x00 0x27             NEW 0x02 0x19
+     NEW 0x00 0x27             NEW 0x02 0x1a
     method ref net/minecraft/src/ResourceLocation.getNamespace ()Ljava/lang/String; -> bjl.b ()Ljava/lang/String; transformResourceLocation(Lbjl;Ljava/lang/String;Ljava/lang/String;)Lbjl;@5
-     INVOKEVIRTUAL 0x00 0x28   INVOKEVIRTUAL 0x02 0x29
-    method ref net/minecraft/src/ResourceLocation.getNamespace ()Ljava/lang/String; -> bjl.b ()Ljava/lang/String; parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@124
-     INVOKEVIRTUAL 0x00 0x28   INVOKEVIRTUAL 0x02 0x29
-    method ref net/minecraft/src/ResourceLocation.getNamespace ()Ljava/lang/String; -> bjl.b ()Ljava/lang/String; parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@168
-     INVOKEVIRTUAL 0x00 0x28   INVOKEVIRTUAL 0x02 0x29
-    method ref net/minecraft/src/ResourceLocation.getNamespace ()Ljava/lang/String; -> bjl.b ()Ljava/lang/String; parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@212
-     INVOKEVIRTUAL 0x00 0x28   INVOKEVIRTUAL 0x02 0x29
+     INVOKEVIRTUAL 0x00 0x28   INVOKEVIRTUAL 0x02 0x2a
+    method ref net/minecraft/src/ResourceLocation.getNamespace ()Ljava/lang/String; -> bjl.b ()Ljava/lang/String; parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@130
+     INVOKEVIRTUAL 0x00 0x28   INVOKEVIRTUAL 0x02 0x2a
+    method ref net/minecraft/src/ResourceLocation.getNamespace ()Ljava/lang/String; -> bjl.b ()Ljava/lang/String; parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@174
+     INVOKEVIRTUAL 0x00 0x28   INVOKEVIRTUAL 0x02 0x2a
+    method ref net/minecraft/src/ResourceLocation.getNamespace ()Ljava/lang/String; -> bjl.b ()Ljava/lang/String; parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@231
+     INVOKEVIRTUAL 0x00 0x28   INVOKEVIRTUAL 0x02 0x2a
+    method ref net/minecraft/src/ResourceLocation.getNamespace ()Ljava/lang/String; -> bjl.b ()Ljava/lang/String; parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@271
+     INVOKEVIRTUAL 0x00 0x28   INVOKEVIRTUAL 0x02 0x2a
     method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V transformResourceLocation(Lbjl;Ljava/lang/String;Ljava/lang/String;)Lbjl;@38
-     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2a
-    method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@106
-     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2a
-    method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@150
-     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2a
-    method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@203
-     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2a
-    method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@216
-     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2a
+     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2b
+    method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@112
+     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2b
+    method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@156
+     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2b
+    method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@209
+     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2b
+    method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@262
+     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2b
+    method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V parseResourceLocation(Lbjl;Ljava/lang/String;)Lbjl;@275
+     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2b
     method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V findResources(Ljava/util/zip/ZipFile;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@142
-     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2a
+     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2b
     method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V findResources(Ljava/util/zip/ZipFile;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@233
-     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2a
+     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2b
     method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V findResources(Ljava/io/File;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@150
-     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2a
+     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2b
     method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V findResources(Ljava/io/File;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@222
-     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2a
+     INVOKESPECIAL 0x00 0x30   INVOKESPECIAL 0x02 0x2b
     method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;)V newMCPatcherResourceLocation(Ljava/lang/String;)Lbjl;@23
-     INVOKESPECIAL 0x00 0x3e   INVOKESPECIAL 0x02 0x2b
+     INVOKESPECIAL 0x00 0x3f   INVOKESPECIAL 0x02 0x2c
     class ref net/minecraft/src/ResourcePack -> bjo findResources(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@28
-     CHECKCAST 0x00 0x46       CHECKCAST 0x02 0x2d
+     CHECKCAST 0x00 0x47       CHECKCAST 0x02 0x2e
     class ref net/minecraft/src/FileResourcePack -> bjf findResources(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@35
-     INSTANCEOF 0x00 0x47      INSTANCEOF 0x02 0x2f
+     INSTANCEOF 0x00 0x48      INSTANCEOF 0x02 0x30
     class ref net/minecraft/src/FileResourcePack -> bjf findResources(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@43
-     CHECKCAST 0x00 0x47       CHECKCAST 0x02 0x2f
+     CHECKCAST 0x00 0x48       CHECKCAST 0x02 0x30
     field ref net/minecraft/src/FileResourcePack.zipFile Ljava/util/zip/ZipFile; -> bjf.d Ljava/util/zip/ZipFile; findResources(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@46
-     GETFIELD 0x00 0x48        GETFIELD 0x02 0x32
+     GETFIELD 0x00 0x49        GETFIELD 0x02 0x33
     class ref net/minecraft/src/DefaultResourcePack -> bjd findResources(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@93
-     INSTANCEOF 0x00 0x4b      INSTANCEOF 0x02 0x34
+     INSTANCEOF 0x00 0x4c      INSTANCEOF 0x02 0x35
     class ref net/minecraft/src/DefaultResourcePack -> bjd findResources(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@113
-     CHECKCAST 0x00 0x4b       CHECKCAST 0x02 0x34
+     CHECKCAST 0x00 0x4c       CHECKCAST 0x02 0x35
     field ref net/minecraft/src/DefaultResourcePack.file Ljava/io/File; -> bjd.c Ljava/io/File; findResources(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@116
-     GETFIELD 0x00 0x4c        GETFIELD 0x02 0x37
+     GETFIELD 0x00 0x4d        GETFIELD 0x02 0x38
     class ref net/minecraft/src/AbstractResourcePack -> bjc findResources(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@152
-     INSTANCEOF 0x00 0x4f      INSTANCEOF 0x02 0x39
+     INSTANCEOF 0x00 0x50      INSTANCEOF 0x02 0x3a
     class ref net/minecraft/src/AbstractResourcePack -> bjc findResources(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@160
-     CHECKCAST 0x00 0x4f       CHECKCAST 0x02 0x39
+     CHECKCAST 0x00 0x50       CHECKCAST 0x02 0x3a
     field ref net/minecraft/src/AbstractResourcePack.file Ljava/io/File; -> bjc.b Ljava/io/File; findResources(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Collection;)V@163
-     GETFIELD 0x00 0x50        GETFIELD 0x02 0x3b
+     GETFIELD 0x00 0x51        GETFIELD 0x02 0x3c
     method ref net/minecraft/client/Minecraft.getTextureManager ()Lnet/minecraft/src/TextureManager; -> ats.J ()Lbij; getTextureIfLoaded(Lbjl;)I@9
-     INVOKEVIRTUAL 0x00 0x5e   INVOKEVIRTUAL 0x02 0x3f
+     INVOKEVIRTUAL 0x00 0x5e   INVOKEVIRTUAL 0x02 0x40
     method ref net/minecraft/client/Minecraft.getTextureManager ()Lnet/minecraft/src/TextureManager; -> ats.J ()Lbij; getTextureObject(Lbjl;)Lbil;@3
-     INVOKEVIRTUAL 0x00 0x5e   INVOKEVIRTUAL 0x02 0x3f
+     INVOKEVIRTUAL 0x00 0x5e   INVOKEVIRTUAL 0x02 0x40
     method ref net/minecraft/client/Minecraft.getTextureManager ()Lnet/minecraft/src/TextureManager; -> ats.J ()Lbij; bindTexture(Lbjl;)V@3
-     INVOKEVIRTUAL 0x00 0x5e   INVOKEVIRTUAL 0x02 0x3f
+     INVOKEVIRTUAL 0x00 0x5e   INVOKEVIRTUAL 0x02 0x40
     method ref net/minecraft/client/Minecraft.getTextureManager ()Lnet/minecraft/src/TextureManager; -> ats.J ()Lbij; unloadTexture(Lbjl;)V@3
-     INVOKEVIRTUAL 0x00 0x5e   INVOKEVIRTUAL 0x02 0x3f
+     INVOKEVIRTUAL 0x00 0x5e   INVOKEVIRTUAL 0x02 0x40
     method ref net/minecraft/src/TextureManager.getTexture (Lnet/minecraft/src/ResourceLocation;)Lnet/minecraft/src/TextureObject; -> bij.b (Lbjl;)Lbil; getTextureIfLoaded(Lbjl;)I@13
-     INVOKEVIRTUAL 0x00 0x5f   INVOKEVIRTUAL 0x02 0x43
+     INVOKEVIRTUAL 0x00 0x5f   INVOKEVIRTUAL 0x02 0x44
     method ref net/minecraft/src/TextureManager.getTexture (Lnet/minecraft/src/ResourceLocation;)Lnet/minecraft/src/TextureObject; -> bij.b (Lbjl;)Lbil; getTextureObject(Lbjl;)Lbil;@7
-     INVOKEVIRTUAL 0x00 0x5f   INVOKEVIRTUAL 0x02 0x43
+     INVOKEVIRTUAL 0x00 0x5f   INVOKEVIRTUAL 0x02 0x44
     method ref net/minecraft/src/TextureManager.getTexture (Lnet/minecraft/src/ResourceLocation;)Lnet/minecraft/src/TextureObject; -> bij.b (Lbjl;)Lbil; unloadTexture(Lbjl;)V@9
-     INVOKEVIRTUAL 0x00 0x5f   INVOKEVIRTUAL 0x02 0x43
+     INVOKEVIRTUAL 0x00 0x5f   INVOKEVIRTUAL 0x02 0x44
     class ref net/minecraft/src/AbstractTexture -> bhx getTextureIfLoaded(Lbjl;)I@18
-     INSTANCEOF 0x00 0x60      INSTANCEOF 0x02 0x45
+     INSTANCEOF 0x00 0x60      INSTANCEOF 0x02 0x46
     class ref net/minecraft/src/AbstractTexture -> bhx getTextureIfLoaded(Lbjl;)I@25
-     CHECKCAST 0x00 0x60       CHECKCAST 0x02 0x45
+     CHECKCAST 0x00 0x60       CHECKCAST 0x02 0x46
     class ref net/minecraft/src/AbstractTexture -> bhx unloadTexture(Lbjl;)V@32
-     INSTANCEOF 0x00 0x60      INSTANCEOF 0x02 0x45
+     INSTANCEOF 0x00 0x60      INSTANCEOF 0x02 0x46
     class ref net/minecraft/src/AbstractTexture -> bhx unloadTexture(Lbjl;)V@39
-     CHECKCAST 0x00 0x60       CHECKCAST 0x02 0x45
+     CHECKCAST 0x00 0x60       CHECKCAST 0x02 0x46
     field ref net/minecraft/src/AbstractTexture.glTextureId I -> bhx.a I getTextureIfLoaded(Lbjl;)I@28
-     GETFIELD 0x00 0x61        GETFIELD 0x02 0x47
+     GETFIELD 0x00 0x61        GETFIELD 0x02 0x48
     method ref com/prupe/mcpatcher/TexturePackAPI.getTextureIfLoaded (Lnet/minecraft/src/ResourceLocation;)I -> com/prupe/mcpatcher/TexturePackAPI.getTextureIfLoaded (Lbjl;)I isTextureLoaded(Lbjl;)Z@1
-     INVOKESTATIC 0x00 0x62    INVOKESTATIC 0x02 0x49
+     INVOKESTATIC 0x00 0x62    INVOKESTATIC 0x02 0x4a
     method ref net/minecraft/src/TextureManager.bindTexture (Lnet/minecraft/src/ResourceLocation;)V -> bij.a (Lbjl;)V bindTexture(Lbjl;)V@7
-     INVOKEVIRTUAL 0x00 0x63   INVOKEVIRTUAL 0x02 0x4b
+     INVOKEVIRTUAL 0x00 0x63   INVOKEVIRTUAL 0x02 0x4c
     class ref net/minecraft/src/TextureAtlas -> bih unloadTexture(Lbjl;)V@18
-     INSTANCEOF 0x00 0x65      INSTANCEOF 0x02 0x4d
+     INSTANCEOF 0x00 0x65      INSTANCEOF 0x02 0x4e
     class ref net/minecraft/src/DynamicTexture -> bhy unloadTexture(Lbjl;)V@25
-     INSTANCEOF 0x00 0x66      INSTANCEOF 0x02 0x4f
+     INSTANCEOF 0x00 0x66      INSTANCEOF 0x02 0x50
     method ref net/minecraft/src/AbstractTexture.unloadGLTexture ()V -> bhx.unloadGLTexture ()V unloadTexture(Lbjl;)V@42
-     INVOKEVIRTUAL 0x00 0x67   INVOKEVIRTUAL 0x02 0x50
+     INVOKEVIRTUAL 0x00 0x67   INVOKEVIRTUAL 0x02 0x51
     field ref net/minecraft/src/TextureManager.texturesByName Ljava/util/Map; -> bij.a Ljava/util/Map; unloadTexture(Lbjl;)V@62
-     GETFIELD 0x00 0x6c        GETFIELD 0x02 0x52
+     GETFIELD 0x00 0x6c        GETFIELD 0x02 0x53
     interface method ref net/minecraft/src/ResourceManager.getResource (Lnet/minecraft/src/ResourceLocation;)Lnet/minecraft/src/Resource; -> bjm.a (Lbjl;)Lbjk; getInputStreamImpl(Lbjl;)Ljava/io/InputStream;@7
-     INVOKEINTERFACE 0x00 0x6f 0x02 0x00  INVOKEINTERFACE 0x02 0x57 0x02 0x00
+     INVOKEINTERFACE 0x00 0x6f 0x02 0x00  INVOKEINTERFACE 0x02 0x58 0x02 0x00
     interface method ref net/minecraft/src/Resource.getInputStream ()Ljava/io/InputStream; -> bjk.b ()Ljava/io/InputStream; getInputStreamImpl(Lbjl;)Ljava/io/InputStream;@12
-     INVOKEINTERFACE 0x00 0x70 0x01 0x00  INVOKEINTERFACE 0x02 0x5b 0x01 0x00
+     INVOKEINTERFACE 0x00 0x70 0x01 0x00  INVOKEINTERFACE 0x02 0x5c 0x01 0x00
    string replace Lnet/minecraft/src/FallbackResourceManager; -> Lbje; @267
    string replace Ljava/util/Map$Entry<Ljava/lang/String;Lnet/minecraft/src/FallbackResourceManager;>; -> Ljava/util/Map$Entry<Ljava/lang/String;Lbje;>; @475
-   string replace net/minecraft/src/TextureManager -> bij @5641
-   string replace Lnet/minecraft/src/TextureManager; -> Lbij; @5604
-   string replace net/minecraft/src/ResourcePack -> bjo @3861
+   string replace net/minecraft/src/TextureManager -> bij @5652
+   string replace Lnet/minecraft/src/TextureManager; -> Lbij; @5615
+   string replace net/minecraft/src/ResourcePack -> bjo @3923
    string replace Ljava/util/List<Lnet/minecraft/src/ResourcePack;>; -> Ljava/util/List<Lbjo;>; @524
-   string replace Lnet/minecraft/src/ResourcePack; -> Lbjo; @3711
-   string replace net/minecraft/src/TextureObject -> bil @5226
-   string replace Lnet/minecraft/src/TextureObject; -> Lbil; @5190
-   string replace net/minecraft/src/ResourceLocation -> bjl @5999
+   string replace Lnet/minecraft/src/ResourcePack; -> Lbjo; @3773
+   string replace net/minecraft/src/TextureObject -> bil @5237
+   string replace Lnet/minecraft/src/TextureObject; -> Lbil; @5201
+   string replace net/minecraft/src/ResourceLocation -> bjl @6010
    string replace Lnet/minecraft/src/ResourceLocation; -> Lbjl; @1483
-   string replace Ljava/util/List<Lnet/minecraft/src/ResourceLocation;>; -> Ljava/util/List<Lbjl;>; @3185
-   string replace Ljava/util/Collection<Lnet/minecraft/src/ResourceLocation;>; -> Ljava/util/Collection<Lbjl;>; @3682
+   string replace Ljava/util/List<Lnet/minecraft/src/ResourceLocation;>; -> Ljava/util/List<Lbjl;>; @3247
+   string replace Ljava/util/Collection<Lnet/minecraft/src/ResourceLocation;>; -> Ljava/util/Collection<Lbjl;>; @3744
    string replace net/minecraft/src/ResourceManager -> bjm @570
    string replace Lnet/minecraft/src/ResourceManager; -> Lbjm; @412
   adding com/prupe/mcpatcher/TexturePackAPI$1.class for __TexturePackBase
@@ -7059,88 +7165,88 @@ Patching...
    method signature (Lnet/minecraft/src/ResourceLocation;)Lnet/minecraft/src/ResourceLocation; -> (Lbjl;)Lbjl;
    method signature (Lnet/minecraft/src/ResourceLocation;[F[Z)V -> (Lbjl;[F[Z)V
     field ref net/minecraft/src/FontRenderer.defaultFont Lnet/minecraft/src/ResourceLocation; -> avf.defaultFont Lbjl; getFontName(Lavf;Lbjl;)Lbjl;@1
-     GETFIELD 0x00 0x03        GETFIELD 0x01 0xa3
+     GETFIELD 0x00 0x03        GETFIELD 0x01 0xaa
     field ref net/minecraft/src/FontRenderer.defaultFont Lnet/minecraft/src/ResourceLocation; -> avf.defaultFont Lbjl; getFontName(Lavf;Lbjl;)Lbjl;@9
-     PUTFIELD 0x00 0x03        PUTFIELD 0x01 0xa3
+     PUTFIELD 0x00 0x03        PUTFIELD 0x01 0xaa
     field ref net/minecraft/src/FontRenderer.defaultFont Lnet/minecraft/src/ResourceLocation; -> avf.defaultFont Lbjl; getFontName(Lavf;Lbjl;)Lbjl;@20
-     GETFIELD 0x00 0x03        GETFIELD 0x01 0xa3
+     GETFIELD 0x00 0x03        GETFIELD 0x01 0xaa
     field ref net/minecraft/src/FontRenderer.defaultFont Lnet/minecraft/src/ResourceLocation; -> avf.defaultFont Lbjl; getFontName(Lavf;Lbjl;)Lbjl;@28
-     GETFIELD 0x00 0x03        GETFIELD 0x01 0xa3
+     GETFIELD 0x00 0x03        GETFIELD 0x01 0xaa
     field ref net/minecraft/src/FontRenderer.defaultFont Lnet/minecraft/src/ResourceLocation; -> avf.defaultFont Lbjl; getFontName(Lavf;Lbjl;)Lbjl;@108
-     GETFIELD 0x00 0x03        GETFIELD 0x01 0xa3
-    field ref net/minecraft/src/FontRenderer.defaultFont Lnet/minecraft/src/ResourceLocation; -> avf.defaultFont Lbjl; getFontName(Lavf;Lbjl;)Lbjl;@142
-     GETFIELD 0x00 0x03        GETFIELD 0x01 0xa3
-    field ref net/minecraft/src/FontRenderer.defaultFont Lnet/minecraft/src/ResourceLocation; -> avf.defaultFont Lbjl; getFontName(Lavf;Lbjl;)Lbjl;@160
-     GETFIELD 0x00 0x03        GETFIELD 0x01 0xa3
+     GETFIELD 0x00 0x03        GETFIELD 0x01 0xaa
+    field ref net/minecraft/src/FontRenderer.defaultFont Lnet/minecraft/src/ResourceLocation; -> avf.defaultFont Lbjl; getFontName(Lavf;Lbjl;)Lbjl;@140
+     GETFIELD 0x00 0x03        GETFIELD 0x01 0xaa
+    field ref net/minecraft/src/FontRenderer.defaultFont Lnet/minecraft/src/ResourceLocation; -> avf.defaultFont Lbjl; getFontName(Lavf;Lbjl;)Lbjl;@169
+     GETFIELD 0x00 0x03        GETFIELD 0x01 0xaa
     field ref net/minecraft/src/FontRenderer.hdFont Lnet/minecraft/src/ResourceLocation; -> avf.hdFont Lbjl; getFontName(Lavf;Lbjl;)Lbjl;@13
-     GETFIELD 0x00 0x04        GETFIELD 0x01 0xa5
+     GETFIELD 0x00 0x04        GETFIELD 0x01 0xac
     field ref net/minecraft/src/FontRenderer.hdFont Lnet/minecraft/src/ResourceLocation; -> avf.hdFont Lbjl; getFontName(Lavf;Lbjl;)Lbjl;@70
-     PUTFIELD 0x00 0x04        PUTFIELD 0x01 0xa5
+     PUTFIELD 0x00 0x04        PUTFIELD 0x01 0xac
     field ref net/minecraft/src/FontRenderer.hdFont Lnet/minecraft/src/ResourceLocation; -> avf.hdFont Lbjl; getFontName(Lavf;Lbjl;)Lbjl;@80
-     GETFIELD 0x00 0x04        GETFIELD 0x01 0xa5
+     GETFIELD 0x00 0x04        GETFIELD 0x01 0xac
     field ref net/minecraft/src/FontRenderer.hdFont Lnet/minecraft/src/ResourceLocation; -> avf.hdFont Lbjl; getFontName(Lavf;Lbjl;)Lbjl;@101
-     GETFIELD 0x00 0x04        GETFIELD 0x01 0xa5
-    field ref net/minecraft/src/FontRenderer.hdFont Lnet/minecraft/src/ResourceLocation; -> avf.hdFont Lbjl; getFontName(Lavf;Lbjl;)Lbjl;@126
-     GETFIELD 0x00 0x04        GETFIELD 0x01 0xa5
+     GETFIELD 0x00 0x04        GETFIELD 0x01 0xac
+    field ref net/minecraft/src/FontRenderer.hdFont Lnet/minecraft/src/ResourceLocation; -> avf.hdFont Lbjl; getFontName(Lavf;Lbjl;)Lbjl;@121
+     GETFIELD 0x00 0x04        GETFIELD 0x01 0xac
     method ref net/minecraft/src/ResourceLocation.getNamespace ()Ljava/lang/String; -> bjl.b ()Ljava/lang/String; getFontName(Lavf;Lbjl;)Lbjl;@23
-     INVOKEVIRTUAL 0x00 0x05   INVOKEVIRTUAL 0x01 0xaa
+     INVOKEVIRTUAL 0x00 0x05   INVOKEVIRTUAL 0x01 0xb1
     method ref net/minecraft/src/ResourceLocation.getNamespace ()Ljava/lang/String; -> bjl.b ()Ljava/lang/String; getUnicodePage(Lbjl;)Lbjl;@15
-     INVOKEVIRTUAL 0x00 0x05   INVOKEVIRTUAL 0x01 0xaa
+     INVOKEVIRTUAL 0x00 0x05   INVOKEVIRTUAL 0x01 0xb1
     method ref net/minecraft/src/ResourceLocation.getPath ()Ljava/lang/String; -> bjl.a ()Ljava/lang/String; getFontName(Lavf;Lbjl;)Lbjl;@31
-     INVOKEVIRTUAL 0x00 0x06   INVOKEVIRTUAL 0x01 0xad
+     INVOKEVIRTUAL 0x00 0x06   INVOKEVIRTUAL 0x01 0xb4
     method ref net/minecraft/src/ResourceLocation.getPath ()Ljava/lang/String; -> bjl.a ()Ljava/lang/String; getUnicodePage(Lbjl;)Lbjl;@19
-     INVOKEVIRTUAL 0x00 0x06   INVOKEVIRTUAL 0x01 0xad
+     INVOKEVIRTUAL 0x00 0x06   INVOKEVIRTUAL 0x01 0xb4
     class ref net/minecraft/src/ResourceLocation -> bjl getFontName(Lavf;Lbjl;)Lbjl;@43
-     NEW 0x00 0x0a             NEW 0x01 0xa7
+     NEW 0x00 0x0a             NEW 0x01 0xae
     class ref net/minecraft/src/ResourceLocation -> bjl getUnicodePage(Lbjl;)Lbjl;@10
-     NEW 0x00 0x0a             NEW 0x01 0xa7
+     NEW 0x00 0x0a             NEW 0x01 0xae
     method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V getFontName(Lavf;Lbjl;)Lbjl;@67
-     INVOKESPECIAL 0x00 0x10   INVOKESPECIAL 0x01 0xae
+     INVOKESPECIAL 0x00 0x10   INVOKESPECIAL 0x01 0xb5
     method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;Ljava/lang/String;)V getUnicodePage(Lbjl;)Lbjl;@29
-     INVOKESPECIAL 0x00 0x10   INVOKESPECIAL 0x01 0xae
+     INVOKESPECIAL 0x00 0x10   INVOKESPECIAL 0x01 0xb5
     method ref com/prupe/mcpatcher/TexturePackAPI.hasResource (Lnet/minecraft/src/ResourceLocation;)Z -> com/prupe/mcpatcher/TexturePackAPI.hasResource (Lbjl;)Z getFontName(Lavf;Lbjl;)Lbjl;@83
-     INVOKESTATIC 0x00 0x12    INVOKESTATIC 0x01 0xb1
+     INVOKESTATIC 0x00 0x12    INVOKESTATIC 0x01 0xb8
     method ref com/prupe/mcpatcher/TexturePackAPI.hasResource (Lnet/minecraft/src/ResourceLocation;)Z -> com/prupe/mcpatcher/TexturePackAPI.hasResource (Lbjl;)Z getUnicodePage(Lbjl;)Lbjl;@34
-     INVOKESTATIC 0x00 0x12    INVOKESTATIC 0x01 0xb1
+     INVOKESTATIC 0x00 0x12    INVOKESTATIC 0x01 0xb8
     field ref net/minecraft/src/FontRenderer.isHD Z -> avf.isHD Z getFontName(Lavf;Lbjl;)Lbjl;@117
-     PUTFIELD 0x00 0x17        PUTFIELD 0x01 0xb2
-    field ref net/minecraft/src/FontRenderer.isHD Z -> avf.isHD Z getFontName(Lavf;Lbjl;)Lbjl;@151
-     PUTFIELD 0x00 0x17        PUTFIELD 0x01 0xb2
+     PUTFIELD 0x00 0x17        PUTFIELD 0x01 0xb9
+    field ref net/minecraft/src/FontRenderer.isHD Z -> avf.isHD Z getFontName(Lavf;Lbjl;)Lbjl;@165
+     PUTFIELD 0x00 0x17        PUTFIELD 0x01 0xb9
+    field ref net/minecraft/src/FontRenderer.isHD Z -> avf.isHD Z getFontName(Lavf;Lbjl;)Lbjl;@175
+     GETFIELD 0x00 0x17        GETFIELD 0x01 0xb9
     field ref net/minecraft/src/FontRenderer.isHD Z -> avf.isHD Z computeCharWidthsf(Lavf;Lbjl;Ljava/awt/image/BufferedImage;[I[IF)[F@8
-     GETFIELD 0x00 0x17        GETFIELD 0x01 0xb2
+     GETFIELD 0x00 0x17        GETFIELD 0x01 0xb9
     field ref net/minecraft/src/FontRenderer.isHD Z -> avf.isHD Z getCharWidthf(Lavf;[II)F@1
-     GETFIELD 0x00 0x17        GETFIELD 0x01 0xb2
-    field ref net/minecraft/src/FontRenderer.fontAdj F -> avf.fontAdj F getFontName(Lavf;Lbjl;)Lbjl;@122
-     PUTFIELD 0x00 0x18        PUTFIELD 0x01 0xb3
-    field ref net/minecraft/src/FontRenderer.fontAdj F -> avf.fontAdj F getFontName(Lavf;Lbjl;)Lbjl;@156
-     PUTFIELD 0x00 0x18        PUTFIELD 0x01 0xb3
+     GETFIELD 0x00 0x17        GETFIELD 0x01 0xb9
+    field ref net/minecraft/src/FontRenderer.fontAdj F -> avf.fontAdj F getFontName(Lavf;Lbjl;)Lbjl;@186
+     PUTFIELD 0x00 0x1a        PUTFIELD 0x01 0xba
     field ref net/minecraft/src/FontRenderer.fontAdj F -> avf.fontAdj F computeCharWidthsf(Lavf;Lbjl;Ljava/awt/image/BufferedImage;[I[IF)[F@17
-     PUTFIELD 0x00 0x18        PUTFIELD 0x01 0xb3
+     PUTFIELD 0x00 0x1a        PUTFIELD 0x01 0xba
     method ref com/prupe/mcpatcher/hd/FontUtils.getCharWidthOverrides (Lnet/minecraft/src/ResourceLocation;[F[Z)V -> com/prupe/mcpatcher/hd/FontUtils.getCharWidthOverrides (Lbjl;[F[Z)V computeCharWidthsf(Lavf;Lbjl;Ljava/awt/image/BufferedImage;[I[IF)[F@347
-     INVOKESTATIC 0x00 0x26    INVOKESTATIC 0x01 0xb5
+     INVOKESTATIC 0x00 0x27    INVOKESTATIC 0x01 0xbc
     method ref net/minecraft/src/FontRenderer.getCharWidth (C)I -> avf.a (C)I getCharWidthf(Lavf;C)F@2
-     INVOKEVIRTUAL 0x00 0x2d   INVOKEVIRTUAL 0x01 0xb7
+     INVOKEVIRTUAL 0x00 0x2e   INVOKEVIRTUAL 0x01 0xbe
     field ref net/minecraft/src/FontRenderer.charWidthf [F -> avf.charWidthf [F getCharWidthf(Lavf;C)F@14
-     GETFIELD 0x00 0x2e        GETFIELD 0x01 0xb8
+     GETFIELD 0x00 0x2f        GETFIELD 0x01 0xbf
     field ref net/minecraft/src/FontRenderer.charWidthf [F -> avf.charWidthf [F getCharWidthf(Lavf;C)F@22
-     GETFIELD 0x00 0x2e        GETFIELD 0x01 0xb8
+     GETFIELD 0x00 0x2f        GETFIELD 0x01 0xbf
     field ref net/minecraft/src/FontRenderer.charWidthf [F -> avf.charWidthf [F getCharWidthf(Lavf;C)F@36
-     GETFIELD 0x00 0x2e        GETFIELD 0x01 0xb8
+     GETFIELD 0x00 0x2f        GETFIELD 0x01 0xbf
     field ref net/minecraft/src/FontRenderer.charWidthf [F -> avf.charWidthf [F getCharWidthf(Lavf;[II)F@8
-     GETFIELD 0x00 0x2e        GETFIELD 0x01 0xb8
+     GETFIELD 0x00 0x2f        GETFIELD 0x01 0xbf
     field ref net/minecraft/src/FontRenderer.fontHeight I -> avf.a I getCharWidthf(Lavf;[II)F@14
-     GETFIELD 0x00 0x2f        GETFIELD 0x01 0xba
+     GETFIELD 0x00 0x30        GETFIELD 0x01 0xc1
     method ref com/prupe/mcpatcher/hd/FontUtils.getCharWidthf (Lnet/minecraft/src/FontRenderer;C)F -> com/prupe/mcpatcher/hd/FontUtils.getCharWidthf (Lavf;C)F getStringWidthf(Lavf;Ljava/lang/String;)F@31
-     INVOKESTATIC 0x00 0x33    INVOKESTATIC 0x01 0xbc
+     INVOKESTATIC 0x00 0x34    INVOKESTATIC 0x01 0xc3
     method ref com/prupe/mcpatcher/TexturePackAPI.transformResourceLocation (Lnet/minecraft/src/ResourceLocation;Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/TexturePackAPI.transformResourceLocation (Lbjl;Ljava/lang/String;Ljava/lang/String;)Lbjl; getCharWidthOverrides(Lbjl;[F[Z)V@5
-     INVOKESTATIC 0x00 0x40    INVOKESTATIC 0x01 0xbf
+     INVOKESTATIC 0x00 0x41    INVOKESTATIC 0x01 0xc6
     method ref com/prupe/mcpatcher/TexturePackAPI.getProperties (Lnet/minecraft/src/ResourceLocation;)Ljava/util/Properties; -> com/prupe/mcpatcher/TexturePackAPI.getProperties (Lbjl;)Ljava/util/Properties; getCharWidthOverrides(Lbjl;[F[Z)V@10
-     INVOKESTATIC 0x00 0x41    INVOKESTATIC 0x01 0xc2
-   string replace net/minecraft/src/ResourceLocation -> bjl @1523
-   string replace Lnet/minecraft/src/ResourceLocation; -> Lbjl; @324
-   string replace net/minecraft/src/FontRenderer -> avf @1456
-   string replace Lnet/minecraft/src/FontRenderer; -> Lavf; @282
-   string replace Ljava/util/Set<Lnet/minecraft/src/FontRenderer;>; -> Ljava/util/Set<Lavf;>; @4226
+     INVOKESTATIC 0x00 0x42    INVOKESTATIC 0x01 0xc9
+   string replace net/minecraft/src/ResourceLocation -> bjl @409
+   string replace Lnet/minecraft/src/ResourceLocation; -> Lbjl; @277
+   string replace net/minecraft/src/FontRenderer -> avf @342
+   string replace Lnet/minecraft/src/FontRenderer; -> Lavf; @300
+   string replace Ljava/util/Set<Lnet/minecraft/src/FontRenderer;>; -> Ljava/util/Set<Lavf;>; @4280
   adding com/prupe/mcpatcher/hd/FontUtils$1.class for Extended HD
     class ref net/minecraft/src/FontRenderer -> avf afterChange()V@24
      CHECKCAST 0x00 0x06       CHECKCAST 0x00 0x3d
@@ -8185,91 +8291,89 @@ Patching...
    field signature Lnet/minecraft/src/ResourceLocation; -> Lbjl;
    field signature Lnet/minecraft/src/TextureAtlas; -> Lbih;
     method ref com/prupe/mcpatcher/TessellatorUtils.registerTextureMap (Lnet/minecraft/src/TextureAtlas;Ljava/lang/String;)V -> com/prupe/mcpatcher/TessellatorUtils.registerTextureMap (Lbih;Ljava/lang/String;)V registerIcons(Lbih;Ljava/lang/String;Ljava/util/Map;)V@67
-     INVOKESTATIC 0x00 0x16    INVOKESTATIC 0x02 0x72
+     INVOKESTATIC 0x00 0x16    INVOKESTATIC 0x02 0x70
     field ref com/prupe/mcpatcher/TileLoader.baseTextureMap Lnet/minecraft/src/TextureAtlas; -> com/prupe/mcpatcher/TileLoader.baseTextureMap Lbih; registerIcons(Lbih;Ljava/lang/String;Ljava/util/Map;)V@101
-     GETFIELD 0x00 0x1b        GETFIELD 0x02 0x74
+     GETFIELD 0x00 0x1b        GETFIELD 0x02 0x72
     field ref com/prupe/mcpatcher/TileLoader.baseTextureMap Lnet/minecraft/src/TextureAtlas; -> com/prupe/mcpatcher/TileLoader.baseTextureMap Lbih; registerIcons(Lbih;Ljava/lang/String;Ljava/util/Map;)V@122
-     PUTFIELD 0x00 0x1b        PUTFIELD 0x02 0x74
+     PUTFIELD 0x00 0x1b        PUTFIELD 0x02 0x72
     field ref com/prupe/mcpatcher/TileLoader.baseTextureMap Lnet/minecraft/src/TextureAtlas; -> com/prupe/mcpatcher/TileLoader.baseTextureMap Lbih; registerDefaultIcon(Ljava/lang/String;)Z@21
-     GETFIELD 0x00 0x1b        GETFIELD 0x02 0x74
+     GETFIELD 0x00 0x1b        GETFIELD 0x02 0x72
     field ref com/prupe/mcpatcher/TileLoader.baseTextureMap Lnet/minecraft/src/TextureAtlas; -> com/prupe/mcpatcher/TileLoader.baseTextureMap Lbih; setDefaultTextureMap(Lbfn;)Z@2
-     GETFIELD 0x00 0x1b        GETFIELD 0x02 0x74
+     GETFIELD 0x00 0x1b        GETFIELD 0x02 0x72
     field ref com/prupe/mcpatcher/TileLoader.baseTextureMap Lnet/minecraft/src/TextureAtlas; -> com/prupe/mcpatcher/TileLoader.baseTextureMap Lbih; setDefaultTextureMap(Lbfn;)Z@9
-     GETFIELD 0x00 0x1b        GETFIELD 0x02 0x74
+     GETFIELD 0x00 0x1b        GETFIELD 0x02 0x72
     method ref com/prupe/mcpatcher/TileLoader.registerOneIcon (Lnet/minecraft/src/TextureAtlas;Ljava/lang/String;Ljava/util/Map;)Z -> com/prupe/mcpatcher/TileLoader.registerOneIcon (Lbih;Ljava/lang/String;Ljava/util/Map;)Z registerIcons(Lbih;Ljava/lang/String;Ljava/util/Map;)V@209
-     INVOKESPECIAL 0x00 0x24   INVOKESPECIAL 0x02 0x76
+     INVOKESPECIAL 0x00 0x24   INVOKESPECIAL 0x02 0x74
     method ref com/prupe/mcpatcher/TexturePackAPI.getImage (Lnet/minecraft/src/ResourceLocation;)Ljava/awt/image/BufferedImage; -> com/prupe/mcpatcher/TexturePackAPI.getImage (Lbjl;)Ljava/awt/image/BufferedImage; getOverrideImage(Lbjl;)Ljava/awt/image/BufferedImage;@52
-     INVOKESTATIC 0x00 0x34    INVOKESTATIC 0x02 0x78
+     INVOKESTATIC 0x00 0x34    INVOKESTATIC 0x02 0x76
     method ref com/prupe/mcpatcher/TexturePackAPI.getImage (Lnet/minecraft/src/ResourceLocation;)Ljava/awt/image/BufferedImage; -> com/prupe/mcpatcher/TexturePackAPI.getImage (Lbjl;)Ljava/awt/image/BufferedImage; preloadTile(Lbjl;ZLjava/lang/String;)Z@25
-     INVOKESTATIC 0x00 0x34    INVOKESTATIC 0x02 0x78
+     INVOKESTATIC 0x00 0x34    INVOKESTATIC 0x02 0x76
     class ref net/minecraft/src/TextureAtlas -> bih updateAnimations()V@24
-     CHECKCAST 0x00 0x3a       CHECKCAST 0x02 0x7a
+     CHECKCAST 0x00 0x3a       CHECKCAST 0x02 0x78
     method ref net/minecraft/src/TextureAtlas.updateAnimations ()V -> bih.updateAnimations ()V updateAnimations()V@29
-     INVOKEVIRTUAL 0x00 0x3b   INVOKEVIRTUAL 0x02 0x7b
+     INVOKEVIRTUAL 0x00 0x3b   INVOKEVIRTUAL 0x02 0x79
     field ref net/minecraft/src/TextureAtlas.blocksAtlas Lnet/minecraft/src/ResourceLocation; -> bih.b Lbjl; getBlocksAtlas()Lbjl;@0
-     GETSTATIC 0x00 0x4c       GETSTATIC 0x02 0x7e
+     GETSTATIC 0x00 0x4c       GETSTATIC 0x02 0x7c
     field ref net/minecraft/src/TextureAtlas.itemsAtlas Lnet/minecraft/src/ResourceLocation; -> bih.itemsAtlas Lbjl; getItemsAtlas()Lbjl;@0
-     GETSTATIC 0x00 0x4d       GETSTATIC 0x02 0x80
+     GETSTATIC 0x00 0x4d       GETSTATIC 0x02 0x7e
     method ref net/minecraft/src/TextureAtlasSprite.getWidth ()I -> bii.a ()I getTextureSize(Lbii;)J@10
-     INVOKEVIRTUAL 0x00 0x56   INVOKEVIRTUAL 0x02 0x85
+     INVOKEVIRTUAL 0x00 0x56   INVOKEVIRTUAL 0x02 0x83
     method ref net/minecraft/src/TextureAtlasSprite.getHeight ()I -> bii.b ()I getTextureSize(Lbii;)J@15
-     INVOKEVIRTUAL 0x00 0x57   INVOKEVIRTUAL 0x02 0x87
+     INVOKEVIRTUAL 0x00 0x57   INVOKEVIRTUAL 0x02 0x85
     class ref net/minecraft/src/TextureAtlasSprite -> bii getTextureSize(Ljava/util/Collection;)J@24
-     CHECKCAST 0x00 0x59       CHECKCAST 0x02 0x82
+     CHECKCAST 0x00 0x59       CHECKCAST 0x02 0x80
     class ref net/minecraft/src/TextureAtlasSprite -> bii registerDefaultIcon(Ljava/lang/String;)Z@56
-     CHECKCAST 0x00 0x59       CHECKCAST 0x02 0x82
+     CHECKCAST 0x00 0x59       CHECKCAST 0x02 0x80
     class ref net/minecraft/src/TextureAtlasSprite -> bii registerOneIcon(Lbih;Ljava/lang/String;Ljava/util/Map;)Z@244
-     CHECKCAST 0x00 0x59       CHECKCAST 0x02 0x82
+     CHECKCAST 0x00 0x59       CHECKCAST 0x02 0x80
     method ref com/prupe/mcpatcher/TileLoader.getTextureSize (Lnet/minecraft/src/TextureAtlasSprite;)J -> com/prupe/mcpatcher/TileLoader.getTextureSize (Lbii;)J getTextureSize(Ljava/util/Collection;)J@32
-     INVOKESTATIC 0x00 0x5a    INVOKESTATIC 0x02 0x89
+     INVOKESTATIC 0x00 0x5a    INVOKESTATIC 0x02 0x87
     method ref com/prupe/mcpatcher/TexturePackAPI.transformResourceLocation (Lnet/minecraft/src/ResourceLocation;Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/TexturePackAPI.transformResourceLocation (Lbjl;Ljava/lang/String;Ljava/lang/String;)Lbjl; getDefaultAddress(Lbjl;)Lbjl;@5
-     INVOKESTATIC 0x00 0x5c    INVOKESTATIC 0x02 0x8c
+     INVOKESTATIC 0x00 0x5c    INVOKESTATIC 0x02 0x8a
     field ref com/prupe/mcpatcher/TileLoader.BLANK_RESOURCE Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/TileLoader.BLANK_RESOURCE Lbjl; parseTileAddress(Lbjl;Ljava/lang/String;)Lbjl;@15
-     GETSTATIC 0x00 0x5e       GETSTATIC 0x02 0x8e
+     GETSTATIC 0x00 0x5e       GETSTATIC 0x02 0x8c
     field ref com/prupe/mcpatcher/TileLoader.BLANK_RESOURCE Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/TileLoader.BLANK_RESOURCE Lbjl; <clinit>()V@27
-     PUTSTATIC 0x00 0x5e       PUTSTATIC 0x02 0x8e
-    method ref net/minecraft/src/ResourceLocation.getPath ()Ljava/lang/String; -> bjl.a ()Ljava/lang/String; parseTileAddress(Lbjl;Ljava/lang/String;)Lbjl;@103
-     INVOKEVIRTUAL 0x00 0x63   INVOKEVIRTUAL 0x02 0x92
+     PUTSTATIC 0x00 0x5e       PUTSTATIC 0x02 0x8c
+    method ref com/prupe/mcpatcher/TexturePackAPI.parseResourceLocation (Lnet/minecraft/src/ResourceLocation;Ljava/lang/String;)Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/TexturePackAPI.parseResourceLocation (Lbjl;Ljava/lang/String;)Lbjl; parseTileAddress(Lbjl;Ljava/lang/String;)Lbjl;@88
+     INVOKESTATIC 0x00 0x62    INVOKESTATIC 0x02 0x8e
     method ref net/minecraft/src/ResourceLocation.getPath ()Ljava/lang/String; -> bjl.a ()Ljava/lang/String; preloadTile(Lbjl;ZLjava/lang/String;)Z@58
-     INVOKEVIRTUAL 0x00 0x63   INVOKEVIRTUAL 0x02 0x92
-    method ref com/prupe/mcpatcher/TexturePackAPI.parseResourceLocation (Lnet/minecraft/src/ResourceLocation;Ljava/lang/String;)Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/TexturePackAPI.parseResourceLocation (Lbjl;Ljava/lang/String;)Lbjl; parseTileAddress(Lbjl;Ljava/lang/String;)Lbjl;@126
-     INVOKESTATIC 0x00 0x65    INVOKESTATIC 0x02 0x94
+     INVOKEVIRTUAL 0x00 0x67   INVOKEVIRTUAL 0x02 0x92
     method ref com/prupe/mcpatcher/TileLoader.preloadTile (Lnet/minecraft/src/ResourceLocation;ZLjava/lang/String;)Z -> com/prupe/mcpatcher/TileLoader.preloadTile (Lbjl;ZLjava/lang/String;)Z preloadTile(Lbjl;Z)Z@4
-     INVOKEVIRTUAL 0x00 0x6e   INVOKEVIRTUAL 0x02 0x96
+     INVOKEVIRTUAL 0x00 0x6c   INVOKEVIRTUAL 0x02 0x94
     class ref net/minecraft/src/ResourceLocation -> bjl registerOneIcon(Lbih;Ljava/lang/String;Ljava/util/Map;)Z@14
-     CHECKCAST 0x00 0x74       CHECKCAST 0x02 0x90
+     CHECKCAST 0x00 0x72       CHECKCAST 0x02 0x90
     class ref net/minecraft/src/ResourceLocation -> bjl <clinit>()V@18
-     NEW 0x00 0x74             NEW 0x02 0x90
+     NEW 0x00 0x72             NEW 0x02 0x90
     method ref net/minecraft/src/TextureAtlas.registerIcon (Ljava/lang/String;)Lnet/minecraft/src/Icon; -> bih.a (Ljava/lang/String;)Lmr; registerOneIcon(Lbih;Ljava/lang/String;Ljava/util/Map;)Z@234
-     INVOKEVIRTUAL 0x00 0x82   INVOKEVIRTUAL 0x02 0x98
+     INVOKEVIRTUAL 0x00 0x80   INVOKEVIRTUAL 0x02 0x96
     method ref com/prupe/mcpatcher/TessellatorUtils.registerIcon (Lnet/minecraft/src/TextureAtlas;Lnet/minecraft/src/Icon;)V -> com/prupe/mcpatcher/TessellatorUtils.registerIcon (Lbih;Lmr;)V registerOneIcon(Lbih;Ljava/lang/String;Ljava/util/Map;)Z@265
-     INVOKESTATIC 0x00 0x83    INVOKESTATIC 0x02 0x9b
+     INVOKESTATIC 0x00 0x82    INVOKESTATIC 0x02 0x99
     class ref net/minecraft/src/Icon -> mr getIcon(Ljava/lang/String;)Lmr;@25
-     CHECKCAST 0x00 0x8a       CHECKCAST 0x02 0x9d
+     CHECKCAST 0x00 0x89       CHECKCAST 0x02 0x9b
     class ref net/minecraft/src/Icon -> mr getIcon(Ljava/lang/String;)Lmr;@50
-     CHECKCAST 0x00 0x8a       CHECKCAST 0x02 0x9d
+     CHECKCAST 0x00 0x89       CHECKCAST 0x02 0x9b
     method ref com/prupe/mcpatcher/TileLoader.getIcon (Ljava/lang/String;)Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/TileLoader.getIcon (Ljava/lang/String;)Lmr; getIcon(Lbjl;)Lmr;@13
-     INVOKEVIRTUAL 0x00 0x8b   INVOKEVIRTUAL 0x02 0x9f
+     INVOKEVIRTUAL 0x00 0x8a   INVOKEVIRTUAL 0x02 0x9d
     field ref net/minecraft/src/Tessellator.textureMap Lnet/minecraft/src/TextureAtlas; -> bfn.textureMap Lbih; setDefaultTextureMap(Lbfn;)Z@5
-     PUTFIELD 0x00 0x8c        PUTFIELD 0x02 0xa3
+     PUTFIELD 0x00 0x8b        PUTFIELD 0x02 0xa1
     method ref net/minecraft/src/ResourceLocation.<init> (Ljava/lang/String;)V -> bjl.<init> (Ljava/lang/String;)V <clinit>()V@24
-     INVOKESPECIAL 0x00 0x92   INVOKESPECIAL 0x02 0xa4
+     INVOKESPECIAL 0x00 0x91   INVOKESPECIAL 0x02 0xa2
     method ref net/minecraft/client/Minecraft.getMaxTextureSize ()I -> ats.y ()I <clinit>()V@76
-     INVOKESTATIC 0x00 0x9a    INVOKESTATIC 0x02 0xa9
-   string replace net/minecraft/src/TextureAtlas -> bih @5379
+     INVOKESTATIC 0x00 0x99    INVOKESTATIC 0x02 0xa7
+   string replace net/minecraft/src/TextureAtlas -> bih @5316
    string replace Lnet/minecraft/src/TextureAtlas; -> Lbih; @260
-   string replace Ljava/util/Set<Lnet/minecraft/src/TextureAtlas;>; -> Ljava/util/Set<Lbih;>; @7483
+   string replace Ljava/util/Set<Lnet/minecraft/src/TextureAtlas;>; -> Ljava/util/Set<Lbih;>; @7471
    string replace net/minecraft/src/ResourceLocation -> bjl @2774
    string replace Lnet/minecraft/src/ResourceLocation; -> Lbjl; @2735
-   string replace Ljava/util/Set<Lnet/minecraft/src/ResourceLocation;>; -> Ljava/util/Set<Lbjl;>; @7496
-   string replace Ljava/util/Map<Lnet/minecraft/src/ResourceLocation;Ljava/awt/image/BufferedImage;>; -> Ljava/util/Map<Lbjl;Ljava/awt/image/BufferedImage;>; @7521
+   string replace Ljava/util/Set<Lnet/minecraft/src/ResourceLocation;>; -> Ljava/util/Set<Lbjl;>; @7484
+   string replace Ljava/util/Map<Lnet/minecraft/src/ResourceLocation;Ljava/awt/image/BufferedImage;>; -> Ljava/util/Map<Lbjl;Ljava/awt/image/BufferedImage;>; @7509
    string replace Ljava/util/Map<Ljava/lang/String;Lnet/minecraft/src/TextureAtlasSprite;>; -> Ljava/util/Map<Ljava/lang/String;Lbii;>; @348
    string replace Lnet/minecraft/src/TextureAtlasSprite; -> Lbii; @4067
    string replace Ljava/util/Collection<Lnet/minecraft/src/TextureAtlasSprite;>; -> Ljava/util/Collection<Lbii;>; @4176
-   string replace Lnet/minecraft/src/Tessellator; -> Lbfn; @6029
-   string replace net/minecraft/src/Icon -> mr @5200
-   string replace Lnet/minecraft/src/Icon; -> Lmr; @5156
-   string replace Ljava/util/Map<Ljava/lang/String;Lnet/minecraft/src/Icon;>; -> Ljava/util/Map<Ljava/lang/String;Lmr;>; @7411
+   string replace Lnet/minecraft/src/Tessellator; -> Lbfn; @6017
+   string replace net/minecraft/src/Icon -> mr @5137
+   string replace Lnet/minecraft/src/Icon; -> Lmr; @5093
+   string replace Ljava/util/Map<Ljava/lang/String;Lnet/minecraft/src/Icon;>; -> Ljava/util/Map<Ljava/lang/String;Lmr;>; @7399
   adding com/prupe/mcpatcher/TileLoader$1.class for __TilesheetBase
     field ref net/minecraft/src/Tessellator.instance Lnet/minecraft/src/Tessellator; -> bfn.a Lbfn; beforeChange()V@5
      GETSTATIC 0x00 0x03       GETSTATIC 0x00 0xd9
@@ -9380,6 +9484,145 @@ Patching...
     method ref com/prupe/mcpatcher/TexturePackAPI.newMCPatcherResourceLocation (Ljava/lang/String;)Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/TexturePackAPI.newMCPatcherResourceLocation (Ljava/lang/String;)Lbjl; <clinit>()V@2
      INVOKESTATIC 0x00 0x17    INVOKESTATIC 0x00 0x98
    string replace Lnet/minecraft/src/EntityFX; -> Lbed; @233
+  adding com/prupe/mcpatcher/NBTRule.class for __NBT
+   method signature (Lnet/minecraft/src/NBTTagCompound;)Z -> (Lbx;)Z
+   method signature (Lnet/minecraft/src/NBTTagCompound;I)Z -> (Lbx;I)Z
+   method signature (Lnet/minecraft/src/NBTTagList;I)Z -> (Lcf;I)Z
+   method signature (Lnet/minecraft/src/NBTBase;I)Z -> (Lck;I)Z
+   method signature (Lnet/minecraft/src/NBTTagByte;)Z -> (Lbw;)Z
+   method signature (Lnet/minecraft/src/NBTTagDouble;)Z -> (Lca;)Z
+   method signature (Lnet/minecraft/src/NBTTagFloat;)Z -> (Lcc;)Z
+   method signature (Lnet/minecraft/src/NBTTagInteger;)Z -> (Lce;)Z
+   method signature (Lnet/minecraft/src/NBTTagLong;)Z -> (Lcg;)Z
+   method signature (Lnet/minecraft/src/NBTTagShort;)Z -> (Lci;)Z
+   method signature (Lnet/minecraft/src/NBTTagString;)Z -> (Lcj;)Z
+    method ref com/prupe/mcpatcher/NBTRule.match (Lnet/minecraft/src/NBTTagCompound;I)Z -> com/prupe/mcpatcher/NBTRule.match (Lbx;I)Z match(Lbx;)Z@7
+     INVOKESPECIAL 0x00 0x1d   INVOKESPECIAL 0x00 0xee
+    method ref com/prupe/mcpatcher/NBTRule.match (Lnet/minecraft/src/NBTTagCompound;I)Z -> com/prupe/mcpatcher/NBTRule.match (Lbx;I)Z match1(Lck;I)Z@19
+     INVOKESPECIAL 0x00 0x1d   INVOKESPECIAL 0x00 0xee
+    method ref net/minecraft/src/NBTTagCompound.getTags ()Ljava/util/Collection; -> bx.c ()Ljava/util/Collection; match(Lbx;I)Z@21
+     INVOKEVIRTUAL 0x00 0x1e   INVOKEVIRTUAL 0x00 0xf3
+    class ref net/minecraft/src/NBTBase -> ck match(Lbx;I)Z@45
+     CHECKCAST 0x00 0x22       CHECKCAST 0x00 0xf5
+    method ref com/prupe/mcpatcher/NBTRule.match1 (Lnet/minecraft/src/NBTBase;I)Z -> com/prupe/mcpatcher/NBTRule.match1 (Lck;I)Z match(Lbx;I)Z@56
+     INVOKESPECIAL 0x00 0x23   INVOKESPECIAL 0x00 0xf7
+    method ref com/prupe/mcpatcher/NBTRule.match1 (Lnet/minecraft/src/NBTBase;I)Z -> com/prupe/mcpatcher/NBTRule.match1 (Lck;I)Z match(Lbx;I)Z@85
+     INVOKESPECIAL 0x00 0x23   INVOKESPECIAL 0x00 0xf7
+    method ref com/prupe/mcpatcher/NBTRule.match1 (Lnet/minecraft/src/NBTBase;I)Z -> com/prupe/mcpatcher/NBTRule.match1 (Lck;I)Z match(Lcf;I)Z@39
+     INVOKESPECIAL 0x00 0x23   INVOKESPECIAL 0x00 0xf7
+    method ref com/prupe/mcpatcher/NBTRule.match1 (Lnet/minecraft/src/NBTBase;I)Z -> com/prupe/mcpatcher/NBTRule.match1 (Lck;I)Z match(Lcf;I)Z@86
+     INVOKESPECIAL 0x00 0x23   INVOKESPECIAL 0x00 0xf7
+    method ref net/minecraft/src/NBTTagCompound.getTag (Ljava/lang/String;)Lnet/minecraft/src/NBTBase; -> bx.a (Ljava/lang/String;)Lck; match(Lbx;I)Z@76
+     INVOKEVIRTUAL 0x00 0x24   INVOKEVIRTUAL 0x00 0xfb
+    method ref net/minecraft/src/NBTTagList.tagCount ()I -> cf.c ()I match(Lcf;I)Z@24
+     INVOKEVIRTUAL 0x00 0x25   INVOKEVIRTUAL 0x00 0xff
+    method ref net/minecraft/src/NBTTagList.tagCount ()I -> cf.c ()I match(Lcf;I)Z@71
+     INVOKEVIRTUAL 0x00 0x25   INVOKEVIRTUAL 0x00 0xff
+    method ref net/minecraft/src/NBTTagList.tagAt (I)Lnet/minecraft/src/NBTBase; -> cf.b (I)Lck; match(Lcf;I)Z@33
+     INVOKEVIRTUAL 0x00 0x26   INVOKEVIRTUAL 0x01 0x03
+    method ref net/minecraft/src/NBTTagList.tagAt (I)Lnet/minecraft/src/NBTBase; -> cf.b (I)Lck; match(Lcf;I)Z@80
+     INVOKEVIRTUAL 0x00 0x26   INVOKEVIRTUAL 0x01 0x03
+    class ref net/minecraft/src/NBTTagCompound -> bx match1(Lck;I)Z@7
+     INSTANCEOF 0x00 0x28      INSTANCEOF 0x00 0xf0
+    class ref net/minecraft/src/NBTTagCompound -> bx match1(Lck;I)Z@15
+     CHECKCAST 0x00 0x28       CHECKCAST 0x00 0xf0
+    class ref net/minecraft/src/NBTTagList -> cf match1(Lck;I)Z@24
+     INSTANCEOF 0x00 0x29      INSTANCEOF 0x00 0xfd
+    class ref net/minecraft/src/NBTTagList -> cf match1(Lck;I)Z@32
+     CHECKCAST 0x00 0x29       CHECKCAST 0x00 0xfd
+    method ref com/prupe/mcpatcher/NBTRule.match (Lnet/minecraft/src/NBTTagList;I)Z -> com/prupe/mcpatcher/NBTRule.match (Lcf;I)Z match1(Lck;I)Z@36
+     INVOKESPECIAL 0x00 0x2a   INVOKESPECIAL 0x01 0x05
+    class ref net/minecraft/src/NBTTagString -> cj match1(Lck;I)Z@52
+     INSTANCEOF 0x00 0x2b      INSTANCEOF 0x01 0x07
+    class ref net/minecraft/src/NBTTagString -> cj match1(Lck;I)Z@60
+     CHECKCAST 0x00 0x2b       CHECKCAST 0x01 0x07
+    method ref com/prupe/mcpatcher/NBTRule.match (Lnet/minecraft/src/NBTTagString;)Z -> com/prupe/mcpatcher/NBTRule.match (Lcj;)Z match1(Lck;I)Z@63
+     INVOKEVIRTUAL 0x00 0x2c   INVOKEVIRTUAL 0x01 0x09
+    class ref net/minecraft/src/NBTTagInteger -> ce match1(Lck;I)Z@68
+     INSTANCEOF 0x00 0x2d      INSTANCEOF 0x01 0x0b
+    class ref net/minecraft/src/NBTTagInteger -> ce match1(Lck;I)Z@76
+     CHECKCAST 0x00 0x2d       CHECKCAST 0x01 0x0b
+    method ref com/prupe/mcpatcher/NBTRule.match (Lnet/minecraft/src/NBTTagInteger;)Z -> com/prupe/mcpatcher/NBTRule.match (Lce;)Z match1(Lck;I)Z@79
+     INVOKEVIRTUAL 0x00 0x2e   INVOKEVIRTUAL 0x01 0x0d
+    class ref net/minecraft/src/NBTTagDouble -> ca match1(Lck;I)Z@84
+     INSTANCEOF 0x00 0x2f      INSTANCEOF 0x01 0x0f
+    class ref net/minecraft/src/NBTTagDouble -> ca match1(Lck;I)Z@92
+     CHECKCAST 0x00 0x2f       CHECKCAST 0x01 0x0f
+    method ref com/prupe/mcpatcher/NBTRule.match (Lnet/minecraft/src/NBTTagDouble;)Z -> com/prupe/mcpatcher/NBTRule.match (Lca;)Z match1(Lck;I)Z@95
+     INVOKEVIRTUAL 0x00 0x30   INVOKEVIRTUAL 0x01 0x11
+    class ref net/minecraft/src/NBTTagFloat -> cc match1(Lck;I)Z@100
+     INSTANCEOF 0x00 0x31      INSTANCEOF 0x01 0x13
+    class ref net/minecraft/src/NBTTagFloat -> cc match1(Lck;I)Z@108
+     CHECKCAST 0x00 0x31       CHECKCAST 0x01 0x13
+    method ref com/prupe/mcpatcher/NBTRule.match (Lnet/minecraft/src/NBTTagFloat;)Z -> com/prupe/mcpatcher/NBTRule.match (Lcc;)Z match1(Lck;I)Z@111
+     INVOKEVIRTUAL 0x00 0x32   INVOKEVIRTUAL 0x01 0x15
+    class ref net/minecraft/src/NBTTagLong -> cg match1(Lck;I)Z@116
+     INSTANCEOF 0x00 0x33      INSTANCEOF 0x01 0x17
+    class ref net/minecraft/src/NBTTagLong -> cg match1(Lck;I)Z@124
+     CHECKCAST 0x00 0x33       CHECKCAST 0x01 0x17
+    method ref com/prupe/mcpatcher/NBTRule.match (Lnet/minecraft/src/NBTTagLong;)Z -> com/prupe/mcpatcher/NBTRule.match (Lcg;)Z match1(Lck;I)Z@127
+     INVOKEVIRTUAL 0x00 0x34   INVOKEVIRTUAL 0x01 0x19
+    class ref net/minecraft/src/NBTTagShort -> ci match1(Lck;I)Z@132
+     INSTANCEOF 0x00 0x35      INSTANCEOF 0x01 0x1b
+    class ref net/minecraft/src/NBTTagShort -> ci match1(Lck;I)Z@140
+     CHECKCAST 0x00 0x35       CHECKCAST 0x01 0x1b
+    method ref com/prupe/mcpatcher/NBTRule.match (Lnet/minecraft/src/NBTTagShort;)Z -> com/prupe/mcpatcher/NBTRule.match (Lci;)Z match1(Lck;I)Z@143
+     INVOKEVIRTUAL 0x00 0x36   INVOKEVIRTUAL 0x01 0x1d
+    class ref net/minecraft/src/NBTTagByte -> bw match1(Lck;I)Z@148
+     INSTANCEOF 0x00 0x37      INSTANCEOF 0x01 0x1f
+    class ref net/minecraft/src/NBTTagByte -> bw match1(Lck;I)Z@156
+     CHECKCAST 0x00 0x37       CHECKCAST 0x01 0x1f
+    method ref com/prupe/mcpatcher/NBTRule.match (Lnet/minecraft/src/NBTTagByte;)Z -> com/prupe/mcpatcher/NBTRule.match (Lbw;)Z match1(Lck;I)Z@159
+     INVOKEVIRTUAL 0x00 0x38   INVOKEVIRTUAL 0x01 0x21
+   string replace Lnet/minecraft/src/NBTTagString; -> Lcj; @2284
+   string replace Lnet/minecraft/src/NBTTagInteger; -> Lce; @2181
+   string replace Lnet/minecraft/src/NBTTagLong; -> Lcg; @2188
+   string replace Lnet/minecraft/src/NBTTagByte; -> Lbw; @2079
+   string replace Lnet/minecraft/src/NBTTagFloat; -> Lcc; @2121
+   string replace Lnet/minecraft/src/NBTTagShort; -> Lci; @2142
+   string replace Lnet/minecraft/src/NBTTagDouble; -> Lca; @2086
+   string replace Lnet/minecraft/src/NBTTagCompound; -> Lbx; @1333
+   string replace Lnet/minecraft/src/NBTTagList; -> Lcf; @1747
+   string replace Lnet/minecraft/src/NBTBase; -> Lck; @1371
+  adding com/prupe/mcpatcher/NBTRule$Exact.class for __NBT
+   method signature (Lnet/minecraft/src/NBTTagByte;)Z -> (Lbw;)Z
+   method signature (Lnet/minecraft/src/NBTTagDouble;)Z -> (Lca;)Z
+   method signature (Lnet/minecraft/src/NBTTagFloat;)Z -> (Lcc;)Z
+   method signature (Lnet/minecraft/src/NBTTagInteger;)Z -> (Lce;)Z
+   method signature (Lnet/minecraft/src/NBTTagLong;)Z -> (Lcg;)Z
+   method signature (Lnet/minecraft/src/NBTTagShort;)Z -> (Lci;)Z
+   method signature (Lnet/minecraft/src/NBTTagString;)Z -> (Lcj;)Z
+    field ref net/minecraft/src/NBTTagByte.data B -> bw.a B match(Lbw;)Z@15
+     GETFIELD 0x00 0x20        GETFIELD 0x00 0xd6
+    field ref net/minecraft/src/NBTTagDouble.data D -> ca.a D match(Lca;)Z@15
+     GETFIELD 0x00 0x22        GETFIELD 0x00 0xda
+    field ref net/minecraft/src/NBTTagFloat.data F -> cc.a F match(Lcc;)Z@15
+     GETFIELD 0x00 0x24        GETFIELD 0x00 0xde
+    field ref net/minecraft/src/NBTTagInteger.data I -> ce.a I match(Lce;)Z@15
+     GETFIELD 0x00 0x26        GETFIELD 0x00 0xe2
+    field ref net/minecraft/src/NBTTagLong.data J -> cg.a J match(Lcg;)Z@15
+     GETFIELD 0x00 0x28        GETFIELD 0x00 0xe6
+    field ref net/minecraft/src/NBTTagShort.data S -> ci.a S match(Lci;)Z@15
+     GETFIELD 0x00 0x2a        GETFIELD 0x00 0xea
+    field ref net/minecraft/src/NBTTagString.data Ljava/lang/String; -> cj.a Ljava/lang/String; match(Lcj;)Z@1
+     GETFIELD 0x00 0x2b        GETFIELD 0x00 0xee
+   string replace Lnet/minecraft/src/NBTTagString; -> Lcj; @2186
+   string replace Lnet/minecraft/src/NBTTagInteger; -> Lce; @1961
+   string replace Lnet/minecraft/src/NBTTagLong; -> Lcg; @2005
+   string replace Lnet/minecraft/src/NBTTagByte; -> Lbw; @1733
+   string replace Lnet/minecraft/src/NBTTagFloat; -> Lcc; @1864
+   string replace Lnet/minecraft/src/NBTTagShort; -> Lci; @2007
+   string replace Lnet/minecraft/src/NBTTagDouble; -> Lca; @1781
+  adding com/prupe/mcpatcher/NBTRule$Regex.class for __NBT
+   method signature (Lnet/minecraft/src/NBTTagString;)Z -> (Lcj;)Z
+    field ref net/minecraft/src/NBTTagString.data Ljava/lang/String; -> cj.a Ljava/lang/String; match(Lcj;)Z@5
+     GETFIELD 0x00 0x04        GETFIELD 0x00 0x40
+   string replace Lnet/minecraft/src/NBTTagString; -> Lcj; @541
+  adding com/prupe/mcpatcher/NBTRule$Glob.class for __NBT
+   method signature (Lnet/minecraft/src/NBTTagString;)Z -> (Lcj;)Z
+    field ref net/minecraft/src/NBTTagString.data Ljava/lang/String; -> cj.a Ljava/lang/String; match(Lcj;)Z@1
+     GETFIELD 0x00 0x05        GETFIELD 0x00 0x58
+   string replace Lnet/minecraft/src/NBTTagString; -> Lcj; @467
   adding com/prupe/mcpatcher/cit/CITUtils.class for Custom Item Textures
    method signature (Lnet/minecraft/src/Icon;Lnet/minecraft/src/ItemStack;I)Lnet/minecraft/src/Icon; -> (Lmr;Lyd;I)Lmr;
    method signature (Lnet/minecraft/src/Icon;Lnet/minecraft/src/Entity;)Lnet/minecraft/src/Icon; -> (Lmr;Lnm;)Lmr;
@@ -9563,175 +9806,64 @@ Patching...
    method signature (Lnet/minecraft/src/ItemStack;)Z -> (Lyd;)Z
    method signature (Lnet/minecraft/src/ItemStack;)Z -> (Lyd;)Z
    method signature (Lnet/minecraft/src/ItemStack;)Z -> (Lyd;)Z
-   method signature ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTBase;)Z -> ([Ljava/lang/String;ILjava/lang/String;Lck;)Z
-   method signature ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagCompound;)Z -> ([Ljava/lang/String;ILjava/lang/String;Lbx;)Z
-   method signature ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagList;)Z -> ([Ljava/lang/String;ILjava/lang/String;Lcf;)Z
-   method signature ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagByte;)Z -> ([Ljava/lang/String;ILjava/lang/String;Lbw;)Z
-   method signature ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagDouble;)Z -> ([Ljava/lang/String;ILjava/lang/String;Lca;)Z
-   method signature ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagFloat;)Z -> ([Ljava/lang/String;ILjava/lang/String;Lcc;)Z
-   method signature ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagInteger;)Z -> ([Ljava/lang/String;ILjava/lang/String;Lce;)Z
-   method signature ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagLong;)Z -> ([Ljava/lang/String;ILjava/lang/String;Lcg;)Z
-   method signature ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagShort;)Z -> ([Ljava/lang/String;ILjava/lang/String;Lci;)Z
-   method signature ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagString;)Z -> ([Ljava/lang/String;ILjava/lang/String;Lcj;)Z
    field signature Lnet/minecraft/src/ResourceLocation; -> Lbjl;
    field signature Lnet/minecraft/src/ResourceLocation; -> Lbjl;
     method ref net/minecraft/src/ResourceLocation.getPath ()Ljava/lang/String; -> bjl.a ()Ljava/lang/String; create(Lbjl;)Lcom/prupe/mcpatcher/cit/OverrideBase;@5
-     INVOKEVIRTUAL 0x00 0x02   INVOKEVIRTUAL 0x02 0x70
+     INVOKEVIRTUAL 0x00 0x02   INVOKEVIRTUAL 0x01 0xd4
     method ref com/prupe/mcpatcher/TexturePackAPI.getProperties (Lnet/minecraft/src/ResourceLocation;)Ljava/util/Properties; -> com/prupe/mcpatcher/TexturePackAPI.getProperties (Lbjl;)Ljava/util/Properties; create(Lbjl;)Lcom/prupe/mcpatcher/cit/OverrideBase;@25
-     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x02 0x73
+     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x01 0xd7
     method ref com/prupe/mcpatcher/cit/ItemOverride.<init> (Lnet/minecraft/src/ResourceLocation;Ljava/util/Properties;)V -> com/prupe/mcpatcher/cit/ItemOverride.<init> (Lbjl;Ljava/util/Properties;)V create(Lbjl;)Lcom/prupe/mcpatcher/cit/OverrideBase;@70
-     INVOKESPECIAL 0x00 0x0e   INVOKESPECIAL 0x02 0x75
+     INVOKESPECIAL 0x00 0x0e   INVOKESPECIAL 0x01 0xd9
     method ref com/prupe/mcpatcher/cit/Enchantment.<init> (Lnet/minecraft/src/ResourceLocation;Ljava/util/Properties;)V -> com/prupe/mcpatcher/cit/Enchantment.<init> (Lbjl;Ljava/util/Properties;)V create(Lbjl;)Lcom/prupe/mcpatcher/cit/OverrideBase;@109
-     INVOKESPECIAL 0x00 0x13   INVOKESPECIAL 0x02 0x76
+     INVOKESPECIAL 0x00 0x13   INVOKESPECIAL 0x01 0xda
     method ref com/prupe/mcpatcher/cit/ArmorOverride.<init> (Lnet/minecraft/src/ResourceLocation;Ljava/util/Properties;)V -> com/prupe/mcpatcher/cit/ArmorOverride.<init> (Lbjl;Ljava/util/Properties;)V create(Lbjl;)Lcom/prupe/mcpatcher/cit/OverrideBase;@139
-     INVOKESPECIAL 0x00 0x17   INVOKESPECIAL 0x02 0x77
+     INVOKESPECIAL 0x00 0x17   INVOKESPECIAL 0x01 0xdb
     field ref com/prupe/mcpatcher/cit/OverrideBase.propertiesName Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/cit/OverrideBase.propertiesName Lbjl; <init>(Lbjl;Ljava/util/Properties;)V@17
-     PUTFIELD 0x00 0x21        PUTFIELD 0x02 0x79
+     PUTFIELD 0x00 0x21        PUTFIELD 0x01 0xdd
     field ref com/prupe/mcpatcher/cit/OverrideBase.propertiesName Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/cit/OverrideBase.propertiesName Lbjl; compareTo(Lcom/prupe/mcpatcher/cit/OverrideBase;)I@17
-     GETFIELD 0x00 0x21        GETFIELD 0x02 0x79
+     GETFIELD 0x00 0x21        GETFIELD 0x01 0xdd
     field ref com/prupe/mcpatcher/cit/OverrideBase.propertiesName Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/cit/OverrideBase.propertiesName Lbjl; compareTo(Lcom/prupe/mcpatcher/cit/OverrideBase;)I@24
-     GETFIELD 0x00 0x21        GETFIELD 0x02 0x79
+     GETFIELD 0x00 0x21        GETFIELD 0x01 0xdd
     field ref com/prupe/mcpatcher/cit/OverrideBase.propertiesName Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/cit/OverrideBase.propertiesName Lbjl; getAlternateTextures(Ljava/util/Properties;)Ljava/util/Map;@144
-     GETFIELD 0x00 0x21        GETFIELD 0x02 0x79
+     GETFIELD 0x00 0x21        GETFIELD 0x01 0xdd
     field ref com/prupe/mcpatcher/cit/OverrideBase.propertiesName Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/cit/OverrideBase.propertiesName Lbjl; toString()Ljava/lang/String;@16
-     GETFIELD 0x00 0x21        GETFIELD 0x02 0x79
+     GETFIELD 0x00 0x21        GETFIELD 0x01 0xdd
     field ref com/prupe/mcpatcher/cit/OverrideBase.propertiesName Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/cit/OverrideBase.propertiesName Lbjl; error(Ljava/lang/String;[Ljava/lang/Object;)V@16
-     GETFIELD 0x00 0x21        GETFIELD 0x02 0x79
-    method ref com/prupe/mcpatcher/TileLoader.getDefaultAddress (Lnet/minecraft/src/ResourceLocation;)Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/TileLoader.getDefaultAddress (Lbjl;)Lbjl; <init>(Lbjl;Ljava/util/Properties;)V@75
-     INVOKESTATIC 0x00 0x26    INVOKESTATIC 0x02 0x7c
-    method ref com/prupe/mcpatcher/TexturePackAPI.hasResource (Lnet/minecraft/src/ResourceLocation;)Z -> com/prupe/mcpatcher/TexturePackAPI.hasResource (Lbjl;)Z <init>(Lbjl;Ljava/util/Properties;)V@82
-     INVOKESTATIC 0x00 0x27    INVOKESTATIC 0x02 0x7f
-    method ref com/prupe/mcpatcher/TexturePackAPI.hasResource (Lnet/minecraft/src/ResourceLocation;)Z -> com/prupe/mcpatcher/TexturePackAPI.hasResource (Lbjl;)Z <init>(Lbjl;Ljava/util/Properties;)V@103
-     INVOKESTATIC 0x00 0x27    INVOKESTATIC 0x02 0x7f
-    method ref com/prupe/mcpatcher/TileLoader.parseTileAddress (Lnet/minecraft/src/ResourceLocation;Ljava/lang/String;)Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/TileLoader.parseTileAddress (Lbjl;Ljava/lang/String;)Lbjl; <init>(Lbjl;Ljava/util/Properties;)V@96
-     INVOKESTATIC 0x00 0x28    INVOKESTATIC 0x02 0x82
+     GETFIELD 0x00 0x21        GETFIELD 0x01 0xdd
+    method ref com/prupe/mcpatcher/TileLoader.getDefaultAddress (Lnet/minecraft/src/ResourceLocation;)Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/TileLoader.getDefaultAddress (Lbjl;)Lbjl; <init>(Lbjl;Ljava/util/Properties;)V@97
+     INVOKESTATIC 0x00 0x29    INVOKESTATIC 0x01 0xe0
+    method ref com/prupe/mcpatcher/TexturePackAPI.hasResource (Lnet/minecraft/src/ResourceLocation;)Z -> com/prupe/mcpatcher/TexturePackAPI.hasResource (Lbjl;)Z <init>(Lbjl;Ljava/util/Properties;)V@104
+     INVOKESTATIC 0x00 0x2a    INVOKESTATIC 0x01 0xe3
+    method ref com/prupe/mcpatcher/TexturePackAPI.hasResource (Lnet/minecraft/src/ResourceLocation;)Z -> com/prupe/mcpatcher/TexturePackAPI.hasResource (Lbjl;)Z <init>(Lbjl;Ljava/util/Properties;)V@125
+     INVOKESTATIC 0x00 0x2a    INVOKESTATIC 0x01 0xe3
+    method ref com/prupe/mcpatcher/TileLoader.parseTileAddress (Lnet/minecraft/src/ResourceLocation;Ljava/lang/String;)Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/TileLoader.parseTileAddress (Lbjl;Ljava/lang/String;)Lbjl; <init>(Lbjl;Ljava/util/Properties;)V@118
+     INVOKESTATIC 0x00 0x2b    INVOKESTATIC 0x01 0xe6
     method ref com/prupe/mcpatcher/TileLoader.parseTileAddress (Lnet/minecraft/src/ResourceLocation;Ljava/lang/String;)Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/TileLoader.parseTileAddress (Lbjl;Ljava/lang/String;)Lbjl; getAlternateTextures(Ljava/util/Properties;)Ljava/util/Map;@149
-     INVOKESTATIC 0x00 0x28    INVOKESTATIC 0x02 0x82
-    field ref com/prupe/mcpatcher/cit/OverrideBase.textureName Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/cit/OverrideBase.textureName Lbjl; <init>(Lbjl;Ljava/util/Properties;)V@129
-     PUTFIELD 0x00 0x2b        PUTFIELD 0x02 0x84
+     INVOKESTATIC 0x00 0x2b    INVOKESTATIC 0x01 0xe6
+    field ref com/prupe/mcpatcher/cit/OverrideBase.textureName Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/cit/OverrideBase.textureName Lbjl; <init>(Lbjl;Ljava/util/Properties;)V@151
+     PUTFIELD 0x00 0x2e        PUTFIELD 0x01 0xe8
     field ref com/prupe/mcpatcher/cit/OverrideBase.textureName Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/cit/OverrideBase.textureName Lbjl; toString()Ljava/lang/String;@23
-     GETFIELD 0x00 0x2b        GETFIELD 0x02 0x84
-    field ref net/minecraft/src/Item.itemsList [Lnet/minecraft/src/Item; -> yb.g [Lyb; <init>(Lbjl;Ljava/util/Properties;)V@224
-     GETSTATIC 0x00 0x37       GETSTATIC 0x02 0x8a
+     GETFIELD 0x00 0x2e        GETFIELD 0x01 0xe8
+    field ref net/minecraft/src/Item.itemsList [Lnet/minecraft/src/Item; -> yb.g [Lyb; <init>(Lbjl;Ljava/util/Properties;)V@237
+     GETSTATIC 0x00 0x38       GETSTATIC 0x01 0xee
     method ref com/prupe/mcpatcher/cit/OverrideBase.matchDamage (Lnet/minecraft/src/ItemStack;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchDamage (Lyd;)Z match(Lyd;[IZ)Z@2
-     INVOKESPECIAL 0x00 0x55   INVOKESPECIAL 0x02 0x8c
+     INVOKESPECIAL 0x00 0x55   INVOKESPECIAL 0x01 0xf0
     method ref com/prupe/mcpatcher/cit/OverrideBase.matchStackSize (Lnet/minecraft/src/ItemStack;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchStackSize (Lyd;)Z match(Lyd;[IZ)Z@10
-     INVOKESPECIAL 0x00 0x56   INVOKESPECIAL 0x02 0x8e
+     INVOKESPECIAL 0x00 0x56   INVOKESPECIAL 0x01 0xf2
     method ref com/prupe/mcpatcher/cit/OverrideBase.matchNBT (Lnet/minecraft/src/ItemStack;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchNBT (Lyd;)Z match(Lyd;[IZ)Z@27
-     INVOKESPECIAL 0x00 0x58   INVOKESPECIAL 0x02 0x90
+     INVOKESPECIAL 0x00 0x58   INVOKESPECIAL 0x01 0xf4
     method ref net/minecraft/src/ItemStack.getItemDamage ()I -> yd.j ()I matchDamage(Lyd;)Z@12
-     INVOKEVIRTUAL 0x00 0x63   INVOKEVIRTUAL 0x02 0x95
+     INVOKEVIRTUAL 0x00 0x63   INVOKEVIRTUAL 0x01 0xf9
     field ref net/minecraft/src/ItemStack.stackSize I -> yd.b I matchStackSize(Lyd;)Z@12
-     GETFIELD 0x00 0x64        GETFIELD 0x02 0x98
-    field ref net/minecraft/src/ItemStack.stackTagCompound Lnet/minecraft/src/NBTTagCompound; -> yd.e Lbx; matchNBT(Lyd;)Z@35
-     GETFIELD 0x00 0x6c        GETFIELD 0x02 0x9b
-    method ref com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagCompound ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagCompound;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagCompound ([Ljava/lang/String;ILjava/lang/String;Lbx;)Z matchNBT(Lyd;)Z@38
-     INVOKESTATIC 0x00 0x6d    INVOKESTATIC 0x02 0x9d
-    method ref com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagCompound ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagCompound;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagCompound ([Ljava/lang/String;ILjava/lang/String;Lbx;)Z matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@32
-     INVOKESTATIC 0x00 0x6d    INVOKESTATIC 0x02 0x9d
-    class ref net/minecraft/src/NBTTagByte -> bw matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@1
-     INSTANCEOF 0x00 0x7b      INSTANCEOF 0x02 0x9f
-    class ref net/minecraft/src/NBTTagByte -> bw matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@11
-     CHECKCAST 0x00 0x7b       CHECKCAST 0x02 0x9f
-    method ref com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagByte ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagByte;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagByte ([Ljava/lang/String;ILjava/lang/String;Lbw;)Z matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@14
-     INVOKESTATIC 0x00 0x7c    INVOKESTATIC 0x02 0xa1
-    class ref net/minecraft/src/NBTTagCompound -> bx matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@19
-     INSTANCEOF 0x00 0x7d      INSTANCEOF 0x02 0xa3
-    class ref net/minecraft/src/NBTTagCompound -> bx matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@29
-     CHECKCAST 0x00 0x7d       CHECKCAST 0x02 0xa3
-    class ref net/minecraft/src/NBTTagList -> cf matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@37
-     INSTANCEOF 0x00 0x7e      INSTANCEOF 0x02 0xa5
-    class ref net/minecraft/src/NBTTagList -> cf matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@47
-     CHECKCAST 0x00 0x7e       CHECKCAST 0x02 0xa5
-    method ref com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagList ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagList;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagList ([Ljava/lang/String;ILjava/lang/String;Lcf;)Z matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@50
-     INVOKESTATIC 0x00 0x7f    INVOKESTATIC 0x02 0xa7
-    class ref net/minecraft/src/NBTTagDouble -> ca matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@55
-     INSTANCEOF 0x00 0x80      INSTANCEOF 0x02 0xa9
-    class ref net/minecraft/src/NBTTagDouble -> ca matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@65
-     CHECKCAST 0x00 0x80       CHECKCAST 0x02 0xa9
-    method ref com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagDouble ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagDouble;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagDouble ([Ljava/lang/String;ILjava/lang/String;Lca;)Z matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@68
-     INVOKESTATIC 0x00 0x81    INVOKESTATIC 0x02 0xab
-    class ref net/minecraft/src/NBTTagFloat -> cc matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@73
-     INSTANCEOF 0x00 0x82      INSTANCEOF 0x02 0xad
-    class ref net/minecraft/src/NBTTagFloat -> cc matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@83
-     CHECKCAST 0x00 0x82       CHECKCAST 0x02 0xad
-    method ref com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagFloat ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagFloat;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagFloat ([Ljava/lang/String;ILjava/lang/String;Lcc;)Z matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@86
-     INVOKESTATIC 0x00 0x83    INVOKESTATIC 0x02 0xaf
-    class ref net/minecraft/src/NBTTagInteger -> ce matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@91
-     INSTANCEOF 0x00 0x84      INSTANCEOF 0x02 0xb1
-    class ref net/minecraft/src/NBTTagInteger -> ce matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@101
-     CHECKCAST 0x00 0x84       CHECKCAST 0x02 0xb1
-    method ref com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagInteger ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagInteger;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagInteger ([Ljava/lang/String;ILjava/lang/String;Lce;)Z matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@104
-     INVOKESTATIC 0x00 0x85    INVOKESTATIC 0x02 0xb3
-    class ref net/minecraft/src/NBTTagLong -> cg matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@109
-     INSTANCEOF 0x00 0x86      INSTANCEOF 0x02 0xb5
-    class ref net/minecraft/src/NBTTagLong -> cg matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@119
-     CHECKCAST 0x00 0x86       CHECKCAST 0x02 0xb5
-    method ref com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagLong ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagLong;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagLong ([Ljava/lang/String;ILjava/lang/String;Lcg;)Z matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@122
-     INVOKESTATIC 0x00 0x87    INVOKESTATIC 0x02 0xb7
-    class ref net/minecraft/src/NBTTagShort -> ci matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@127
-     INSTANCEOF 0x00 0x88      INSTANCEOF 0x02 0xb9
-    class ref net/minecraft/src/NBTTagShort -> ci matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@137
-     CHECKCAST 0x00 0x88       CHECKCAST 0x02 0xb9
-    method ref com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagShort ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagShort;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagShort ([Ljava/lang/String;ILjava/lang/String;Lci;)Z matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@140
-     INVOKESTATIC 0x00 0x89    INVOKESTATIC 0x02 0xbb
-    class ref net/minecraft/src/NBTTagString -> cj matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@145
-     INSTANCEOF 0x00 0x8a      INSTANCEOF 0x02 0xbd
-    class ref net/minecraft/src/NBTTagString -> cj matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@155
-     CHECKCAST 0x00 0x8a       CHECKCAST 0x02 0xbd
-    method ref com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagString ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTTagString;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchNBTTagString ([Ljava/lang/String;ILjava/lang/String;Lcj;)Z matchNBT([Ljava/lang/String;ILjava/lang/String;Lck;)Z@158
-     INVOKESTATIC 0x00 0x8b    INVOKESTATIC 0x02 0xbf
-    method ref net/minecraft/src/NBTTagCompound.getTags ()Ljava/util/Collection; -> bx.c ()Ljava/util/Collection; matchNBTTagCompound([Ljava/lang/String;ILjava/lang/String;Lbx;)Z@19
-     INVOKEVIRTUAL 0x00 0x8c   INVOKEVIRTUAL 0x02 0xc2
-    class ref net/minecraft/src/NBTBase -> ck matchNBTTagCompound([Ljava/lang/String;ILjava/lang/String;Lbx;)Z@46
-     CHECKCAST 0x00 0x8e       CHECKCAST 0x02 0xc4
-    method ref com/prupe/mcpatcher/cit/OverrideBase.matchNBT ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTBase;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchNBT ([Ljava/lang/String;ILjava/lang/String;Lck;)Z matchNBTTagCompound([Ljava/lang/String;ILjava/lang/String;Lbx;)Z@58
-     INVOKESTATIC 0x00 0x8f    INVOKESTATIC 0x02 0xc6
-    method ref com/prupe/mcpatcher/cit/OverrideBase.matchNBT ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTBase;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchNBT ([Ljava/lang/String;ILjava/lang/String;Lck;)Z matchNBTTagCompound([Ljava/lang/String;ILjava/lang/String;Lbx;)Z@84
-     INVOKESTATIC 0x00 0x8f    INVOKESTATIC 0x02 0xc6
-    method ref com/prupe/mcpatcher/cit/OverrideBase.matchNBT ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTBase;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchNBT ([Ljava/lang/String;ILjava/lang/String;Lck;)Z matchNBTTagList([Ljava/lang/String;ILjava/lang/String;Lcf;)Z@37
-     INVOKESTATIC 0x00 0x8f    INVOKESTATIC 0x02 0xc6
-    method ref com/prupe/mcpatcher/cit/OverrideBase.matchNBT ([Ljava/lang/String;ILjava/lang/String;Lnet/minecraft/src/NBTBase;)Z -> com/prupe/mcpatcher/cit/OverrideBase.matchNBT ([Ljava/lang/String;ILjava/lang/String;Lck;)Z matchNBTTagList([Ljava/lang/String;ILjava/lang/String;Lcf;)Z@87
-     INVOKESTATIC 0x00 0x8f    INVOKESTATIC 0x02 0xc6
-    method ref net/minecraft/src/NBTTagCompound.getTag (Ljava/lang/String;)Lnet/minecraft/src/NBTBase; -> bx.a (Ljava/lang/String;)Lck; matchNBTTagCompound([Ljava/lang/String;ILjava/lang/String;Lbx;)Z@81
-     INVOKEVIRTUAL 0x00 0x90   INVOKEVIRTUAL 0x02 0xc9
-    method ref net/minecraft/src/NBTTagList.tagCount ()I -> cf.c ()I matchNBTTagList([Ljava/lang/String;ILjava/lang/String;Lcf;)Z@20
-     INVOKEVIRTUAL 0x00 0x91   INVOKEVIRTUAL 0x02 0xcb
-    method ref net/minecraft/src/NBTTagList.tagCount ()I -> cf.c ()I matchNBTTagList([Ljava/lang/String;ILjava/lang/String;Lcf;)Z@70
-     INVOKEVIRTUAL 0x00 0x91   INVOKEVIRTUAL 0x02 0xcb
-    method ref net/minecraft/src/NBTTagList.tagAt (I)Lnet/minecraft/src/NBTBase; -> cf.b (I)Lck; matchNBTTagList([Ljava/lang/String;ILjava/lang/String;Lcf;)Z@34
-     INVOKEVIRTUAL 0x00 0x92   INVOKEVIRTUAL 0x02 0xce
-    method ref net/minecraft/src/NBTTagList.tagAt (I)Lnet/minecraft/src/NBTBase; -> cf.b (I)Lck; matchNBTTagList([Ljava/lang/String;ILjava/lang/String;Lcf;)Z@84
-     INVOKEVIRTUAL 0x00 0x92   INVOKEVIRTUAL 0x02 0xce
-    field ref net/minecraft/src/NBTTagByte.data B -> bw.a B matchNBTTagByte([Ljava/lang/String;ILjava/lang/String;Lbw;)Z@1
-     GETFIELD 0x00 0x95        GETFIELD 0x02 0xd0
-    field ref net/minecraft/src/NBTTagDouble.data D -> ca.a D matchNBTTagDouble([Ljava/lang/String;ILjava/lang/String;Lca;)Z@1
-     GETFIELD 0x00 0x97        GETFIELD 0x02 0xd2
-    field ref net/minecraft/src/NBTTagFloat.data F -> cc.a F matchNBTTagFloat([Ljava/lang/String;ILjava/lang/String;Lcc;)Z@1
-     GETFIELD 0x00 0x99        GETFIELD 0x02 0xd4
-    field ref net/minecraft/src/NBTTagInteger.data I -> ce.a I matchNBTTagInteger([Ljava/lang/String;ILjava/lang/String;Lce;)Z@1
-     GETFIELD 0x00 0x9b        GETFIELD 0x02 0xd6
-    field ref net/minecraft/src/NBTTagLong.data J -> cg.a J matchNBTTagLong([Ljava/lang/String;ILjava/lang/String;Lcg;)Z@1
-     GETFIELD 0x00 0x9c        GETFIELD 0x02 0xd8
-    field ref net/minecraft/src/NBTTagShort.data S -> ci.a S matchNBTTagShort([Ljava/lang/String;ILjava/lang/String;Lci;)Z@1
-     GETFIELD 0x00 0x9e        GETFIELD 0x02 0xda
-    field ref net/minecraft/src/NBTTagString.data Ljava/lang/String; -> cj.a Ljava/lang/String; matchNBTTagString([Ljava/lang/String;ILjava/lang/String;Lcj;)Z@2
-     GETFIELD 0x00 0xa0        GETFIELD 0x02 0xdc
-   string replace Lnet/minecraft/src/NBTTagLong; -> Lcg; @6483
-   string replace Lnet/minecraft/src/NBTTagByte; -> Lbw; @6089
-   string replace Lnet/minecraft/src/ItemStack; -> Lyd; @3398
-   string replace Lnet/minecraft/src/NBTBase; -> Lck; @4948
-   string replace Lnet/minecraft/src/NBTTagString; -> Lcj; @6612
-   string replace net/minecraft/src/ResourceLocation -> bjl @1704
+     GETFIELD 0x00 0x64        GETFIELD 0x01 0xfc
+    field ref net/minecraft/src/ItemStack.stackTagCompound Lnet/minecraft/src/NBTTagCompound; -> yd.e Lbx; matchNBT(Lyd;)Z@31
+     GETFIELD 0x00 0x6c        GETFIELD 0x02 0x00
+    method ref com/prupe/mcpatcher/NBTRule.match (Lnet/minecraft/src/NBTTagCompound;)Z -> com/prupe/mcpatcher/NBTRule.match (Lbx;)Z matchNBT(Lyd;)Z@34
+     INVOKEVIRTUAL 0x00 0x6d   INVOKEVIRTUAL 0x02 0x03
+   string replace Lnet/minecraft/src/ItemStack; -> Lyd; @3516
+   string replace net/minecraft/src/ResourceLocation -> bjl @1714
    string replace Lnet/minecraft/src/ResourceLocation; -> Lbjl; @267
-   string replace Ljava/util/Map<Ljava/lang/String;Lnet/minecraft/src/ResourceLocation;>; -> Ljava/util/Map<Ljava/lang/String;Lbjl;>; @3586
-   string replace Lnet/minecraft/src/NBTTagInteger; -> Lce; @6270
-   string replace Lnet/minecraft/src/NBTTagFloat; -> Lcc; @6154
-   string replace Lnet/minecraft/src/NBTTagDouble; -> Lca; @6035
-   string replace Lnet/minecraft/src/NBTTagCompound; -> Lbx; @5561
-   string replace net/minecraft/src/NBTTagList -> cf @5810
-   string replace Lnet/minecraft/src/NBTTagList; -> Lcf; @5777
-   string replace Lnet/minecraft/src/NBTTagShort; -> Lci; @6237
+   string replace Ljava/util/Map<Ljava/lang/String;Lnet/minecraft/src/ResourceLocation;>; -> Ljava/util/Map<Ljava/lang/String;Lbjl;>; @3704
   adding com/prupe/mcpatcher/cit/ItemOverride.class for Custom Item Textures
    method signature (Lnet/minecraft/src/ResourceLocation;Ljava/util/Properties;)V -> (Lbjl;Ljava/util/Properties;)V
    method signature (Lnet/minecraft/src/Icon;)Lnet/minecraft/src/Icon; -> (Lmr;)Lmr;
@@ -10353,6 +10485,14 @@ Better Skies
     ResourceLocation (bjl.class)
     World (abv.class)
     WorldClient (bda.class)
+
+__NBT
+    added com/prupe/mcpatcher/NBTRule$Exact.class
+    added com/prupe/mcpatcher/NBTRule$Glob.class
+    added com/prupe/mcpatcher/NBTRule$Regex.class
+    added com/prupe/mcpatcher/NBTRule.class
+    NBTTagCompound (bx.class)
+    NBTTagList (cf.class)
 
 Custom Item Textures
     added com/prupe/mcpatcher/cit/ArmorOverride.class
