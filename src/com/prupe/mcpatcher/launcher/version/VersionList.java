@@ -3,10 +3,11 @@ package com.prupe.mcpatcher.launcher.version;
 import com.google.gson.Gson;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.JsonUtils;
-import com.prupe.mcpatcher.Logger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;

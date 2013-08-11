@@ -3,7 +3,9 @@ package com.prupe.mcpatcher;
 import com.google.gson.*;
 
 import java.io.*;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.*;
 
 public class JsonUtils {
