@@ -2,11 +2,8 @@ package com.prupe.mcpatcher;
 
 import com.google.gson.JsonObject;
 import com.prupe.mcpatcher.launcher.version.Library;
-import com.prupe.mcpatcher.mod.*;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -35,6 +32,10 @@ class ModList {
         boolean internal;
         boolean experimental;
 
+        BuiltInMod(String name, String className, ClassLoader loader) throws ClassNotFoundException {
+            this(name, loader.loadClass(className).asSubclass(Mod.class));
+        }
+
         BuiltInMod(String name, Class<? extends Mod> modClass) {
             this.name = name;
             this.modClass = modClass;
@@ -51,25 +52,102 @@ class ModList {
         }
     }
 
-    ModList(MinecraftVersion version) {
+    ModList(MinecraftVersion version) throws Exception {
         this.version = version;
-        BaseTexturePackMod.clearEarlyInitializeMethods();
         register(new BuiltInMod(MCPatcherUtils.BASE_MOD, BaseMod.class).setInternal(true));
-        register(new BuiltInMod(MCPatcherUtils.BASE_TEXTURE_PACK_MOD, BaseTexturePackMod.class).setInternal(true));
-        register(new BuiltInMod(MCPatcherUtils.BASE_TILESHEET_MOD, BaseTilesheetMod.class).setInternal(true));
-        register(new BuiltInMod(MCPatcherUtils.NBT_MOD, NBTMod.class).setInternal(true));
-        register(new BuiltInMod(MCPatcherUtils.EXTENDED_HD, ExtendedHD.class));
-        register(new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, RandomMobs.class));
-        register(new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, CustomColors.class));
-        register(new BuiltInMod(MCPatcherUtils.CONNECTED_TEXTURES, ConnectedTextures.class));
-        register(new BuiltInMod(MCPatcherUtils.BETTER_GLASS, BetterGlass.class));
-        register(new BuiltInMod(MCPatcherUtils.BETTER_SKIES, BetterSkies.class));
-        register(new BuiltInMod(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, CustomItemTextures.class));
-        register(new BuiltInMod(MCPatcherUtils.GLSL_SHADERS, GLSLShader.class).setExperimental(true));
+        if (version.compareTo("13w02a") < 0) {
+            ClassLoader loader = getModClassLoader("2.4.6", "/mods2.jar");
+            register(new BuiltInMod(MCPatcherUtils.BASE_TEXTURE_PACK_MOD, "com.prupe.mcpatcher.mod.BaseTexturePackMod", loader).setInternal(true));
+            register(new BuiltInMod(MCPatcherUtils.HD_TEXTURES, "com.prupe.mcpatcher.mod.HDTexture", loader));
+            register(new BuiltInMod(MCPatcherUtils.HD_FONT, "com.prupe.mcpatcher.mod.HDFont", loader));
+            register(new BuiltInMod(MCPatcherUtils.BETTER_GRASS, "com.prupe.mcpatcher.mod.BetterGrass", loader));
+            register(new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, "com.prupe.mcpatcher.mod.RandomMobs", loader));
+            register(new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, "com.prupe.mcpatcher.mod.CustomColors", loader));
+            register(new BuiltInMod(MCPatcherUtils.CONNECTED_TEXTURES, "com.prupe.mcpatcher.mod.ConnectedTextures", loader));
+            register(new BuiltInMod(MCPatcherUtils.BETTER_GLASS, "com.prupe.mcpatcher.mod.BetterGlass", loader));
+            register(new BuiltInMod(MCPatcherUtils.BETTER_SKIES, "com.prupe.mcpatcher.mod.BetterSkies", loader));
+            register(new BuiltInMod(MCPatcherUtils.GLSL_SHADERS, "com.prupe.mcpatcher.mod.GLSLShader", loader).setExperimental(true));
+        } else if (version.compareTo("13w18a") < 0) {
+            ClassLoader loader = getModClassLoader("3.0.5", "/mods3.jar");
+            register(new BuiltInMod(MCPatcherUtils.BASE_TEXTURE_PACK_MOD, "com.prupe.mcpatcher.mod.BaseTexturePackMod", loader).setInternal(true));
+            register(new BuiltInMod(MCPatcherUtils.EXTENDED_HD, "com.prupe.mcpatcher.mod.ExtendedHD", loader));
+            register(new BuiltInMod(MCPatcherUtils.HD_FONT, "com.prupe.mcpatcher.mod.HDFont", loader));
+            register(new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, "com.prupe.mcpatcher.mod.RandomMobs", loader));
+            register(new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, "com.prupe.mcpatcher.mod.CustomColors", loader));
+            register(new BuiltInMod(MCPatcherUtils.CONNECTED_TEXTURES, "com.prupe.mcpatcher.mod.ConnectedTextures", loader));
+            register(new BuiltInMod(MCPatcherUtils.BETTER_GLASS, "com.prupe.mcpatcher.mod.BetterGlass", loader));
+            register(new BuiltInMod(MCPatcherUtils.BETTER_SKIES, "com.prupe.mcpatcher.mod.BetterSkies", loader));
+        } else {
+            ClassLoader loader = getModClassLoader(MCPatcher.VERSION_STRING, "/mods4.jar");
+            register(new BuiltInMod(MCPatcherUtils.BASE_TEXTURE_PACK_MOD, "com.prupe.mcpatcher.mod.BaseTexturePackMod", loader).setInternal(true));
+            register(new BuiltInMod(MCPatcherUtils.BASE_TILESHEET_MOD, "com.prupe.mcpatcher.mod.BaseTilesheetMod", loader).setInternal(true));
+            register(new BuiltInMod(MCPatcherUtils.NBT_MOD, "com.prupe.mcpatcher.mod.NBTMod", loader).setInternal(true));
+            register(new BuiltInMod(MCPatcherUtils.EXTENDED_HD, "com.prupe.mcpatcher.mod.ExtendedHD", loader));
+            register(new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, "com.prupe.mcpatcher.mod.RandomMobs", loader));
+            register(new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, "com.prupe.mcpatcher.mod.CustomColors", loader));
+            register(new BuiltInMod(MCPatcherUtils.CONNECTED_TEXTURES, "com.prupe.mcpatcher.mod.ConnectedTextures", loader));
+            register(new BuiltInMod(MCPatcherUtils.BETTER_GLASS, "com.prupe.mcpatcher.mod.BetterGlass", loader));
+            register(new BuiltInMod(MCPatcherUtils.BETTER_SKIES, "com.prupe.mcpatcher.mod.BetterSkies", loader));
+            register(new BuiltInMod(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "com.prupe.mcpatcher.mod.CustomItemTextures", loader));
+        }
         loadBuiltInMods(true);
     }
 
+    private static ClassLoader getModClassLoader(String version, String resource) throws Exception {
+        File local;
+        if (Util.devDir == null) {
+            // run from command line in dev environment
+            local = new File("../mcpatcher-legacy/out/artifacts" + resource.replace(".jar", "") + resource);
+        } else {
+            // run from within IDE
+            local = new File(Util.devDir, "../mcpatcher-legacy/out/artifacts" + resource.replace(".jar", "") + resource);
+        }
+        if (Util.checkSignature(local, Util.JAR_SIGNATURE)) {
+            return new URLClassLoader(new URL[]{local.toURI().toURL()});
+        }
+
+        try {
+            return new JarClassLoader(resource);
+        } catch (FileNotFoundException e) {
+            // nothing
+        } catch (Throwable e) {
+            Logger.log(e);
+        }
+
+        Library library = new Library("com.prupe.mcpatcher:mcpatcher-legacy:" + version, "https://bitbucket.org/prupe/mcpatcher-legacy/downloads/");
+        local = library.getPath(MCPatcherUtils.getMinecraftPath("libraries"));
+        if (!Util.checkSignature(local, Util.JAR_SIGNATURE)) {
+            local.getParentFile().mkdirs();
+            InputStream input = null;
+            OutputStream output = null;
+            try {
+                input = ModList.class.getResourceAsStream(resource);
+                if (input != null) {
+                    output = new FileOutputStream(local);
+                    Util.copyStream(input, output);
+                }
+            } finally {
+                MCPatcherUtils.close(input);
+                MCPatcherUtils.close(output);
+            }
+        }
+        if (!Util.checkSignature(local, Util.JAR_SIGNATURE)) {
+            local.getParentFile().mkdirs();
+            URL url = new URL("https://bitbucket.org/prupe/mcpatcher-legacy/downloads/mcpatcher-legacy-" + version + ".jar");
+            Util.fetchURL(url, local, false, Util.LONG_TIMEOUT, Util.JAR_SIGNATURE);
+        }
+        return new URLClassLoader(new URL[]{local.toURI().toURL()});
+    }
+
     private void register(BuiltInMod builtInMod) {
+        try {
+            Method preInit = builtInMod.modClass.getDeclaredMethod("preInitialize");
+            preInit.invoke(null);
+        } catch (NoSuchMethodException e) {
+            // nothing
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
         builtInMods.put(builtInMod.name, builtInMod);
     }
 
@@ -531,7 +609,7 @@ class ModList {
                     if (file.isFile()) {
                         Map<String, String> fileMap = new LinkedHashMap<String, String>();
                         for (Config.FileEntry entry1 : files) {
-                            fileMap.put(entry1.from, entry1.to);
+                            fileMap.put(entry1.to, entry1.from);
                         }
                         try {
                             mod = new ExternalMod(new ZipFile(file), fileMap);
@@ -577,7 +655,7 @@ class ModList {
             List<Config.FileEntry> files = new ArrayList<Config.FileEntry>();
             files.clear();
             for (Map.Entry<String, String> entry : extmod.fileMap.entrySet()) {
-                files.add(new Config.FileEntry(entry.getKey(), entry.getValue()));
+                files.add(new Config.FileEntry(entry.getValue(), entry.getKey()));
             }
             modEntry.files = files;
         } else if (mod.customJar == null) {
@@ -669,5 +747,13 @@ class ModList {
             sb.append(s);
         }
         return sb.toString();
+    }
+
+    List<Library> getExtraLibraries() {
+        List<Library> list = new ArrayList<Library>();
+        for (Mod mod : getSelected()) {
+            mod.addExtraLibraries(list);
+        }
+        return list;
     }
 }

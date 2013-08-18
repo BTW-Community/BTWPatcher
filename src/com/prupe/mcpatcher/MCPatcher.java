@@ -27,7 +27,7 @@ final public class MCPatcher {
     /**
      * MCPatcher release number
      */
-    public static final int RELEASE_VERSION = 1;
+    public static final int RELEASE_VERSION = 2;
     /**
      * MCPatcher patch level
      */
@@ -158,7 +158,7 @@ final public class MCPatcher {
         }
 
         if (guiEnabled) {
-            ui = new UserInterface.GUI();
+            ui = new MainForm();
         } else {
             ui = new UserInterface.CLI();
         }
@@ -239,7 +239,7 @@ final public class MCPatcher {
         Thread.sleep(0);
     }
 
-    static boolean refreshMinecraftPath() {
+    static void refreshMinecraftPath() throws Exception {
         if (minecraft != null) {
             minecraft.closeStreams();
             minecraft = null;
@@ -248,16 +248,13 @@ final public class MCPatcher {
             ui.setStatusText("Opening %s", profileManager.getInputJar().getName());
             minecraft = new MinecraftJar(profileManager);
             minecraft.logVersion();
-        } catch (IOException e) {
+        } catch (Exception e) {
             minecraft = null;
-            Logger.log(e);
-            return false;
+            throw e;
         }
-        refreshModList();
-        return true;
     }
 
-    private static void refreshModList() {
+    static void refreshModList() throws Exception {
         ui.setStatusText("Loading mods...");
         if (modList != null) {
             modList.close();
@@ -279,8 +276,6 @@ final public class MCPatcher {
                 Logger.log(e);
             }
         }
-        ui.setModList(modList);
-        ui.updateModList();
     }
 
     static void checkModApplicability() throws IOException, InterruptedException {
@@ -703,12 +698,11 @@ final public class MCPatcher {
         return conflicts;
     }
 
-    static boolean patch() {
+    static void patch() throws PatcherException {
         modList.refreshInternalMods();
         modList.setApplied(true);
         modifiedClasses.clear();
         addedClasses.clear();
-        boolean patchOk = false;
         try {
             Logger.log(Logger.LOG_MAIN);
             Logger.log(Logger.LOG_MAIN, "Patching...");
@@ -730,20 +724,16 @@ final public class MCPatcher {
             writeProperties();
             minecraft.checkOutput();
             minecraft.closeStreams();
-            profileManager.createOutputProfile(modList.getOverrideVersionJson(), modList.getExtraJavaArguments());
+            profileManager.createOutputProfile(modList.getOverrideVersionJson(), modList.getExtraJavaArguments(), modList.getExtraLibraries());
 
             Logger.log(Logger.LOG_MAIN);
             Logger.log(Logger.LOG_MAIN, "Done!");
-            patchOk = true;
         } catch (Throwable e) {
-            Logger.log(e);
             Logger.log(Logger.LOG_MAIN);
             Logger.log(Logger.LOG_MAIN, "Restoring original profile due to previous error");
             profileManager.deleteProfile(profileManager.getOutputProfile(), true);
-        } finally {
-            saveProperties();
+            throw new PatcherException.PatchError(e);
         }
-        return patchOk;
     }
 
     private static void applyMods() throws Exception {

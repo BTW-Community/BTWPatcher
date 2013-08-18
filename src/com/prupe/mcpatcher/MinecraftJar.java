@@ -23,14 +23,14 @@ class MinecraftJar {
     private JarFile inputJar;
     private JarOutputStream outputJar;
 
-    MinecraftJar(ProfileManager profileManager) throws IOException {
+    MinecraftJar(ProfileManager profileManager) throws PatcherException {
         this.profileManager = profileManager;
         inputFile = profileManager.getInputJar();
         outputFile = profileManager.getOutputJar();
         inputMD5 = Util.computeMD5(inputFile);
         inputVersion = MinecraftVersion.parseVersion(profileManager.getInputBaseVersion());
         if (inputVersion == null) {
-            throw new IOException("Could not determine version of " + inputFile.getName());
+            throw new PatcherException.CorruptJarFile(inputFile);
         }
         origMD5 = MinecraftVersion.getOriginalMD5(inputVersion);
     }
@@ -154,17 +154,19 @@ class MinecraftJar {
         outputJar = null;
     }
 
-    void run() {
+    void run() throws PatcherException, IOException {
         File jarFile = getOutputFile();
         Profile profile = profileManager.getOutputProfileData();
         if (profile == null) {
-            Logger.log(Logger.LOG_MAIN, "Output profile '%s' unexpectedly missing", profileManager.getOutputProfile());
-            return;
+            throw new IllegalStateException(String.format(
+                "Output profile '%s' unexpectedly missing", profileManager.getOutputProfile()
+            ));
         }
         Version version = profileManager.getOutputVersionData();
         if (version == null || !version.isComplete()) {
-            Logger.log(Logger.LOG_MAIN, "Output version '%s' unexpectedly missing", profileManager.getOutputVersion());
-            return;
+            throw new IllegalStateException(String.format(
+                "Output version '%s' unexpectedly missing", profileManager.getOutputVersion()
+            ));
         }
         List<String> cmdLine = new ArrayList<String>();
         Map<String, String> gameArgs = new HashMap<String, String>();

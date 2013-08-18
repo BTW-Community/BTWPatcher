@@ -19,18 +19,15 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-class MainForm {
+class MainForm extends UserInterface {
     private static final int TAB_MODS = 0;
     private static final int TAB_OPTIONS = 1;
     private static final int TAB_LOG = 2;
     private static final int TAB_CLASS_MAP = 3;
     private static final int TAB_PATCH_SUMMARY = 4;
-
-    static final String FORUM_URL = "http://www.minecraftforum.net/topic/1496369-";
 
     private static final Color MOD_BUSY_COLOR = new Color(192, 192, 192);
     private static final String MOD_DESC_FORMAT1 = "<html>" +
@@ -104,7 +101,7 @@ class MainForm {
                 } catch (Throwable e) {
                     Logger.log(Logger.LOG_MAIN);
                     Logger.log(Logger.LOG_MAIN, "Unexpected error while handling UI event %s", event.toString());
-                    e.printStackTrace();
+                    Logger.log(e);
                     if (!reenter) {
                         reenter = true;
                         try {
@@ -113,7 +110,7 @@ class MainForm {
                             updateActiveTab();
                             cancelWorker();
                         } catch (Throwable e1) {
-                            e.printStackTrace();
+                            Logger.log(e1);
                         } finally {
                             reenter = false;
                         }
@@ -122,7 +119,7 @@ class MainForm {
             }
         });
 
-        frame = new JFrame("Minecraft Patcher " + MCPatcher.VERSION_STRING);
+        frame = new JFrame("MCPatcher " + MCPatcher.VERSION_STRING);
         frame.setResizable(true);
         frame.setContentPane(mainPanel);
         setIconImage(frame);
@@ -185,8 +182,7 @@ class MainForm {
                         profileManager.copyCurrentProfile(profile);
                     }
                 }
-                updateProfileLists(profileManager);
-                MCPatcher.refreshMinecraftPath();
+                refreshMinecraft(false, false);
             }
         });
 
@@ -200,8 +196,7 @@ class MainForm {
                 int index = origVersionComboBox.getSelectedIndex();
                 java.util.List<String> versions = profileManager.getInputVersions();
                 profileManager.selectInputVersion(versions.get(index));
-                updateProfileLists(profileManager);
-                MCPatcher.refreshMinecraftPath();
+                refreshMinecraft(false, false);
             }
         });
 
@@ -362,22 +357,10 @@ class MainForm {
                         return;
                     }
                 }
-                runWorker(new UIWorker() {
+                runWorker(new UIWorker("Patch") {
                     @Override
-                    boolean runImpl() {
-                        return MCPatcher.patch();
-                    }
-
-                    @Override
-                    void updateUI() {
-                        if (!success()) {
-                            JOptionPane.showMessageDialog(frame,
-                                "There was an error during patching.  " +
-                                    "See log for more information.  " +
-                                    "Your original minecraft.jar has been restored.",
-                                "Error", JOptionPane.ERROR_MESSAGE
-                            );
-                        }
+                    void runImpl() throws Exception {
+                        MCPatcher.patch();
                     }
                 });
             }
@@ -399,14 +382,12 @@ class MainForm {
         testButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 tabbedPane.setSelectedIndex(TAB_LOG);
-                MCPatcher.saveProperties();
-                runWorker(new UIWorker() {
+                runWorker(new UIWorker("Launch game") {
                     @Override
-                    boolean runImpl() {
+                    void runImpl() throws Exception {
                         setStatusText("Launching %s...", MCPatcher.minecraft.getOutputFile().getName());
                         MCPatcher.saveProperties();
                         MCPatcher.minecraft.run();
-                        return true;
                     }
                 });
             }
@@ -415,6 +396,7 @@ class MainForm {
         tabbedPane.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 updateActiveTab();
+                MCPatcher.saveProperties();
             }
         });
 
@@ -445,10 +427,7 @@ class MainForm {
         return "Your minecraft.jar appears to be already modded.\n" +
             "It is highly recommended that you install mods via MCPatcher instead.\n" +
             " - Close MCPatcher.\n" +
-            " - Delete both minecraft.jar and minecraft-" + version + ".jar.\n" +
-            (version.isPrerelease() ?
-                " - Re-download the snapshot from mojang.com.\n" :
-                " - Re-download the game using the launcher.\n") +
+            " - Re-download " + version.getVersionString() + " using the launcher.\n" +
             " - Run MCPatcher and select mods to add using the Add (+) button in the main window.\n" +
             "This will prevent most conflicts between MCPatcher and other mods.";
     }
@@ -463,6 +442,17 @@ class MainForm {
         }
     }
 
+    @Override
+    boolean shouldExit() {
+        return false;
+    }
+
+    @Override
+    boolean go(ProfileManager profileManager) {
+        refreshMinecraft(true, false);
+        return true;
+    }
+
     void show() {
         setSelectedCheckBox.setSelected(Config.getInstance().selectPatchedProfile);
         frame.setLocationRelativeTo(null);
@@ -470,19 +460,11 @@ class MainForm {
     }
 
     File chooseMinecraftDir(File minecraftDir) {
+        PatcherException exception = new PatcherException.InstallationNotFound(minecraftDir);
         JOptionPane.showMessageDialog(null,
-            "Minecraft installation not found in\n" +
-                minecraftDir.getPath() + "\n\n" +
-                "This version of MCPatcher supports the new Minecraft launcher only.\n" +
-                "You must run the game from the new Minecraft launcher at least once before\n" +
-                "starting MCPatcher.  The new launcher can be downloaded from Mojang at\n" +
-                "https://mojang.com/2013/07/minecraft-1-6-2-pre-release/\n\n" +
-                "For the old launcher, use MCPatcher 3.x (for Minecraft 1.5.2) or MCPatcher 2.x\n" +
-                "(for Minecraft 1.4.7 and earlier) available from\n" +
-                FORUM_URL + "\n\n" +
-                "If the game is installed somewhere else, please select the game folder now.\n" +
-                "The game folder is the one containing the assets, libraries, and versions subfolders.\n",
-            "Minecraft not found", JOptionPane.ERROR_MESSAGE
+            exception.getMessageBoxText(),
+            exception.getMessageBoxTitle(),
+            JOptionPane.ERROR_MESSAGE
         );
         JFileChooser fd = new JFileChooser();
         fd.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -501,53 +483,8 @@ class MainForm {
                 "for general use.\n\n" +
                 "Please make backups of your mods, save files, and texture packs\n" +
                 "before using.  Report any problems in the thread for MCPatcher beta at\n" +
-                FORUM_URL,
+                PatcherException.FORUM_URL,
             "For testing only", JOptionPane.INFORMATION_MESSAGE
-        );
-    }
-
-    void showCorruptJarError(File defaultMinecraft) {
-        if (defaultMinecraft.exists()) {
-            tabbedPane.setSelectedIndex(TAB_LOG);
-            JOptionPane.showMessageDialog(frame,
-                "There was an error opening minecraft.jar. This may be because:\n" +
-                    " - You selected the launcher jar and not the main minecraft.jar in the versions folder.\n" +
-                    " - You selected a texture pack and not minecraft.jar.\n" +
-                    " - The file has already been patched.\n" +
-                    " - There was an update that this patcher cannot handle.\n" +
-                    " - There is another, conflicting mod applied.\n" +
-                    " - The jar file is invalid or corrupt.\n" +
-                    "\n" +
-                    "You can re-download the original minecraft.jar by using the Force Update\n" +
-                    "button in the Minecraft Launcher.\n",
-                "Invalid or Corrupt minecraft.jar", JOptionPane.ERROR_MESSAGE
-            );
-        } else {
-            JOptionPane.showMessageDialog(frame,
-                "Could not find minecraft.jar in\n" +
-                    defaultMinecraft.getParentFile().getPath() + "\n" +
-                    "\n" +
-                    "Use the Browse button to select a different\n" +
-                    "input file before patching.",
-                "Missing minecraft.jar", JOptionPane.ERROR_MESSAGE
-            );
-        }
-    }
-
-    void showLauncherError(Throwable e) {
-        tabbedPane.setSelectedIndex(TAB_LOG);
-        JOptionPane.showMessageDialog(frame,
-            "There was an error with your Minecraft installation.\n\n" +
-                e.getMessage() + "\n\n" +
-                "Please re-run the game from the Minecraft Launcher.  If the problem persists,\n" +
-                "try manually downloading the list from\n" +
-                VersionList.VERSION_LIST + "\n" +
-                "and copying it to " + MCPatcherUtils.getMinecraftPath("versions") + "\n\n" +
-                "Or try deleting both " + Config.MCPATCHER_JSON + " and " + Config.LAUNCHER_JSON + " from\n" +
-                MCPatcherUtils.getMinecraftPath() + "\n" +
-                "and run the launcher again.",
-            "Configuration error",
-            JOptionPane.ERROR_MESSAGE
         );
     }
 
@@ -582,10 +519,12 @@ class MainForm {
                 }
             }
             tabbedPane.setSelectedIndex(TAB_LOG);
-            runWorker(new UIWorker() {
+            runWorker(new UIWorker("Convert") {
+                private boolean result;
+
                 @Override
-                boolean runImpl() {
-                    return converter.convert(MCPatcher.ui);
+                void runImpl() {
+                    result = converter.convert(MainForm.this);
                 }
 
                 @Override
@@ -594,7 +533,7 @@ class MainForm {
                     for (String s : converter.getMessages()) {
                         sb.append(s).append('\n');
                     }
-                    if (!success()) {
+                    if (!success() || !result) {
                         JOptionPane.showMessageDialog(frame, sb.toString(),
                             "Error converting " + selectedFile.getName(),
                             JOptionPane.ERROR_MESSAGE
@@ -617,30 +556,49 @@ class MainForm {
         }
     }
 
-    void refreshProfileManager(final boolean forceRemote) {
+    void refreshMinecraft(final boolean refreshProfileManager, final boolean forceRemote) {
         final ProfileManager profileManager = MCPatcher.profileManager;
         if (profileManager == null) {
             return;
         }
-        runWorker(new UIWorker() {
+        runWorker(new UIWorker("Analyze") {
             @Override
-            boolean runImpl() throws Exception {
-                profileManager.refresh(MCPatcher.ui, forceRemote);
-                return true;
+            void runImpl() throws Exception {
+                if (refreshProfileManager) {
+                    profileManager.refresh(MainForm.this, forceRemote);
+                }
+                runInEventThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateProfileLists(profileManager);
+                    }
+                });
+                MCPatcher.refreshMinecraftPath();
+                runInEventThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        setModList(null);
+                    }
+                });
+                MCPatcher.refreshModList();
+                runInEventThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        setModList(MCPatcher.modList);
+                    }
+                });
+                MCPatcher.checkModApplicability();
+                MCPatcher.saveProperties();
             }
 
             @Override
             void updateUI() {
-                if (error != null) {
-                    showLauncherError(error);
-                }
-                updateProfileLists(profileManager);
-            }
-
-            @Override
-            void nextTask() {
-                if (error == null) {
-                    MCPatcher.refreshMinecraftPath();
+                redrawModList();
+                if (success() && MCPatcher.minecraft.isModded()) {
+                    JOptionPane.showMessageDialog(frame,
+                        getModWarningText(MCPatcher.minecraft.getVersion()),
+                        "Warning", JOptionPane.WARNING_MESSAGE
+                    );
                 }
             }
         });
@@ -693,7 +651,8 @@ class MainForm {
         });
     }
 
-    void setStatusText(final String format, final Object... params) {
+    @Override
+    public void setStatusText(final String format, final Object... params) {
         runInEventThread(new Runnable() {
             @Override
             public void run() {
@@ -702,7 +661,8 @@ class MainForm {
         });
     }
 
-    void updateProgress(final int value, final int max) {
+    @Override
+    public void updateProgress(final int value, final int max) {
         runInEventThread(new Runnable() {
             @Override
             public void run() {
@@ -838,7 +798,6 @@ class MainForm {
                 }
             }
         }
-        MCPatcher.saveProperties();
     }
 
     private void loadOptions() {
@@ -922,29 +881,6 @@ class MainForm {
             }
         });
         redrawModList();
-    }
-
-    void updateModList() {
-        runWorker(new UIWorker() {
-            @Override
-            boolean runImpl() throws IOException, InterruptedException {
-                MCPatcher.checkModApplicability();
-                return true;
-            }
-
-            @Override
-            void updateUI() {
-                redrawModList();
-                if (error != null) {
-                    showCorruptJarError(MCPatcher.minecraft.getInputFile());
-                } else if (MCPatcher.minecraft.isModded()) {
-                    JOptionPane.showMessageDialog(frame,
-                        getModWarningText(MCPatcher.minecraft.getVersion()),
-                        "Warning", JOptionPane.WARNING_MESSAGE
-                    );
-                }
-            }
-        });
     }
 
     void redrawModList() {
@@ -1105,54 +1041,67 @@ class MainForm {
 
     abstract private class UIWorker extends Thread {
         protected Throwable error;
-        protected boolean status;
         protected boolean interrupted;
+
+        UIWorker(String name) {
+            super(name);
+        }
 
         @Override
         final public void run() {
             error = null;
-            status = false;
             interrupted = false;
             try {
-                status = runImpl();
+                runImpl();
             } catch (InterruptedException e) {
                 interrupted = true;
             } catch (Throwable e) {
                 Logger.log(e);
                 error = e;
             } finally {
-                if (SwingUtilities.isEventDispatchThread()) {
-                    finish();
-                } else {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            finish();
-                        }
-                    });
-                }
+                runInEventThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        finish();
+                    }
+                });
             }
         }
 
         final void finish() {
             updateUI();
             setBusy(false);
-            if (!success()) {
+            if (error != null) {
                 tabbedPane.setSelectedIndex(TAB_LOG);
+                showErrorMessage();
             }
-            nextTask();
+        }
+
+        private void showErrorMessage() {
+            if (error instanceof PatcherException) {
+                JOptionPane.showMessageDialog(frame,
+                    ((PatcherException) error).getMessageBoxText(),
+                    ((PatcherException) error).getMessageBoxTitle(),
+                    JOptionPane.ERROR_MESSAGE
+                );
+            } else if (error != null) {
+                JOptionPane.showMessageDialog(frame,
+                    "An unexpected error occurred.\n\n" +
+                        error + "\n\n" +
+                        "Check the Log tab for more information.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
         }
 
         boolean success() {
-            return status && error == null;
+            return error == null && !interrupted;
         }
 
         void updateUI() {
         }
 
-        abstract boolean runImpl() throws Exception;
-
-        void nextTask() {
-        }
+        abstract void runImpl() throws Exception;
     }
 }

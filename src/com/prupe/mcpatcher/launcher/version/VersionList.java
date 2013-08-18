@@ -1,9 +1,7 @@
 package com.prupe.mcpatcher.launcher.version;
 
 import com.google.gson.Gson;
-import com.prupe.mcpatcher.Config;
-import com.prupe.mcpatcher.JsonUtils;
-import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.*;
 
 import java.io.File;
 import java.io.InputStream;
@@ -14,12 +12,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class VersionList {
-    public static final URL VERSION_LIST = JsonUtils.newURL("https://s3.amazonaws.com/Minecraft.Download/versions/versions.json");
-
-    private static final URL[] VERSIONS_URLS = new URL[]{
-        VERSION_LIST,
-        JsonUtils.newURL(VERSION_LIST.toString().replaceFirst("^https", "http")),
-    };
+    public static final URL VERSION_LIST = Util.newURL("https://s3.amazonaws.com/Minecraft.Download/versions/versions.json");
+    private static final URL VERSION_LIST2 = Util.newURL(VERSION_LIST.toString().replaceFirst("^https", "http"));
 
     List<Version> versions = new ArrayList<Version>();
     LatestVersion latest;
@@ -28,14 +22,17 @@ public class VersionList {
         return MCPatcherUtils.getMinecraftPath("versions", Config.VERSIONS_JSON);
     }
 
-    public static boolean fetchRemoteVersionList(int timeoutMS) {
+    public static void fetchRemoteVersionList(int timeoutMS) throws PatcherException {
         File local = getPath();
-        for (URL url : VERSIONS_URLS) {
-            if (JsonUtils.fetchURL(url, local, true, timeoutMS, JsonUtils.JSON_SIGNATURE)) {
-                return true;
+        try {
+            Util.fetchURL(VERSION_LIST, local, true, timeoutMS, Util.JSON_SIGNATURE);
+        } catch (PatcherException e) {
+            try {
+                Util.fetchURL(VERSION_LIST2, local, true, timeoutMS, Util.JSON_SIGNATURE);
+            } catch (PatcherException e1) {
+                throw e;
             }
         }
-        return false;
     }
 
     public static VersionList getLocalVersionList() {

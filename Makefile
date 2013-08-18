@@ -34,8 +34,6 @@ FILTER = ./testfilter.pl
 default:
 
 build:
-	@echo "WARNING: ant build does not work, use IntelliJ IDEA"
-	@echo "http://www.jetbrains.com/idea/download/"
 	ant
 
 release: $(MCPATCHER)

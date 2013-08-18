@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher;
 
+import com.prupe.mcpatcher.launcher.version.Library;
 import javassist.bytecode.AccessFlag;
 
 import javax.imageio.ImageIO;
@@ -29,16 +30,22 @@ import static javassist.bytecode.Opcode.*;
  * can be instantiated or extended as needed.
  */
 public final class BaseMod extends Mod {
+    private final boolean haveProfiler;
+
     BaseMod() {
         name = MCPatcherUtils.BASE_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
-        version = "1.2";
+        version = "1.3";
         configPanel = new ConfigPanel();
         clearDependencies();
 
+        haveProfiler = getMinecraftVersion().compareTo("1.3") >= 0;
+
         addClassMod(new XMinecraftMod());
-        addClassMod(new ProfilerMod(this));
+        if (haveProfiler) {
+            addClassMod(new ProfilerMod(this));
+        }
 
         addClassFile(MCPatcherUtils.UTILS_CLASS);
         addClassFile(MCPatcherUtils.LOGGER_CLASS);
@@ -51,8 +58,9 @@ public final class BaseMod extends Mod {
         addClassFile(MCPatcherUtils.CONFIG_CLASS + "$ModEntry");
         addClassFile(MCPatcherUtils.CONFIG_CLASS + "$FileEntry");
         addClassFile(MCPatcherUtils.JSON_UTILS_CLASS);
-        addClassFile(MCPatcherUtils.PROFILER_API_CLASS);
-        addClassFile(MCPatcherUtils.INPUT_HANDLER_CLASS);
+        if (haveProfiler) {
+            addClassFile(MCPatcherUtils.PROFILER_API_CLASS);
+        }
 
         addFile("assets/minecraft/" + MCPatcherUtils.BLANK_PNG);
     }
@@ -72,6 +80,11 @@ public final class BaseMod extends Mod {
         } else {
             return super.openFile(name);
         }
+    }
+
+    @Override
+    public void addExtraLibraries(List<Library> libraries) {
+        libraries.add(new Library("com.google.code.gson:gson:2.2.2"));
     }
 
     class ConfigPanel extends ModConfigPanel {
@@ -201,7 +214,10 @@ public final class BaseMod extends Mod {
     private class XMinecraftMod extends MinecraftMod {
         XMinecraftMod() {
             super(BaseMod.this);
-            addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "mcProfiler", "LProfiler;")));
+
+            if (haveProfiler) {
+                addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "mcProfiler", "LProfiler;")));
+            }
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -220,13 +236,23 @@ public final class BaseMod extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
+                    // (Lnet/minecraft/src/Session;IIZZLjava/io/File;Ljava/io/File;Ljava/io/File;Ljava/net/Proxy;Ljava/lang/String;)V
+                    List<String> descriptor = ConstPoolUtils.parseDescriptor(getMethodInfo().getDescriptor());
                     return buildCode(
-                        ALOAD, 6,
-                        ALOAD, 7,
+                        getFileArgument(descriptor, 6),
+                        getFileArgument(descriptor, 7),
                         push(getMinecraftVersion().getVersionString()),
                         push(MCPatcher.VERSION_STRING),
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.UTILS_CLASS, "setMinecraft", "(Ljava/io/File;Ljava/io/File;Ljava/lang/String;Ljava/lang/String;)V"))
                     );
+                }
+
+                private byte[] getFileArgument(List<String> descriptor, int index) {
+                    if (descriptor.size() > index - 1 && "Ljava/io/File;".equals(descriptor.get(index - 1))) {
+                        return registerLoadStore(ALOAD, index);
+                    } else {
+                        return buildCode(ACONST_NULL);
+                    }
                 }
             }
                 .setInsertAfter(true)
@@ -244,18 +270,64 @@ public final class BaseMod extends Mod {
      * Matches Minecraft class and maps the getInstance method.
      */
     public static class MinecraftMod extends com.prupe.mcpatcher.ClassMod {
+        protected final FieldRef instance = new FieldRef(getDeobfClass(), "instance", "LMinecraft;");
         protected final MethodRef getInstance = new MethodRef(getDeobfClass(), "getInstance", "()LMinecraft;");
 
         public MinecraftMod(Mod mod) {
             super(mod);
 
-            addClassSignature(new ConstSignature("Minecraft-Client"));
-            addClassSignature(new ConstSignature("textures/gui/title/mojang.png"));
+            if (getMinecraftVersion().compareTo("13w16a") >= 0) {
+                addClassSignature(new ConstSignature("Minecraft-Client"));
+                addClassSignature(new ConstSignature("textures/gui/title/mojang.png"));
+            } else {
+                addClassSignature(new FilenameSignature("net/minecraft/client/Minecraft.class"));
+            }
 
-            addMemberMapper(new MethodMapper(getInstance)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
-            );
+            if (getMinecraftVersion().compareTo("1.3") >= 0) {
+                addMemberMapper(new MethodMapper(getInstance)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
+                );
+            } else {
+                addPatch(new AddFieldPatch(instance, AccessFlag.PUBLIC | AccessFlag.STATIC));
+
+                addPatch(new BytecodePatch() {
+                    @Override
+                    public String getDescription() {
+                        return "set instance";
+                    }
+
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            begin(),
+                            ALOAD_0,
+                            reference(INVOKESPECIAL, new MethodRef("java.lang.Object", "<init>", "()V"))
+                        );
+                    }
+
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            ALOAD_0,
+                            reference(PUTSTATIC, instance)
+                        );
+                    }
+                }
+                    .setInsertAfter(true)
+                    .matchConstructorOnly(true)
+                );
+
+                addPatch(new AddMethodPatch(getInstance) {
+                    @Override
+                    public byte[] generateMethod() {
+                        return buildCode(
+                            reference(GETSTATIC, instance),
+                            ARETURN
+                        );
+                    }
+                });
+            }
         }
 
         public MinecraftMod mapWorldClient() {
@@ -266,6 +338,79 @@ public final class BaseMod extends Mod {
         public MinecraftMod mapPlayer() {
             addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "thePlayer", "LEntityClientPlayerMP;")));
             return this;
+        }
+
+        public MinecraftMod addWorldGetter() {
+            final MethodRef getWorld = new MethodRef(getDeobfClass(), "getWorld", "()LWorld;");
+
+            if (getMinecraftVersion().compareTo("12w18a") >= 0) {
+                final FieldRef worldServer = new FieldRef(getDeobfClass(), "worldServer", "LWorldServer;");
+                final FieldRef world = new FieldRef("WorldServer", "world", "LWorld;");
+
+                addMemberMapper(new FieldMapper(worldServer));
+
+                addPatch(new AddMethodPatch(getWorld) {
+                    @Override
+                    public byte[] generateMethod() {
+                        return buildCode(
+                            ALOAD_0,
+                            reference(GETFIELD, worldServer),
+                            reference(GETFIELD, world),
+                            ARETURN
+                        );
+                    }
+                });
+            } else {
+                final FieldRef theWorld = new FieldRef(getDeobfClass(), "theWorld", "LWorld;");
+
+                addMemberMapper(new FieldMapper(theWorld));
+
+                addPatch(new AddMethodPatch(getWorld) {
+                    @Override
+                    public byte[] generateMethod() {
+                        return buildCode(
+                            ALOAD_0,
+                            reference(GETFIELD, theWorld),
+                            ARETURN
+                        );
+                    }
+                });
+            }
+            return this;
+        }
+    }
+
+    /**
+     * Maps Profiler class and start/endSection methods.
+     */
+    public static class ProfilerMod extends com.prupe.mcpatcher.ClassMod {
+        public ProfilerMod(Mod mod) {
+            super(mod);
+
+            addClassSignature(new ConstSignature("root"));
+            addClassSignature(new ConstSignature("[UNKNOWN]"));
+            addClassSignature(new ConstSignature(100.0));
+
+            final MethodRef startSection = new MethodRef(getDeobfClass(), "startSection", "(Ljava/lang/String;)V");
+            final MethodRef endSection = new MethodRef(getDeobfClass(), "endSection", "()V");
+            final MethodRef endStartSection = new MethodRef(getDeobfClass(), "endStartSection", "(Ljava/lang/String;)V");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        captureReference(INVOKEVIRTUAL),
+                        ALOAD_0,
+                        ALOAD_1,
+                        captureReference(INVOKEVIRTUAL)
+                    );
+                }
+            }
+                .setMethod(endStartSection)
+                .addXref(1, endSection)
+                .addXref(2, startSection)
+            );
         }
     }
 
@@ -660,17 +805,6 @@ public final class BaseMod extends Mod {
         }
     }
 
-    /**
-     * Matches WorldServer class and maps world field.
-     */
-    public static class WorldServerMod extends com.prupe.mcpatcher.ClassMod {
-        public WorldServerMod(Mod mod) {
-            super(mod);
-            addClassSignature(new ConstSignature("Saving level"));
-            addClassSignature(new ConstSignature("Saving chunks"));
-        }
-    }
-
     public static class WorldClientMod extends com.prupe.mcpatcher.ClassMod {
         public WorldClientMod(Mod mod) {
             super(mod);
@@ -864,102 +998,6 @@ public final class BaseMod extends Mod {
     }
 
     /**
-     * Maps GameSettings class.
-     */
-    public static class GameSettingsMod extends com.prupe.mcpatcher.ClassMod {
-        public GameSettingsMod(Mod mod) {
-            super(mod);
-
-            addClassSignature(new ConstSignature("options.txt"));
-            addClassSignature(new OrSignature(
-                new ConstSignature("key.forward"),
-                new ConstSignature("Forward")
-            ));
-        }
-
-        /**
-         * Map any GameSettings field stored in options.txt.
-         *
-         * @param option     name in options.txt
-         * @param field      name of field in GameSettings class
-         * @param descriptor type descriptor
-         */
-        protected void mapOption(final String option, final String field, final String descriptor) {
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // if (as[0].equals(option)) {
-                        ALOAD_3,
-                        ICONST_0,
-                        AALOAD,
-                        push(option),
-                        reference(INVOKEVIRTUAL, new MethodRef("java/lang/String", "equals", "(Ljava/lang/Object;)Z")),
-                        IFEQ, any(2),
-
-                        // field = ...;
-                        nonGreedy(any(0, 20)),
-                        captureReference(PUTFIELD)
-                    );
-                }
-            }.addXref(1, new FieldRef(getDeobfClass(), field, descriptor)));
-        }
-    }
-
-    /**
-     * Maps Profiler class and start/endSection methods.
-     */
-    public static class ProfilerMod extends com.prupe.mcpatcher.ClassMod {
-        public ProfilerMod(Mod mod) {
-            super(mod);
-
-            addClassSignature(new ConstSignature("root"));
-            addClassSignature(new ConstSignature("[UNKNOWN]"));
-            addClassSignature(new ConstSignature(100.0));
-
-            final MethodRef startSection = new MethodRef(getDeobfClass(), "startSection", "(Ljava/lang/String;)V");
-            final MethodRef endSection = new MethodRef(getDeobfClass(), "endSection", "()V");
-            final MethodRef endStartSection = new MethodRef(getDeobfClass(), "endStartSection", "(Ljava/lang/String;)V");
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        captureReference(INVOKEVIRTUAL),
-                        ALOAD_0,
-                        ALOAD_1,
-                        captureReference(INVOKEVIRTUAL)
-                    );
-                }
-            }
-                .setMethod(endStartSection)
-                .addXref(1, endSection)
-                .addXref(2, startSection)
-            );
-        }
-    }
-
-    public static class ITexturePackMod extends com.prupe.mcpatcher.ClassMod {
-        public ITexturePackMod(Mod mod) {
-            super(mod);
-
-            addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "deleteTexturePack", "(LTextureManager;)V"),
-                new InterfaceMethodRef(getDeobfClass(), "bindThumbnailTexture", "(LTextureManager;)V"),
-                new InterfaceMethodRef(getDeobfClass(), "getResourceAsStream2", "(Ljava/lang/String;Z)Ljava/io/InputStream;"),
-                new InterfaceMethodRef(getDeobfClass(), "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;"),
-                new InterfaceMethodRef(getDeobfClass(), "getTexturePackID", "()Ljava/lang/String;"),
-                new InterfaceMethodRef(getDeobfClass(), "getTexturePackFileName", "()Ljava/lang/String;"),
-                new InterfaceMethodRef(getDeobfClass(), "getFirstDescriptionLine", "()Ljava/lang/String;"),
-                new InterfaceMethodRef(getDeobfClass(), "getSecondDescriptionLine", "()Ljava/lang/String;"),
-                new InterfaceMethodRef(getDeobfClass(), "hasResource", "(Ljava/lang/String;Z)Z"),
-                new InterfaceMethodRef(getDeobfClass(), "isCompatible", "()Z")
-            ).setInterfaceOnly(true));
-        }
-    }
-
-    /**
      * Maps TextureUtilsClass (1.6).
      */
     public static class TextureUtilMod extends com.prupe.mcpatcher.ClassMod {
@@ -1042,20 +1080,11 @@ public final class BaseMod extends Mod {
      * Maps Texture class and various fields and methods.
      */
     public static class TextureMod extends com.prupe.mcpatcher.ClassMod {
-        protected final FieldRef textureTarget = new FieldRef(getDeobfClass(), "textureTarget", "I");
         protected final FieldRef glTextureId = new FieldRef(getDeobfClass(), "glTextureId", "I");
-        protected final FieldRef textureCreated = new FieldRef(getDeobfClass(), "textureCreated", "Z");
-        protected final MethodRef getTextureId = new MethodRef(getDeobfClass(), "getTextureId", "()I");
+        protected final FieldRef rgb = new FieldRef(getDeobfClass(), "rgb", "[I");
         protected final MethodRef getGlTextureId = new MethodRef(getDeobfClass(), "getGlTextureId", "()I");
         protected final MethodRef getWidth = new MethodRef(getDeobfClass(), "getWidth", "()I");
         protected final MethodRef getHeight = new MethodRef(getDeobfClass(), "getHeight", "()I");
-        protected final MethodRef getTextureData = new MethodRef(getDeobfClass(), "getTextureData", "()Ljava/nio/ByteBuffer;");
-        protected final MethodRef getTextureName = new MethodRef(getDeobfClass(), "getTextureName", "()Ljava/lang/String;");
-        protected final MethodRef createTexture = new MethodRef(getDeobfClass(), "createTexture", "()V");
-        protected final MethodRef transferFromImage = new MethodRef(getDeobfClass(), "transferFromImage", "(Ljava/awt/image/BufferedImage;)V");
-        protected final MethodRef glBindTexture = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V");
-
-        protected final FieldRef rgb = new FieldRef(getDeobfClass(), "rgb", "[I");
         protected final MethodRef getRGB = new MethodRef(getDeobfClass(), "getRGB", "()[I");
 
         public TextureMod(Mod mod) {

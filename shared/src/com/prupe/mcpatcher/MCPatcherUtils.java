@@ -27,11 +27,13 @@ public class MCPatcherUtils {
     private static String patcherVersion;
 
     public static final String EXTENDED_HD = "Extended HD";
+    public static final String HD_TEXTURES = "HD Textures";
     public static final String HD_FONT = "HD Font";
     public static final String RANDOM_MOBS = "Random Mobs";
     public static final String CUSTOM_COLORS = "Custom Colors";
     public static final String CONNECTED_TEXTURES = "Connected Textures";
     public static final String BETTER_SKIES = "Better Skies";
+    public static final String BETTER_GRASS = "Better Grass";
     public static final String BETTER_GLASS = "Better Glass";
     public static final String CUSTOM_ITEM_TEXTURES = "Custom Item Textures";
     public static final String GLSL_SHADERS = "GLSL Shaders";
@@ -66,6 +68,9 @@ public class MCPatcherUtils {
     public static final String FANCY_DIAL_CLASS = "com.prupe.mcpatcher.hd.FancyDial";
     public static final String FONT_UTILS_CLASS = "com.prupe.mcpatcher.hd.FontUtils";
     public static final String MIPMAP_HELPER_CLASS = "com.prupe.mcpatcher.hd.MipmapHelper";
+    public static final String FANCY_COMPASS_CLASS = "com.prupe.mcpatcher.hd.FancyCompass";
+    public static final String TEXTURE_UTILS_CLASS = "com.prupe.mcpatcher.hd.TextureUtils";
+    public static final String TILE_SIZE_CLASS = "com.prupe.mcpatcher.hd.TileSize";
 
     public static final String NBT_RULE_CLASS = "com.prupe.mcpatcher.NBTRule";
 
@@ -90,6 +95,7 @@ public class MCPatcherUtils {
     public static final String GLASS_PANE_RENDERER_CLASS = "com.prupe.mcpatcher.ctm.GlassPaneRenderer";
     public static final String RENDER_PASS_CLASS = "com.prupe.mcpatcher.ctm.RenderPass";
     public static final String RENDER_PASS_API_CLASS = "com.prupe.mcpatcher.ctm.RenderPassAPI";
+    public static final String SUPER_TESSELLATOR_CLASS = "com.prupe.mcpatcher.ctm.SuperTessellator";
 
     public static final String SKY_RENDERER_CLASS = "com.prupe.mcpatcher.sky.SkyRenderer";
     public static final String FIREWORKS_HELPER_CLASS = "com.prupe.mcpatcher.sky.FireworksHelper";
@@ -337,15 +343,29 @@ public class MCPatcherUtils {
     public static void setMinecraft(File gameDir, File assetsDir, String minecraftVersion, String patcherVersion) {
         isGame = true;
         Config.setReadOnly(true);
-        minecraftDir = assetsDir.getParentFile().getAbsoluteFile();
-        MCPatcherUtils.gameDir = gameDir.getAbsoluteFile();
+        boolean defaultMCDir;
+        if (assetsDir == null) {
+            minecraftDir = getDefaultGameDir();
+            defaultMCDir = true;
+        } else {
+            minecraftDir = assetsDir.getParentFile().getAbsoluteFile();
+            defaultMCDir = false;
+        }
+        boolean defaultGameDir;
+        if (gameDir == null) {
+            MCPatcherUtils.gameDir = minecraftDir;
+            defaultGameDir = true;
+        } else {
+            MCPatcherUtils.gameDir = gameDir.getAbsoluteFile();
+            defaultGameDir = false;
+        }
         MCPatcherUtils.minecraftVersion = minecraftVersion;
         MCPatcherUtils.patcherVersion = patcherVersion;
         System.out.println();
         System.out.printf("MCPatcherUtils initialized:\n");
-        System.out.printf("Minecraft directory: %s\n", minecraftDir);
+        System.out.printf("Minecraft directory: %s%s\n", minecraftDir, defaultMCDir ? " (default)" : "");
         System.out.printf("  (assets, libraries, versions)\n");
-        System.out.printf("Game directory:      %s\n", MCPatcherUtils.gameDir);
+        System.out.printf("Game directory:      %s%s\n", MCPatcherUtils.gameDir, defaultGameDir ? " (default)" : "");
         System.out.printf("  (resourcepacks, saves)\n");
         System.out.printf("Minecraft version:   %s\n", minecraftVersion);
         System.out.printf("MCPatcher version:   %s\n", patcherVersion);

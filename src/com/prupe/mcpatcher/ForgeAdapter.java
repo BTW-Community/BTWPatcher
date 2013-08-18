@@ -123,9 +123,7 @@ class ForgeAdapter extends Mod {
 
     private void setupClassLoader() throws Exception {
         Library lzmaLib = new Library(LZMA_MAVEN, null);
-        if (!lzmaLib.fetch(mcLibDir)) {
-            throw new IOException("Could not get LZMA library " + lzmaLib.getPath(mcLibDir).getName());
-        }
+        lzmaLib.fetch(mcLibDir);
         ClassLoader classLoader = URLClassLoader.newInstance(new URL[]{
             lzmaLib.getPath(mcLibDir).toURI().toURL(),
             forgeJarPath.toURI().toURL()

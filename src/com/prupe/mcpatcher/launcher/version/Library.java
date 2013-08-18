@@ -1,7 +1,8 @@
 package com.prupe.mcpatcher.launcher.version;
 
-import com.prupe.mcpatcher.JsonUtils;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.PatcherException;
+import com.prupe.mcpatcher.Util;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -56,6 +57,10 @@ public class Library {
     public Library(String name, String url) {
         this.name = name;
         this.url = url;
+    }
+
+    public Library(String name) {
+        this(name, null);
     }
 
     private boolean isNative() {
@@ -154,17 +159,13 @@ public class Library {
         }
     }
 
-    public boolean fetch(File libDir) {
+    public void fetch(File libDir) throws PatcherException {
         File local = getPath(libDir);
         URL remote = getURL();
-        if (local == null || remote == null) {
-            return false;
+        if (!local.isFile()) {
+            local.getParentFile().mkdirs();
+            Util.fetchURL(remote, local, false, Util.LONG_TIMEOUT, Util.JAR_SIGNATURE);
         }
-        if (local.isFile()) {
-            return true;
-        }
-        local.getParentFile().mkdirs();
-        return JsonUtils.fetchURL(remote, local, false, JsonUtils.LONG_TIMEOUT, JsonUtils.JAR_SIGNATURE);
     }
 
     public void addToClassPath(File libDir, List<File> jars) {
@@ -174,7 +175,7 @@ public class Library {
         jars.add(getPath(libDir));
     }
 
-    public void unpackNatives(File libDir, File destDir) {
+    public void unpackNatives(File libDir, File destDir) throws IOException {
         if (!isNative() || MCPatcherUtils.isNullOrEmpty(name) || exclude()) {
             return;
         }
@@ -201,15 +202,13 @@ public class Library {
                 if (!dest.isFile() || dest.length() != entry.getSize()) {
                     input = zip.getInputStream(entry);
                     output = new FileOutputStream(dest);
-                    JsonUtils.copyStream(input, output);
+                    Util.copyStream(input, output);
                     MCPatcherUtils.close(input);
                     MCPatcherUtils.close(output);
                     input = null;
                     output = null;
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         } finally {
             MCPatcherUtils.close(zip);
             MCPatcherUtils.close(input);

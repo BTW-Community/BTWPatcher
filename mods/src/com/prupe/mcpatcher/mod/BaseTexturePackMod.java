@@ -57,6 +57,7 @@ public class BaseTexturePackMod extends Mod {
         addClassFile(MCPatcherUtils.WEIGHTED_INDEX_CLASS + "$1");
         addClassFile(MCPatcherUtils.WEIGHTED_INDEX_CLASS + "$2");
         addClassFile(MCPatcherUtils.BLEND_METHOD_CLASS);
+        addClassFile(MCPatcherUtils.INPUT_HANDLER_CLASS);
     }
 
     @Override
@@ -64,7 +65,7 @@ public class BaseTexturePackMod extends Mod {
         return new String[]{"Texture Pack"};
     }
 
-    public static void clearEarlyInitializeMethods() {
+    public static void preInitialize() {
         earlyInitMethods.clear();
     }
 

@@ -45,11 +45,11 @@ class ProfileManager {
         return config.selectPatchedProfile;
     }
 
-    void refresh(UserInterface ui) throws IOException {
+    void refresh(UserInterface ui) throws PatcherException, IOException {
         refresh(ui, false);
     }
 
-    void refresh(UserInterface ui, boolean forceRemote) throws IOException {
+    void refresh(UserInterface ui, boolean forceRemote) throws PatcherException, IOException {
         ready = false;
 
         rebuildRemoteVersionList(ui, forceRemote);
@@ -69,15 +69,21 @@ class ProfileManager {
         ready = true;
     }
 
-    private void rebuildRemoteVersionList(UserInterface ui, boolean forceRemote) throws IOException {
+    private void rebuildRemoteVersionList(UserInterface ui, boolean forceRemote) throws PatcherException, IOException {
         remoteVersions = null;
         File path = VersionList.getPath();
+        PatcherException patcherException = null;
         if (isRemote() || forceRemote) {
             ui.setStatusText("Getting version list from %s...", VersionList.VERSION_LIST.getHost());
-            int timeout = forceRemote ? JsonUtils.LONG_TIMEOUT / 2 : JsonUtils.SHORT_TIMEOUT;
-            VersionList.fetchRemoteVersionList(timeout);
+            int timeout = forceRemote ? Util.LONG_TIMEOUT / 2 : Util.SHORT_TIMEOUT;
+            try {
+                VersionList.fetchRemoteVersionList(timeout);
+            } catch (PatcherException e) {
+                Logger.log(e);
+                patcherException = e;
+            }
         }
-        if (path.isFile()) {
+        if (Util.checkSignature(path, Util.JSON_SIGNATURE)) {
             ui.setStatusText("Reading version list...");
             remoteVersions = VersionList.getLocalVersionList();
             if (remoteVersions != null && !remoteVersions.getVersions().isEmpty()) {
@@ -90,7 +96,11 @@ class ProfileManager {
             config.fetchRemoteVersionList = false;
         }
         if (remoteVersions == null || remoteVersions.getVersions().isEmpty()) {
-            throw new IOException("Could not get list of Minecraft versions");
+            if (patcherException == null) {
+                throw new IOException("Could not get list of Minecraft versions");
+            } else {
+                throw patcherException;
+            }
         }
     }
 
@@ -456,11 +466,11 @@ class ProfileManager {
         }
     }
 
-    void createOutputProfile(JsonObject baseVersion, String javaArgs) {
+    void createOutputProfile(JsonObject baseVersion, String javaArgs, List<Library> extraLibraries) {
         if (!MCPatcherUtils.isNullOrEmpty(inputVersion) && !MCPatcherUtils.isNullOrEmpty(outputVersion)) {
             Version version = Version.getLocalVersion(inputVersion);
             if (version != null && version.isComplete()) {
-                version.copyToNewVersion(baseVersion, outputVersion);
+                version.copyToNewVersion(baseVersion, outputVersion, extraLibraries);
             }
         }
         addLauncherProfile(outputProfile, outputVersion, javaArgs);

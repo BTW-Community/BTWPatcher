@@ -456,46 +456,165 @@
         <delete dir="${newcode.testoutput.dir}"/>
     </target>
 
+
+    <!-- Module mods -->
+
+    <dirname property="module.mods.basedir" file="${ant.file}"/>
+
+
+    <property name="compiler.args.mods" value="${compiler.args}"/>
+
+    <property name="mods.output.dir" value="${module.mods.basedir}/out/production/mods"/>
+    <property name="mods.testoutput.dir" value="${module.mods.basedir}/out/test/mods"/>
+
+    <path id="mods.module.bootclasspath">
+        <!-- Paths to be included in compilation bootclasspath -->
+    </path>
+
+    <path id="mods.module.production.classpath">
+        <pathelement location="${mcpatcher.output.dir}"/>
+        <pathelement location="${shared.output.dir}"/>
+        <path refid="library.org.javassist:javassist:3.18.0-ga.classpath"/>
+        <pathelement location="${idea.home}/lib/forms_rt.jar"/>
+    </path>
+
+    <path id="mods.runtime.production.module.classpath">
+        <pathelement location="${mods.output.dir}"/>
+        <pathelement location="${mcpatcher.output.dir}"/>
+        <pathelement location="${shared.output.dir}"/>
+        <pathelement location="${stubs.output.dir}"/>
+        <path refid="library.com.google.code.gson:gson:2.2.4.classpath"/>
+        <path refid="library.org.javassist:javassist:3.18.0-ga.classpath"/>
+    </path>
+
+    <path id="mods.module.classpath">
+        <pathelement location="${mods.output.dir}"/>
+        <pathelement location="${mcpatcher.testoutput.dir}"/>
+        <pathelement location="${mcpatcher.output.dir}"/>
+        <pathelement location="${shared.testoutput.dir}"/>
+        <pathelement location="${shared.output.dir}"/>
+        <path refid="library.org.javassist:javassist:3.18.0-ga.classpath"/>
+    </path>
+
+    <path id="mods.runtime.module.classpath">
+        <pathelement location="${mods.testoutput.dir}"/>
+        <pathelement location="${mods.output.dir}"/>
+        <pathelement location="${mcpatcher.testoutput.dir}"/>
+        <pathelement location="${mcpatcher.output.dir}"/>
+        <pathelement location="${shared.testoutput.dir}"/>
+        <pathelement location="${shared.output.dir}"/>
+        <pathelement location="${stubs.testoutput.dir}"/>
+        <pathelement location="${stubs.output.dir}"/>
+        <path refid="library.com.google.code.gson:gson:2.2.4.classpath"/>
+        <path refid="library.org.javassist:javassist:3.18.0-ga.classpath"/>
+    </path>
+
+
+    <patternset id="excluded.from.module.mods">
+        <patternset refid="ignored.files"/>
+    </patternset>
+
+    <patternset id="excluded.from.compilation.mods">
+        <patternset refid="excluded.from.module.mods"/>
+    </patternset>
+
+    <path id="mods.module.sourcepath">
+        <dirset dir="${module.mods.basedir}/mods">
+            <include name="src"/>
+        </dirset>
+    </path>
+
+
+    <target name="compile.module.mods" depends="compile.module.mods.production,compile.module.mods.tests"
+            description="Compile module mods"/>
+
+    <target name="compile.module.mods.production"
+            depends="register.custom.compilers,compile.module.mcpatcher,compile.module.shared"
+            description="Compile module mods; production classes">
+        <mkdir dir="${mods.output.dir}"/>
+        <javac2 destdir="${mods.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}"
+                memorymaximumsize="${compiler.max.memory}" fork="true" includeantruntime="false">
+            <compilerarg line="${compiler.args.mods}"/>
+            <bootclasspath refid="mods.module.bootclasspath"/>
+            <classpath refid="mods.module.production.classpath"/>
+            <src refid="mods.module.sourcepath"/>
+            <patternset refid="excluded.from.compilation.mods"/>
+        </javac2>
+
+        <copy todir="${mods.output.dir}">
+            <fileset dir="${module.mods.basedir}/mods/src">
+                <patternset refid="compiler.resources"/>
+                <type type="file"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="compile.module.mods.tests" depends="register.custom.compilers,compile.module.mods.production"
+            description="compile module mods; test classes" unless="skip.tests"/>
+
+    <target name="clean.module.mods" description="cleanup module">
+        <delete dir="${mods.output.dir}"/>
+        <delete dir="${mods.testoutput.dir}"/>
+    </target>
+
     <target name="init" description="Build initialization">
         <!-- Perform any build initialization in this target -->
     </target>
 
-    <target name="clean" depends="clean.module.stubs, clean.module.shared, clean.module.mcpatcher, clean.module.newcode"
+    <target name="clean"
+            depends="clean.module.stubs, clean.module.shared, clean.module.mcpatcher, clean.module.newcode, clean.module.mods"
             description="cleanup all"/>
 
     <target name="build.modules"
-            depends="init, clean, compile.module.stubs, compile.module.shared, compile.module.mcpatcher, compile.module.newcode"
+            depends="init, clean, compile.module.stubs, compile.module.shared, compile.module.mcpatcher, compile.module.newcode, compile.module.mods"
             description="build all modules"/>
 
     <target name="init.artifacts">
         <property name="artifacts.temp.dir" value="${basedir}/__artifacts_temp"/>
         <property name="artifact.output.mcpatcher" value="${basedir}/out/artifacts/mcpatcher"/>
+        <property name="artifact.output.mods4" value="${basedir}/out/artifacts/mods4"/>
         <mkdir dir="${artifacts.temp.dir}"/>
         <property name="temp.jar.path.mcpatcher.jar" value="${artifacts.temp.dir}/mcpatcher.jar"/>
+        <property name="temp.jar.path.mods4.jar" value="${artifacts.temp.dir}/mods4.jar"/>
     </target>
 
     <target name="artifact.mcpatcher"
-            depends="init.artifacts, compile.module.mcpatcher, compile.module.newcode, compile.module.shared"
+            depends="init.artifacts, compile.module.mcpatcher, compile.module.shared, artifact.mods4"
             description="Build &#39;mcpatcher&#39; artifact">
         <property name="artifact.temp.output.mcpatcher" value="${artifacts.temp.dir}/mcpatcher"/>
         <mkdir dir="${artifact.temp.output.mcpatcher}"/>
         <jar destfile="${temp.jar.path.mcpatcher.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
             <zipfileset file="${basedir}/src/META-INF/MANIFEST.MF" prefix="META-INF"/>
             <zipfileset dir="${mcpatcher.output.dir}"/>
-            <zipfileset dir="${newcode.output.dir}"/>
             <zipfileset dir="${shared.output.dir}"/>
             <zipfileset dir="${basedir}/src/resources" prefix="resources"/>
             <zipfileset src="${basedir}/lib/javassist-3.18.0-GA.jar" excludes="META-INF/*"/>
-            <zipfileset src="${basedir}/lib/gson-2.2.4.jar"/>
-            <zipfileset src="${idea.home}/lib/forms_rt.jar"/>
+            <zipfileset src="${basedir}/lib/gson-2.2.4.jar" excludes="META-INF/*"/>
+            <zipfileset src="${idea.home}/lib/forms_rt.jar" excludes="META-INF/*"/>
+            <zipfileset dir="${artifact.temp.output.mods4}"/>
         </jar>
         <copy file="${temp.jar.path.mcpatcher.jar}" tofile="${artifact.temp.output.mcpatcher}/mcpatcher.jar"/>
     </target>
 
-    <target name="build.all.artifacts" depends="artifact.mcpatcher" description="Build all artifacts">
+    <target name="artifact.mods4" depends="init.artifacts, compile.module.mods, compile.module.newcode"
+            description="Build &#39;mods4&#39; artifact">
+        <property name="artifact.temp.output.mods4" value="${artifacts.temp.dir}/mods4"/>
+        <mkdir dir="${artifact.temp.output.mods4}"/>
+        <jar destfile="${temp.jar.path.mods4.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+            <zipfileset dir="${mods.output.dir}"/>
+            <zipfileset dir="${newcode.output.dir}"/>
+        </jar>
+        <copy file="${temp.jar.path.mods4.jar}" tofile="${artifact.temp.output.mods4}/mods4.jar"/>
+    </target>
+
+    <target name="build.all.artifacts" depends="artifact.mcpatcher, artifact.mods4" description="Build all artifacts">
         <mkdir dir="${artifact.output.mcpatcher}"/>
         <copy todir="${artifact.output.mcpatcher}">
             <fileset dir="${artifact.temp.output.mcpatcher}"/>
+        </copy>
+        <mkdir dir="${artifact.output.mods4}"/>
+        <copy todir="${artifact.output.mods4}">
+            <fileset dir="${artifact.temp.output.mods4}"/>
         </copy>
 
         <!-- Delete temporary files -->

@@ -47,76 +47,10 @@ abstract public class UserInterface {
     public void updateProgress(int value, int max) {
     }
 
-    void setModList(ModList modList) {
-    }
-
-    void updateModList() {
-    }
-
     public void setStatusText(String format, Object... params) {
     }
 
     void showBetaWarning() {
-    }
-
-    void showCorruptJarError(File defaultMinecraft) {
-        Logger.log(Logger.LOG_MAIN, "ERROR: %s missing or corrupt", defaultMinecraft.getPath());
-    }
-
-    static class GUI extends UserInterface {
-        private final MainForm mainForm = new MainForm();
-
-        @Override
-        boolean shouldExit() {
-            return false;
-        }
-
-        @Override
-        void show() {
-            mainForm.show();
-        }
-
-        @Override
-        boolean go(ProfileManager profileManager) {
-            mainForm.refreshProfileManager(false);
-            return true;
-        }
-
-        @Override
-        File chooseMinecraftDir(File enteredMCDir) {
-            return mainForm.chooseMinecraftDir(enteredMCDir);
-        }
-
-        @Override
-        public void updateProgress(int value, int max) {
-            mainForm.updateProgress(value, max);
-        }
-
-        @Override
-        void setModList(ModList modList) {
-            mainForm.setModList(modList);
-        }
-
-        @Override
-        void updateModList() {
-            mainForm.updateModList();
-        }
-
-        @Override
-        public void setStatusText(String format, Object... params) {
-            mainForm.setStatusText(format, params);
-        }
-
-        @Override
-        void showBetaWarning() {
-            mainForm.showBetaWarning();
-        }
-
-        @Override
-        void showCorruptJarError(File defaultMinecraft) {
-            super.showCorruptJarError(defaultMinecraft);
-            mainForm.showCorruptJarError(defaultMinecraft);
-        }
     }
 
     static class CLI extends UserInterface {
@@ -136,14 +70,16 @@ abstract public class UserInterface {
             try {
                 profileManager.refresh(this);
                 MCPatcher.refreshMinecraftPath();
+                MCPatcher.refreshModList();
                 MCPatcher.checkModApplicability();
                 System.out.println();
                 System.out.println("#### Class map:");
                 MCPatcher.showClassMaps(System.out);
-                ok = MCPatcher.patch();
+                MCPatcher.patch();
                 System.out.println();
                 System.out.println("#### Patch summary:");
                 MCPatcher.showPatchResults(System.out);
+                ok = true;
             } catch (Throwable e) {
                 Logger.log(e);
             }

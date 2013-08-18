@@ -1,11 +1,38 @@
 package com.prupe.mcpatcher;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.util.*;
 
-class Util {
+public class Util {
+    public static final byte[] JSON_SIGNATURE = "{".getBytes();
+    public static final byte[] JAR_SIGNATURE = "PK".getBytes();
+    public static final int SHORT_TIMEOUT = 6000;
+    public static final int LONG_TIMEOUT = 30000;
+
     static int bits;
+    static File devDir;
+
+    static {
+        try {
+            bits = Integer.parseInt(System.getProperty("sun.arch.data.model"));
+        } catch (Throwable e) {
+            bits = 32;
+        }
+        try {
+            File path = new File(MCPatcher.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+            if (path.isDirectory()) {
+                devDir = path.getParentFile().getParentFile().getParentFile();
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+            devDir = null;
+        }
+    }
 
     static byte b(int value, int index) {
         return (byte) ((value >> (index * 8)) & 0xFF);
@@ -41,7 +68,7 @@ class Util {
         return demarshal(data, 0, data.length);
     }
 
-    static void copyStream(InputStream input, OutputStream output) throws IOException {
+    public static void copyStream(InputStream input, OutputStream output) throws IOException {
         byte[] buffer = new byte[1024];
         while (true) {
             int count = input.read(buffer);
@@ -52,7 +79,7 @@ class Util {
         }
     }
 
-    static void copyFile(File input, File output) throws IOException {
+    public static void copyFile(File input, File output) throws IOException {
         FileInputStream is = null;
         FileOutputStream os = null;
         try {
@@ -105,19 +132,125 @@ class Util {
             System.getProperty("os.version"),
             System.getProperty("os.arch")
         );
-        String bitString;
-        try {
-            bits = Integer.parseInt(System.getProperty("sun.arch.data.model"));
-            bitString = String.format(" (%d bit)", bits);
-        } catch (Throwable e) {
-            bits = 0;
-            bitString = "";
-        }
-        Logger.log(Logger.LOG_MAIN, "JVM: %s %s%s",
+        Logger.log(Logger.LOG_MAIN, "JVM: %s %s (%d bit)",
             System.getProperty("java.vendor"),
             System.getProperty("java.version"),
-            bitString
+            bits
         );
         Logger.log(Logger.LOG_MAIN, "Classpath: %s", System.getProperty("java.class.path"));
+    }
+
+    public static URL newURL(String url) {
+        try {
+            return new URL(url);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void fetchURL(URL url, File local, boolean forceRemote, int timeoutMS, byte[] signature) throws PatcherException {
+        boolean alreadyExists = checkSignature(local, signature);
+        if (forceRemote || !alreadyExists) {
+            BufferedInputStream input = null;
+            OutputStream output = null;
+            UserInterface ui = MCPatcher.ui;
+            try {
+                System.out.printf("Fetching %s...\n", url);
+                ui.setStatusText("Downloading %s...", local.getName());
+                URLConnection connection = url.openConnection();
+                connection.setConnectTimeout(timeoutMS);
+                connection.setReadTimeout(timeoutMS / 2);
+                input = new BufferedInputStream(connection.getInputStream());
+                if (checkSignature(input, signature)) {
+                    output = new FileOutputStream(local);
+                    int expLen = connection.getContentLength();
+                    if (expLen <= 0) {
+                        copyStream(input, output);
+                    } else {
+                        byte[] buffer = new byte[1024];
+                        int total = 0;
+                        int count;
+                        while ((count = input.read(buffer)) > 0) {
+                            total += count;
+                            ui.updateProgress(total, expLen);
+                            output.write(buffer, 0, count);
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                throw new PatcherException.DownloadException(e, url, local);
+            } finally {
+                MCPatcherUtils.close(input);
+                MCPatcherUtils.close(output);
+                ui.updateProgress(0, 0);
+            }
+        }
+        if (!checkSignature(local, signature)) {
+            if (!alreadyExists) {
+                local.delete();
+            }
+            throw new PatcherException.DownloadException(url, local);
+        }
+    }
+
+    public static boolean checkSignature(File file, byte[] signature) {
+        if (signature == null || signature.length <= 0) {
+            return true;
+        }
+        if (!file.isFile()) {
+            return false;
+        }
+        BufferedInputStream input = null;
+        try {
+            input = new BufferedInputStream(new FileInputStream(file));
+            return checkSignature(input, signature);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            MCPatcherUtils.close(input);
+        }
+    }
+
+    public static boolean checkSignature(BufferedInputStream input, byte[] signature) throws IOException {
+        if (signature != null && signature.length > 0 && input.markSupported()) {
+            try {
+                input.mark(signature.length);
+                byte[] header = new byte[signature.length];
+                int count = input.read(header);
+                return count == header.length && Arrays.equals(signature, header);
+            } finally {
+                input.reset();
+            }
+        }
+        return true;
+    }
+
+    public static <K, V> void reorderMap(LinkedHashMap<K, V> map, int fromIndex, int toIndex) {
+        List<K> keys = new ArrayList<K>();
+        keys.addAll(map.keySet());
+        K target = keys.remove(fromIndex);
+        if (toIndex >= keys.size()) {
+            keys.add(target);
+        } else if (toIndex >= 0) {
+            keys.add(toIndex, target);
+        }
+        LinkedHashMap<K, V> newMap = new LinkedHashMap<K, V>();
+        for (K key : keys) {
+            newMap.put(target, map.get(key));
+        }
+        map.clear();
+        map.putAll(newMap);
+    }
+
+    public static <K, V> void sortMap(LinkedHashMap<K, V> map, Comparator<Map.Entry<K, V>> comparator) {
+        List<Map.Entry<K, V>> entries = new ArrayList<Map.Entry<K, V>>();
+        entries.addAll(map.entrySet());
+        Collections.sort(entries, comparator);
+        map.clear();
+        for (Map.Entry<K, V> entry : entries) {
+            map.put(entry.getKey(), entry.getValue());
+        }
     }
 }

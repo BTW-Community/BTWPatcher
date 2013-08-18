@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher.launcher.version;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.prupe.mcpatcher.*;
@@ -18,6 +19,8 @@ public class Version implements Comparable<Version> {
     private static final String TAG_ID = "id";
     private static final String TAG_TIME = "time";
     private static final String TAG_RELEASE_TIME = "releaseTime";
+    private static final String TAG_LIBRARIES = "libraries";
+    private static final String TAG_NAME = "name";
 
     private static final String LEGACY = "legacy";
     private static final String LEGACY_VALUE = "${auth_player_name} ${auth_session}";
@@ -63,8 +66,8 @@ public class Version implements Comparable<Version> {
         }
     }
 
-    public static boolean fetchJson(String id, boolean forceRemote) {
-        return JsonUtils.fetchURL(getJsonURL(id), getJsonPath(id), forceRemote, JsonUtils.LONG_TIMEOUT, JsonUtils.JSON_SIGNATURE);
+    public static void fetchJson(String id, boolean forceRemote) throws PatcherException {
+        Util.fetchURL(getJsonURL(id), getJsonPath(id), forceRemote, Util.LONG_TIMEOUT, Util.JSON_SIGNATURE);
     }
 
     public static File getJsonPath(String id) {
@@ -72,11 +75,11 @@ public class Version implements Comparable<Version> {
     }
 
     public static URL getJsonURL(String id) {
-        return JsonUtils.newURL(BASE_URL + id + "/" + id + ".json");
+        return Util.newURL(BASE_URL + id + "/" + id + ".json");
     }
 
-    public static boolean fetchJar(String id, boolean forceRemote) {
-        return JsonUtils.fetchURL(getJarURL(id), getJarPath(id), forceRemote, JsonUtils.LONG_TIMEOUT, JsonUtils.JAR_SIGNATURE);
+    public static void fetchJar(String id, boolean forceRemote) throws PatcherException {
+        Util.fetchURL(getJarURL(id), getJarPath(id), forceRemote, Util.LONG_TIMEOUT, Util.JAR_SIGNATURE);
     }
 
     public static File getJarPath(String id) {
@@ -84,7 +87,7 @@ public class Version implements Comparable<Version> {
     }
 
     public static URL getJarURL(String id) {
-        return JsonUtils.newURL(BASE_URL + id + "/" + id + ".jar");
+        return Util.newURL(BASE_URL + id + "/" + id + ".jar");
     }
 
     public static boolean deleteLocalFiles(String id) {
@@ -155,7 +158,7 @@ public class Version implements Comparable<Version> {
         return false;
     }
 
-    public Version copyToNewVersion(JsonObject base, String newid) {
+    public Version copyToNewVersion(JsonObject base, String newid, List<Library> extraLibraries) {
         JsonObject json = JsonUtils.parseJson(getJsonPath());
         if (json == null) {
             return null;
@@ -169,6 +172,11 @@ public class Version implements Comparable<Version> {
         json.addProperty(TAG_ID, newid);
         updateDateField(json, TAG_TIME);
         updateDateField(json, TAG_RELEASE_TIME);
+        if (extraLibraries != null) {
+            for (Library library : extraLibraries) {
+                addLibrary(json, library);
+            }
+        }
         outPath.getParentFile().mkdirs();
         if (!JsonUtils.writeJson(json, outPath)) {
             return null;
@@ -196,6 +204,31 @@ public class Version implements Comparable<Version> {
         }
     }
 
+    private static void addLibrary(JsonObject json, Library library) {
+        JsonElement element = json.get(TAG_LIBRARIES);
+        if (element == null || !element.isJsonArray()) {
+            return;
+        }
+        JsonArray libraries = element.getAsJsonArray();
+        for (JsonElement lib : libraries) {
+            if (lib == null || !lib.isJsonObject()) {
+                continue;
+            }
+            element = lib.getAsJsonObject().get(TAG_NAME);
+            if (element == null || !element.isJsonPrimitive()) {
+                continue;
+            }
+            String name = element.getAsString();
+            if (MCPatcherUtils.isNullOrEmpty(name)) {
+                continue;
+            }
+            if (name.startsWith(library.getPackageName() + ":" + library.getName() + ":")) {
+                return;
+            }
+        }
+        libraries.add(JsonUtils.newGson().toJsonTree(library, Library.class));
+    }
+
     private static String changeDate(DateFormat format, String oldValue) throws ParseException {
         oldValue = oldValue.replaceFirst("(\\d\\d):(\\d\\d)$", "$1$2");
         Calendar calendar = Calendar.getInstance();
@@ -213,7 +246,7 @@ public class Version implements Comparable<Version> {
         }
     }
 
-    public void unpackNatives(File libDir, File destDir) {
+    public void unpackNatives(File libDir, File destDir) throws IOException {
         if (libraries != null && !libraries.isEmpty()) {
             destDir.mkdirs();
             for (Library l : libraries) {
@@ -222,7 +255,7 @@ public class Version implements Comparable<Version> {
         }
     }
 
-    public void fetchLibraries(File libDir) {
+    public void fetchLibraries(File libDir) throws PatcherException {
         if (!MCPatcherUtils.isNullOrEmpty(libraries)) {
             for (Library l : libraries) {
                 if (!l.exclude()) {

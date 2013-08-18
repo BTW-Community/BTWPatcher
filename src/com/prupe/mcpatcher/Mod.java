@@ -1,9 +1,9 @@
 package com.prupe.mcpatcher;
 
 import com.google.gson.JsonObject;
+import com.prupe.mcpatcher.launcher.version.Library;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -132,6 +132,9 @@ public abstract class Mod {
     void addExtraJavaArguments(List<String> cmdLine) {
     }
 
+    void addExtraLibraries(List<Library> libraries) {
+    }
+
     /**
      * Hook for doing any cleanup (closing files, etc.) when a Mod is deleted.
      */
@@ -258,25 +261,11 @@ public abstract class Mod {
      */
     public InputStream openFile(String name) throws IOException {
         InputStream inputStream = null;
-        try {
-            // workaround to allow running from IDE
-            File devPath = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
-            if (devPath.isDirectory()) {
-                devPath = devPath.getParentFile();
-                for (String s : new String[]{"newcode", "shared"}) {
-                    File path = new File(devPath, s);
-                    path = new File(path, name);
-                    if (path.isFile()) {
-                        return new FileInputStream(path);
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            // nothing
-        }
         URL url = getClass().getResource(name);
         if (url != null) {
-            url = new URL(url.toString().replaceAll("!(?=.*!)", "%21"));
+            if (!(getClass().getClassLoader() instanceof JarClassLoader)) {
+                url = new URL(url.toString().replaceAll("!(?=.*!)", "%21"));
+            }
             inputStream = url.openStream();
         }
         if (inputStream == null) {

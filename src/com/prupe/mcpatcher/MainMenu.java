@@ -51,7 +51,7 @@ class MainMenu {
         refresh.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainForm.refreshProfileManager(true);
+                mainForm.refreshMinecraft(true, true);
             }
         });
         file.add(refresh);
