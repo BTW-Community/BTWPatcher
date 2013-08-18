@@ -3,9 +3,12 @@ package com.prupe.mcpatcher;
 import com.google.gson.JsonObject;
 import com.prupe.mcpatcher.launcher.version.Library;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
@@ -58,7 +61,7 @@ class ModList {
         }
     }
 
-    ModList(MinecraftVersion version) throws Exception {
+    ModList(MinecraftVersion version) throws PatcherException, IOException, ClassNotFoundException {
         this.version = version;
         register(new BuiltInMod(MCPatcherUtils.BASE_MOD, BaseMod.class).setInternal(true));
         boolean found = false;
@@ -91,7 +94,7 @@ class ModList {
         loadBuiltInMods(true);
     }
 
-    private static LegacyVersionList getLegacyVersionList() throws Exception {
+    private static LegacyVersionList getLegacyVersionList() throws PatcherException {
         LegacyVersionList list = null;
         File local = MCPatcherUtils.getMinecraftPath(LegacyVersionList.VERSIONS_JSON);
         if (Util.checkSignature(local, Util.JSON_SIGNATURE)) {
@@ -111,7 +114,7 @@ class ModList {
         return list;
     }
 
-    private static ClassLoader getLegacyClassLoader(LegacyVersionList.Entry entry) throws Exception {
+    private static ClassLoader getLegacyClassLoader(LegacyVersionList.Entry entry) throws MalformedURLException, PatcherException {
         File local;
         if (Util.devDir == null) {
             // run from command line in dev environment
