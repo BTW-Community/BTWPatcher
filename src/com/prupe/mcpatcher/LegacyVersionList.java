@@ -20,6 +20,7 @@ class LegacyVersionList {
         String id;
         String maxMinecraftVersion;
         String libraryVersion;
+        String md5;
         String baseURL;
         List<Mod> mods = new ArrayList<Mod>();
 

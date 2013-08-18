@@ -93,9 +93,15 @@ class ModList {
 
     private static LegacyVersionList getLegacyVersionList() throws Exception {
         LegacyVersionList list = null;
-        File local = new File("../mcpatcher-legacy/" + LegacyVersionList.VERSIONS_JSON);
+        File local = MCPatcherUtils.getMinecraftPath(LegacyVersionList.VERSIONS_JSON);
         if (Util.checkSignature(local, Util.JSON_SIGNATURE)) {
             list = JsonUtils.parseJson(local, LegacyVersionList.class);
+        }
+        if (list == null) {
+            File local1 = new File("../mcpatcher-legacy/" + LegacyVersionList.VERSIONS_JSON);
+            if (Util.checkSignature(local1, Util.JSON_SIGNATURE)) {
+                list = JsonUtils.parseJson(local, LegacyVersionList.class);
+            }
         }
         if (list == null) {
             Util.fetchURL(LegacyVersionList.VERSIONS_URL, local, true, Util.LONG_TIMEOUT, Util.JSON_SIGNATURE);
@@ -120,9 +126,16 @@ class ModList {
 
         Library library = new Library("com.prupe.mcpatcher:mcpatcher-legacy:" + entry.libraryVersion, LegacyVersionList.DEFAULT_BASE_URL);
         local = library.getPath(MCPatcherUtils.getMinecraftPath("libraries"));
+        boolean forceRemote = false;
+        if (local.isFile() && !MCPatcherUtils.isNullOrEmpty(entry.md5)) {
+            String currentMD5 = Util.computeMD5(local);
+            if (!entry.md5.equals(currentMD5)) {
+                forceRemote = true;
+            }
+        }
         if (!Util.checkSignature(local, Util.JAR_SIGNATURE)) {
             local.getParentFile().mkdirs();
-            Util.fetchURL(entry.getURL(), local, false, Util.LONG_TIMEOUT, Util.JAR_SIGNATURE);
+            Util.fetchURL(entry.getURL(), local, forceRemote, Util.LONG_TIMEOUT, Util.JAR_SIGNATURE);
         }
         return new URLClassLoader(new URL[]{local.toURI().toURL()});
     }
