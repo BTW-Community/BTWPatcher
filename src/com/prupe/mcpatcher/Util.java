@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -158,9 +159,40 @@ public class Util {
             try {
                 System.out.printf("Fetching %s...\n", url);
                 ui.setStatusText("Downloading %s...", local.getName());
-                URLConnection connection = url.openConnection();
-                connection.setConnectTimeout(timeoutMS);
-                connection.setReadTimeout(timeoutMS / 2);
+                URLConnection connection = null;
+                loop:
+                for (int redirect = 1; redirect <= 5; redirect++) {
+                    connection = url.openConnection();
+                    connection.setConnectTimeout(timeoutMS);
+                    connection.setReadTimeout(timeoutMS / 2);
+                    if (connection instanceof HttpURLConnection) {
+                        HttpURLConnection httpConnection = (HttpURLConnection) connection;
+                        httpConnection.setInstanceFollowRedirects(true);
+                        httpConnection.connect();
+                        switch (httpConnection.getResponseCode() / 100) {
+                            case 2:
+                                break loop;
+
+                            case 3:
+                                String newURL = httpConnection.getHeaderField("Location");
+                                if (!MCPatcherUtils.isNullOrEmpty(newURL)) {
+                                    url = new URL(newURL);
+                                    if ("http".equals(url.getProtocol()) || "https".equals(url.getProtocol()) || "ftp".equals(url.getProtocol())) {
+                                        System.out.printf("Redirect #%d: %s\n", redirect, url);
+                                        connection = null;
+                                        continue loop;
+                                    }
+                                }
+                                // fall through
+
+                            default:
+                                throw new IOException("HTTP response code: " + httpConnection.getResponseCode());
+                        }
+                    }
+                }
+                if (connection == null) {
+                    throw new IOException("Redirect limit exceeded");
+                }
                 input = new BufferedInputStream(connection.getInputStream());
                 if (checkSignature(input, signature)) {
                     output = new FileOutputStream(local);
