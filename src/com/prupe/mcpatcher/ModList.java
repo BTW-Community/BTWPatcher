@@ -133,10 +133,8 @@ class ModList {
                 forceRemote = true;
             }
         }
-        if (!Util.checkSignature(local, Util.JAR_SIGNATURE)) {
-            local.getParentFile().mkdirs();
-            Util.fetchURL(entry.getURL(), local, forceRemote, Util.LONG_TIMEOUT, Util.JAR_SIGNATURE);
-        }
+        local.getParentFile().mkdirs();
+        Util.fetchURL(entry.getURL(), local, forceRemote, Util.LONG_TIMEOUT, Util.JAR_SIGNATURE);
         return new URLClassLoader(new URL[]{local.toURI().toURL()});
     }
 
