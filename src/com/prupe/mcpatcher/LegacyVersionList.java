@@ -12,15 +12,15 @@ class LegacyVersionList {
     static final String DEFAULT_BASE_URL = "https://bitbucket.org/prupe/mcpatcher-legacy/downloads/";
 
     int format = 1;
-    LinkedHashMap<String, Entry> versions = new LinkedHashMap<String, Entry>();
+    LinkedHashMap<String, Version> versions = new LinkedHashMap<String, Version>();
 
-    void add(Entry entry) {
-        versions.put(entry.getKey(), entry);
+    void add(Version version) {
+        versions.put(version.getKey(), version);
     }
 
-    List<Entry> find(String api) {
-        List<Entry> list = new ArrayList<Entry>();
-        for (Map.Entry<String, Entry> entry : versions.entrySet()) {
+    List<Version> find(String api) {
+        List<Version> list = new ArrayList<Version>();
+        for (Map.Entry<String, Version> entry : versions.entrySet()) {
             if (entry.getValue().api.equals(api)) {
                 list.add(entry.getValue());
             }
@@ -28,7 +28,7 @@ class LegacyVersionList {
         return list;
     }
 
-    static class Entry {
+    static class Version {
         String id;
         String api;
         String maxMinecraftVersion;
@@ -37,10 +37,10 @@ class LegacyVersionList {
         String baseURL;
         List<Mod> mods = new ArrayList<Mod>();
 
-        private Entry() {
+        private Version() {
         }
 
-        Entry(String id, String api, String maxMinecraftVersion, String libraryVersion) {
+        Version(String id, String api, String maxMinecraftVersion, String libraryVersion) {
             this.id = id;
             this.api = api;
             this.maxMinecraftVersion = maxMinecraftVersion;

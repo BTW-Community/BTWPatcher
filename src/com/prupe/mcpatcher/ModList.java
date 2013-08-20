@@ -67,7 +67,7 @@ class ModList {
         boolean found = false;
         if (version.compareTo("13w18a") < 0) {
             LegacyVersionList list = getLegacyVersionList();
-            for (LegacyVersionList.Entry entry : list.find(MCPatcher.API_VERSION)) {
+            for (LegacyVersionList.Version entry : list.find(MCPatcher.API_VERSION)) {
                 if (version.compareTo(entry.maxMinecraftVersion) <= 0) {
                     ClassLoader loader = getLegacyClassLoader(entry);
                     for (LegacyVersionList.Mod mod : entry.mods) {
@@ -120,28 +120,28 @@ class ModList {
         return list;
     }
 
-    private static ClassLoader getLegacyClassLoader(LegacyVersionList.Entry entry) throws MalformedURLException, PatcherException {
+    private static ClassLoader getLegacyClassLoader(LegacyVersionList.Version version) throws MalformedURLException, PatcherException {
         File local;
         for (File dir : new File[]{Util.devDir, new File("."), new File("..")}) {
             if (dir != null) {
-                local = new File(dir, "../mcpatcher-legacy/out/artifacts/" + entry.id + entry.getResource());
+                local = new File(dir, "../mcpatcher-legacy/out/artifacts/" + version.id + version.getResource());
                 if (Util.checkSignature(local, Util.JAR_SIGNATURE)) {
                     return new URLClassLoader(new URL[]{local.toURI().toURL()});
                 }
             }
         }
 
-        Library library = new Library("com.prupe.mcpatcher:mcpatcher-legacy:" + entry.libraryVersion, LegacyVersionList.DEFAULT_BASE_URL);
+        Library library = new Library("com.prupe.mcpatcher:mcpatcher-legacy:" + version.libraryVersion, LegacyVersionList.DEFAULT_BASE_URL);
         local = library.getPath(MCPatcherUtils.getMinecraftPath("libraries"));
         boolean forceRemote = false;
-        if (local.isFile() && !MCPatcherUtils.isNullOrEmpty(entry.md5)) {
+        if (local.isFile() && !MCPatcherUtils.isNullOrEmpty(version.md5)) {
             String currentMD5 = Util.computeMD5(local);
-            if (!entry.md5.equals(currentMD5)) {
+            if (!version.md5.equals(currentMD5)) {
                 forceRemote = true;
             }
         }
         local.getParentFile().mkdirs();
-        Util.fetchURL(entry.getURL(), local, forceRemote, Util.LONG_TIMEOUT, Util.JAR_SIGNATURE);
+        Util.fetchURL(version.getURL(), local, forceRemote, Util.LONG_TIMEOUT, Util.JAR_SIGNATURE);
         return new URLClassLoader(new URL[]{local.toURI().toURL()});
     }
 
