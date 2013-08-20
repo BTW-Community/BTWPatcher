@@ -17,6 +17,8 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipFile;
 
 class ModList {
+    static LegacyVersionList legacyVersionList;
+
     private final MinecraftVersion version;
     private final Map<String, BuiltInMod> builtInMods = new LinkedHashMap<String, BuiltInMod>();
     private final List<Mod> modsByIndex = new ArrayList<Mod>();
@@ -66,15 +68,19 @@ class ModList {
         register(new BuiltInMod(MCPatcherUtils.BASE_MOD, BaseMod.class).setInternal(true));
         boolean found = false;
         if (version.compareTo("13w18a") < 0) {
-            LegacyVersionList list = getLegacyVersionList();
-            for (LegacyVersionList.Version entry : list.find(MCPatcher.API_VERSION)) {
-                if (version.compareTo(entry.maxMinecraftVersion) <= 0) {
-                    ClassLoader loader = getLegacyClassLoader(entry);
-                    for (LegacyVersionList.Mod mod : entry.mods) {
-                        register(new BuiltInMod(mod, loader));
+            if (legacyVersionList == null) {
+                legacyVersionList = getLegacyVersionList();
+            }
+            if (legacyVersionList != null) {
+                for (LegacyVersionList.Version entry : legacyVersionList.find(MCPatcher.API_VERSION)) {
+                    if (version.compareTo(entry.maxMinecraftVersion) <= 0) {
+                        ClassLoader loader = getLegacyClassLoader(entry);
+                        for (LegacyVersionList.Mod mod : entry.mods) {
+                            register(new BuiltInMod(mod, loader));
+                        }
+                        found = true;
+                        break;
                     }
-                    found = true;
-                    break;
                 }
             }
         }
@@ -96,27 +102,21 @@ class ModList {
 
     private static LegacyVersionList getLegacyVersionList() throws PatcherException {
         LegacyVersionList list;
-        File local = MCPatcherUtils.getMinecraftPath(LegacyVersionList.VERSIONS_JSON);
-        if (Util.checkSignature(local, Util.JSON_SIGNATURE)) {
-            list = JsonUtils.parseJson(local, LegacyVersionList.class);
-            if (list != null) {
-                return list;
-            }
-        }
         for (File dir : new File[]{Util.devDir, new File("."), new File("..")}) {
             if (dir != null) {
-                File local1 = new File(dir, "../mcpatcher-legacy/" + LegacyVersionList.VERSIONS_JSON);
-                if (Util.checkSignature(local1, Util.JSON_SIGNATURE)) {
-                    list = JsonUtils.parseJson(local1, LegacyVersionList.class);
+                File local = new File(dir, "../mcpatcher-legacy/" + LegacyVersionList.VERSIONS_JSON);
+                if (Util.checkSignature(local, Util.JSON_SIGNATURE)) {
+                    list = JsonUtils.parseJson(local, LegacyVersionList.class);
                     if (list != null) {
                         return list;
                     }
                 }
             }
         }
+        File local = MCPatcherUtils.getMinecraftPath(LegacyVersionList.VERSIONS_JSON);
         Util.fetchURL(LegacyVersionList.VERSIONS_URL, local, true, Util.LONG_TIMEOUT, Util.JSON_SIGNATURE);
         list = JsonUtils.parseJson(local, LegacyVersionList.class);
-        local.deleteOnExit();
+        local.delete();
         return list;
     }
 

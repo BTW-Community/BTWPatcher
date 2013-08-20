@@ -46,7 +46,7 @@ class MainMenu {
         file.setMnemonic('F');
         menuBar.add(file);
 
-        refresh = new JMenuItem("Refresh profile list");
+        refresh = new JMenuItem("Refresh version list");
         refresh.setMnemonic('R');
         refresh.addActionListener(new ActionListener() {
             @Override

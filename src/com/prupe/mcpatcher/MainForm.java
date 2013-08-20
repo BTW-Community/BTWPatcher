@@ -580,6 +580,9 @@ class MainForm extends UserInterface {
                         setModList(null);
                     }
                 });
+                if (forceRemote) {
+                    ModList.legacyVersionList = null;
+                }
                 MCPatcher.refreshModList();
                 runInEventThread(new Runnable() {
                     @Override
