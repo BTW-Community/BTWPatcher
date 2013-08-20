@@ -2,7 +2,9 @@ package com.prupe.mcpatcher;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 class LegacyVersionList {
     static final String VERSIONS_JSON = "mcpatcher-legacy.json";
@@ -10,14 +12,25 @@ class LegacyVersionList {
     static final String DEFAULT_BASE_URL = "https://bitbucket.org/prupe/mcpatcher-legacy/downloads/";
 
     int format = 1;
-    List<Entry> versions = new ArrayList<Entry>();
+    LinkedHashMap<String, Entry> versions = new LinkedHashMap<String, Entry>();
 
     void add(Entry entry) {
-        versions.add(entry);
+        versions.put(entry.getKey(), entry);
+    }
+
+    List<Entry> find(String api) {
+        List<Entry> list = new ArrayList<Entry>();
+        for (Map.Entry<String, Entry> entry : versions.entrySet()) {
+            if (entry.getValue().api.equals(api)) {
+                list.add(entry.getValue());
+            }
+        }
+        return list;
     }
 
     static class Entry {
         String id;
+        String api;
         String maxMinecraftVersion;
         String libraryVersion;
         String md5;
@@ -27,8 +40,9 @@ class LegacyVersionList {
         private Entry() {
         }
 
-        Entry(String id, String maxMinecraftVersion, String libraryVersion) {
+        Entry(String id, String api, String maxMinecraftVersion, String libraryVersion) {
             this.id = id;
+            this.api = api;
             this.maxMinecraftVersion = maxMinecraftVersion;
             this.libraryVersion = libraryVersion;
         }
@@ -39,6 +53,10 @@ class LegacyVersionList {
 
         URL getURL() {
             return Util.newURL(getBaseURL() + "mcpatcher-legacy-" + libraryVersion + ".jar");
+        }
+
+        String getKey() {
+            return id + "." + api;
         }
 
         String getResource() {

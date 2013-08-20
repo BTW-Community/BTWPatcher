@@ -67,7 +67,7 @@ class ModList {
         boolean found = false;
         if (version.compareTo("13w18a") < 0) {
             LegacyVersionList list = getLegacyVersionList();
-            for (LegacyVersionList.Entry entry : list.versions) {
+            for (LegacyVersionList.Entry entry : list.find(MCPatcher.API_VERSION)) {
                 if (version.compareTo(entry.maxMinecraftVersion) <= 0) {
                     ClassLoader loader = getLegacyClassLoader(entry);
                     for (LegacyVersionList.Mod mod : entry.mods) {

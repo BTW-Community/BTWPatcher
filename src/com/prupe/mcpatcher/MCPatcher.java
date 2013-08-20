@@ -44,6 +44,8 @@ final public class MCPatcher {
             (PATCH_VERSION > 0 ? String.format("_%02d", PATCH_VERSION) : "") +
             (BETA_VERSION > 0 ? "-beta" + BETA_VERSION : "");
 
+    public static final String API_VERSION = "20130818";
+
     static ProfileManager profileManager;
     static MinecraftJar minecraft = null;
     static ModList modList;
