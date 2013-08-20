@@ -95,36 +95,40 @@ class ModList {
     }
 
     private static LegacyVersionList getLegacyVersionList() throws PatcherException {
-        LegacyVersionList list = null;
+        LegacyVersionList list;
         File local = MCPatcherUtils.getMinecraftPath(LegacyVersionList.VERSIONS_JSON);
         if (Util.checkSignature(local, Util.JSON_SIGNATURE)) {
             list = JsonUtils.parseJson(local, LegacyVersionList.class);
-        }
-        if (list == null) {
-            File local1 = new File("../mcpatcher-legacy/" + LegacyVersionList.VERSIONS_JSON);
-            if (Util.checkSignature(local1, Util.JSON_SIGNATURE)) {
-                list = JsonUtils.parseJson(local, LegacyVersionList.class);
+            if (list != null) {
+                return list;
             }
         }
-        if (list == null) {
-            Util.fetchURL(LegacyVersionList.VERSIONS_URL, local, true, Util.LONG_TIMEOUT, Util.JSON_SIGNATURE);
-            list = JsonUtils.parseJson(local, LegacyVersionList.class);
-            local.deleteOnExit();
+        for (File dir : new File[]{Util.devDir, new File("."), new File("..")}) {
+            if (dir != null) {
+                File local1 = new File(dir, "../mcpatcher-legacy/" + LegacyVersionList.VERSIONS_JSON);
+                if (Util.checkSignature(local1, Util.JSON_SIGNATURE)) {
+                    list = JsonUtils.parseJson(local1, LegacyVersionList.class);
+                    if (list != null) {
+                        return list;
+                    }
+                }
+            }
         }
+        Util.fetchURL(LegacyVersionList.VERSIONS_URL, local, true, Util.LONG_TIMEOUT, Util.JSON_SIGNATURE);
+        list = JsonUtils.parseJson(local, LegacyVersionList.class);
+        local.deleteOnExit();
         return list;
     }
 
     private static ClassLoader getLegacyClassLoader(LegacyVersionList.Entry entry) throws MalformedURLException, PatcherException {
         File local;
-        if (Util.devDir == null) {
-            // run from command line in dev environment
-            local = new File("../mcpatcher-legacy/out/artifacts/" + entry.id + entry.getResource());
-        } else {
-            // run from within IDE
-            local = new File(Util.devDir, "../mcpatcher-legacy/out/artifacts/" + entry.id + entry.getResource());
-        }
-        if (Util.checkSignature(local, Util.JAR_SIGNATURE)) {
-            return new URLClassLoader(new URL[]{local.toURI().toURL()});
+        for (File dir : new File[]{Util.devDir, new File("."), new File("..")}) {
+            if (dir != null) {
+                local = new File(dir, "../mcpatcher-legacy/out/artifacts/" + entry.id + entry.getResource());
+                if (Util.checkSignature(local, Util.JAR_SIGNATURE)) {
+                    return new URLClassLoader(new URL[]{local.toURI().toURL()});
+                }
+            }
         }
 
         Library library = new Library("com.prupe.mcpatcher:mcpatcher-legacy:" + entry.libraryVersion, LegacyVersionList.DEFAULT_BASE_URL);
