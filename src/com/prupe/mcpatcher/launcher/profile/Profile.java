@@ -69,6 +69,7 @@ public class Profile {
             JsonElement elem = newProfile.get(TAG_JAVA_ARGS);
             if (elem != null && elem.isJsonPrimitive()) {
                 sb.append(elem.getAsString());
+                sb.append(' ');
             }
             sb.append(javaArgs);
             newProfile.addProperty(TAG_JAVA_ARGS, sb.toString());
