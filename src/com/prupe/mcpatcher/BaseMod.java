@@ -258,37 +258,8 @@ public final class BaseMod extends Mod {
                 .setInsertAfter(true)
                 .matchConstructorOnly(true)
             );
-        }
 
-        @Override
-        public String getDeobfClass() {
-            return "Minecraft";
-        }
-    }
-
-    /**
-     * Matches Minecraft class and maps the getInstance method.
-     */
-    public static class MinecraftMod extends com.prupe.mcpatcher.ClassMod {
-        protected final FieldRef instance = new FieldRef(getDeobfClass(), "instance", "LMinecraft;");
-        protected final MethodRef getInstance = new MethodRef(getDeobfClass(), "getInstance", "()LMinecraft;");
-
-        public MinecraftMod(Mod mod) {
-            super(mod);
-
-            if (getMinecraftVersion().compareTo("13w16a") >= 0) {
-                addClassSignature(new ConstSignature("Minecraft-Client"));
-                addClassSignature(new ConstSignature("textures/gui/title/mojang.png"));
-            } else {
-                addClassSignature(new FilenameSignature("net/minecraft/client/Minecraft.class"));
-            }
-
-            if (getMinecraftVersion().compareTo("1.3") >= 0) {
-                addMemberMapper(new MethodMapper(getInstance)
-                    .accessFlag(AccessFlag.PUBLIC, true)
-                    .accessFlag(AccessFlag.STATIC, true)
-                );
-            } else {
+            if (!haveGetInstance) {
                 addPatch(new AddFieldPatch(instance, AccessFlag.PUBLIC | AccessFlag.STATIC));
 
                 addPatch(new BytecodePatch() {
@@ -318,7 +289,7 @@ public final class BaseMod extends Mod {
                     .matchConstructorOnly(true)
                 );
 
-                addPatch(new AddMethodPatch(getInstance) {
+                addPatch(new AddMethodPatch(getInstance, AccessFlag.PUBLIC | AccessFlag.STATIC) {
                     @Override
                     public byte[] generateMethod() {
                         return buildCode(
@@ -327,6 +298,39 @@ public final class BaseMod extends Mod {
                         );
                     }
                 });
+            }
+        }
+
+        @Override
+        public String getDeobfClass() {
+            return "Minecraft";
+        }
+    }
+
+    /**
+     * Matches Minecraft class and maps the getInstance method.
+     */
+    public static class MinecraftMod extends com.prupe.mcpatcher.ClassMod {
+        protected final FieldRef instance = new FieldRef(getDeobfClass(), "instance", "LMinecraft;");
+        protected final MethodRef getInstance = new MethodRef(getDeobfClass(), "getInstance", "()LMinecraft;");
+        protected final boolean haveGetInstance;
+
+        public MinecraftMod(Mod mod) {
+            super(mod);
+            haveGetInstance = getMinecraftVersion().compareTo("1.3") >= 0;
+
+            if (getMinecraftVersion().compareTo("13w16a") >= 0) {
+                addClassSignature(new ConstSignature("Minecraft-Client"));
+                addClassSignature(new ConstSignature("textures/gui/title/mojang.png"));
+            } else {
+                addClassSignature(new FilenameSignature("net/minecraft/client/Minecraft.class"));
+            }
+
+            if (haveGetInstance) {
+                addMemberMapper(new MethodMapper(getInstance)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
+                );
             }
         }
 
