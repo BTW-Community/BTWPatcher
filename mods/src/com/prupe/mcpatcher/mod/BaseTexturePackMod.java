@@ -50,7 +50,6 @@ public class BaseTexturePackMod extends Mod {
 
         addClassFile(MCPatcherUtils.TEXTURE_PACK_API_CLASS);
         addClassFile(MCPatcherUtils.TEXTURE_PACK_API_CLASS + "$1");
-        addClassFile(MCPatcherUtils.TEXTURE_PACK_API_CLASS + "$2");
         addClassFile(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS);
         addClassFile(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS + "$1");
         addClassFile(MCPatcherUtils.WEIGHTED_INDEX_CLASS);

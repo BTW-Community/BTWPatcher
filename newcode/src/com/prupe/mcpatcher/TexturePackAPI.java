@@ -146,7 +146,7 @@ public class TexturePackAPI {
         return listResources(null, directory, suffix, recursive, directories, sortByFilename);
     }
 
-    public static List<ResourceLocation> listResources(String namespace, String directory, String suffix, boolean recursive, boolean directories, boolean sortByFilename) {
+    public static List<ResourceLocation> listResources(String namespace, String directory, String suffix, boolean recursive, boolean directories, final boolean sortByFilename) {
         if (suffix == null) {
             suffix = "";
         }
@@ -158,25 +158,24 @@ public class TexturePackAPI {
         } else {
             findResources(namespace, directory, suffix, recursive, directories, resources);
         }
-        if (sortByFilename) {
-            Collections.sort(resources, new Comparator<ResourceLocation>() {
-                public int compare(ResourceLocation o1, ResourceLocation o2) {
-                    String f1 = o1.getPath().replaceAll(".*/", "").replaceFirst("\\.properties", "");
-                    String f2 = o2.getPath().replaceAll(".*/", "").replaceFirst("\\.properties", "");
-                    int result = f1.compareTo(f2);
-                    if (result != 0) {
-                        return result;
-                    }
-                    return o1.getPath().compareTo(o2.getPath());
+        Collections.sort(resources, new Comparator<ResourceLocation>() {
+            @Override
+            public int compare(ResourceLocation o1, ResourceLocation o2) {
+                String n1 = o1.getNamespace();
+                String n2 = o2.getNamespace();
+                int result = n1.compareTo(n2);
+                if (result != 0) {
+                    return result;
                 }
-            });
-        } else {
-            Collections.sort(resources, new Comparator<ResourceLocation>() {
-                public int compare(ResourceLocation o1, ResourceLocation o2) {
-                    return o1.getPath().compareTo(o2.getPath());
+                String f1 = o1.getPath();
+                String f2 = o2.getPath();
+                if (sortByFilename) {
+                    f1 = f1.replaceAll(".*/", "").replaceFirst("\\.properties", "");
+                    f2 = f2.replaceAll(".*/", "").replaceFirst("\\.properties", "");
                 }
-            });
-        }
+                return f1.compareTo(f2);
+            }
+        });
         return resources;
     }
 
