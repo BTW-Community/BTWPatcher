@@ -111,7 +111,12 @@ abstract public class TexturePackChangeHandler {
         List<ResourcePack> resourcePacks = TexturePackAPI.getResourcePacks(null);
         logger.fine("%s resource packs (%d selected):", initializing ? "initializing" : "changing", resourcePacks.size());
         for (ResourcePack pack : resourcePacks) {
-            logger.fine("resource pack: %s", pack);
+            logger.fine("resource pack: %s", pack.getName());
+        }
+        Set<String> namespaces = TexturePackAPI.getNamespaces();
+        logger.fine("%d resource namespaces:", namespaces.size());
+        for (String namespace : namespaces) {
+            logger.fine("namespace: %s", namespace);
         }
 
         for (TexturePackChangeHandler handler : handlers) {
