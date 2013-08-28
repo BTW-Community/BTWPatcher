@@ -37,6 +37,15 @@ public class TexturePackAPI {
         return list;
     }
 
+    public static Set<String> getNamespaces() {
+        Set<String> set = new HashSet<String>();
+        ResourceManager resourceManager = getResourceManager();
+        if (resourceManager instanceof SimpleReloadableResourceManager) {
+            set.addAll(((SimpleReloadableResourceManager) resourceManager).namespaceMap.keySet());
+        }
+        return set;
+    }
+
     public static ResourceManager getResourceManager() {
         return Minecraft.getInstance().getResourceManager();
     }
@@ -134,11 +143,21 @@ public class TexturePackAPI {
     }
 
     public static List<ResourceLocation> listResources(String directory, String suffix, boolean recursive, boolean directories, boolean sortByFilename) {
+        return listResources(null, directory, suffix, recursive, directories, sortByFilename);
+    }
+
+    public static List<ResourceLocation> listResources(String namespace, String directory, String suffix, boolean recursive, boolean directories, boolean sortByFilename) {
         if (suffix == null) {
             suffix = "";
         }
         List<ResourceLocation> resources = new ArrayList<ResourceLocation>();
-        findResources(DEFAULT_NAMESPACE, directory, suffix, recursive, directories, resources);
+        if (MCPatcherUtils.isNullOrEmpty(namespace)) {
+            for (String namespace1 : getNamespaces()) {
+                findResources(namespace1, directory, suffix, recursive, directories, resources);
+            }
+        } else {
+            findResources(namespace, directory, suffix, recursive, directories, resources);
+        }
         if (sortByFilename) {
             Collections.sort(resources, new Comparator<ResourceLocation>() {
                 public int compare(ResourceLocation o1, ResourceLocation o2) {
