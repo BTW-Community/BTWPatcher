@@ -11,8 +11,8 @@ class LegacyVersionList {
     static final URL VERSIONS_URL = Util.newURL("https://bitbucket.org/prupe/mcpatcher-legacy/raw/master/" + VERSIONS_JSON);
     static final String DEFAULT_BASE_URL = "https://bitbucket.org/prupe/mcpatcher-legacy/downloads/";
 
-    int format = 1;
-    LinkedHashMap<String, Version> versions = new LinkedHashMap<String, Version>();
+    private int format = 1;
+    private LinkedHashMap<String, Version> versions = new LinkedHashMap<String, Version>();
 
     void add(Version version) {
         versions.put(version.getKey(), version);
