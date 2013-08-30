@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.src.BiomeGenBase;
 
 import java.lang.reflect.Method;
+import java.util.BitSet;
 
 class BiomeHelper {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
@@ -24,16 +25,26 @@ class BiomeHelper {
         }
     }
 
-    static String getBiomeNameAt(int i, int j, int k) {
+    static void parseBiomeList(String list, BitSet bits) {
+        if (MCPatcherUtils.isNullOrEmpty(list)) {
+            return;
+        }
+        for (String s : list.toLowerCase().split("\\s+")) {
+            if (s.isEmpty()) {
+                continue;
+            }
+            for (BiomeGenBase biome : BiomeGenBase.biomeList) {
+                if (biome != null && biome.biomeName != null &&
+                    s.equals(biome.biomeName.toLowerCase().replace(" ", ""))) {
+                    bits.set(biome.biomeID);
+                }
+            }
+        }
+    }
+
+    static int getBiomeIDAt(int i, int j, int k) {
         BiomeGenBase biome = getBiomeGenAt(i, j, k);
-        if (biome == null) {
-            return "";
-        }
-        String biomeName = biome.biomeName;
-        if (biomeName == null) {
-            return "";
-        }
-        return biomeName.toLowerCase().replace(" ", "");
+        return biome == null ? BiomeGenBase.biomeList.length : biome.biomeID;
     }
 
     static BiomeGenBase getBiomeGenAt(int i, int j, int k) {

@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.WeightedIndex;
 import net.minecraft.src.ResourceLocation;
 
+import java.lang.reflect.Method;
 import java.util.*;
 
 class MobRuleList {
@@ -19,6 +20,24 @@ class MobRuleList {
     private final List<ResourceLocation> allSkins;
     private final int skinCount;
     private final List<MobRuleEntry> entries;
+
+    private static Method parseBiomeList;
+    static Method getBiomeIDAt;
+
+    static {
+        try {
+            Class<?> biomeHelperClass = Class.forName(MCPatcherUtils.BIOME_HELPER_CLASS);
+            parseBiomeList = biomeHelperClass.getDeclaredMethod("parseBiomeList", String.class, BitSet.class);
+            getBiomeIDAt = biomeHelperClass.getDeclaredMethod("getBiomeIDAt", Integer.TYPE, Integer.TYPE, Integer.TYPE);
+            parseBiomeList.setAccessible(true);
+            getBiomeIDAt.setAccessible(true);
+            logger.fine("biome integration active");
+        } catch (Throwable e) {
+            parseBiomeList = null;
+            getBiomeIDAt = null;
+            logger.warning("biome integration failed");
+        }
+    }
 
     private MobRuleList(ResourceLocation baseSkin) {
         this.baseSkin = baseSkin;
@@ -66,7 +85,7 @@ class MobRuleList {
         entries = tmpEntries.isEmpty() ? null : tmpEntries;
     }
 
-    ResourceLocation getSkin(long key, int i, int j, int k, String biome) {
+    ResourceLocation getSkin(long key, int i, int j, int k, Integer biome) {
         if (entries == null) {
             int index = (int) (key % skinCount);
             if (index < 0) {
@@ -100,7 +119,7 @@ class MobRuleList {
     private static class MobRuleEntry {
         final int[] skins;
         final WeightedIndex weightedIndex;
-        private final Set<String> biomes;
+        private final BitSet biomes;
         private final int minHeight;
         private final int maxHeight;
 
@@ -127,13 +146,20 @@ class MobRuleList {
                 return null;
             }
 
-            HashSet<String> biomes = new HashSet<String>();
-            String biomeList = properties.getProperty("biomes." + index, "").trim().toLowerCase();
-            if (!biomeList.equals("")) {
-                Collections.addAll(biomes, biomeList.split("\\s+"));
-            }
-            if (biomes.isEmpty()) {
+            BitSet biomes;
+            String biomeList = MCPatcherUtils.getStringProperty(properties, "biomes." + index, "");
+            if (biomeList.isEmpty()) {
                 biomes = null;
+            } else {
+                biomes = new BitSet();
+                if (parseBiomeList != null) {
+                    try {
+                        parseBiomeList.invoke(null, biomeList, biomes);
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                        parseBiomeList = null;
+                    }
+                }
             }
 
             int minHeight = MCPatcherUtils.getIntProperty(properties, "minHeight." + index, -1);
@@ -146,7 +172,7 @@ class MobRuleList {
             return new MobRuleEntry(skins, chooser, biomes, minHeight, maxHeight);
         }
 
-        MobRuleEntry(int[] skins, WeightedIndex weightedIndex, HashSet<String> biomes, int minHeight, int maxHeight) {
+        MobRuleEntry(int[] skins, WeightedIndex weightedIndex, BitSet biomes, int minHeight, int maxHeight) {
             this.skins = skins;
             this.weightedIndex = weightedIndex;
             this.biomes = biomes;
@@ -154,9 +180,9 @@ class MobRuleList {
             this.maxHeight = maxHeight;
         }
 
-        boolean match(int i, int j, int k, String biome) {
+        boolean match(int i, int j, int k, Integer biome) {
             if (biomes != null) {
-                if (!biomes.contains(biome)) {
+                if (biome == null || !biomes.get(biome)) {
                     return false;
                 }
             }
@@ -177,8 +203,8 @@ class MobRuleList {
             }
             if (biomes != null) {
                 sb.append(", biomes:");
-                for (String s : biomes) {
-                    sb.append(' ').append(s);
+                for (int i = biomes.nextSetBit(0); i >= 0; i = biomes.nextSetBit(i + 1)) {
+                    sb.append(' ').append(i);
                 }
             }
             if (minHeight >= 0) {

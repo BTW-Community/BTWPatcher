@@ -11,7 +11,6 @@ import net.minecraft.src.ResourceLocation;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -78,7 +77,6 @@ public class MobRandomizer {
         private static final long ADDEND = 0xbL;
         private static final long MASK = (1L << 48) - 1;
 
-        private static Method getBiomeNameAt;
         private static final HashMap<Integer, ExtraInfo> allInfo = new HashMap<Integer, ExtraInfo>();
         private static final HashMap<WeakReference<EntityLivingBase>, ExtraInfo> allRefs = new HashMap<WeakReference<EntityLivingBase>, ExtraInfo>();
         private static final ReferenceQueue<EntityLivingBase> refQueue = new ReferenceQueue<EntityLivingBase>();
@@ -89,21 +87,7 @@ public class MobRandomizer {
         private final int origX;
         private final int origY;
         private final int origZ;
-        private String origBiome;
-
-        static {
-            try {
-                Class<?> biomeHelperClass = Class.forName(MCPatcherUtils.BIOME_HELPER_CLASS);
-                getBiomeNameAt = biomeHelperClass.getDeclaredMethod("getBiomeNameAt", Integer.TYPE, Integer.TYPE, Integer.TYPE);
-                getBiomeNameAt.setAccessible(true);
-            } catch (Throwable e) {
-            }
-            if (getBiomeNameAt == null) {
-                logger.warning("biome integration failed");
-            } else {
-                logger.fine("biome integration active");
-            }
-        }
+        private Integer origBiome;
 
         ExtraInfo(EntityLivingBase entity) {
             this(entity, getSkinId(entity.entityId), (int) entity.posX, (int) entity.posY, (int) entity.posZ);
@@ -119,11 +103,11 @@ public class MobRandomizer {
         }
 
         private void setBiome() {
-            if (origBiome == null && getBiomeNameAt != null) {
+            if (origBiome == null && MobRuleList.getBiomeIDAt != null) {
                 try {
-                    origBiome = (String) getBiomeNameAt.invoke(null, origX, origY, origZ);
+                    origBiome = (Integer) MobRuleList.getBiomeIDAt.invoke(null, origX, origY, origZ);
                 } catch (Throwable e) {
-                    getBiomeNameAt = null;
+                    MobRuleList.getBiomeIDAt = null;
                     e.printStackTrace();
                 }
             }

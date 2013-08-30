@@ -143,7 +143,8 @@ abstract class TileOverride implements ITileOverride {
     private static final int CONNECT_BY_TILE = 1;
     private static final int CONNECT_BY_MATERIAL = 2;
 
-    private static Method getBiomeNameAt;
+    private static Method parseBiomeList;
+    private static Method getBiomeIDAt;
 
     private final ResourceLocation propertiesFile;
     private final String texturesDirectory;
@@ -157,7 +158,7 @@ abstract class TileOverride implements ITileOverride {
     private final int metadata;
     private final int connectType;
     private final boolean innerSeams;
-    private final Set<String> biomes;
+    private final BitSet biomes;
     private final int minHeight;
     private final int maxHeight;
 
@@ -171,14 +172,15 @@ abstract class TileOverride implements ITileOverride {
     static {
         try {
             Class<?> biomeHelperClass = Class.forName(MCPatcherUtils.BIOME_HELPER_CLASS);
-            getBiomeNameAt = biomeHelperClass.getDeclaredMethod("getBiomeNameAt", Integer.TYPE, Integer.TYPE, Integer.TYPE);
-            getBiomeNameAt.setAccessible(true);
-        } catch (Throwable e) {
-        }
-        if (getBiomeNameAt == null) {
-            logger.warning("biome integration failed");
-        } else {
+            parseBiomeList = biomeHelperClass.getDeclaredMethod("parseBiomeList", String.class, BitSet.class);
+            getBiomeIDAt = biomeHelperClass.getDeclaredMethod("getBiomeIDAt", Integer.TYPE, Integer.TYPE, Integer.TYPE);
+            parseBiomeList.setAccessible(true);
+            getBiomeIDAt.setAccessible(true);
             logger.fine("biome integration active");
+        } catch (Throwable e) {
+            parseBiomeList = null;
+            getBiomeIDAt = null;
+            logger.warning("biome integration failed");
         }
     }
 
@@ -297,15 +299,20 @@ abstract class TileOverride implements ITileOverride {
 
         innerSeams = MCPatcherUtils.getBooleanProperty(properties, "innerSeams", false);
 
-        Set<String> biomes = new HashSet<String>();
-        String biomeList = properties.getProperty("biomes", "").trim().toLowerCase();
-        if (!biomeList.equals("")) {
-            Collections.addAll(biomes, biomeList.split("\\s+"));
-        }
-        if (biomes.isEmpty()) {
+        String biomeList = properties.getProperty("biomes", "");
+        if (biomeList.isEmpty()) {
             biomes = null;
+        } else {
+            biomes = new BitSet();
+            if (parseBiomeList != null) {
+                try {
+                    parseBiomeList.invoke(null, biomeList, biomes);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    parseBiomeList = null;
+                }
+            }
         }
-        this.biomes = biomes;
 
         minHeight = MCPatcherUtils.getIntProperty(properties, "minHeight", -1);
         maxHeight = MCPatcherUtils.getIntProperty(properties, "maxHeight", Integer.MAX_VALUE);
@@ -731,14 +738,18 @@ abstract class TileOverride implements ITileOverride {
         if (j < minHeight || j > maxHeight) {
             return null;
         }
-        if (biomes != null && getBiomeNameAt != null) {
+        if (biomes != null) {
+            if (getBiomeIDAt == null) {
+                return null;
+            }
             try {
-                if (!biomes.contains(getBiomeNameAt.invoke(null, i, j, k))) {
+                int id = (Integer) getBiomeIDAt.invoke(null, i, j, k);
+                if (!biomes.get(id)) {
                     return null;
                 }
             } catch (Throwable e) {
                 e.printStackTrace();
-                getBiomeNameAt = null;
+                getBiomeIDAt = null;
             }
         }
         return getTileImpl(blockAccess, block, origIcon, i, j, k, face);
