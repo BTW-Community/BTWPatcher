@@ -1,6 +1,8 @@
 package net.minecraft.src;
 
 public class BiomeGenBase {
+    public static BiomeGenBase[] biomeList;
+
     public int biomeID;
     public String biomeName;
     public int color;

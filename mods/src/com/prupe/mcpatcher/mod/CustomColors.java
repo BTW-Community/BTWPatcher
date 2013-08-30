@@ -404,6 +404,7 @@ public class CustomColors extends Mod {
     private class BiomeGenBaseMod extends ClassMod {
         BiomeGenBaseMod() {
             final FieldRef waterColorMultiplier = new FieldRef(getDeobfClass(), "waterColorMultiplier", "I");
+            final FieldRef biomeList = new FieldRef(getDeobfClass(), "biomeList", "[LBiomeGenBase;");
             final FieldRef biomeID = new FieldRef(getDeobfClass(), "biomeID", "I");
             final FieldRef temperature = new FieldRef(getDeobfClass(), "temperature", "F");
             final FieldRef rainfall = new FieldRef(getDeobfClass(), "rainfall", "F");
@@ -522,6 +523,11 @@ public class CustomColors extends Mod {
                 .accessFlag(AccessFlag.PUBLIC, true)
                 .accessFlag(AccessFlag.STATIC, false)
                 .accessFlag(AccessFlag.FINAL, false)
+            );
+
+            addMemberMapper(new FieldMapper(biomeList)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, true)
             );
 
             addMemberMapper(new FieldMapper(color).accessFlag(AccessFlag.PUBLIC, true));
