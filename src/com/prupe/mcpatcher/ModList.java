@@ -23,6 +23,7 @@ class ModList {
     private final Map<String, BuiltInMod> builtInMods = new LinkedHashMap<String, BuiltInMod>();
     private final List<Mod> modsByIndex = new ArrayList<Mod>();
     private final Map<String, Mod> modsByName = new HashMap<String, Mod>();
+    private boolean needReorder;
     private boolean applied;
 
     private class ModDependencyException extends Exception {
@@ -167,7 +168,14 @@ class ModList {
         for (BuiltInMod builtInMod : builtInMods.values()) {
             if (!modsByName.containsKey(builtInMod.name) && (MCPatcher.experimentalMods || !builtInMod.experimental) && internal == builtInMod.internal) {
                 addNoReplace(newModInstance(builtInMod));
+                needReorder = true;
             }
+        }
+        if (needReorder) {
+            while (needReorder) {
+                needReorder = reorderBuiltinMods();
+            }
+            refreshInternalMods();
         }
     }
 
@@ -472,6 +480,27 @@ class ModList {
         refreshInternalMods();
     }
 
+    private boolean reorderBuiltinMods() {
+        List<String> builtIns = new ArrayList<String>();
+        builtIns.addAll(builtInMods.keySet());
+        for (int i = 0; i < modsByIndex.size(); i++) {
+            Mod mod1 = modsByIndex.get(i);
+            int index1 = builtIns.indexOf(mod1.getName());
+            if (index1 >= 0) {
+                for (int j = i + 1; j < modsByIndex.size(); j++) {
+                    Mod mod2 = modsByIndex.get(j);
+                    int index2 = builtIns.indexOf(mod2.getName());
+                    if (index2 >= 0 && index1 > index2) {
+                        modsByIndex.set(i, mod2);
+                        modsByIndex.set(j, mod1);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     void refreshInternalMods() {
         outer:
         while (true) {
@@ -594,6 +623,7 @@ class ModList {
     void loadSavedMods() {
         Config config = Config.getInstance();
         List<String> invalidEntries = new ArrayList<String>();
+        needReorder = false;
         for (Map.Entry<String, Config.ModEntry> entry : config.getSelectedVersion().mods.entrySet()) {
             String name = entry.getKey();
             Config.ModEntry modEntry = entry.getValue();
@@ -604,7 +634,9 @@ class ModList {
                 // nothing
             } else if (type.equals(Config.VAL_BUILTIN)) {
                 BuiltInMod builtInMod = builtInMods.get(name);
-                if (builtInMod != null && (MCPatcher.experimentalMods || !builtInMod.experimental)) {
+                if (builtInMod == null) {
+                    needReorder = true;
+                } else if (MCPatcher.experimentalMods || !builtInMod.experimental) {
                     mod = newModInstance(builtInMod);
                 }
             } else if (type.equals(Config.VAL_EXTERNAL_ZIP)) {
