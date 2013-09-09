@@ -453,7 +453,11 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
         if (i < b.length) {
             return -b[i];
         }
-        return this.preRelease - that.preRelease;
+        i = this.preRelease - that.preRelease;
+        if (i != 0) {
+            return i;
+        }
+        return this.getVersionString().compareTo(that.getVersionString());
     }
 
     /**
