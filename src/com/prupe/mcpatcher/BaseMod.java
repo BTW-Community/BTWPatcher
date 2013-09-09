@@ -1345,10 +1345,10 @@ public final class BaseMod extends Mod {
             );
 
             mapNBTMethod("Byte", "B");
-            mapNBTSubclass("ByteArray", "[B");
+            mapNBTMethod("ByteArray", "[B");
             mapNBTMethod("Double", "D");
             mapNBTMethod("Float", "F");
-            mapNBTSubclass("IntArray", "[I");
+            mapNBTMethod("IntArray", "[I");
             mapNBTMethod("Integer", "I");
             mapNBTMethod("Long", "J");
             mapNBTMethod("Short", "S");
@@ -1374,53 +1374,6 @@ public final class BaseMod extends Mod {
             addMemberMapper(new MethodMapper(get));
             addMemberMapper(new MethodMapper(set));
         }
-
-        protected void mapNBTSubclass(String type, String desc) {
-            final MethodRef get = new MethodRef(getDeobfClass(), "get" + type, "(Ljava/lang/String;)" + desc);
-            final MethodRef set = new MethodRef(getDeobfClass(), "set" + type, "(Ljava/lang/String;" + desc + ")V");
-            final String nbtTagType = "NBTTag" + type;
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        ALOAD_1,
-                        reference(INVOKEINTERFACE, mapGet),
-                        captureReference(CHECKCAST),
-                        captureReference(GETFIELD)
-                    );
-                }
-            }
-                .setMethod(get)
-                .addXref(1, tagMap)
-                .addXref(2, new ClassRef(nbtTagType))
-                .addXref(3, new FieldRef(nbtTagType, "data", desc))
-            );
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        ALOAD_1,
-                        captureReference(NEW),
-                        DUP,
-                        ALOAD_1,
-                        subset(new int[]{ILOAD_2, ALOAD_2, LLOAD_2, FLOAD_2, DLOAD_2}, true),
-                        captureReference(INVOKESPECIAL),
-                        reference(INVOKEINTERFACE, mapPut)
-                    );
-                }
-            }
-                .setMethod(set)
-                .addXref(1, tagMap)
-                .addXref(2, new ClassRef(nbtTagType))
-                .addXref(3, new MethodRef(nbtTagType, "<init>", "(Ljava/lang/String;" + desc + ")V"))
-            );
-        }
     }
 
     public static class NBTTagListMod extends com.prupe.mcpatcher.ClassMod {
@@ -1428,6 +1381,9 @@ public final class BaseMod extends Mod {
             super(mod);
             setParentClass("NBTBase");
 
+            final boolean haveTagAt = getMinecraftVersion().compareTo("13w36a") < 0;
+
+            final FieldRef data = new FieldRef(getDeobfClass(), "data", "Ljava/util/List;");
             final MethodRef tagCount = new MethodRef(getDeobfClass(), "tagCount", "()I");
             final MethodRef removeTag = new MethodRef(getDeobfClass(), "removeTag", "(I)LNBTBase;");
             final MethodRef tagAt = new MethodRef(getDeobfClass(), "tagAt", "(I)LNBTBase;");
@@ -1435,7 +1391,12 @@ public final class BaseMod extends Mod {
             final InterfaceMethodRef listRemove = new InterfaceMethodRef("java/util/List", "remove", "(I)Ljava/lang/Object;");
             final InterfaceMethodRef listGet = new InterfaceMethodRef("java/util/List", "get", "(I)Ljava/lang/Object;");
 
-            addClassSignature(new ConstSignature(" entries of type "));
+            if (haveTagAt) {
+                addClassSignature(new ConstSignature(" entries of type "));
+            } else {
+                addClassSignature(new ConstSignature("["));
+                addClassSignature(new ConstSignature("]"));
+            }
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -1455,14 +1416,31 @@ public final class BaseMod extends Mod {
                 }
             }.setMethod(removeTag));
 
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        reference(INVOKEINTERFACE, listGet)
-                    );
-                }
-            }.setMethod(tagAt));
+            if (haveTagAt) {
+                addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            reference(INVOKEINTERFACE, listGet)
+                        );
+                    }
+                }.setMethod(tagAt));
+            } else {
+                addMemberMapper(new FieldMapper(data));
+
+                addPatch(new AddMethodPatch(tagAt) {
+                    @Override
+                    public byte[] generateMethod() {
+                        return buildCode(
+                            ALOAD_0,
+                            reference(GETFIELD, data),
+                            ILOAD_1,
+                            reference(INVOKEINTERFACE, listGet),
+                            ARETURN
+                        );
+                    }
+                }.allowDuplicate(true));
+            }
         }
     }
 }

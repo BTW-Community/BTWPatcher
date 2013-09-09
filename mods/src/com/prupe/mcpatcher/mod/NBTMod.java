@@ -19,8 +19,6 @@ public class NBTMod extends Mod {
         newBaseClass = getMinecraftVersion().compareTo("13w36a") >= 0;
 
         addClassMod(new NBTBaseMod());
-        addClassMod(new BaseMod.NBTTagCompoundMod(this));
-        addClassMod(new BaseMod.NBTTagListMod(this));
         if (newBaseClass) {
             addClassMod(new NBTTagScalarMod());
         }
@@ -30,6 +28,11 @@ public class NBTMod extends Mod {
         addClassMod(new NBTTagNumberMod(4, "Long", "J"));
         addClassMod(new NBTTagNumberMod(5, "Float", "F"));
         addClassMod(new NBTTagNumberMod(6, "Double", "D"));
+        addClassMod(new NBTSubclassMod(7, "ByteArray", "[B"));
+        addClassMod(new NBTSubclassMod(8, "String", "Ljava/lang/String;"));
+        addClassMod(new BaseMod.NBTTagListMod(this)); // id=9
+        addClassMod(new BaseMod.NBTTagCompoundMod(this)); // id=10
+        addClassMod(new NBTSubclassMod(11, "IntArray", "[I"));
 
         addClassFile(MCPatcherUtils.NBT_RULE_CLASS);
         addClassFile(MCPatcherUtils.NBT_RULE_CLASS + "$Exact");
@@ -72,16 +75,19 @@ public class NBTMod extends Mod {
         }
     }
 
-    private class NBTTagNumberMod extends ClassMod {
-        private final String name;
+    private class NBTSubclassMod extends ClassMod {
+        protected final String name;
+        protected final FieldRef data;
+        protected final MethodRef getId;
+        protected final MethodRef getValue;
 
-        NBTTagNumberMod(final int id, String name, String desc) {
+        NBTSubclassMod(final int id, String name, String desc) {
             this.name = name;
-            setParentClass(newBaseClass ? "NBTTagScalar" : "NBTBase");
+            data = new FieldRef(getDeobfClass(), "data", desc);
+            getId = new MethodRef(getDeobfClass(), "getId", "()B");
+            getValue = new MethodRef(getDeobfClass(), "get" + name, "()" + desc);
 
-            final FieldRef data = new FieldRef(getDeobfClass(), "data", desc);
-            final MethodRef getId = new MethodRef(getDeobfClass(), "getId", "()B");
-            final MethodRef getValue = new MethodRef(getDeobfClass(), "get" + name, "()" + desc);
+            setParentClass("NBTBase");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -95,19 +101,7 @@ public class NBTMod extends Mod {
                 }
             }.setMethod(getId));
 
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        begin(),
-                        ALOAD_0,
-                        captureReference(GETFIELD)
-                    );
-                }
-            }
-                .setMethod(getValue)
-                .addXref(1, data)
-            );
+            addMemberMapper(new FieldMapper(data));
 
             addPatch(new MakeMemberPublicPatch(data));
         }
@@ -115,6 +109,15 @@ public class NBTMod extends Mod {
         @Override
         public String getDeobfClass() {
             return "NBTTag" + name;
+        }
+    }
+
+    private class NBTTagNumberMod extends NBTSubclassMod {
+        NBTTagNumberMod(final int id, String name, String desc) {
+            super(id, name, desc);
+            if (newBaseClass) {
+                setParentClass("NBTTagScalar");
+            }
         }
     }
 }
