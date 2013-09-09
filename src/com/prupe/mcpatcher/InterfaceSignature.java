@@ -9,8 +9,7 @@ import java.util.List;
 
 public class InterfaceSignature extends ClassSignature {
     private final JavaRef[] methods;
-    private boolean interfaceOnly;
-    private boolean abstractOnly;
+    private int classType = 1;
     private boolean exactMatch;
 
     public InterfaceSignature(ClassMod classMod, JavaRef... methods) {
@@ -30,16 +29,15 @@ public class InterfaceSignature extends ClassSignature {
             }
         }
         this.methods = tmpMethods.toArray(new JavaRef[tmpMethods.size()]);
-        interfaceOnly = true;
     }
 
     public InterfaceSignature setInterfaceOnly(boolean interfaceOnly) {
-        this.interfaceOnly = interfaceOnly;
+        classType = interfaceOnly ? 1 : 0;
         return this;
     }
 
     public InterfaceSignature setAbstractOnly(boolean abstractOnly) {
-        this.abstractOnly = abstractOnly;
+        classType = abstractOnly ? 2 : 0;
         return this;
     }
 
@@ -50,10 +48,10 @@ public class InterfaceSignature extends ClassSignature {
 
     @Override
     public boolean match(String filename, ClassFile classFile, ClassMap tempClassMap) {
-        if (interfaceOnly && !classFile.isInterface()) {
+        if (classType == 1 && !classFile.isInterface()) {
             return false;
         }
-        if (abstractOnly && !classFile.isAbstract()) {
+        if (classType == 2 && !classFile.isAbstract()) {
             return false;
         }
         final List obfMethods = classFile.getMethods();
