@@ -86,7 +86,13 @@ class ModList {
             }
         }
         if (!found) {
-            ClassLoader loader = new JarClassLoader("/mods4.jar");
+            ClassLoader loader;
+            if (Util.devDir == null) {
+                loader = new JarClassLoader("/mods4.jar");
+            } else {
+                File local = new File(Util.devDir, "out/artifacts/mods4/mods4.jar");
+                loader = new URLClassLoader(new URL[]{local.toURI().toURL()});
+            }
             register(new BuiltInMod(MCPatcherUtils.BASE_TEXTURE_PACK_MOD, "com.prupe.mcpatcher.mod.BaseTexturePackMod", loader).setInternal(true));
             register(new BuiltInMod(MCPatcherUtils.BASE_TILESHEET_MOD, "com.prupe.mcpatcher.mod.BaseTilesheetMod", loader).setInternal(true));
             register(new BuiltInMod(MCPatcherUtils.NBT_MOD, "com.prupe.mcpatcher.mod.NBTMod", loader).setInternal(true));
