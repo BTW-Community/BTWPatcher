@@ -1303,10 +1303,15 @@ public final class BaseMod extends Mod {
             setParentClass("NBTBase");
 
             addClassSignature(new ConstSignature(new ClassRef("java.util.HashMap")));
-            addClassSignature(new ConstSignature(":["));
-            addClassSignature(new ConstSignature(":"));
-            addClassSignature(new ConstSignature(","));
-            addClassSignature(new ConstSignature("]"));
+            if (getMinecraftVersion().compareTo("13w36a") >= 0) {
+                addClassSignature(new ConstSignature("{"));
+                addClassSignature(new ConstSignature("}"));
+            } else {
+                addClassSignature(new ConstSignature(":["));
+                addClassSignature(new ConstSignature(":"));
+                addClassSignature(new ConstSignature(","));
+                addClassSignature(new ConstSignature("]"));
+            }
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -1340,10 +1345,10 @@ public final class BaseMod extends Mod {
             );
 
             mapNBTMethod("Byte", "B");
-            mapNBTMethod("ByteArray", "[B");
+            mapNBTSubclass("ByteArray", "[B");
             mapNBTMethod("Double", "D");
             mapNBTMethod("Float", "F");
-            mapNBTMethod("IntArray", "[I");
+            mapNBTSubclass("IntArray", "[I");
             mapNBTMethod("Integer", "I");
             mapNBTMethod("Long", "J");
             mapNBTMethod("Short", "S");
@@ -1363,6 +1368,14 @@ public final class BaseMod extends Mod {
         }
 
         protected void mapNBTMethod(String type, String desc) {
+            final MethodRef get = new MethodRef(getDeobfClass(), "get" + type, "(Ljava/lang/String;)" + desc);
+            final MethodRef set = new MethodRef(getDeobfClass(), "set" + type, "(Ljava/lang/String;" + desc + ")V");
+
+            addMemberMapper(new MethodMapper(get));
+            addMemberMapper(new MethodMapper(set));
+        }
+
+        protected void mapNBTSubclass(String type, String desc) {
             final MethodRef get = new MethodRef(getDeobfClass(), "get" + type, "(Ljava/lang/String;)" + desc);
             final MethodRef set = new MethodRef(getDeobfClass(), "set" + type, "(Ljava/lang/String;" + desc + ")V");
             final String nbtTagType = "NBTTag" + type;
