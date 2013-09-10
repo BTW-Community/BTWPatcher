@@ -91,17 +91,17 @@ abstract public class BlockAPI {
 
         @Override
         protected Block getBlockById_Impl(int id) {
-            return null;
+            return Block.blockRegistry.getById(id);
         }
 
         @Override
         protected Block getBlockByCanonicalId_Impl(int id) {
-            return null;
+            return Block.blockRegistry.getById(id);
         }
 
         @Override
         protected int getBlockId_Impl(Block block) {
-            return 0;
+            return Block.blockRegistry.getId(block);
         }
 
         @Override
