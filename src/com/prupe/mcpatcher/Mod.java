@@ -283,7 +283,7 @@ public abstract class Mod {
     }
 
     public void setApiVersion(String apiName, int version) {
-        MCPatcher.modList.properties.setProperty(apiName + Config.TAG_API_VERSION, String.valueOf(version));
+        MCPatcher.patcherProperties.setProperty(apiName + Config.TAG_API_VERSION, String.valueOf(version));
     }
 
     /**

@@ -49,6 +49,7 @@ final public class MCPatcher {
     static ProfileManager profileManager;
     static MinecraftJar minecraft = null;
     static ModList modList;
+    static final Properties patcherProperties = new Properties();
     private static final Set<String> modifiedClasses = new HashSet<String>();
     private static final Set<String> addedClasses = new HashSet<String>();
     private static final Set<String> conflictClasses = new HashSet<String>();
@@ -261,6 +262,7 @@ final public class MCPatcher {
         if (modList != null) {
             modList.close();
         }
+        patcherProperties.clear();
         modList = new ModList(minecraft.getVersion());
         if (!ignoreSavedMods) {
             modList.loadSavedMods();
@@ -926,13 +928,12 @@ final public class MCPatcher {
     }
 
     private static void writeProperties() throws IOException {
-        Properties properties = modList.properties;
-        properties.setProperty(Config.TAG_MINECRAFT_VERSION, minecraft.getVersion().getVersionString());
-        properties.setProperty(Config.TAG_PATCHER_VERSION, MCPatcher.VERSION_STRING);
+        patcherProperties.setProperty(Config.TAG_MINECRAFT_VERSION, minecraft.getVersion().getVersionString());
+        patcherProperties.setProperty(Config.TAG_PATCHER_VERSION, MCPatcher.VERSION_STRING);
         modifiedClasses.addAll(conflictClasses);
-        writeList(properties, Config.TAG_MODIFIED_CLASSES, modifiedClasses);
-        writeList(properties, Config.TAG_ADDED_CLASSES, addedClasses);
-        minecraft.writeProperties(properties);
+        writeList(patcherProperties, Config.TAG_MODIFIED_CLASSES, modifiedClasses);
+        writeList(patcherProperties, Config.TAG_ADDED_CLASSES, addedClasses);
+        minecraft.writeProperties(patcherProperties);
     }
 
     private static void writeList(Properties properties, String propertyName, Collection<String> data) {

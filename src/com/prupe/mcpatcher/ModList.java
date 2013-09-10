@@ -26,8 +26,6 @@ class ModList {
     private boolean needReorder;
     private boolean applied;
 
-    final Properties properties = new Properties();
-
     private class ModDependencyException extends Exception {
         ModDependencyException(String s) {
             super(s);
