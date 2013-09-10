@@ -185,8 +185,8 @@ public class CTMUtils {
             if (override.getMatchingBlocks() != null) {
                 for (int index : override.getMatchingBlocks()) {
                     String blockName = "";
-                    if (index >= 0 && index < Block.blocksList.length && Block.blocksList[index] != null) {
-                        blockName = Block.blocksList[index].getShortName();
+                    if (index >= 0 && index < BlockAPI.getNumBlocks() && BlockAPI.getBlockById(index) != null) {
+                        blockName = BlockAPI.getBlockById(index).getShortName();
                         if (blockName == null) {
                             blockName = "";
                         } else {
@@ -238,7 +238,7 @@ public class CTMUtils {
         TileOverrideIterator(Block block, Icon icon) {
             this.block = block;
             currentIcon = icon;
-            blockOverrides = CTMUtils.blockOverrides[block.blockID];
+            blockOverrides = CTMUtils.blockOverrides[BlockAPI.getBlockId(block)];
             iconOverrides = CTMUtils.tileOverrides.get(this.currentIcon.getIconName());
         }
 

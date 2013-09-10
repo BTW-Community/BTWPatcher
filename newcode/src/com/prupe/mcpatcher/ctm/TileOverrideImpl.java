@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.ctm;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TileLoader;
 import com.prupe.mcpatcher.WeightedIndex;
+import com.prupe.mcpatcher.block.BlockAPI;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.Icon;
@@ -582,7 +583,7 @@ class TileOverrideImpl {
         }
 
         boolean isBetterGrass(IBlockAccess blockAccess, Block block, int i, int j, int k, int face) {
-            return block.blockID == blockID && getTile(blockAccess, block, null, i, j, k, face) == fullTile;
+            return BlockAPI.getBlockId(block) == blockID && getTile(blockAccess, block, null, i, j, k, face) == fullTile;
         }
 
         public Icon getTile(Block block, Icon origIcon, int face, int metadata) {

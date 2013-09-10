@@ -57,10 +57,11 @@ public class RenderPass {
                 if (pass < 0) {
                     return;
                 }
+                int blockID = BlockAPI.getBlockId(block);
                 if (pass <= 2) {
-                    baseRenderPass[block.blockID] = pass;
+                    baseRenderPass[blockID] = pass;
                 } else {
-                    extraRenderPass[block.blockID] = pass;
+                    extraRenderPass[blockID] = pass;
                 }
                 maxRenderPass = Math.max(maxRenderPass, pass);
             }
@@ -108,15 +109,17 @@ public class RenderPass {
     }
 
     public static int getBlockRenderPass(Block block) {
+        int blockID = BlockAPI.getBlockId(block);
         if (renderPass <= 2) {
-            return baseRenderPass[block.blockID];
+            return baseRenderPass[blockID];
         } else {
-            return extraRenderPass[block.blockID];
+            return extraRenderPass[blockID];
         }
     }
 
     public static boolean canRenderInPass(Block block, int pass, boolean renderThis) {
-        if (baseRenderPass[block.blockID] < 2 && extraRenderPass[block.blockID] < 2) {
+        int blockID = BlockAPI.getBlockId(block);
+        if (baseRenderPass[blockID] < 2 && extraRenderPass[blockID] < 2) {
             return renderThis;
         } else {
             return pass == getBlockRenderPass(block);

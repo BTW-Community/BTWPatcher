@@ -526,7 +526,7 @@ abstract class TileOverride implements ITileOverride {
     }
 
     final boolean shouldConnect(IBlockAccess blockAccess, Block block, Icon icon, int i, int j, int k, int face, int[] offset) {
-        int blockID = block.blockID;
+        int blockID = BlockAPI.getBlockId(block);
         int metadata = blockAccess.getBlockMetadata(i, j, k);
         i += offset[0];
         j += offset[1];

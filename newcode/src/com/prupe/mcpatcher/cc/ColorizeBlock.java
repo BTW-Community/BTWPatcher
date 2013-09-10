@@ -197,11 +197,12 @@ public class ColorizeBlock {
 
     public static int colorizeBlock(Block block, int i, int j, int k, int metadata) {
         ColorMap colorMap = null;
+        int blockID = BlockAPI.getBlockId(block);
         if (!blockMetaColorMaps.isEmpty()) {
-            colorMap = blockMetaColorMaps.get(ColorMap.getBlockMetaKey(block.blockID, metadata));
+            colorMap = blockMetaColorMaps.get(ColorMap.getBlockMetaKey(blockID, metadata));
         }
-        if (colorMap == null && block.blockID >= 0 && block.blockID < blockColorMaps.length) {
-            colorMap = blockColorMaps[block.blockID];
+        if (colorMap == null && blockID >= 0 && blockID < blockColorMaps.length) {
+            colorMap = blockColorMaps[blockID];
         }
         return colorizeWithBlending(colorMap, 0xffffff, i, j, k);
     }
@@ -216,7 +217,7 @@ public class ColorizeBlock {
     }
 
     public static int colorizeBlock(Block block) {
-        ColorMap colorMap = blockColorMaps[block.blockID];
+        ColorMap colorMap = blockColorMaps[BlockAPI.getBlockId(block)];
         if (colorMap == null) {
             return 0xffffff;
         } else {
@@ -226,7 +227,7 @@ public class ColorizeBlock {
 
     public static int colorizeStem(int defaultColor, Block block, int blockMetadata) {
         int[] colors;
-        switch (block.blockID) {
+        switch (BlockAPI.getBlockId(block)) {
             case BLOCK_ID_PUMPKIN_STEM:
                 colors = pumpkinStemColors;
                 break;
