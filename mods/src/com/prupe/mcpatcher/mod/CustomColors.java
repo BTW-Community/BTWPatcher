@@ -74,6 +74,7 @@ public class CustomColors extends Mod {
         addClassMod(new BaseMod.IBlockAccessMod(this));
         addClassMod(new BaseMod.TessellatorMod(this));
         addClassMod(new BlockMod());
+        addClassMod(new BlockCauldronMod());
 
         addClassMod(new BiomeGenBaseMod());
         addClassMod(new BiomeGenSwampMod());
@@ -344,8 +345,6 @@ public class CustomColors extends Mod {
                 }
             }.setMethod(getRenderColor));
 
-            addBlockSignature("cauldron");
-
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
@@ -398,6 +397,25 @@ public class CustomColors extends Mod {
                     );
                 }
             }.targetMethod(getRenderColor));
+        }
+    }
+
+    private class BlockCauldronMod extends ClassMod {
+        BlockCauldronMod() {
+            setParentClass("Block");
+
+            addTexSignature("inner");
+            addTexSignature("top");
+            addTexSignature("bottom");
+            addTexSignature("side");
+            addClassSignature(new ConstSignature(0.3125f));
+        }
+
+        private void addTexSignature(String s) {
+            addClassSignature(new OrSignature(
+                new ConstSignature(s),
+                new ConstSignature("_" + s)
+            ));
         }
     }
 
