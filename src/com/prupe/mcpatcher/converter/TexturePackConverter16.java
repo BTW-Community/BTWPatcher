@@ -738,11 +738,16 @@ public class TexturePackConverter16 extends TexturePackConverter {
 
     public TexturePackConverter16(File input) {
         super(input);
-        File dir = new File(input.getParentFile().getParentFile(), "resourcepacks");
-        dir.mkdirs();
-        output = new File(dir, input.getName());
-        if (output.equals(input)) {
-            output = new File(dir, MCPATCHER_CONVERT_PREFIX + input.getName());
+        File dir;
+        try {
+            dir = new File(this.input.getParentFile().getParentFile(), "resourcepacks");
+            dir.mkdirs();
+        } catch (Throwable e) {
+            dir = new File(".");
+        }
+        output = new File(dir, this.input.getName());
+        if (output.equals(this.input)) {
+            output = new File(dir, MCPATCHER_CONVERT_PREFIX + this.input.getName());
         }
     }
 

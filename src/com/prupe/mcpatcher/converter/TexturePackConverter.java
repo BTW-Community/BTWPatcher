@@ -26,7 +26,7 @@ abstract public class TexturePackConverter {
     private final List<String> messages = new ArrayList<String>();
 
     protected TexturePackConverter(File input) {
-        this.input = input;
+        this.input = input.getAbsoluteFile();
     }
 
     public List<String> getMessages() {
