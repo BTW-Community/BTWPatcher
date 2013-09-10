@@ -282,6 +282,10 @@ public abstract class Mod {
         return inputStream;
     }
 
+    public void setApiVersion(String apiName, int version) {
+        MCPatcher.modList.properties.setProperty(apiName + Config.TAG_API_VERSION, String.valueOf(version));
+    }
+
     /**
      * Indicates that this mod <i>requires</i> another mod to function.  Whenever the specified
      * mod is unchecked in the GUI, this mod will be unchecked too.  Whenever this mod is checked

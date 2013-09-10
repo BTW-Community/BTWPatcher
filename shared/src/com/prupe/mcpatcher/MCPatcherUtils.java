@@ -25,6 +25,7 @@ public class MCPatcherUtils {
     private static boolean isGame;
     private static String minecraftVersion;
     private static String patcherVersion;
+    private static Properties patcherProperties;
 
     public static final String EXTENDED_HD = "Extended HD";
     public static final String HD_TEXTURES = "HD Textures";
@@ -519,5 +520,43 @@ public class MCPatcherUtils {
             a[i] = tmpList.get(i);
         }
         return a;
+    }
+
+    private static Properties getPatcherProperties() {
+        if (patcherProperties == null) {
+            patcherProperties = new Properties();
+            InputStream input = null;
+            try {
+                input = MCPatcherUtils.class.getResourceAsStream(Config.MCPATCHER_PROPERTIES);
+                if (input == null) {
+                    System.out.printf("ERROR: could not read %s\n", Config.MCPATCHER_PROPERTIES);
+                }
+                readProperties(input, patcherProperties);
+            } finally {
+                close(input);
+            }
+        }
+        return patcherProperties;
+    }
+
+    public static <T> T getAPI(Class<T> baseClass, String apiName, String prefix) {
+        String propertyName = apiName + Config.TAG_API_VERSION;
+        int apiVersion = getIntProperty(getPatcherProperties(), propertyName, 0);
+        if (apiVersion <= 0) {
+            System.out.printf("ERROR: could not get %s from %s\n", propertyName, Config.MCPATCHER_PROPERTIES);
+            return null;
+        }
+        String className = baseClass.getCanonicalName() + prefix + apiVersion;
+        try {
+            Class<? extends T> apiClass = Class.forName(className).asSubclass(baseClass);
+            return apiClass.newInstance();
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static <T> T getAPI(Class<T> baseClass, String apiName) {
+        return getAPI(baseClass, apiName, "$V");
     }
 }

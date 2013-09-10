@@ -926,7 +926,7 @@ final public class MCPatcher {
     }
 
     private static void writeProperties() throws IOException {
-        Properties properties = new Properties();
+        Properties properties = modList.properties;
         properties.setProperty(Config.TAG_MINECRAFT_VERSION, minecraft.getVersion().getVersionString());
         properties.setProperty(Config.TAG_PATCHER_VERSION, MCPatcher.VERSION_STRING);
         modifiedClasses.addAll(conflictClasses);
