@@ -28,6 +28,11 @@ public class World implements IBlockAccess {
         return 0;
     }
 
+    @Override
+    public Block getBlockAt(int i, int j, int k) {
+        return null;
+    }
+
     public int getBlockLightValue(int x, int y, int z) {
         return 0;
     }

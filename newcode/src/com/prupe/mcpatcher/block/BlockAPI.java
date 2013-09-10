@@ -77,4 +77,36 @@ abstract public class BlockAPI {
             return Block.blocksList.length;
         }
     }
+
+    final private static class V2 extends BlockAPI {
+        @Override
+        protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
+            return blockAccess.getBlockAt(i, j, k);
+        }
+
+        @Override
+        protected int getBlockIdAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
+            return getBlockId_Impl(getBlockAt_Impl(blockAccess, i, j, k));
+        }
+
+        @Override
+        protected Block getBlockById_Impl(int id) {
+            return null;
+        }
+
+        @Override
+        protected Block getBlockByCanonicalId_Impl(int id) {
+            return null;
+        }
+
+        @Override
+        protected int getBlockId_Impl(Block block) {
+            return 0;
+        }
+
+        @Override
+        protected int getNumBlocks_Impl() {
+            return 4096;
+        }
+    }
 }

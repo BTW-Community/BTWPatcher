@@ -5,7 +5,9 @@ public interface IBlockAccess {
 
     public WorldChunkManager getWorldChunkManager(); // 1.1 and below
 
-    public int getBlockId(int i, int j, int k);
+    public int getBlockId(int i, int j, int k); // pre-13w36a
+
+    public Block getBlockAt(int i, int j, int k); // 13w36a+
 
     public int getBlockMetadata(int i, int j, int k);
 }
