@@ -96,6 +96,7 @@ class ModList {
             register(new BuiltInMod(MCPatcherUtils.BASE_TEXTURE_PACK_MOD, "com.prupe.mcpatcher.mod.BaseTexturePackMod", loader).setInternal(true));
             register(new BuiltInMod(MCPatcherUtils.BASE_TILESHEET_MOD, "com.prupe.mcpatcher.mod.BaseTilesheetMod", loader).setInternal(true));
             register(new BuiltInMod(MCPatcherUtils.NBT_MOD, "com.prupe.mcpatcher.mod.NBTMod", loader).setInternal(true));
+            register(new BuiltInMod(MCPatcherUtils.BLOCK_API_MOD, "com.prupe.mcpatcher.api.BlockAPIMod", loader).setInternal(true));
             register(new BuiltInMod(MCPatcherUtils.EXTENDED_HD, "com.prupe.mcpatcher.mod.ExtendedHD", loader));
             register(new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, "com.prupe.mcpatcher.mod.RandomMobs", loader));
             register(new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, "com.prupe.mcpatcher.mod.CustomColors", loader));
