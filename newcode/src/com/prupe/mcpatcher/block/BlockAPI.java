@@ -15,6 +15,10 @@ abstract public class BlockAPI {
         return instance.getBlockIdAt_Impl(blockAccess, i, j, k);
     }
 
+    public static Block getBlockById(int id) {
+        return instance.getBlockById_Impl(id);
+    }
+
     public static Block getBlockByCanonicalId(int id) {
         return instance.getBlockByCanonicalId_Impl(id);
     }
@@ -30,7 +34,9 @@ abstract public class BlockAPI {
     abstract protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k);
     
     abstract protected int getBlockIdAt_Impl(IBlockAccess blockAccess, int i, int j, int k);
-    
+
+    abstract protected Block getBlockById_Impl(int id);
+
     abstract protected Block getBlockByCanonicalId_Impl(int id);
     
     abstract protected int getBlockId_Impl(Block block);
@@ -49,6 +55,11 @@ abstract public class BlockAPI {
         @Override
         protected int getBlockIdAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
             return blockAccess.getBlockId(i, j, k); 
+        }
+
+        @Override
+        protected Block getBlockById_Impl(int id) {
+            return Block.blocksList[id];
         }
 
         @Override
