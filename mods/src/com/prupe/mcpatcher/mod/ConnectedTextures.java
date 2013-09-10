@@ -220,7 +220,6 @@ public class ConnectedTextures extends Mod {
         private final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;III)Z");
         private final MethodRef renderStandardBlockWithColorMultiplier = new MethodRef(getDeobfClass(), "renderStandardBlockWithColorMultiplier", "(LBlock;IIIFFF)Z");
         private final MethodRef hasOverrideTexture = new MethodRef(getDeobfClass(), "hasOverrideTexture", "()Z");
-        private final MethodRef drawCrossedSquares = new MethodRef(getDeobfClass(), "drawCrossedSquares", "(LBlock;IDDDF)V");
         private final MethodRef renderBlockPane = new MethodRef(getDeobfClass(), "renderBlockPane", "(LBlockPane;III)Z");
         private final MethodRef renderBlockBrewingStand = new MethodRef(getDeobfClass(), "renderBlockBrewingStand", "(LBlockBrewingStand;III)Z");
         private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
@@ -282,6 +281,11 @@ public class ConnectedTextures extends Mod {
             setupFastGrass();
             setupStandardBlocks();
             setupNonStandardBlocks();
+            if (haveBlockRegistry) {
+                setupCrossedSquares17();
+            } else {
+                setupCrossedSquares16();
+            }
             setupGlassPanes();
             setupHeldBlocks();
         }
@@ -748,7 +752,6 @@ public class ConnectedTextures extends Mod {
         }
 
         private void setupNonStandardBlocks() {
-            addMemberMapper(new MethodMapper(drawCrossedSquares));
             mapRenderTypeMethod(25, renderBlockBrewingStand);
 
             addPatch(new RenderBlocksPatch() {
@@ -797,6 +800,12 @@ public class ConnectedTextures extends Mod {
                     return getTileNoFace;
                 }
             });
+        }
+
+        private void setupCrossedSquares16() {
+            final MethodRef drawCrossedSquares = new MethodRef(getDeobfClass(), "drawCrossedSquares", "(LBlock;IDDDF)V");
+
+            addMemberMapper(new MethodMapper(drawCrossedSquares));
 
             addPatch(new RenderBlocksPatch() {
                 @Override
@@ -821,6 +830,14 @@ public class ConnectedTextures extends Mod {
                     return getTileNoFace;
                 }
             }.targetMethod(drawCrossedSquares));
+        }
+
+        private void setupCrossedSquares17() {
+            final MethodRef drawCrossedSquares = new MethodRef(getDeobfClass(), "drawCrossedSquares", "(LIcon;DDDF)V");
+
+            addMemberMapper(new MethodMapper(drawCrossedSquares));
+
+            // TODO: new patch
         }
 
         private void setupGlassPanes() {
