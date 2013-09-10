@@ -490,10 +490,16 @@ public final class BaseMod extends Mod {
      * Matches IBlockAccess interface and maps getBlockId, getBlockMetadata methods.
      */
     public static class IBlockAccessMod extends com.prupe.mcpatcher.ClassMod {
+        protected final boolean haveBlockRegistry;
+
         public IBlockAccessMod(Mod mod) {
             super(mod);
+            haveBlockRegistry = getMinecraftVersion().compareTo("13w36a") >= 0;
+
             addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "getBlockId", "(III)I"),
+                haveBlockRegistry ?
+                    new InterfaceMethodRef(getDeobfClass(), "getBlock", "(III)LBlock;") :
+                    new InterfaceMethodRef(getDeobfClass(), "getBlockId", "(III)I"),
                 new InterfaceMethodRef(getDeobfClass(), "getBlockTileEntity", "(III)LTileEntity;"),
                 new InterfaceMethodRef(getDeobfClass(), "getLightBrightnessForSkyBlocks", "(IIII)I"),
                 new InterfaceMethodRef(getDeobfClass(), "getBrightness", "(IIII)F"),
@@ -517,7 +523,7 @@ public final class BaseMod extends Mod {
      * Matches Block class and maps blockID and blockList fields.
      */
     public static class BlockMod extends com.prupe.mcpatcher.ClassMod {
-        protected final boolean haveBlockRegistery;
+        protected final boolean haveBlockRegistry;
 
         private static final ArrayList<BlockSubclassEntry> subclasses = new ArrayList<BlockSubclassEntry>() {
             {
@@ -701,9 +707,9 @@ public final class BaseMod extends Mod {
 
         public BlockMod(Mod mod) {
             super(mod);
-            haveBlockRegistery = getMinecraftVersion().compareTo("13w36a") >= 0;
+            haveBlockRegistry = getMinecraftVersion().compareTo("13w36a") >= 0;
 
-            if (haveBlockRegistery) {
+            if (haveBlockRegistry) {
                 addClassSignature(new ConstSignature("minecraft:stone"));
                 addClassSignature(new ConstSignature("minecraft:grass"));
                 addClassSignature(new ConstSignature("minecraft:dirt"));
