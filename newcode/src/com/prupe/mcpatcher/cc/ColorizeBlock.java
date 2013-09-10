@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.block.BlockAPI;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.ResourceLocation;
@@ -36,7 +37,7 @@ public class ColorizeBlock {
     private static final int BLOCK_ID_PUMPKIN_STEM = 104;
     private static final int BLOCK_ID_MELON_STEM = 105;
 
-    private static final ColorMap[] blockColorMaps = new ColorMap[Block.blocksList.length]; // bitmaps from palette.block.*
+    private static final ColorMap[] blockColorMaps = new ColorMap[BlockAPI.getNumBlocks()]; // bitmaps from palette.block.*
     private static final Map<Float, ColorMap> blockMetaColorMaps = new HashMap<Float, ColorMap>(); // bitmaps from palette.block.*
     private static int lilypadColor; // lilypad
     private static float[][] redstoneColor; // colormap/redstone.png

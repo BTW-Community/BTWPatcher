@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.ctm;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.block.BlockAPI;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
@@ -12,8 +13,8 @@ public class RenderPass {
 
     private static final ResourceLocation RENDERPASS_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("renderpass.properties");
 
-    private static final int[] baseRenderPass = new int[Block.blocksList.length];
-    private static final int[] extraRenderPass = new int[Block.blocksList.length];
+    private static final int[] baseRenderPass = new int[BlockAPI.getNumBlocks()];
+    private static final int[] extraRenderPass = new int[BlockAPI.getNumBlocks()];
 
     private static BlendMethod blendMethod;
     private static boolean enableLightmap;
@@ -43,8 +44,8 @@ public class RenderPass {
                 Arrays.fill(baseRenderPass, -1);
                 Arrays.fill(extraRenderPass, -1);
 
-                for (int i = 0; i < Block.blocksList.length; i++) {
-                    Block block = Block.blocksList[i];
+                for (int i = 0; i < BlockAPI.getNumBlocks(); i++) {
+                    Block block = BlockAPI.getBlockById(i);
                     if (block != null) {
                         baseRenderPass[i] = block.getRenderBlockPass();
                     }

@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.ctm;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.block.BlockAPI;
 import net.minecraft.src.*;
 
 import java.util.*;
@@ -19,7 +20,7 @@ public class CTMUtils {
     static final int BLOCK_ID_CRAFTED_SNOW = 80;
 
     private static final List<ITileOverride> allOverrides = new ArrayList<ITileOverride>();
-    private static final ITileOverride blockOverrides[][] = new ITileOverride[Block.blocksList.length][];
+    private static final ITileOverride blockOverrides[][] = new ITileOverride[BlockAPI.getNumBlocks()][];
     private static final Map<String, ITileOverride[]> tileOverrides = new HashMap<String, ITileOverride[]>();
     private static TileLoader tileLoader;
     private static TileOverrideImpl.BetterGrass betterGrass;
@@ -64,10 +65,10 @@ public class CTMUtils {
                     override.registerIcons();
                 }
                 for (int i = 0; i < blockOverrides.length; i++) {
-                    if (blockOverrides[i] != null && Block.blocksList[i] != null) {
+                    if (blockOverrides[i] != null && BlockAPI.getBlockById(i) != null) {
                         for (ITileOverride override : blockOverrides[i]) {
                             if (override != null && !override.isDisabled() && override.getRenderPass() >= 0) {
-                                RenderPassAPI.instance.setRenderPassForBlock(Block.blocksList[i], override.getRenderPass());
+                                RenderPassAPI.instance.setRenderPassForBlock(BlockAPI.getBlockById(i), override.getRenderPass());
                             }
                         }
                     }

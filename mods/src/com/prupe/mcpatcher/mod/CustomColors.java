@@ -67,6 +67,7 @@ public class CustomColors extends Mod {
         version = "1.6";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
+        addDependency(MCPatcherUtils.BLOCK_API_MOD);
 
         configPanel = new ConfigPanel();
 

@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.TileLoader;
+import com.prupe.mcpatcher.block.BlockAPI;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.Icon;
@@ -242,9 +243,9 @@ abstract class TileOverride implements ITileOverride {
             error("no images found in %s/", texturesDirectory);
         }
 
-        String[] mappings = new String[Block.blocksList.length];
-        for (int i = 0; i < Block.blocksList.length; i++) {
-            Block block = Block.blocksList[i];
+        String[] mappings = new String[BlockAPI.getNumBlocks()];
+        for (int i = 0; i < BlockAPI.getNumBlocks(); i++) {
+            Block block = BlockAPI.getBlockById(i);
             if (block != null) {
                 mappings[i] = block.getShortName();
             }
@@ -530,9 +531,9 @@ abstract class TileOverride implements ITileOverride {
         i += offset[0];
         j += offset[1];
         k += offset[2];
-        int neighborID = blockAccess.getBlockId(i, j, k);
+        int neighborID = BlockAPI.getBlockIdAt(blockAccess, i, j, k);
         int neighborMeta = blockAccess.getBlockMetadata(i, j, k);
-        Block neighbor = Block.blocksList[neighborID];
+        Block neighbor = BlockAPI.getBlockAt(blockAccess, i, j, k);
         if (exclude(neighbor, face, neighborMeta)) {
             return false;
         }
