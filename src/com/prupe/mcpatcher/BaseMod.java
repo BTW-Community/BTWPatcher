@@ -1469,6 +1469,7 @@ public final class BaseMod extends Mod {
                             reference(GETFIELD, data),
                             ILOAD_1,
                             reference(INVOKEINTERFACE, listGet),
+                            reference(CHECKCAST, new ClassRef("NBTBase")),
                             ARETURN
                         );
                     }
