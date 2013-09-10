@@ -385,7 +385,7 @@ public class RandomMobs extends Mod {
             setParentClass("RenderLiving");
 
             final FieldRef renderBlocks = new FieldRef(getDeobfClass(), "renderBlocks", "LRenderBlocks;");
-            final FieldRef mushroomRed = new FieldRef("Block", "mushroomRed", "LBlockFlower;");
+            final FieldRef mushroomRed = new FieldRef("BlockList", "mushroomRed", "LBlockFlower;");
             final FieldRef blocksAtlas = new FieldRef("TextureAtlas", "blocks", "LResourceLocation;");
             final MethodRef renderEquippedItems = new MethodRef(getDeobfClass(), "renderEquippedItems1", "(LEntityMooshroom;F)V");
             final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceLocation;)V");
@@ -413,7 +413,7 @@ public class RandomMobs extends Mod {
                         // ...
                         any(0, 100),
 
-                        // renderBlocks.renderBlockAsItem(Block.mushroomRed, 0, 1.0f);
+                        // renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
                         ALOAD_0,
                         captureReference(GETFIELD),
                         captureReference(GETSTATIC),

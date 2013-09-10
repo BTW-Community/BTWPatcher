@@ -15,6 +15,8 @@ public class ConnectedTextures extends Mod {
     private final MethodRef startCTM = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "start", "()V");
     private final MethodRef finishCTM = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "finish", "()V");
 
+    private final boolean haveBlockRegistery;
+
     public ConnectedTextures() {
         name = MCPatcherUtils.CONNECTED_TEXTURES;
         author = "MCPatcher";
@@ -25,6 +27,8 @@ public class ConnectedTextures extends Mod {
         addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
 
         configPanel = new ConfigPanel();
+
+        haveBlockRegistery = getMinecraftVersion().compareTo("13w36a") >= 0;
 
         addClassMod(new BaseMod.IBlockAccessMod(this));
         addClassMod(new BaseMod.TessellatorMod(this));
@@ -152,6 +156,7 @@ public class ConnectedTextures extends Mod {
             final InterfaceMethodRef getBlockMetadata = new InterfaceMethodRef("IBlockAccess", "getBlockMetadata", "(III)I");
             final MethodRef getBlockIconFromSideAndMetadata = new MethodRef(getDeobfClass(), "getBlockIconFromSideAndMetadata", "(II)LIcon;");
             final MethodRef getShortName = new MethodRef(getDeobfClass(), "getShortName", "()Ljava/lang/String;");
+            final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(" + (haveBlockRegistery ? "" : "I") + "LMaterial;)V");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -180,12 +185,14 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push(" is already occupied by ")
+                        ALOAD_0,
+                        haveBlockRegistery ? ALOAD_1 : ALOAD_2,
+                        captureReference(PUTFIELD)
                     );
                 }
             }
-                .matchConstructorOnly(true)
-                .setMethod(new MethodRef(getDeobfClass(), "<init>", "(ILMaterial;)V"))
+                .setMethod(constructor)
+                .addXref(1, blockMaterial)
             );
 
             addClassSignature(new BytecodeSignature() {
