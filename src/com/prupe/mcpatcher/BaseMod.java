@@ -555,14 +555,14 @@ public final class BaseMod extends Mod {
                 add(new BlockSubclassEntry(32, "BlockDeadBush", "deadBush", "BlockDeadBush", "deadbush"));
                 add(new BlockSubclassEntry(33, "BlockPistonBase", "pistonBase", "BlockPistonBase", "pistonBase"));
                 add(new BlockSubclassEntry(34, "BlockPistonExtension", "pistonExtension", "BlockPistonExtension", "unnamedBlock34"));
-                add(new BlockSubclassEntry(35, "Block", "cloth", "BlockCloth", "cloth"));
+                add(new BlockSubclassEntry(35, "Block", "cloth", "BlockColored", "cloth"));
                 add(new BlockSubclassEntry(36, "BlockPistonMoving", "pistonMoving", "BlockPistonMoving", "unnamedBlock36"));
                 add(new BlockSubclassEntry(37, "BlockFlower", "plantYellow", "BlockFlower", "flower"));
                 add(new BlockSubclassEntry(38, "BlockFlower", "plantRed", "BlockFlower", "rose"));
                 add(new BlockSubclassEntry(39, "BlockFlower", "mushroomBrown", "BlockMushroom", "mushroom"));
                 add(new BlockSubclassEntry(40, "BlockFlower", "mushroomRed", "BlockMushroom", "mushroom"));
                 add(new BlockSubclassEntry(41, "Block", "blockGold", "BlockOreStorage", "blockGold"));
-                add(new BlockSubclassEntry(42, "Block", "blockSteel", "BlockOreStorage", "blockIron"));
+                add(new BlockSubclassEntry(42, "Block", "blockIron", "BlockOreStorage", "blockIron"));
                 add(new BlockSubclassEntry(43, "BlockHalfSlab", "stoneDoubleSlab", "BlockStep", "stoneSlab"));
                 add(new BlockSubclassEntry(44, "BlockHalfSlab", "stoneSingleSlab", "BlockStep", "stoneSlab"));
                 add(new BlockSubclassEntry(45, "Block", "brick", "Block", "brick"));
@@ -573,7 +573,7 @@ public final class BaseMod extends Mod {
                 add(new BlockSubclassEntry(50, "Block", "torchWood", "BlockTorch", "torch"));
                 add(new BlockSubclassEntry(51, "BlockFire", "fire", "BlockFire", "fire"));
                 add(new BlockSubclassEntry(52, "Block", "mobSpawner", "BlockMobSpawner", "mobSpawner"));
-                add(new BlockSubclassEntry(53, "Block", "stairCompactPlanks", "BlockStairs", "stairsWood"));
+                add(new BlockSubclassEntry(53, "Block", "stairsWoodOak", "BlockStairs", "stairsWood"));
                 add(new BlockSubclassEntry(54, "BlockChest", "chest", "BlockChest", "chest"));
                 add(new BlockSubclassEntry(55, "BlockRedstoneWire", "redstoneWire", "BlockRedstoneWire", "redstoneDust"));
                 add(new BlockSubclassEntry(56, "Block", "oreDiamond", "BlockOre", "oreDiamond"));
@@ -581,17 +581,17 @@ public final class BaseMod extends Mod {
                 add(new BlockSubclassEntry(58, "Block", "workbench", "BlockWorkbench", "workbench"));
                 add(new BlockSubclassEntry(59, "Block", "crops", "BlockCrops", "crops"));
                 add(new BlockSubclassEntry(60, "Block", "tilledField", "BlockFarmland", "farmland"));
-                add(new BlockSubclassEntry(61, "Block", "stoneOvenIdle", "BlockFurnace", "furnace"));
-                add(new BlockSubclassEntry(62, "Block", "stoneOvenActive", "BlockFurnace", "furnace"));
+                add(new BlockSubclassEntry(61, "Block", "furnaceIdle", "BlockFurnace", "furnace"));
+                add(new BlockSubclassEntry(62, "Block", "furnaceBurning", "BlockFurnace", "furnace"));
                 add(new BlockSubclassEntry(63, "Block", "signPost", "BlockSign", "sign"));
                 add(new BlockSubclassEntry(64, "Block", "doorWood", "BlockDoor", "doorWood"));
                 add(new BlockSubclassEntry(65, "Block", "ladder", "BlockLadder", "ladder"));
                 add(new BlockSubclassEntry(66, "Block", "rail", "BlockRail", "rail"));
-                add(new BlockSubclassEntry(67, "Block", "stairCompactCobblestone", "BlockStairs", "stairsStone"));
+                add(new BlockSubclassEntry(67, "Block", "stairsCobblestone", "BlockStairs", "stairsStone"));
                 add(new BlockSubclassEntry(68, "Block", "signWall", "BlockSign", "sign"));
                 add(new BlockSubclassEntry(69, "Block", "lever", "BlockLever", "lever"));
                 add(new BlockSubclassEntry(70, "Block", "pressurePlateStone", "BlockPressurePlate", "pressurePlate"));
-                add(new BlockSubclassEntry(71, "Block", "doorSteel", "BlockDoor", "doorIron"));
+                add(new BlockSubclassEntry(71, "Block", "doorIron", "BlockDoor", "doorIron"));
                 add(new BlockSubclassEntry(72, "Block", "pressurePlatePlanks", "BlockPressurePlate", "pressurePlate"));
                 add(new BlockSubclassEntry(73, "Block", "oreRedstone", "BlockRedstoneOre", "oreRedstone"));
                 add(new BlockSubclassEntry(74, "Block", "oreRedstoneGlowing", "BlockRedstoneOre", "oreRedstone"));
@@ -629,7 +629,7 @@ public final class BaseMod extends Mod {
                 add(new BlockSubclassEntry(106, "Block", "vine", "BlockVine", "vine"));
                 add(new BlockSubclassEntry(107, "Block", "fenceGate", "BlockFenceGate", "fenceGate"));
                 add(new BlockSubclassEntry(108, "Block", "stairsBrick", "BlockStairs", "stairsBrick"));
-                add(new BlockSubclassEntry(109, "Block", "stairsStoneBrickSmooth", "BlockStairs", "stairsStoneBrickSmooth"));
+                add(new BlockSubclassEntry(109, "Block", "stairsStoneBrick", "BlockStairs", "stairsStoneBrickSmooth"));
                 add(new BlockSubclassEntry(110, "BlockMycelium", "mycelium", "BlockMycelium", "mycel"));
                 add(new BlockSubclassEntry(111, "Block", "waterlily", "BlockLilyPad", "waterlily"));
                 add(new BlockSubclassEntry(112, "Block", "netherBrick", "Block", "netherBrick"));
@@ -666,18 +666,34 @@ public final class BaseMod extends Mod {
                 add(new BlockSubclassEntry(143, "Block", "woodenButton", "BlockButtonWood", "button"));
                 add(new BlockSubclassEntry(144, "Block", "skull", "BlockSkull", "skull"));
                 add(new BlockSubclassEntry(145, "Block", "anvil", "BlockAnvil", "anvil"));
-                add(new BlockSubclassEntry(146, "Block", "chestTrap", "BlockChest", "chestTrap"));
-                add(new BlockSubclassEntry(147, "Block", "weightedPlate_light", "BlockPressurePlateWeighted", "weightedPlate_light"));
-                add(new BlockSubclassEntry(148, "Block", "weightedPlate_heavy", "BlockPressurePlateWeighted", "weightedPlate_heavy"));
-                add(new BlockSubclassEntry(149, "BlockComparator", "comparator1", "BlockComparator", "comparator"));
-                add(new BlockSubclassEntry(150, "BlockComparator", "comparator2", "BlockComparator", "comparator"));
-                add(new BlockSubclassEntry(151, "BlockDaylightDetector", "daylightDetector", "BlockDaylightDetector", "daylightDetector"));
+                add(new BlockSubclassEntry(146, "Block", "chestTrapped", "BlockChest", "chestTrap"));
+                add(new BlockSubclassEntry(147, "Block", "pressurePlateGold", "BlockPressurePlateWeighted", "weightedPlate_light"));
+                add(new BlockSubclassEntry(148, "Block", "pressurePlateIron", "BlockPressurePlateWeighted", "weightedPlate_heavy"));
+                add(new BlockSubclassEntry(149, "BlockComparator", "redstoneComparatorIdle", "BlockComparator", "comparator"));
+                add(new BlockSubclassEntry(150, "BlockComparator", "redstoneComparatorActive", "BlockComparator", "comparator"));
+                add(new BlockSubclassEntry(151, "BlockDaylightDetector", "daylightSensor", "BlockDaylightDetector", "daylightDetector"));
                 add(new BlockSubclassEntry(152, "Block", "blockRedstone", "BlockPoweredOre", "blockRedstone"));
-                add(new BlockSubclassEntry(153, "Block", "netherquartz", "BlockOre", "netherquartz"));
-                add(new BlockSubclassEntry(154, "BlockHopper", "hopper", "BlockHopper", "hopper"));
-                add(new BlockSubclassEntry(155, "Block", "quartzBlock", "BlockQuartz", "quartzBlock"));
-                add(new BlockSubclassEntry(156, "Block", "stairsQuartz", "BlockStairs", "stairsQuartz"));
-                add(new BlockSubclassEntry(157, "Block", "activatorRail", "BlockRailPowered", "activatorRail"));
+                add(new BlockSubclassEntry(153, "Block", "oreNetherQuartz", "BlockOre", "netherquartz"));
+                add(new BlockSubclassEntry(154, "BlockHopper", "hopperBlock", "BlockHopper", "hopper"));
+                add(new BlockSubclassEntry(155, "Block", "blockNetherQuartz", "BlockQuartz", "quartzBlock"));
+                add(new BlockSubclassEntry(156, "Block", "stairsNetherQuartz", "BlockStairs", "stairsQuartz"));
+                add(new BlockSubclassEntry(157, "Block", "railActivator", "BlockRailPowered", "activatorRail"));
+                add(new BlockSubclassEntry(158, "Block", "dropper", "BlockDropper", "dropper"));
+                add(new BlockSubclassEntry(159, "Block", "clayHardenedStained", "BlockColored", "clayHardenedStained"));
+                // block id 160
+                // block id 161
+                // block id 162
+                // block id 163
+                // block id 164
+                // block id 165
+                // block id 166
+                // block id 167
+                // block id 168
+                // block id 169
+                add(new BlockSubclassEntry(170, "Block", "hayBlock", "BlockHay", "hayBlock"));
+                add(new BlockSubclassEntry(171, "Block", "woolCarpet", "BlockCarpet", "woolCarpet"));
+                add(new BlockSubclassEntry(172, "Block", "clayHardened", "Block", "clayHardened"));
+                add(new BlockSubclassEntry(173, "Block", "blockCoal", "Block", "blockCoal"));
             }
         };
 
