@@ -1,8 +1,6 @@
 package com.prupe.mcpatcher.api;
 
-import com.prupe.mcpatcher.BaseMod;
-import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.Mod;
+import com.prupe.mcpatcher.*;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -24,8 +22,12 @@ public class BlockAPIMod extends Mod {
         version = String.valueOf(apiVersion) + ".0";
         setApiVersion("block", apiVersion);
 
-        addClassMod(new BaseMod.BlockMod(this));
+        addClassMod(new BlockMod());
         addClassMod(new BaseMod.IBlockAccessMod(this));
+        if (apiVersion >= 2) {
+            addClassMod(new RegistryBaseMod());
+            addClassMod(new RegistryMod());
+        }
 
         addClassFile(MCPatcherUtils.BLOCK_API_CLASS);
         addClassFile(MCPatcherUtils.BLOCK_API_CLASS + "$V" + apiVersion);
@@ -34,5 +36,43 @@ public class BlockAPIMod extends Mod {
     @Override
     public String[] getLoggingCategories() {
         return null;
+    }
+
+    private class BlockMod extends BaseMod.BlockMod {
+        BlockMod() {
+            super(BlockAPIMod.this);
+
+            if (apiVersion == 1) {
+                return;
+            }
+
+            final FieldRef blockRegistry = new FieldRef(getDeobfClass(), "blockRegistry", "LRegistry;");
+
+            addMemberMapper(new FieldMapper(blockRegistry));
+        }
+    }
+
+    private class RegistryBaseMod extends ClassMod {
+        RegistryBaseMod() {
+            addClassSignature(new InterfaceSignature(
+                new MethodRef(getDeobfClass(), "<init>", "()V"),
+                new MethodRef(getDeobfClass(), "newHashMap", "()Ljava/util/HashMap;"),
+                new MethodRef(getDeobfClass(), "get", "(Ljava/lang/Object;)Ljava/lang/Object;"),
+                new MethodRef(getDeobfClass(), "put", "(Ljava/lang/Object;Ljava/lang/Object;)V"),
+                new MethodRef(getDeobfClass(), "getKeys", "()Ljava/util/Set;")
+            ).setInterfaceOnly(false));
+        }
+    }
+
+    private class RegistryMod extends ClassMod {
+        RegistryMod() {
+            addClassSignature(new InterfaceSignature(
+                new MethodRef(getDeobfClass(), "<init>", "()V"),
+                new MethodRef(getDeobfClass(), "register", "(ILjava/lang/String;Ljava/lang/Object;)V"),
+                new MethodRef(getDeobfClass(), "getId", "(Ljava/lang/Object;)I"),
+                new MethodRef(getDeobfClass(), "getById", "(I)Ljava/lang/Object;"),
+                new MethodRef(getDeobfClass(), "getAll", "()Ljava/util/List;")
+            ).setInterfaceOnly(false));
+        }
     }
 }

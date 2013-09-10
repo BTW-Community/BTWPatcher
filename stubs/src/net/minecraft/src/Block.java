@@ -1,8 +1,9 @@
 package net.minecraft.src;
 
 public class Block {
-    public static Block blocksList[];
-    public static int lightValue[];
+    public static Registry<Block> blockRegistry; // 13w36a+
+
+    public static Block blocksList[]; // pre-13w36a
 
     public int blockID;
     public Material blockMaterial;
