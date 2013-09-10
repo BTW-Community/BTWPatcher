@@ -6,6 +6,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -530,9 +531,9 @@ public class MCPatcherUtils {
             patcherProperties = new Properties();
             InputStream input = null;
             try {
-                input = MCPatcherUtils.class.getResourceAsStream(Config.MCPATCHER_PROPERTIES);
+                input = MCPatcherUtils.class.getResourceAsStream("/" + Config.MCPATCHER_PROPERTIES);
                 if (input == null) {
-                    System.out.printf("ERROR: could not read %s\n", Config.MCPATCHER_PROPERTIES);
+                    System.out.printf("ERROR: could not read %s\n", "/" + Config.MCPATCHER_PROPERTIES);
                 }
                 readProperties(input, patcherProperties);
             } finally {
@@ -552,7 +553,9 @@ public class MCPatcherUtils {
         String className = baseClass.getCanonicalName() + prefix + apiVersion;
         try {
             Class<? extends T> apiClass = Class.forName(className).asSubclass(baseClass);
-            return apiClass.newInstance();
+            Constructor<? extends T> constructor = apiClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
         } catch (Throwable e) {
             e.printStackTrace();
         }
