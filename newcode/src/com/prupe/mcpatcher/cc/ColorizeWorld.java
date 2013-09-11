@@ -24,9 +24,6 @@ public class ColorizeWorld {
     private static final int CLOUDS_FANCY = 2;
     private static int cloudType = CLOUDS_DEFAULT;
 
-    private static final List<BiomeGenBase> biomes = new ArrayList<BiomeGenBase>();
-    private static boolean biomesLogged;
-
     private static Entity fogCamera;
 
     private static final Map<Integer, Integer> textColorMap = new HashMap<Integer, Integer>(); // text.*
@@ -111,20 +108,8 @@ public class ColorizeWorld {
         signTextColor = loadIntColor("text.sign", 0);
     }
 
-    public static void setupBiome(BiomeGenBase biome) {
-        biomes.add(biome);
-    }
-
     public static void setupForFog(Entity entity) {
         fogCamera = entity;
-        if (!biomesLogged) {
-            biomesLogged = true;
-            for (BiomeGenBase biome : biomes) {
-                int x = ColorMap.getX(biome.temperature, biome.rainfall);
-                int y = ColorMap.getY(biome.temperature, biome.rainfall);
-                logger.finer("setupBiome #%d \"%s\" %06x (%d,%d)", biome.biomeID, biome.biomeName, biome.waterColorMultiplier, x, y);
-            }
-        }
     }
 
     public static boolean computeFogColor(int index) {

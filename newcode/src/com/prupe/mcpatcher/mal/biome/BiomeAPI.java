@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher.mal.biome;
 
+import com.prupe.mcpatcher.MAL;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.client.Minecraft;
@@ -8,8 +9,9 @@ import net.minecraft.src.BiomeGenBase;
 import java.lang.reflect.Method;
 import java.util.BitSet;
 
-public class BiomeAPI {
+abstract public class BiomeAPI {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
+    private static final BiomeAPI instance = MAL.newInstance(BiomeAPI.class, "biome");
 
     private static Method getWaterColorMultiplier;
     private static BiomeGenBase lastBiome;
@@ -57,7 +59,7 @@ public class BiomeAPI {
     }
 
     public static float getTemperature(int i, int j, int k) {
-        return getBiomeGenAt(i, j, k).getTemperaturef();
+        return instance.getTemperaturef_Impl(getBiomeGenAt(i, j, k), i, j, k);
     }
 
     public static float getRainfall(int i, int j, int k) {
@@ -75,5 +77,30 @@ public class BiomeAPI {
             }
         }
         return biome.waterColorMultiplier;
+    }
+
+    public static void setupBiome(BiomeGenBase biome) {
+        int x = (int) (256.0f * (1.0f - biome.temperature));
+        int y = (int) (256.0f * (1.0f - biome.temperature * biome.rainfall));
+        logger.finer("setupBiome #%d \"%s\" %06x (%d,%d)", biome.biomeID, biome.biomeName, biome.waterColorMultiplier, x, y);
+    }
+
+    abstract protected float getTemperaturef_Impl(BiomeGenBase biome, int i, int j, int k);
+
+    BiomeAPI() {
+    }
+
+    final private static class V1 extends BiomeAPI {
+        @Override
+        protected float getTemperaturef_Impl(BiomeGenBase biome, int i, int j, int k) {
+            return biome.getTemperaturef();
+        }
+    }
+
+    final private static class V2 extends BiomeAPI {
+        @Override
+        protected float getTemperaturef_Impl(BiomeGenBase biome, int i, int j, int k) {
+            return biome.getTemperaturef(i, j, k);
+        }
     }
 }
