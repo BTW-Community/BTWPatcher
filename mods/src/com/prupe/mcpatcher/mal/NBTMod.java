@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher.mod;
+package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
 import javassist.bytecode.AccessFlag;

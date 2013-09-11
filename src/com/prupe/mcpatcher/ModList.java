@@ -93,11 +93,13 @@ class ModList {
                 File local = new File(Util.devDir, "out/artifacts/mods4/mods4.jar");
                 loader = new URLClassLoader(new URL[]{local.toURI().toURL()});
             }
-            register(new BuiltInMod(MCPatcherUtils.BASE_TEXTURE_PACK_MOD, "com.prupe.mcpatcher.mod.BaseTexturePackMod", loader).setInternal(true));
-            register(new BuiltInMod(MCPatcherUtils.BASE_TILESHEET_MOD, "com.prupe.mcpatcher.mod.BaseTilesheetMod", loader).setInternal(true));
-            register(new BuiltInMod(MCPatcherUtils.NBT_MOD, "com.prupe.mcpatcher.mod.NBTMod", loader).setInternal(true));
+
+            register(new BuiltInMod(MCPatcherUtils.BASE_TEXTURE_PACK_MOD, "com.prupe.mcpatcher.mal.BaseTexturePackMod", loader).setInternal(true));
+            register(new BuiltInMod(MCPatcherUtils.BASE_TILESHEET_MOD, "com.prupe.mcpatcher.mal.BaseTilesheetMod", loader).setInternal(true));
+            register(new BuiltInMod(MCPatcherUtils.NBT_MOD, "com.prupe.mcpatcher.mal.NBTMod", loader).setInternal(true));
             register(new BuiltInMod(MCPatcherUtils.BLOCK_API_MOD, "com.prupe.mcpatcher.mal.BlockAPIMod", loader).setInternal(true));
             register(new BuiltInMod(MCPatcherUtils.ITEM_API_MOD, "com.prupe.mcpatcher.mal.ItemAPIMod", loader).setInternal(true));
+
             register(new BuiltInMod(MCPatcherUtils.EXTENDED_HD, "com.prupe.mcpatcher.mod.ExtendedHD", loader));
             register(new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, "com.prupe.mcpatcher.mod.RandomMobs", loader));
             register(new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, "com.prupe.mcpatcher.mod.CustomColors", loader));
