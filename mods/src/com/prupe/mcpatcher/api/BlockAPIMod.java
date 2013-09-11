@@ -66,6 +66,8 @@ public class BlockAPIMod extends Mod {
 
     private class RegistryMod extends ClassMod {
         RegistryMod() {
+            setParentClass("RegistryBase");
+
             addClassSignature(new InterfaceSignature(
                 new MethodRef(getDeobfClass(), "<init>", "()V"),
                 new MethodRef(getDeobfClass(), "register", "(ILjava/lang/String;Ljava/lang/Object;)V"),
