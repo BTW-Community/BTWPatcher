@@ -6,7 +6,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,6 +55,7 @@ public class MCPatcherUtils {
     public static final String JSON_UTILS_CLASS = "com.prupe.mcpatcher.JsonUtils";
     public static final String PROFILER_API_CLASS = "com.prupe.mcpatcher.ProfilerAPI";
     public static final String INPUT_HANDLER_CLASS = "com.prupe.mcpatcher.InputHandler";
+    public static final String MAL_CLASS = "com.prupe.mcpatcher.MAL";
 
     public static final String TEXTURE_PACK_API_CLASS = "com.prupe.mcpatcher.TexturePackAPI";
     public static final String TEXTURE_PACK_CHANGE_HANDLER_CLASS = "com.prupe.mcpatcher.TexturePackChangeHandler";
@@ -526,14 +526,14 @@ public class MCPatcherUtils {
         return a;
     }
 
-    private static Properties getPatcherProperties() {
+    static Properties getPatcherProperties() {
         if (patcherProperties == null) {
             patcherProperties = new Properties();
             InputStream input = null;
             try {
                 input = MCPatcherUtils.class.getResourceAsStream("/" + Config.MCPATCHER_PROPERTIES);
                 if (input == null) {
-                    System.out.printf("ERROR: could not read %s\n", "/" + Config.MCPATCHER_PROPERTIES);
+                    System.out.printf("ERROR: could not read /%s\n", Config.MCPATCHER_PROPERTIES);
                 }
                 readProperties(input, patcherProperties);
             } finally {
@@ -541,28 +541,5 @@ public class MCPatcherUtils {
             }
         }
         return patcherProperties;
-    }
-
-    public static <T> T getAPI(Class<T> baseClass, String apiName, String prefix) {
-        String propertyName = apiName + Config.TAG_API_VERSION;
-        int apiVersion = getIntProperty(getPatcherProperties(), propertyName, 0);
-        if (apiVersion <= 0) {
-            System.out.printf("ERROR: could not get %s from %s\n", propertyName, Config.MCPATCHER_PROPERTIES);
-            return null;
-        }
-        String className = baseClass.getCanonicalName() + prefix + apiVersion;
-        try {
-            Class<? extends T> apiClass = Class.forName(className).asSubclass(baseClass);
-            Constructor<? extends T> constructor = apiClass.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            return constructor.newInstance();
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static <T> T getAPI(Class<T> baseClass, String apiName) {
-        return getAPI(baseClass, apiName, "$V");
     }
 }

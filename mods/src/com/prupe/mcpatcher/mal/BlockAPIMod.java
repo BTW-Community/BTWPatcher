@@ -1,13 +1,9 @@
-package com.prupe.mcpatcher.api;
+package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
 
-import static com.prupe.mcpatcher.BinaryRegex.*;
-import static com.prupe.mcpatcher.BytecodeMatcher.*;
-import static javassist.bytecode.Opcode.*;
-
 public class BlockAPIMod extends Mod {
-    private final int apiVersion;
+    private final int malVersion;
 
     public BlockAPIMod() {
         name = MCPatcherUtils.BLOCK_API_MOD;
@@ -15,22 +11,22 @@ public class BlockAPIMod extends Mod {
         description = "Internal mod required by the patcher.";
 
         if (getMinecraftVersion().compareTo("13w36a") < 0) {
-            apiVersion = 1;
+            malVersion = 1;
         } else {
-            apiVersion = 2;
+            malVersion = 2;
         }
-        version = String.valueOf(apiVersion) + ".0";
-        setApiVersion("block", apiVersion);
+        version = String.valueOf(malVersion) + ".0";
+        setMALVersion("block", malVersion);
 
         addClassMod(new BlockMod());
         addClassMod(new BaseMod.IBlockAccessMod(this));
-        if (apiVersion >= 2) {
+        if (malVersion >= 2) {
             addClassMod(new RegistryBaseMod());
             addClassMod(new RegistryMod());
         }
 
         addClassFile(MCPatcherUtils.BLOCK_API_CLASS);
-        addClassFile(MCPatcherUtils.BLOCK_API_CLASS + "$V" + apiVersion);
+        addClassFile(MCPatcherUtils.BLOCK_API_CLASS + "$V" + malVersion);
     }
 
     @Override
@@ -42,7 +38,7 @@ public class BlockAPIMod extends Mod {
         BlockMod() {
             super(BlockAPIMod.this);
 
-            if (apiVersion == 1) {
+            if (malVersion == 1) {
                 return;
             }
 

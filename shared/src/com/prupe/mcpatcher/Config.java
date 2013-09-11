@@ -28,7 +28,7 @@ public class Config {
     static final String VAL_EXTERNAL_ZIP = "externalZip";
     static final String VAL_EXTERNAL_JAR = "externalJar";
 
-    static final String TAG_API_VERSION = ".apiVersion";
+    static final String TAG_MAL_VERSION = ".MALVersion";
 
     private static final String TAG_SELECTED_PROFILE = "selectedProfile";
 

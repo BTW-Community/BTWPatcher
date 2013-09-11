@@ -61,6 +61,7 @@ public final class BaseMod extends Mod {
         if (haveProfiler) {
             addClassFile(MCPatcherUtils.PROFILER_API_CLASS);
         }
+        addClassFile(MCPatcherUtils.MAL_CLASS);
 
         addFile("assets/minecraft/" + MCPatcherUtils.BLANK_PNG);
     }

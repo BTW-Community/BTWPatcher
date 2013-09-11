@@ -1,11 +1,11 @@
 package com.prupe.mcpatcher.block;
 
-import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.MAL;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
 
 abstract public class BlockAPI {
-    private static final BlockAPI instance = MCPatcherUtils.getAPI(BlockAPI.class, "block");
+    private static final BlockAPI instance = MAL.newInstance(BlockAPI.class, "block");
 
     public static Block getBlockAt(IBlockAccess blockAccess, int i, int j, int k) {
         return instance.getBlockAt_Impl(blockAccess, i, j, k);

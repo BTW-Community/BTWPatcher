@@ -282,8 +282,8 @@ public abstract class Mod {
         return inputStream;
     }
 
-    public void setApiVersion(String apiName, int version) {
-        MCPatcher.patcherProperties.setProperty(apiName + Config.TAG_API_VERSION, String.valueOf(version));
+    public void setMALVersion(String apiName, int version) {
+        MCPatcher.patcherProperties.setProperty(apiName + Config.TAG_MAL_VERSION, String.valueOf(version));
     }
 
     /**
