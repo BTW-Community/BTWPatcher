@@ -803,25 +803,23 @@ public final class BaseMod extends Mod {
      * Matches Item class.
      */
     public static class ItemMod extends com.prupe.mcpatcher.ClassMod {
-        protected final FieldRef itemsList = new FieldRef(getDeobfClass(), "itemsList", "[LItem;");
-        protected final FieldRef itemID = new FieldRef(getDeobfClass(), "itemID", "I");
+        protected final boolean haveItemRegistry;
+
         protected final MethodRef getItemName = new MethodRef(getDeobfClass(), "getItemName", "()Ljava/lang/String;");
 
         public ItemMod(Mod mod) {
             super(mod);
-            addClassSignature(new ConstSignature("CONFLICT @ "));
-            addClassSignature(new ConstSignature("coal"));
+            haveItemRegistry = getMinecraftVersion().compareTo("13w36a") >= 0;
 
-            addMemberMapper(new FieldMapper(itemsList)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
-            );
-
-            addMemberMapper(new FieldMapper(itemID)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
-                .accessFlag(AccessFlag.FINAL, true)
-            );
+            if (haveItemRegistry) {
+                addClassSignature(new ConstSignature("minecraft:iron_shovel"));
+                addClassSignature(new ConstSignature("minecraft:iron_pickaxe"));
+                addClassSignature(new ConstSignature("minecraft:iron_axe"));
+                addClassSignature(new ConstSignature(".name"));
+            } else {
+                addClassSignature(new ConstSignature("CONFLICT @ "));
+                addClassSignature(new ConstSignature("coal"));
+            }
 
             addMemberMapper(new MethodMapper(getItemName)
                 .accessFlag(AccessFlag.PUBLIC, true)

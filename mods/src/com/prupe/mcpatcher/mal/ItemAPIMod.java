@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
+import javassist.bytecode.AccessFlag;
 
 public class ItemAPIMod extends Mod {
     private final int malVersion;
@@ -37,10 +38,27 @@ public class ItemAPIMod extends Mod {
         ItemMod() {
             super(ItemAPIMod.this);
 
-            if (malVersion == 2) {
+            if (haveItemRegistry) {
                 final FieldRef itemRegistry = new FieldRef(getDeobfClass(), "itemRegistry", "LRegistry;");
 
-                addMemberMapper(new FieldMapper(itemRegistry));
+                addMemberMapper(new FieldMapper(itemRegistry)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
+                );
+            } else {
+                final FieldRef itemsList = new FieldRef(getDeobfClass(), "itemsList", "[LItem;");
+                final FieldRef itemID = new FieldRef(getDeobfClass(), "itemID", "I");
+
+                addMemberMapper(new FieldMapper(itemsList)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
+                );
+
+                addMemberMapper(new FieldMapper(itemID)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, false)
+                    .accessFlag(AccessFlag.FINAL, true)
+                );
             }
         }
     }

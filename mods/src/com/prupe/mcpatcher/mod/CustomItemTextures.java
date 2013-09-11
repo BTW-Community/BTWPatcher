@@ -34,6 +34,7 @@ public class CustomItemTextures extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
         addDependency(MCPatcherUtils.NBT_MOD);
+        addDependency(MCPatcherUtils.ITEM_API_MOD);
 
         addClassMod(new BaseMod.ResourceLocationMod(this));
         addClassMod(new BaseMod.TessellatorMod(this));
