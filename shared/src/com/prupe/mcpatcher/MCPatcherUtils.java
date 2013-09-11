@@ -77,10 +77,9 @@ public class MCPatcherUtils {
     public static final String TEXTURE_UTILS_CLASS = "com.prupe.mcpatcher.hd.TextureUtils";
     public static final String TILE_SIZE_CLASS = "com.prupe.mcpatcher.hd.TileSize";
 
-    public static final String NBT_RULE_CLASS = "com.prupe.mcpatcher.NBTRule";
-
     public static final String BLOCK_API_CLASS = "com.prupe.mcpatcher.mal.block.BlockAPI";
     public static final String ITEM_API_CLASS = "com.prupe.mcpatcher.mal.item.ItemAPI";
+    public static final String NBT_RULE_CLASS = "com.prupe.mcpatcher.mal.nbt.NBTRule";
     public static final String BIOME_API_CLASS = "com.prupe.mcpatcher.mal.biome.BiomeAPI";
 
     public static final String RANDOM_MOBS_CLASS = "com.prupe.mcpatcher.mob.MobRandomizer";

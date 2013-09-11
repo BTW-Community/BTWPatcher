@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.mal.item.ItemAPI;
+import com.prupe.mcpatcher.mal.nbt.NBTRule;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.ResourceLocation;
 

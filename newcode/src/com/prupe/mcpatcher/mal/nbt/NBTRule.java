@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher;
+package com.prupe.mcpatcher.mal.nbt;
 
 import net.minecraft.src.*;
 
