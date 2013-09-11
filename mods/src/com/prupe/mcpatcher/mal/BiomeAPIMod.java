@@ -113,6 +113,8 @@ public class BiomeAPIMod extends Mod {
         private void mapTempAndRainfall(String desc, final int[] arguments) {
             final MethodRef getTemperaturef = new MethodRef(getDeobfClass(), "getTemperaturef", "(" + desc + ")F");
             final MethodRef getRainfallf = new MethodRef(getDeobfClass(), "getRainfallf", "()F");
+            final MethodRef getGrassColor = new MethodRef(getDeobfClass(), "getGrassColor", "(" + desc + ")I");
+            final MethodRef getFoliageColor = new MethodRef(getDeobfClass(), "getFoliageColor", "(" + desc + ")I");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -148,6 +150,12 @@ public class BiomeAPIMod extends Mod {
             }
                 .addXref(1, getTemperaturef)
                 .addXref(2, getRainfallf)
+            );
+
+            addMemberMapper(new MethodMapper(getGrassColor, getFoliageColor)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, false)
+                .accessFlag(AccessFlag.FINAL, false)
             );
         }
     }

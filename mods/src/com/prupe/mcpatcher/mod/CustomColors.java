@@ -78,7 +78,7 @@ public class CustomColors extends Mod {
         addClassMod(new BlockMod());
         addClassMod(new BlockCauldronMod());
 
-        addClassMod(new BiomeGenBaseMod());
+        addClassMod(new BaseMod.BiomeGenBaseMod(this));
         addClassMod(new BiomeGenSwampMod());
         addClassMod(new BlockFluidMod());
         addClassMod(new ItemMod());
@@ -418,21 +418,6 @@ public class CustomColors extends Mod {
                 new ConstSignature(s),
                 new ConstSignature("_" + s)
             ));
-        }
-    }
-
-    private class BiomeGenBaseMod extends BaseMod.BiomeGenBaseMod {
-        BiomeGenBaseMod() {
-            super(CustomColors.this);
-
-            final MethodRef getGrassColor = new MethodRef(getDeobfClass(), "getGrassColor", "()I");
-            final MethodRef getFoliageColor = new MethodRef(getDeobfClass(), "getFoliageColor", "()I");
-
-            addMemberMapper(new MethodMapper(getGrassColor, getFoliageColor)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
-                .accessFlag(AccessFlag.FINAL, false)
-            );
         }
     }
 
