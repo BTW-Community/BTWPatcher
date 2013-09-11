@@ -145,7 +145,7 @@ public class CustomColors extends Mod {
         addClassFile(MCPatcherUtils.COLORIZE_BLOCK_CLASS);
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS);
         addClassFile(MCPatcherUtils.LIGHTMAP_CLASS);
-        addClassFile(MCPatcherUtils.BIOME_HELPER_CLASS);
+        addClassFile(MCPatcherUtils.BIOME_API_CLASS);
 
         BaseTexturePackMod.earlyInitialize(3, MCPatcherUtils.COLORIZER_CLASS, "init");
     }

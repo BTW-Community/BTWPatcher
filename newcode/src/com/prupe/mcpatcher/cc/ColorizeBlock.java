@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
@@ -192,7 +193,7 @@ public class ColorizeBlock {
     }
 
     public static int colorizeWater(Object dummy, int i, int k) {
-        return Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_WATER].colorize(BiomeHelper.getWaterColorMultiplier(i, 64, k), i, 64, k);
+        return Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_WATER].colorize(BiomeAPI.getWaterColorMultiplier(i, 64, k), i, 64, k);
     }
 
     public static int colorizeBlock(Block block, int i, int j, int k, int metadata) {

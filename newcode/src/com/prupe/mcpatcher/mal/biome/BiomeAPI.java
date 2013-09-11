@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher.cc;
+package com.prupe.mcpatcher.mal.biome;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
@@ -8,7 +8,7 @@ import net.minecraft.src.BiomeGenBase;
 import java.lang.reflect.Method;
 import java.util.BitSet;
 
-class BiomeHelper {
+public class BiomeAPI {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
     private static Method getWaterColorMultiplier;
@@ -25,7 +25,7 @@ class BiomeHelper {
         }
     }
 
-    static void parseBiomeList(String list, BitSet bits) {
+    public static void parseBiomeList(String list, BitSet bits) {
         if (MCPatcherUtils.isNullOrEmpty(list)) {
             return;
         }
@@ -42,12 +42,12 @@ class BiomeHelper {
         }
     }
 
-    static int getBiomeIDAt(int i, int j, int k) {
+    public static int getBiomeIDAt(int i, int j, int k) {
         BiomeGenBase biome = getBiomeGenAt(i, j, k);
         return biome == null ? BiomeGenBase.biomeList.length : biome.biomeID;
     }
 
-    static BiomeGenBase getBiomeGenAt(int i, int j, int k) {
+    public static BiomeGenBase getBiomeGenAt(int i, int j, int k) {
         if (lastBiome == null || i != lastI || k != lastK) {
             lastI = i;
             lastK = k;
@@ -56,15 +56,15 @@ class BiomeHelper {
         return lastBiome;
     }
 
-    static float getTemperature(int i, int j, int k) {
+    public static float getTemperature(int i, int j, int k) {
         return getBiomeGenAt(i, j, k).getTemperaturef();
     }
 
-    static float getRainfall(int i, int j, int k) {
+    public static float getRainfall(int i, int j, int k) {
         return getBiomeGenAt(i, j, k).getRainfallf();
     }
 
-    static int getWaterColorMultiplier(int i, int j, int k) {
+    public static int getWaterColorMultiplier(int i, int j, int k) {
         BiomeGenBase biome = getBiomeGenAt(i, j, k);
         if (getWaterColorMultiplier != null) {
             try {

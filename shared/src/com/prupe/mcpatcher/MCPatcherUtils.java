@@ -44,6 +44,7 @@ public class MCPatcherUtils {
     public static final String NBT_MOD = "__NBT";
     public static final String BLOCK_API_MOD = "__BlockAPI";
     public static final String ITEM_API_MOD = "__ItemAPI";
+    public static final String BIOME_API_MOD = "__BiomeAPI";
 
     public static final String CUSTOM_ANIMATIONS = "Custom Animations";
     public static final String MIPMAP = "Mipmap";
@@ -80,6 +81,7 @@ public class MCPatcherUtils {
 
     public static final String BLOCK_API_CLASS = "com.prupe.mcpatcher.mal.block.BlockAPI";
     public static final String ITEM_API_CLASS = "com.prupe.mcpatcher.mal.item.ItemAPI";
+    public static final String BIOME_API_CLASS = "com.prupe.mcpatcher.mal.biome.BiomeAPI";
 
     public static final String RANDOM_MOBS_CLASS = "com.prupe.mcpatcher.mob.MobRandomizer";
     public static final String MOB_RULE_LIST_CLASS = "com.prupe.mcpatcher.mob.MobRuleList";
@@ -92,7 +94,6 @@ public class MCPatcherUtils {
     public static final String COLORIZE_ENTITY_CLASS = "com.prupe.mcpatcher.cc.ColorizeEntity";
     public static final String COLORIZE_BLOCK_CLASS = "com.prupe.mcpatcher.cc.ColorizeBlock";
     public static final String COLOR_MAP_CLASS = "com.prupe.mcpatcher.cc.ColorMap";
-    public static final String BIOME_HELPER_CLASS = "com.prupe.mcpatcher.cc.BiomeHelper";
     public static final String LIGHTMAP_CLASS = "com.prupe.mcpatcher.cc.Lightmap";
 
     public static final String CTM_UTILS_CLASS = "com.prupe.mcpatcher.ctm.CTMUtils";

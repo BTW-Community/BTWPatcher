@@ -99,6 +99,7 @@ class ModList {
             register(new BuiltInMod(MCPatcherUtils.NBT_MOD, "com.prupe.mcpatcher.mal.NBTMod", loader).setInternal(true));
             register(new BuiltInMod(MCPatcherUtils.BLOCK_API_MOD, "com.prupe.mcpatcher.mal.BlockAPIMod", loader).setInternal(true));
             register(new BuiltInMod(MCPatcherUtils.ITEM_API_MOD, "com.prupe.mcpatcher.mal.ItemAPIMod", loader).setInternal(true));
+            register(new BuiltInMod(MCPatcherUtils.BIOME_API_MOD, "com.prupe.mcpatcher.mal.BiomeAPIMod", loader).setInternal(true));
 
             register(new BuiltInMod(MCPatcherUtils.EXTENDED_HD, "com.prupe.mcpatcher.mod.ExtendedHD", loader));
             register(new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, "com.prupe.mcpatcher.mod.RandomMobs", loader));

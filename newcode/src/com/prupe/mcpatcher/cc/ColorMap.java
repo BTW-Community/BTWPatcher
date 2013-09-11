@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.cc;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import net.minecraft.src.ResourceLocation;
 
 import java.util.Arrays;
@@ -80,7 +81,7 @@ final class ColorMap {
     }
 
     int colorize(int defaultColor, int i, int j, int k) {
-        return colorize(defaultColor, BiomeHelper.getTemperature(i, j, k), BiomeHelper.getRainfall(i, j, k));
+        return colorize(defaultColor, BiomeAPI.getTemperature(i, j, k), BiomeAPI.getRainfall(i, j, k));
     }
 
     void colorizeWithBlending(int i, int j, int k, int radius, float[] result) {

@@ -26,7 +26,7 @@ class MobRuleList {
 
     static {
         try {
-            Class<?> biomeHelperClass = Class.forName(MCPatcherUtils.BIOME_HELPER_CLASS);
+            Class<?> biomeHelperClass = Class.forName(MCPatcherUtils.BIOME_API_CLASS);
             parseBiomeList = biomeHelperClass.getDeclaredMethod("parseBiomeList", String.class, BitSet.class);
             getBiomeIDAt = biomeHelperClass.getDeclaredMethod("getBiomeIDAt", Integer.TYPE, Integer.TYPE, Integer.TYPE);
             parseBiomeList.setAccessible(true);
