@@ -41,7 +41,6 @@ public class CustomColors extends Mod {
     private static final MethodRef getItemColorFromDamage = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "getItemColorFromDamage", "(III)I");
     private static final MethodRef getWaterBottleColor = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "getWaterBottleColor", "()I");
     private static final MethodRef getLilyPadColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "getLilyPadColor", "()I");
-    private static final MethodRef setupBiome = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "setupBiome", "(LBiomeGenBase;)V");
     private static final MethodRef setupPotion = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "setupPotion", "(LPotion;)V");
     private static final MethodRef setupForFog = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "setupForFog", "(LEntity;)V");
     private static final MethodRef setupSpawnerEgg = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "setupSpawnerEgg", "(Ljava/lang/String;III)V");
@@ -69,6 +68,7 @@ public class CustomColors extends Mod {
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BLOCK_API_MOD);
+        addDependency(MCPatcherUtils.BIOME_API_MOD);
 
         configPanel = new ConfigPanel();
 
@@ -421,162 +421,17 @@ public class CustomColors extends Mod {
         }
     }
 
-    private class BiomeGenBaseMod extends ClassMod {
+    private class BiomeGenBaseMod extends BaseMod.BiomeGenBaseMod {
         BiomeGenBaseMod() {
-            final FieldRef waterColorMultiplier = new FieldRef(getDeobfClass(), "waterColorMultiplier", "I");
-            final FieldRef biomeList = new FieldRef(getDeobfClass(), "biomeList", "[LBiomeGenBase;");
-            final FieldRef biomeID = new FieldRef(getDeobfClass(), "biomeID", "I");
-            final FieldRef temperature = new FieldRef(getDeobfClass(), "temperature", "F");
-            final FieldRef rainfall = new FieldRef(getDeobfClass(), "rainfall", "F");
+            super(CustomColors.this);
+
             final MethodRef getGrassColor = new MethodRef(getDeobfClass(), "getGrassColor", "()I");
             final MethodRef getFoliageColor = new MethodRef(getDeobfClass(), "getFoliageColor", "()I");
-            final FieldRef color = new FieldRef(getDeobfClass(), "color", "I");
-            final FieldRef biomeName = new FieldRef(getDeobfClass(), "biomeName", "Ljava/lang/String;");
-            final MethodRef setBiomeName = new MethodRef(getDeobfClass(), "setBiomeName", "(Ljava/lang/String;)LBiomeGenBase;");
-
-            addClassSignature(new ConstSignature("Ocean"));
-            addClassSignature(new ConstSignature("Plains"));
-            addClassSignature(new ConstSignature("Desert"));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        push(0xffffff),
-                        captureReference(PUTFIELD)
-                    );
-                }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, waterColorMultiplier)
-            );
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        ILOAD_1,
-                        captureReference(PUTFIELD)
-                    );
-                }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, biomeID)
-            );
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        push(0.5f),
-                        captureReference(PUTFIELD),
-                        ALOAD_0,
-                        push(0.5f),
-                        captureReference(PUTFIELD)
-                    );
-                }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, temperature)
-                .addXref(2, rainfall)
-            );
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        begin(),
-                        ALOAD_0,
-                        ALOAD_1,
-                        captureReference(PUTFIELD),
-                        ALOAD_0,
-                        ARETURN,
-                        end()
-                    );
-                }
-            }
-                .setMethod(setBiomeName)
-                .addXref(1, biomeName)
-            );
-
-            final MethodRef getTemperaturef = new MethodRef(getDeobfClass(), "getTemperaturef", "()F");
-            final MethodRef getRainfallf = new MethodRef(getDeobfClass(), "getRainfallf", "()F");
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // d = MathHelper.clampf(getTemperature(), 0.0f, 1.0f);
-                        begin(),
-                        ALOAD_0,
-                        captureReference(INVOKEVIRTUAL),
-                        push(0.0f),
-                        push(1.0f),
-                        anyReference(INVOKESTATIC),
-                        F2D,
-                        DSTORE_1,
-
-                        // d1 = MathHelper.clampf(getRainfall(), 0.0f, 1.0f);
-                        ALOAD_0,
-                        captureReference(INVOKEVIRTUAL),
-                        push(0.0f),
-                        push(1.0f),
-                        anyReference(INVOKESTATIC),
-                        F2D,
-                        DSTORE_3,
-
-                        // return Colorizerxxx.yyy(d, d1);
-                        DLOAD_1,
-                        DLOAD_3,
-                        anyReference(INVOKESTATIC),
-                        IRETURN
-                    );
-                }
-            }
-                .addXref(1, getTemperaturef)
-                .addXref(2, getRainfallf)
-            );
 
             addMemberMapper(new MethodMapper(getGrassColor, getFoliageColor)
                 .accessFlag(AccessFlag.PUBLIC, true)
                 .accessFlag(AccessFlag.STATIC, false)
                 .accessFlag(AccessFlag.FINAL, false)
-            );
-
-            addMemberMapper(new FieldMapper(biomeList)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
-            );
-
-            addMemberMapper(new FieldMapper(color).accessFlag(AccessFlag.PUBLIC, true));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "map biomes by name";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        ARETURN,
-                        end()
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        ALOAD_0,
-                        reference(INVOKESTATIC, setupBiome)
-                    );
-                }
-            }
-                .setInsertBefore(true)
-                .targetMethod(setBiomeName)
             );
         }
     }
