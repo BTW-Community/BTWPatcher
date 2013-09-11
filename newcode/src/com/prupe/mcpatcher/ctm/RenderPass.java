@@ -130,7 +130,7 @@ public class RenderPass {
         if (block.shouldSideBeRendered(blockAccess, i, j, k, face)) {
             return true;
         } else {
-            return extraRenderPass[blockAccess.getBlockId(i, j, k)] >= 0 && extraRenderPass[block.blockID] < 0;
+            return extraRenderPass[BlockAPI.getBlockIdAt(blockAccess, i, j, k)] >= 0 && extraRenderPass[BlockAPI.getBlockId(block)] < 0;
         }
     }
 
