@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.item.ItemAPI;
 import net.minecraft.src.ItemStack;
 
 import java.util.*;
@@ -38,7 +39,7 @@ final class EnchantmentList {
     EnchantmentList(Enchantment[][] enchantments, ItemStack itemStack) {
         BitSet layersPresent = new BitSet();
         Map<Integer, Layer> tmpLayers = new HashMap<Integer, Layer>();
-        int itemID = itemStack.itemID;
+        int itemID = ItemAPI.getItemId(itemStack.getItem());
         int[] enchantmentLevels = CITUtils.getEnchantmentLevels(itemID, itemStack.stackTagCompound);
         boolean hasEffect = itemStack.hasEffectVanilla();
         if (itemID >= 0 && itemID < enchantments.length && enchantments[itemID] != null) {

@@ -255,7 +255,7 @@ public class CITUtils {
     }
 
     private static <T extends OverrideBase> T findMatch(T[][] overrides, ItemStack itemStack) {
-        int itemID = itemStack.itemID;
+        int itemID = ItemAPI.getItemId(itemStack.getItem());
         if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
             int[] enchantmentLevels = getEnchantmentLevels(itemID, itemStack.stackTagCompound);
             boolean hasEffect = itemStack.hasEffectVanilla();
