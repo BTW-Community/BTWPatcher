@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.item.ItemAPI;
 import net.minecraft.src.Item;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.ResourceLocation;
@@ -102,7 +103,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             BitSet ids = parseBitSet(value, CITUtils.LOWEST_ITEM_ID, CITUtils.HIGHEST_ITEM_ID);
             boolean all = true;
             for (int i = CITUtils.LOWEST_ITEM_ID; i <= CITUtils.HIGHEST_ITEM_ID; i++) {
-                if (Item.itemsList[i] != null && !ids.get(i)) {
+                if (ItemAPI.getItemById(i) != null && !ids.get(i)) {
                     all = false;
                     break;
                 }

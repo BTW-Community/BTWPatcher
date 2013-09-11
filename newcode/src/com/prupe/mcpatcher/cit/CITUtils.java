@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.item.ItemAPI;
 import net.minecraft.src.*;
 
 import java.awt.image.BufferedImage;
@@ -19,7 +20,7 @@ public class CITUtils {
     private static final ResourceLocation CIT_PROPERTIES2 = TexturePackAPI.newMCPatcherResourceLocation("cit/" + CIT_PROPERTIES);
     static final ResourceLocation FIXED_ARMOR_RESOURCE = new ResourceLocation("textures/models/armor/iron_layer_1.png");
 
-    private static final int MAX_ITEMS = Item.itemsList.length;
+    private static final int MAX_ITEMS = ItemAPI.getNumItems();
     static final int MAX_ENCHANTMENTS = 256;
     static int LOWEST_ITEM_ID;
     static int HIGHEST_ITEM_ID;
@@ -67,18 +68,18 @@ public class CITUtils {
                 itemNameMap.clear();
 
                 for (LOWEST_ITEM_ID = 256; LOWEST_ITEM_ID < MAX_ITEMS; LOWEST_ITEM_ID++) {
-                    if (Item.itemsList[LOWEST_ITEM_ID] != null) {
+                    if (ItemAPI.getItemById(LOWEST_ITEM_ID) != null) {
                         break;
                     }
                 }
                 for (HIGHEST_ITEM_ID = MAX_ITEMS - 1; HIGHEST_ITEM_ID >= 0; HIGHEST_ITEM_ID--) {
-                    if (Item.itemsList[HIGHEST_ITEM_ID] != null) {
+                    if (ItemAPI.getItemById(HIGHEST_ITEM_ID) != null) {
                         break;
                     }
                 }
                 if (LOWEST_ITEM_ID <= HIGHEST_ITEM_ID) {
                     for (int i = LOWEST_ITEM_ID; i <= HIGHEST_ITEM_ID; i++) {
-                        Item item = Item.itemsList[i];
+                        Item item = ItemAPI.getItemById(i);
                         if (item != null) {
                             String name = item.getItemName();
                             if (name != null) {
@@ -171,7 +172,7 @@ public class CITUtils {
             }
 
             private void registerOverride(OverrideBase[][] list, int itemID, OverrideBase override) {
-                if (Item.itemsList[itemID] != null) {
+                if (ItemAPI.getItemById(itemID) != null) {
                     Class<? extends OverrideBase> overrideClass = list.getClass().getComponentType().getComponentType().asSubclass(OverrideBase.class);
                     list[itemID] = registerOverride(list[itemID], override, overrideClass);
                 }
@@ -345,8 +346,8 @@ public class CITUtils {
     }
 
     static String getItemName(int itemID) {
-        if (itemID >= 0 && itemID < Item.itemsList.length) {
-            Item item = Item.itemsList[itemID];
+        if (itemID >= 0 && itemID < MAX_ITEMS) {
+            Item item = ItemAPI.getItemById(itemID);
             if (item != null) {
                 String name = item.getItemName();
                 if (name != null) {
