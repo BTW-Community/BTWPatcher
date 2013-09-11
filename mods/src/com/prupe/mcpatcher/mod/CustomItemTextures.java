@@ -215,7 +215,6 @@ public class CustomItemTextures extends Mod {
     private class ItemStackMod extends ClassMod {
         ItemStackMod() {
             final FieldRef stackSize = new FieldRef(getDeobfClass(), "stackSize", "I");
-            final FieldRef itemID = new FieldRef(getDeobfClass(), "itemID", "I");
             final FieldRef itemDamage = new FieldRef(getDeobfClass(), "itemDamage", "I");
             final FieldRef stackTagCompound = new FieldRef(getDeobfClass(), "stackTagCompound", "LNBTTagCompound;");
             final MethodRef getItemDamage = new MethodRef(getDeobfClass(), "getItemDamage", "()I");
@@ -229,8 +228,11 @@ public class CustomItemTextures extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         ALOAD_0,
-                        ILOAD_1,
-                        captureReference(PUTFIELD),
+                        subset(new int[]{
+                            ILOAD_1 /* pre-13w36a */,
+                            ALOAD_1 /* 13w36a+ */
+                        }, true),
+                        anyReference(PUTFIELD),
                         ALOAD_0,
                         ILOAD_2,
                         captureReference(PUTFIELD),
@@ -241,10 +243,8 @@ public class CustomItemTextures extends Mod {
                 }
             }
                 .matchConstructorOnly(true)
-                .setMethod(new MethodRef(getDeobfClass(), "<init>", "(III)V"))
-                .addXref(1, itemID)
-                .addXref(2, stackSize)
-                .addXref(3, itemDamage)
+                .addXref(1, stackSize)
+                .addXref(2, itemDamage)
             );
 
             addClassSignature(new BytecodeSignature() {
