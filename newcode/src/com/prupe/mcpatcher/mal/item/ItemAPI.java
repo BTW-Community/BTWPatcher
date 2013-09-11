@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher.item;
+package com.prupe.mcpatcher.mal.item;
 
 import com.prupe.mcpatcher.MAL;
 import net.minecraft.src.Item;

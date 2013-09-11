@@ -2,7 +2,7 @@ package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.item.ItemAPI;
+import com.prupe.mcpatcher.mal.item.ItemAPI;
 import net.minecraft.src.ItemStack;
 
 import java.util.*;

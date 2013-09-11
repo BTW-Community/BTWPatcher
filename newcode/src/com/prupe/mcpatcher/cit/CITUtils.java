@@ -1,7 +1,7 @@
 package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.*;
-import com.prupe.mcpatcher.item.ItemAPI;
+import com.prupe.mcpatcher.mal.item.ItemAPI;
 import net.minecraft.src.*;
 
 import java.awt.image.BufferedImage;

@@ -1,7 +1,7 @@
 package com.prupe.mcpatcher.ctm;
 
 import com.prupe.mcpatcher.*;
-import com.prupe.mcpatcher.block.BlockAPI;
+import com.prupe.mcpatcher.mal.block.BlockAPI;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 

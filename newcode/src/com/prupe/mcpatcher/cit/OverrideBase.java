@@ -1,8 +1,7 @@
 package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.*;
-import com.prupe.mcpatcher.item.ItemAPI;
-import net.minecraft.src.Item;
+import com.prupe.mcpatcher.mal.item.ItemAPI;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.ResourceLocation;
 

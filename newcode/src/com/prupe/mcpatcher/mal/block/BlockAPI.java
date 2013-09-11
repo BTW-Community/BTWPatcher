@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher.block;
+package com.prupe.mcpatcher.mal.block;
 
 import com.prupe.mcpatcher.MAL;
 import net.minecraft.src.Block;
