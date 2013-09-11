@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.WeightedIndex;
+import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import net.minecraft.src.ResourceLocation;
 
 import java.lang.reflect.Method;
@@ -20,24 +21,6 @@ class MobRuleList {
     private final List<ResourceLocation> allSkins;
     private final int skinCount;
     private final List<MobRuleEntry> entries;
-
-    private static Method parseBiomeList;
-    static Method getBiomeIDAt;
-
-    static {
-        try {
-            Class<?> biomeHelperClass = Class.forName(MCPatcherUtils.BIOME_API_CLASS);
-            parseBiomeList = biomeHelperClass.getDeclaredMethod("parseBiomeList", String.class, BitSet.class);
-            getBiomeIDAt = biomeHelperClass.getDeclaredMethod("getBiomeIDAt", Integer.TYPE, Integer.TYPE, Integer.TYPE);
-            parseBiomeList.setAccessible(true);
-            getBiomeIDAt.setAccessible(true);
-            logger.fine("biome integration active");
-        } catch (Throwable e) {
-            parseBiomeList = null;
-            getBiomeIDAt = null;
-            logger.warning("biome integration failed");
-        }
-    }
 
     private MobRuleList(ResourceLocation baseSkin) {
         this.baseSkin = baseSkin;
@@ -152,14 +135,7 @@ class MobRuleList {
                 biomes = null;
             } else {
                 biomes = new BitSet();
-                if (parseBiomeList != null) {
-                    try {
-                        parseBiomeList.invoke(null, biomeList, biomes);
-                    } catch (Throwable e) {
-                        e.printStackTrace();
-                        parseBiomeList = null;
-                    }
-                }
+                BiomeAPI.parseBiomeList(biomeList, biomes);
             }
 
             int minHeight = MCPatcherUtils.getIntProperty(properties, "minHeight." + index, -1);

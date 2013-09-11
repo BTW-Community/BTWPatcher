@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.TileLoader;
+import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
@@ -144,9 +145,6 @@ abstract class TileOverride implements ITileOverride {
     private static final int CONNECT_BY_TILE = 1;
     private static final int CONNECT_BY_MATERIAL = 2;
 
-    private static Method parseBiomeList;
-    private static Method getBiomeIDAt;
-
     private final ResourceLocation propertiesFile;
     private final String texturesDirectory;
     private final String baseFilename;
@@ -169,21 +167,6 @@ abstract class TileOverride implements ITileOverride {
     private int[] reorient;
     private int rotateUV;
     protected boolean rotateTop;
-
-    static {
-        try {
-            Class<?> biomeHelperClass = Class.forName(MCPatcherUtils.BIOME_API_CLASS);
-            parseBiomeList = biomeHelperClass.getDeclaredMethod("parseBiomeList", String.class, BitSet.class);
-            getBiomeIDAt = biomeHelperClass.getDeclaredMethod("getBiomeIDAt", Integer.TYPE, Integer.TYPE, Integer.TYPE);
-            parseBiomeList.setAccessible(true);
-            getBiomeIDAt.setAccessible(true);
-            logger.fine("biome integration active");
-        } catch (Throwable e) {
-            parseBiomeList = null;
-            getBiomeIDAt = null;
-            logger.warning("biome integration failed");
-        }
-    }
 
     static TileOverride create(ResourceLocation propertiesFile, TileLoader tileLoader) {
         if (propertiesFile == null) {
@@ -305,14 +288,7 @@ abstract class TileOverride implements ITileOverride {
             biomes = null;
         } else {
             biomes = new BitSet();
-            if (parseBiomeList != null) {
-                try {
-                    parseBiomeList.invoke(null, biomeList, biomes);
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                    parseBiomeList = null;
-                }
-            }
+            BiomeAPI.parseBiomeList(biomeList, biomes);
         }
 
         minHeight = MCPatcherUtils.getIntProperty(properties, "minHeight", -1);
@@ -739,19 +715,8 @@ abstract class TileOverride implements ITileOverride {
         if (j < minHeight || j > maxHeight) {
             return null;
         }
-        if (biomes != null) {
-            if (getBiomeIDAt == null) {
-                return null;
-            }
-            try {
-                int id = (Integer) getBiomeIDAt.invoke(null, i, j, k);
-                if (!biomes.get(id)) {
-                    return null;
-                }
-            } catch (Throwable e) {
-                e.printStackTrace();
-                getBiomeIDAt = null;
-            }
+        if (biomes != null && !biomes.get(BiomeAPI.getBiomeIDAt(i, j, k))) {
+            return null;
         }
         return getTileImpl(blockAccess, block, origIcon, i, j, k, face);
     }

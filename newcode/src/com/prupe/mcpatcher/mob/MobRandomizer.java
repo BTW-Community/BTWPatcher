@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.mob;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackChangeHandler;
+import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import net.minecraft.src.Entity;
 import net.minecraft.src.EntityLivingBase;
 import net.minecraft.src.NBTTagCompound;
@@ -103,13 +104,8 @@ public class MobRandomizer {
         }
 
         private void setBiome() {
-            if (origBiome == null && MobRuleList.getBiomeIDAt != null) {
-                try {
-                    origBiome = (Integer) MobRuleList.getBiomeIDAt.invoke(null, origX, origY, origZ);
-                } catch (Throwable e) {
-                    MobRuleList.getBiomeIDAt = null;
-                    e.printStackTrace();
-                }
+            if (origBiome == null) {
+                origBiome = BiomeAPI.getBiomeIDAt(origX, origY, origZ);
             }
         }
 

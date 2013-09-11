@@ -22,6 +22,7 @@ public class RandomMobs extends Mod {
         version = "1.6";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
+        addDependency(MCPatcherUtils.BIOME_API_MOD);
 
         addClassMod(new BaseMod.ResourceLocationMod(this));
         addClassMod(new BaseMod.NBTTagCompoundMod(this));

@@ -27,6 +27,7 @@ public class ConnectedTextures extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
         addDependency(MCPatcherUtils.BLOCK_API_MOD);
+        addDependency(MCPatcherUtils.BIOME_API_MOD);
 
         configPanel = new ConfigPanel();
 
