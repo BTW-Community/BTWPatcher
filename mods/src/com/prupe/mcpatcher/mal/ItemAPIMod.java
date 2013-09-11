@@ -2,11 +2,11 @@ package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
 
-public class BlockAPIMod extends Mod {
+public class ItemAPIMod extends Mod {
     private final int malVersion;
 
-    public BlockAPIMod() {
-        name = MCPatcherUtils.BLOCK_API_MOD;
+    public ItemAPIMod() {
+        name = MCPatcherUtils.ITEM_API_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
 
@@ -16,17 +16,16 @@ public class BlockAPIMod extends Mod {
             malVersion = 2;
         }
         version = String.valueOf(malVersion) + ".0";
-        setMALVersion("block", malVersion);
+        setMALVersion("item", malVersion);
 
-        addClassMod(new BlockMod());
-        addClassMod(new BaseMod.IBlockAccessMod(this));
+        addClassMod(new ItemMod());
         if (malVersion >= 2) {
             addClassMod(new Shared.RegistryBaseMod(this));
             addClassMod(new Shared.RegistryMod(this));
         }
 
-        addClassFile(MCPatcherUtils.BLOCK_API_CLASS);
-        addClassFile(MCPatcherUtils.BLOCK_API_CLASS + "$V" + malVersion);
+        addClassFile(MCPatcherUtils.ITEM_API_CLASS);
+        addClassFile(MCPatcherUtils.ITEM_API_CLASS + "$V" + malVersion);
     }
 
     @Override
@@ -34,14 +33,14 @@ public class BlockAPIMod extends Mod {
         return null;
     }
 
-    private class BlockMod extends BaseMod.BlockMod {
-        BlockMod() {
-            super(BlockAPIMod.this);
+    private class ItemMod extends BaseMod.ItemMod {
+        ItemMod() {
+            super(ItemAPIMod.this);
 
             if (malVersion == 2) {
-                final FieldRef blockRegistry = new FieldRef(getDeobfClass(), "blockRegistry", "LRegistry;");
+                final FieldRef itemRegistry = new FieldRef(getDeobfClass(), "itemRegistry", "LRegistry;");
 
-                addMemberMapper(new FieldMapper(blockRegistry));
+                addMemberMapper(new FieldMapper(itemRegistry));
             }
         }
     }
