@@ -82,8 +82,10 @@ public class CustomColors extends Mod {
         addClassMod(new BiomeGenSwampMod());
         addClassMod(new BlockFluidMod());
         addClassMod(new ItemMod());
-        addClassMod(new ItemBlockMod());
-        addClassMod(new ItemRendererMod());
+        if (getMinecraftVersion().compareTo("13w36a") < 0) { // TODO
+            addClassMod(new ItemBlockMod());
+            addClassMod(new ItemRendererMod());
+        }
 
         addClassMod(new PotionMod());
         addClassMod(new PotionHelperMod());
@@ -145,7 +147,6 @@ public class CustomColors extends Mod {
         addClassFile(MCPatcherUtils.COLORIZE_BLOCK_CLASS);
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS);
         addClassFile(MCPatcherUtils.LIGHTMAP_CLASS);
-        addClassFile(MCPatcherUtils.BIOME_API_CLASS);
 
         BaseTexturePackMod.earlyInitialize(3, MCPatcherUtils.COLORIZER_CLASS, "init");
     }
@@ -430,12 +431,18 @@ public class CustomColors extends Mod {
         BiomeGenSwampMod() {
             setParentClass("BiomeGenBase");
 
-            addClassSignature(new ConstSignature(MAGIC1));
-            addClassSignature(new ConstSignature(MAGIC2));
-            addClassSignature(new OrSignature(
-                new ConstSignature(MAGIC3_A),
-                new ConstSignature(MAGIC3_B)
-            ));
+            if (getMinecraftVersion().compareTo("13w36a") < 0) {
+                addClassSignature(new ConstSignature(MAGIC1));
+                addClassSignature(new ConstSignature(MAGIC2));
+                addClassSignature(new OrSignature(
+                    new ConstSignature(MAGIC3_A),
+                    new ConstSignature(MAGIC3_B)
+                ));
+            } else {
+                addClassSignature(new ConstSignature(0xe0ffae));
+                addClassSignature(new ConstSignature(0x4c763c));
+                addClassSignature(new ConstSignature(0x6a7039));
+            }
 
             addSwampColorPatch("SWAMP_GRASS", "Grass");
             addSwampColorPatch("SWAMP_FOLIAGE", "Foliage");
@@ -860,11 +867,16 @@ public class CustomColors extends Mod {
         private final MethodRef colorMultiplier = new MethodRef(getDeobfClass(), "colorMultiplier", "(LIBlockAccess;III)I");
 
         BlockLeavesMod() {
+            setParentClass("BlockLeavesBase");
+
             final MethodRef getFoliageColorPine = new MethodRef("ColorizerFoliage", "getFoliageColorPine", "()I");
             final MethodRef getFoliageColorBirch = new MethodRef("ColorizerFoliage", "getFoliageColorBirch", "()I");
-            final MethodRef getFoliageColor = new MethodRef("BiomeGenBase", "getFoliageColor", "()I");
             final InterfaceMethodRef getBlockMetadata = new InterfaceMethodRef("IBlockAccess", "getBlockMetadata", "(III)I");
-            final InterfaceMethodRef getBiomeGenAt = new InterfaceMethodRef("IBlockAccess", "getBiomeGenAt", "(II)LBiomeGenBase;");
+
+            addClassSignature(new ConstSignature("oak"));
+            addClassSignature(new ConstSignature("spruce"));
+            addClassSignature(new ConstSignature("birch"));
+            addClassSignature(new ConstSignature("jungle"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -901,26 +913,6 @@ public class CustomColors extends Mod {
                 .addXref(1, getBlockMetadata)
                 .addXref(2, getFoliageColorPine)
                 .addXref(3, getFoliageColorBirch)
-            );
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_1,
-                        ILOAD_2,
-                        anyILOAD,
-                        IADD,
-                        ILOAD, 4,
-                        anyILOAD,
-                        IADD,
-                        captureReference(INVOKEINTERFACE),
-                        captureReference(INVOKEVIRTUAL)
-                    );
-                }
-            }
-                .addXref(1, getBiomeGenAt)
-                .addXref(2, getFoliageColor)
             );
 
             addFoliagePatch("PINE", "Pine");
