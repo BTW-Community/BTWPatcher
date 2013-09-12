@@ -7,7 +7,7 @@ public interface IBlockAccess {
 
     public int getBlockId(int i, int j, int k); // pre-13w36a
 
-    public Block getBlockAt(int i, int j, int k); // 13w36a+
+    public Block getBlock(int i, int j, int k); // 13w36a+
 
     public int getBlockMetadata(int i, int j, int k);
 }

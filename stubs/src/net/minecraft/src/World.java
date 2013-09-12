@@ -29,7 +29,7 @@ public class World implements IBlockAccess {
     }
 
     @Override
-    public Block getBlockAt(int i, int j, int k) {
+    public Block getBlock(int i, int j, int k) {
         return null;
     }
 

@@ -81,7 +81,7 @@ abstract public class BlockAPI {
     final private static class V2 extends BlockAPI {
         @Override
         protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
-            return blockAccess.getBlockAt(i, j, k);
+            return blockAccess.getBlock(i, j, k);
         }
 
         @Override
