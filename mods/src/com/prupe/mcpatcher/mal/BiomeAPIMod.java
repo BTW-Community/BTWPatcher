@@ -23,6 +23,7 @@ public class BiomeAPIMod extends Mod {
         version = String.valueOf(malVersion) + ".0";
         setMALVersion("biome", malVersion);
 
+        addClassMod(new BaseMod.IBlockAccessMod(this));
         addClassMod(new BaseMod.MinecraftMod(this).mapWorldClient());
         addClassMod(new BaseMod.WorldMod(this));
         addClassMod(new BaseMod.WorldClientMod(this));
