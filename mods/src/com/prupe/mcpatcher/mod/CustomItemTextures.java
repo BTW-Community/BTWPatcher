@@ -47,7 +47,9 @@ public class CustomItemTextures extends Mod {
         addClassMod(new EntityItemMod());
         addClassMod(new ItemRendererMod());
         addClassMod(new RenderItemMod());
-        addClassMod(new RenderLivingEntityMod());
+        if (getMinecraftVersion().compareTo("13w36a") < 0) {
+            addClassMod(new RenderLivingEntityMod());
+        }
         addClassMod(new RenderBipedMod());
         addClassMod(new RenderPlayerMod());
         addClassMod(new RenderSnowballMod());
