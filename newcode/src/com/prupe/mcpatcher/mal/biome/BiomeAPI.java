@@ -13,6 +13,8 @@ abstract public class BiomeAPI {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
     private static final BiomeAPI instance = MAL.newInstance(BiomeAPI.class, "biome");
 
+    private static boolean biomesLogged;
+
     private static Method getWaterColorMultiplier;
     private static BiomeGenBase lastBiome;
     private static int lastI;
@@ -28,6 +30,12 @@ abstract public class BiomeAPI {
     }
 
     public static void parseBiomeList(String list, BitSet bits) {
+        if (!biomesLogged) {
+            biomesLogged = true;
+            for (BiomeGenBase biome : BiomeGenBase.biomeList) {
+                setupBiome(biome);
+            }
+        }
         if (MCPatcherUtils.isNullOrEmpty(list)) {
             return;
         }
@@ -80,9 +88,11 @@ abstract public class BiomeAPI {
     }
 
     public static void setupBiome(BiomeGenBase biome) {
-        int x = (int) (256.0f * (1.0f - biome.temperature));
-        int y = (int) (256.0f * (1.0f - biome.temperature * biome.rainfall));
-        logger.finer("setupBiome #%d \"%s\" %06x (%d,%d)", biome.biomeID, biome.biomeName, biome.waterColorMultiplier, x, y);
+        if (biome != null) {
+            int x = (int) (255.0f * (1.0f - biome.temperature));
+            int y = (int) (255.0f * (1.0f - biome.temperature * biome.rainfall));
+            logger.config("setupBiome #%d \"%s\" %06x (%d,%d)", biome.biomeID, biome.biomeName, biome.waterColorMultiplier, x, y);
+        }
     }
 
     abstract protected float getTemperaturef_Impl(BiomeGenBase biome, int i, int j, int k);
