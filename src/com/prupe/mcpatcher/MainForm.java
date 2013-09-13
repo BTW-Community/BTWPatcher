@@ -119,7 +119,7 @@ class MainForm extends UserInterface {
             }
         });
 
-        frame = new JFrame("MCPatcher " + MCPatcher.VERSION_STRING);
+        frame = new JFrame("MCPatcher " + MCPatcher.DISPLAY_VERSION_STRING);
         frame.setResizable(true);
         frame.setContentPane(mainPanel);
         setIconImage(frame);
@@ -737,9 +737,9 @@ class MainForm extends UserInterface {
             currentVersion = profileManager.getInputVersion();
         }
         if (MCPatcherUtils.isNullOrEmpty(currentVersion)) {
-            frame.setTitle("MCPatcher " + MCPatcher.VERSION_STRING);
+            frame.setTitle("MCPatcher " + MCPatcher.DISPLAY_VERSION_STRING);
         } else {
-            frame.setTitle("MCPatcher " + MCPatcher.VERSION_STRING + " [Minecraft " + currentVersion + "]");
+            frame.setTitle("MCPatcher " + MCPatcher.DISPLAY_VERSION_STRING + " [Minecraft " + currentVersion + "]");
         }
         boolean inputOk = false;
         boolean outputOk = false;

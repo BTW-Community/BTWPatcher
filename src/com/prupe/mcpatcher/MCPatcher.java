@@ -44,6 +44,11 @@ final public class MCPatcher {
             (PATCH_VERSION > 0 ? String.format("_%02d", PATCH_VERSION) : "") +
             (BETA_VERSION > 0 ? "-beta" + BETA_VERSION : "");
 
+    private static final String OVERRIDE_VERSION_STRING = null;
+
+    static final String DISPLAY_VERSION_STRING = OVERRIDE_VERSION_STRING == null ?
+        VERSION_STRING : OVERRIDE_VERSION_STRING;
+
     public static final String API_VERSION = "20130818";
 
     static ProfileManager profileManager;
@@ -107,7 +112,7 @@ final public class MCPatcher {
                 } catch (NumberFormatException e) {
                 }
             } else if (args[i].equals("-version")) {
-                System.out.println(VERSION_STRING);
+                System.out.println(DISPLAY_VERSION_STRING);
                 System.exit(0);
             } else if (args[i].equals("-mcdir") && i + 1 < args.length) {
                 i++;
