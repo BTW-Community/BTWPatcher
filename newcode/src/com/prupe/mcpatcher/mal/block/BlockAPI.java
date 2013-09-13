@@ -101,7 +101,8 @@ abstract public class BlockAPI {
 
         @Override
         protected int getBlockId_Impl(Block block) {
-            return Block.blockRegistry.getId(block);
+            int id = Block.blockRegistry.getId(block);
+            return id < 0 ? 0 : id;
         }
 
         @Override
