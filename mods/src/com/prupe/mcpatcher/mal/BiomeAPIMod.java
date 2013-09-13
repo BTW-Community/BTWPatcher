@@ -33,6 +33,11 @@ public class BiomeAPIMod extends Mod {
         addClassFile(MCPatcherUtils.BIOME_API_CLASS + "$V" + malVersion);
     }
 
+    @Override
+    public String[] getLoggingCategories() {
+        return null;
+    }
+
     private class BiomeGenBaseMod extends BaseMod.BiomeGenBaseMod {
         BiomeGenBaseMod() {
             super(BiomeAPIMod.this);
