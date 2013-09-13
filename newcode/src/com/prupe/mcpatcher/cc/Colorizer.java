@@ -149,14 +149,7 @@ public class Colorizer {
 
     static int loadIntColor(String key, int color) {
         logger.config("%s=%06x", key, color);
-        String value = properties.getProperty(key, "");
-        if (!value.equals("")) {
-            try {
-                return Integer.parseInt(value, 16);
-            } catch (NumberFormatException e) {
-            }
-        }
-        return color;
+        return MCPatcherUtils.getHexProperty(properties, key, color);
     }
 
     static void loadFloatColor(String key, float[] color) {
