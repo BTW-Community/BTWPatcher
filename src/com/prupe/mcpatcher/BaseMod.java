@@ -711,9 +711,9 @@ public final class BaseMod extends Mod {
             haveBlockRegistry = getMinecraftVersion().compareTo("13w36a") >= 0;
 
             if (haveBlockRegistry) {
-                addClassSignature(new ConstSignature("minecraft:stone"));
-                addClassSignature(new ConstSignature("minecraft:grass"));
-                addClassSignature(new ConstSignature("minecraft:dirt"));
+                addClassSignature(new ConstSignature("stone"));
+                addClassSignature(new ConstSignature("grass"));
+                addClassSignature(new ConstSignature("dirt"));
                 addClassSignature(new ConstSignature(".name"));
             } else {
                 addClassSignature(new ConstSignature(" is already occupied by "));
@@ -812,9 +812,9 @@ public final class BaseMod extends Mod {
             haveItemRegistry = getMinecraftVersion().compareTo("13w36a") >= 0;
 
             if (haveItemRegistry) {
-                addClassSignature(new ConstSignature("minecraft:iron_shovel"));
-                addClassSignature(new ConstSignature("minecraft:iron_pickaxe"));
-                addClassSignature(new ConstSignature("minecraft:iron_axe"));
+                addClassSignature(new ConstSignature("iron_shovel"));
+                addClassSignature(new ConstSignature("iron_pickaxe"));
+                addClassSignature(new ConstSignature("iron_axe"));
                 addClassSignature(new ConstSignature(".name"));
             } else {
                 addClassSignature(new ConstSignature("CONFLICT @ "));
