@@ -39,17 +39,33 @@ abstract public class BiomeAPI {
         if (MCPatcherUtils.isNullOrEmpty(list)) {
             return;
         }
-        for (String s : list.toLowerCase().split("\\s+")) {
-            if (s.isEmpty()) {
+        for (String s : list.split(list.contains(",") ? "\\s*,\\s*" : "\\s+")) {
+            BiomeGenBase biome = findBiomeByName(s);
+            if (biome != null) {
+                bits.set(biome.biomeID);
+            }
+        }
+    }
+
+    public static BiomeGenBase findBiomeByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        name = name.trim();
+        if (name.isEmpty()) {
+            return null;
+        }
+        for (BiomeGenBase biome : BiomeGenBase.biomeList) {
+            if (biome == null || biome.biomeName == null) {
                 continue;
             }
-            for (BiomeGenBase biome : BiomeGenBase.biomeList) {
-                if (biome != null && biome.biomeName != null &&
-                    s.equals(biome.biomeName.toLowerCase().replace(" ", ""))) {
-                    bits.set(biome.biomeID);
+            if (name.equalsIgnoreCase(biome.biomeName) || name.equalsIgnoreCase(biome.biomeName.replace(" ", ""))) {
+                if (biome.biomeID >= 0 && biome.biomeID < BiomeGenBase.biomeList.length) {
+                    return biome;
                 }
             }
         }
+        return null;
     }
 
     public static int getBiomeIDAt(int i, int j, int k) {
