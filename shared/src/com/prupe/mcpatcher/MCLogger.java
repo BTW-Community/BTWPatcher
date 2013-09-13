@@ -10,7 +10,7 @@ public class MCLogger {
 
     private static final long FLOOD_INTERVAL = 1000L;
     private static final long FLOOD_REPORT_INTERVAL = 5000L;
-    private static final int FLOOD_LIMIT = 100;
+    private static final int FLOOD_LIMIT = Config.getInstance().floodMessageLimit;
     private static final int FLOOD_LEVEL = Level.CONFIG.intValue();
 
     private final String logPrefix;

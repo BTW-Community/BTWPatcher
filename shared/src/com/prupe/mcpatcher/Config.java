@@ -47,6 +47,7 @@ public class Config {
     boolean fetchRemoteVersionList = true;
     boolean extraProfiling;
     String lastModDirectory;
+    int floodMessageLimit = 1000;
     LinkedHashMap<String, String> logging = new LinkedHashMap<String, String>();
     LinkedHashMap<String, ProfileEntry> profiles = new LinkedHashMap<String, ProfileEntry>();
 
