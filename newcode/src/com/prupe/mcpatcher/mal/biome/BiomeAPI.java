@@ -30,12 +30,7 @@ abstract public class BiomeAPI {
     }
 
     public static void parseBiomeList(String list, BitSet bits) {
-        if (!biomesLogged) {
-            biomesLogged = true;
-            for (BiomeGenBase biome : BiomeGenBase.biomeList) {
-                setupBiome(biome);
-            }
-        }
+        logBiomes();
         if (MCPatcherUtils.isNullOrEmpty(list)) {
             return;
         }
@@ -48,10 +43,11 @@ abstract public class BiomeAPI {
     }
 
     public static BiomeGenBase findBiomeByName(String name) {
+        logBiomes();
         if (name == null) {
             return null;
         }
-        name = name.trim();
+        name = name.replace(" ", "");
         if (name.isEmpty()) {
             return null;
         }
@@ -103,11 +99,17 @@ abstract public class BiomeAPI {
         return biome.waterColorMultiplier;
     }
 
-    public static void setupBiome(BiomeGenBase biome) {
-        if (biome != null) {
-            int x = (int) (255.0f * (1.0f - biome.temperature));
-            int y = (int) (255.0f * (1.0f - biome.temperature * biome.rainfall));
-            logger.config("setupBiome #%d \"%s\" %06x (%d,%d)", biome.biomeID, biome.biomeName, biome.waterColorMultiplier, x, y);
+    private static void logBiomes() {
+        if (!biomesLogged) {
+            biomesLogged = true;
+            for (int i = 0; i < BiomeGenBase.biomeList.length; i++) {
+                BiomeGenBase biome = BiomeGenBase.biomeList[i];
+                if (biome != null) {
+                    int x = (int) (255.0f * (1.0f - biome.temperature));
+                    int y = (int) (255.0f * (1.0f - biome.temperature * biome.rainfall));
+                    logger.config("setupBiome #%d id=%d \"%s\" %06x (%d,%d)", i, biome.biomeID, biome.biomeName, biome.waterColorMultiplier, x, y);
+                }
+            }
         }
     }
 

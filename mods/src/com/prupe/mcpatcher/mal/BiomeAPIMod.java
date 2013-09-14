@@ -46,7 +46,6 @@ public class BiomeAPIMod extends Mod {
             final FieldRef temperature = new FieldRef(getDeobfClass(), "temperature", "F");
             final FieldRef rainfall = new FieldRef(getDeobfClass(), "rainfall", "F");
             final FieldRef color = new FieldRef(getDeobfClass(), "color", "I");
-            final MethodRef setupBiome = new MethodRef(MCPatcherUtils.BIOME_API_CLASS, "setupBiome", "(LBiomeGenBase;)V");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -81,33 +80,6 @@ public class BiomeAPIMod extends Mod {
             );
 
             addMemberMapper(new FieldMapper(color).accessFlag(AccessFlag.PUBLIC, true));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "map biomes by name";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        ARETURN,
-                        end()
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        ALOAD_0,
-                        reference(INVOKESTATIC, setupBiome)
-                    );
-                }
-            }
-                .setInsertBefore(true)
-                .targetMethod(setBiomeName)
-            );
 
             if (malVersion == 1) {
                 mapTempAndRainfall("", new int[0]);
