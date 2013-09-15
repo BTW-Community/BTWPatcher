@@ -45,26 +45,32 @@ public class Colorizer {
             @Override
             public void afterChange() {
                 reloadColorProperties();
-                if (useFogColors) {
-                    ColorizeWorld.reloadFogColors(properties);
+                if (useParticleColors) {
+                    ColorizeEntity.reloadParticleColors(properties);
                 }
-                if (usePotionColors) {
-                    ColorizeItem.reloadPotionColors(properties);
+                if (useTreeColors) {
+                    ColorizeBlock.reloadFoliageColors(properties);
                 }
-                if (useSwampColors) {
-                    ColorizeBlock.reloadSwampColors(properties);
+                if (useWaterColors) {
+                    ColorizeBlock.reloadWaterColors(properties);
                 }
                 if (useBlockColors) {
                     ColorizeBlock.reloadBlockColors(properties);
                 }
-                if (useParticleColors) {
-                    ColorizeEntity.reloadParticleColors(properties);
+                if (useSwampColors) {
+                    ColorizeBlock.reloadSwampColors(properties);
                 }
                 if (useRedstoneColors) {
                     ColorizeBlock.reloadRedstoneColors(properties);
                 }
                 if (useStemColors) {
                     ColorizeBlock.reloadStemColors(properties);
+                }
+                if (useFogColors) {
+                    ColorizeWorld.reloadFogColors(properties);
+                }
+                if (usePotionColors) {
+                    ColorizeItem.reloadPotionColors(properties);
                 }
                 if (useCloudType) {
                     ColorizeWorld.reloadCloudType(properties);
@@ -81,7 +87,6 @@ public class Colorizer {
                 if (useXPOrbColors) {
                     ColorizeEntity.reloadXPOrbColors(properties);
                 }
-                ColorizeBlock.reloadColorMaps(properties);
             }
         });
     }

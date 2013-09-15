@@ -15,26 +15,22 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class CustomColors extends Mod {
-    private static final MethodRef colorizeBlock = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;)I");
-    private static final MethodRef colorizeBlock4Int = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;IIII)I");
-    private static final MethodRef colorizeBiome1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBiome", "(IIDD)I");
-    private static final MethodRef colorizeBiome2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBiome", "(II)I");
-    private static final MethodRef colorizeBiome3 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBiome", "(IIIII)I");
-    private static final MethodRef colorizeBiomeWithBlending = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBiomeWithBlending", "(IIIII)I");
+    private static final MethodRef getNewColorMultiplier1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "getColorMultiplier", "(LBlock;)I");
+    private static final MethodRef getNewColorMultiplier2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "getColorMultiplier", "(LBlock;I)I");
+    private static final MethodRef getNewColorMultiplier3 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "getColorMultiplier", "(LBlock;LIBlockAccess;III)I");
     private static final MethodRef colorizeRedstoneWire = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeRedstoneWire", "(LIBlockAccess;IIII)I");
     private static final MethodRef colorizeStem = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeStem", "(ILBlock;I)I");
-    private static final MethodRef colorizeWater = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeWater", "(Ljava/lang/Object;II)I");
     private static final MethodRef colorizeWaterBlockGL = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeWaterBlockGL", "(I)V");
     private static final MethodRef colorizeSpawnerEgg = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "colorizeSpawnerEgg", "(III)I");
     private static final MethodRef colorizeText1 = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "colorizeText", "(I)I");
     private static final MethodRef colorizeText2 = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "colorizeText", "(II)I");
     private static final MethodRef colorizeSignText = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "colorizeSignText", "()I");
     private static final MethodRef colorizeXPOrb = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "colorizeXPOrb", "(IF)I");
-    private static final MethodRef computeFogColor1 = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeFogColor", "(I)Z");
-    private static final MethodRef computeFogColor2 = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeFogColor", "(LWorld;F)Z");
+    private static final MethodRef computeUnderwaterColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeUnderwaterColor", "()Z");
+    private static final MethodRef computeFogColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeFogColor", "(LWorld;F)Z");
     private static final MethodRef computeSkyColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeSkyColor", "(LWorld;F)Z");
     private static final MethodRef computeLavaDropColor = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "computeLavaDropColor", "(I)Z");
-    private static final MethodRef computeWaterColor1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeWaterColor", "(DDD)Z");
+    private static final MethodRef computeWaterColor1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeWaterColor", "(III)Z");
     private static final MethodRef computeWaterColor2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeWaterColor", "()V");
     private static final MethodRef computeMyceliumParticleColor = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "computeMyceliumParticleColor", "()Z");
     private static final MethodRef computeRedstoneWireColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeRedstoneWireColor", "(I)Z");
@@ -59,6 +55,9 @@ public class CustomColors extends Mod {
 
     private static final MethodRef getColorFromDamage = new MethodRef("Item", "getColorFromDamage", "(LItemStack;I)I");
     private static final FieldRef fleeceColorTable = new FieldRef("EntitySheep", "fleeceColorTable", "[[F");
+    private static final MethodRef getBlockColor = new MethodRef("Block", "getBlockColor", "()I");
+    private static final MethodRef getRenderColor = new MethodRef("Block", "getRenderColor", "(I)I");
+    private static final MethodRef colorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;III)I");
 
     public CustomColors() {
         name = MCPatcherUtils.CUSTOM_COLORS;
@@ -79,7 +78,6 @@ public class CustomColors extends Mod {
         addClassMod(new BlockCauldronMod());
 
         addClassMod(new BaseMod.BiomeGenBaseMod(this));
-        addClassMod(new BiomeGenSwampMod());
         addClassMod(new BlockFluidMod());
         addClassMod(new ItemMod());
         if (getMinecraftVersion().compareTo("13w36a") < 0) { // TODO
@@ -89,9 +87,6 @@ public class CustomColors extends Mod {
 
         addClassMod(new PotionMod());
         addClassMod(new PotionHelperMod());
-
-        addClassMod(new ColorizerFoliageMod());
-        addClassMod(new BlockLeavesMod());
 
         addClassMod(new WorldMod());
         addClassMod(new BaseMod.WorldClientMod(this));
@@ -146,6 +141,8 @@ public class CustomColors extends Mod {
         addClassFile(MCPatcherUtils.COLORIZE_ENTITY_CLASS);
         addClassFile(MCPatcherUtils.COLORIZE_BLOCK_CLASS);
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS);
+        addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$V1");
+        addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$V2");
         addClassFile(MCPatcherUtils.LIGHTMAP_CLASS);
 
         BaseTexturePackMod.earlyInitialize(3, MCPatcherUtils.COLORIZER_CLASS, "init");
@@ -332,10 +329,12 @@ public class CustomColors extends Mod {
         BlockMod() {
             super(CustomColors.this);
 
-            final MethodRef getRenderColor = new MethodRef(getDeobfClass(), "getRenderColor", "(I)I");
-            final MethodRef colorMultiplier = new MethodRef(getDeobfClass(), "colorMultiplier", "(LIBlockAccess;III)I");
-            final InterfaceMethodRef getBlockMetadata = new InterfaceMethodRef("IBlockAccess", "getBlockMetadata", "(III)I");
+            match0xffffff(getBlockColor);
+            match0xffffff(getRenderColor);
+            match0xffffff(colorMultiplier);
+        }
 
+        private void match0xffffff(MethodRef method) {
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
@@ -346,60 +345,7 @@ public class CustomColors extends Mod {
                         end()
                     );
                 }
-            }.setMethod(getRenderColor));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override color multiplier for all blocks";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push(0xffffff)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        ALOAD_0,
-                        ILOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4,
-                        ALOAD_1,
-                        ILOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4,
-                        reference(INVOKEINTERFACE, getBlockMetadata),
-                        reference(INVOKESTATIC, colorizeBlock4Int)
-                    );
-                }
-
-            }.targetMethod(colorMultiplier));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override default color for all blocks";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push(0xffffff)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        ALOAD_0,
-                        reference(INVOKESTATIC, colorizeBlock)
-                    );
-                }
-            }.targetMethod(getRenderColor));
+            }.setMethod(method));
         }
     }
 
@@ -422,62 +368,10 @@ public class CustomColors extends Mod {
         }
     }
 
-    private class BiomeGenSwampMod extends ClassMod {
-        private static final int MAGIC1 = 0xfefefe;
-        private static final int MAGIC2 = 0x4e0e4e;
-        private static final int MAGIC3_A = 0xe0ff70;
-        private static final int MAGIC3_B = 0xe0ffae;
-
-        BiomeGenSwampMod() {
-            setParentClass("BiomeGenBase");
-
-            if (getMinecraftVersion().compareTo("13w36a") < 0) {
-                addClassSignature(new ConstSignature(MAGIC1));
-                addClassSignature(new ConstSignature(MAGIC2));
-                addClassSignature(new OrSignature(
-                    new ConstSignature(MAGIC3_A),
-                    new ConstSignature(MAGIC3_B)
-                ));
-            } else {
-                addClassSignature(new ConstSignature(0xe0ffae));
-                addClassSignature(new ConstSignature(0x4c763c));
-                addClassSignature(new ConstSignature(0x6a7039));
-            }
-
-            addSwampColorPatch("SWAMP_GRASS", "Grass");
-            addSwampColorPatch("SWAMP_FOLIAGE", "Foliage");
-        }
-
-        private void addSwampColorPatch(final String index, final String name) {
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override swamp " + name.toLowerCase() + " color";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        IRETURN
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.COLORIZER_CLASS, "COLOR_MAP_" + index, "I")),
-                        DLOAD_1,
-                        DLOAD_3,
-                        reference(INVOKESTATIC, colorizeBiome1),
-                        IRETURN
-                    );
-                }
-            }.targetMethod(new MethodRef(getDeobfClass(), "get" + name + "Color", "()I")));
-        }
-    }
-
     private class BlockFluidMod extends ClassMod {
         BlockFluidMod() {
+            setParentClass("Block");
+
             addClassSignature(new ConstSignature("splash"));
             addClassSignature(new ConstSignature("liquid.water"));
 
@@ -504,32 +398,6 @@ public class CustomColors extends Mod {
                 .setMethod(colorMultiplier)
                 .addXref(1, waterColorMultiplier)
             );
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override water color";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        reference(INVOKEINTERFACE, new InterfaceMethodRef("IBlockAccess", "getBiomeGenAt", "(II)LBiomeGenBase;")),
-                        or(
-                            build(reference(GETFIELD, waterColorMultiplier)), // vMC
-                            build(reference(INVOKEVIRTUAL, getWaterColorMultiplier)) // forge
-                        )
-
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, colorizeWater)
-                    );
-                }
-            }.targetMethod(colorMultiplier));
         }
     }
 
@@ -618,7 +486,7 @@ public class CustomColors extends Mod {
                         // GL11.glTranslatef(-0.9375f, -0.0625f, 0.0f);
                         push(-0.9375f),
                         push(-0.0625f),
-                        FCONST_0,
+                        push(0.0f),
                         reference(INVOKESTATIC, glTranslatef)
                     );
                 }
@@ -639,7 +507,7 @@ public class CustomColors extends Mod {
                         // GL11.glTranslatef(-0.9375f, -0.0625f, 0.0f);
                         push(-0.9375f),
                         push(-0.0625f),
-                        FCONST_0,
+                        push(0.0f),
                         reference(INVOKESTATIC, glTranslatef)
                     );
                 }
@@ -824,132 +692,6 @@ public class CustomColors extends Mod {
         }
     }
 
-    private class ColorizerFoliageMod extends ClassMod {
-        ColorizerFoliageMod() {
-            setupColor("PINE", 0x619961, "Pine");
-            setupColor("BIRCH", 0x80a755, "Birch");
-            setupColor("FOLIAGE", 0x48b518, "Basic");
-        }
-
-        private void setupColor(final String index, final int color, final String name) {
-            addClassSignature(new ConstSignature(color));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override default " + name.toLowerCase() + " foliage color";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        begin(),
-                        push(color),
-                        IRETURN,
-                        end()
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        push(color),
-                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.COLORIZER_CLASS, "COLOR_MAP_" + index, "I")),
-                        reference(INVOKESTATIC, colorizeBiome2),
-                        IRETURN
-                    );
-                }
-            });
-        }
-    }
-
-    private class BlockLeavesMod extends ClassMod {
-        private final MethodRef colorMultiplier = new MethodRef(getDeobfClass(), "colorMultiplier", "(LIBlockAccess;III)I");
-
-        BlockLeavesMod() {
-            setParentClass("BlockLeavesBase");
-
-            final MethodRef getFoliageColorPine = new MethodRef("ColorizerFoliage", "getFoliageColorPine", "()I");
-            final MethodRef getFoliageColorBirch = new MethodRef("ColorizerFoliage", "getFoliageColorBirch", "()I");
-            final InterfaceMethodRef getBlockMetadata = new InterfaceMethodRef("IBlockAccess", "getBlockMetadata", "(III)I");
-
-            addClassSignature(new ConstSignature("oak"));
-            addClassSignature(new ConstSignature("spruce"));
-            addClassSignature(new ConstSignature("birch"));
-            addClassSignature(new ConstSignature("jungle"));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        begin(),
-                        ALOAD_1,
-                        ILOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4,
-                        captureReference(INVOKEINTERFACE),
-                        ISTORE, 5,
-
-                        ILOAD, 5,
-                        subset(new byte[]{ICONST_1, ICONST_3}, true), // 1.1 uses (i & 1) == 1, 12w03a uses (i & 3) == 1
-                        IAND,
-                        ICONST_1,
-                        IF_ICMPNE, any(2),
-                        captureReference(INVOKESTATIC),
-                        IRETURN,
-
-                        ILOAD, 5,
-                        subset(new byte[]{ICONST_2, ICONST_3}, true), // 1.1 uses (i & 2) == 2, 12w03a uses (i & 3) == 2
-                        IAND,
-                        ICONST_2,
-                        IF_ICMPNE, any(2),
-
-                        captureReference(INVOKESTATIC),
-                        IRETURN
-                    );
-                }
-            }
-                .setMethod(colorMultiplier)
-                .addXref(1, getBlockMetadata)
-                .addXref(2, getFoliageColorPine)
-                .addXref(3, getFoliageColorBirch)
-            );
-
-            addFoliagePatch("PINE", "Pine");
-            addFoliagePatch("BIRCH", "Birch");
-        }
-
-        private void addFoliagePatch(final String index, final String name) {
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override biome " + name.toLowerCase() + " foliage color";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        reference(INVOKESTATIC, new MethodRef("ColorizerFoliage", "getFoliageColor" + name, "()I"))
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.COLORIZER_CLASS, "COLOR_MAP_" + index, "I")),
-                        ILOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4,
-                        reference(INVOKESTATIC, colorizeBiomeWithBlending)
-                    );
-                }
-            }
-                .setInsertAfter(true)
-                .targetMethod(colorMultiplier)
-            );
-        }
-    }
-
     private class WorldMod extends BaseMod.WorldMod {
         WorldMod() {
             super(CustomColors.this);
@@ -1096,68 +838,6 @@ public class CustomColors extends Mod {
                     );
                 }
             }.setMethod(getFogColor));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override fog color";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // f3 = 0.7529412f;
-                        push(0.7529412f),
-                        FSTORE, capture(any()),
-
-                        // f4 = 0.84705883f;
-                        push(0.84705883f),
-                        FSTORE, capture(any()),
-
-                        // f5 = 1.0f;
-                        push(1.0f),
-                        FSTORE, capture(any())
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // if (ColorizeWorld.computeFogColor(Colorizer.COLOR_MAP_FOG0)) {
-                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.COLORIZER_CLASS, "COLOR_MAP_FOG0", "I")),
-                        reference(INVOKESTATIC, computeFogColor1),
-                        IFEQ, branch("A"),
-
-                        // f3 = Colorizer.setColor[0];
-                        reference(GETSTATIC, setColor),
-                        ICONST_0,
-                        FALOAD,
-                        FSTORE, getCaptureGroup(1),
-
-                        // f4 = Colorizer.setColor[1];
-                        reference(GETSTATIC, setColor),
-                        ICONST_1,
-                        FALOAD,
-                        FSTORE, getCaptureGroup(2),
-
-                        // f5 = Colorizer.setColor[2];
-                        reference(GETSTATIC, setColor),
-                        ICONST_2,
-                        FALOAD,
-                        FSTORE, getCaptureGroup(3),
-
-                        // } else {
-                        GOTO, branch("B"),
-                        label("A"),
-
-                        // ... original code ...
-                        getMatch(),
-
-                        // }
-                        label("B")
-                    );
-                }
-            }.targetMethod(getFogColor));
         }
     }
 
@@ -1465,33 +1145,36 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (Colorizer.computeWaterColor(i, j, k)) {
+                        // if (ColorizeBlock.computeWaterColor((int) this.posX, (int) this.posY, (int) this.posZ)) {
                         ALOAD_0,
                         reference(GETFIELD, posX),
+                        D2I,
                         ALOAD_0,
                         reference(GETFIELD, posY),
+                        D2I,
                         ALOAD_0,
                         reference(GETFIELD, posZ),
+                        D2I,
                         reference(INVOKESTATIC, computeWaterColor1),
                         IFEQ, branch("A"),
 
-                        // particleRed = Colorizer.waterColor[0];
+                        // particleRed = Colorizer.setColor[0];
                         ALOAD_0,
-                        reference(GETSTATIC, waterColor),
+                        reference(GETSTATIC, setColor),
                         ICONST_0,
                         FALOAD,
                         reference(PUTFIELD, particleRed),
 
-                        // particleGreen = Colorizer.waterColor[1];
+                        // particleGreen = Colorizer.setColor[1];
                         ALOAD_0,
-                        reference(GETSTATIC, waterColor),
+                        reference(GETSTATIC, setColor),
                         ICONST_1,
                         FALOAD,
                         reference(PUTFIELD, particleGreen),
 
-                        // particleBlue = Colorizer.waterColor[2];
+                        // particleBlue = Colorizer.setColor[2];
                         ALOAD_0,
-                        reference(GETSTATIC, waterColor),
+                        reference(GETSTATIC, setColor),
                         ICONST_2,
                         FALOAD,
                         reference(PUTFIELD, particleBlue),
@@ -1827,37 +1510,39 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // ColorizeEntity.computeSuspendColor(0x6666b2, (int) x, (int) y, (int) z);
                         push(0x6666b2),
-                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.COLORIZER_CLASS, "COLOR_MAP_UNDERWATER", "I")),
                         DLOAD_2,
                         D2I,
                         DLOAD, 4,
                         D2I,
                         DLOAD, 6,
                         D2I,
-                        reference(INVOKESTATIC, colorizeBiome3),
-                        reference(INVOKESTATIC, setColorF),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "computeSuspendColor", "(IIII)V")),
 
+                        // this.particleRed = Colorizer.setColor[0];
                         ALOAD_0,
                         reference(GETSTATIC, setColor),
-                        ICONST_0,
+                        push(0),
                         FALOAD,
                         reference(PUTFIELD, particleRed),
 
+                        // this.particleGreen = Colorizer.setColor[1];
                         ALOAD_0,
                         reference(GETSTATIC, setColor),
-                        ICONST_1,
+                        push(1),
                         FALOAD,
                         reference(PUTFIELD, particleGreen),
 
+                        // this.particleBlue = Colorizer.setColor[2];
                         ALOAD_0,
                         reference(GETSTATIC, setColor),
-                        ICONST_2,
+                        push(2),
                         FALOAD,
                         reference(PUTFIELD, particleBlue)
                     );
                 }
-            });
+            }.matchConstructorOnly(true));
         }
     }
 
@@ -2457,7 +2142,7 @@ public class CustomColors extends Mod {
                         // if (ColorizeWorld.computeFogColor(world, f)) {
                         ALOAD_2,
                         FLOAD_1,
-                        reference(INVOKESTATIC, computeFogColor2),
+                        reference(INVOKESTATIC, computeFogColor),
                         IFEQ, branch("A"),
 
                         // fogColorRed = Colorizer.setColor[0];
@@ -2525,9 +2210,8 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (ColorizeWorld.computeFogColor(Colorizer.COLOR_MAP_UNDERWATER)) {
-                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.COLORIZER_CLASS, "COLOR_MAP_UNDERWATER", "I")),
-                        reference(INVOKESTATIC, computeFogColor1),
+                        // if (ColorizeWorld.computeUnderwaterColor()) {
+                        reference(INVOKESTATIC, computeUnderwaterColor),
                         IFEQ, branch("A"),
 
                         // fogColorRed = Colorizer.setColor[0];
@@ -2708,6 +2392,7 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature(0.1875));
             addClassSignature(new ConstSignature(0.01));
 
+            final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
             final MethodRef renderBlockFallingSand = new MethodRef(getDeobfClass(), "renderBlockFallingSand", "(LBlock;LWorld;IIII)V");
             final MethodRef renderBlockFluids = new MethodRef(getDeobfClass(), "renderBlockFluids", "(LBlock;III)Z");
             final MethodRef renderBlockCauldron = new MethodRef(getDeobfClass(), "renderBlockCauldron", "(LBlockCauldron;III)Z");
@@ -2729,8 +2414,8 @@ public class CustomColors extends Mod {
                 }
             }
                 .setMethod(renderBlockFluids)
-                .addXref(1, new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;"))
-                .addXref(2, new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;III)I"))
+                .addXref(1, blockAccess)
+                .addXref(2, colorMultiplier)
             );
 
             addClassSignature(new BytecodeSignature() {
@@ -2751,6 +2436,48 @@ public class CustomColors extends Mod {
             }.setMethod(renderBlockFallingSand));
 
             addMemberMapper(new MethodMapper(renderBlockCauldron));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override block color";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKEVIRTUAL, colorMultiplier)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(INVOKESTATIC, getNewColorMultiplier3)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override block color (held)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKEVIRTUAL, getRenderColor)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(INVOKESTATIC, getNewColorMultiplier2)
+                    );
+                }
+            });
 
             addPatch(new TessellatorPatch() {
                 @Override
@@ -2773,15 +2500,15 @@ public class CustomColors extends Mod {
                         // Colorizer.computeWaterColor();
                         reference(INVOKESTATIC, computeWaterColor2),
 
-                        // tessellator.setColorOpaque(Colorizer.waterColor[0], Colorizer.waterColor[1], Colorizer.waterColor[2]);
+                        // tessellator.setColorOpaque(Colorizer.setColor[0], Colorizer.setColor[1], Colorizer.setColor[2]);
                         ALOAD, tessellatorRegister,
-                        reference(GETSTATIC, waterColor),
+                        reference(GETSTATIC, setColor),
                         push(0),
                         FALOAD,
-                        reference(GETSTATIC, waterColor),
+                        reference(GETSTATIC, setColor),
                         push(1),
                         FALOAD,
-                        reference(GETSTATIC, waterColor),
+                        reference(GETSTATIC, setColor),
                         push(2),
                         FALOAD,
                         reference(INVOKEVIRTUAL, setColorOpaque_F)
@@ -2826,13 +2553,14 @@ public class CustomColors extends Mod {
                     } else {
                         done = true;
                         extraCode = buildCode(
-                            // setColorF(Colorizer.colorizeBlock(block, i, j, k, 0));
+                            // setColorF(ColorizeBlock.getColorMultiplier(block, this.blockAccess, i, j, k));
                             ALOAD_1,
+                            ALOAD_0,
+                            reference(GETFIELD, blockAccess),
                             ILOAD_3,
                             ILOAD, 4,
                             ILOAD, 5,
-                            ICONST_0,
-                            reference(INVOKESTATIC, colorizeBlock4Int),
+                            reference(INVOKESTATIC,  getNewColorMultiplier3),
                             reference(INVOKESTATIC, setColorF)
                         );
                     }
@@ -2970,7 +2698,6 @@ public class CustomColors extends Mod {
 
         private void setupBTW() {
             final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
-            final MethodRef colorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;III)I");
             final MethodRef renderBlock = new MethodRef(getDeobfClass(), "RenderStandardFullBlock", "(LBlock;III)Z");
             final MethodRef renderBlockAO = new MethodRef(getDeobfClass(), "RenderStandardFullBlockWithAmbientOcclusion", "(LBlock;III)Z");
             final MethodRef renderBlockCM = new MethodRef(getDeobfClass(), "RenderStandardFullBlockWithColorMultiplier", "(LBlock;III)Z");

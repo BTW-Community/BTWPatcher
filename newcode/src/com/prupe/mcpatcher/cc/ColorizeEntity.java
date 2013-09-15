@@ -122,4 +122,11 @@ public class ColorizeEntity {
     public static int getPotionEffectColor(int defaultColor, EntityLivingBase entity) {
         return defaultColor == 0 ? defaultColor : entity.overridePotionColor;
     }
+
+    public static void computeSuspendColor(int defaultColor, int i, int j, int k) {
+        if (ColorizeWorld.underwaterColor != null) {
+            defaultColor = ColorizeWorld.underwaterColor.getColorMultiplier(i, j, k);
+        }
+        Colorizer.setColorF(defaultColor);
+    }
 }

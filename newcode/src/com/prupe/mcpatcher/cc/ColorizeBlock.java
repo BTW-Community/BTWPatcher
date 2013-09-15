@@ -26,10 +26,10 @@ public class ColorizeBlock {
     private static final ResourceLocation MELON_STEM_COLORS = TexturePackAPI.newMCPatcherResourceLocation("colormap/melonstem.png");
     private static final ResourceLocation SWAMPGRASSCOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/swampgrass.png");
     private static final ResourceLocation SWAMPFOLIAGECOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/swampfoliage.png");
+    private static final ResourceLocation DEFAULT_FOLIAGECOLOR = new ResourceLocation("minecraft", "textures/colormap/foliage.png");
     private static final ResourceLocation FOLIAGECOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/foliage.png");
     private static final ResourceLocation PINECOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/pine.png");
     private static final ResourceLocation BIRCHCOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/birch.png");
-    private static final ResourceLocation JUNGLECOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/jungle.png");
     private static final ResourceLocation WATERCOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/water.png");
 
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
@@ -38,19 +38,23 @@ public class ColorizeBlock {
     private static final int BLOCK_ID_WATER = 8;
     private static final int BLOCK_ID_WATER_STATIC = 9;
     private static final int BLOCK_ID_LEAVES = 18;
+    private static final int BLOCK_ID_TALL_GRASS = 31;
     private static final int BLOCK_ID_PUMPKIN_STEM = 104;
     private static final int BLOCK_ID_MELON_STEM = 105;
+    private static final int BLOCK_ID_VINE = 106;
 
     private static final ColorMap[] blockColorMaps = new ColorMap[BlockAPI.getNumBlocks()]; // bitmaps from palette.block.*
     private static final Map<Integer, ColorMap> blockMetaColorMaps = new HashMap<Integer, ColorMap>(); // bitmaps from palette.block.*
     private static ColorMap swampGrassColorMap;
     private static ColorMap swampFoliageColorMap;
+    private static ColorMap waterColorMap;
     private static int lilypadColor; // lilypad
     private static float[][] redstoneColor; // colormap/redstone.png
     private static int[] pumpkinStemColors; // colormap/pumpkinstem.png
     private static int[] melonStemColors; // colormap/melonstem.png
 
     private static BiomeGenBase swampBiome;
+    private static Block waterBlock;
 
     private static final int blockBlendRadius = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius", 1);
 
@@ -66,11 +70,13 @@ public class ColorizeBlock {
 
     static void reset() {
         swampBiome = BiomeAPI.findBiomeByName("Swampland");
+        waterBlock = BlockAPI.getBlockById(BLOCK_ID_WATER);
 
         Arrays.fill(blockColorMaps, null);
         blockMetaColorMaps.clear();
         swampGrassColorMap = null;
         swampFoliageColorMap = null;
+        waterColorMap = null;
 
         lilypadColor = 0x208030;
         waterColor = new float[]{0.2f, 0.3f, 1.0f};
@@ -79,28 +85,27 @@ public class ColorizeBlock {
         melonStemColors = null;
     }
 
-    static void reloadColorMaps(Properties properties) {
-        if (Colorizer.useTreeColors) {
-            registerColorMap(FOLIAGECOLOR, BLOCK_ID_LEAVES, 0);
-            registerColorMap(PINECOLOR, BLOCK_ID_LEAVES, 1);
-            registerColorMap(BIRCHCOLOR, BLOCK_ID_LEAVES, 2);
-            registerColorMap(JUNGLECOLOR, BLOCK_ID_LEAVES, 3);
-        }
-        if (Colorizer.useWaterColors) {
-            ColorMap colorMap = registerColorMap(WATERCOLOR, BLOCK_ID_WATER + " " + BLOCK_ID_WATER_STATIC);
-            if (colorMap != null) {
-                colorMap.multiplyMap(ColorizeEntity.waterBaseColor);
-            }
-        }
+    static void reloadFoliageColors(Properties properties) {
+        registerColorMap(DEFAULT_FOLIAGECOLOR, BLOCK_ID_TALL_GRASS + " " + BLOCK_ID_VINE);
+        registerColorMap(FOLIAGECOLOR, BLOCK_ID_LEAVES + ":0 " + BLOCK_ID_VINE);
+        registerColorMap(PINECOLOR, BLOCK_ID_LEAVES, 1);
+        registerColorMap(BIRCHCOLOR, BLOCK_ID_LEAVES, 2);
+    }
 
-        swampGrassColorMap = ColorMap.loadColorMap(Colorizer.useSwampColors, SWAMPGRASSCOLOR);
-        swampFoliageColorMap = ColorMap.loadColorMap(Colorizer.useSwampColors, SWAMPFOLIAGECOLOR);
+    static void reloadWaterColors(Properties properties) {
+        waterColorMap = registerColorMap(WATERCOLOR, BLOCK_ID_WATER + " " + BLOCK_ID_WATER_STATIC);
+        if (waterColorMap != null) {
+            waterColorMap.multiplyMap(ColorizeEntity.waterBaseColor);
+        }
     }
 
     static void reloadSwampColors(Properties properties) {
         int[] temp = new int[]{lilypadColor};
         Colorizer.loadIntColor("lilypad", temp, 0);
         lilypadColor = temp[0];
+
+        swampGrassColorMap = ColorMap.loadColorMap(Colorizer.useSwampColors, SWAMPGRASSCOLOR);
+        swampFoliageColorMap = ColorMap.loadColorMap(Colorizer.useSwampColors, SWAMPFOLIAGECOLOR);
     }
 
     static void reloadBlockColors(Properties properties) {
@@ -231,7 +236,7 @@ public class ColorizeBlock {
         int blockId = BlockAPI.getBlockId(block);
         ColorMap colorMap = findColorMap(blockId, metadata);
         if (colorMap == null) {
-            return block.getBlockColor();
+            return block.getRenderColor(metadata);
         } else {
             return colorMap.getColorMultiplier();
         }
@@ -242,9 +247,23 @@ public class ColorizeBlock {
         int blockId = BlockAPI.getBlockId(block);
         ColorMap colorMap = findColorMap(blockId, metadata, BiomeAPI.getBiomeGenAt(i, j, k));
         if (colorMap == null) {
-            return block.getBlockColor();
+            return block.colorMultiplier(blockAccess, i, j, k);
         } else {
             return colorMap.getColorMultiplier(i, j, k, blockBlendRadius);
+        }
+    }
+
+    public static void computeWaterColor() {
+        int color = waterColorMap == null ? waterBlock.getBlockColor() : waterColorMap.getColorMultiplier();
+        Colorizer.setColorF(color);
+    }
+
+    public static boolean computeWaterColor(int i, int j, int k) {
+        if (waterColorMap == null) {
+            return false;
+        } else {
+            Colorizer.setColorF(waterColorMap.getColorMultiplier(i, j, k));
+            return true;
         }
     }
 

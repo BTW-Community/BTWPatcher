@@ -36,7 +36,7 @@ public class ColorizeWorld {
     private static final boolean[] textCodeColorSet = new boolean[32];
     private static int signTextColor; // text.sign
 
-    private static ColorMap underwaterColor;
+    static ColorMap underwaterColor;
     private static ColorMap fogColorMap;
     private static ColorMap skyColorMap;
 
