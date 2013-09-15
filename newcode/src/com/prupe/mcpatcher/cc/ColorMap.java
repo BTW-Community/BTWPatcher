@@ -286,7 +286,7 @@ abstract class ColorMap {
         }
 
         private float getY(BiomeGenBase biome, int i, int j, int k) {
-            float y = (float) j * yScale;
+            float y = (float) (255 - j) * yScale;
             if (yVariance != 0.0f) {
                 y += yVariance * noiseMinus1to1(k, -j, i, ~biome.biomeID);
             }
