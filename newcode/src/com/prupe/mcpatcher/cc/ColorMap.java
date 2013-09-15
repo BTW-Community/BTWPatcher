@@ -73,6 +73,17 @@ abstract class ColorMap {
         mapDefault = MCPatcherUtils.getHexProperty(properties, "defaultColor", getDefaultColor());
     }
 
+    void multiplyMap(float[] f) {
+        float[] g = new float[3];
+        for (int i = 0; i < map.length; i++) {
+            Colorizer.intToFloat3(map[i], g);
+            g[0] *= f[0];
+            g[1] *= f[1];
+            g[2] *= f[2];
+            map[i] = Colorizer.float3ToInt(g);
+        }
+    }
+
     int getColorMultiplier(int i, int j, int k) {
         computeXY(BiomeAPI.getBiomeGenAt(i, j, k), i, j, k, xy);
         return getRGB(xy[0], xy[1]);

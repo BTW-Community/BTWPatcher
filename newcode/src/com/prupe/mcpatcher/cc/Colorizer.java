@@ -45,7 +45,6 @@ public class Colorizer {
             @Override
             public void afterChange() {
                 reloadColorProperties();
-                ColorizeBlock.reloadColorMaps(properties);
                 if (useFogColors) {
                     ColorizeWorld.reloadFogColors(properties);
                 }
@@ -82,6 +81,7 @@ public class Colorizer {
                 if (useXPOrbColors) {
                     ColorizeEntity.reloadXPOrbColors(properties);
                 }
+                ColorizeBlock.reloadColorMaps(properties);
             }
         });
     }

@@ -34,9 +34,9 @@ public class ColorizeBlock {
 
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
 
+    private static final int BLOCK_ID_GRASS = 2;
     private static final int BLOCK_ID_WATER = 8;
     private static final int BLOCK_ID_WATER_STATIC = 9;
-    private static final int BLOCK_ID_GRASS = 2;
     private static final int BLOCK_ID_LEAVES = 18;
     private static final int BLOCK_ID_PUMPKIN_STEM = 104;
     private static final int BLOCK_ID_MELON_STEM = 105;
@@ -80,11 +80,18 @@ public class ColorizeBlock {
     }
 
     static void reloadColorMaps(Properties properties) {
-        registerColorMap(FOLIAGECOLOR, BLOCK_ID_LEAVES, 0);
-        registerColorMap(PINECOLOR, BLOCK_ID_LEAVES, 1);
-        registerColorMap(BIRCHCOLOR, BLOCK_ID_LEAVES, 2);
-        registerColorMap(JUNGLECOLOR, BLOCK_ID_LEAVES, 3);
-        registerColorMap(WATERCOLOR, BLOCK_ID_WATER + " " + BLOCK_ID_WATER_STATIC);
+        if (Colorizer.useTreeColors) {
+            registerColorMap(FOLIAGECOLOR, BLOCK_ID_LEAVES, 0);
+            registerColorMap(PINECOLOR, BLOCK_ID_LEAVES, 1);
+            registerColorMap(BIRCHCOLOR, BLOCK_ID_LEAVES, 2);
+            registerColorMap(JUNGLECOLOR, BLOCK_ID_LEAVES, 3);
+        }
+        if (Colorizer.useWaterColors) {
+            ColorMap colorMap = registerColorMap(WATERCOLOR, BLOCK_ID_WATER + " " + BLOCK_ID_WATER_STATIC);
+            if (colorMap != null) {
+                colorMap.multiplyMap(ColorizeEntity.waterBaseColor);
+            }
+        }
 
         swampGrassColorMap = ColorMap.loadColorMap(Colorizer.useSwampColors, SWAMPGRASSCOLOR);
         swampFoliageColorMap = ColorMap.loadColorMap(Colorizer.useSwampColors, SWAMPFOLIAGECOLOR);
@@ -115,14 +122,14 @@ public class ColorizeBlock {
         }
     }
 
-    private static void registerColorMap(ResourceLocation resource, int blockId, int metadata) {
-        registerColorMap(resource, blockId + ":" + metadata);
+    private static ColorMap registerColorMap(ResourceLocation resource, int blockId, int metadata) {
+        return registerColorMap(resource, blockId + ":" + metadata);
     }
 
-    private static void registerColorMap(ResourceLocation resource, String idList) {
+    private static ColorMap registerColorMap(ResourceLocation resource, String idList) {
         ColorMap colorMap = ColorMap.loadColorMap(true, resource);
         if (colorMap == null) {
-            return;
+            return null;
         }
         for (String idString : idList.split("\\s+")) {
             String[] tokens = idString.split(":");
@@ -151,6 +158,7 @@ public class ColorizeBlock {
             }
             logger.finer("using %s for block %s, default color %06x", resource, idString, colorMap.getColorMultiplier());
         }
+        return colorMap;
     }
 
     static void reloadRedstoneColors(Properties properties) {
@@ -210,18 +218,6 @@ public class ColorizeBlock {
         return findColorMap(blockId, metadata);
     }
 
-    private static int postProcessColorMultiplier(int blockId, int rgb) {
-        if (blockId == BLOCK_ID_WATER || blockId == BLOCK_ID_WATER_STATIC) {
-            Colorizer.intToFloat3(rgb, waterColor);
-            waterColor[0] *= ColorizeEntity.waterBaseColor[0];
-            waterColor[1] *= ColorizeEntity.waterBaseColor[1];
-            waterColor[2] *= ColorizeEntity.waterBaseColor[2];
-            return Colorizer.float3ToInt(waterColor);
-        } else {
-            return rgb;
-        }
-    }
-
     public static int getColorMultiplier(Block block) {
         ColorMap colorMap = blockColorMaps[BlockAPI.getBlockId(block)];
         if (colorMap == null) {
@@ -237,7 +233,7 @@ public class ColorizeBlock {
         if (colorMap == null) {
             return block.getBlockColor();
         } else {
-            return postProcessColorMultiplier(blockId, colorMap.getColorMultiplier());
+            return colorMap.getColorMultiplier();
         }
     }
 
@@ -248,7 +244,7 @@ public class ColorizeBlock {
         if (colorMap == null) {
             return block.getBlockColor();
         } else {
-            return postProcessColorMultiplier(blockId, colorMap.getColorMultiplier(i, j, k, blockBlendRadius));
+            return colorMap.getColorMultiplier(i, j, k, blockBlendRadius);
         }
     }
 
