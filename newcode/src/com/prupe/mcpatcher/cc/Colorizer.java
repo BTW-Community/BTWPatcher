@@ -28,19 +28,6 @@ public class Colorizer {
     static final boolean useXPOrbColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "xporb", true);
     static final boolean useEggColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "egg", true);
 
-    public static final int COLOR_MAP_SWAMP_GRASS = 0;
-    public static final int COLOR_MAP_SWAMP_FOLIAGE = 1;
-    public static final int COLOR_MAP_PINE = 2;
-    public static final int COLOR_MAP_BIRCH = 3;
-    public static final int COLOR_MAP_FOLIAGE = 4;
-    public static final int COLOR_MAP_WATER = 5;
-    public static final int COLOR_MAP_UNDERWATER = 6;
-    public static final int COLOR_MAP_FOG0 = 7;
-    public static final int COLOR_MAP_SKY0 = 8;
-    public static final int NUM_FIXED_COLOR_MAPS = 9;
-
-    static final ColorMap[] fixedColorMaps = new ColorMap[NUM_FIXED_COLOR_MAPS]; // bitmaps from FIXED_COLOR_MAPS
-
     public static final float[] setColor = new float[3];
 
     static {

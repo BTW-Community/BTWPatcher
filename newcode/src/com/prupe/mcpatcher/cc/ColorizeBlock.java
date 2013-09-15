@@ -39,14 +39,13 @@ public class ColorizeBlock {
     private static final int BLOCK_ID_MELON_STEM = 105;
 
     private static final ColorMap[] blockColorMaps = new ColorMap[BlockAPI.getNumBlocks()]; // bitmaps from palette.block.*
-    private static final Map<Float, ColorMap> blockMetaColorMaps = new HashMap<Float, ColorMap>(); // bitmaps from palette.block.*
+    private static final Map<Integer, ColorMap> blockMetaColorMaps = new HashMap<Integer, ColorMap>(); // bitmaps from palette.block.*
     private static int lilypadColor; // lilypad
     private static float[][] redstoneColor; // colormap/redstone.png
     private static int[] pumpkinStemColors; // colormap/pumpkinstem.png
     private static int[] melonStemColors; // colormap/melonstem.png
 
     private static final int blockBlendRadius = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius", 1);
-    private static final float blockBlendScale = (float) Math.pow(2 * blockBlendRadius + 1, -2);
 
     public static float[] waterColor;
 
@@ -59,16 +58,6 @@ public class ColorizeBlock {
     }
 
     static void reset() {
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_SWAMP_GRASS] = new ColorMap(0x4e4e4e);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_SWAMP_FOLIAGE] = new ColorMap(0x4e4e4e);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_PINE] = new ColorMap(0x619961);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_BIRCH] = new ColorMap(0x80a755);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_FOLIAGE] = new ColorMap(0x48b518);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_WATER] = new ColorMap(0xffffff);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_UNDERWATER] = new ColorMap(0x050533);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_FOG0] = new ColorMap(0xc0d8ff);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_SKY0] = new ColorMap(0xffffff);
-
         Arrays.fill(blockColorMaps, null);
         blockMetaColorMaps.clear();
 
@@ -80,16 +69,6 @@ public class ColorizeBlock {
     }
 
     static void reloadColorMaps(Properties properties) {
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_SWAMP_GRASS].loadColorMap(Colorizer.useSwampColors, SWAMPGRASSCOLOR);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_SWAMP_FOLIAGE].loadColorMap(Colorizer.useSwampColors, SWAMPFOLIAGECOLOR);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_PINE].loadColorMap(Colorizer.useTreeColors, PINECOLOR);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_BIRCH].loadColorMap(Colorizer.useTreeColors, BIRCHCOLOR);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_FOLIAGE].loadColorMap(Colorizer.useTreeColors, FOLIAGECOLOR);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_FOLIAGE].clear();
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_WATER].loadColorMap(Colorizer.useWaterColors, WATERCOLOR);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_UNDERWATER].loadColorMap(Colorizer.useWaterColors, UNDERWATERCOLOR);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_FOG0].loadColorMap(Colorizer.useFogColors, FOGCOLOR0);
-        Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_SKY0].loadColorMap(Colorizer.useFogColors, SKYCOLOR0);
     }
 
     static void reloadSwampColors(Properties properties) {
@@ -108,42 +87,45 @@ public class ColorizeBlock {
             if (!key.startsWith(PALETTE_BLOCK_KEY)) {
                 continue;
             }
-            ResourceLocation address = TexturePackAPI.parseResourceLocation(Colorizer.COLOR_PROPERTIES, key.substring(PALETTE_BLOCK_KEY.length()).trim());
-            if (address == null) {
+            key = key.substring(PALETTE_BLOCK_KEY.length()).trim();
+            ResourceLocation resource = TexturePackAPI.parseResourceLocation(Colorizer.COLOR_PROPERTIES, key);
+            if (resource == null) {
                 continue;
             }
-            ColorMap colorMap = new ColorMap(0xffffff);
-            colorMap.loadColorMap(true, address);
-            if (!colorMap.isCustom()) {
-                continue;
-            }
-            for (String idString : value.split("\\s+")) {
-                String[] tokens = idString.split(":");
-                int[] tokensInt = new int[tokens.length];
-                try {
-                    for (int i = 0; i < tokens.length; i++) {
-                        tokensInt[i] = Integer.parseInt(tokens[i]);
-                    }
-                } catch (NumberFormatException e) {
-                    continue;
+            registerColorMap(ColorMap.loadColorMap(true, resource), resource, value);
+        }
+    }
+
+    private static void registerColorMap(ColorMap colorMap, ResourceLocation resource, String idList) {
+        if (colorMap == null) {
+            return;
+        }
+        for (String idString : idList.split("\\s+")) {
+            String[] tokens = idString.split(":");
+            int[] tokensInt = new int[tokens.length];
+            try {
+                for (int i = 0; i < tokens.length; i++) {
+                    tokensInt[i] = Integer.parseInt(tokens[i]);
                 }
-                switch (tokensInt.length) {
-                    case 1:
-                        if (tokensInt[0] < 0 || tokensInt[0] >= blockColorMaps.length) {
-                            continue;
-                        }
-                        blockColorMaps[tokensInt[0]] = colorMap;
-                        break;
-
-                    case 2:
-                        blockMetaColorMaps.put(ColorMap.getBlockMetaKey(tokensInt[0], tokensInt[1]), colorMap);
-                        break;
-
-                    default:
+            } catch (NumberFormatException e) {
+                continue;
+            }
+            switch (tokensInt.length) {
+                case 1:
+                    if (tokensInt[0] < 0 || tokensInt[0] >= blockColorMaps.length) {
                         continue;
-                }
-                logger.finer("using %s for block %s, default color %06x", key, idString, colorMap.colorize());
+                    }
+                    blockColorMaps[tokensInt[0]] = colorMap;
+                    break;
+
+                case 2:
+                    blockMetaColorMaps.put(ColorMap.getBlockMetaKey(tokensInt[0], tokensInt[1]), colorMap);
+                    break;
+
+                default:
+                    continue;
             }
+            logger.finer("using %s for block %s, default color %06x", resource, idString, colorMap.getColorMultiplier());
         }
     }
 
@@ -174,6 +156,42 @@ public class ColorizeBlock {
     private static int[] getStemRGB(ResourceLocation resource) {
         int[] rgb = MCPatcherUtils.getImageRGB(TexturePackAPI.getImage(resource));
         return rgb == null || rgb.length < 8 ? null : rgb;
+    }
+
+    private static ColorMap findColorMap(int blockId, int metadata) {
+        ColorMap colorMap = blockMetaColorMaps.get(ColorMap.getBlockMetaKey(blockId, metadata));
+        if (colorMap != null) {
+            return colorMap;
+        }
+        return blockColorMaps[blockId];
+    }
+
+    public static int getColorMultiplier(Block block) {
+        ColorMap colorMap = blockColorMaps[BlockAPI.getBlockId(block)];
+        if (colorMap == null) {
+            return block.getBlockColor();
+        } else {
+            return colorMap.getColorMultiplier();
+        }
+    }
+
+    public static int getColorMultiplier(Block block, int metadata) {
+        ColorMap colorMap = findColorMap(BlockAPI.getBlockId(block), metadata);
+        if (colorMap == null) {
+            return block.getBlockColor();
+        } else {
+            return colorMap.getColorMultiplier();
+        }
+    }
+
+    public static int getColorMultiplier(Block block, IBlockAccess blockAccess, int i, int j, int k) {
+        int metadata = blockAccess.getBlockMetadata(i, j, k);
+        ColorMap colorMap = findColorMap(BlockAPI.getBlockId(block), metadata);
+        if (colorMap == null) {
+            return block.getBlockColor();
+        } else {
+            return colorMap.getColorMultiplier(i, j, k, blockBlendRadius);
+        }
     }
 
     public static int colorizeBiome(int defaultColor, int index, double temperature, double rainfall) {

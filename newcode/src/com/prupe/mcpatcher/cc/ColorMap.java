@@ -33,9 +33,10 @@ abstract class ColorMap {
     private int lastBlendI = Integer.MIN_VALUE;
     private int lastBlendJ = Integer.MIN_VALUE;
     private int lastBlendK = Integer.MIN_VALUE;
+    private final float[] tmpBlendResult = new float[3];
     private final float[] lastBlendResult = new float[3];
 
-    static ColorMap loadColorMap1(boolean useCustom, ResourceLocation resource) {
+    static ColorMap loadColorMap(boolean useCustom, ResourceLocation resource) {
         if (!useCustom) {
             return null;
         }
@@ -72,9 +73,40 @@ abstract class ColorMap {
         mapDefault = MCPatcherUtils.getHexProperty(properties, "defaultColor", getDefaultColor());
     }
 
-    int getColorMultiplier(BiomeGenBase biome, int i, int j, int k) {
-        computeXY(biome, i, j, k, xy);
+    int getColorMultiplier(int i, int j, int k) {
+        computeXY(BiomeAPI.getBiomeGenAt(i, j, k), i, j, k, xy);
         return getRGB(xy[0], xy[1]);
+    }
+
+    int getColorMultiplier(int i, int j, int k, int radius) {
+        getColorMultiplier(i, j, k, radius, tmpBlendResult);
+        return Colorizer.float3ToInt(tmpBlendResult);
+    }
+
+    void getColorMultiplier(int i, int j, int k, int radius, float[] result) {
+        if (i == lastBlendI && j == lastBlendJ && k == lastBlendK) {
+            System.arraycopy(lastBlendResult, 0, result, 0, 3);
+            return;
+        }
+        Arrays.fill(result, 0.0f);
+        for (int offsetI = -radius; offsetI <= radius; offsetI++) {
+            for (int offsetK = -radius; offsetK <= radius; offsetK++) {
+                int rgb = getColorMultiplier(i, j, k);
+                intToFloat3(rgb, lastBlendResult);
+                result[0] += lastBlendResult[0];
+                result[1] += lastBlendResult[1];
+                result[2] += lastBlendResult[2];
+            }
+        }
+        int diameter = 2 * radius + 1;
+        float scale = 1.0f / (float) (diameter * diameter);
+        result[0] *= scale;
+        result[1] *= scale;
+        result[2] *= scale;
+        System.arraycopy(result, 0, lastBlendResult, 0, 3);
+        lastBlendI = i;
+        lastBlendJ = j;
+        lastBlendK = k;
     }
 
     int getColorMultiplier() {
@@ -152,32 +184,6 @@ abstract class ColorMap {
         } else {
             return i;
         }
-    }
-
-    void colorizeWithBlending(int i, int j, int k, int radius, float[] result) {
-        if (i == lastBlendI && j == lastBlendJ && k == lastBlendK) {
-            System.arraycopy(lastBlendResult, 0, result, 0, 3);
-            return;
-        }
-        Arrays.fill(result, 0.0f);
-        for (int offsetI = -radius; offsetI <= radius; offsetI++) {
-            for (int offsetK = -radius; offsetK <= radius; offsetK++) {
-                int rgb = getColorMultiplier(BiomeAPI.getBiomeGenAt(i, j, k), i, j, k);
-                intToFloat3(rgb, lastBlendResult);
-                result[0] += lastBlendResult[0];
-                result[1] += lastBlendResult[1];
-                result[2] += lastBlendResult[2];
-            }
-        }
-        int diameter = 2 * radius + 1;
-        float scale = 1.0f / (float) (diameter * diameter);
-        result[0] *= scale;
-        result[1] *= scale;
-        result[2] *= scale;
-        System.arraycopy(result, 0, lastBlendResult, 0, 3);
-        lastBlendI = i;
-        lastBlendJ = j;
-        lastBlendK = k;
     }
 
     abstract int getDefaultColor();

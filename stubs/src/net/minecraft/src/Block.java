@@ -39,4 +39,16 @@ public class Block {
     public int getRenderType() {
         return 0;
     }
+
+    public int getBlockColor() {
+        return 0xffffff;
+    }
+
+    public int getRenderColor(int metadata) {
+        return 0xfffffff;
+    }
+
+    public int colorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
+        return 0xffffff;
+    }
 }
