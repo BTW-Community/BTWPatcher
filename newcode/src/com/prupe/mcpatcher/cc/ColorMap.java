@@ -99,10 +99,12 @@ abstract class ColorMap {
             System.arraycopy(lastBlendResult, 0, result, 0, 3);
             return;
         }
-        Arrays.fill(result, 0.0f);
+        result[0] = 0.0f;
+        result[1] = 0.0f;
+        result[2] = 0.0f;
         for (int offsetI = -radius; offsetI <= radius; offsetI++) {
             for (int offsetK = -radius; offsetK <= radius; offsetK++) {
-                int rgb = getColorMultiplier(i, j, k);
+                int rgb = getColorMultiplier(i + offsetI, j, k + offsetK);
                 intToFloat3(rgb, lastBlendResult);
                 result[0] += lastBlendResult[0];
                 result[1] += lastBlendResult[1];
