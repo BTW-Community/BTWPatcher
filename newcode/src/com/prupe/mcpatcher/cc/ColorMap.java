@@ -266,7 +266,7 @@ abstract class ColorMap {
 
         @Override
         int getDefaultColor() {
-            return getRGB(0.0f, 64.0f);
+            return getRGB(1.0f, 64.0f);
         }
 
         @Override
@@ -293,67 +293,4 @@ abstract class ColorMap {
             return y;
         }
     }
-
-    /*
-    static int getX(double temperature, double rainfall) {
-        return (int) (COLORMAP_SCALE * (1.0 - Colorizer.clamp(temperature)));
-    }
-
-    static int getY(double temperature, double rainfall) {
-        return (int) (COLORMAP_SCALE * (1.0 - Colorizer.clamp(rainfall) * Colorizer.clamp(temperature)));
-    }
-
-    static float getBlockMetaKey(int blockID, int metadata) {
-        return blockID + (metadata & 0xff) / 256.0f;
-    }
-
-    ColorMap(int defaultColor) {
-        mapDefault = defaultColor;
-    }
-
-    void loadColorMap(boolean useCustom, ResourceLocation resource) {
-        if (!useCustom) {
-            return;
-        }
-        map = MCPatcherUtils.getImageRGB(TexturePackAPI.getImage(resource));
-        if (map == null) {
-            return;
-        }
-        if (map.length != COLORMAP_SIZE * COLORMAP_SIZE) {
-            logger.error("%s must be %dx%d", resource, COLORMAP_SIZE, COLORMAP_SIZE);
-            map = null;
-            return;
-        }
-        mapDefault = colorize(0xffffff, 0.5, 1.0);
-        logger.fine("using %s, default color %06x", resource, mapDefault);
-    }
-
-    boolean isCustom() {
-        return map != null;
-    }
-
-    void clear() {
-        map = null;
-    }
-
-    int colorize() {
-        return mapDefault;
-    }
-
-    int colorize(int defaultColor) {
-        return map == null ? defaultColor : mapDefault;
-    }
-
-    int colorize(int defaultColor, double temperature, double rainfall) {
-        if (map == null) {
-            return defaultColor;
-        } else {
-            return map[COLORMAP_SIZE * getY(temperature, rainfall) + getX(temperature, rainfall)];
-        }
-    }
-
-    int colorize(int defaultColor, int i, int j, int k) {
-        return colorize(defaultColor, BiomeAPI.getTemperature(i, j, k), BiomeAPI.getRainfall(i, j, k));
-    }
-    */
 }
