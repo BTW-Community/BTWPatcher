@@ -78,12 +78,20 @@ abstract public class BiomeAPI {
         return lastBiome;
     }
 
+    public static float getTemperature(BiomeGenBase biome, int i, int j, int k) {
+        return instance.getTemperaturef_Impl(biome, i, j, k);
+    }
+
     public static float getTemperature(int i, int j, int k) {
-        return instance.getTemperaturef_Impl(getBiomeGenAt(i, j, k), i, j, k);
+        return getTemperature(getBiomeGenAt(i, j, k), i, j, k);
+    }
+
+    public static float getRainfall(BiomeGenBase biome, int i, int j, int k) {
+        return biome.getRainfallf();
     }
 
     public static float getRainfall(int i, int j, int k) {
-        return getBiomeGenAt(i, j, k).getRainfallf();
+        return getRainfall(getBiomeGenAt(i, j, k), i, j, k);
     }
 
     public static int getWaterColorMultiplier(int i, int j, int k) {
