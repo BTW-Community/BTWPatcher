@@ -86,10 +86,10 @@ public class ColorizeBlock {
     }
 
     static void reloadFoliageColors(Properties properties) {
-        registerColorMap(DEFAULT_FOLIAGECOLOR, BLOCK_ID_TALL_GRASS + " " + BLOCK_ID_VINE);
-        registerColorMap(FOLIAGECOLOR, BLOCK_ID_LEAVES + ":0 " + BLOCK_ID_VINE);
-        registerColorMap(PINECOLOR, BLOCK_ID_LEAVES, 1);
-        registerColorMap(BIRCHCOLOR, BLOCK_ID_LEAVES, 2);
+        registerColorMap(DEFAULT_FOLIAGECOLOR, BLOCK_ID_LEAVES + ":0,4,8,12 " + BLOCK_ID_VINE);
+        registerColorMap(FOLIAGECOLOR, BLOCK_ID_LEAVES + ":0,4,8,12 " + BLOCK_ID_VINE);
+        registerColorMap(PINECOLOR, BLOCK_ID_LEAVES + ":1,5,9,13");
+        registerColorMap(BIRCHCOLOR, BLOCK_ID_LEAVES + ":2,6,10,14");
     }
 
     static void reloadWaterColors(Properties properties) {
@@ -127,10 +127,6 @@ public class ColorizeBlock {
         }
     }
 
-    private static ColorMap registerColorMap(ResourceLocation resource, int blockId, int metadata) {
-        return registerColorMap(resource, blockId + ":" + metadata);
-    }
-
     private static ColorMap registerColorMap(ResourceLocation resource, String idList) {
         ColorMap colorMap = ColorMap.loadColorMap(true, resource);
         if (colorMap == null) {
@@ -138,28 +134,18 @@ public class ColorizeBlock {
         }
         for (String idString : idList.split("\\s+")) {
             String[] tokens = idString.split(":");
-            int[] tokensInt = new int[tokens.length];
-            try {
-                for (int i = 0; i < tokens.length; i++) {
-                    tokensInt[i] = Integer.parseInt(tokens[i]);
-                }
-            } catch (NumberFormatException e) {
-                continue;
-            }
-            switch (tokensInt.length) {
-                case 1:
-                    if (tokensInt[0] < 0 || tokensInt[0] >= blockColorMaps.length) {
-                        continue;
+            int[] blockIds = MCPatcherUtils.parseIntegerList(tokens[0], 0, blockColorMaps.length - 1);
+            if (tokens.length > 1) {
+                int[] metadata = MCPatcherUtils.parseIntegerList(tokens[1], 0, 15);
+                for (int blockId : blockIds) {
+                    for (int meta : metadata) {
+                        blockMetaColorMaps.put(ColorMap.getBlockMetaKey(blockId, meta), colorMap);
                     }
-                    blockColorMaps[tokensInt[0]] = colorMap;
-                    break;
-
-                case 2:
-                    blockMetaColorMaps.put(ColorMap.getBlockMetaKey(tokensInt[0], tokensInt[1]), colorMap);
-                    break;
-
-                default:
-                    continue;
+                }
+            } else {
+                for (int blockId : blockIds) {
+                    blockColorMaps[blockId] = colorMap;
+                }
             }
             logger.finer("using %s for block %s, default color %06x", resource, idString, colorMap.getColorMultiplier());
         }
