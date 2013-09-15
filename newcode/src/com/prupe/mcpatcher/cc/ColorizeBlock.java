@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
+import net.minecraft.src.BiomeGenBase;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.ResourceLocation;
@@ -25,25 +26,31 @@ public class ColorizeBlock {
     private static final ResourceLocation MELON_STEM_COLORS = TexturePackAPI.newMCPatcherResourceLocation("colormap/melonstem.png");
     private static final ResourceLocation SWAMPGRASSCOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/swampgrass.png");
     private static final ResourceLocation SWAMPFOLIAGECOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/swampfoliage.png");
+    private static final ResourceLocation FOLIAGECOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/foliage.png");
     private static final ResourceLocation PINECOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/pine.png");
     private static final ResourceLocation BIRCHCOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/birch.png");
-    private static final ResourceLocation FOLIAGECOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/foliage.png");
+    private static final ResourceLocation JUNGLECOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/jungle.png");
     private static final ResourceLocation WATERCOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/water.png");
-    private static final ResourceLocation UNDERWATERCOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/underwater.png");
-    private static final ResourceLocation FOGCOLOR0 = TexturePackAPI.newMCPatcherResourceLocation("colormap/fog0.png");
-    private static final ResourceLocation SKYCOLOR0 = TexturePackAPI.newMCPatcherResourceLocation("colormap/sky0.png");
 
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
 
+    private static final int BLOCK_ID_WATER = 8;
+    private static final int BLOCK_ID_WATER_STATIC = 9;
+    private static final int BLOCK_ID_GRASS = 2;
+    private static final int BLOCK_ID_LEAVES = 18;
     private static final int BLOCK_ID_PUMPKIN_STEM = 104;
     private static final int BLOCK_ID_MELON_STEM = 105;
 
     private static final ColorMap[] blockColorMaps = new ColorMap[BlockAPI.getNumBlocks()]; // bitmaps from palette.block.*
     private static final Map<Integer, ColorMap> blockMetaColorMaps = new HashMap<Integer, ColorMap>(); // bitmaps from palette.block.*
+    private static ColorMap swampGrassColorMap;
+    private static ColorMap swampFoliageColorMap;
     private static int lilypadColor; // lilypad
     private static float[][] redstoneColor; // colormap/redstone.png
     private static int[] pumpkinStemColors; // colormap/pumpkinstem.png
     private static int[] melonStemColors; // colormap/melonstem.png
+
+    private static BiomeGenBase swampBiome;
 
     private static final int blockBlendRadius = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius", 1);
 
@@ -58,8 +65,12 @@ public class ColorizeBlock {
     }
 
     static void reset() {
+        swampBiome = BiomeAPI.findBiomeByName("Swampland");
+
         Arrays.fill(blockColorMaps, null);
         blockMetaColorMaps.clear();
+        swampGrassColorMap = null;
+        swampFoliageColorMap = null;
 
         lilypadColor = 0x208030;
         waterColor = new float[]{0.2f, 0.3f, 1.0f};
@@ -69,6 +80,14 @@ public class ColorizeBlock {
     }
 
     static void reloadColorMaps(Properties properties) {
+        registerColorMap(FOLIAGECOLOR, BLOCK_ID_LEAVES, 0);
+        registerColorMap(PINECOLOR, BLOCK_ID_LEAVES, 1);
+        registerColorMap(BIRCHCOLOR, BLOCK_ID_LEAVES, 2);
+        registerColorMap(JUNGLECOLOR, BLOCK_ID_LEAVES, 3);
+        registerColorMap(WATERCOLOR, BLOCK_ID_WATER + " " + BLOCK_ID_WATER_STATIC);
+
+        swampGrassColorMap = ColorMap.loadColorMap(Colorizer.useSwampColors, SWAMPGRASSCOLOR);
+        swampFoliageColorMap = ColorMap.loadColorMap(Colorizer.useSwampColors, SWAMPFOLIAGECOLOR);
     }
 
     static void reloadSwampColors(Properties properties) {
@@ -92,11 +111,16 @@ public class ColorizeBlock {
             if (resource == null) {
                 continue;
             }
-            registerColorMap(ColorMap.loadColorMap(true, resource), resource, value);
+            registerColorMap(resource, value);
         }
     }
 
-    private static void registerColorMap(ColorMap colorMap, ResourceLocation resource, String idList) {
+    private static void registerColorMap(ResourceLocation resource, int blockId, int metadata) {
+        registerColorMap(resource, blockId + ":" + metadata);
+    }
+
+    private static void registerColorMap(ResourceLocation resource, String idList) {
+        ColorMap colorMap = ColorMap.loadColorMap(true, resource);
         if (colorMap == null) {
             return;
         }
@@ -166,6 +190,38 @@ public class ColorizeBlock {
         return blockColorMaps[blockId];
     }
 
+    private static ColorMap findColorMap(int blockId, int metadata, BiomeGenBase biome) {
+        if (biome == swampBiome) {
+            switch (blockId) {
+                case BLOCK_ID_GRASS:
+                    if (swampGrassColorMap != null) {
+                        return swampGrassColorMap;
+                    }
+
+                case BLOCK_ID_LEAVES:
+                    if (swampFoliageColorMap != null) {
+                        return swampFoliageColorMap;
+                    }
+
+                default:
+                    break;
+            }
+        }
+        return findColorMap(blockId, metadata);
+    }
+
+    private static int postProcessColorMultiplier(int blockId, int rgb) {
+        if (blockId == BLOCK_ID_WATER || blockId == BLOCK_ID_WATER_STATIC) {
+            Colorizer.intToFloat3(rgb, waterColor);
+            waterColor[0] *= ColorizeEntity.waterBaseColor[0];
+            waterColor[1] *= ColorizeEntity.waterBaseColor[1];
+            waterColor[2] *= ColorizeEntity.waterBaseColor[2];
+            return Colorizer.float3ToInt(waterColor);
+        } else {
+            return rgb;
+        }
+    }
+
     public static int getColorMultiplier(Block block) {
         ColorMap colorMap = blockColorMaps[BlockAPI.getBlockId(block)];
         if (colorMap == null) {
@@ -176,71 +232,23 @@ public class ColorizeBlock {
     }
 
     public static int getColorMultiplier(Block block, int metadata) {
-        ColorMap colorMap = findColorMap(BlockAPI.getBlockId(block), metadata);
+        int blockId = BlockAPI.getBlockId(block);
+        ColorMap colorMap = findColorMap(blockId, metadata);
         if (colorMap == null) {
             return block.getBlockColor();
         } else {
-            return colorMap.getColorMultiplier();
+            return postProcessColorMultiplier(blockId, colorMap.getColorMultiplier());
         }
     }
 
     public static int getColorMultiplier(Block block, IBlockAccess blockAccess, int i, int j, int k) {
         int metadata = blockAccess.getBlockMetadata(i, j, k);
-        ColorMap colorMap = findColorMap(BlockAPI.getBlockId(block), metadata);
+        int blockId = BlockAPI.getBlockId(block);
+        ColorMap colorMap = findColorMap(blockId, metadata, BiomeAPI.getBiomeGenAt(i, j, k));
         if (colorMap == null) {
             return block.getBlockColor();
         } else {
-            return colorMap.getColorMultiplier(i, j, k, blockBlendRadius);
-        }
-    }
-
-    public static int colorizeBiome(int defaultColor, int index, double temperature, double rainfall) {
-        return Colorizer.fixedColorMaps[index].colorize(defaultColor, temperature, rainfall);
-    }
-
-    public static int colorizeBiome(int defaultColor, int index) {
-        return Colorizer.fixedColorMaps[index].colorize(defaultColor);
-    }
-
-    public static int colorizeBiome(int defaultColor, int index, int i, int j, int k) {
-        return Colorizer.fixedColorMaps[index].colorize(defaultColor, i, j, k);
-    }
-
-    public static int colorizeBiomeWithBlending(int defaultColor, int index, int i, int j, int k) {
-        return colorizeWithBlending(Colorizer.fixedColorMaps[index], defaultColor, i, j, k);
-    }
-
-    public static int colorizeWater(Object dummy, int i, int k) {
-        return Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_WATER].colorize(BiomeAPI.getWaterColorMultiplier(i, 64, k), i, 64, k);
-    }
-
-    public static int colorizeBlock(Block block, int i, int j, int k, int metadata) {
-        ColorMap colorMap = null;
-        int blockID = BlockAPI.getBlockId(block);
-        if (!blockMetaColorMaps.isEmpty()) {
-            colorMap = blockMetaColorMaps.get(ColorMap.getBlockMetaKey(blockID, metadata));
-        }
-        if (colorMap == null && blockID >= 0 && blockID < blockColorMaps.length) {
-            colorMap = blockColorMaps[blockID];
-        }
-        return colorizeWithBlending(colorMap, 0xffffff, i, j, k);
-    }
-
-    private static int colorizeWithBlending(ColorMap colorMap, int defaultColor, int i, int j, int k) {
-        if (colorMap == null || !colorMap.isCustom() || blockBlendRadius <= 0) {
-            return defaultColor;
-        }
-        float[] f = new float[3];
-        colorMap.colorizeWithBlending(i, j, k, blockBlendRadius, f);
-        return Colorizer.float3ToInt(f);
-    }
-
-    public static int colorizeBlock(Block block) {
-        ColorMap colorMap = blockColorMaps[BlockAPI.getBlockId(block)];
-        if (colorMap == null) {
-            return 0xffffff;
-        } else {
-            return colorMap.colorize(0xffffff);
+            return postProcessColorMultiplier(blockId, colorMap.getColorMultiplier(i, j, k, blockBlendRadius));
         }
     }
 
@@ -265,9 +273,9 @@ public class ColorizeBlock {
         return lilypadColor;
     }
 
-    public static int getItemColorFromDamage(int defaultColor, int blockID, int damage) {
-        if (blockID == 8 || blockID == 9) {
-            return colorizeBiome(defaultColor, Colorizer.COLOR_MAP_WATER);
+    public static int getItemColorFromDamage(int defaultColor, int blockId, int damage) {
+        if (blockId == BLOCK_ID_WATER || blockId == BLOCK_ID_WATER_STATIC) {
+            return getColorMultiplier(BlockAPI.getBlockById(blockId), damage);
         } else {
             return defaultColor;
         }
@@ -291,28 +299,9 @@ public class ColorizeBlock {
         }
     }
 
-    public static boolean computeWaterColor(double x, double y, double z) {
-        if (Colorizer.useParticleColors && Colorizer.fixedColorMaps[Colorizer.COLOR_MAP_WATER].isCustom()) {
-            int rgb = colorizeBiome(0xffffff, Colorizer.COLOR_MAP_WATER, (int) x, (int) y, (int) z);
-            float[] multiplier = new float[3];
-            Colorizer.intToFloat3(rgb, multiplier);
-            for (int i = 0; i < 3; i++) {
-                waterColor[i] = multiplier[i] * ColorizeEntity.waterBaseColor[i];
-            }
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static void computeWaterColor() {
-        int rgb = colorizeBiome(0xffffff, Colorizer.COLOR_MAP_WATER);
-        Colorizer.intToFloat3(rgb, waterColor);
-    }
-
     public static void colorizeWaterBlockGL(int blockID) {
-        if (blockID == 8 || blockID == 9) {
-            computeWaterColor();
+        if (blockID == BLOCK_ID_WATER || blockID == BLOCK_ID_WATER_STATIC) {
+            getColorMultiplier(BlockAPI.getBlockById(blockID));
             GL11.glColor4f(waterColor[0], waterColor[1], waterColor[2], 1.0f);
         }
     }

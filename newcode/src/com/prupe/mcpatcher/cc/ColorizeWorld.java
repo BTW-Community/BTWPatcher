@@ -3,8 +3,9 @@ package com.prupe.mcpatcher.cc;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import net.minecraft.src.BiomeGenBase;
+import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.Entity;
+import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.World;
 
 import java.util.*;
@@ -15,6 +16,10 @@ public class ColorizeWorld {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
     private static final int fogBlendRadius = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "fogBlendRadius", 7);
+
+    private static final ResourceLocation UNDERWATERCOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/underwater.png");
+    private static final ResourceLocation FOGCOLOR0 = TexturePackAPI.newMCPatcherResourceLocation("colormap/fog0.png");
+    private static final ResourceLocation SKYCOLOR0 = TexturePackAPI.newMCPatcherResourceLocation("colormap/sky0.png");
 
     private static final String TEXT_KEY = "text.";
     private static final String TEXT_CODE_KEY = TEXT_KEY + "code.";
@@ -31,6 +36,10 @@ public class ColorizeWorld {
     private static final boolean[] textCodeColorSet = new boolean[32];
     private static int signTextColor; // text.sign
 
+    private static ColorMap underwaterColor;
+    private static ColorMap fogColorMap;
+    private static ColorMap skyColorMap;
+
     public static float[] netherFogColor;
     public static float[] endFogColor;
     public static int endSkyColor;
@@ -44,6 +53,10 @@ public class ColorizeWorld {
     }
 
     static void reset() {
+        underwaterColor = null;
+        fogColorMap = null;
+        skyColorMap = null;
+
         netherFogColor = new float[]{0.2f, 0.03f, 0.03f};
         endFogColor = new float[]{0.075f, 0.075f, 0.094f};
         endSkyColor = 0x181818;
@@ -58,6 +71,10 @@ public class ColorizeWorld {
     }
 
     static void reloadFogColors(Properties properties) {
+        underwaterColor = ColorMap.loadColorMap(Colorizer.useFogColors, UNDERWATERCOLOR);
+        fogColorMap = ColorMap.loadColorMap(Colorizer.useFogColors, FOGCOLOR0);
+        skyColorMap = ColorMap.loadColorMap(Colorizer.useFogColors, SKYCOLOR0);
+
         loadFloatColor("fog.nether", netherFogColor);
         loadFloatColor("fog.end", endFogColor);
         endSkyColor = loadIntColor("sky.end", endSkyColor);
@@ -112,19 +129,20 @@ public class ColorizeWorld {
         fogCamera = entity;
     }
 
-    public static boolean computeFogColor(int index) {
-        if (index < 0 || index >= fixedColorMaps.length || fogCamera == null || !fixedColorMaps[index].isCustom()) {
+    private static boolean computeFogColor(ColorMap colorMap) {
+        if (colorMap == null || fogCamera == null) {
             return false;
         }
-        int x = (int) fogCamera.posX;
-        int y = (int) fogCamera.posY;
-        int z = (int) fogCamera.posZ;
-        fixedColorMaps[index].colorizeWithBlending(x, y, z, fogBlendRadius, setColor);
+        int i = (int) fogCamera.posX;
+        int j = (int) fogCamera.posY;
+        int k = (int) fogCamera.posZ;
+        int rgb = colorMap.getColorMultiplier(i, j, k, fogBlendRadius);
+        Colorizer.setColorF(rgb);
         return true;
     }
 
     public static boolean computeFogColor(World world, float f) {
-        if (world.worldProvider.worldType == 0 && computeFogColor(COLOR_MAP_FOG0)) {
+        if (world.worldProvider.worldType == 0 && computeFogColor(fogColorMap)) {
             computeLightningFlash(world, f);
             return true;
         } else {
@@ -133,12 +151,16 @@ public class ColorizeWorld {
     }
 
     public static boolean computeSkyColor(World world, float f) {
-        if (world.worldProvider.worldType == 0 && computeFogColor(COLOR_MAP_SKY0)) {
+        if (world.worldProvider.worldType == 0 && computeFogColor(skyColorMap)) {
             computeLightningFlash(world, f);
             return true;
         } else {
             return false;
         }
+    }
+
+    public static boolean computeUnderwaterColor() {
+        return computeFogColor(underwaterColor);
     }
 
     private static void computeLightningFlash(World world, float f) {
