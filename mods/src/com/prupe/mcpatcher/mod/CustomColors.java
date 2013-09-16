@@ -15,11 +15,13 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class CustomColors extends Mod {
-    private static final MethodRef getNewColorMultiplier1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "getColorMultiplier", "(LBlock;)I");
-    private static final MethodRef getNewColorMultiplier2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "getColorMultiplier", "(LBlock;I)I");
-    private static final MethodRef getNewColorMultiplier3 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "getColorMultiplier", "(LBlock;LIBlockAccess;III)I");
+    private static final MethodRef colorizeBlock1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;)Z");
+    private static final MethodRef colorizeBlock2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;I)Z");
+    private static final MethodRef colorizeBlock3 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;LIBlockAccess;III)Z");
+    private static final MethodRef getNewColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "getColorMultiplier", "(LBlock;III)I");
     private static final MethodRef colorizeRedstoneWire = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeRedstoneWire", "(LIBlockAccess;IIII)I");
     private static final MethodRef colorizeStem = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeStem", "(ILBlock;I)I");
+    private static final MethodRef colorizeWater = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeWater", "(Ljava/lang/Object;II)I");
     private static final MethodRef colorizeWaterBlockGL = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeWaterBlockGL", "(I)V");
     private static final MethodRef colorizeSpawnerEgg = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "colorizeSpawnerEgg", "(III)I");
     private static final MethodRef colorizeText1 = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "colorizeText", "(I)I");
@@ -44,6 +46,7 @@ public class CustomColors extends Mod {
     private static final MethodRef drawFancyClouds = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "drawFancyClouds", "(Z)Z");
 
     private static final FieldRef setColor = new FieldRef(MCPatcherUtils.COLORIZER_CLASS, "setColor", "[F");
+    private static final FieldRef blockColor = new FieldRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "blockColor", "I");
     private static final FieldRef endFogColor = new FieldRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "endFogColor", "[F");
     private static final FieldRef endSkyColor = new FieldRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "endSkyColor", "I");
     private static final FieldRef netherFogColor = new FieldRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "netherFogColor", "[F");
@@ -74,11 +77,18 @@ public class CustomColors extends Mod {
         addClassMod(new BaseMod.MinecraftMod(this).mapWorldClient());
         addClassMod(new BaseMod.IBlockAccessMod(this));
         addClassMod(new BaseMod.TessellatorMod(this));
+
         addClassMod(new BlockMod());
+        addClassMod(new BlockFluidMod());
+        addClassMod(new BlockLeavesMod());
+        addClassMod(new BlockLeavesBaseMod());
+        addClassMod(new BlockLilyPadMod());
+        addClassMod(new BlockTallGrassMod());
+        addClassMod(new BlockFlowerMod());
+        addClassMod(new BlockVineMod());
         addClassMod(new BlockCauldronMod());
 
         addClassMod(new BaseMod.BiomeGenBaseMod(this));
-        addClassMod(new BlockFluidMod());
         addClassMod(new ItemMod());
         if (getMinecraftVersion().compareTo("13w36a") < 0) { // TODO
             addClassMod(new ItemBlockMod());
@@ -106,8 +116,6 @@ public class CustomColors extends Mod {
 
         addClassMod(new EntityLivingBaseMod());
         addClassMod(new EntityRendererMod());
-
-        addClassMod(new BlockLilyPadMod());
 
         addClassMod(new BlockRedstoneWireMod());
         addClassMod(new RenderBlocksMod());
@@ -325,6 +333,53 @@ public class CustomColors extends Mod {
         }
     }
 
+    private void addBlockColorPatch(com.prupe.mcpatcher.ClassMod classMod) {
+        classMod.addPatch(new com.prupe.mcpatcher.BytecodePatch(classMod) {
+            @Override
+            public String getDescription() {
+                return "override color multiplier";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    begin()
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                String desc = getMethodInfo().getDescriptor();
+                final MethodRef newMethod;
+                final byte[] args;
+                if (desc.contains("III)")) {
+                    newMethod = colorizeBlock3;
+                    args = new byte[]{ALOAD_1, ILOAD_2, ILOAD_3, ILOAD, 4};
+                } else if (desc.contains("I)")) {
+                    newMethod = colorizeBlock2;
+                    args = new byte[]{ILOAD_1};
+                } else {
+                    newMethod = colorizeBlock1;
+                    args = new byte[0];
+                }
+                return buildCode(
+                    // if (ColorizeBlock.colorizeBlock(this, ...)) {
+                    ALOAD_0,
+                    args,
+                    reference(INVOKESTATIC, newMethod),
+                    IFEQ, branch("A"),
+
+                    // return ColorizeBlock.blockColor;
+                    reference(GETSTATIC, blockColor),
+                    IRETURN,
+
+                    // }
+                    label("A")
+                );
+            }
+        }.targetMethod(getBlockColor, getRenderColor, colorMultiplier));
+    }
+
     private class BlockMod extends BaseMod.BlockMod {
         BlockMod() {
             super(CustomColors.this);
@@ -332,6 +387,8 @@ public class CustomColors extends Mod {
             match0xffffff(getBlockColor);
             match0xffffff(getRenderColor);
             match0xffffff(colorMultiplier);
+
+            addBlockColorPatch(this);
         }
 
         private void match0xffffff(MethodRef method) {
@@ -377,7 +434,6 @@ public class CustomColors extends Mod {
 
             final MethodRef colorMultiplier = new MethodRef(getDeobfClass(), "colorMultiplier", "(LIBlockAccess;III)I");
             final FieldRef waterColorMultiplier = new FieldRef("BiomeGenBase", "waterColorMultiplier", "I");
-            final MethodRef getWaterColorMultiplier = new MethodRef("BiomeGenBase", "getWaterColorMultiplier", "()I");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -398,6 +454,96 @@ public class CustomColors extends Mod {
                 .setMethod(colorMultiplier)
                 .addXref(1, waterColorMultiplier)
             );
+
+            addBlockColorPatch(this);
+        }
+    }
+
+    private class BlockLeavesBaseMod extends ClassMod {
+        BlockLeavesBaseMod() {
+            setParentClass("Block");
+            addPrerequisiteClass("BlockLeaves");
+        }
+    }
+
+    private class BlockLeavesMod extends ClassMod {
+        BlockLeavesMod() {
+            setParentClass("BlockLeavesBase");
+
+            addLeafType("oak");
+            addLeafType("spruce");
+            addLeafType("birch");
+            addLeafType("jungle");
+
+            addBlockColorPatch(this);
+        }
+
+        private void addLeafType(String type) {
+            addClassSignature(new ConstSignature(type));
+            addClassSignature(new ConstSignature("leaves_" + type));
+            addClassSignature(new ConstSignature("leaves_" + type + "_opaque"));
+        }
+    }
+
+    private class BlockFlowerMod extends ClassMod {
+        BlockFlowerMod() {
+            setParentClass("Block");
+            addPrerequisiteClass("BlockLilyPad");
+        }
+    }
+
+    private class BlockLilyPadMod extends ClassMod {
+        BlockLilyPadMod() {
+            setParentClass("BlockFlower");
+
+            addClassSignature(new ConstSignature(0x208030));
+            addClassSignature(new ConstSignature(0.5f));
+            addClassSignature(new ConstSignature(0.015625f));
+
+            addBlockColorPatch(this);
+        }
+    }
+
+    private class BlockTallGrassMod extends ClassMod {
+        BlockTallGrassMod() {
+            setParentClass("BlockFlower");
+
+            addClassSignature(new ConstSignature("deadbush"));
+            addClassSignature(new ConstSignature("tallgrass"));
+            addClassSignature(new ConstSignature("fern"));
+
+            addBlockColorPatch(this);
+        }
+    }
+
+    private class BlockVineMod extends ClassMod {
+        private final MethodRef setBlockBoundsBasedOnState = new MethodRef(getDeobfClass(), "setBlockBoundsBasedOnState", "(LIBlockAccess;III)V");
+
+        BlockVineMod() {
+            setParentClass("Block");
+
+            addClassSignature(new ConstSignature(0.0625f));
+            addClassSignature(new ConstSignature(0.9375f));
+
+            addAndSignature(2, 0.0625f);
+            addAndSignature(8, 0.9375f);
+
+            addBlockColorPatch(this);
+        }
+
+        private void addAndSignature(final int mask, final float bounds) {
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        capture(anyILOAD),
+                        push(mask),
+                        IAND,
+                        any(0, 10),
+                        push(bounds)
+                    );
+                }
+            }.setMethod(setBlockBoundsBasedOnState));
         }
     }
 
@@ -1689,36 +1835,6 @@ public class CustomColors extends Mod {
         }
     }
 
-    private class BlockLilyPadMod extends ClassMod {
-        private static final int MAGIC = 0x208030;
-
-        BlockLilyPadMod() {
-            addClassSignature(new ConstSignature(MAGIC));
-            addClassSignature(new ConstSignature(0.5f));
-            addClassSignature(new ConstSignature(0.015625f));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override lily pad color";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push(MAGIC)
-                    );
-                }
-
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, getLilyPadColor)
-                    );
-                }
-            });
-        }
-    }
-
     private class EntityLivingBaseMod extends BaseMod.EntityLivingBaseMod {
         public EntityLivingBaseMod() {
             super(CustomColors.this);
@@ -2437,48 +2553,6 @@ public class CustomColors extends Mod {
 
             addMemberMapper(new MethodMapper(renderBlockCauldron));
 
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override block color";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        reference(INVOKEVIRTUAL, colorMultiplier)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, getNewColorMultiplier3)
-                    );
-                }
-            });
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override block color (held)";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        reference(INVOKEVIRTUAL, getRenderColor)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, getNewColorMultiplier2)
-                    );
-                }
-            });
-
             addPatch(new TessellatorPatch() {
                 @Override
                 public String getDescription() {
@@ -2553,14 +2627,12 @@ public class CustomColors extends Mod {
                     } else {
                         done = true;
                         extraCode = buildCode(
-                            // setColorF(ColorizeBlock.getColorMultiplier(block, this.blockAccess, i, j, k));
+                            // setColorF(ColorizeBlock.getColorMultiplier(block, i, j, k));
                             ALOAD_1,
-                            ALOAD_0,
-                            reference(GETFIELD, blockAccess),
                             ILOAD_3,
                             ILOAD, 4,
                             ILOAD, 5,
-                            reference(INVOKESTATIC,  getNewColorMultiplier3),
+                            reference(INVOKESTATIC, getNewColorMultiplier),
                             reference(INVOKESTATIC, setColorF)
                         );
                     }

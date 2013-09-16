@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.BiomeGenBase;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
@@ -58,6 +59,7 @@ public class ColorizeBlock {
 
     private static final int blockBlendRadius = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius", 1);
 
+    public static int blockColor;
     public static float[] waterColor;
 
     static {
@@ -215,35 +217,46 @@ public class ColorizeBlock {
         return findColorMap(blockId, metadata, BiomeAPI.getBiomeGenAt(i, j, k));
     }
 
-    public static int getColorMultiplier(Block block) {
+    public static boolean colorizeBlock(Block block) {
         ColorMap colorMap = blockColorMaps[BlockAPI.getBlockId(block)];
         if (colorMap == null) {
-            return block.getBlockColor();
+            return false;
         } else {
-            return colorMap.getColorMultiplier();
+            blockColor = colorMap.getColorMultiplier();
+            return true;
         }
     }
 
-    public static int getColorMultiplier(Block block, int metadata) {
+    public static boolean colorizeBlock(Block block, int metadata) {
         int blockId = BlockAPI.getBlockId(block);
         ColorMap colorMap = findColorMap(blockId, metadata);
         if (colorMap == null) {
-            return block.getRenderColor(metadata);
+            return false;
         } else {
-            return colorMap.getColorMultiplier();
+            blockColor = colorMap.getColorMultiplier();
+            return true;
         }
     }
 
-    public static int getColorMultiplier(Block block, IBlockAccess blockAccess, int i, int j, int k) {
+    public static boolean colorizeBlock(Block block, IBlockAccess blockAccess, int i, int j, int k) {
         ColorMap colorMap = findColorMap(block, blockAccess, i, j, k);
-        return getColorMultiplier(block, blockAccess, colorMap, i, j, k);
+        return colorizeBlock(block, blockAccess, colorMap, i, j, k);
     }
 
-    private static int getColorMultiplier(Block block, IBlockAccess blockAccess, ColorMap colorMap, int i, int j, int k) {
+    private static boolean colorizeBlock(Block block, IBlockAccess blockAccess, ColorMap colorMap, int i, int j, int k) {
         if (colorMap == null) {
-            return block.colorMultiplier(blockAccess, i, j, k);
+            return false;
         } else {
-            return colorMap.getColorMultiplier(i, j, k, blockBlendRadius);
+            blockColor = colorMap.getColorMultiplier(i, j, k, blockBlendRadius);
+            return true;
+        }
+    }
+
+    public static int getColorMultiplier(Block block, int i, int j, int k) {
+        if (colorizeBlock(block, Minecraft.getInstance().theWorld, i, j, k)) {
+            return blockColor;
+        } else {
+            return 0xffffff;
         }
     }
 
@@ -284,7 +297,7 @@ public class ColorizeBlock {
 
     public static int getItemColorFromDamage(int defaultColor, int blockId, int damage) {
         if (blockId == BLOCK_ID_WATER || blockId == BLOCK_ID_WATER_STATIC) {
-            return getColorMultiplier(BlockAPI.getBlockById(blockId), damage);
+            return colorizeBlock(BlockAPI.getBlockById(blockId), damage) ? blockColor : defaultColor;
         } else {
             return defaultColor;
         }
@@ -310,7 +323,6 @@ public class ColorizeBlock {
 
     public static void colorizeWaterBlockGL(int blockID) {
         if (blockID == BLOCK_ID_WATER || blockID == BLOCK_ID_WATER_STATIC) {
-            getColorMultiplier(BlockAPI.getBlockById(blockID));
             GL11.glColor4f(waterColor[0], waterColor[1], waterColor[2], 1.0f);
         }
     }
