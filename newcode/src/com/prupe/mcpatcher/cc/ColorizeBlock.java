@@ -209,6 +209,12 @@ public class ColorizeBlock {
         return findColorMap(blockId, metadata);
     }
 
+    private static ColorMap findColorMap(Block block, IBlockAccess blockAccess, int i, int j, int k) {
+        int metadata = blockAccess.getBlockMetadata(i, j, k);
+        int blockId = BlockAPI.getBlockId(block);
+        return findColorMap(blockId, metadata, BiomeAPI.getBiomeGenAt(i, j, k));
+    }
+
     public static int getColorMultiplier(Block block) {
         ColorMap colorMap = blockColorMaps[BlockAPI.getBlockId(block)];
         if (colorMap == null) {
@@ -229,9 +235,11 @@ public class ColorizeBlock {
     }
 
     public static int getColorMultiplier(Block block, IBlockAccess blockAccess, int i, int j, int k) {
-        int metadata = blockAccess.getBlockMetadata(i, j, k);
-        int blockId = BlockAPI.getBlockId(block);
-        ColorMap colorMap = findColorMap(blockId, metadata, BiomeAPI.getBiomeGenAt(i, j, k));
+        ColorMap colorMap = findColorMap(block, blockAccess, i, j, k);
+        return getColorMultiplier(block, blockAccess, colorMap, i, j, k);
+    }
+
+    private static int getColorMultiplier(Block block, IBlockAccess blockAccess, ColorMap colorMap, int i, int j, int k) {
         if (colorMap == null) {
             return block.colorMultiplier(blockAccess, i, j, k);
         } else {

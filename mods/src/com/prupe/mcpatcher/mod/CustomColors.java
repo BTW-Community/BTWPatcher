@@ -2385,6 +2385,7 @@ public class CustomColors extends Mod {
 
     private class RenderBlocksMod extends RedstoneWireClassMod {
         private final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
+        private final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
 
         RenderBlocksMod() {
             super("override redstone wire color", new MethodRef("RenderBlocks", "renderBlockRedstoneWire", "(LBlock;III)Z"));
@@ -2392,7 +2393,6 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature(0.1875));
             addClassSignature(new ConstSignature(0.01));
 
-            final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
             final MethodRef renderBlockFallingSand = new MethodRef(getDeobfClass(), "renderBlockFallingSand", "(LBlock;LWorld;IIII)V");
             final MethodRef renderBlockFluids = new MethodRef(getDeobfClass(), "renderBlockFluids", "(LBlock;III)Z");
             final MethodRef renderBlockCauldron = new MethodRef(getDeobfClass(), "renderBlockCauldron", "(LBlockCauldron;III)Z");
