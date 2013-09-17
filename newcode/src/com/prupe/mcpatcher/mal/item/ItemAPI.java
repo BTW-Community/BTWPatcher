@@ -3,9 +3,7 @@ package com.prupe.mcpatcher.mal.item;
 import com.prupe.mcpatcher.MAL;
 import net.minecraft.src.Item;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 abstract public class ItemAPI {
     private static final ItemAPI instance = MAL.newInstance(ItemAPI.class, "item");
@@ -15,9 +13,11 @@ abstract public class ItemAPI {
             int id = Integer.parseInt(name);
             return instance.getItemById_Impl(id);
         }
-        name = instance.getCanonicalName_Impl(name);
+        Set<String> names = new HashSet<String>();
+        names.add(name);
+        instance.getPossibleItemNames_Impl(name, names);
         for (Item item : getAllItems()) {
-            if (name.equals(getItemName(item))) {
+            if (instance.matchItem_Impl(item, names)) {
                 return item;
             }
         }
@@ -25,7 +25,7 @@ abstract public class ItemAPI {
     }
 
     public static String getItemName(Item item) {
-        return item.getItemName();
+        return item == null ? "(null)" : item.getItemName().replaceFirst("^item\\.", "");
     }
 
     public static List<Item> getAllItems() {
@@ -40,7 +40,12 @@ abstract public class ItemAPI {
 
     abstract protected List<Item> getAllItems_Impl();
 
-    abstract protected String getCanonicalName_Impl(String name);
+    protected void getPossibleItemNames_Impl(String name, Set<String> aliases) {
+    }
+
+    protected boolean matchItem_Impl(Item item, Set<String> names) {
+        return names.contains(getItemName(item));
+    }
 
     abstract protected Item getItemById_Impl(int id);
 
@@ -54,11 +59,10 @@ abstract public class ItemAPI {
         }
 
         @Override
-        protected String getCanonicalName_Impl(String name) {
+        protected void getPossibleItemNames_Impl(String name, Set<String> aliases) {
             if (name.startsWith("minecraft:")) {
-                name = name.substring(10);
+                aliases.add(name.substring(10));
             }
-            return name;
         }
 
         @Override
@@ -74,11 +78,13 @@ abstract public class ItemAPI {
         }
 
         @Override
-        protected String getCanonicalName_Impl(String name) {
-            if (!name.contains(":")) {
-                name = "minecraft:" + name;
+        protected boolean matchItem_Impl(Item item, Set<String> names) {
+            for (String name : names) {
+                if (item == Item.itemRegistry.get(name)) {
+                    return true;
+                }
             }
-            return name;
+            return super.matchItem_Impl(item, names);
         }
 
         @Override
