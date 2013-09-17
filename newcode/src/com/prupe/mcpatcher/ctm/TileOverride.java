@@ -225,7 +225,13 @@ abstract class TileOverride implements ITileOverride {
             error("no images found in %s/", texturesDirectory);
         }
 
-        matchBlocks = getBlockList(MCPatcherUtils.getStringProperty(properties, "matchBlocks", ""));
+        String value;
+        if (baseFilename.matches("block\\d+.*")) {
+            value = baseFilename.substring(5).replaceAll("\\D.*", "");
+        } else {
+            value = "";
+        }
+        matchBlocks = getBlockList(MCPatcherUtils.getStringProperty(properties, "matchBlocks", value));
         matchTiles = getIDList(properties, "matchTiles");
         if (matchBlocks.isEmpty() && matchTiles.isEmpty()) {
             matchTiles.add(baseFilename);
@@ -354,7 +360,9 @@ abstract class TileOverride implements ITileOverride {
     private Set<Block> getBlockList(String property) {
         Set<Block> blocks = new HashSet<Block>();
         for (String token : property.split("\\s+")) {
-            if (token.matches("\\d+-\\d+")) {
+            if (token.equals("")) {
+                // nothing
+            } else if (token.matches("\\d+-\\d+")) {
                 for (int id : MCPatcherUtils.parseIntegerList(token, 0, 65535)) {
                     Block block = BlockAPI.parseBlockName(String.valueOf(id));
                     if (block == null) {
