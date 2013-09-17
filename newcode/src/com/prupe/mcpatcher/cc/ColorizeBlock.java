@@ -59,6 +59,59 @@ public class ColorizeBlock {
     public static int blockColor;
     public static float[] waterColor;
 
+    private static final float[] AO_BASE = new float[]{0.5f, 1.0f, 0.8f, 0.8f, 0.6f, 0.6f};
+
+    private static final int[][][] FACE_VERTICES = new int[][][]{
+        // bottom face (y=0)
+        {
+            {0, 0, 1}, // top left
+            {0, 0, 0}, // bottom left
+            {1, 0, 0}, // bottom right
+            {1, 0, 1}, // top right
+        },
+        // top face (y=1)
+        {
+            {1, 1, 1},
+            {1, 1, 0},
+            {0, 1, 0},
+            {0, 1, 1},
+        },
+        // north face (z=0)
+        {
+            {0, 1, 0},
+            {1, 1, 0},
+            {1, 0, 0},
+            {0, 0, 0},
+        },
+        // south face (z=1)
+        {
+            {0, 1, 1},
+            {0, 0, 1},
+            {1, 0, 1},
+            {1, 1, 1},
+        },
+        // west face (x=0)
+        {
+            {0, 1, 1},
+            {0, 1, 0},
+            {0, 0, 0},
+            {0, 0, 1},
+        },
+        // east face (x=1)
+        {
+            {1, 0, 1},
+            {1, 0, 0},
+            {1, 1, 0},
+            {1, 1, 1},
+        },
+    };
+
+    private static ColorMap lastColorMap;
+    private static int lastI = Integer.MIN_VALUE;
+    private static int lastJ = Integer.MIN_VALUE;
+    private static int lastK = Integer.MIN_VALUE;
+    private static final float[][][][] cubeColors = new float[2][2][2][3];
+
     static {
         try {
             reset();
@@ -76,6 +129,7 @@ public class ColorizeBlock {
         swampGrassColorMap = null;
         swampFoliageColorMap = null;
         waterColorMap = null;
+        lastColorMap = null;
 
         lilypadColor = 0x208030;
         waterColor = new float[]{0.2f, 0.3f, 1.0f};
@@ -322,5 +376,88 @@ public class ColorizeBlock {
         if (blockID == BLOCK_ID_WATER || blockID == BLOCK_ID_WATER_STATIC) {
             GL11.glColor4f(waterColor[0], waterColor[1], waterColor[2], 1.0f);
         }
+    }
+
+    private static void computeCubeColors(Block block, IBlockAccess blockAccess, ColorMap colorMap, int i, int j, int k, int di, int dj, int dk) {
+        int rgb;
+        if (true) { // TODO: remove
+            colorizeBlock(block, blockAccess, colorMap, i + di, j + dj, k + dk);
+            rgb = blockColor;
+        } else {
+            rgb = 0;
+            rgb |= (i + di) % 2 == 0 ? 0 : 0xff0000;
+            rgb |= (j + dj) % 2 == 0 ? 0 : 0xff00;
+            rgb |= (k + dk) % 2 == 0 ? 0 : 0xff;
+        }
+        Colorizer.intToFloat3(rgb, cubeColors[di][dj][dk]);
+    }
+
+    private static ColorMap computeCubeColors(Block block, IBlockAccess blockAccess, int i, int j, int k) {
+        ColorMap colorMap = findColorMap(block, blockAccess, i, j, k);
+        if (colorMap != null) {
+            computeCubeColors(block, blockAccess, colorMap, i, j, k, 0, 0, 0);
+            computeCubeColors(block, blockAccess, colorMap, i, j, k, 0, 1, 0);
+            computeCubeColors(block, blockAccess, colorMap, i, j, k, 0, 0, 1);
+            computeCubeColors(block, blockAccess, colorMap, i, j, k, 0, 1, 1);
+            computeCubeColors(block, blockAccess, colorMap, i, j, k, 1, 0, 0);
+            computeCubeColors(block, blockAccess, colorMap, i, j, k, 1, 1, 0);
+            computeCubeColors(block, blockAccess, colorMap, i, j, k, 1, 0, 1);
+            computeCubeColors(block, blockAccess, colorMap, i, j, k, 1, 1, 1);
+        }
+        return colorMap;
+    }
+
+    public static boolean setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
+                                              int i, int j, int k, int face,
+                                              boolean useColor, float r, float g, float b,
+                                              float topLeft, float bottomLeft, float bottomRight, float topRight) {
+        if (face != 1 && !useColor) { // TODO: also check for renderPass > 1
+            return false;
+        }
+        if (i != lastI || j != lastJ || k != lastK) {
+            lastColorMap = computeCubeColors(block, blockAccess, i, j, k);
+            lastI = i;
+            lastJ = j;
+            lastK = k;
+        }
+        if (lastColorMap == null) {
+            return false;
+        }
+
+        float aoBase = AO_BASE[face];
+        topLeft *= aoBase;
+        bottomLeft *= aoBase;
+        bottomRight *= aoBase;
+        topRight *= aoBase;
+
+        int[][] offsets = FACE_VERTICES[face];
+        int[] offset;
+        float[] color;
+
+        offset = offsets[0];
+        color = cubeColors[offset[0]][offset[1]][offset[2]];
+        renderBlocks.colorRedTopLeft = topLeft * color[0];
+        renderBlocks.colorGreenTopLeft = topLeft * color[1];
+        renderBlocks.colorBlueTopLeft = topLeft * color[2];
+
+        offset = offsets[1];
+        color = cubeColors[offset[0]][offset[1]][offset[2]];
+        renderBlocks.colorRedBottomLeft = bottomLeft * color[0];
+        renderBlocks.colorGreenBottomLeft = bottomLeft * color[1];
+        renderBlocks.colorBlueBottomLeft = bottomLeft * color[2];
+
+        offset = offsets[2];
+        color = cubeColors[offset[0]][offset[1]][offset[2]];
+        renderBlocks.colorRedBottomRight = bottomRight * color[0];
+        renderBlocks.colorGreenBottomRight = bottomRight * color[1];
+        renderBlocks.colorBlueBottomRight = bottomRight * color[2];
+
+        offset = offsets[3];
+        color = cubeColors[offset[0]][offset[1]][offset[2]];
+        renderBlocks.colorRedTopRight = topRight * color[0];
+        renderBlocks.colorGreenTopRight = topRight * color[1];
+        renderBlocks.colorBlueTopRight = topRight * color[2];
+
+        return true;
     }
 }

@@ -2787,6 +2787,169 @@ public class CustomColors extends Mod {
             }.targetMethod(renderBlockFluids));
 
             setupBTW();
+            setupBiomeSmoothing();
+        }
+
+        private void setupBiomeSmoothing() {
+            final MethodRef setupBiomeSmoothing = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIZFFFFFFF)Z");
+
+            final String[] vertexNames = new String[]{"TopLeft", "BottomLeft", "BottomRight", "TopRight"};
+            final String[] colorNames = new String[]{"Red", "Green", "Blue"};
+            final int[] xrefOrder = new int[]{1, 4, 6, 8, 11, 13, 15, 18, 20, 22, 25, 27};
+            final FieldRef[] vertexColorFields = new FieldRef[12];
+
+            addClassSignature(new BytecodeSignature() {
+                {
+                    int i = 0;
+                    for (String v : vertexNames) {
+                        for (String c : colorNames) {
+                            vertexColorFields[i] = new FieldRef(getDeobfClass(), "color" + c + v, "F");
+                            addXref(xrefOrder[i], vertexColorFields[i]);
+                            i++;
+                        }
+                    }
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        getSubExpression(0),
+                        getSubExpression(1),
+                        getSubExpression(2),
+                        getSubExpression(3)
+                    );
+                }
+
+                private String getSubExpression(int index) {
+                    index *= 7;
+                    return build(
+                        // this.colorRedxxxx *= red;
+                        ALOAD_0,
+                        DUP,
+                        capture(build(GETFIELD, capture(any(2)))),
+                        FLOAD, capture(any()),
+                        FMUL,
+                        PUTFIELD, backReference(index + 2),
+
+                        // this.colorGreenxxxx *= green;
+                        ALOAD_0,
+                        DUP,
+                        capture(build(GETFIELD, capture(any(2)))),
+                        FLOAD, backReference(index + 3),
+                        FMUL,
+                        PUTFIELD, backReference(index + 5),
+
+                        // this.colorBluexxxx *= blue;
+                        ALOAD_0,
+                        DUP,
+                        capture(build(GETFIELD, capture(any(2)))),
+                        FLOAD, backReference(index + 3),
+                        FMUL,
+                        PUTFIELD, backReference(index + 7)
+                    );
+                }
+            });
+
+            for (FieldRef field : vertexColorFields) {
+                addPatch(new MakeMemberPublicPatch(field));
+            }
+
+            addPatch(new BytecodePatch() {
+                private int patchCount;
+                private int useColor;
+
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                push(1),
+                                capture(anyISTORE),
+                                any(0, 50),
+                                push(0),
+                                backReference(1)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            useColor = extractRegisterNum(getCaptureGroup(1));
+                            return true;
+                        }
+                    });
+                }
+
+                @Override
+                public String getDescription() {
+                    return "smooth biome colors";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.colorRedTopLeft *= topLeft;
+                        getSubExpression(0),
+                        any(0, 80),
+                        // this.colorRedBottomLeft *= bottomLeft;
+                        getSubExpression(3),
+                        any(0, 80),
+                        // this.colorRedBottomRight *= bottomRight;
+                        getSubExpression(6),
+                        any(0, 80),
+                        // this.colorBlueTopRight *= topRight;
+                        getSubExpression(11)
+                    );
+                }
+
+                private String getSubExpression(int index) {
+                    return build(
+                        ALOAD_0,
+                        DUP,
+                        reference(GETFIELD, vertexColorFields[index]),
+                        capture(anyFLOAD),
+                        FMUL,
+                        reference(PUTFIELD, vertexColorFields[index])
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // if (!ColorizeBlock.setupBiomeSmoothing(this, block, this.blockAccess,
+                        //                                        i, j, k, face,
+                        //                                        useColor, r, g, b,
+                        //                                        topLeft, bottomLeft, bottomRight, topRight)) {
+                        ALOAD_0,
+                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, blockAccess),
+
+                        ILOAD_2,
+                        ILOAD_3,
+                        ILOAD, 4,
+                        push(patchCount++ % 6),
+
+                        ILOAD, useColor,
+                        FLOAD, 5,
+                        FLOAD, 6,
+                        FLOAD, 7,
+
+                        getCaptureGroup(1),
+                        getCaptureGroup(2),
+                        getCaptureGroup(3),
+                        getCaptureGroup(4),
+
+                        reference(INVOKESTATIC, setupBiomeSmoothing),
+                        IFNE, branch("A"),
+
+                        // ...
+                        getMatch(),
+
+                        // }
+                        label("A")
+                    );
+                }
+            });
         }
 
         private void setupBTW() {
