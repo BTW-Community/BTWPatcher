@@ -501,6 +501,27 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature(0.015625f));
 
             addBlockColorPatch(this);
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override lily pad color";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(0xffffff)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(INVOKESTATIC, getLilyPadColor)
+                    );
+                }
+            }.targetMethod(getBlockColor, getRenderColor, colorMultiplier));
         }
     }
 
