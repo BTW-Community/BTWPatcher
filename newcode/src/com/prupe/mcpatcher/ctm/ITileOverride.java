@@ -11,7 +11,7 @@ interface ITileOverride extends Comparable<ITileOverride> {
 
     void registerIcons();
 
-    Set<Integer> getMatchingBlocks();
+    Set<Block> getMatchingBlocks();
 
     Set<String> getMatchingTiles();
 

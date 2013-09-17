@@ -11,7 +11,6 @@ import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.Icon;
 import net.minecraft.src.ResourceLocation;
 
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -151,7 +150,7 @@ abstract class TileOverride implements ITileOverride {
     private final TileLoader tileLoader;
     private final int renderPass;
     private final int weight;
-    private final Set<Integer> matchBlocks;
+    private final Set<Block> matchBlocks;
     private final Set<String> matchTiles;
     private final int faces;
     private final int metadata;
@@ -226,14 +225,7 @@ abstract class TileOverride implements ITileOverride {
             error("no images found in %s/", texturesDirectory);
         }
 
-        String[] mappings = new String[BlockAPI.getNumBlocks()];
-        for (int i = 0; i < BlockAPI.getNumBlocks(); i++) {
-            Block block = BlockAPI.getBlockById(i);
-            if (block != null) {
-                mappings[i] = block.getShortName();
-            }
-        }
-        matchBlocks = getIDList(properties, "matchBlocks", "block", mappings);
+        matchBlocks = getBlockList(MCPatcherUtils.getStringProperty(properties, "matchBlocks", ""));
         matchTiles = getIDList(properties, "matchTiles");
         if (matchBlocks.isEmpty() && matchTiles.isEmpty()) {
             matchTiles.add(baseFilename);
@@ -359,6 +351,30 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
+    private Set<Block> getBlockList(String property) {
+        Set<Block> blocks = new HashSet<Block>();
+        for (String token : property.split("\\s+")) {
+            if (token.matches("\\d+-\\d+")) {
+                for (int id : MCPatcherUtils.parseIntegerList(token, 0, 65535)) {
+                    Block block = BlockAPI.parseBlockName(String.valueOf(id));
+                    if (block == null) {
+                        warn("unknown block id %d", id);
+                    } else {
+                        blocks.add(block);
+                    }
+                }
+            } else {
+                Block block = BlockAPI.parseBlockName(token);
+                if (block == null) {
+                    warn("unknown block %s", token);
+                } else {
+                    blocks.add(block);
+                }
+            }
+        }
+        return blocks;
+    }
+
     private Set<Integer> getIDList(Properties properties, String key, String type, String[] mappings) {
         Set<Integer> list = new HashSet<Integer>();
         String property = properties.getProperty(key, "");
@@ -473,7 +489,7 @@ abstract class TileOverride implements ITileOverride {
         return disabled;
     }
 
-    final public Set<Integer> getMatchingBlocks() {
+    final public Set<Block> getMatchingBlocks() {
         return matchBlocks;
     }
 
@@ -502,12 +518,10 @@ abstract class TileOverride implements ITileOverride {
     }
 
     final boolean shouldConnect(IBlockAccess blockAccess, Block block, Icon icon, int i, int j, int k, int face, int[] offset) {
-        int blockID = BlockAPI.getBlockId(block);
         int metadata = blockAccess.getBlockMetadata(i, j, k);
         i += offset[0];
         j += offset[1];
         k += offset[2];
-        int neighborID = BlockAPI.getBlockIdAt(blockAccess, i, j, k);
         int neighborMeta = blockAccess.getBlockMetadata(i, j, k);
         Block neighbor = BlockAPI.getBlockAt(blockAccess, i, j, k);
         if (exclude(neighbor, face, neighborMeta)) {
@@ -531,7 +545,7 @@ abstract class TileOverride implements ITileOverride {
         }
         switch (connectType) {
             case CONNECT_BY_BLOCK:
-                return neighborID == blockID;
+                return neighbor == block;
 
             case CONNECT_BY_TILE:
                 return neighbor.getBlockIcon(blockAccess, i, j, k, face) == icon;

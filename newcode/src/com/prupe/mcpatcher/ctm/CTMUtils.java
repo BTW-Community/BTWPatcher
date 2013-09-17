@@ -14,14 +14,14 @@ public class CTMUtils {
     private static final boolean enableGrass = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "grass", false);
     private static final int maxRecursion = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "maxRecursion", 4);
 
-    static final int BLOCK_ID_GRASS = 2;
-    static final int BLOCK_ID_MYCELIUM = 110;
-    static final int BLOCK_ID_SNOW = 78;
-    static final int BLOCK_ID_CRAFTED_SNOW = 80;
+    private static Block grassBlock;
+    private static Block mycelBlock;
+    static Block snowBlock;
+    static Block craftedSnowBlock;
 
     private static final List<ITileOverride> allOverrides = new ArrayList<ITileOverride>();
-    private static final ITileOverride blockOverrides[][] = new ITileOverride[BlockAPI.getNumBlocks()][];
-    private static final Map<String, ITileOverride[]> tileOverrides = new HashMap<String, ITileOverride[]>();
+    private static final Map<Block, List<ITileOverride>> blockOverrides = new IdentityHashMap<Block, List<ITileOverride>>();
+    private static final Map<String, List<ITileOverride>> tileOverrides = new IdentityHashMap<String, List<ITileOverride>>();
     private static TileLoader tileLoader;
     private static TileOverrideImpl.BetterGrass betterGrass;
 
@@ -41,9 +41,14 @@ public class CTMUtils {
 
             @Override
             public void beforeChange() {
+                grassBlock = BlockAPI.parseBlockName("minecraft:grass");
+                mycelBlock = BlockAPI.parseBlockName("minecraft:mycelium");
+                snowBlock = BlockAPI.parseBlockName("minecraft:snow_layer");
+                craftedSnowBlock = BlockAPI.parseBlockName("minecraft:snow");
+
                 RenderPassAPI.instance.clear();
                 allOverrides.clear();
-                Arrays.fill(blockOverrides, null);
+                blockOverrides.clear();
                 tileOverrides.clear();
                 tileLoader = new TileLoader("textures/blocks", true, logger);
                 betterGrass = null;
@@ -58,26 +63,24 @@ public class CTMUtils {
             @Override
             public void afterChange() {
                 if (enableGrass) {
-                    registerOverride(betterGrass = new TileOverrideImpl.BetterGrass(tileLoader, BLOCK_ID_GRASS, "grass"));
-                    registerOverride(new TileOverrideImpl.BetterGrass(tileLoader, BLOCK_ID_MYCELIUM, "mycel"));
+                    registerOverride(betterGrass = new TileOverrideImpl.BetterGrass(tileLoader, grassBlock, "grass"));
+                    registerOverride(new TileOverrideImpl.BetterGrass(tileLoader, mycelBlock, "mycel"));
                 }
                 for (ITileOverride override : allOverrides) {
                     override.registerIcons();
                 }
-                for (int i = 0; i < blockOverrides.length; i++) {
-                    if (blockOverrides[i] != null && BlockAPI.getBlockById(i) != null) {
-                        for (ITileOverride override : blockOverrides[i]) {
-                            if (override != null && !override.isDisabled() && override.getRenderPass() >= 0) {
-                                RenderPassAPI.instance.setRenderPassForBlock(BlockAPI.getBlockById(i), override.getRenderPass());
-                            }
+                for (Map.Entry<Block, List<ITileOverride>> entry : blockOverrides.entrySet()) {
+                    for (ITileOverride override : entry.getValue()) {
+                        if (override.getRenderPass() >= 0) {
+                            RenderPassAPI.instance.setRenderPassForBlock(entry.getKey(), override.getRenderPass());
                         }
                     }
                 }
-                for (ITileOverride[] overrides : blockOverrides) {
-                    sortOverrides(overrides);
+                for (List<ITileOverride> overrides : blockOverrides.values()) {
+                    Collections.sort(overrides);
                 }
-                for (ITileOverride[] overrides : tileOverrides.values()) {
-                    sortOverrides(overrides);
+                for (List<ITileOverride> overrides : tileOverrides.values()) {
+                    Collections.sort(overrides);
                 }
             }
 
@@ -183,23 +186,29 @@ public class CTMUtils {
         if (override != null && !override.isDisabled()) {
             boolean registered = false;
             if (override.getMatchingBlocks() != null) {
-                for (int index : override.getMatchingBlocks()) {
-                    String blockName = "";
-                    if (index >= 0 && index < BlockAPI.getNumBlocks() && BlockAPI.getBlockById(index) != null) {
-                        blockName = BlockAPI.getBlockById(index).getShortName();
-                        if (blockName == null) {
-                            blockName = "";
-                        } else {
-                            blockName = " (" + blockName.replaceFirst("^tile\\.", "") + ")";
-                        }
+                for (Block block : override.getMatchingBlocks()) {
+                    if (block == null) {
+                        continue;
                     }
-                    blockOverrides[index] = registerOverride(blockOverrides[index], override, "block " + index + blockName);
+                    List<ITileOverride> list = blockOverrides.get(block);
+                    if (list == null) {
+                        list = new ArrayList<ITileOverride>();
+                        blockOverrides.put(block, list);
+                    }
+                    list.add(override);
+                    logger.fine("using %s for block %s", override, BlockAPI.getBlockName(block));
                     registered = true;
                 }
             }
             if (override.getMatchingTiles() != null) {
                 for (String name : override.getMatchingTiles()) {
-                    tileOverrides.put(name, registerOverride(tileOverrides.get(name), override, "tile " + name));
+                    List<ITileOverride> list = tileOverrides.get(name);
+                    if (list == null) {
+                        list = new ArrayList<ITileOverride>();
+                        tileOverrides.put(name, list);
+                    }
+                    list.add(override);
+                    logger.fine("using %s for tile %s", override, name);
                     registered = true;
                 }
             }
@@ -209,23 +218,11 @@ public class CTMUtils {
         }
     }
 
-    private static ITileOverride[] registerOverride(ITileOverride[] overrides, ITileOverride override, String description) {
-        logger.fine("using %s for %s", override, description);
-        if (overrides == null) {
-            return new ITileOverride[]{override};
-        } else {
-            ITileOverride[] newList = new ITileOverride[overrides.length + 1];
-            System.arraycopy(overrides, 0, newList, 0, overrides.length);
-            newList[overrides.length] = override;
-            return newList;
-        }
-    }
-
     abstract private static class TileOverrideIterator implements Iterator<ITileOverride> {
         private final Block block;
         private Icon currentIcon;
-        private ITileOverride[] blockOverrides;
-        private ITileOverride[] iconOverrides;
+        private List<ITileOverride> blockOverride;
+        private List<ITileOverride> iconOverride;
         private final Set<ITileOverride> skipOverrides = new HashSet<ITileOverride>();
 
         private int blockPos;
@@ -238,13 +235,13 @@ public class CTMUtils {
         TileOverrideIterator(Block block, Icon icon) {
             this.block = block;
             currentIcon = icon;
-            blockOverrides = CTMUtils.blockOverrides[BlockAPI.getBlockId(block)];
-            iconOverrides = CTMUtils.tileOverrides.get(this.currentIcon.getIconName());
+            blockOverride = blockOverrides.get(block);
+            iconOverride = tileOverrides.get(this.currentIcon.getIconName());
         }
 
         private void resetForNextPass() {
-            blockOverrides = null;
-            iconOverrides = CTMUtils.tileOverrides.get(currentIcon.getIconName());
+            blockOverride = null;
+            iconOverride = CTMUtils.tileOverrides.get(currentIcon.getIconName());
             blockPos = 0;
             iconPos = 0;
             foundNext = false;
@@ -254,16 +251,16 @@ public class CTMUtils {
             if (foundNext) {
                 return true;
             }
-            if (iconOverrides != null) {
-                while (iconPos < iconOverrides.length) {
-                    if (checkOverride(iconOverrides[iconPos++])) {
+            if (iconOverride != null) {
+                while (iconPos < iconOverride.size()) {
+                    if (checkOverride(iconOverride.get(iconPos++))) {
                         return true;
                     }
                 }
             }
-            if (blockOverrides != null) {
-                while (blockPos < blockOverrides.length) {
-                    if (checkOverride(blockOverrides[blockPos++])) {
+            if (blockOverride != null) {
+                while (blockPos < blockOverride.size()) {
+                    if (checkOverride(blockOverride.get(blockPos++))) {
                         return true;
                     }
                 }

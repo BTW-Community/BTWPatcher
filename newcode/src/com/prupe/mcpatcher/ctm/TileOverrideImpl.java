@@ -515,13 +515,13 @@ class TileOverrideImpl {
             {1, 0},
         };
 
-        private final int blockID;
+        private final Block block;
         private final String tileName;
         private final Icon fullTile;
         private final Icon fullSnowTile;
 
-        BetterGrass(TileLoader tileLoader, int blockID, String tileName) {
-            this.blockID = blockID;
+        BetterGrass(TileLoader tileLoader, Block block, String tileName) {
+            this.block = block;
             this.tileName = tileName;
             fullSnowTile = tileLoader.getIcon("snow");
             fullTile = tileLoader.getIcon(tileName + "_top");
@@ -539,9 +539,9 @@ class TileOverrideImpl {
         public void registerIcons() {
         }
 
-        public Set<Integer> getMatchingBlocks() {
-            Set<Integer> ids = new HashSet<Integer>();
-            ids.add(blockID);
+        public Set<Block> getMatchingBlocks() {
+            Set<Block> ids = new HashSet<Block>();
+            ids.add(block);
             return ids;
         }
 
@@ -566,11 +566,11 @@ class TileOverrideImpl {
                 return null;
             }
             int[] offset = OFFSET_MATRIX[face - 2];
-            if (BlockAPI.getBlockIdAt(blockAccess, i + offset[0], j - 1, k + offset[1]) == blockID) {
-                int neighborBlock = BlockAPI.getBlockIdAt(blockAccess, i, j + 1, k);
-                if (neighborBlock == CTMUtils.BLOCK_ID_SNOW || neighborBlock == CTMUtils.BLOCK_ID_CRAFTED_SNOW) {
-                    neighborBlock = BlockAPI.getBlockIdAt(blockAccess, i + offset[0], j, k + offset[1]);
-                    if (neighborBlock == CTMUtils.BLOCK_ID_SNOW || neighborBlock == CTMUtils.BLOCK_ID_CRAFTED_SNOW) {
+            if (BlockAPI.getBlockAt(blockAccess, i + offset[0], j - 1, k + offset[1]) == block) {
+                Block neighborBlock = BlockAPI.getBlockAt(blockAccess, i, j + 1, k);
+                if (neighborBlock == CTMUtils.snowBlock || neighborBlock == CTMUtils.craftedSnowBlock) {
+                    neighborBlock = BlockAPI.getBlockAt(blockAccess, i + offset[0], j, k + offset[1]);
+                    if (neighborBlock == CTMUtils.snowBlock || neighborBlock == CTMUtils.craftedSnowBlock) {
                         return fullSnowTile;
                     } else {
                         return null;
@@ -583,7 +583,7 @@ class TileOverrideImpl {
         }
 
         boolean isBetterGrass(IBlockAccess blockAccess, Block block, int i, int j, int k, int face) {
-            return BlockAPI.getBlockId(block) == blockID && getTile(blockAccess, block, null, i, j, k, face) == fullTile;
+            return block == this.block && getTile(blockAccess, block, null, i, j, k, face) == fullTile;
         }
 
         public Icon getTile(Block block, Icon origIcon, int face, int metadata) {

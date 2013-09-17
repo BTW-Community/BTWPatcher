@@ -5,7 +5,8 @@ import com.prupe.mcpatcher.mal.block.BlockAPI;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
-import java.util.Arrays;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class RenderPass {
@@ -13,8 +14,8 @@ public class RenderPass {
 
     private static final ResourceLocation RENDERPASS_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("renderpass.properties");
 
-    private static final int[] baseRenderPass = new int[BlockAPI.getNumBlocks()];
-    private static final int[] extraRenderPass = new int[BlockAPI.getNumBlocks()];
+    private static final Map<Block, Integer> baseRenderPass = new IdentityHashMap<Block, Integer>();
+    private static final Map<Block, Integer> extraRenderPass = new IdentityHashMap<Block, Integer>();
 
     private static BlendMethod blendMethod;
     private static boolean enableLightmap;
@@ -41,14 +42,11 @@ public class RenderPass {
             @Override
             void clear() {
                 maxRenderPass = 1;
-                Arrays.fill(baseRenderPass, -1);
-                Arrays.fill(extraRenderPass, -1);
+                baseRenderPass.clear();
+                extraRenderPass.clear();
 
-                for (int i = 0; i < BlockAPI.getNumBlocks(); i++) {
-                    Block block = BlockAPI.getBlockById(i);
-                    if (block != null) {
-                        baseRenderPass[i] = block.getRenderBlockPass();
-                    }
+                for (Block block : BlockAPI.getAllBlocks()) {
+                    baseRenderPass.put(block, block.getRenderBlockPass());
                 }
             }
 
@@ -57,11 +55,10 @@ public class RenderPass {
                 if (pass < 0) {
                     return;
                 }
-                int blockID = BlockAPI.getBlockId(block);
                 if (pass <= 2) {
-                    baseRenderPass[blockID] = pass;
+                    baseRenderPass.put(block, pass);
                 } else {
-                    extraRenderPass[blockID] = pass;
+                    extraRenderPass.put(block, pass);
                 }
                 maxRenderPass = Math.max(maxRenderPass, pass);
             }
@@ -109,28 +106,33 @@ public class RenderPass {
     }
 
     public static int getBlockRenderPass(Block block) {
-        int blockID = BlockAPI.getBlockId(block);
+        Integer i;
         if (renderPass <= 2) {
-            return baseRenderPass[blockID];
+            i = baseRenderPass.get(block);
         } else {
-            return extraRenderPass[blockID];
+            i = extraRenderPass.get(block);
         }
+        return i == null ? -1 : i;
     }
 
     public static boolean canRenderInPass(Block block, int pass, boolean renderThis) {
-        int blockID = BlockAPI.getBlockId(block);
-        if (baseRenderPass[blockID] < 2 && extraRenderPass[blockID] < 2) {
+        Integer base = baseRenderPass.get(block);
+        Integer extra = extraRenderPass.get(block);
+        if (base == null || (base < 2 && extra == null)) {
             return renderThis;
         } else {
-            return pass == getBlockRenderPass(block);
+            return pass == base;
         }
     }
 
     public static boolean shouldSideBeRendered(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
         if (block.shouldSideBeRendered(blockAccess, i, j, k, face)) {
             return true;
+        } else if (extraRenderPass.containsKey(block)) {
+            Block neighbor = BlockAPI.getBlockAt(blockAccess, i, j, k);
+            return extraRenderPass.containsKey(neighbor);
         } else {
-            return extraRenderPass[BlockAPI.getBlockIdAt(blockAccess, i, j, k)] >= 0 && extraRenderPass[BlockAPI.getBlockId(block)] < 0;
+            return false;
         }
     }
 

@@ -32,17 +32,18 @@ public class ColorizeBlock {
 
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
 
-    private static final int BLOCK_ID_GRASS = 2;
-    private static final int BLOCK_ID_WATER = 8;
-    private static final int BLOCK_ID_WATER_STATIC = 9;
-    private static final int BLOCK_ID_LEAVES = 18;
-    private static final int BLOCK_ID_TALL_GRASS = 31;
-    private static final int BLOCK_ID_PUMPKIN_STEM = 104;
-    private static final int BLOCK_ID_MELON_STEM = 105;
-    private static final int BLOCK_ID_VINE = 106;
+    private static BiomeGenBase swampBiome;
 
-    private static final ColorMap[] blockColorMaps = new ColorMap[BlockAPI.getNumBlocks()]; // bitmaps from palette.block.*
-    private static final Map<Integer, ColorMap> blockMetaColorMaps = new HashMap<Integer, ColorMap>(); // bitmaps from palette.block.*
+    private static Block grassBlock;
+    private static Block waterBlock;
+    private static Block staticWaterBlock;
+    private static Block leavesBlock;
+    private static Block tallGrassBlock;
+    private static Block pumpkinStemBlock;
+    private static Block melonStemBlock;
+    private static Block vineBlock;
+
+    private static final Map<Block, ColorMap[]> blockColorMaps = new HashMap<Block, ColorMap[]>(); // bitmaps from palette.block.*
     private static ColorMap swampGrassColorMap;
     private static ColorMap swampFoliageColorMap;
     private static ColorMap waterColorMap;
@@ -50,9 +51,6 @@ public class ColorizeBlock {
     private static float[][] redstoneColor; // colormap/redstone.png
     private static int[] pumpkinStemColors; // colormap/pumpkinstem.png
     private static int[] melonStemColors; // colormap/melonstem.png
-
-    private static BiomeGenBase swampBiome;
-    private static Block waterBlock;
 
     private static final int blockBlendRadius = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius", 1);
 
@@ -122,10 +120,17 @@ public class ColorizeBlock {
 
     static void reset() {
         swampBiome = BiomeAPI.findBiomeByName("Swampland");
-        waterBlock = BlockAPI.getBlockById(BLOCK_ID_WATER);
 
-        Arrays.fill(blockColorMaps, null);
-        blockMetaColorMaps.clear();
+        grassBlock = BlockAPI.parseBlockName("minecraft:grass");
+        waterBlock = BlockAPI.parseBlockName("minecraft:flowing_water");
+        staticWaterBlock = BlockAPI.parseBlockName("minecraft:water");
+        leavesBlock = BlockAPI.parseBlockName("minecraft:leaves");
+        tallGrassBlock = BlockAPI.parseBlockName("minecraft:tallgrass");
+        pumpkinStemBlock = BlockAPI.parseBlockName("minecraft:pumpkin_stem");
+        melonStemBlock = BlockAPI.parseBlockName("minecraft:melon_stem");
+        vineBlock = BlockAPI.parseBlockName("minecraft:vine");
+
+        blockColorMaps.clear();
         swampGrassColorMap = null;
         swampFoliageColorMap = null;
         waterColorMap = null;
@@ -139,14 +144,14 @@ public class ColorizeBlock {
     }
 
     static void reloadFoliageColors(Properties properties) {
-        registerColorMap(DEFAULT_GRASSCOLOR, BLOCK_ID_GRASS + " " + BLOCK_ID_TALL_GRASS + ":1,2");
-        registerColorMap(DEFAULT_FOLIAGECOLOR, BLOCK_ID_LEAVES + ":0,4,8,12 " + BLOCK_ID_VINE);
-        registerColorMap(PINECOLOR, BLOCK_ID_LEAVES + ":1,5,9,13");
-        registerColorMap(BIRCHCOLOR, BLOCK_ID_LEAVES + ":2,6,10,14");
+        registerColorMap(DEFAULT_GRASSCOLOR, BlockAPI.getBlockName(grassBlock) + " " + BlockAPI.getBlockName(tallGrassBlock) + ":1,2");
+        registerColorMap(DEFAULT_FOLIAGECOLOR, BlockAPI.getBlockName(leavesBlock) + ":0,4,8,12 " + BlockAPI.getBlockName(vineBlock));
+        registerColorMap(PINECOLOR, BlockAPI.getBlockName(leavesBlock) + ":1,5,9,13");
+        registerColorMap(BIRCHCOLOR, BlockAPI.getBlockName(leavesBlock) + ":2,6,10,14");
     }
 
     static void reloadWaterColors(Properties properties) {
-        waterColorMap = registerColorMap(WATERCOLOR, BLOCK_ID_WATER + " " + BLOCK_ID_WATER_STATIC);
+        waterColorMap = registerColorMap(WATERCOLOR, BlockAPI.getBlockName(waterBlock) + " " + BlockAPI.getBlockName(staticWaterBlock));
         if (waterColorMap != null) {
             waterColorMap.multiplyMap(ColorizeEntity.waterBaseColor);
         }
@@ -185,22 +190,20 @@ public class ColorizeBlock {
         if (colorMap == null) {
             return null;
         }
+        int[] metadata = new int[1];
         for (String idString : idList.split("\\s+")) {
-            String[] tokens = idString.split(":");
-            int[] blockIds = MCPatcherUtils.parseIntegerList(tokens[0], 0, blockColorMaps.length - 1);
-            if (tokens.length > 1) {
-                int[] metadata = MCPatcherUtils.parseIntegerList(tokens[1], 0, 15);
-                for (int blockId : blockIds) {
-                    for (int meta : metadata) {
-                        blockMetaColorMaps.put(ColorMap.getBlockMetaKey(blockId, meta), colorMap);
-                    }
+            Block block = BlockAPI.parseBlockAndMetadata(idString, metadata);
+            if (block != null) {
+                ColorMap[] maps = blockColorMaps.get(block);
+                if (maps == null) {
+                    maps = new ColorMap[BlockAPI.METADATA_ARRAY_SIZE];
+                    blockColorMaps.put(block, maps);
                 }
-            } else {
-                for (int blockId : blockIds) {
-                    blockColorMaps[blockId] = colorMap;
-                }
+                maps[metadata[0]] = colorMap;
+                logger.finer("using %s for block %s, default color %06x",
+                    resource, BlockAPI.getBlockName(block, metadata[0]), colorMap.getColorMultiplier()
+                );
             }
-            logger.finer("using %s for block %s, default color %06x", resource, idString, colorMap.getColorMultiplier());
         }
         return colorMap;
     }
@@ -234,53 +237,44 @@ public class ColorizeBlock {
         return rgb == null || rgb.length < 8 ? null : rgb;
     }
 
-    private static ColorMap findColorMap(int blockId, int metadata) {
-        ColorMap colorMap = blockMetaColorMaps.get(ColorMap.getBlockMetaKey(blockId, metadata));
+    private static ColorMap findColorMap(Block block, int metadata) {
+        ColorMap[] maps = blockColorMaps.get(block);
+        if (maps == null) {
+            return null;
+        }
+        ColorMap colorMap = maps[metadata];
         if (colorMap != null) {
             return colorMap;
         }
-        return blockColorMaps[blockId];
+        return maps[BlockAPI.NO_METADATA];
     }
 
-    private static ColorMap findColorMap(int blockId, int metadata, BiomeGenBase biome) {
+    private static ColorMap findColorMap(Block block, int metadata, BiomeGenBase biome) {
         if (biome == swampBiome) {
-            switch (blockId) {
-                case BLOCK_ID_GRASS:
-                    if (swampGrassColorMap != null) {
-                        return swampGrassColorMap;
-                    }
-
-                case BLOCK_ID_LEAVES:
-                    if (swampFoliageColorMap != null) {
-                        return swampFoliageColorMap;
-                    }
-
-                default:
-                    break;
+            if (block == grassBlock) {
+                if (swampGrassColorMap != null) {
+                    return swampGrassColorMap;
+                }
+            } else if (block == leavesBlock) {
+                if (swampFoliageColorMap != null) {
+                    return swampFoliageColorMap;
+                }
             }
         }
-        return findColorMap(blockId, metadata);
+        return findColorMap(block, metadata);
     }
 
     private static ColorMap findColorMap(Block block, IBlockAccess blockAccess, int i, int j, int k) {
         int metadata = blockAccess.getBlockMetadata(i, j, k);
-        int blockId = BlockAPI.getBlockId(block);
-        return findColorMap(blockId, metadata, BiomeAPI.getBiomeGenAt(i, j, k));
+        return findColorMap(block, metadata, BiomeAPI.getBiomeGenAt(i, j, k));
     }
 
     public static boolean colorizeBlock(Block block) {
-        ColorMap colorMap = blockColorMaps[BlockAPI.getBlockId(block)];
-        if (colorMap == null) {
-            return false;
-        } else {
-            blockColor = colorMap.getColorMultiplier();
-            return true;
-        }
+        return colorizeBlock(block, BlockAPI.NO_METADATA);
     }
 
     public static boolean colorizeBlock(Block block, int metadata) {
-        int blockId = BlockAPI.getBlockId(block);
-        ColorMap colorMap = findColorMap(blockId, metadata);
+        ColorMap colorMap = findColorMap(block, metadata);
         if (colorMap == null) {
             return false;
         } else {
@@ -327,17 +321,12 @@ public class ColorizeBlock {
 
     public static int colorizeStem(int defaultColor, Block block, int blockMetadata) {
         int[] colors;
-        switch (BlockAPI.getBlockId(block)) {
-            case BLOCK_ID_PUMPKIN_STEM:
-                colors = pumpkinStemColors;
-                break;
-
-            case BLOCK_ID_MELON_STEM:
-                colors = melonStemColors;
-                break;
-
-            default:
-                return defaultColor;
+        if (block == pumpkinStemBlock) {
+            colors = pumpkinStemColors;
+        } else if (block == melonStemBlock) {
+            colors = melonStemColors;
+        } else {
+            return defaultColor;
         }
         return colors == null ? defaultColor : colors[blockMetadata & 0x7];
     }
@@ -346,9 +335,9 @@ public class ColorizeBlock {
         return lilypadColor;
     }
 
-    public static int getItemColorFromDamage(int defaultColor, int blockId, int damage) {
-        if (blockId == BLOCK_ID_WATER || blockId == BLOCK_ID_WATER_STATIC) {
-            return colorizeBlock(BlockAPI.getBlockById(blockId), damage) ? blockColor : defaultColor;
+    public static int getItemColorFromDamage(int defaultColor, Block block, int damage) {
+        if (block == waterBlock || block == staticWaterBlock) {
+            return colorizeBlock(block, damage) ? blockColor : defaultColor;
         } else {
             return defaultColor;
         }
@@ -372,8 +361,8 @@ public class ColorizeBlock {
         }
     }
 
-    public static void colorizeWaterBlockGL(int blockID) {
-        if (blockID == BLOCK_ID_WATER || blockID == BLOCK_ID_WATER_STATIC) {
+    public static void colorizeWaterBlockGL(Block block) {
+        if (block == waterBlock || block == staticWaterBlock) {
             GL11.glColor4f(waterColor[0], waterColor[1], waterColor[2], 1.0f);
         }
     }
