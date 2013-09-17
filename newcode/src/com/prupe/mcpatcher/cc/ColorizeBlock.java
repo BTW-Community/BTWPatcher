@@ -199,7 +199,11 @@ public class ColorizeBlock {
                     maps = new ColorMap[BlockAPI.METADATA_ARRAY_SIZE];
                     blockColorMaps.put(block, maps);
                 }
-                maps[metadata[0]] = colorMap;
+                for (int i = 0; i < maps.length; i++) {
+                    if ((metadata[0] & (1 << i)) != 0) {
+                        maps[i] = colorMap;
+                    }
+                }
                 logger.finer("using %s for block %s, default color %06x",
                     resource, BlockAPI.getBlockName(block, metadata[0]), colorMap.getColorMultiplier()
                 );
