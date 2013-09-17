@@ -7,10 +7,7 @@ import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.BiomeGenBase;
-import net.minecraft.src.Block;
-import net.minecraft.src.IBlockAccess;
-import net.minecraft.src.ResourceLocation;
+import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Arrays;
@@ -27,8 +24,8 @@ public class ColorizeBlock {
     private static final ResourceLocation MELON_STEM_COLORS = TexturePackAPI.newMCPatcherResourceLocation("colormap/melonstem.png");
     private static final ResourceLocation SWAMPGRASSCOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/swampgrass.png");
     private static final ResourceLocation SWAMPFOLIAGECOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/swampfoliage.png");
+    private static final ResourceLocation DEFAULT_GRASSCOLOR = new ResourceLocation("minecraft", "textures/colormap/grass.png");
     private static final ResourceLocation DEFAULT_FOLIAGECOLOR = new ResourceLocation("minecraft", "textures/colormap/foliage.png");
-    private static final ResourceLocation FOLIAGECOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/foliage.png");
     private static final ResourceLocation PINECOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/pine.png");
     private static final ResourceLocation BIRCHCOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/birch.png");
     private static final ResourceLocation WATERCOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/water.png");
@@ -88,8 +85,8 @@ public class ColorizeBlock {
     }
 
     static void reloadFoliageColors(Properties properties) {
+        registerColorMap(DEFAULT_GRASSCOLOR, BLOCK_ID_GRASS + " " + BLOCK_ID_TALL_GRASS + ":1,2");
         registerColorMap(DEFAULT_FOLIAGECOLOR, BLOCK_ID_LEAVES + ":0,4,8,12 " + BLOCK_ID_VINE);
-        registerColorMap(FOLIAGECOLOR, BLOCK_ID_LEAVES + ":0,4,8,12 " + BLOCK_ID_VINE);
         registerColorMap(PINECOLOR, BLOCK_ID_LEAVES + ":1,5,9,13");
         registerColorMap(BIRCHCOLOR, BLOCK_ID_LEAVES + ":2,6,10,14");
     }
