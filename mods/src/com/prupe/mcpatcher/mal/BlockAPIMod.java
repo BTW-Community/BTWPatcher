@@ -38,6 +38,17 @@ public class BlockAPIMod extends Mod {
         BlockMod() {
             super(BlockAPIMod.this);
 
+            final MethodRef getShortName = new MethodRef(getDeobfClass(), "getShortName", "()Ljava/lang/String;");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push("tile.")
+                    );
+                }
+            }.setMethod(getShortName));
+
             if (malVersion == 2) {
                 final FieldRef blockRegistry = new FieldRef(getDeobfClass(), "blockRegistry", "LRegistry;");
 
