@@ -13,7 +13,7 @@ final class ArmorOverride extends OverrideBase {
     ArmorOverride(ResourceLocation propertiesName, Properties properties) {
         super(propertiesName, properties);
 
-        if (itemsIDs == null) {
+        if (items == null) {
             error("no matching items specified");
         }
         if (textureName == null && alternateTextures == null) {

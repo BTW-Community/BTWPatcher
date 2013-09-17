@@ -1,8 +1,12 @@
 package com.prupe.mcpatcher.cit;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.MCLogger;
+import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.TileLoader;
 import com.prupe.mcpatcher.mal.item.ItemAPI;
 import com.prupe.mcpatcher.mal.nbt.NBTRule;
+import net.minecraft.src.Item;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.ResourceLocation;
 
@@ -19,7 +23,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
     final ResourceLocation textureName;
     final Map<String, ResourceLocation> alternateTextures;
     final int weight;
-    final BitSet itemsIDs;
+    final Set<Item> items;
     final BitSet damage;
     final int damageMask;
     final BitSet stackSize;
@@ -98,17 +102,15 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             value = MCPatcherUtils.getStringProperty(properties, "matchItems", "");
         }
         if (value.equals("")) {
-            itemsIDs = null;
+            items = null;
         } else {
-            BitSet ids = parseBitSet(value, CITUtils.LOWEST_ITEM_ID, CITUtils.HIGHEST_ITEM_ID);
-            boolean all = true;
-            for (int i = CITUtils.LOWEST_ITEM_ID; i <= CITUtils.HIGHEST_ITEM_ID; i++) {
-                if (ItemAPI.getItemById(i) != null && !ids.get(i)) {
-                    all = false;
-                    break;
+            items = new HashSet<Item>();
+            for (String s : value.split("\\s+")) {
+                Item item = ItemAPI.parseItemName(s);
+                if (item != null) {
+                    items.add(item);
                 }
             }
-            itemsIDs = all ? null : ids;
         }
 
         damage = parseBitSet(properties, "damage", 0, MAX_DAMAGE);

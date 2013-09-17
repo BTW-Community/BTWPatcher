@@ -2,7 +2,7 @@ package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.mal.item.ItemAPI;
+import net.minecraft.src.Item;
 import net.minecraft.src.ItemStack;
 
 import java.util.*;
@@ -36,22 +36,24 @@ final class EnchantmentList {
         }
     }
 
-    EnchantmentList(Enchantment[][] enchantments, ItemStack itemStack) {
+    EnchantmentList(Map<Item, List<Enchantment>> enchantments, List<Enchantment> allItemEnchantments, ItemStack itemStack) {
         BitSet layersPresent = new BitSet();
         Map<Integer, Layer> tmpLayers = new HashMap<Integer, Layer>();
-        int itemID = ItemAPI.getItemId(itemStack.getItem());
-        int[] enchantmentLevels = CITUtils.getEnchantmentLevels(itemID, itemStack.stackTagCompound);
+        Item item = itemStack.getItem();
+        int[] enchantmentLevels = CITUtils.getEnchantmentLevels(item, itemStack.stackTagCompound);
         boolean hasEffect = itemStack.hasEffectVanilla();
-        if (itemID >= 0 && itemID < enchantments.length && enchantments[itemID] != null) {
-            for (Enchantment enchantment : enchantments[itemID]) {
-                if (enchantment.match(itemStack, enchantmentLevels, hasEffect)) {
-                    int level = Math.max(enchantment.lastEnchantmentLevel, 1);
-                    int layer = enchantment.layer;
-                    if (!layersPresent.get(layer)) {
-                        Layer newLayer = new Layer(enchantment, level);
-                        tmpLayers.put(layer, newLayer);
-                        layersPresent.set(layer);
-                    }
+        List<Enchantment> list = enchantments.get(item);
+        if (list == null) {
+            list = allItemEnchantments;
+        }
+        for (Enchantment enchantment : list) {
+            if (enchantment.match(itemStack, enchantmentLevels, hasEffect)) {
+                int level = Math.max(enchantment.lastEnchantmentLevel, 1);
+                int layer = enchantment.layer;
+                if (!layersPresent.get(layer)) {
+                    Layer newLayer = new Layer(enchantment, level);
+                    tmpLayers.put(layer, newLayer);
+                    layersPresent.set(layer);
                 }
             }
         }

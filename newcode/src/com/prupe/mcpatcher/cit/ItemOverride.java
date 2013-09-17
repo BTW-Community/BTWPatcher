@@ -9,16 +9,13 @@ import java.util.Map;
 import java.util.Properties;
 
 final class ItemOverride extends OverrideBase {
-    private static final int ITEM_ID_COMPASS = 345;
-    private static final int ITEM_ID_CLOCK = 347;
-
     private Icon icon;
     private final Map<Icon, Icon> iconMap;
 
     ItemOverride(ResourceLocation propertiesName, Properties properties) {
         super(propertiesName, properties);
 
-        if (itemsIDs == null) {
+        if (items == null) {
             error("no matching items specified");
         }
 
@@ -42,10 +39,10 @@ final class ItemOverride extends OverrideBase {
 
     void preload(TileLoader tileLoader) {
         String special = null;
-        if (itemsIDs != null) {
-            if (itemsIDs.get(ITEM_ID_COMPASS)) {
+        if (items != null) {
+            if (items.contains(CITUtils.itemCompass)) {
                 special = "compass";
-            } else if (itemsIDs.get(ITEM_ID_CLOCK)) {
+            } else if (items.contains(CITUtils.itemClock)) {
                 special = "clock";
             }
         }

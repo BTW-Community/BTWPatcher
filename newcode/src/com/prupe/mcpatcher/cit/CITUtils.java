@@ -5,12 +5,8 @@ import com.prupe.mcpatcher.mal.item.ItemAPI;
 import net.minecraft.src.*;
 
 import java.awt.image.BufferedImage;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public class CITUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
@@ -20,22 +16,21 @@ public class CITUtils {
     private static final ResourceLocation CIT_PROPERTIES2 = TexturePackAPI.newMCPatcherResourceLocation("cit/" + CIT_PROPERTIES);
     static final ResourceLocation FIXED_ARMOR_RESOURCE = new ResourceLocation("textures/models/armor/iron_layer_1.png");
 
-    private static final int MAX_ITEMS = ItemAPI.getNumItems();
     static final int MAX_ENCHANTMENTS = 256;
-    static int LOWEST_ITEM_ID;
-    static int HIGHEST_ITEM_ID;
-    static final Map<String, Integer> itemNameMap = new HashMap<String, Integer>();
 
-    private static final int ITEM_ID_ENCHANTED_BOOK = 403;
+    private static Item itemEnchantedBook;
+    static Item itemCompass;
+    static Item itemClock;
 
     static final boolean enableItems = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "items", true);
     static final boolean enableEnchantments = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "enchantments", true);
     static final boolean enableArmor = Config.getBoolean(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "armor", true);
 
     private static TileLoader tileLoader;
-    private static final ItemOverride[][] items = new ItemOverride[MAX_ITEMS][];
-    private static final Enchantment[][] enchantments = new Enchantment[MAX_ITEMS][];
-    private static final ArmorOverride[][] armors = new ArmorOverride[MAX_ITEMS][];
+    private static final Map<Item, List<ItemOverride>> items = new IdentityHashMap<Item, List<ItemOverride>>();
+    private static final Map<Item, List<Enchantment>> enchantments = new IdentityHashMap<Item, List<Enchantment>>();
+    private static final List<Enchantment> allItemEnchantments = new ArrayList<Enchantment>();
+    private static final Map<Item, List<ArmorOverride>> armors = new IdentityHashMap<Item, List<ArmorOverride>>();
 
     private static boolean useGlint;
 
@@ -60,39 +55,16 @@ public class CITUtils {
         TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, 3) {
             @Override
             public void beforeChange() {
-                tileLoader = new TileLoader("textures/items", false, logger);
-                Arrays.fill(items, null);
-                Arrays.fill(enchantments, null);
-                Arrays.fill(armors, null);
-                lastIcon = null;
-                itemNameMap.clear();
+                itemEnchantedBook = ItemAPI.parseItemName("minecraft:enchanted_book");
+                itemCompass = ItemAPI.parseItemName("minecraft:compass");
+                itemClock = ItemAPI.parseItemName("minecraft:clock");
 
-                for (LOWEST_ITEM_ID = 256; LOWEST_ITEM_ID < MAX_ITEMS; LOWEST_ITEM_ID++) {
-                    if (ItemAPI.getItemById(LOWEST_ITEM_ID) != null) {
-                        break;
-                    }
-                }
-                for (HIGHEST_ITEM_ID = MAX_ITEMS - 1; HIGHEST_ITEM_ID >= 0; HIGHEST_ITEM_ID--) {
-                    if (ItemAPI.getItemById(HIGHEST_ITEM_ID) != null) {
-                        break;
-                    }
-                }
-                if (LOWEST_ITEM_ID <= HIGHEST_ITEM_ID) {
-                    for (int i = LOWEST_ITEM_ID; i <= HIGHEST_ITEM_ID; i++) {
-                        Item item = ItemAPI.getItemById(i);
-                        if (item != null) {
-                            String name = item.getItemName();
-                            if (name != null) {
-                                itemNameMap.put(name, i);
-                            }
-                        }
-                    }
-                    logger.fine("%d items, lowest used item id is %d (%s), highest is %d (%s)",
-                        itemNameMap.size(),
-                        LOWEST_ITEM_ID, getItemName(LOWEST_ITEM_ID),
-                        HIGHEST_ITEM_ID, getItemName(HIGHEST_ITEM_ID)
-                    );
-                }
+                tileLoader = new TileLoader("textures/items", false, logger);
+                items.clear();
+                enchantments.clear();
+                allItemEnchantments.clear();
+                armors.clear();
+                lastIcon = null;
 
                 BufferedImage image = TexturePackAPI.getImage(FIXED_ARMOR_RESOURCE);
                 if (image == null) {
@@ -125,82 +97,63 @@ public class CITUtils {
 
             @Override
             public void afterChange() {
-                for (OverrideBase[] overrides1 : items) {
-                    if (overrides1 != null) {
-                        for (OverrideBase override : overrides1) {
-                            ((ItemOverride) override).registerIcon(tileLoader);
-                        }
+                for (List<ItemOverride> list : items.values()) {
+                    for (OverrideBase override : list) {
+                        ((ItemOverride) override).registerIcon(tileLoader);
                     }
+                    Collections.sort(list);
                 }
-                sortOverrides(items);
-                sortOverrides(enchantments);
-                sortOverrides(armors);
+                for (List<Enchantment> list : enchantments.values()) {
+                    list.addAll(allItemEnchantments);
+                    Collections.sort(list);
+                }
+                for (List<ArmorOverride> list : armors.values()) {
+                    Collections.sort(list);
+                }
             }
 
+            @SuppressWarnings("unchecked")
             private void registerOverride(OverrideBase override) {
                 if (override != null && !override.error) {
-                    OverrideBase[][] list;
+                    Map map;
                     if (override instanceof ItemOverride) {
                         ((ItemOverride) override).preload(tileLoader);
-                        list = items;
+                        map = items;
                     } else if (override instanceof Enchantment) {
-                        list = enchantments;
+                        map = enchantments;
                     } else if (override instanceof ArmorOverride) {
-                        list = armors;
+                        map = armors;
                     } else {
                         logger.severe("unknown ItemOverride type %d", override.getClass().getName());
                         return;
                     }
-                    if (override.itemsIDs == null) {
-                        logger.fine("registered %s to all items", override);
-                        for (int i = LOWEST_ITEM_ID; i <= HIGHEST_ITEM_ID; i++) {
-                            registerOverride(list, i, override);
+                    if (override.items == null) {
+                        if (override instanceof Enchantment) {
+                            logger.fine("registered %s to all items", override);
+                            allItemEnchantments.add((Enchantment) override);
                         }
                     } else {
-                        int j = 0;
-                        for (int i = override.itemsIDs.nextSetBit(0); i >= 0; i = override.itemsIDs.nextSetBit(i + 1)) {
-                            registerOverride(list, i, override);
-                            if (j < 10) {
-                                logger.fine("registered %s to item %d (%s)", override, i, getItemName(i));
-                            } else if (j == 10) {
-                                logger.fine("... %d total", override.itemsIDs.cardinality());
+                        int i = 0;
+                        for (Item item : override.items) {
+                            registerOverride(map, item, override);
+                            if (i < 10) {
+                                logger.fine("registered %s to item %d (%s)", override, item);
+                            } else if (i == 10) {
+                                logger.fine("... %d total", override.items.size());
                             }
-                            j++;
+                            i++;
                         }
                     }
                 }
             }
 
-            private void registerOverride(OverrideBase[][] list, int itemID, OverrideBase override) {
-                if (ItemAPI.getItemById(itemID) != null) {
-                    Class<? extends OverrideBase> overrideClass = list.getClass().getComponentType().getComponentType().asSubclass(OverrideBase.class);
-                    list[itemID] = registerOverride(list[itemID], override, overrideClass);
+            private void registerOverride(Map<Item, List<OverrideBase>> map, Item item, OverrideBase override) {
+                List<OverrideBase> list = map.get(item);
+                if (list == null) {
+                    list = new ArrayList<OverrideBase>();
+                    map.put(item, list);
                 }
-            }
-
-            private OverrideBase[] registerOverride(OverrideBase[] list, OverrideBase override, Class<? extends OverrideBase> overrideClass) {
-                if (override == null) {
-                    // nothing
-                } else if (!overrideClass.isAssignableFrom(override.getClass())) {
-                    logger.severe("unexpected class %s in %s array", override.getClass().getName(), overrideClass.getSimpleName());
-                } else if (list == null) {
-                    list = (OverrideBase[]) Array.newInstance(overrideClass, 1);
-                    list[0] = override;
-                } else {
-                    OverrideBase[] newList = (OverrideBase[]) Array.newInstance(overrideClass, list.length + 1);
-                    System.arraycopy(list, 0, newList, 0, list.length);
-                    newList[list.length] = override;
-                    list = newList;
-                }
-                return list;
-            }
-
-            private void sortOverrides(OverrideBase[][] overrides) {
-                for (OverrideBase[] list : overrides) {
-                    if (list != null) {
-                        Arrays.sort(list);
-                    }
-                }
+                list.add(override);
             }
         });
     }
@@ -254,12 +207,13 @@ public class CITUtils {
         return texture;
     }
 
-    private static <T extends OverrideBase> T findMatch(T[][] overrides, ItemStack itemStack) {
-        int itemID = ItemAPI.getItemId(itemStack.getItem());
-        if (itemID >= 0 && itemID < overrides.length && overrides[itemID] != null) {
-            int[] enchantmentLevels = getEnchantmentLevels(itemID, itemStack.stackTagCompound);
+    private static <T extends OverrideBase> T findMatch(Map<Item, List<T>> overrides, ItemStack itemStack) {
+        Item item = itemStack.getItem();
+        List<T> list = overrides.get(item);
+        if (list != null) {
+            int[] enchantmentLevels = getEnchantmentLevels(item, itemStack.stackTagCompound);
             boolean hasEffect = itemStack.hasEffectVanilla();
-            for (T override : overrides[itemID]) {
+            for (T override : list) {
                 if (override.match(itemStack, enchantmentLevels, hasEffect)) {
                     return override;
                 }
@@ -275,7 +229,7 @@ public class CITUtils {
         if (!enableEnchantments) {
             return false;
         }
-        EnchantmentList matches = new EnchantmentList(enchantments, itemStack);
+        EnchantmentList matches = new EnchantmentList(enchantments, allItemEnchantments, itemStack);
         if (matches.isEmpty()) {
             return !useGlint;
         }
@@ -303,7 +257,7 @@ public class CITUtils {
         if (!enableEnchantments || itemStack == null) {
             return false;
         }
-        EnchantmentList matches = new EnchantmentList(enchantments, itemStack);
+        EnchantmentList matches = new EnchantmentList(enchantments, allItemEnchantments, itemStack);
         if (matches.isEmpty()) {
             return !useGlint;
         }
@@ -323,7 +277,7 @@ public class CITUtils {
         if (itemStack == null) {
             return false;
         }
-        armorMatches = new EnchantmentList(enchantments, itemStack);
+        armorMatches = new EnchantmentList(enchantments, allItemEnchantments, itemStack);
         armorMatchIndex = 0;
         return !armorMatches.isEmpty();
     }
@@ -345,24 +299,11 @@ public class CITUtils {
         armorMatchIndex++;
     }
 
-    static String getItemName(int itemID) {
-        if (itemID >= 0 && itemID < MAX_ITEMS) {
-            Item item = ItemAPI.getItemById(itemID);
-            if (item != null) {
-                String name = item.getItemName();
-                if (name != null) {
-                    return name;
-                }
-            }
-        }
-        return "unknown item " + itemID;
-    }
-
-    static int[] getEnchantmentLevels(int itemID, NBTTagCompound nbt) {
+    static int[] getEnchantmentLevels(Item item, NBTTagCompound nbt) {
         int[] levels = null;
         if (nbt != null) {
             NBTBase base;
-            if (itemID == ITEM_ID_ENCHANTED_BOOK) {
+            if (item == itemEnchantedBook) {
                 base = nbt.getTag("StoredEnchantments");
             } else {
                 base = nbt.getTag("ench");
