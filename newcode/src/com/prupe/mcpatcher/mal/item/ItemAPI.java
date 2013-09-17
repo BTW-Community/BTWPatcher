@@ -6,10 +6,15 @@ import net.minecraft.src.Item;
 abstract public class ItemAPI {
     private static final ItemAPI instance = MAL.newInstance(ItemAPI.class, "item");
 
+    public static Item parseItemName(String name) {
+        return null; // TODO
+    }
+
     public static Item getItemById(int id) {
         return instance.getItemById_Impl(id);
     }
 
+    @Deprecated
     public static int getItemId(Item item) {
         return instance.getItemId_Impl(item);
     }
