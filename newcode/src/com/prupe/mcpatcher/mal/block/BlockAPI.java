@@ -5,9 +5,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 abstract public class BlockAPI {
     public static final int MAX_METADATA = 15;
@@ -21,9 +19,11 @@ abstract public class BlockAPI {
             int id = Integer.parseInt(name);
             return instance.getBlockById_Impl(id);
         }
-        name = instance.getCanonicalName_Impl(name);
+        Set<String> names = new HashSet<String>();
+        names.add(name);
+        instance.getPossibleBlockNames_Impl(name, names);
         for (Block block : getAllBlocks()) {
-            if (name.equals(getBlockName(block))) {
+            if (instance.matchBlock_Impl(block, names)) {
                 return block;
             }
         }
@@ -31,20 +31,20 @@ abstract public class BlockAPI {
     }
 
     public static Block parseBlockAndMetadata(String name, int[] metadata) {
-        metadata[0] = NO_METADATA;
-        if (name.matches(".*:[-0-9,]+")) {
+        metadata[0] = (1 << NO_METADATA);
+        if (name.matches(".*:[-0-9, ]+")) {
             metadata[0] = 0;
             int pos = name.lastIndexOf(':');
             for (int meta : MCPatcherUtils.parseIntegerList(name.substring(pos + 1), 0, MAX_METADATA)) {
                 metadata[0] |= (1 << meta);
             }
-            name = name.substring(0, pos - 1);
+            name = name.substring(0, pos);
         }
         return parseBlockName(name);
     }
 
     public static String getBlockName(Block block) {
-        return block.getShortName();
+        return block == null ? "(null)" : block.getShortName().replaceFirst("^tile\\.", "");
     }
 
     public static String getBlockName(Block block, int metadata) {
@@ -80,7 +80,12 @@ abstract public class BlockAPI {
 
     abstract protected List<Block> getAllBlocks_Impl();
 
-    abstract protected String getCanonicalName_Impl(String name);
+    protected void getPossibleBlockNames_Impl(String name, Set<String> aliases) {
+    }
+
+    protected boolean matchBlock_Impl(Block block, Set<String> names) {
+        return names.contains(getBlockName(block));
+    }
 
     abstract protected Block getBlockById_Impl(int id);
 
@@ -99,11 +104,10 @@ abstract public class BlockAPI {
         }
 
         @Override
-        protected String getCanonicalName_Impl(String name) {
+        protected void getPossibleBlockNames_Impl(String name, Set<String> aliases) {
             if (name.startsWith("minecraft:")) {
-                name = name.substring(10);
+                aliases.add(name.substring(10));
             }
-            return name;
         }
 
         @Override
@@ -124,11 +128,13 @@ abstract public class BlockAPI {
         }
 
         @Override
-        protected String getCanonicalName_Impl(String name) {
-            if (!name.contains(":")) {
-                name = "minecraft:" + name;
+        protected boolean matchBlock_Impl(Block block, Set<String> names) {
+            for (String name : names) {
+                if (block == Block.blockRegistry.get(name)) {
+                    return true;
+                }
             }
-            return name;
+            return super.matchBlock_Impl(block, names);
         }
 
         @Override
