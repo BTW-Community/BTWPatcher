@@ -47,9 +47,7 @@ public class CustomItemTextures extends Mod {
         addClassMod(new EntityItemMod());
         addClassMod(new ItemRendererMod());
         addClassMod(new RenderItemMod());
-        if (getMinecraftVersion().compareTo("13w36a") < 0) {
-            addClassMod(new RenderLivingEntityMod());
-        }
+        addClassMod(new RenderLivingEntityMod());
         addClassMod(new RenderBipedMod());
         addClassMod(new RenderPlayerMod());
         addClassMod(new RenderSnowballMod());
@@ -652,9 +650,25 @@ public class CustomItemTextures extends Mod {
     private class RenderLivingEntityMod extends ClassMod {
         RenderLivingEntityMod() {
             final MethodRef doRenderLiving = new MethodRef(getDeobfClass(), "doRenderLiving", "(LEntityLivingBase;DDDFF)V");
+            final MethodRef glDisable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDisable", "(I)V");
 
-            addClassSignature(new ConstSignature("deadmau5"));
+            if (getMinecraftVersion().compareTo("13w36a") < 0) {
+                addClassSignature(new ConstSignature("deadmau5"));
+            } else {
+                addClassSignature(new ConstSignature(85.0f));
+                addClassSignature(new ConstSignature(-85.0f));
+            }
             addGlintSignature(this, doRenderLiving);
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(2884), // GL11.GL_CULL_FACE
+                        reference(INVOKESTATIC, glDisable)
+                    );
+                }
+            }.setMethod(doRenderLiving));
 
             addPatch(new BytecodePatch() {
                 private int passRegister;
