@@ -15,7 +15,6 @@ import static javassist.bytecode.Opcode.*;
 public class CustomItemTextures extends Mod {
     private static final String GLINT_PNG = "textures/misc/enchanted_item_glint.png";
 
-    private static final FieldRef itemsList = new FieldRef("Item", "itemsList", "[LItem;");
     private static final MethodRef glDepthFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthFunc", "(I)V");
     private static final MethodRef getEntityItem = new MethodRef("EntityItem", "getEntityItem", "()LItemStack;");
     private static final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffectVanilla", "()Z");
@@ -427,15 +426,32 @@ public class CustomItemTextures extends Mod {
     private class RenderItemMod extends ClassMod {
         RenderItemMod() {
             final FieldRef zLevel = new FieldRef(getDeobfClass(), "zLevel", "F");
+            final FieldRef itemsList = new FieldRef("Item", "itemsList", "[LItem;");
             final MethodRef renderDroppedItem = new MethodRef(getDeobfClass(), "renderDroppedItemVanilla", "(LEntityItem;LIcon;IFFFF)V");
             final MethodRef renderDroppedItemForge = new MethodRef(getDeobfClass(), "renderDroppedItem", "(LEntityItem;LIcon;IFFFFI)V");
             final MethodRef renderItemAndEffectIntoGUI = new MethodRef(getDeobfClass(), "renderItemAndEffectIntoGUI", "(LFontRenderer;LTextureManager;LItemStack;II)V");
+            final MethodRef renderItemIntoGUI = new MethodRef(getDeobfClass(), "renderItemIntoGUI", "(LFontRenderer;LTextureManager;LItemStack;II)V");
             final MethodRef renderItemIntoGUIForge = new MethodRef(getDeobfClass(), "renderItemIntoGUI", "(LFontRenderer;LTextureManager;LItemStack;IIZ)V");
             final MethodRef renderEffectForge = new MethodRef(getDeobfClass(), "renderEffect", "(LTextureManager;II)V");
+            final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
 
             addClassSignature(new ConstSignature("missingno"));
             addGlintSignature(this, renderDroppedItem);
             addGlintSignature(this, renderItemAndEffectIntoGUI, build(ALOAD_2));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // GL11.glRotatef(210.0f, 1.0f, 0.0f, 0.0f);
+                        push(210.0f),
+                        push(1.0f),
+                        push(0.0f),
+                        push(0.0f),
+                        reference(INVOKESTATIC, glRotatef)
+                    );
+                }
+            }.setMethod(renderItemIntoGUI));
 
             addMemberMapper(new FieldMapper(zLevel).accessFlag(AccessFlag.STATIC, false));
 
@@ -594,10 +610,20 @@ public class CustomItemTextures extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // Item.itemsList[itemID].getIconFromDamageForRenderPass(itemDamage, renderPass)
-                        reference(GETSTATIC, itemsList),
-                        anyILOAD,
-                        AALOAD,
+                        or(
+                            build(
+                                // 1.6: Item.itemsList[itemID]
+                                reference(GETSTATIC, itemsList),
+                                anyILOAD,
+                                AALOAD
+                            ),
+                            build(
+                                // 1.7: itemStack.getItem()
+                                ALOAD_3,
+                                reference(INVOKEVIRTUAL, getItem)
+                            )
+                        ),
+                        // (...).getIconFromDamageForRenderPass(itemDamage, renderPass)
                         anyILOAD,
                         capture(anyILOAD),
                         reference(INVOKEVIRTUAL, getIconFromDamageForRenderPass)
@@ -613,7 +639,10 @@ public class CustomItemTextures extends Mod {
                         reference(INVOKESTATIC, getCITIcon)
                     );
                 }
-            }.setInsertAfter(true));
+            }
+                .setInsertAfter(true)
+                .targetMethod(renderItemIntoGUI, renderItemIntoGUIForge)
+            );
 
             addPatch(new BytecodePatch() {
                 @Override
