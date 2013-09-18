@@ -532,6 +532,7 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature("deadbush"));
             addClassSignature(new ConstSignature("tallgrass"));
             addClassSignature(new ConstSignature("fern"));
+            addClassSignature(new ConstSignature("stone").negate(true));
 
             addBlockColorPatch(this);
         }
