@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.ctm;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
+import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
@@ -27,12 +28,12 @@ public class RenderPass {
     static {
         RenderPassAPI.instance = new RenderPassAPI() {
             @Override
-            boolean skipDefaultRendering(Block block) {
+            public boolean skipDefaultRendering(Block block) {
                 return renderPass > 1;
             }
 
             @Override
-            boolean skipThisRenderPass(Block block, int pass) {
+            public boolean skipThisRenderPass(Block block, int pass) {
                 if (pass < 0) {
                     pass = block.getRenderBlockPass();
                 }
@@ -40,7 +41,7 @@ public class RenderPass {
             }
 
             @Override
-            void clear() {
+            public void clear() {
                 maxRenderPass = 1;
                 baseRenderPass.clear();
                 extraRenderPass.clear();
@@ -51,7 +52,7 @@ public class RenderPass {
             }
 
             @Override
-            void setRenderPassForBlock(Block block, int pass) {
+            public void setRenderPassForBlock(Block block, int pass) {
                 if (pass < 0) {
                     return;
                 }
@@ -64,7 +65,7 @@ public class RenderPass {
             }
 
             @Override
-            void finish() {
+            public void finish() {
                 RenderPass.finish();
             }
         };
