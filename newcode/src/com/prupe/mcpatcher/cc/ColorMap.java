@@ -27,6 +27,8 @@ abstract class ColorMap {
     final int height;
     final float maxX;
     final float maxY;
+    private final int blendRadius;
+    private final float blendScale;
 
     private final float[] xy = new float[2];
 
@@ -36,7 +38,7 @@ abstract class ColorMap {
     private final float[] tmpBlendResult = new float[3];
     private final float[] lastBlendResult = new float[3];
 
-    static ColorMap loadColorMap(boolean useCustom, ResourceLocation resource) {
+    static ColorMap loadColorMap(boolean useCustom, ResourceLocation resource, int blendRadius) {
         if (!useCustom) {
             return null;
         }
@@ -51,22 +53,25 @@ abstract class ColorMap {
         }
         int format = MCPatcherUtils.getIntProperty(properties, "format", 1);
         if (format <= 1) {
-            return new V1(image, properties);
+            return new V1(image, properties, blendRadius);
         } else if (format == 2) {
-            return new V2(image, properties);
+            return new V2(image, properties, blendRadius);
         } else {
             logger.error("%s: unknown format %d", propertiesResource, format);
             return null;
         }
     }
 
-    ColorMap(BufferedImage image, Properties properties) {
+    ColorMap(BufferedImage image, Properties properties, int blendRadius) {
         map = MCPatcherUtils.getImageRGB(image);
         width = image.getWidth();
         height = image.getHeight();
         maxX = width - 1.0f;
         maxY = height - 1.0f;
         mapDefault = MCPatcherUtils.getHexProperty(properties, "defaultColor", getDefaultColor());
+        this.blendRadius = blendRadius;
+        int diameter = 2 * blendRadius + 1;
+        blendScale = 1.0f / (float) (diameter * diameter);
     }
 
     void multiplyMap(float[] f) {
@@ -85,20 +90,20 @@ abstract class ColorMap {
         return getRGB(xy[0], xy[1]);
     }
 
-    int getColorMultiplier(int i, int j, int k, int radius) {
-        float[] f = getColorMultiplier1(i, j, k, radius);
+    int getColorMultiplierWithBlending(int i, int j, int k) {
+        float[] f = getColorMultiplierWithBlendingF(i, j, k);
         return Colorizer.float3ToInt(f);
     }
 
-    private float[] getColorMultiplier1(int i, int j, int k, int radius) {
+    private float[] getColorMultiplierWithBlendingF(int i, int j, int k) {
         if (i == lastBlendI && j == lastBlendJ && k == lastBlendK) {
             return lastBlendResult;
         }
         lastBlendResult[0] = 0.0f;
         lastBlendResult[1] = 0.0f;
         lastBlendResult[2] = 0.0f;
-        for (int di = -radius; di <= radius; di++) {
-            for (int dk = -radius; dk <= radius; dk++) {
+        for (int di = -blendRadius; di <= blendRadius; di++) {
+            for (int dk = -blendRadius; dk <= blendRadius; dk++) {
                 int rgb = getColorMultiplier(i + di, j, k + dk);
                 intToFloat3(rgb, tmpBlendResult);
                 lastBlendResult[0] += tmpBlendResult[0];
@@ -106,11 +111,9 @@ abstract class ColorMap {
                 lastBlendResult[2] += tmpBlendResult[2];
             }
         }
-        int diameter = 2 * radius + 1;
-        float scale = 1.0f / (float) (diameter * diameter);
-        lastBlendResult[0] *= scale;
-        lastBlendResult[1] *= scale;
-        lastBlendResult[2] *= scale;
+        lastBlendResult[0] *= blendScale;
+        lastBlendResult[1] *= blendScale;
+        lastBlendResult[2] *= blendScale;
         lastBlendI = i;
         lastBlendJ = j;
         lastBlendK = k;
@@ -199,8 +202,8 @@ abstract class ColorMap {
     abstract void computeXY(BiomeGenBase biome, int i, int j, int k, float[] f);
 
     private static final class V1 extends ColorMap {
-        private V1(BufferedImage image, Properties properties) {
-            super(image, properties);
+        private V1(BufferedImage image, Properties properties, int blendRadius) {
+            super(image, properties, blendRadius);
         }
 
         @Override
@@ -224,8 +227,8 @@ abstract class ColorMap {
         private final float yScale;
         private final float yVariance;
 
-        private V2(BufferedImage image, Properties properties) {
-            super(image, properties);
+        private V2(BufferedImage image, Properties properties, int blendRadius) {
+            super(image, properties, blendRadius);
 
             float xScale = (float) width / (float) COLORMAP_WIDTH;
             yScale = (float) height / (float) COLORMAP_HEIGHT;

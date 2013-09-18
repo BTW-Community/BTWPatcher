@@ -71,9 +71,9 @@ public class ColorizeWorld {
     }
 
     static void reloadFogColors(Properties properties) {
-        underwaterColor = ColorMap.loadColorMap(Colorizer.useFogColors, UNDERWATERCOLOR);
-        fogColorMap = ColorMap.loadColorMap(Colorizer.useFogColors, FOGCOLOR0);
-        skyColorMap = ColorMap.loadColorMap(Colorizer.useFogColors, SKYCOLOR0);
+        underwaterColor = ColorMap.loadColorMap(Colorizer.useFogColors, UNDERWATERCOLOR, fogBlendRadius);
+        fogColorMap = ColorMap.loadColorMap(Colorizer.useFogColors, FOGCOLOR0, fogBlendRadius);
+        skyColorMap = ColorMap.loadColorMap(Colorizer.useFogColors, SKYCOLOR0, fogBlendRadius);
 
         loadFloatColor("fog.nether", netherFogColor);
         loadFloatColor("fog.end", endFogColor);
@@ -136,7 +136,7 @@ public class ColorizeWorld {
         int i = (int) fogCamera.posX;
         int j = (int) fogCamera.posY;
         int k = (int) fogCamera.posZ;
-        int rgb = colorMap.getColorMultiplier(i, j, k, fogBlendRadius);
+        int rgb = colorMap.getColorMultiplierWithBlending(i, j, k);
         Colorizer.setColorF(rgb);
         return true;
     }

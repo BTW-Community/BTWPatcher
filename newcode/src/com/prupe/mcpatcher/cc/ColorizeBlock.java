@@ -162,8 +162,8 @@ public class ColorizeBlock {
         Colorizer.loadIntColor("lilypad", temp, 0);
         lilypadColor = temp[0];
 
-        swampGrassColorMap = ColorMap.loadColorMap(Colorizer.useSwampColors, SWAMPGRASSCOLOR);
-        swampFoliageColorMap = ColorMap.loadColorMap(Colorizer.useSwampColors, SWAMPFOLIAGECOLOR);
+        swampGrassColorMap = ColorMap.loadColorMap(Colorizer.useSwampColors, SWAMPGRASSCOLOR, blockBlendRadius);
+        swampFoliageColorMap = ColorMap.loadColorMap(Colorizer.useSwampColors, SWAMPFOLIAGECOLOR, blockBlendRadius);
     }
 
     static void reloadBlockColors(Properties properties) {
@@ -186,7 +186,7 @@ public class ColorizeBlock {
     }
 
     private static ColorMap registerColorMap(ResourceLocation resource, String idList) {
-        ColorMap colorMap = ColorMap.loadColorMap(true, resource);
+        ColorMap colorMap = ColorMap.loadColorMap(true, resource, blockBlendRadius);
         if (colorMap == null) {
             return null;
         }
@@ -296,7 +296,7 @@ public class ColorizeBlock {
         if (colorMap == null) {
             return false;
         } else {
-            blockColor = colorMap.getColorMultiplier(i, j, k, blockBlendRadius);
+            blockColor = colorMap.getColorMultiplierWithBlending(i, j, k);
             return true;
         }
     }
@@ -318,7 +318,7 @@ public class ColorizeBlock {
         if (waterColorMap == null) {
             return false;
         } else {
-            Colorizer.setColorF(waterColorMap.getColorMultiplier(i, j, k));
+            Colorizer.setColorF(waterColorMap.getColorMultiplierWithBlending(i, j, k));
             return true;
         }
     }
