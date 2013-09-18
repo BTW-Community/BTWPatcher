@@ -118,17 +118,17 @@ public class RenderPass {
     public static boolean canRenderInPass(Block block, int pass, boolean renderThis) {
         Integer base = baseRenderPass.get(block);
         Integer extra = extraRenderPass.get(block);
-        if (base == null || (base < 2 && extra == null)) {
+        if ((base == null || base < 2) && extra == null) {
             return renderThis;
         } else {
-            return pass == base;
+            return pass == getBlockRenderPass(block);
         }
     }
 
     public static boolean shouldSideBeRendered(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
         if (block.shouldSideBeRendered(blockAccess, i, j, k, face)) {
             return true;
-        } else if (extraRenderPass.containsKey(block)) {
+        } else if (!extraRenderPass.containsKey(block)) {
             Block neighbor = BlockAPI.getBlockAt(blockAccess, i, j, k);
             return extraRenderPass.containsKey(neighbor);
         } else {
