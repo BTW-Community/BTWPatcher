@@ -98,6 +98,16 @@ public class CTMUtils {
         active = tileLoader.setDefaultTextureMap(Tessellator.instance);
     }
 
+    // called by drawCrossedSquares, which in 1.7 no longer has a Block parameter
+    public static Icon getTile(RenderBlocks renderBlocks, int i, int j, int k, Icon origIcon, Tessellator tessellator) {
+        Block block = BlockAPI.getBlockAt(renderBlocks.blockAccess, i, j, k);
+        if (block == null) {
+            return null;
+        } else {
+            return getTile(renderBlocks, block, i, j, k, origIcon, tessellator);
+        }
+    }
+
     public static Icon getTile(RenderBlocks renderBlocks, Block block, int i, int j, int k, Icon origIcon, Tessellator tessellator) {
         return getTile(renderBlocks, block, i, j, k, -1, origIcon, tessellator);
     }

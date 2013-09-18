@@ -236,6 +236,7 @@ public class ConnectedTextures extends Mod {
         private final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
         private final MethodRef getTile = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIIILIcon;LTessellator;)LIcon;");
         private final MethodRef getTileNoFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIILIcon;LTessellator;)LIcon;");
+        private final MethodRef getTileNoFaceOrBlock = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;IIILIcon;LTessellator;)LIcon;");
         private final MethodRef getTileBySideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IILTessellator;)LIcon;");
         private final MethodRef getTileBySide = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;ILTessellator;)LIcon;");
         private final MethodRef getTessellator = new MethodRef(MCPatcherUtils.TESSELLATOR_UTILS_CLASS, "getTessellator", "(LTessellator;LIcon;)LTessellator;");
@@ -348,7 +349,7 @@ public class ConnectedTextures extends Mod {
                 return buildCode(
                     // icon = CTMUtils.getTile(this, block, ..., icon, tessellator);
                     ALOAD_0,
-                    ALOAD_1,
+                    getBlockCode(),
                     getCTMUtilsArgs(),
                     registerLoadStore(ALOAD, iconRegister),
                     registerLoadStore(ALOAD, tessellatorRegister),
@@ -371,6 +372,10 @@ public class ConnectedTextures extends Mod {
                     reference(INVOKESTATIC, getTessellator),
                     registerLoadStore(ASTORE, tessellatorRegister)
                 );
+            }
+
+            protected byte[] getBlockCode() {
+                return new byte[]{ALOAD_1};
             }
 
             protected int getIconRegister() {
@@ -839,7 +844,39 @@ public class ConnectedTextures extends Mod {
 
             addMemberMapper(new MethodMapper(drawCrossedSquares));
 
-            // TODO: new patch
+            addPatch(new RenderBlocksPatch() {
+                @Override
+                protected String getTextureType() {
+                    return "crossed squares";
+                }
+
+                @Override
+                protected byte[] getCTMUtilsArgs() {
+                    return buildCode(
+                        DLOAD_2,
+                        D2I,
+                        DLOAD, 4,
+                        D2I,
+                        DLOAD, 6,
+                        D2I
+                    );
+                }
+
+                @Override
+                protected MethodRef getCTMUtilsMethod() {
+                    return getTileNoFaceOrBlock;
+                }
+
+                @Override
+                protected int getIconRegister() {
+                    return 1;
+                }
+
+                @Override
+                protected byte[] getBlockCode() {
+                    return new byte[0];
+                }
+            }.targetMethod(drawCrossedSquares));
         }
 
         private void setupGlassPanes() {
