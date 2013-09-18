@@ -60,10 +60,6 @@ abstract class ColorMap {
         }
     }
 
-    static int getBlockMetaKey(int blockID, int metadata) {
-        return (blockID << 4) | (metadata & 0xf);
-    }
-
     ColorMap(BufferedImage image, Properties properties) {
         map = MCPatcherUtils.getImageRGB(image);
         width = image.getWidth();
@@ -90,36 +86,35 @@ abstract class ColorMap {
     }
 
     int getColorMultiplier(int i, int j, int k, int radius) {
-        getColorMultiplier(i, j, k, radius, tmpBlendResult);
-        return Colorizer.float3ToInt(tmpBlendResult);
+        float[] f = getColorMultiplier1(i, j, k, radius);
+        return Colorizer.float3ToInt(f);
     }
 
-    void getColorMultiplier(int i, int j, int k, int radius, float[] result) {
+    private float[] getColorMultiplier1(int i, int j, int k, int radius) {
         if (i == lastBlendI && j == lastBlendJ && k == lastBlendK) {
-            System.arraycopy(lastBlendResult, 0, result, 0, 3);
-            return;
+            return lastBlendResult;
         }
-        result[0] = 0.0f;
-        result[1] = 0.0f;
-        result[2] = 0.0f;
-        for (int offsetI = -radius; offsetI <= radius; offsetI++) {
-            for (int offsetK = -radius; offsetK <= radius; offsetK++) {
-                int rgb = getColorMultiplier(i + offsetI, j, k + offsetK);
-                intToFloat3(rgb, lastBlendResult);
-                result[0] += lastBlendResult[0];
-                result[1] += lastBlendResult[1];
-                result[2] += lastBlendResult[2];
+        lastBlendResult[0] = 0.0f;
+        lastBlendResult[1] = 0.0f;
+        lastBlendResult[2] = 0.0f;
+        for (int di = -radius; di <= radius; di++) {
+            for (int dk = -radius; dk <= radius; dk++) {
+                int rgb = getColorMultiplier(i + di, j, k + dk);
+                intToFloat3(rgb, tmpBlendResult);
+                lastBlendResult[0] += tmpBlendResult[0];
+                lastBlendResult[1] += tmpBlendResult[1];
+                lastBlendResult[2] += tmpBlendResult[2];
             }
         }
         int diameter = 2 * radius + 1;
         float scale = 1.0f / (float) (diameter * diameter);
-        result[0] *= scale;
-        result[1] *= scale;
-        result[2] *= scale;
-        System.arraycopy(result, 0, lastBlendResult, 0, 3);
+        lastBlendResult[0] *= scale;
+        lastBlendResult[1] *= scale;
+        lastBlendResult[2] *= scale;
         lastBlendI = i;
         lastBlendJ = j;
         lastBlendK = k;
+        return lastBlendResult;
     }
 
     int getColorMultiplier() {
