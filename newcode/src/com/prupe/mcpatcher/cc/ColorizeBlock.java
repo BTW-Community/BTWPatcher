@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
+import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
@@ -403,7 +404,7 @@ public class ColorizeBlock {
                                               int i, int j, int k, int face,
                                               boolean useColor, float r, float g, float b,
                                               float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        if (face != 1 && !useColor) { // TODO: also check for renderPass > 1
+        if ((!useColor && face != 1) || RenderPassAPI.instance.skipDefaultRendering(block)) {
             return false;
         }
         if (i != lastI || j != lastJ || k != lastK) {
