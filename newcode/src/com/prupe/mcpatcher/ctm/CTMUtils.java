@@ -21,7 +21,7 @@ public class CTMUtils {
 
     private static final List<ITileOverride> allOverrides = new ArrayList<ITileOverride>();
     private static final Map<Block, List<ITileOverride>> blockOverrides = new IdentityHashMap<Block, List<ITileOverride>>();
-    private static final Map<String, List<ITileOverride>> tileOverrides = new IdentityHashMap<String, List<ITileOverride>>();
+    private static final Map<String, List<ITileOverride>> tileOverrides = new HashMap<String, List<ITileOverride>>();
     private static TileLoader tileLoader;
     private static TileOverrideImpl.BetterGrass betterGrass;
 
@@ -236,12 +236,12 @@ public class CTMUtils {
             this.block = block;
             currentIcon = icon;
             blockOverride = blockOverrides.get(block);
-            iconOverride = tileOverrides.get(this.currentIcon.getIconName());
+            iconOverride = tileOverrides.get(currentIcon.getIconName());
         }
 
         private void resetForNextPass() {
             blockOverride = null;
-            iconOverride = CTMUtils.tileOverrides.get(currentIcon.getIconName());
+            iconOverride = tileOverrides.get(currentIcon.getIconName());
             blockPos = 0;
             iconPos = 0;
             foundNext = false;

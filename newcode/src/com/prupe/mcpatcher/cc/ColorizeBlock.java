@@ -10,8 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -43,7 +42,7 @@ public class ColorizeBlock {
     private static Block melonStemBlock;
     private static Block vineBlock;
 
-    private static final Map<Block, ColorMap[]> blockColorMaps = new HashMap<Block, ColorMap[]>(); // bitmaps from palette.block.*
+    private static final Map<Block, ColorMap[]> blockColorMaps = new IdentityHashMap<Block, ColorMap[]>(); // bitmaps from palette.block.*
     private static ColorMap swampGrassColorMap;
     private static ColorMap swampFoliageColorMap;
     private static ColorMap waterColorMap;

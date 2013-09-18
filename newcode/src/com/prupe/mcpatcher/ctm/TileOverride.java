@@ -227,12 +227,12 @@ abstract class TileOverride implements ITileOverride {
 
         String value;
         if (baseFilename.matches("block\\d+.*")) {
-            value = baseFilename.substring(5).replaceAll("\\D.*", "");
+            value = baseFilename.replaceFirst("block(\\d+).*", "$1");
         } else {
             value = "";
         }
         matchBlocks = getBlockList(MCPatcherUtils.getStringProperty(properties, "matchBlocks", value));
-        matchTiles = getIDList(properties, "matchTiles");
+        matchTiles = getTileList(properties, "matchTiles");
         if (matchBlocks.isEmpty() && matchTiles.isEmpty()) {
             matchTiles.add(baseFilename);
         }
@@ -383,48 +383,7 @@ abstract class TileOverride implements ITileOverride {
         return blocks;
     }
 
-    private Set<Integer> getIDList(Properties properties, String key, String type, String[] mappings) {
-        Set<Integer> list = new HashSet<Integer>();
-        String property = properties.getProperty(key, "");
-        token:
-        for (String token : property.split("\\s+")) {
-            if (token.equals("")) {
-                // nothing
-            } else if (token.matches("\\d+")) {
-                try {
-                    int id = Integer.parseInt(token);
-                    if (id >= 0 && id < mappings.length) {
-                        list.add(id);
-                    } else {
-                        warn("%s value %d is out of range", key, id);
-                    }
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                for (int i = 0; i < mappings.length; i++) {
-                    if (token.equals(mappings[i])) {
-                        list.add(i);
-                        continue token;
-                    }
-                }
-                warn("unknown %s value %s", key, token);
-            }
-        }
-        if (list.isEmpty()) {
-            Matcher m = Pattern.compile(type + "(\\d+)").matcher(baseFilename);
-            if (m.find()) {
-                try {
-                    list.add(Integer.parseInt(m.group(1)));
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return list;
-    }
-
-    private Set<String> getIDList(Properties properties, String key) {
+    private Set<String> getTileList(Properties properties, String key) {
         Set<String> list = new HashSet<String>();
         String property = properties.getProperty(key, "");
         for (String token : property.split("\\s+")) {
@@ -470,7 +429,7 @@ abstract class TileOverride implements ITileOverride {
 
     @Override
     public String toString() {
-        return String.format("%s[%s]", getMethod(), propertiesFile);
+        return String.format("%s[%s] (%d tiles)", getMethod(), propertiesFile, getNumberOfTiles());
     }
 
     public final void registerIcons() {
