@@ -17,6 +17,7 @@ public class CustomItemTextures extends Mod {
 
     private static final MethodRef glDepthFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthFunc", "(I)V");
     private static final MethodRef getEntityItem = new MethodRef("EntityItem", "getEntityItem", "()LItemStack;");
+    private static final FieldRef itemsList = new FieldRef("Item", "itemsList", "[LItem;");
     private static final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffectVanilla", "()Z");
     private static final MethodRef hasEffectForge = new MethodRef("ItemStack", "hasEffect", "(I)Z");
     private static final MethodRef getIconFromDamageForRenderPass = new MethodRef("Item", "getIconFromDamageForRenderPass", "(II)LIcon;");
@@ -147,6 +148,9 @@ public class CustomItemTextures extends Mod {
             final MethodRef getIconForge = new MethodRef(getDeobfClass(), "getIcon", "(LItemStack;I)LIcon;");
 
             addMemberMapper(new MethodMapper(getIconIndex));
+            if (!haveItemRegistry) {
+                addMemberMapper(new FieldMapper(itemsList));
+            }
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -426,11 +430,10 @@ public class CustomItemTextures extends Mod {
     private class RenderItemMod extends ClassMod {
         RenderItemMod() {
             final FieldRef zLevel = new FieldRef(getDeobfClass(), "zLevel", "F");
-            final FieldRef itemsList = new FieldRef("Item", "itemsList", "[LItem;");
             final MethodRef renderDroppedItem = new MethodRef(getDeobfClass(), "renderDroppedItemVanilla", "(LEntityItem;LIcon;IFFFF)V");
             final MethodRef renderDroppedItemForge = new MethodRef(getDeobfClass(), "renderDroppedItem", "(LEntityItem;LIcon;IFFFFI)V");
             final MethodRef renderItemAndEffectIntoGUI = new MethodRef(getDeobfClass(), "renderItemAndEffectIntoGUI", "(LFontRenderer;LTextureManager;LItemStack;II)V");
-            final MethodRef renderItemIntoGUI = new MethodRef(getDeobfClass(), "renderItemIntoGUI", "(LFontRenderer;LTextureManager;LItemStack;II)V");
+            final MethodRef renderItemIntoGUI = new MethodRef(getDeobfClass(), "renderItemIntoGUIVanilla", "(LFontRenderer;LTextureManager;LItemStack;II)V");
             final MethodRef renderItemIntoGUIForge = new MethodRef(getDeobfClass(), "renderItemIntoGUI", "(LFontRenderer;LTextureManager;LItemStack;IIZ)V");
             final MethodRef renderEffectForge = new MethodRef(getDeobfClass(), "renderEffect", "(LTextureManager;II)V");
             final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
