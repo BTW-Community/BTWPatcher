@@ -19,13 +19,16 @@ public class ExtendedHD extends Mod {
 
     private static final MethodRef imageRead = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
 
+    private final boolean haveMipmapping;
+
     public ExtendedHD() {
         name = MCPatcherUtils.EXTENDED_HD;
         author = "MCPatcher";
         description = "Provides support for custom animations, HD fonts, mipmapping, and other graphical features.";
         version = "3.1";
 
-        configPanel = new HDConfig();
+        haveMipmapping = getMinecraftVersion().compareTo("13w38a") >= 0;
+        configPanel = new HDConfig(!haveMipmapping);
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
@@ -34,18 +37,22 @@ public class ExtendedHD extends Mod {
             return;
         }
 
-        addClassMod(new MinecraftMod());
         addClassMod(new BaseMod.ResourceLocationMod(this));
         addClassMod(new BaseMod.ResourceMod(this));
         addClassMod(new BaseMod.IconMod(this));
         addClassMod(new BaseMod.TextureObjectMod(this));
         addClassMod(new BaseMod.AbstractTextureMod(this));
         addClassMod(new BaseMod.TextureMod(this));
-        addClassMod(new TextureUtilMod());
         addClassMod(new TextureManagerMod());
         addClassMod(new TextureAtlasMod());
-        addClassMod(new TextureAtlasSpriteMod());
-        addClassMod(new SimpleTextureMod());
+        if (haveMipmapping) {
+            addClassMod(new BaseMod.TextureAtlasSpriteMod(this));
+        } else {
+            addClassMod(new MinecraftMod());
+            addClassMod(new TextureUtilMod());
+            addClassMod(new TextureAtlasSpriteMod());
+            addClassMod(new SimpleTextureMod());
+        }
         addClassMod(new TextureCompassMod());
         addClassMod(new TextureClockMod());
         addClassMod(new SimpleResourceMod());
@@ -54,12 +61,16 @@ public class ExtendedHD extends Mod {
         addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS);
         addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS + "$1");
         addClassFile(MCPatcherUtils.MIPMAP_HELPER_CLASS);
-        addClassFile(MCPatcherUtils.AA_HELPER_CLASS);
-        addClassFile(MCPatcherUtils.BORDERED_TEXTURE_CLASS);
+        if (!haveMipmapping) {
+            addClassFile(MCPatcherUtils.AA_HELPER_CLASS);
+            addClassFile(MCPatcherUtils.BORDERED_TEXTURE_CLASS);
+        }
         addClassFile(MCPatcherUtils.FANCY_DIAL_CLASS);
         addClassFile(MCPatcherUtils.FANCY_DIAL_CLASS + "$Layer");
 
-        getClassMap().addInheritance("TextureAtlasSprite", MCPatcherUtils.BORDERED_TEXTURE_CLASS);
+        if (!haveMipmapping) {
+            getClassMap().addInheritance("TextureAtlasSprite", MCPatcherUtils.BORDERED_TEXTURE_CLASS);
+        }
     }
 
     @Override
@@ -190,7 +201,7 @@ public class ExtendedHD extends Mod {
                     );
                 }
             }
-                .addXref(2, new MethodRef("TextureAtlasSprite", "getFrameRGB", "(I)[I"))
+                .addXref(2, new MethodRef("TextureAtlasSprite", "getFrameRGB", "(I)" + (haveMipmapping ? "[" : "") + "[I"))
                 .addXref(3, new MethodRef("TextureAtlasSprite", "getX0", "()I"))
                 .addXref(4, new MethodRef("TextureAtlasSprite", "getY0", "()I"))
             );
@@ -198,6 +209,11 @@ public class ExtendedHD extends Mod {
             addMemberMapper(new FieldMapper(animations));
 
             addPatch(new MakeMemberPublicPatch(animations));
+
+            if (haveMipmapping) {
+                return;
+            }
+
             addPatch(new TextureMipmapPatch(this, basePath));
 
             addPatch(new BytecodePatch() {

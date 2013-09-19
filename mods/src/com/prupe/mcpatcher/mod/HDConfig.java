@@ -39,8 +39,14 @@ public class HDConfig extends ModConfigPanel {
     private JCheckBox gl13CheckBox;
     private JCheckBox scratchTextureCheckBox;
     private JCheckBox debugBorderCheckBox;
+    private JPanel mipmapPanel;
 
-    HDConfig() {
+    private final boolean showMipmapping;
+
+    HDConfig(boolean showMipmapping) {
+        this.showMipmapping = showMipmapping;
+        mipmapPanel.setVisible(showMipmapping);
+
         fontCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 boolean selected = fontCheckBox.isSelected();
@@ -97,6 +103,7 @@ public class HDConfig extends ModConfigPanel {
                 Config.set(MCPatcherUtils.EXTENDED_HD, TAG_DEBUG_BORDER, debugBorderCheckBox.isSelected());
             }
         });
+        debugBorderCheckBox.setVisible(showMipmapping);
 
         mipmapLevelSpinner.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
@@ -191,18 +198,19 @@ public class HDConfig extends ModConfigPanel {
         animationCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_ANIMATIONS, true));
         compassCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_COMPASS, true));
         clockCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_CLOCK, true));
-        mipmapCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_MIPMAP, false));
-        mipmapLevelSpinner.setValue(Config.getInt(MCPatcherUtils.EXTENDED_HD, TAG_MAX_MIPMAP_LEVEL, 3));
-        lodBiasSpinner.setValue(Config.getInt(MCPatcherUtils.EXTENDED_HD, TAG_LOD_BIAS, 0));
-        anisoSpinner.setValue(Config.getInt(MCPatcherUtils.EXTENDED_HD, TAG_ANISOTROPIC_FILTERING, 1));
-        aaSpinner.setValue(Config.getInt(MCPatcherUtils.EXTENDED_HD, TAG_ANTI_ALIASING, 0));
+        if (showMipmapping) {
+            mipmapCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_MIPMAP, false));
+            mipmapLevelSpinner.setValue(Config.getInt(MCPatcherUtils.EXTENDED_HD, TAG_MAX_MIPMAP_LEVEL, 3));
+            lodBiasSpinner.setValue(Config.getInt(MCPatcherUtils.EXTENDED_HD, TAG_LOD_BIAS, 0));
+            anisoSpinner.setValue(Config.getInt(MCPatcherUtils.EXTENDED_HD, TAG_ANISOTROPIC_FILTERING, 1));
+            aaSpinner.setValue(Config.getInt(MCPatcherUtils.EXTENDED_HD, TAG_ANTI_ALIASING, 0));
+            debugBorderCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_DEBUG_BORDER, false));
+        }
         gl13CheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_GL13, true));
         scratchTextureCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_SCRATCH_TEXTURE, true));
-        debugBorderCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_DEBUG_BORDER, false));
 
         showAdvancedOption(gl13CheckBox);
         showAdvancedOption(scratchTextureCheckBox);
-        showAdvancedOption(debugBorderCheckBox);
     }
 
     @Override
