@@ -345,16 +345,19 @@ public class BaseTilesheetMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // i = Minecraft.getMaxTextureSize();
                         begin(),
                         captureReference(INVOKESTATIC),
                         ISTORE_2,
 
+                        // stitcher = new Stitcher(i, i, true, ...);
                         captureReference(NEW),
                         DUP,
                         ILOAD_2,
                         ILOAD_2,
                         push(1),
-                        captureReference(INVOKESPECIAL),
+                        any(0, 6),
+                        anyReference(INVOKESPECIAL),
                         ASTORE_3
                     );
                 }
@@ -362,7 +365,6 @@ public class BaseTilesheetMod extends Mod {
                 .setMethod(refreshTextures2)
                 .addXref(1, new MethodRef("Minecraft", "getMaxTextureSize", "()I"))
                 .addXref(2, new ClassRef("Stitcher"))
-                .addXref(3, new MethodRef("Stitcher", "<init>", "(IIZ)V"))
             );
 
             addClassSignature(new BytecodeSignature() {
