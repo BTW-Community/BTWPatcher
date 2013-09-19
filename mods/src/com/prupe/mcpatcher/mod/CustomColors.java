@@ -21,8 +21,7 @@ public class CustomColors extends Mod {
     private static final MethodRef getNewColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "getColorMultiplier", "(LBlock;III)I");
     private static final MethodRef colorizeRedstoneWire = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeRedstoneWire", "(LIBlockAccess;IIII)I");
     private static final MethodRef colorizeStem = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeStem", "(ILBlock;I)I");
-    private static final MethodRef colorizeWater = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeWater", "(Ljava/lang/Object;II)I");
-    private static final MethodRef colorizeWaterBlockGL = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeWaterBlockGL", "(I)V");
+    private static final MethodRef colorizeWaterBlockGL = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeWaterBlockGL", "(LBlock;)V");
     private static final MethodRef colorizeSpawnerEgg = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "colorizeSpawnerEgg", "(III)I");
     private static final MethodRef colorizeText1 = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "colorizeText", "(I)I");
     private static final MethodRef colorizeText2 = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "colorizeText", "(II)I");
@@ -51,7 +50,6 @@ public class CustomColors extends Mod {
     private static final FieldRef endSkyColor = new FieldRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "endSkyColor", "I");
     private static final FieldRef netherFogColor = new FieldRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "netherFogColor", "[F");
     private static final FieldRef portalColor = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "portalColor", "[F");
-    private static final FieldRef waterColor = new FieldRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "waterColor", "[F");
     private static final FieldRef armorColors = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "armorColors", "[[F");
     private static final FieldRef collarColors = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "collarColors", "[[F");
     private static final FieldRef undyedLeatherColor = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "undyedLeatherColor", "I");
@@ -90,10 +88,7 @@ public class CustomColors extends Mod {
 
         addClassMod(new BaseMod.BiomeGenBaseMod(this));
         addClassMod(new ItemMod());
-        if (getMinecraftVersion().compareTo("13w36a") < 0) { // TODO
-            addClassMod(new ItemBlockMod());
-            addClassMod(new ItemRendererMod());
-        }
+        addClassMod(new ItemRendererMod());
 
         addClassMod(new PotionMod());
         addClassMod(new PotionHelperMod());
@@ -587,51 +582,12 @@ public class CustomColors extends Mod {
         }
     }
 
-    private class ItemBlockMod extends ClassMod {
-        ItemBlockMod() {
-            final FieldRef blockID = new FieldRef(getDeobfClass(), "blockID", "I");
-
-            setParentClass("Item");
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        ILOAD_1,
-                        push(256),
-                        IADD,
-                        anyReference(PUTFIELD)
-                    );
-                }
-            }.matchConstructorOnly(true));
-
-            addMemberMapper(new FieldMapper(blockID).accessFlag(AccessFlag.PRIVATE, true));
-
-            addPatch(new AddMethodPatch(new MethodRef(getDeobfClass(), getColorFromDamage.getName(), getColorFromDamage.getType())) {
-                @Override
-                public byte[] generateMethod() {
-                    return buildCode(
-                        ALOAD_0,
-                        ALOAD_1,
-                        ILOAD_2,
-                        reference(INVOKESPECIAL, getColorFromDamage),
-                        ALOAD_0,
-                        reference(GETFIELD, blockID),
-                        ILOAD_2,
-                        reference(INVOKESTATIC, getItemColorFromDamage),
-                        IRETURN
-                    );
-                }
-            });
-        }
-    }
-
     private class ItemRendererMod extends ClassMod {
         ItemRendererMod() {
-            final FieldRef itemID = new FieldRef("ItemStack", "itemID", "I");
             final MethodRef renderItem = new MethodRef(getDeobfClass(), "renderItem", "(LEntityLivingBase;LItemStack;I)V");
             final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
+            final boolean haveItemID = getMinecraftVersion().compareTo("13w36a") < 0;
+            final FieldRef itemID = haveItemID ? new FieldRef("ItemStack", "itemID", "I") : null;
 
             addClassSignature(new ConstSignature("textures/misc/enchanted_item_glint.png"));
             addClassSignature(new ConstSignature("textures/map/map_background.png"));
@@ -640,17 +596,6 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // par2ItemStack.itemID
-                        ALOAD_2,
-                        captureReference(GETFIELD),
-                        or(
-                            build(push(256)),
-                            build(AALOAD)
-                        ),
-
-                        // ...
-                        any(0, 400),
-
                         // GL11.glTranslatef(-0.9375f, -0.0625f, 0.0f);
                         push(-0.9375f),
                         push(-0.0625f),
@@ -658,12 +603,55 @@ public class CustomColors extends Mod {
                         reference(INVOKESTATIC, glTranslatef)
                     );
                 }
+            }.setMethod(renderItem));
+
+            if (haveItemID) {
+                addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // par2ItemStack.itemID
+                            ALOAD_2,
+                            captureReference(GETFIELD),
+                            or(
+                                build(push(256)),
+                                build(AALOAD)
+                            )
+                        );
+                    }
+                }
+                    .addXref(1, itemID)
+                    .setMethod(renderItem)
+                );
             }
-                .addXref(1, itemID)
-                .setMethod(renderItem)
-            );
 
             addPatch(new BytecodePatch() {
+                private int blockRegister;
+
+                {
+                    if (!haveItemID) {
+                        addPreMatchSignature(new BytecodeSignature() {
+                            @Override
+                            public String getMatchExpression() {
+                                return buildExpression(
+                                    // block = Block.getItemBlock(item);
+                                    begin(),
+                                    any(0, 20),
+                                    anyALOAD,
+                                    anyReference(INVOKESTATIC),
+                                    capture(anyASTORE)
+                                );
+                            }
+
+                            @Override
+                            public boolean afterMatch() {
+                                blockRegister = extractRegisterNum(getCaptureGroup(1));
+                                return true;
+                            }
+                        });
+                    }
+                }
+
                 @Override
                 public String getDescription() {
                     return "override water block color in third person";
@@ -682,19 +670,19 @@ public class CustomColors extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // if (par2ItemStack != null) {
-                        ALOAD_2,
-                        IFNULL, branch("A"),
-
-                        // Colorizer.colorizeWaterBlockGL(par2ItemStack.itemID)
-                        ALOAD_2,
-                        reference(GETFIELD, itemID),
-                        reference(INVOKESTATIC, colorizeWaterBlockGL),
-
-                        // }
-                        label("A")
-                    );
+                    if (haveItemID) {
+                        return buildCode(
+                            ALOAD_2,
+                            reference(GETFIELD, itemID),
+                            reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.BLOCK_API_CLASS, "getBlockById", "(I)LBlock;")),
+                            reference(INVOKESTATIC, colorizeWaterBlockGL)
+                        );
+                    } else {
+                        return buildCode(
+                            ALOAD, blockRegister,
+                            reference(INVOKESTATIC, colorizeWaterBlockGL)
+                        );
+                    }
                 }
             }
                 .setInsertAfter(true)

@@ -76,6 +76,11 @@ abstract public class BlockAPI {
         return instance.getBlockAt_Impl(blockAccess, i, j, k);
     }
 
+    // used by custom colors ItemRenderer patch in 1.6 only
+    public static Block getBlockById(int id) {
+        return instance.getBlockById_Impl(id);
+    }
+
     abstract protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k);
 
     abstract protected List<Block> getAllBlocks_Impl();
