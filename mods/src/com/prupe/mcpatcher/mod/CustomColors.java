@@ -500,13 +500,13 @@ public class CustomColors extends Mod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "override lily pad color";
+                    return "override fixed lily pad color";
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push(0xffffff)
+                        push(0x208030)
                     );
                 }
 
