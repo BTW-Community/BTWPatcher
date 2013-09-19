@@ -1326,9 +1326,7 @@ public final class BaseMod extends Mod {
     public static class NBTTagCompoundMod extends com.prupe.mcpatcher.ClassMod {
         private final InterfaceMethodRef containsKey = new InterfaceMethodRef("java/util/Map", "containsKey", "(Ljava/lang/Object;)Z");
         private final InterfaceMethodRef mapRemove = new InterfaceMethodRef("java/util/Map", "remove", "(Ljava/lang/Object;)Ljava/lang/Object;");
-        private final InterfaceMethodRef mapGet = new InterfaceMethodRef("java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
-        private final InterfaceMethodRef mapPut = new InterfaceMethodRef("java/util/Map", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
-        private final FieldRef tagMap = new FieldRef(getDeobfClass(), "tagMap", "Ljava/util/Map;");
+        protected final FieldRef tagMap = new FieldRef(getDeobfClass(), "tagMap", "Ljava/util/Map;");
 
         public NBTTagCompoundMod(Mod mod) {
             super(mod);
@@ -1389,9 +1387,7 @@ public final class BaseMod extends Mod {
             addMemberMapper(new MethodMapper(null, new MethodRef(getDeobfClass(), "getBoolean", "(Ljava/lang/String;)Z")));
             addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "setBoolean", "(Ljava/lang/String;Z)V")));
             addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getCompoundTag", "(Ljava/lang/String;)L" + getDeobfClass() + ";")));
-            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "setCompoundTag", "(Ljava/lang/String;L" + getDeobfClass() + ";)V")));
             addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getTag", "(Ljava/lang/String;)LNBTBase;")));
-            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getTags", "()Ljava/util/Collection;")));
         }
 
         public NBTTagCompoundMod mapGetTagList() {

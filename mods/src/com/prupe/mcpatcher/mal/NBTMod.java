@@ -31,7 +31,7 @@ public class NBTMod extends Mod {
         addClassMod(new NBTSubclassMod(7, "ByteArray", "[B"));
         addClassMod(new NBTSubclassMod(8, "String", "Ljava/lang/String;"));
         addClassMod(new BaseMod.NBTTagListMod(this)); // id=9
-        addClassMod(new BaseMod.NBTTagCompoundMod(this)); // id=10
+        addClassMod(new NBTTagCompoundMod()); // id=10
         addClassMod(new NBTSubclassMod(11, "IntArray", "[I"));
 
         addClassFile(MCPatcherUtils.NBT_RULE_CLASS);
@@ -64,7 +64,8 @@ public class NBTMod extends Mod {
             setParentClass("NBTBase");
 
             addClassSignature(new InterfaceSignature(
-                new MethodRef(getDeobfClass(), "<init>", "(Ljava/lang/String;)V"),
+                new MethodRef(getDeobfClass(), "<init>",
+                    getMinecraftVersion().compareTo("13w38a") < 0 ? "(Ljava/lang/String;)V" : "()V"),
                 new MethodRef(getDeobfClass(), "getLong", "()J"),
                 new MethodRef(getDeobfClass(), "getInt", "()I"),
                 new MethodRef(getDeobfClass(), "getShort", "()S"),
@@ -117,6 +118,32 @@ public class NBTMod extends Mod {
             super(id, name, desc);
             if (newBaseClass) {
                 setParentClass("NBTTagScalar");
+            }
+        }
+    }
+
+    private class NBTTagCompoundMod extends BaseMod.NBTTagCompoundMod {
+        NBTTagCompoundMod() {
+            super(NBTMod.this);
+
+            final MethodRef setCompoundTag = new MethodRef(getDeobfClass(), "setCompoundTag", "(Ljava/lang/String;L" + getDeobfClass() + ";)V");
+            final MethodRef getTags = new MethodRef(getDeobfClass(), "getTags", "()Ljava/util/Collection;");
+
+            if (getMinecraftVersion().compareTo("13w38a") < 0) {
+                addMemberMapper(new MethodMapper(setCompoundTag));
+                addMemberMapper(new MethodMapper(getTags));
+            } else {
+                addPatch(new AddMethodPatch(getTags) {
+                    @Override
+                    public byte[] generateMethod() {
+                        return buildCode(
+                            ALOAD_0,
+                            reference(GETFIELD, tagMap),
+                            reference(INVOKEINTERFACE, new InterfaceMethodRef("java/util/Map", "values", "()Ljava/util/Collection;")),
+                            ARETURN
+                        );
+                    }
+                });
             }
         }
     }
