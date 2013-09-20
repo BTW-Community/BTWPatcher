@@ -55,9 +55,9 @@ public class CITUtils {
         TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, 3) {
             @Override
             public void beforeChange() {
-                itemEnchantedBook = ItemAPI.parseItemName("minecraft:enchanted_book");
-                itemCompass = ItemAPI.parseItemName("minecraft:compass");
-                itemClock = ItemAPI.parseItemName("minecraft:clock");
+                itemEnchantedBook = ItemAPI.getFixedItem("minecraft:enchanted_book");
+                itemCompass = ItemAPI.getFixedItem("minecraft:compass");
+                itemClock = ItemAPI.getFixedItem("minecraft:clock");
 
                 tileLoader = new TileLoader("textures/items", false, logger);
                 items.clear();

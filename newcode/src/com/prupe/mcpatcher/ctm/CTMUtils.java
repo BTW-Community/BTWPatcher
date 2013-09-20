@@ -42,10 +42,10 @@ public class CTMUtils {
 
             @Override
             public void beforeChange() {
-                grassBlock = BlockAPI.parseBlockName("minecraft:grass");
-                mycelBlock = BlockAPI.parseBlockName("minecraft:mycelium");
-                snowBlock = BlockAPI.parseBlockName("minecraft:snow_layer");
-                craftedSnowBlock = BlockAPI.parseBlockName("minecraft:snow");
+                grassBlock = BlockAPI.getFixedBlock("minecraft:grass");
+                mycelBlock = BlockAPI.getFixedBlock("minecraft:mycelium");
+                snowBlock = BlockAPI.getFixedBlock("minecraft:snow_layer");
+                craftedSnowBlock = BlockAPI.getFixedBlock("minecraft:snow");
 
                 RenderPassAPI.instance.clear();
                 allOverrides.clear();

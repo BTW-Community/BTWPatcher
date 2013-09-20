@@ -8,6 +8,18 @@ import java.util.*;
 abstract public class ItemAPI {
     private static final ItemAPI instance = MAL.newInstance(ItemAPI.class, "item");
 
+    public static Item getFixedItem(String name) {
+        Set<String> names = new HashSet<String>();
+        names.add(name);
+        instance.getPossibleItemNames_Impl(name, names);
+        for (Item item : getAllItems()) {
+            if (instance.matchItem_Impl(item, names)) {
+                return item;
+            }
+        }
+        throw new IllegalArgumentException("unknown block " + name);
+    }
+
     public static Item parseItemName(String name) {
         if (name.matches("\\d+")) {
             int id = Integer.parseInt(name);

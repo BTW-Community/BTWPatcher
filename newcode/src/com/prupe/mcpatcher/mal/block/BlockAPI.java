@@ -14,6 +14,18 @@ abstract public class BlockAPI {
 
     private static final BlockAPI instance = MAL.newInstance(BlockAPI.class, "block");
 
+    public static Block getFixedBlock(String name) {
+        Set<String> names = new HashSet<String>();
+        names.add(name);
+        instance.getPossibleBlockNames_Impl(name, names);
+        for (Block block : getAllBlocks()) {
+            if (instance.matchBlock_Impl(block, names)) {
+                return block;
+            }
+        }
+        throw new IllegalArgumentException("unknown block " + name);
+    }
+
     public static Block parseBlockName(String name) {
         if (name.matches("\\d+")) {
             int id = Integer.parseInt(name);

@@ -121,14 +121,14 @@ public class ColorizeBlock {
     static void reset() {
         swampBiome = BiomeAPI.findBiomeByName("Swampland");
 
-        grassBlock = BlockAPI.parseBlockName("minecraft:grass");
-        waterBlock = BlockAPI.parseBlockName("minecraft:flowing_water");
-        staticWaterBlock = BlockAPI.parseBlockName("minecraft:water");
-        leavesBlock = BlockAPI.parseBlockName("minecraft:leaves");
-        tallGrassBlock = BlockAPI.parseBlockName("minecraft:tallgrass");
-        pumpkinStemBlock = BlockAPI.parseBlockName("minecraft:pumpkin_stem");
-        melonStemBlock = BlockAPI.parseBlockName("minecraft:melon_stem");
-        vineBlock = BlockAPI.parseBlockName("minecraft:vine");
+        grassBlock = BlockAPI.getFixedBlock("minecraft:grass");
+        waterBlock = BlockAPI.getFixedBlock("minecraft:flowing_water");
+        staticWaterBlock = BlockAPI.getFixedBlock("minecraft:water");
+        leavesBlock = BlockAPI.getFixedBlock("minecraft:leaves");
+        tallGrassBlock = BlockAPI.getFixedBlock("minecraft:tallgrass");
+        pumpkinStemBlock = BlockAPI.getFixedBlock("minecraft:pumpkin_stem");
+        melonStemBlock = BlockAPI.getFixedBlock("minecraft:melon_stem");
+        vineBlock = BlockAPI.getFixedBlock("minecraft:vine");
 
         blockColorMaps.clear();
         swampGrassColorMap = null;
