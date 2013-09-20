@@ -88,6 +88,7 @@ public class CustomColors extends Mod {
 
         addClassMod(new BaseMod.BiomeGenBaseMod(this));
         addClassMod(new ItemMod());
+        addClassMod(new ItemBlockMod());
         addClassMod(new ItemRendererMod());
 
         addClassMod(new PotionMod());
@@ -579,6 +580,93 @@ public class CustomColors extends Mod {
                     );
                 }
             }.setMethod(getColorFromDamage));
+        }
+    }
+
+    private class ItemBlockMod extends ClassMod {
+        ItemBlockMod() {
+            setParentClass("Item");
+
+            final FieldRef block = new FieldRef(getDeobfClass(), "block", "LBlock;");
+            final MethodRef onItemUse = new MethodRef(getDeobfClass(), "onItemUse", "(LItemStack;LEntityPlayer;LWorld;IIIIFFF)Z");
+
+            addClassSignature(new ConstSignature(0.5f));
+            addClassSignature(new ConstSignature(0.8f));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(7),
+                        IAND
+                    );
+                }
+            }.setMethod(onItemUse));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // if (face == 2) z--;
+                        ILOAD, 7,
+                        push(2),
+                        IF_ICMPNE, any(2),
+                        IINC, 6, -1,
+
+                        // if (face == 3) z++;
+                        ILOAD, 7,
+                        push(3),
+                        IF_ICMPNE, any(2),
+                        IINC, 6, 1
+                    );
+                }
+            }.setMethod(onItemUse));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // if (y == 255)
+                        ILOAD, 5,
+                        push(255),
+                        IF_ICMPNE, any(2)
+                    );
+                }
+            }.setMethod(onItemUse));
+
+            addMemberMapper(new FieldMapper(block));
+
+            addPatch(new AddMethodPatch(getColorFromDamage) {
+                @Override
+                public byte[] generateMethod() {
+                    return buildCode(
+                        // if (this.block != null) {
+                        ALOAD_0,
+                        reference(GETFIELD, block),
+                        ASTORE_3,
+                        ALOAD_3,
+                        IFNULL, branch("A"),
+
+                        // return this.block.getRenderColor(damage);
+                        ALOAD_3,
+                        ILOAD_2,
+                        reference(INVOKEVIRTUAL, getRenderColor),
+                        IRETURN,
+
+                        // } else {
+                        label("A"),
+
+                        // return super.getColorFromDamage(itemStack, damage);
+                        ALOAD_0,
+                        ALOAD_1,
+                        ILOAD_2,
+                        reference(INVOKESPECIAL, getColorFromDamage),
+                        IRETURN
+
+                        // }
+                    );
+                }
+            });
         }
     }
 
