@@ -2660,6 +2660,7 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature(0.1875));
             addClassSignature(new ConstSignature(0.01));
 
+            final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;III)Z");
             final MethodRef renderBlockFallingSand = new MethodRef(getDeobfClass(), "renderBlockFallingSand", "(LBlock;LWorld;IIII)V");
             final MethodRef renderBlockCauldron = new MethodRef(getDeobfClass(), "renderBlockCauldron", "(LBlockCauldron;III)Z");
 
@@ -2667,20 +2668,22 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        ALOAD_1,
+                        // renderType == 4 ? this.renderBlockFluids(block, i, j, k) : ...
+                        ILOAD, 5,
+                        push(4),
+                        IF_ICMPNE, any(2),
                         ALOAD_0,
-                        captureReference(GETFIELD),
+                        ALOAD_1,
                         ILOAD_2,
                         ILOAD_3,
                         ILOAD, 4,
                         captureReference(INVOKEVIRTUAL),
-                        ISTORE, 6
+                        subset(new int[]{GOTO, IRETURN}, true)
                     );
                 }
             }
-                .setMethod(renderBlockFluids)
-                .addXref(1, blockAccess)
-                .addXref(2, colorMultiplier)
+                .setMethod(renderBlockByRenderType)
+                .addXref(1, renderBlockFluids)
             );
 
             addClassSignature(new BytecodeSignature() {
