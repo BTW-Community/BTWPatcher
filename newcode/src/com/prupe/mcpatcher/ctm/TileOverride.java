@@ -682,7 +682,9 @@ abstract class TileOverride implements ITileOverride {
             return null;
         }
         if (face < 0 && requiresFace()) {
-            error("method=%s is not supported for non-standard blocks", getMethod());
+            error("method=%s is not supported for non-standard block %s:%d @ %d %d %d",
+                getMethod(), BlockAPI.getBlockName(block), blockAccess.getBlockMetadata(i, j, k), i, j, k
+            );
             return null;
         }
         if (block == null || RenderPassAPI.instance.skipThisRenderPass(block, renderPass)) {
@@ -709,7 +711,9 @@ abstract class TileOverride implements ITileOverride {
             return null;
         }
         if (face < 0 && requiresFace()) {
-            error("method=%s is not supported for non-standard blocks", getMethod());
+            error("method=%s is not supported for non-standard block %s:%d",
+                getMethod(), BlockAPI.getBlockName(block), metadata
+            );
             return null;
         }
         if (minHeight >= 0 || maxHeight < Integer.MAX_VALUE || biomes != null) {
