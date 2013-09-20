@@ -102,6 +102,49 @@ public class ColorizeBlock {
             {1, 1, 0},
             {1, 1, 1},
         },
+
+        // bottom face, water (y=0)
+        {
+            {0, 0, 1}, // top left
+            {0, 0, 0}, // bottom left
+            {1, 0, 0}, // bottom right
+            {1, 0, 1}, // top right
+        },
+        // top face, water (y=1) cycle by 2
+        {
+            {0, 1, 0},
+            {0, 1, 1},
+            {1, 1, 1},
+            {1, 1, 0},
+        },
+        // north face, water (z=0)
+        {
+            {0, 1, 0},
+            {1, 1, 0},
+            {1, 0, 0},
+            {0, 0, 0},
+        },
+        // south face, water (z=1) cycle by 1
+        {
+            {1, 1, 1},
+            {0, 1, 1},
+            {0, 0, 1},
+            {1, 0, 1},
+        },
+        // west face, water (x=0)
+        {
+            {0, 1, 1},
+            {0, 1, 0},
+            {0, 0, 0},
+            {0, 0, 1},
+        },
+        // east face, water (x=1) cycle by 2
+        {
+            {1, 1, 0},
+            {1, 1, 1},
+            {1, 0, 1},
+            {1, 0, 0},
+        },
     };
 
     private static ColorMap lastColorMap;
@@ -402,10 +445,10 @@ public class ColorizeBlock {
         return colorMap;
     }
 
-    public static boolean setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
-                                              int i, int j, int k, int face,
-                                              boolean useColor, float r, float g, float b,
-                                              float topLeft, float bottomLeft, float bottomRight, float topRight) {
+    public static boolean setupBiomeSmoothing1(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
+                                               int i, int j, int k, int face,
+                                               boolean useColor, boolean useAO, float r, float g, float b,
+                                               float topLeft, float bottomLeft, float bottomRight, float topRight) {
         if ((!useColor && face != 1) || RenderPassAPI.instance.skipDefaultRendering(block)) {
             return false;
         }
@@ -419,11 +462,13 @@ public class ColorizeBlock {
             return false;
         }
 
-        float aoBase = AO_BASE[face];
-        topLeft *= aoBase;
-        bottomLeft *= aoBase;
-        bottomRight *= aoBase;
-        topRight *= aoBase;
+        if (useAO) {
+            float aoBase = AO_BASE[face];
+            topLeft *= aoBase;
+            bottomLeft *= aoBase;
+            bottomRight *= aoBase;
+            topRight *= aoBase;
+        }
 
         int[][] offsets = FACE_VERTICES[face];
         int[] offset;
@@ -454,6 +499,29 @@ public class ColorizeBlock {
         renderBlocks.colorBlueTopRight = topRight * color[2];
 
         return true;
+    }
+
+    public static void setupBiomeSmoothing2(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
+                                            int i, int j, int k, int face,
+                                            boolean useColor, boolean useAO, float r, float g, float b,
+                                            float topLeft, float bottomLeft, float bottomRight, float topRight) {
+        if (!setupBiomeSmoothing1(renderBlocks, block, blockAccess, i, j, k, face, useColor, useAO, r, g, b,
+            topLeft, bottomLeft, bottomRight, topRight)) {
+            renderBlocks.colorRedTopLeft = r * topLeft;
+            renderBlocks.colorRedBottomLeft = r * bottomLeft;
+            renderBlocks.colorRedBottomRight = r * bottomRight;
+            renderBlocks.colorRedTopRight = r * topRight;
+
+            renderBlocks.colorGreenTopLeft = g * topLeft;
+            renderBlocks.colorGreenBottomLeft = g * bottomLeft;
+            renderBlocks.colorGreenBottomRight = g * bottomRight;
+            renderBlocks.colorGreenTopRight = g * topRight;
+
+            renderBlocks.colorBlueTopLeft = b * topLeft;
+            renderBlocks.colorBlueBottomLeft = b * bottomLeft;
+            renderBlocks.colorBlueBottomRight = b * bottomRight;
+            renderBlocks.colorBlueTopRight = b * topRight;
+        }
     }
 
     public static void setupBiomeSmoothing(Block block, IBlockAccess blockAccess, Tessellator tessellator,

@@ -2781,10 +2781,8 @@ public class CustomColors extends Mod {
         }
 
         private void setupBiomeSmoothing() {
-            final MethodRef setupBiomeSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIZFFFFFFF)Z");
-            final MethodRef setupBiomeSmoothing2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing", "(LBlock;LIBlockAccess;LTessellator;IIIFFF)V");
-            final MethodRef setVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setVertexColor", "(II)V");
-            final MethodRef finishVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "finishVertexColor", "()V");
+            final MethodRef setupBiomeSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing1", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIZZFFFFFFF)Z");
+            final MethodRef setupBiomeSmoothing2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing2", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIZZFFFFFFF)V");
 
             final String[] vertexNames = new String[]{"TopLeft", "BottomLeft", "BottomRight", "TopRight"};
             final String[] colorNames = new String[]{"Red", "Green", "Blue"};
@@ -2908,10 +2906,10 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (!ColorizeBlock.setupBiomeSmoothing(this, block, this.blockAccess,
-                        //                                        i, j, k, face,
-                        //                                        useColor, r, g, b,
-                        //                                        topLeft, bottomLeft, bottomRight, topRight)) {
+                        // if (!ColorizeBlock.setupBiomeSmoothing1(this, block, this.blockAccess,
+                        //                                         i, j, k, face,
+                        //                                         useColor, true, r, g, b,
+                        //                                         topLeft, bottomLeft, bottomRight, topRight)) {
                         ALOAD_0,
                         ALOAD_1,
                         ALOAD_0,
@@ -2923,6 +2921,7 @@ public class CustomColors extends Mod {
                         push(patchCount++ % 6),
 
                         ILOAD, useColor,
+                        push(1),
                         FLOAD, 5,
                         FLOAD, 6,
                         FLOAD, 7,
@@ -2945,89 +2944,166 @@ public class CustomColors extends Mod {
             });
 
             addPatch(new BytecodePatch() {
+                private int patchCount;
+                private int faceRegister;
+
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                // || renderFaces[face]
+                                anyALOAD,
+                                capture(anyILOAD),
+                                BALOAD,
+                                IFEQ, any(2)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            faceRegister = extractRegisterNum(getCaptureGroup(1));
+                            return true;
+                        }
+                    });
+                }
+
                 @Override
                 public String getDescription() {
-                    return "smooth biome colors (water)";
+                    return "smooth biome colors (water part 1)";
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        lookBehind(build(
-                            // brightness = 1.0f;
-                            push(1.0f),
-                            anyFSTORE
-                        ), true),
+                        // tessellator.setColorOpaque_F(k * l * r, k * l * g, k * l * b);
+                        anyALOAD,
+                        capture(anyFLOAD),
+                        capture(anyFLOAD),
+                        FMUL,
+                        anyFLOAD,
+                        FMUL,
 
-                        // tessellator.setColorOpaque_F(...);
+                        backReference(1),
+                        backReference(2),
+                        FMUL,
+                        anyFLOAD,
+                        FMUL,
+
+                        backReference(1),
+                        backReference(2),
+                        FMUL,
+                        anyFLOAD,
+                        FMUL,
+
+                        reference(INVOKEVIRTUAL, setColorOpaque_F)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    byte[] faceCode;
+                    switch (patchCount++) {
+                        case 0:
+                            faceCode = new byte[]{ICONST_1}; // top face
+                            break;
+
+                        case 1:
+                            faceCode = new byte[]{ICONST_0}; // bottom face
+                            break;
+
+                        case 2:
+                            faceCode = buildCode(
+                                registerLoadStore(ILOAD, faceRegister),
+                                push(2),
+                                IADD
+                            ); // other faces
+                            break;
+
+                        default:
+                            return null;
+                    }
+                    return buildCode(
+                        // ColorizeBlock.setupBiomeSmoothing2(this, block, this.blockAccess,
+                        //                                    i, j, k, face + 6,
+                        //                                    useColor, false, r, g, b,
+                        //                                    topLeft, bottomLeft, bottomRight, topRight);
+                        ALOAD_0,
+                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, blockAccess),
+
+                        ILOAD_2,
+                        ILOAD_3,
+                        ILOAD, 4,
+                        faceCode,
+                        push(6),
+                        IADD,
+
+                        push(1),
+                        push(0),
+                        FLOAD, 7,
+                        FLOAD, 8,
+                        FLOAD, 9,
+
+                        getCaptureGroup(1),
+                        getCaptureGroup(2),
+                        FMUL,
+                        DUP,
+                        DUP,
+                        DUP,
+
+                        reference(INVOKESTATIC, setupBiomeSmoothing2)
+                    );
+                }
+            }.targetMethod(renderBlockFluids));
+
+            addPatch(new BytecodePatch() {
+                private int patchCount;
+
+                @Override
+                public String getDescription() {
+                    return "smooth biome colors (water part 2)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // tessellator.addVertexWithUV(...);
                         capture(anyALOAD),
-                        capture(any(0, 40)),
-                        reference(INVOKEVIRTUAL, setColorOpaque_F),
-
-                        // tessellator.addVertexWithUV(...); x 4
-                        capture(build(
-                            backReference(1),
-                            any(0, 40),
-                            reference(INVOKEVIRTUAL, addVertexWithUV)
-                        )),
-                        capture(build(
-                            backReference(1),
-                            any(0, 40),
-                            reference(INVOKEVIRTUAL, addVertexWithUV)
-                        )),
-                        capture(build(
-                            backReference(1),
-                            any(0, 40),
-                            reference(INVOKEVIRTUAL, addVertexWithUV)
-                        )),
-                        capture(build(
-                            backReference(1),
-                            any(0, 40),
-                            reference(INVOKEVIRTUAL, addVertexWithUV)
-                        ))
+                        nonGreedy(any(0, 40)),
+                        reference(INVOKEVIRTUAL, addVertexWithUV)
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // ColorizeBlock.setupBiomeSmoothing(block, blockAccess, tessellator, i, j, k, r, g, b);
-                        ALOAD_1,
-                        ALOAD_0,
-                        reference(GETFIELD, blockAccess),
+                        // tessellator.setColorOpaque_F(this.colorRedxxx, this.colorGreenxxx, this.colorBluexxx);
                         getCaptureGroup(1),
-                        ILOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4,
-                        getCaptureGroup(2),
-                        reference(INVOKESTATIC, setupBiomeSmoothing2),
-
-                        // ColorizeBlock.setVertexColor(xoffset, zoffset);
-                        // tessellator.addVertexWithUV(...); x4
-                        push(0),
-                        push(0),
-                        reference(INVOKESTATIC, setVertexColor),
-                        getCaptureGroup(3),
-
-                        push(0),
-                        push(1),
-                        reference(INVOKESTATIC, setVertexColor),
-                        getCaptureGroup(4),
-
-                        push(1),
-                        push(1),
-                        reference(INVOKESTATIC, setVertexColor),
-                        getCaptureGroup(5),
-
-                        push(1),
-                        push(0),
-                        reference(INVOKESTATIC, setVertexColor),
-                        getCaptureGroup(6),
-
-                        reference(INVOKESTATIC, finishVertexColor)
+                        getVertex(patchCount++),
+                        reference(INVOKEVIRTUAL, setColorOpaque_F)
                     );
                 }
-            }.targetMethod(renderBlockFluids));
+
+                private byte[] getVertex(int index) {
+                    return buildCode(
+                        getVertexColor(index, 0),
+                        getVertexColor(index, 1),
+                        getVertexColor(index, 2)
+                    );
+                }
+
+                private byte[] getVertexColor(int vertex, int channel) {
+                    return buildCode(
+                        ALOAD_0,
+                        reference(GETFIELD, new FieldRef(getDeobfClass(), "color" + colorNames[channel % 3] + vertexNames[vertex % 4], "F"))
+                    );
+                }
+            }
+                .setInsertBefore(true)
+                .targetMethod(renderBlockFluids)
+            );
         }
 
         private void setupBTW() {
