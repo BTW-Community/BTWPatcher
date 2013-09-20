@@ -206,8 +206,6 @@ public class ConnectedTextures extends Mod {
                 }
             }.setMethod(getShortName));
 
-            addMemberMapper(new FieldMapper(blockMaterial).accessFlag(AccessFlag.PUBLIC, true));
-
             addPatch(new MakeMemberPublicPatch(getShortName));
         }
     }
