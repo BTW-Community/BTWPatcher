@@ -381,10 +381,7 @@ public class BetterGlass extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         push(516), // GL_GREATER
-                        or(
-                            build(push(0.01f)), // pre-13w38a
-                            build(push(0.5f)) // 13w38a+
-                        ),
+                        anyLDC, // pre-13w38a 0.01f, 13w38a 0.5f, 13w38b+ 0.1f
                         reference(INVOKESTATIC, glAlphaFunc)
                     );
                 }
