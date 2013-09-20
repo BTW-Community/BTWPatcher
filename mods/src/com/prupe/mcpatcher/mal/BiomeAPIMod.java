@@ -86,6 +86,8 @@ public class BiomeAPIMod extends Mod {
             } else {
                 mapTempAndRainfall("III", new int[]{ILOAD_1, ILOAD_2, ILOAD_3});
             }
+
+            addPatch(new MakeMemberPublicPatch(biomeList));
         }
 
         private void mapTempAndRainfall(String desc, final int[] arguments) {

@@ -1519,7 +1519,6 @@ public final class BaseMod extends Mod {
             );
 
             addMemberMapper(new FieldMapper(biomeList)
-                .accessFlag(AccessFlag.PUBLIC, true)
                 .accessFlag(AccessFlag.STATIC, true)
             );
 
