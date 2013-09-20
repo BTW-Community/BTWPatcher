@@ -381,7 +381,10 @@ public class BetterGlass extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         push(516), // GL_GREATER
-                        push(0.01f),
+                        or(
+                            build(push(0.01f)), // pre-13w38a
+                            build(push(0.5f)) // 13w38a+
+                        ),
                         reference(INVOKESTATIC, glAlphaFunc)
                     );
                 }
@@ -524,11 +527,18 @@ public class BetterGlass extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        anyILOAD,
-                        push(16),
-                        IDIV,
-                        push(1),
-                        IADD
+                        // this.worldRenderers = new WorldRenderer[this.renderChunksWide * this.renderChunksTall * this.renderChunksDeep];
+                        ALOAD_0,
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        IMUL,
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        IMUL,
+                        anyReference(ANEWARRAY),
+                        anyReference(PUTFIELD)
                     );
                 }
             }.setMethod(loadRenderers));
