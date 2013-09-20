@@ -35,7 +35,6 @@ public class CustomColors extends Mod {
     private static final MethodRef computeWaterColor2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeWaterColor", "()V");
     private static final MethodRef computeMyceliumParticleColor = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "computeMyceliumParticleColor", "()Z");
     private static final MethodRef computeRedstoneWireColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeRedstoneWireColor", "(I)Z");
-    private static final MethodRef getItemColorFromDamage = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "getItemColorFromDamage", "(III)I");
     private static final MethodRef getWaterBottleColor = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "getWaterBottleColor", "()I");
     private static final MethodRef getLilyPadColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "getLilyPadColor", "()I");
     private static final MethodRef setupPotion = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "setupPotion", "(LPotion;)V");
@@ -587,7 +586,6 @@ public class CustomColors extends Mod {
         ItemBlockMod() {
             setParentClass("Item");
 
-            final FieldRef block = new FieldRef(getDeobfClass(), "block", "LBlock;");
             final MethodRef onItemUse = new MethodRef(getDeobfClass(), "onItemUse", "(LItemStack;LEntityPlayer;LWorld;IIIIFFF)Z");
 
             addClassSignature(new ConstSignature(0.5f));
@@ -634,39 +632,91 @@ public class CustomColors extends Mod {
                 }
             }.setMethod(onItemUse));
 
-            addMemberMapper(new FieldMapper(block));
+            if (getMinecraftVersion().compareTo("13w36a") < 0) {
+                final FieldRef blocksList = new FieldRef("Block", "blocksList", "[LBlock;");
+                final FieldRef blockID = new FieldRef(getDeobfClass(), "blockID", "I");
 
-            addPatch(new AddMethodPatch(getColorFromDamage) {
-                @Override
-                public byte[] generateMethod() {
-                    return buildCode(
-                        // if (this.block != null) {
-                        ALOAD_0,
-                        reference(GETFIELD, block),
-                        ASTORE_3,
-                        ALOAD_3,
-                        IFNULL, branch("A"),
-
-                        // return this.block.getRenderColor(damage);
-                        ALOAD_3,
-                        ILOAD_2,
-                        reference(INVOKEVIRTUAL, getRenderColor),
-                        IRETURN,
-
-                        // } else {
-                        label("A"),
-
-                        // return super.getColorFromDamage(itemStack, damage);
-                        ALOAD_0,
-                        ALOAD_1,
-                        ILOAD_2,
-                        reference(INVOKESPECIAL, getColorFromDamage),
-                        IRETURN
-
-                        // }
-                    );
+                addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            ALOAD_0,
+                            ILOAD_1,
+                            push(256),
+                            IADD,
+                            captureReference(PUTFIELD)
+                        );
+                    }
                 }
-            });
+                    .matchConstructorOnly(true)
+                    .addXref(1, blockID)
+                );
+
+                addPatch(new ItemBlockPatch() {
+                    @Override
+                    protected byte[] getBlockOnStack() {
+                        return buildCode(
+                            reference(GETSTATIC, blocksList),
+                            ALOAD_0,
+                            reference(GETFIELD, blockID),
+                            AALOAD
+                        );
+                    }
+                });
+            } else {
+                final FieldRef block = new FieldRef(getDeobfClass(), "block", "LBlock;");
+
+                addMemberMapper(new FieldMapper(block));
+
+                addPatch(new ItemBlockPatch() {
+                    @Override
+                    protected byte[] getBlockOnStack() {
+                        return buildCode(
+                            ALOAD_0,
+                            reference(GETFIELD, block)
+                        );
+                    }
+                });
+            }
+        }
+
+        abstract private class ItemBlockPatch extends AddMethodPatch {
+            public ItemBlockPatch() {
+                super(getColorFromDamage);
+            }
+
+            @Override
+            public byte[] generateMethod() {
+                return buildCode(
+                    // Block block = ...;
+                    getBlockOnStack(),
+                    ASTORE_3,
+
+                    // if (block != null) {
+                    ALOAD_3,
+                    IFNULL, branch("A"),
+
+                    // return block.getRenderColor(damage);
+                    ALOAD_3,
+                    ILOAD_2,
+                    reference(INVOKEVIRTUAL, getRenderColor),
+                    IRETURN,
+
+                    // } else {
+                    label("A"),
+
+                    // return super.getColorFromDamage(itemStack, damage);
+                    ALOAD_0,
+                    ALOAD_1,
+                    ILOAD_2,
+                    reference(INVOKESPECIAL, getColorFromDamage),
+                    IRETURN
+
+                    // }
+                );
+            }
+
+            abstract protected byte[] getBlockOnStack();
         }
     }
 
