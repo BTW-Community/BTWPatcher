@@ -76,7 +76,8 @@ abstract public class BlockAPI {
 
     public static List<Block> getAllBlocks() {
         List<Block> blocks = new ArrayList<Block>();
-        for (Block block : instance.getAllBlocks_Impl()) {
+        for (Iterator<Block> i = instance.iterator_Impl(); i.hasNext(); ) {
+            Block block = i.next();
             if (block != null && !blocks.contains(block)) {
                 blocks.add(block);
             }
@@ -95,7 +96,7 @@ abstract public class BlockAPI {
 
     abstract protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k);
 
-    abstract protected List<Block> getAllBlocks_Impl();
+    abstract protected Iterator<Block> iterator_Impl();
 
     protected void getPossibleBlockNames_Impl(String name, Set<String> aliases) {
     }
@@ -116,8 +117,8 @@ abstract public class BlockAPI {
         }
 
         @Override
-        protected List<Block> getAllBlocks_Impl() {
-            return Arrays.asList(Block.blocksList);
+        protected Iterator<Block> iterator_Impl() {
+            return Arrays.asList(Block.blocksList).iterator();
         }
 
         @Override
@@ -140,8 +141,8 @@ abstract public class BlockAPI {
         }
 
         @Override
-        protected List<Block> getAllBlocks_Impl() {
-            return Block.blockRegistry.getAll();
+        protected Iterator<Block> iterator_Impl() {
+            return Block.blockRegistry.iterator();
         }
 
         @Override

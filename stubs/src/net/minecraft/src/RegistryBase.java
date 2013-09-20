@@ -7,6 +7,10 @@ public class RegistryBase<K, V> {
         return null;
     }
 
+    public boolean containsKey(K key) {
+        return false;
+    }
+
     public Set<K> getKeys() {
         return null;
     }

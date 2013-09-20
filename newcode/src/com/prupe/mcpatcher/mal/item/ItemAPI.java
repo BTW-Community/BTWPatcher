@@ -42,7 +42,8 @@ abstract public class ItemAPI {
 
     public static List<Item> getAllItems() {
         List<Item> items = new ArrayList<Item>();
-        for (Item item : instance.getAllItems_Impl()) {
+        for (Iterator<Item> i = instance.iterator_Impl(); i.hasNext(); ) {
+            Item item = i.next();
             if (item != null && !items.contains(item)) {
                 items.add(item);
             }
@@ -50,7 +51,7 @@ abstract public class ItemAPI {
         return items;
     }
 
-    abstract protected List<Item> getAllItems_Impl();
+    abstract protected Iterator<Item> iterator_Impl();
 
     protected void getPossibleItemNames_Impl(String name, Set<String> aliases) {
     }
@@ -66,8 +67,8 @@ abstract public class ItemAPI {
 
     final private static class V1 extends ItemAPI {
         @Override
-        protected List<Item> getAllItems_Impl() {
-            return Arrays.asList(Item.itemsList);
+        protected Iterator<Item> iterator_Impl() {
+            return Arrays.asList(Item.itemsList).iterator();
         }
 
         @Override
@@ -85,8 +86,8 @@ abstract public class ItemAPI {
 
     final private static class V2 extends ItemAPI {
         @Override
-        protected List<Item> getAllItems_Impl() {
-            return Item.itemRegistry.getAll();
+        protected Iterator<Item> iterator_Impl() {
+            return Item.itemRegistry.iterator();
         }
 
         @Override

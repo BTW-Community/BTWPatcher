@@ -15,7 +15,8 @@ class Shared {
                 new MethodRef(getDeobfClass(), "newHashMap", "()Ljava/util/HashMap;"),
                 new MethodRef(getDeobfClass(), "get", "(Ljava/lang/Object;)Ljava/lang/Object;"),
                 new MethodRef(getDeobfClass(), "put", "(Ljava/lang/Object;Ljava/lang/Object;)V"),
-                new MethodRef(getDeobfClass(), "getKeys", "()Ljava/util/Set;")
+                new MethodRef(getDeobfClass(), "getKeys", "()Ljava/util/Set;"),
+                new MethodRef(getDeobfClass(), "containsKey", "(Ljava/lang/Object;)Z")
             ).setInterfaceOnly(false));
         }
     }
@@ -45,9 +46,10 @@ class Shared {
                 new MethodRef(getDeobfClass(), "register", "(ILjava/lang/String;Ljava/lang/Object;)V"),
                 getFullName,
                 new MethodRef(getDeobfClass(), "get", "(Ljava/lang/String;)Ljava/lang/Object;"),
+                new MethodRef(getDeobfClass(), "containsKey", "(Ljava/lang/String;)Z"),
                 new MethodRef(getDeobfClass(), "getId", "(Ljava/lang/Object;)I"),
                 new MethodRef(getDeobfClass(), "getById", "(I)Ljava/lang/Object;"),
-                new MethodRef(getDeobfClass(), "getAll", "()Ljava/util/List;")
+                new MethodRef(getDeobfClass(), "iterator", "()Ljava/util/Iterator;")
             ).setInterfaceOnly(false));
         }
     }
