@@ -2781,21 +2781,22 @@ public class CustomColors extends Mod {
         }
 
         private void setupBiomeSmoothing() {
+            final FieldRef enableAO = new FieldRef(getDeobfClass(), "enableAO", "Z");
             final MethodRef setupBiomeSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing1", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIZZFFFFFFF)Z");
             final MethodRef setupBiomeSmoothing2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing2", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIZZFFFFFFF)V");
 
             final String[] vertexNames = new String[]{"TopLeft", "BottomLeft", "BottomRight", "TopRight"};
             final String[] colorNames = new String[]{"Red", "Green", "Blue"};
-            final int[] xrefOrder = new int[]{1, 4, 6, 8, 11, 13, 15, 18, 20, 22, 25, 27};
             final FieldRef[] vertexColorFields = new FieldRef[12];
 
             addClassSignature(new BytecodeSignature() {
                 {
+                    addXref(1, enableAO);
+
                     int i = 0;
                     for (String v : vertexNames) {
                         for (String c : colorNames) {
                             vertexColorFields[i] = new FieldRef(getDeobfClass(), "color" + c + v, "F");
-                            addXref(xrefOrder[i], vertexColorFields[i]);
                             i++;
                         }
                     }
@@ -2804,6 +2805,13 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // if (this.enableAO)
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        IFEQ_or_IFNE, any(2),
+
+                        nonGreedy(any(0, 200)),
+
                         getSubExpression(0),
                         getSubExpression(1),
                         getSubExpression(2),
@@ -2812,31 +2820,35 @@ public class CustomColors extends Mod {
                 }
 
                 private String getSubExpression(int index) {
-                    index *= 7;
+                    addXref(7 * index + 2, vertexColorFields[3 * index]);
+                    addXref(7 * index + 3, vertexColorFields[3 * index + 1]);
+                    addXref(7 * index + 4, vertexColorFields[3 * index + 2]);
+                    addXref(7 * index + 5, setColorOpaque_F);
+                    // this.brightnessxxx
+                    // tessellator.setBrightness
+                    addXref(7 * index + 8, addVertexWithUV);
+
                     return build(
-                        // this.colorRedxxxx *= red;
+                        // tessellator.setColorOpaque_F(this.colorRedxxx, this.colorGreenxxx, this.colorBluexxx);
+                        anyALOAD,
                         ALOAD_0,
-                        DUP,
-                        capture(build(GETFIELD, capture(any(2)))),
-                        FLOAD, capture(any()),
-                        FMUL,
-                        PUTFIELD, backReference(index + 2),
+                        captureReference(GETFIELD),
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        captureReference(INVOKEVIRTUAL),
 
-                        // this.colorGreenxxxx *= green;
+                        // tessellator.setBrightness(this.brightnessxxx);
+                        anyALOAD,
                         ALOAD_0,
-                        DUP,
-                        capture(build(GETFIELD, capture(any(2)))),
-                        FLOAD, backReference(index + 3),
-                        FMUL,
-                        PUTFIELD, backReference(index + 5),
+                        captureReference(GETFIELD),
+                        captureReference(INVOKEVIRTUAL),
 
-                        // this.colorBluexxxx *= blue;
-                        ALOAD_0,
-                        DUP,
-                        capture(build(GETFIELD, capture(any(2)))),
-                        FLOAD, backReference(index + 3),
-                        FMUL,
-                        PUTFIELD, backReference(index + 7)
+                        // tessellator.addVertexWithUV(...);
+                        anyALOAD,
+                        repeat(anyDLOAD, 5),
+                        captureReference(INVOKEVIRTUAL)
                     );
                 }
             });
