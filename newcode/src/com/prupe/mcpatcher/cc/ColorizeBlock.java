@@ -108,6 +108,8 @@ public class ColorizeBlock {
     private static int lastI = Integer.MIN_VALUE;
     private static int lastJ = Integer.MIN_VALUE;
     private static int lastK = Integer.MIN_VALUE;
+    private static Tessellator lastTessellator;
+
     private static final float[][][][] cubeColors = new float[2][2][2][3];
 
     static {
@@ -452,5 +454,30 @@ public class ColorizeBlock {
         renderBlocks.colorBlueTopRight = topRight * color[2];
 
         return true;
+    }
+
+    public static void setupBiomeSmoothing(Block block, IBlockAccess blockAccess, Tessellator tessellator,
+                                           int i, int j, int k, float r, float g, float b) {
+        lastI = i;
+        lastJ = j;
+        lastK = k;
+        lastTessellator = tessellator;
+        lastColorMap = findColorMap(block, blockAccess, i, j, k);
+        if (lastColorMap == null) {
+            lastTessellator.setColorOpaque_F(r, g, b);
+        }
+    }
+
+    public static void setVertexColor(int di, int dk) {
+        if (lastColorMap != null) {
+            int rgb = lastColorMap.getColorMultiplierWithBlending(lastI + di, lastJ, lastK + dk);
+            float[] f = new float[3];
+            Colorizer.intToFloat3(rgb, f);
+            lastTessellator.setColorOpaque_F(f[0], f[1], f[2]);
+        }
+    }
+
+    public static void finishVertexColor() {
+        lastTessellator = null;
     }
 }

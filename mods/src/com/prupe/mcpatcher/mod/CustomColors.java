@@ -2512,6 +2512,9 @@ public class CustomColors extends Mod {
     private class RenderBlocksMod extends RedstoneWireClassMod {
         private final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
         private final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
+        private final MethodRef renderBlockFluids = new MethodRef(getDeobfClass(), "renderBlockFluids", "(LBlock;III)Z");
+        private final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
+        private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
 
         RenderBlocksMod() {
             super("override redstone wire color", new MethodRef("RenderBlocks", "renderBlockRedstoneWire", "(LBlock;III)Z"));
@@ -2520,9 +2523,7 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature(0.01));
 
             final MethodRef renderBlockFallingSand = new MethodRef(getDeobfClass(), "renderBlockFallingSand", "(LBlock;LWorld;IIII)V");
-            final MethodRef renderBlockFluids = new MethodRef(getDeobfClass(), "renderBlockFluids", "(LBlock;III)Z");
             final MethodRef renderBlockCauldron = new MethodRef(getDeobfClass(), "renderBlockCauldron", "(LBlockCauldron;III)Z");
-            final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -2780,7 +2781,10 @@ public class CustomColors extends Mod {
         }
 
         private void setupBiomeSmoothing() {
-            final MethodRef setupBiomeSmoothing = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIZFFFFFFF)Z");
+            final MethodRef setupBiomeSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIZFFFFFFF)Z");
+            final MethodRef setupBiomeSmoothing2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing", "(LBlock;LIBlockAccess;LTessellator;IIIFFF)V");
+            final MethodRef setVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setVertexColor", "(II)V");
+            final MethodRef finishVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "finishVertexColor", "()V");
 
             final String[] vertexNames = new String[]{"TopLeft", "BottomLeft", "BottomRight", "TopRight"};
             final String[] colorNames = new String[]{"Red", "Green", "Blue"};
@@ -2928,7 +2932,7 @@ public class CustomColors extends Mod {
                         getCaptureGroup(3),
                         getCaptureGroup(4),
 
-                        reference(INVOKESTATIC, setupBiomeSmoothing),
+                        reference(INVOKESTATIC, setupBiomeSmoothing1),
                         IFNE, branch("A"),
 
                         // ...
@@ -2939,6 +2943,91 @@ public class CustomColors extends Mod {
                     );
                 }
             });
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "smooth biome colors (water)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        lookBehind(build(
+                            // brightness = 1.0f;
+                            push(1.0f),
+                            anyFSTORE
+                        ), true),
+
+                        // tessellator.setColorOpaque_F(...);
+                        capture(anyALOAD),
+                        capture(any(0, 40)),
+                        reference(INVOKEVIRTUAL, setColorOpaque_F),
+
+                        // tessellator.addVertexWithUV(...); x 4
+                        capture(build(
+                            backReference(1),
+                            any(0, 40),
+                            reference(INVOKEVIRTUAL, addVertexWithUV)
+                        )),
+                        capture(build(
+                            backReference(1),
+                            any(0, 40),
+                            reference(INVOKEVIRTUAL, addVertexWithUV)
+                        )),
+                        capture(build(
+                            backReference(1),
+                            any(0, 40),
+                            reference(INVOKEVIRTUAL, addVertexWithUV)
+                        )),
+                        capture(build(
+                            backReference(1),
+                            any(0, 40),
+                            reference(INVOKEVIRTUAL, addVertexWithUV)
+                        ))
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // ColorizeBlock.setupBiomeSmoothing(block, blockAccess, tessellator, i, j, k, r, g, b);
+                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, blockAccess),
+                        getCaptureGroup(1),
+                        ILOAD_2,
+                        ILOAD_3,
+                        ILOAD, 4,
+                        getCaptureGroup(2),
+                        reference(INVOKESTATIC, setupBiomeSmoothing2),
+
+                        // ColorizeBlock.setVertexColor(xoffset, zoffset);
+                        // tessellator.addVertexWithUV(...); x4
+                        push(0),
+                        push(0),
+                        reference(INVOKESTATIC, setVertexColor),
+                        getCaptureGroup(3),
+
+                        push(0),
+                        push(1),
+                        reference(INVOKESTATIC, setVertexColor),
+                        getCaptureGroup(4),
+
+                        push(1),
+                        push(1),
+                        reference(INVOKESTATIC, setVertexColor),
+                        getCaptureGroup(5),
+
+                        push(1),
+                        push(0),
+                        reference(INVOKESTATIC, setVertexColor),
+                        getCaptureGroup(6),
+
+                        reference(INVOKESTATIC, finishVertexColor)
+                    );
+                }
+            }.targetMethod(renderBlockFluids));
         }
 
         private void setupBTW() {
