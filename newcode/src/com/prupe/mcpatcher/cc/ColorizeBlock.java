@@ -144,16 +144,16 @@ public class ColorizeBlock {
     }
 
     static void reloadFoliageColors(Properties properties) {
-        registerColorMap(DEFAULT_GRASSCOLOR, BlockAPI.getBlockName(grassBlock) + " " + BlockAPI.getBlockName(tallGrassBlock) + ":1,2");
-        registerColorMap(DEFAULT_FOLIAGECOLOR, BlockAPI.getBlockName(leavesBlock) + ":0,4,8,12 " + BlockAPI.getBlockName(vineBlock));
-        registerColorMap(PINECOLOR, BlockAPI.getBlockName(leavesBlock) + ":1,5,9,13");
-        registerColorMap(BIRCHCOLOR, BlockAPI.getBlockName(leavesBlock) + ":2,6,10,14");
+        registerColorMap(DEFAULT_GRASSCOLOR, "minecraft:grass minecraft:tallgrass:1,2");
+        registerColorMap(DEFAULT_FOLIAGECOLOR, "minecraft:leaves:0,4,8,12 minecraft:vine");
+        registerColorMap(PINECOLOR, "minecraft:leaves:1,5,9,13");
+        registerColorMap(BIRCHCOLOR, "minecraft:leaves:2,6,10,14");
     }
 
     static void reloadWaterColors(Properties properties) {
-        waterColorMap = registerColorMap(WATERCOLOR, BlockAPI.getBlockName(waterBlock) + " " + BlockAPI.getBlockName(staticWaterBlock));
+        waterColorMap = registerColorMap(WATERCOLOR, "minecraft:flowing_water minecraft:water");
         if (waterColorMap != null) {
-            waterColorMap.multiplyMap(ColorizeEntity.waterBaseColor);
+            Colorizer.intToFloat3(waterColorMap.getColorMultiplier(), waterColor);
         }
     }
 
