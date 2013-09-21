@@ -164,6 +164,7 @@ abstract class TileOverride implements ITileOverride {
     private final List<ResourceLocation> tileNames = new ArrayList<ResourceLocation>();
     protected Icon[] icons;
     private boolean disabled;
+    private int warnCount;
     private int[] reorient;
     private int rotateUV;
     protected boolean rotateTop;
@@ -448,8 +449,9 @@ abstract class TileOverride implements ITileOverride {
     }
 
     final void warn(String format, Object... params) {
-        if (propertiesFile != null) {
+        if (propertiesFile != null && warnCount < 10) {
             logger.warning(propertiesFile + ": " + format, params);
+            warnCount++;
         }
     }
 
@@ -682,7 +684,7 @@ abstract class TileOverride implements ITileOverride {
             return null;
         }
         if (face < 0 && requiresFace()) {
-            error("method=%s is not supported for non-standard block %s:%d @ %d %d %d",
+            warn("method=%s is not supported for non-standard block %s:%d @ %d %d %d",
                 getMethod(), BlockAPI.getBlockName(block), blockAccess.getBlockMetadata(i, j, k), i, j, k
             );
             return null;
@@ -711,7 +713,7 @@ abstract class TileOverride implements ITileOverride {
             return null;
         }
         if (face < 0 && requiresFace()) {
-            error("method=%s is not supported for non-standard block %s:%d",
+            warn("method=%s is not supported for non-standard block %s:%d",
                 getMethod(), BlockAPI.getBlockName(block), metadata
             );
             return null;
