@@ -838,6 +838,7 @@ public class ConnectedTextures extends Mod {
 
         private void setupCrossedSquares17() {
             final MethodRef drawCrossedSquares = new MethodRef(getDeobfClass(), "drawCrossedSquares", "(LIcon;DDDF)V");
+            final MethodRef round = new MethodRef("java/lang/Math", "round", "(D)J");
 
             addMemberMapper(new MethodMapper(drawCrossedSquares));
 
@@ -850,12 +851,15 @@ public class ConnectedTextures extends Mod {
                 @Override
                 protected byte[] getCTMUtilsArgs() {
                     return buildCode(
+                        // x,z coords are randomly offset by -0.15 to 0.15
                         DLOAD_2,
-                        D2I,
+                        reference(INVOKESTATIC, round),
+                        L2I,
                         DLOAD, 4,
                         D2I,
                         DLOAD, 6,
-                        D2I
+                        reference(INVOKESTATIC, round),
+                        L2I
                     );
                 }
 
