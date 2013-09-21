@@ -4,11 +4,13 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
-import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.*;
+import net.minecraft.src.Block;
+import net.minecraft.src.IBlockAccess;
+import net.minecraft.src.RenderBlocks;
+import net.minecraft.src.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
 import java.util.IdentityHashMap;
@@ -32,20 +34,12 @@ public class ColorizeBlock {
 
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
 
-    private static BiomeGenBase swampBiome;
-
-    private static Block grassBlock;
     private static Block waterBlock;
     private static Block staticWaterBlock;
-    private static Block leavesBlock;
-    private static Block tallGrassBlock;
     private static Block pumpkinStemBlock;
     private static Block melonStemBlock;
-    private static Block vineBlock;
 
     private static final Map<Block, ColorMap[]> blockColorMaps = new IdentityHashMap<Block, ColorMap[]>(); // bitmaps from palette.block.*
-    private static ColorMap swampGrassColorMap;
-    private static ColorMap swampFoliageColorMap;
     private static ColorMap waterColorMap;
     private static int lilypadColor; // lilypad
     private static float[][] redstoneColor; // colormap/redstone.png
@@ -163,20 +157,12 @@ public class ColorizeBlock {
     }
 
     static void reset() {
-        swampBiome = BiomeAPI.findBiomeByName("Swampland");
-
-        grassBlock = BlockAPI.getFixedBlock("minecraft:grass");
         waterBlock = BlockAPI.getFixedBlock("minecraft:flowing_water");
         staticWaterBlock = BlockAPI.getFixedBlock("minecraft:water");
-        leavesBlock = BlockAPI.getFixedBlock("minecraft:leaves");
-        tallGrassBlock = BlockAPI.getFixedBlock("minecraft:tallgrass");
         pumpkinStemBlock = BlockAPI.getFixedBlock("minecraft:pumpkin_stem");
         melonStemBlock = BlockAPI.getFixedBlock("minecraft:melon_stem");
-        vineBlock = BlockAPI.getFixedBlock("minecraft:vine");
 
         blockColorMaps.clear();
-        swampGrassColorMap = null;
-        swampFoliageColorMap = null;
         waterColorMap = null;
         lastColorMap = null;
 
@@ -188,8 +174,10 @@ public class ColorizeBlock {
     }
 
     static void reloadFoliageColors(Properties properties) {
-        registerColorMap(DEFAULT_GRASSCOLOR, "minecraft:grass minecraft:tallgrass:1,2");
-        registerColorMap(DEFAULT_FOLIAGECOLOR, "minecraft:leaves:0,4,8,12 minecraft:vine");
+        ColorMap colorMap = ColorMap.loadColorMap(true, DEFAULT_GRASSCOLOR, SWAMPGRASSCOLOR, blockBlendRadius);
+        registerColorMap(colorMap, DEFAULT_GRASSCOLOR, "minecraft:grass minecraft:tallgrass:1,2");
+        colorMap = ColorMap.loadColorMap(true, DEFAULT_FOLIAGECOLOR, SWAMPFOLIAGECOLOR, blockBlendRadius);
+        registerColorMap(colorMap, DEFAULT_FOLIAGECOLOR, "minecraft:leaves:0,4,8,12 minecraft:vine");
         registerColorMap(PINECOLOR, "minecraft:leaves:1,5,9,13");
         registerColorMap(BIRCHCOLOR, "minecraft:leaves:2,6,10,14");
     }
@@ -208,9 +196,6 @@ public class ColorizeBlock {
         int[] temp = new int[]{lilypadColor};
         Colorizer.loadIntColor("lilypad", temp, 0);
         lilypadColor = temp[0];
-
-        swampGrassColorMap = ColorMap.loadColorMap(Colorizer.useSwampColors, SWAMPGRASSCOLOR, blockBlendRadius);
-        swampFoliageColorMap = ColorMap.loadColorMap(Colorizer.useSwampColors, SWAMPFOLIAGECOLOR, blockBlendRadius);
     }
 
     static void reloadBlockColors(Properties properties) {
@@ -306,24 +291,9 @@ public class ColorizeBlock {
         return maps[BlockAPI.NO_METADATA];
     }
 
-    private static ColorMap findColorMap(Block block, int metadata, BiomeGenBase biome) {
-        if (biome == swampBiome) {
-            if (block == grassBlock) {
-                if (swampGrassColorMap != null) {
-                    return swampGrassColorMap;
-                }
-            } else if (block == leavesBlock) {
-                if (swampFoliageColorMap != null) {
-                    return swampFoliageColorMap;
-                }
-            }
-        }
-        return findColorMap(block, metadata);
-    }
-
     private static ColorMap findColorMap(Block block, IBlockAccess blockAccess, int i, int j, int k) {
         int metadata = blockAccess.getBlockMetadata(i, j, k);
-        return findColorMap(block, metadata, BiomeAPI.getBiomeGenAt(i, j, k));
+        return findColorMap(block, metadata);
     }
 
     public static boolean colorizeBlock(Block block) {

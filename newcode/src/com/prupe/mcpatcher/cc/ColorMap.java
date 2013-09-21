@@ -38,6 +38,10 @@ abstract class ColorMap {
     private final float[] lastBlendResult = new float[3];
 
     static ColorMap loadColorMap(boolean useCustom, ResourceLocation resource, int blendRadius) {
+        return loadColorMap(useCustom, resource, null, blendRadius);
+    }
+
+    static ColorMap loadColorMap(boolean useCustom, ResourceLocation resource, ResourceLocation swampResource, int blendRadius) {
         if (!useCustom) {
             return null;
         }
@@ -52,7 +56,11 @@ abstract class ColorMap {
         }
         int format = MCPatcherUtils.getIntProperty(properties, "format", 1);
         if (format <= 1) {
-            return new V1(image, properties, blendRadius);
+            if (swampResource == null) {
+                return new V1Swamp(swampResource, image, properties, blendRadius);
+            } else {
+                return new V1(image, properties, blendRadius);
+            }
         } else if (format == 2) {
             return new V2(image, properties, blendRadius);
         } else {
@@ -74,7 +82,11 @@ abstract class ColorMap {
     }
 
     int getColorMultiplier(int i, int j, int k) {
-        computeXY(BiomeAPI.getBiomeGenAt(i, j, k), i, j, k, xy);
+        return getColorMultiplier(BiomeAPI.getBiomeGenAt(i, j, k), i, j, k);
+    }
+
+    int getColorMultiplier(BiomeGenBase biome, int i, int j, int k) {
+        computeXY(biome, i, j, k, xy);
         return getRGB(xy[0], xy[1]);
     }
 
@@ -209,7 +221,7 @@ abstract class ColorMap {
         }
     }
 
-    private static final class V1 extends ColorMap {
+    private static class V1 extends ColorMap {
         private V1(BufferedImage image, Properties properties, int blendRadius) {
             super(image, properties, blendRadius);
         }
@@ -225,6 +237,28 @@ abstract class ColorMap {
             float rainfall = Colorizer.clamp(BiomeAPI.getRainfall(biome, i, j, k));
             f[0] = maxX * (1.0f - temperature);
             f[1] = maxY * (1.0f - temperature * rainfall);
+        }
+    }
+
+    private static final class V1Swamp extends V1 {
+        private final ColorMap swampMap;
+        private final BiomeGenBase swampBiome;
+
+        private V1Swamp(ResourceLocation swampResource, BufferedImage image, Properties properties, int blendRadius) {
+            super(image, properties, blendRadius);
+            swampBiome = BiomeAPI.findBiomeByName("Swampland");
+            ColorMap tmpMap = loadColorMap(Colorizer.useSwampColors, swampResource, blendRadius);
+            swampMap = tmpMap == null ? this : tmpMap;
+        }
+
+        @Override
+        int getColorMultiplier(int i, int j, int k) {
+            BiomeGenBase biome = BiomeAPI.getBiomeGenAt(i, j, k);
+            if (biome == swampBiome) {
+                return swampMap.getColorMultiplier(biome, i, j, k);
+            } else {
+                return getColorMultiplier(biome, i, j, k);
+            }
         }
     }
 
