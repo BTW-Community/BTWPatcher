@@ -213,7 +213,6 @@ public class ConnectedTextures extends Mod {
     private class RenderBlocksMod extends BaseMod.RenderBlocksMod {
         private final MethodRef[] faceMethods = new MethodRef[6];
         private final FieldRef overrideBlockTexture = new FieldRef(getDeobfClass(), "overrideBlockTexture", "LIcon;");
-        private final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
         private final FieldRef fancyGrass = new FieldRef(getDeobfClass(), "fancyGrass", "Z");
         private final FieldRef instance = new FieldRef("Tessellator", "instance", "LTessellator;");
         private final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;III)Z");

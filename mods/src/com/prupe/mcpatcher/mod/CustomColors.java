@@ -2513,9 +2513,8 @@ public class CustomColors extends Mod {
         }
     }
 
-    private abstract class RedstoneWireClassMod extends ClassMod {
-        RedstoneWireClassMod(final String description, final MethodRef method) {
-            addClassSignature(new BytecodeSignature() {
+    private void setupRedstoneWire(com.prupe.mcpatcher.ClassMod classMod, final String description, final MethodRef method) {
+            classMod.addClassSignature(new BytecodeSignature(classMod) {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -2537,7 +2536,7 @@ public class CustomColors extends Mod {
                 }
             }.setMethod(method));
 
-            addPatch(new BytecodePatch() {
+            classMod.addPatch(new BytecodePatch(classMod) {
                 @Override
                 public String getDescription() {
                     return description;
@@ -2608,14 +2607,15 @@ public class CustomColors extends Mod {
                     );
                 }
             }.targetMethod(method));
-        }
     }
 
-    private class BlockRedstoneWireMod extends RedstoneWireClassMod {
+    private class BlockRedstoneWireMod extends ClassMod {
         BlockRedstoneWireMod() {
-            super("override redstone wire particle color", new MethodRef("BlockRedstoneWire", "randomDisplayTick", "(LWorld;IIILjava/util/Random;)V"));
-
             setParentClass("Block");
+
+            final MethodRef randomDisplayTick = new MethodRef("BlockRedstoneWire", "randomDisplayTick", "(LWorld;IIILjava/util/Random;)V");
+
+            setupRedstoneWire(this, "override redstone wire particle color", randomDisplayTick);
 
             addClassSignature(new ConstSignature("reddust"));
 
@@ -2647,15 +2647,14 @@ public class CustomColors extends Mod {
         }
     }
 
-    private class RenderBlocksMod extends RedstoneWireClassMod {
+    private class RenderBlocksMod extends BaseMod.RenderBlocksMod {
         private final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
-        private final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
         private final MethodRef renderBlockFluids = new MethodRef(getDeobfClass(), "renderBlockFluids", "(LBlock;III)Z");
         private final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
         private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
 
         RenderBlocksMod() {
-            super("override redstone wire color", new MethodRef("RenderBlocks", "renderBlockRedstoneWire", "(LBlock;III)Z"));
+            super(CustomColors.this);
 
             addClassSignature(new ConstSignature(0.1875));
             addClassSignature(new ConstSignature(0.01));
@@ -2663,6 +2662,7 @@ public class CustomColors extends Mod {
             final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;III)Z");
             final MethodRef renderBlockFallingSand = new MethodRef(getDeobfClass(), "renderBlockFallingSand", "(LBlock;LWorld;IIII)V");
             final MethodRef renderBlockCauldron = new MethodRef(getDeobfClass(), "renderBlockCauldron", "(LBlockCauldron;III)Z");
+            final MethodRef renderBlockRedstoneWire = new MethodRef(getDeobfClass(), "renderBlockRedstoneWire", "(LBlock;III)Z");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -2702,6 +2702,8 @@ public class CustomColors extends Mod {
                     );
                 }
             }.setMethod(renderBlockFallingSand));
+
+            setupRedstoneWire(this, "override redstone wire color", renderBlockRedstoneWire);
 
             addMemberMapper(new MethodMapper(renderBlockCauldron));
 
@@ -3307,7 +3309,6 @@ public class CustomColors extends Mod {
         }
 
         private void setupBTW() {
-            final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
             final MethodRef renderBlock = new MethodRef(getDeobfClass(), "RenderStandardFullBlock", "(LBlock;III)Z");
             final MethodRef renderBlockAO = new MethodRef(getDeobfClass(), "RenderStandardFullBlockWithAmbientOcclusion", "(LBlock;III)Z");
             final MethodRef renderBlockCM = new MethodRef(getDeobfClass(), "RenderStandardFullBlockWithColorMultiplier", "(LBlock;III)Z");
