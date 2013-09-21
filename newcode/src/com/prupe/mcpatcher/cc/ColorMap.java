@@ -9,7 +9,6 @@ import net.minecraft.src.BiomeGenBase;
 import net.minecraft.src.ResourceLocation;
 
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 
@@ -72,17 +71,6 @@ abstract class ColorMap {
         this.blendRadius = blendRadius;
         int diameter = 2 * blendRadius + 1;
         blendScale = 1.0f / (float) (diameter * diameter);
-    }
-
-    void multiplyMap(float[] f) {
-        float[] g = new float[3];
-        for (int i = 0; i < map.length; i++) {
-            Colorizer.intToFloat3(map[i], g);
-            g[0] *= f[0];
-            g[1] *= f[1];
-            g[2] *= f[2];
-            map[i] = Colorizer.float3ToInt(g);
-        }
     }
 
     int getColorMultiplier(int i, int j, int k) {
@@ -200,6 +188,26 @@ abstract class ColorMap {
     abstract int getDefaultColor();
 
     abstract void computeXY(BiomeGenBase biome, int i, int j, int k, float[] f);
+
+    static final class Water extends ColorMap {
+        Water(int blendRadius) {
+            super(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), null, blendRadius);
+        }
+
+        @Override
+        int getDefaultColor() {
+            return BiomeAPI.findBiomeByName("Ocean").waterColorMultiplier;
+        }
+
+        @Override
+        void computeXY(BiomeGenBase biome, int i, int j, int k, float[] f) {
+        }
+
+        @Override
+        int getColorMultiplier(int i, int j, int k) {
+            return BiomeAPI.getWaterColorMultiplier(i, j, k);
+        }
+    }
 
     private static final class V1 extends ColorMap {
         private V1(BufferedImage image, Properties properties, int blendRadius) {

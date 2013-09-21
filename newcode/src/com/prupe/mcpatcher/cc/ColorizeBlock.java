@@ -196,7 +196,10 @@ public class ColorizeBlock {
 
     static void reloadWaterColors(Properties properties) {
         waterColorMap = registerColorMap(WATERCOLOR, "minecraft:flowing_water minecraft:water");
-        if (waterColorMap != null) {
+        if (waterColorMap == null) {
+            waterColorMap = new ColorMap.Water(blockBlendRadius);
+            registerColorMap(waterColorMap, null, "minecraft:flowing_water minecraft:water");
+        } else {
             Colorizer.intToFloat3(waterColorMap.getColorMultiplier(), waterColor);
         }
     }
@@ -234,6 +237,10 @@ public class ColorizeBlock {
         if (colorMap == null) {
             return null;
         }
+        return registerColorMap(colorMap, resource, idList);
+    }
+
+    private static ColorMap registerColorMap(ColorMap colorMap, ResourceLocation resource, String idList) {
         int[] metadata = new int[1];
         for (String idString : idList.split("\\s+")) {
             Block block = BlockAPI.parseBlockAndMetadata(idString, metadata);
@@ -248,9 +255,11 @@ public class ColorizeBlock {
                         maps[i] = colorMap;
                     }
                 }
-                logger.finer("using %s for block %s, default color %06x",
-                    resource, BlockAPI.getBlockName(block, metadata[0]), colorMap.getColorMultiplier()
-                );
+                if (resource != null) {
+                    logger.finer("using %s for block %s, default color %06x",
+                        resource, BlockAPI.getBlockName(block, metadata[0]), colorMap.getColorMultiplier()
+                    );
+                }
             }
         }
         return colorMap;
