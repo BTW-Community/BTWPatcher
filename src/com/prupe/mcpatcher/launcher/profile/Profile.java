@@ -148,6 +148,12 @@ public class Profile {
             if (authentication.accessToken != null && authentication.uuid != null) {
                 args.put("auth_session", "token:" + authentication.accessToken + ':' + authentication.uuid);
             }
+            if (authentication.uuid != null) {
+                args.put("auth_uuid", authentication.uuid);
+            }
+            if (authentication.accessToken != null) {
+                args.put("auth_access_token", authentication.accessToken);
+            }
         }
     }
 
