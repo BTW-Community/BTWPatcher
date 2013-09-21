@@ -57,12 +57,12 @@ abstract class ColorMap {
         int format = MCPatcherUtils.getIntProperty(properties, "format", 1);
         if (format <= 1) {
             if (swampResource == null) {
-                return new V1Swamp(swampResource, image, properties, blendRadius);
+                return new TempHumiditySwamp(swampResource, image, properties, blendRadius);
             } else {
-                return new V1(image, properties, blendRadius);
+                return new TempHumidity(image, properties, blendRadius);
             }
         } else if (format == 2) {
-            return new V2(image, properties, blendRadius);
+            return new Grid(image, properties, blendRadius);
         } else {
             logger.error("%s: unknown format %d", propertiesResource, format);
             return null;
@@ -221,8 +221,8 @@ abstract class ColorMap {
         }
     }
 
-    private static class V1 extends ColorMap {
-        private V1(BufferedImage image, Properties properties, int blendRadius) {
+    private static class TempHumidity extends ColorMap {
+        private TempHumidity(BufferedImage image, Properties properties, int blendRadius) {
             super(image, properties, blendRadius);
         }
 
@@ -240,11 +240,11 @@ abstract class ColorMap {
         }
     }
 
-    private static final class V1Swamp extends V1 {
+    private static final class TempHumiditySwamp extends TempHumidity {
         private final ColorMap swampMap;
         private final BiomeGenBase swampBiome;
 
-        private V1Swamp(ResourceLocation swampResource, BufferedImage image, Properties properties, int blendRadius) {
+        private TempHumiditySwamp(ResourceLocation swampResource, BufferedImage image, Properties properties, int blendRadius) {
             super(image, properties, blendRadius);
             swampBiome = BiomeAPI.findBiomeByName("Swampland");
             ColorMap tmpMap = loadColorMap(Colorizer.useSwampColors, swampResource, blendRadius);
@@ -262,14 +262,14 @@ abstract class ColorMap {
         }
     }
 
-    private static final class V2 extends ColorMap {
+    private static final class Grid extends ColorMap {
         private final float[] biomeStart = new float[BiomeGenBase.biomeList.length];
         private final float[] biomeWidth = new float[BiomeGenBase.biomeList.length];
 
         private final float yScale;
         private final float yVariance;
 
-        private V2(BufferedImage image, Properties properties, int blendRadius) {
+        private Grid(BufferedImage image, Properties properties, int blendRadius) {
             super(image, properties, blendRadius);
 
             float xScale = (float) width / (float) COLORMAP_WIDTH;

@@ -145,9 +145,9 @@ public class CustomColors extends Mod {
         addClassFile(MCPatcherUtils.COLORIZE_BLOCK_CLASS);
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS);
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$Water");
-        addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$V1");
-        addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$V1Swamp");
-        addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$V2");
+        addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$TempHumidity");
+        addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$TempHumiditySwamp");
+        addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$Grid");
         addClassFile(MCPatcherUtils.LIGHTMAP_CLASS);
 
         BaseTexturePackMod.earlyInitialize(3, MCPatcherUtils.COLORIZER_CLASS, "init");
