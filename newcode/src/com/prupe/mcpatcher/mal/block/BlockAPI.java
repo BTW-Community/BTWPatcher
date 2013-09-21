@@ -223,7 +223,7 @@ abstract public class BlockAPI {
     }
 
     public static String getBlockName(Block block) {
-        return block == null ? "(null)" : block.getShortName().replaceFirst("^tile\\.", "");
+        return block == null ? "(null)" : instance.getBlockName_Impl(block);
     }
 
     public static String getBlockName(Block block, int metadata) {
@@ -273,6 +273,8 @@ abstract public class BlockAPI {
 
     abstract protected Block getBlockByName_Impl(String name);
 
+    abstract protected String getBlockName_Impl(Block block);
+
     BlockAPI() {
     }
 
@@ -296,6 +298,17 @@ abstract public class BlockAPI {
         protected Block getBlockByName_Impl(String name) {
             Integer id = canonicalIdByName.get(name);
             return id == null ? null : getBlockById_Impl(id);
+        }
+
+        @Override
+        protected String getBlockName_Impl(Block block) {
+            int id = block.blockID;
+            for (Map.Entry<String, Integer> entry : canonicalIdByName.entrySet()) {
+                if (id == entry.getValue()) {
+                    return entry.getKey();
+                }
+            }
+            return String.valueOf(id);
         }
     }
 
@@ -347,6 +360,16 @@ abstract public class BlockAPI {
         @Override
         protected Block getBlockByName_Impl(String name) {
             return Block.blockRegistry.get(name);
+        }
+
+        @Override
+        protected String getBlockName_Impl(Block block) {
+            for (String name : Block.blockRegistry.getKeys()) {
+                if (block == Block.blockRegistry.get(name)) {
+                    return name;
+                }
+            }
+            return String.valueOf(Block.blockRegistry.getId(block));
         }
     }
 }

@@ -209,7 +209,7 @@ abstract public class ItemAPI {
     }
 
     public static String getItemName(Item item) {
-        return item == null ? "(null)" : item.getItemName().replaceFirst("^item\\.", "");
+        return item == null ? "(null)" : instance.getItemName_Impl(item);
     }
 
     public static List<Item> getAllItems() {
@@ -233,6 +233,8 @@ abstract public class ItemAPI {
 
     abstract protected Item getItemByName_Impl(String name);
 
+    abstract protected String getItemName_Impl(Item item);
+
     ItemAPI() {
     }
 
@@ -251,6 +253,17 @@ abstract public class ItemAPI {
         protected Item getItemByName_Impl(String name) {
             Integer id = canonicalIdByName.get(name);
             return id == null ? null : getItemById_Impl(id);
+        }
+
+        @Override
+        protected String getItemName_Impl(Item item) {
+            int id = item.itemID;
+            for (Map.Entry<String, Integer> entry : canonicalIdByName.entrySet()) {
+                if (id == entry.getValue()) {
+                    return entry.getKey();
+                }
+            }
+            return String.valueOf(id);
         }
     }
 
@@ -297,6 +310,16 @@ abstract public class ItemAPI {
         @Override
         protected Item getItemByName_Impl(String name) {
             return Item.itemRegistry.get(name);
+        }
+
+        @Override
+        protected String getItemName_Impl(Item item) {
+            for (String name : Item.itemRegistry.getKeys()) {
+                if (item == Item.itemRegistry.get(name)) {
+                    return name;
+                }
+            }
+            return String.valueOf(Item.itemRegistry.getId(item));
         }
     }
 }
