@@ -2879,17 +2879,16 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // tessellator.setColorOpaque_F(f3 * f7, f3 * f7, f3 * f7);
+                        // tessellator.setColorOpaque_F(k * l, k * l, k * l);
+                        // -or-
+                        // tessellator.setColorOpaque_F(k, k, k);
                         ALOAD, tessellatorRegister,
-                        FLOAD, capture(any()),
-                        FLOAD, capture(any()),
-                        FMUL,
-                        FLOAD, backReference(1),
-                        FLOAD, backReference(2),
-                        FMUL,
-                        FLOAD, backReference(1),
-                        FLOAD, backReference(2),
-                        FMUL,
+                        capture(build(
+                            anyFLOAD,
+                            optional(build(anyFLOAD, FMUL))
+                        )),
+                        backReference(1),
+                        backReference(1),
                         reference(INVOKEVIRTUAL, setColorOpaque_F)
                     );
                 }
@@ -2897,21 +2896,15 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // tessellator.setColorOpaque_F(f3 * f7 * f, f3 * f7 * f1, f3 * f7 * f2);
+                        // tessellator.setColorOpaque_F(k * l * r, k * l * g, k * l * b);
                         ALOAD, tessellatorRegister,
-                        FLOAD, getCaptureGroup(1),
-                        FLOAD, getCaptureGroup(2),
-                        FMUL,
+                        getCaptureGroup(1),
                         FLOAD, waterRegisters[0],
                         FMUL,
-                        FLOAD, getCaptureGroup(1),
-                        FLOAD, getCaptureGroup(2),
-                        FMUL,
+                        getCaptureGroup(1),
                         FLOAD, waterRegisters[1],
                         FMUL,
-                        FLOAD, getCaptureGroup(1),
-                        FLOAD, getCaptureGroup(2),
-                        FMUL,
+                        getCaptureGroup(1),
                         FLOAD, waterRegisters[2],
                         FMUL,
                         reference(INVOKEVIRTUAL, setColorOpaque_F)
@@ -3132,23 +3125,22 @@ public class CustomColors extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         // tessellator.setColorOpaque_F(k * l * r, k * l * g, k * l * b);
+                        // -or-
+                        // tessellator.setColorOpaque_F(k * r, k * g, k * b);
                         anyALOAD,
+                        capture(build(
+                            anyFLOAD,
+                            optional(build(anyFLOAD, FMUL))
+                        )),
                         capture(anyFLOAD),
-                        capture(anyFLOAD),
-                        FMUL,
-                        anyFLOAD,
                         FMUL,
 
                         backReference(1),
-                        backReference(2),
-                        FMUL,
-                        anyFLOAD,
+                        capture(anyFLOAD),
                         FMUL,
 
                         backReference(1),
-                        backReference(2),
-                        FMUL,
-                        anyFLOAD,
+                        capture(anyFLOAD),
                         FMUL,
 
                         reference(INVOKEVIRTUAL, setColorOpaque_F)
@@ -3197,13 +3189,11 @@ public class CustomColors extends Mod {
 
                         push(1),
                         push(0),
-                        FLOAD, 7,
-                        FLOAD, 8,
-                        FLOAD, 9,
+                        getCaptureGroup(2),
+                        getCaptureGroup(3),
+                        getCaptureGroup(4),
 
                         getCaptureGroup(1),
-                        getCaptureGroup(2),
-                        FMUL,
                         DUP,
                         DUP,
                         DUP,

@@ -418,8 +418,7 @@ public class ColorizeBlock {
     private static void computeCubeColors(Block block, IBlockAccess blockAccess, ColorMap colorMap, int i, int j, int k, int di, int dj, int dk) {
         int rgb;
         if (true) { // TODO: remove
-            colorizeBlock(block, blockAccess, colorMap, i + di, j + dj, k + dk);
-            rgb = blockColor;
+            rgb = colorMap.getColorMultiplierWithBlending(i + di, j + dj, k + dk);
         } else {
             rgb = 0;
             rgb |= (i + di) % 2 == 0 ? 0 : 0xff0000;
@@ -448,7 +447,7 @@ public class ColorizeBlock {
                                                int i, int j, int k, int face,
                                                boolean useColor, boolean useAO, float r, float g, float b,
                                                float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        if ((!useColor && face != 1) || RenderPassAPI.instance.skipDefaultRendering(block)) {
+        if ((!useColor && (face % 6) != 1) || RenderPassAPI.instance.skipDefaultRendering(block)) {
             return false;
         }
         if (i != lastI || j != lastJ || k != lastK) {
