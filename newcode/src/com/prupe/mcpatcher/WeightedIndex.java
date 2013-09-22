@@ -88,7 +88,7 @@ abstract public class WeightedIndex {
 
     // adapted from CityHash http://code.google.com/p/cityhash/source/browse/trunk/ (MIT license)
     public static long hash128To64(int i, int j, int k, int l) {
-        return hash128To64(((long) i << 32) | (long) j, ((long) k << 32) | (long) l);
+        return hash128To64(((long) i << 32) | ((long) j & 0xffffffffL), ((long) k << 32) | ((long) l & 0xffffffffL));
     }
 
     public static long hash128To64(long a, long b) {
