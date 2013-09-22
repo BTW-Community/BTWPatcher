@@ -466,20 +466,20 @@ public class FancyDial {
     private void readTextureToBuffer(int texture, ByteBuffer buffer) {
         TexturePackAPI.bindTexture(texture);
         buffer.position(0);
-        GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+        GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, MipmapHelper.TEX_FORMAT, MipmapHelper.TEX_DATA_TYPE, buffer);
     }
 
     private void readTextureToBuffer(ByteBuffer buffer) {
         EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer[NUM_SCRATCH_TEXTURES]);
         buffer.position(0);
-        GL11.glReadPixels(x0, y0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+        GL11.glReadPixels(x0, y0, width, height, MipmapHelper.TEX_FORMAT, MipmapHelper.TEX_DATA_TYPE, buffer);
         EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
     }
 
     private void copyBufferToItemsTexture(ByteBuffer buffer) {
         TexturePackAPI.bindTexture(itemsTexture);
         buffer.position(0);
-        GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, x0, y0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+        GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, x0, y0, width, height, MipmapHelper.TEX_FORMAT, MipmapHelper.TEX_DATA_TYPE, buffer);
     }
 
     private static void drawBox() {

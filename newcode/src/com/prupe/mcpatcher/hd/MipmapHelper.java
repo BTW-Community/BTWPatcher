@@ -27,8 +27,8 @@ public class MipmapHelper {
 
     private static final ResourceLocation MIPMAP_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("mipmap.properties");
 
-    private static final int TEX_FORMAT = GL12.GL_BGRA;
-    private static final int TEX_DATA_TYPE = GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
+    static final int TEX_FORMAT = GL12.GL_BGRA;
+    static final int TEX_DATA_TYPE = GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
 
     private static final int MIN_ALPHA = 0x1a;
     private static final int MAX_ALPHA = 0xe5;
