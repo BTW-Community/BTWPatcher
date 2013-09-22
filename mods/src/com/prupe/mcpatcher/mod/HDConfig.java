@@ -45,7 +45,6 @@ public class HDConfig extends ModConfigPanel {
 
     HDConfig(boolean showMipmapping) {
         this.showMipmapping = showMipmapping;
-        mipmapPanel.setVisible(showMipmapping);
 
         fontCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -103,7 +102,6 @@ public class HDConfig extends ModConfigPanel {
                 Config.set(MCPatcherUtils.EXTENDED_HD, TAG_DEBUG_BORDER, debugBorderCheckBox.isSelected());
             }
         });
-        debugBorderCheckBox.setVisible(showMipmapping);
 
         mipmapLevelSpinner.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
@@ -191,6 +189,9 @@ public class HDConfig extends ModConfigPanel {
 
     @Override
     public void load() {
+        mipmapPanel.setVisible(showMipmapping);
+        debugBorderCheckBox.setVisible(showMipmapping);
+
         boolean hdFont = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_FONT, true);
         fontCheckBox.setSelected(hdFont);
         fontWidthCheckBox.setEnabled(hdFont);
@@ -205,6 +206,7 @@ public class HDConfig extends ModConfigPanel {
             anisoSpinner.setValue(Config.getInt(MCPatcherUtils.EXTENDED_HD, TAG_ANISOTROPIC_FILTERING, 1));
             aaSpinner.setValue(Config.getInt(MCPatcherUtils.EXTENDED_HD, TAG_ANTI_ALIASING, 0));
             debugBorderCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_DEBUG_BORDER, false));
+            showAdvancedOption(debugBorderCheckBox);
         }
         gl13CheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_GL13, true));
         scratchTextureCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.EXTENDED_HD, TAG_SCRATCH_TEXTURE, true));
