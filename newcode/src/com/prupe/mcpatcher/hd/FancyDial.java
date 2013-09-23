@@ -108,14 +108,17 @@ public class FancyDial {
             logger.finer("deferring %s update until initialization finishes", icon.getIconName());
             return false;
         }
-        FancyDial instance = instances.get(icon);
-        if (instance == null) {
-            instance = getInstance(icon);
-            if (instance == null) {
-                return false;
-            }
+        int oldFB = GL11.glGetInteger(EXTFramebufferObject.GL_FRAMEBUFFER_BINDING_EXT);
+        if (oldFB != 0) {
+            logger.finer("deferring %s update while non-default framebuffer %d is active", icon.getIconName(), oldFB);
+            return false;
         }
-        return instance.render(itemFrameRenderer);
+        try {
+            FancyDial instance = getInstance(icon);
+            return instance != null && instance.render(itemFrameRenderer);
+        } finally {
+            EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, oldFB);
+        }
     }
 
     static void clearAll() {
@@ -156,14 +159,21 @@ public class FancyDial {
     }
 
     private static FancyDial getInstance(TextureAtlasSprite icon) {
+        FancyDial instance = instances.get(icon);
+        if (instance != null) {
+            return instance;
+        }
         ResourceLocation resource = setupInfo.get(icon);
+        if (resource == null) {
+            return null;
+        }
         Properties properties = TexturePackAPI.getProperties(resource);
         setupInfo.remove(icon);
         if (properties == null) {
             return null;
         }
         try {
-            FancyDial instance = new FancyDial(icon, resource, properties);
+            instance = new FancyDial(icon, resource, properties);
             if (instance.ok) {
                 instances.put(icon, instance);
                 return instance;
@@ -253,7 +263,6 @@ public class FancyDial {
         }
         EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer);
         EXTFramebufferObject.glFramebufferTexture2DEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT, GL11.GL_TEXTURE_2D, texture, 0);
-        EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
         return frameBuffer;
     }
 
@@ -445,7 +454,6 @@ public class FancyDial {
             GL11.glPopMatrix();
         }
 
-        EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
         GL11.glPopAttrib();
 
         GL11.glMatrixMode(GL11.GL_PROJECTION);
@@ -473,7 +481,6 @@ public class FancyDial {
         EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer[NUM_SCRATCH_TEXTURES]);
         buffer.position(0);
         GL11.glReadPixels(x0, y0, width, height, MipmapHelper.TEX_FORMAT, MipmapHelper.TEX_DATA_TYPE, buffer);
-        EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
     }
 
     private void copyBufferToItemsTexture(ByteBuffer buffer) {
