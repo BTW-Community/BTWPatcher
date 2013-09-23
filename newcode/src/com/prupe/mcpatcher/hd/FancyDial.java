@@ -31,10 +31,12 @@ public class FancyDial {
     private static final boolean useScratchTexture = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "useScratchTexture", true);
     private static final int glAttributes;
     private static boolean initialized;
+    private static boolean active;
     private static final int drawList = GL11.glGenLists(1);
 
-    private static final Map<TextureAtlasSprite, ResourceLocation> setupInfo = new WeakHashMap<TextureAtlasSprite, ResourceLocation>();
-    private static final Map<TextureAtlasSprite, FancyDial> instances = new WeakHashMap<TextureAtlasSprite, FancyDial>();
+    private static final Map<TextureAtlasSprite, ResourceLocation> setupInfo = new IdentityHashMap<TextureAtlasSprite, ResourceLocation>();
+    private static final Map<TextureAtlasSprite, FancyDial> instances = new IdentityHashMap<TextureAtlasSprite, FancyDial>();
+    private static int warnCount;
 
     private final TextureAtlasSprite icon;
     private final ResourceLocation resource;
@@ -100,6 +102,7 @@ public class FancyDial {
         if (TexturePackAPI.hasResource(resource)) {
             logger.fine("found custom %s (%s)", name, resource);
             setupInfo.put(icon, resource);
+            active = true;
         }
     }
 
@@ -108,9 +111,15 @@ public class FancyDial {
             logger.finer("deferring %s update until initialization finishes", icon.getIconName());
             return false;
         }
+        if (!active) {
+            return false;
+        }
         int oldFB = GL11.glGetInteger(EXTFramebufferObject.GL_FRAMEBUFFER_BINDING_EXT);
         if (oldFB != 0) {
-            logger.finer("deferring %s update while non-default framebuffer %d is active", icon.getIconName(), oldFB);
+            if (warnCount < 10) {
+                logger.finer("deferring %s update while non-default framebuffer %d is active", icon.getIconName(), oldFB);
+                warnCount++;
+            }
             return false;
         }
         try {
@@ -123,6 +132,10 @@ public class FancyDial {
 
     static void clearAll() {
         logger.finer("FancyDial.clearAll");
+        if (initialized) {
+            active = false;
+            setupInfo.clear();
+        }
         for (FancyDial instance : instances.values()) {
             if (instance != null) {
                 instance.finish();
@@ -159,21 +172,20 @@ public class FancyDial {
     }
 
     private static FancyDial getInstance(TextureAtlasSprite icon) {
-        FancyDial instance = instances.get(icon);
-        if (instance != null) {
-            return instance;
+        if (instances.containsKey(icon)) {
+            return instances.get(icon);
         }
-        ResourceLocation resource = setupInfo.get(icon);
+        ResourceLocation resource = setupInfo.remove(icon);
+        instances.put(icon, null);
         if (resource == null) {
             return null;
         }
         Properties properties = TexturePackAPI.getProperties(resource);
-        setupInfo.remove(icon);
         if (properties == null) {
             return null;
         }
         try {
-            instance = new FancyDial(icon, resource, properties);
+            FancyDial instance = new FancyDial(icon, resource, properties);
             if (instance.ok) {
                 instances.put(icon, instance);
                 return instance;
