@@ -28,4 +28,9 @@ public class MAL {
     public static <T> T newInstance(Class<T> baseClass, String apiName) {
         return newInstance(baseClass, apiName, "$V");
     }
+
+    public static int getVersion(String apiName) {
+        String propertyName = apiName + Config.TAG_MAL_VERSION;
+        return MCPatcherUtils.getIntProperty(MCPatcherUtils.getPatcherProperties(), propertyName, 0);
+    }
 }
