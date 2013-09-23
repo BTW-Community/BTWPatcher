@@ -2926,17 +2926,21 @@ public class CustomColors extends Mod {
             final String[] vertexNames = new String[]{"TopLeft", "BottomLeft", "BottomRight", "TopRight"};
             final String[] colorNames = new String[]{"Red", "Green", "Blue"};
             final FieldRef[] vertexColorFields = new FieldRef[12];
+            final FieldRef[] brightnessFields = new FieldRef[4];
 
             addClassSignature(new BytecodeSignature() {
                 {
                     addXref(1, enableAO);
 
                     int i = 0;
+                    int j = 0;
                     for (String v : vertexNames) {
                         for (String c : colorNames) {
                             vertexColorFields[i] = new FieldRef(getDeobfClass(), "color" + c + v, "F");
                             i++;
                         }
+                        brightnessFields[j] = new FieldRef(getDeobfClass(), "brightness" + v, "I");
+                        j++;
                     }
                 }
 
@@ -2962,7 +2966,7 @@ public class CustomColors extends Mod {
                     addXref(7 * index + 3, vertexColorFields[3 * index + 1]);
                     addXref(7 * index + 4, vertexColorFields[3 * index + 2]);
                     addXref(7 * index + 5, setColorOpaque_F);
-                    // this.brightnessxxx
+                    addXref(7 * index + 6, brightnessFields[index]);
                     // tessellator.setBrightness
                     addXref(7 * index + 8, addVertexWithUV);
 
