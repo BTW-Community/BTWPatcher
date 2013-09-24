@@ -5,6 +5,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
+import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.Block;
@@ -423,16 +424,16 @@ public class ColorizeBlock {
     }
 
     public static boolean setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
-                                               int i, int j, int k, int face, boolean useColor,
+                                               int i, int j, int k, int face,
                                                float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        return setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, useColor, true, topLeft, bottomLeft, bottomRight, topRight);
+        return setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, topLeft, bottomLeft, bottomRight, topRight);
     }
 
     public static void setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                            int i, int j, int k, int face,
                                            float r, float g, float b,
                                            float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        if (!setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, true,
+        if (!setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true,
             topLeft, bottomLeft, bottomRight, topRight)) {
             renderBlocks.colorRedTopLeft = r * topLeft;
             renderBlocks.colorRedBottomLeft = r * bottomLeft;
@@ -453,9 +454,8 @@ public class ColorizeBlock {
 
     private static boolean setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                                int i, int j, int k, int face,
-                                               boolean useColor, boolean useAO,
-                                               float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        if ((!useColor && (face % 6) != 1) || RenderPassAPI.instance.skipDefaultRendering(block)) {
+                                               boolean useAO, float topLeft, float bottomLeft, float bottomRight, float topRight) {
+        if (!RenderBlocksUtils.useColorMultiplier(face)) {
             return false;
         }
         if (i != lastI || j != lastJ || k != lastK) {
@@ -469,7 +469,7 @@ public class ColorizeBlock {
         }
 
         if (useAO) {
-            float aoBase = AO_BASE[face];
+            float aoBase = RenderBlocksUtils.AO_BASE[face % 6];
             topLeft *= aoBase;
             bottomLeft *= aoBase;
             bottomRight *= aoBase;

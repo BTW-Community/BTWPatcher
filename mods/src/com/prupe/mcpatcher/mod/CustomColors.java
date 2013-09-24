@@ -2655,8 +2655,6 @@ public class CustomColors extends Mod {
         private final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
         private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
 
-        private int useColorRegister;
-
         RenderBlocksMod() {
             super(CustomColors.this);
 
@@ -2922,7 +2920,7 @@ public class CustomColors extends Mod {
 
         private void setupBiomeSmoothing() {
             final FieldRef enableAO = new FieldRef(getDeobfClass(), "enableAO", "Z");
-            final MethodRef setupBiomeSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIZFFFF)Z");
+            final MethodRef setupBiomeSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)Z");
             final MethodRef setupBiomeSmoothing2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIZZFFFFFFF)V");
 
             final String[] vertexNames = new String[]{"TopLeft", "BottomLeft", "BottomRight", "TopRight"};
@@ -3007,18 +3005,8 @@ public class CustomColors extends Mod {
                         @Override
                         public String getMatchExpression() {
                             return buildExpression(
-                                push(1),
-                                capture(anyISTORE),
-                                any(0, 50),
-                                push(0),
-                                backReference(1)
+                                push("grass_top")
                             );
-                        }
-
-                        @Override
-                        public boolean afterMatch() {
-                            useColorRegister = extractRegisterNum(getCaptureGroup(1));
-                            return true;
                         }
                     });
                 }
@@ -3112,9 +3100,9 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (useColor && !ColorizeBlock.setupBiomeSmoothing(this, block, this.blockAccess,
-                        //                                                    i, j, k, face, useColor,
-                        //                                                    topLeft, bottomLeft, bottomRight, topRight)) {
+                        // if (!ColorizeBlock.setupBiomeSmoothing(this, block, this.blockAccess,
+                        //                                        i, j, k, face,
+                        //                                        topLeft, bottomLeft, bottomRight, topRight)) {
                         ALOAD_0,
                         ALOAD_1,
                         ALOAD_0,
@@ -3124,7 +3112,6 @@ public class CustomColors extends Mod {
                         ILOAD_3,
                         ILOAD, 4,
                         getCaptureGroup(5),
-                        ILOAD, useColorRegister,
 
                         getCaptureGroup(1),
                         getCaptureGroup(2),
