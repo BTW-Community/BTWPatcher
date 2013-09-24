@@ -3175,7 +3175,7 @@ public class CustomColors extends Mod {
                     }
                     return buildCode(
                         // isSmooth = ColorizeBlock.setupBlockSmoothing(this, block, this,blockAccess,
-                        //                                              i, j, k, face);
+                        //                                              i, j, k, face + 6);
                         // if (!ColorizeBlock.isSmooth) { //
                         ALOAD_0,
                         ALOAD_1,
@@ -3186,6 +3186,8 @@ public class CustomColors extends Mod {
                         ILOAD_3,
                         ILOAD, 4,
                         faceCode,
+                        push(6),
+                        IADD,
 
                         reference(INVOKESTATIC, setupBlockSmoothing1),
                         reference(PUTSTATIC, isSmooth),
