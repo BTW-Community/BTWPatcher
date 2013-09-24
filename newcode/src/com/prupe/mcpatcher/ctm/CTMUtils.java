@@ -12,19 +12,12 @@ public class CTMUtils {
 
     private static final boolean enableStandard = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "standard", true);
     private static final boolean enableNonStandard = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "nonStandard", true);
-    private static final boolean enableGrass = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "grass", false);
     private static final int maxRecursion = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "maxRecursion", 4);
-
-    private static Block grassBlock;
-    private static Block mycelBlock;
-    static Block snowBlock;
-    static Block craftedSnowBlock;
 
     private static final List<ITileOverride> allOverrides = new ArrayList<ITileOverride>();
     private static final Map<Block, List<ITileOverride>> blockOverrides = new IdentityHashMap<Block, List<ITileOverride>>();
     private static final Map<String, List<ITileOverride>> tileOverrides = new HashMap<String, List<ITileOverride>>();
     private static TileLoader tileLoader;
-    private static TileOverrideImpl.BetterGrass betterGrass;
 
     static boolean active;
     static ITileOverride lastOverride;
@@ -42,17 +35,11 @@ public class CTMUtils {
 
             @Override
             public void beforeChange() {
-                grassBlock = BlockAPI.getFixedBlock("minecraft:grass");
-                mycelBlock = BlockAPI.getFixedBlock("minecraft:mycelium");
-                snowBlock = BlockAPI.getFixedBlock("minecraft:snow_layer");
-                craftedSnowBlock = BlockAPI.getFixedBlock("minecraft:snow");
-
                 RenderPassAPI.instance.clear();
                 allOverrides.clear();
                 blockOverrides.clear();
                 tileOverrides.clear();
                 tileLoader = new TileLoader("textures/blocks", true, logger);
-                betterGrass = null;
 
                 if (enableStandard || enableNonStandard) {
                     for (ResourceLocation resource : TexturePackAPI.listResources(TexturePackAPI.MCPATCHER_SUBDIR + "ctm", ".properties", true, false, true)) {
@@ -63,10 +50,6 @@ public class CTMUtils {
 
             @Override
             public void afterChange() {
-                if (enableGrass) {
-                    registerOverride(betterGrass = new TileOverrideImpl.BetterGrass(tileLoader, grassBlock, "grass"));
-                    registerOverride(new TileOverrideImpl.BetterGrass(tileLoader, mycelBlock, "mycel"));
-                }
                 for (ITileOverride override : allOverrides) {
                     override.registerIcons();
                 }
@@ -167,10 +150,6 @@ public class CTMUtils {
         TessellatorUtils.clearDefaultTextureMap(Tessellator.instance);
         lastOverride = null;
         active = false;
-    }
-
-    public static boolean isBetterGrass(IBlockAccess blockAccess, Block block, int i, int j, int k, int face) {
-        return betterGrass != null && betterGrass.isBetterGrass(blockAccess, block, i, j, k, face);
     }
 
     private static boolean checkBlock(RenderBlocks renderBlocks, Block block) {
