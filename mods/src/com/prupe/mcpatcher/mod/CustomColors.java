@@ -3276,6 +3276,62 @@ public class CustomColors extends Mod {
                 .setInsertBefore(true)
                 .targetMethod(renderBlockFluids)
             );
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "smooth biome colors (water part 3)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.renderFaceYNeg(block, (double) i, (double) j + var32, (double) k, ...);
+                        ALOAD_0,
+                        ALOAD_1,
+                        ILOAD_2,
+                        I2D,
+                        ILOAD_3,
+                        I2D,
+                        anyDLOAD,
+                        DADD,
+                        ILOAD, 4,
+                        I2D,
+                        nonGreedy(any(0, 20)),
+                        anyReference(INVOKEVIRTUAL),
+                        anyReference(INVOKEVIRTUAL),
+
+                        // flag = true;
+                        push(1),
+                        anyISTORE
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // if (ColorizeBlock.isSmooth) {
+                        reference(GETSTATIC, isSmooth),
+                        IFEQ, branch("A"),
+
+                        // this.enableAO = true;
+                        ALOAD_0,
+                        push(1),
+                        reference(PUTFIELD, enableAO),
+
+                        // }
+                        label("A"),
+
+                        // ...
+                        getMatch(),
+
+                        // this.enableAO = false;
+                        ALOAD_0,
+                        push(0),
+                        reference(PUTFIELD, enableAO)
+                    );
+                }
+            }.targetMethod(renderBlockFluids));
         }
 
         private void setupBTW() {
