@@ -2920,8 +2920,8 @@ public class CustomColors extends Mod {
 
         private void setupBiomeSmoothing() {
             final FieldRef enableAO = new FieldRef(getDeobfClass(), "enableAO", "Z");
-            final MethodRef setupBiomeSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)Z");
-            final MethodRef setupBiomeSmoothing2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIZZFFFFFFF)V");
+            final MethodRef setupBlockSmoothing = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)Z");
+            final MethodRef setupWaterSmoothing = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupWaterSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)V");
 
             final String[] vertexNames = new String[]{"TopLeft", "BottomLeft", "BottomRight", "TopRight"};
             final String[] colorNames = new String[]{"Red", "Green", "Blue"};
@@ -3093,7 +3093,7 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (!ColorizeBlock.setupBiomeSmoothing(this, block, this.blockAccess,
+                        // if (!ColorizeBlock.setupBlockSmoothing(this, block, this.blockAccess,
                         //                                        i, j, k, face,
                         //                                        topLeft, bottomLeft, bottomRight, topRight)) {
                         ALOAD_0,
@@ -3111,7 +3111,7 @@ public class CustomColors extends Mod {
                         getCaptureGroup(3),
                         getCaptureGroup(4),
 
-                        reference(INVOKESTATIC, setupBiomeSmoothing1),
+                        reference(INVOKESTATIC, setupBlockSmoothing),
                         IFNE, branch("A"),
 
                         // ...
@@ -3203,10 +3203,9 @@ public class CustomColors extends Mod {
                             return null;
                     }
                     return buildCode(
-                        // ColorizeBlock.setupBiomeSmoothing2(this, block, this.blockAccess,
-                        //                                    i, j, k, face + 6,
-                        //                                    useColor, false, r, g, b,
-                        //                                    topLeft, bottomLeft, bottomRight, topRight);
+                        // ColorizeBlock.setupWaterSmoothing(this, block, this.blockAccess,
+                        //                                   i, j, k, face,
+                        //                                   r, g, b, aoMult);
                         ALOAD_0,
                         ALOAD_1,
                         ALOAD_0,
@@ -3216,21 +3215,14 @@ public class CustomColors extends Mod {
                         ILOAD_3,
                         ILOAD, 4,
                         faceCode,
-                        push(6),
-                        IADD,
 
-                        push(1),
-                        push(0),
                         getCaptureGroup(2),
                         getCaptureGroup(3),
                         getCaptureGroup(4),
 
                         getCaptureGroup(1),
-                        DUP,
-                        DUP,
-                        DUP,
 
-                        reference(INVOKESTATIC, setupBiomeSmoothing2)
+                        reference(INVOKESTATIC, setupWaterSmoothing)
                     );
                 }
             }.targetMethod(renderBlockFluids));
@@ -3313,7 +3305,7 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // this.enableAO = true; TODO: check isAmbientOcclusionEnabled()
+                        // this.enableAO = true;
                         ALOAD_0,
                         push(1),
                         reference(PUTFIELD, enableAO),

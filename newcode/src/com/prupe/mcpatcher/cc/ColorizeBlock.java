@@ -6,7 +6,6 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
-import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
@@ -51,8 +50,6 @@ public class ColorizeBlock {
 
     public static int blockColor;
     public static float[] waterColor;
-
-    private static final float[] AO_BASE = new float[]{0.5f, 1.0f, 0.8f, 0.8f, 0.6f, 0.6f};
 
     private static final int[][][] FACE_VERTICES = new int[][][]{
         // bottom face (y=0)
@@ -423,32 +420,34 @@ public class ColorizeBlock {
         return colorMap;
     }
 
-    public static boolean setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
-                                               int i, int j, int k, int face,
-                                               float topLeft, float bottomLeft, float bottomRight, float topRight) {
+    public static boolean setupBlockSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
+                                              int i, int j, int k, int face,
+                                              float topLeft, float bottomLeft, float bottomRight, float topRight) {
         return setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, topLeft, bottomLeft, bottomRight, topRight);
     }
 
-    public static void setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
+    public static void setupWaterSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                            int i, int j, int k, int face,
-                                           float r, float g, float b,
-                                           float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        if (!setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true,
-            topLeft, bottomLeft, bottomRight, topRight)) {
-            renderBlocks.colorRedTopLeft = r * topLeft;
-            renderBlocks.colorRedBottomLeft = r * bottomLeft;
-            renderBlocks.colorRedBottomRight = r * bottomRight;
-            renderBlocks.colorRedTopRight = r * topRight;
+                                           float r, float g, float b, float aoMult) {
+        if (!setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, (face % 6) + 6, true,
+            aoMult, aoMult, aoMult, aoMult)) {
+            float color = r * aoMult;
+            renderBlocks.colorRedTopLeft = color;
+            renderBlocks.colorRedBottomLeft = color;
+            renderBlocks.colorRedBottomRight = color;
+            renderBlocks.colorRedTopRight = color;
 
-            renderBlocks.colorGreenTopLeft = g * topLeft;
-            renderBlocks.colorGreenBottomLeft = g * bottomLeft;
-            renderBlocks.colorGreenBottomRight = g * bottomRight;
-            renderBlocks.colorGreenTopRight = g * topRight;
+            color = g * aoMult;
+            renderBlocks.colorGreenTopLeft = color;
+            renderBlocks.colorGreenBottomLeft = color;
+            renderBlocks.colorGreenBottomRight = color;
+            renderBlocks.colorGreenTopRight = color;
 
-            renderBlocks.colorBlueTopLeft = b * topLeft;
-            renderBlocks.colorBlueBottomLeft = b * bottomLeft;
-            renderBlocks.colorBlueBottomRight = b * bottomRight;
-            renderBlocks.colorBlueTopRight = b * topRight;
+            color = b * aoMult;
+            renderBlocks.colorBlueTopLeft = color;
+            renderBlocks.colorBlueBottomLeft = color;
+            renderBlocks.colorBlueBottomRight = color;
+            renderBlocks.colorBlueTopRight = color;
         }
     }
 
