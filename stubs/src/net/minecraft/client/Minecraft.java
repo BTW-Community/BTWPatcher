@@ -31,6 +31,10 @@ public class Minecraft {
         return null;
     }
 
+    public static boolean isAmbientOcclusionEnabled() {
+        return false;
+    }
+
     public void scheduleTexturePackRefresh() {
     }
 

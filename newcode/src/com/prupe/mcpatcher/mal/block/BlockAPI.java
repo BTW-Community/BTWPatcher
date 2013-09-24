@@ -191,10 +191,9 @@ abstract public class BlockAPI {
     public static Block getFixedBlock(String name) {
         Block block = parseBlockName(name);
         if (block == null) {
-            throw new IllegalArgumentException("unknown block " + name);
-        } else {
-            return block;
+            new IllegalArgumentException("unknown block " + name).printStackTrace();
         }
+        return block;
     }
 
     public static Block parseBlockName(String name) {
