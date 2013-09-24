@@ -3001,14 +3001,7 @@ public class CustomColors extends Mod {
 
             addPatch(new BytecodePatch() {
                 {
-                    addPreMatchSignature(new BytecodeSignature() {
-                        @Override
-                        public String getMatchExpression() {
-                            return buildExpression(
-                                push("grass_top")
-                            );
-                        }
-                    });
+                    addPreMatchSignature(grassTopSignature);
                 }
 
                 @Override

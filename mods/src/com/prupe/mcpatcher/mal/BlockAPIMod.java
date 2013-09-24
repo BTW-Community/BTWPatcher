@@ -135,8 +135,6 @@ public class BlockAPIMod extends Mod {
     }
 
     private class RenderBlocksMod extends BaseMod.RenderBlocksMod {
-        private int useColorRegister;
-
         RenderBlocksMod() {
             super(BlockAPIMod.this);
 
@@ -144,7 +142,6 @@ public class BlockAPIMod extends Mod {
             final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;III)Z");
             final MethodRef isAmbientOcclusionEnabled = new MethodRef("Minecraft", "isAmbientOcclusionEnabled", "()Z");
             final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
-            final MethodRef strEquals = new MethodRef("java/lang/String", "equals", "(Ljava/lang/Object;)Z");
             final MethodRef setupColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "setupColorMultiplier", "(LBlock;LIBlockAccess;IIIZFFF)V");
             final MethodRef useColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(I)Z");
             final MethodRef getColorMultiplierRed = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierRed", "(I)F");
@@ -163,27 +160,6 @@ public class BlockAPIMod extends Mod {
                 .setMethod(renderStandardBlock)
                 .addXref(1, isAmbientOcclusionEnabled)
             );
-
-            final BytecodeSignature grassTopSignature = new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push("grass_top"),
-                        reference(INVOKEVIRTUAL, strEquals),
-                        IFEQ, any(2),
-                        // useColor = false;
-                        push(0),
-                        capture(anyISTORE),
-                        GOTO, any(2)
-                    );
-                }
-
-                @Override
-                public boolean afterMatch() {
-                    useColorRegister = extractRegisterNum(getCaptureGroup(1));
-                    return true;
-                }
-            };
 
             addClassSignature(new BytecodeSignature() {
                 @Override

@@ -997,8 +997,13 @@ public final class BaseMod extends Mod {
         protected final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
         protected final MethodRef shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;IIII)Z");
 
+        protected final com.prupe.mcpatcher.BytecodeSignature grassTopSignature;
+        protected int useColorRegister;
+
         public RenderBlocksMod(Mod mod) {
             super(mod);
+
+            final MethodRef strEquals = new MethodRef("java/lang/String", "equals", "(Ljava/lang/Object;)Z");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -1038,6 +1043,27 @@ public final class BaseMod extends Mod {
 
             addClassSignature(new ConstSignature(0.1875));
             addClassSignature(new ConstSignature(0.01));
+
+            grassTopSignature = new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push("grass_top"),
+                        reference(INVOKEVIRTUAL, strEquals),
+                        IFEQ, any(2),
+                        // useColor = false;
+                        push(0),
+                        capture(anyISTORE),
+                        GOTO, any(2)
+                    );
+                }
+
+                @Override
+                public boolean afterMatch() {
+                    useColorRegister = extractRegisterNum(getCaptureGroup(1));
+                    return true;
+                }
+            };
         }
     }
 
