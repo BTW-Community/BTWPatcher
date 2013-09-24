@@ -2655,6 +2655,8 @@ public class CustomColors extends Mod {
         private final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
         private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
 
+        private int useColorRegister;
+
         RenderBlocksMod() {
             super(CustomColors.this);
 
@@ -2920,8 +2922,8 @@ public class CustomColors extends Mod {
 
         private void setupBiomeSmoothing() {
             final FieldRef enableAO = new FieldRef(getDeobfClass(), "enableAO", "Z");
-            final MethodRef setupBiomeSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing1", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIZZFFFFFFF)Z");
-            final MethodRef setupBiomeSmoothing2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing2", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIZZFFFFFFF)V");
+            final MethodRef setupBiomeSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIZFFFF)Z");
+            final MethodRef setupBiomeSmoothing2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBiomeSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIZZFFFFFFF)V");
 
             final String[] vertexNames = new String[]{"TopLeft", "BottomLeft", "BottomRight", "TopRight"};
             final String[] colorNames = new String[]{"Red", "Green", "Blue"};
@@ -3000,9 +3002,6 @@ public class CustomColors extends Mod {
             }
 
             addPatch(new BytecodePatch() {
-                private int patchCount;
-                private int useColor;
-
                 {
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
@@ -3018,7 +3017,7 @@ public class CustomColors extends Mod {
 
                         @Override
                         public boolean afterMatch() {
-                            useColor = extractRegisterNum(getCaptureGroup(1));
+                            useColorRegister = extractRegisterNum(getCaptureGroup(1));
                             return true;
                         }
                     });
@@ -3026,32 +3025,85 @@ public class CustomColors extends Mod {
 
                 @Override
                 public String getDescription() {
-                    return "smooth biome colors";
+                    return "setup biome smoothing (standard blocks)";
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // this.brightnessxxx = ...; x4
+                        lookBehind(build(
+                            getBrightnessSubExpression(),
+                            getBrightnessSubExpression(),
+                            getBrightnessSubExpression(),
+                            getBrightnessSubExpression()
+                        ), true),
+
+                        // ...
+                        nonGreedy(any(0, 1000)),
+
                         // this.colorRedTopLeft *= topLeft;
-                        getSubExpression(0),
-                        any(0, 80),
+                        getColorSubExpression(0),
+                        getColorSubExpression(1),
+                        getColorSubExpression(2),
                         // this.colorRedBottomLeft *= bottomLeft;
-                        getSubExpression(3),
-                        any(0, 80),
+                        getColorSubExpression(3),
+                        getColorSubExpression(4),
+                        getColorSubExpression(5),
                         // this.colorRedBottomRight *= bottomRight;
-                        getSubExpression(6),
-                        any(0, 80),
-                        // this.colorBlueTopRight *= topRight;
-                        getSubExpression(11)
+                        getColorSubExpression(6),
+                        getColorSubExpression(7),
+                        getColorSubExpression(8),
+                        // this.colorRedTopRight *= topRight;
+                        getColorSubExpression(9),
+                        getColorSubExpression(10),
+                        getColorSubExpression(11),
+
+                        // this.getBlockIcon(block, this.blockAccess, i, j, k, ...);
+                        lookAhead(build(
+                            nonGreedy(any(0, 30)),
+                            ALOAD_0,
+                            ALOAD_1,
+                            ALOAD_0,
+                            reference(GETFIELD, blockAccess),
+                            ILOAD_2,
+                            ILOAD_3,
+                            ILOAD, 4,
+                            capture(any(0, 3)),
+                            anyReference(INVOKEVIRTUAL)
+                        ), true)
                     );
                 }
 
-                private String getSubExpression(int index) {
+                private String getBrightnessSubExpression() {
                     return build(
+                        // this.brightnessxxx = this.getAoBrightness(..., brightness);
+                        ALOAD_0,
+                        ALOAD_0,
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        anyILOAD,
+                        anyReference(INVOKESPECIAL),
+                        or(
+                            build(reference(PUTFIELD, brightnessFields[0])),
+                            build(reference(PUTFIELD, brightnessFields[1])),
+                            build(reference(PUTFIELD, brightnessFields[2])),
+                            build(reference(PUTFIELD, brightnessFields[3]))
+                        )
+                    );
+                }
+
+                private String getColorSubExpression(int index) {
+                    return build(
+                        // this.colorxxxyyy *= yyy;
                         ALOAD_0,
                         DUP,
                         reference(GETFIELD, vertexColorFields[index]),
-                        capture(anyFLOAD),
+                        index % 3 == 0 ? capture(anyFLOAD) : backReference(index / 3 + 1),
                         FMUL,
                         reference(PUTFIELD, vertexColorFields[index])
                     );
@@ -3060,10 +3112,9 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (!ColorizeBlock.setupBiomeSmoothing1(this, block, this.blockAccess,
-                        //                                         i, j, k, face,
-                        //                                         useColor, true, r, g, b,
-                        //                                         topLeft, bottomLeft, bottomRight, topRight)) {
+                        // if (useColor && !ColorizeBlock.setupBiomeSmoothing(this, block, this.blockAccess,
+                        //                                                    i, j, k, face, useColor,
+                        //                                                    topLeft, bottomLeft, bottomRight, topRight)) {
                         ALOAD_0,
                         ALOAD_1,
                         ALOAD_0,
@@ -3072,13 +3123,8 @@ public class CustomColors extends Mod {
                         ILOAD_2,
                         ILOAD_3,
                         ILOAD, 4,
-                        push(patchCount++ % 6),
-
-                        ILOAD, useColor,
-                        push(1),
-                        FLOAD, 5,
-                        FLOAD, 6,
-                        FLOAD, 7,
+                        getCaptureGroup(5),
+                        ILOAD, useColorRegister,
 
                         getCaptureGroup(1),
                         getCaptureGroup(2),

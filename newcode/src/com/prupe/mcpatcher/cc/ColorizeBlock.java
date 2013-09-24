@@ -422,9 +422,38 @@ public class ColorizeBlock {
         return colorMap;
     }
 
-    public static boolean setupBiomeSmoothing1(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
+    public static boolean setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
+                                               int i, int j, int k, int face, boolean useColor,
+                                               float topLeft, float bottomLeft, float bottomRight, float topRight) {
+        return setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, useColor, true, topLeft, bottomLeft, bottomRight, topRight);
+    }
+
+    public static void setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
+                                           int i, int j, int k, int face,
+                                           float r, float g, float b,
+                                           float topLeft, float bottomLeft, float bottomRight, float topRight) {
+        if (!setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, true,
+            topLeft, bottomLeft, bottomRight, topRight)) {
+            renderBlocks.colorRedTopLeft = r * topLeft;
+            renderBlocks.colorRedBottomLeft = r * bottomLeft;
+            renderBlocks.colorRedBottomRight = r * bottomRight;
+            renderBlocks.colorRedTopRight = r * topRight;
+
+            renderBlocks.colorGreenTopLeft = g * topLeft;
+            renderBlocks.colorGreenBottomLeft = g * bottomLeft;
+            renderBlocks.colorGreenBottomRight = g * bottomRight;
+            renderBlocks.colorGreenTopRight = g * topRight;
+
+            renderBlocks.colorBlueTopLeft = b * topLeft;
+            renderBlocks.colorBlueBottomLeft = b * bottomLeft;
+            renderBlocks.colorBlueBottomRight = b * bottomRight;
+            renderBlocks.colorBlueTopRight = b * topRight;
+        }
+    }
+
+    private static boolean setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                                int i, int j, int k, int face,
-                                               boolean useColor, boolean useAO, float r, float g, float b,
+                                               boolean useColor, boolean useAO,
                                                float topLeft, float bottomLeft, float bottomRight, float topRight) {
         if ((!useColor && (face % 6) != 1) || RenderPassAPI.instance.skipDefaultRendering(block)) {
             return false;
@@ -476,28 +505,5 @@ public class ColorizeBlock {
         renderBlocks.colorBlueTopRight = topRight * color[2];
 
         return true;
-    }
-
-    public static void setupBiomeSmoothing2(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
-                                            int i, int j, int k, int face,
-                                            boolean useColor, boolean useAO, float r, float g, float b,
-                                            float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        if (!setupBiomeSmoothing1(renderBlocks, block, blockAccess, i, j, k, face, useColor, useAO, r, g, b,
-            topLeft, bottomLeft, bottomRight, topRight)) {
-            renderBlocks.colorRedTopLeft = r * topLeft;
-            renderBlocks.colorRedBottomLeft = r * bottomLeft;
-            renderBlocks.colorRedBottomRight = r * bottomRight;
-            renderBlocks.colorRedTopRight = r * topRight;
-
-            renderBlocks.colorGreenTopLeft = g * topLeft;
-            renderBlocks.colorGreenBottomLeft = g * bottomLeft;
-            renderBlocks.colorGreenBottomRight = g * bottomRight;
-            renderBlocks.colorGreenTopRight = g * topRight;
-
-            renderBlocks.colorBlueTopLeft = b * topLeft;
-            renderBlocks.colorBlueBottomLeft = b * bottomLeft;
-            renderBlocks.colorBlueBottomRight = b * bottomRight;
-            renderBlocks.colorBlueTopRight = b * topRight;
-        }
     }
 }
