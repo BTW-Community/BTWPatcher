@@ -2995,7 +2995,7 @@ public class CustomColors extends Mod {
                         ), true),
 
                         // ...
-                        nonGreedy(any(0, 1000)),
+                        nonGreedy(any(0, 200)),
 
                         // this.colorRedTopLeft *= topLeft;
                         getColorSubExpression(0),
@@ -3032,16 +3032,10 @@ public class CustomColors extends Mod {
 
                 private String getBrightnessSubExpression() {
                     return build(
-                        // this.brightnessxxx = this.getAoBrightness(..., brightness);
+                        // this.brightnessxxx = this.get/mixAoBrightness(...);
                         ALOAD_0,
                         ALOAD_0,
-                        ALOAD_0,
-                        anyReference(GETFIELD),
-                        ALOAD_0,
-                        anyReference(GETFIELD),
-                        ALOAD_0,
-                        anyReference(GETFIELD),
-                        anyILOAD,
+                        nonGreedy(any(0, 100)),
                         anyReference(INVOKESPECIAL),
                         or(
                             build(reference(PUTFIELD, brightnessFields[0])),
