@@ -20,6 +20,9 @@ import java.util.Properties;
 public class ColorizeBlock {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
+    private static final boolean enableSmoothBiomes = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "smoothBiomes", true);
+    private static final boolean enableTestColorSmoothing = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "testColorSmoothing", false);
+
     private static final ResourceLocation REDSTONE_COLORS = TexturePackAPI.newMCPatcherResourceLocation("colormap/redstone.png");
     private static final ResourceLocation STEM_COLORS = TexturePackAPI.newMCPatcherResourceLocation("colormap/stem.png");
     private static final ResourceLocation PUMPKIN_STEM_COLORS = TexturePackAPI.newMCPatcherResourceLocation("colormap/pumpkinstem.png");
@@ -395,13 +398,13 @@ public class ColorizeBlock {
 
     private static void computeCubeColors(Block block, IBlockAccess blockAccess, ColorMap colorMap, int i, int j, int k, int di, int dj, int dk) {
         int rgb;
-        if (true) { // TODO: remove
-            rgb = colorMap.getColorMultiplierWithBlending(i + di, j + dj, k + dk);
-        } else {
+        if (enableTestColorSmoothing) {
             rgb = 0;
             rgb |= (i + di) % 2 == 0 ? 0 : 0xff0000;
             rgb |= (j + dj) % 2 == 0 ? 0 : 0xff00;
             rgb |= (k + dk) % 2 == 0 ? 0 : 0xff;
+        } else {
+            rgb = colorMap.getColorMultiplierWithBlending(i + di, j + dj, k + dk);
         }
         Colorizer.intToFloat3(rgb, cubeColors[di][dj][dk]);
     }
@@ -424,14 +427,16 @@ public class ColorizeBlock {
     public static boolean setupBlockSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                               int i, int j, int k, int face,
                                               float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        return RenderBlocksUtils.isAmbientOcclusionEnabled() &&
+        return enableSmoothBiomes &&
+            RenderBlocksUtils.isAmbientOcclusionEnabled() &&
             RenderBlocksUtils.useColorMultiplier(face) &&
             setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, false, topLeft, bottomLeft, bottomRight, topRight);
     }
 
     public static boolean setupBlockSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                               int i, int j, int k, int face) {
-        return RenderBlocksUtils.isAmbientOcclusionEnabled() &&
+        return enableSmoothBiomes &&
+            RenderBlocksUtils.isAmbientOcclusionEnabled() &&
             setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
