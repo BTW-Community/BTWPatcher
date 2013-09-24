@@ -3236,7 +3236,7 @@ public class CustomColors extends Mod {
                     return buildExpression(
                         // tessellator.addVertexWithUV(...);
                         capture(anyALOAD),
-                        nonGreedy(any(0, 40)),
+                        nonGreedy(any(0, 20)),
                         reference(INVOKEVIRTUAL, addVertexWithUV)
                     );
                 }
