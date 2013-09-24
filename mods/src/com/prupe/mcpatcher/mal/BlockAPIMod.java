@@ -140,7 +140,7 @@ public class BlockAPIMod extends Mod {
         RenderBlocksMod() {
             super(BlockAPIMod.this);
 
-            final MethodRef hasOverrideBlockTexture = new MethodRef(getDeobfClass(), "hasOverrideBlockTexture", "Z");
+            final MethodRef hasOverrideBlockTexture = new MethodRef(getDeobfClass(), "hasOverrideBlockTexture", "()Z");
             final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;III)Z");
             final MethodRef isAmbientOcclusionEnabled = new MethodRef("Minecraft", "isAmbientOcclusionEnabled", "()Z");
             final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
@@ -173,7 +173,8 @@ public class BlockAPIMod extends Mod {
                         IFEQ, any(2),
                         // useColor = false;
                         push(0),
-                        capture(anyISTORE)
+                        capture(anyISTORE),
+                        GOTO, any(2)
                     );
                 }
 
@@ -183,6 +184,20 @@ public class BlockAPIMod extends Mod {
                     return true;
                 }
             };
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        grassTopSignature.getMatchExpression(),
+                        ALOAD_0,
+                        captureReference(INVOKEVIRTUAL),
+                        IFEQ, any(2),
+                        push(0),
+                        backReference(1)
+                    );
+                }
+            }.addXref(2, hasOverrideBlockTexture));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -200,6 +215,7 @@ public class BlockAPIMod extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // RenderBlocksUtils.setupColorMultiplier(block, this.blockAccess, i, j, k, this.hasOverrideTexture(), r, g, b);
                         ALOAD_1,
                         ALOAD_0,
                         reference(GETFIELD, blockAccess),
@@ -322,7 +338,8 @@ public class BlockAPIMod extends Mod {
                         push(patchCount),
                         reference(INVOKESTATIC, getColorMultiplierGreen),
                         push(patchCount),
-                        reference(INVOKESTATIC, getColorMultiplierBlue)
+                        reference(INVOKESTATIC, getColorMultiplierBlue),
+                        reference(INVOKEVIRTUAL, setColorOpaque_F)
                     );
                     patchCount++;
                     return code;
