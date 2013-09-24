@@ -50,6 +50,7 @@ public class ColorizeBlock {
 
     public static int blockColor;
     public static float[] waterColor;
+    public static boolean isSmooth;
 
     private static final int[][][] FACE_VERTICES = new int[][][]{
         // bottom face (y=0)
@@ -423,50 +424,20 @@ public class ColorizeBlock {
     public static boolean setupBlockSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                               int i, int j, int k, int face,
                                               float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        return RenderBlocksUtils.useColorMultiplier(face) &&
-            setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, topLeft, bottomLeft, bottomRight, topRight);
+        return RenderBlocksUtils.isAmbientOcclusionEnabled() &&
+            RenderBlocksUtils.useColorMultiplier(face) &&
+            setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, false, topLeft, bottomLeft, bottomRight, topRight);
     }
 
     public static boolean setupBlockSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                               int i, int j, int k, int face) {
-        if (RenderBlocksUtils.isAmbientOcclusionEnabled()) {
-            return setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, 1.0f, 1.0f, 1.0f, 1.0f);
-        } else {
-            return false;
-        }
-    }
-
-    public static void setupWaterSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
-                                           int i, int j, int k, int face,
-                                           float r, float g, float b, float aoMult) {
-        if (!setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, (face % 6) + 6, true,
-            aoMult, aoMult, aoMult, aoMult)) {
-            float color = r * aoMult;
-            renderBlocks.colorRedTopLeft = color;
-            renderBlocks.colorRedBottomLeft = color;
-            renderBlocks.colorRedBottomRight = color;
-            renderBlocks.colorRedTopRight = color;
-
-            color = g * aoMult;
-            renderBlocks.colorGreenTopLeft = color;
-            renderBlocks.colorGreenBottomLeft = color;
-            renderBlocks.colorGreenBottomRight = color;
-            renderBlocks.colorGreenTopRight = color;
-
-            color = b * aoMult;
-            renderBlocks.colorBlueTopLeft = color;
-            renderBlocks.colorBlueBottomLeft = color;
-            renderBlocks.colorBlueBottomRight = color;
-            renderBlocks.colorBlueTopRight = color;
-        }
+        return RenderBlocksUtils.isAmbientOcclusionEnabled() &&
+            setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     private static boolean setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                                int i, int j, int k, int face,
                                                boolean useAO, float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        if (!RenderBlocksUtils.isAmbientOcclusionEnabled()) {
-            return false;
-        }
         if (i != lastI || j != lastJ || k != lastK) {
             lastColorMap = computeCubeColors(block, blockAccess, i, j, k);
             lastI = i;

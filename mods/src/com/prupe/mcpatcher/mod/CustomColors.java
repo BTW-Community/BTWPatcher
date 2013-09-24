@@ -2654,6 +2654,8 @@ public class CustomColors extends Mod {
         private final MethodRef renderBlockFluids = new MethodRef(getDeobfClass(), "renderBlockFluids", "(LBlock;III)Z");
         private final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
         private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
+        private final MethodRef setupBlockSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIII)Z");
+        private final MethodRef setupBlockSmoothing2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)Z");
 
         RenderBlocksMod() {
             super(CustomColors.this);
@@ -2665,7 +2667,6 @@ public class CustomColors extends Mod {
             final MethodRef renderBlockFallingSand = new MethodRef(getDeobfClass(), "renderBlockFallingSand", "(LBlock;LWorld;IIII)V");
             final MethodRef renderBlockCauldron = new MethodRef(getDeobfClass(), "renderBlockCauldron", "(LBlockCauldron;III)Z");
             final MethodRef renderBlockRedstoneWire = new MethodRef(getDeobfClass(), "renderBlockRedstoneWire", "(LBlock;III)Z");
-            final MethodRef setupBlockSmoothing = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIII)Z");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -2779,7 +2780,7 @@ public class CustomColors extends Mod {
                         ILOAD, 4,
                         ILOAD, 5,
                         push(patchCount++),
-                        reference(INVOKESTATIC, setupBlockSmoothing),
+                        reference(INVOKESTATIC, setupBlockSmoothing1),
                         IFNE, branch("A"),
 
                         // ...
@@ -2894,8 +2895,7 @@ public class CustomColors extends Mod {
 
         private void setupBiomeSmoothing() {
             final FieldRef enableAO = new FieldRef(getDeobfClass(), "enableAO", "Z");
-            final MethodRef setupBlockSmoothing = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)Z");
-            final MethodRef setupWaterSmoothing = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupWaterSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)V");
+            final FieldRef isSmooth = new FieldRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "isSmooth", "Z");
 
             final String[] vertexNames = new String[]{"TopLeft", "BottomLeft", "BottomRight", "TopRight"};
             final String[] colorNames = new String[]{"Red", "Green", "Blue"};
@@ -2980,7 +2980,7 @@ public class CustomColors extends Mod {
 
                 @Override
                 public String getDescription() {
-                    return "setup biome smoothing (standard blocks)";
+                    return "smooth biome colors (standard blocks)";
                 }
 
                 @Override
@@ -3085,7 +3085,7 @@ public class CustomColors extends Mod {
                         getCaptureGroup(3),
                         getCaptureGroup(4),
 
-                        reference(INVOKESTATIC, setupBlockSmoothing),
+                        reference(INVOKESTATIC, setupBlockSmoothing2),
                         IFNE, branch("A"),
 
                         // ...
@@ -3138,15 +3138,15 @@ public class CustomColors extends Mod {
                             anyFLOAD,
                             optional(build(anyFLOAD, FMUL))
                         )),
-                        capture(anyFLOAD),
+                        anyFLOAD,
                         FMUL,
 
                         backReference(1),
-                        capture(anyFLOAD),
+                        anyFLOAD,
                         FMUL,
 
                         backReference(1),
-                        capture(anyFLOAD),
+                        anyFLOAD,
                         FMUL,
 
                         reference(INVOKEVIRTUAL, setColorOpaque_F)
@@ -3177,9 +3177,9 @@ public class CustomColors extends Mod {
                             return null;
                     }
                     return buildCode(
-                        // ColorizeBlock.setupWaterSmoothing(this, block, this.blockAccess,
-                        //                                   i, j, k, face,
-                        //                                   r, g, b, aoMult);
+                        // isSmooth = ColorizeBlock.setupBlockSmoothing(this, block, this,blockAccess,
+                        //                                              i, j, k, face);
+                        // if (!ColorizeBlock.isSmooth) { //
                         ALOAD_0,
                         ALOAD_1,
                         ALOAD_0,
@@ -3190,13 +3190,17 @@ public class CustomColors extends Mod {
                         ILOAD, 4,
                         faceCode,
 
-                        getCaptureGroup(2),
-                        getCaptureGroup(3),
-                        getCaptureGroup(4),
+                        reference(INVOKESTATIC, setupBlockSmoothing1),
+                        reference(PUTSTATIC, isSmooth),
 
-                        getCaptureGroup(1),
+                        reference(GETSTATIC, isSmooth),
+                        IFNE, branch("A"),
 
-                        reference(INVOKESTATIC, setupWaterSmoothing)
+                        // ...
+                        getMatch(),
+
+                        // }
+                        label("A")
                     );
                 }
             }.targetMethod(renderBlockFluids));
@@ -3222,10 +3226,17 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // if (ColorizeBlock.isSmooth) {
+                        reference(GETSTATIC, isSmooth),
+                        IFEQ, branch("A"),
+
                         // tessellator.setColorOpaque_F(this.colorRedxxx, this.colorGreenxxx, this.colorBluexxx);
                         getCaptureGroup(1),
                         getVertex(patchCount++),
-                        reference(INVOKEVIRTUAL, setColorOpaque_F)
+                        reference(INVOKEVIRTUAL, setColorOpaque_F),
+
+                        // }
+                        label("A")
                     );
                 }
 
@@ -3247,53 +3258,6 @@ public class CustomColors extends Mod {
                 .setInsertBefore(true)
                 .targetMethod(renderBlockFluids)
             );
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "smooth biome colors (water part 3)";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // this.renderFaceYNeg(block, (double) i, (double) j + var32, (double) k, this.getBlockIconFromSide(block, 0));
-                        ALOAD_0,
-                        ALOAD_1,
-                        ILOAD_2,
-                        I2D,
-                        ILOAD_3,
-                        I2D,
-                        anyDLOAD,
-                        DADD,
-                        ILOAD, 4,
-                        I2D,
-                        ALOAD_0,
-                        ALOAD_1,
-                        push(0),
-                        anyReference(INVOKEVIRTUAL),
-                        anyReference(INVOKEVIRTUAL)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // this.enableAO = true;
-                        ALOAD_0,
-                        push(1),
-                        reference(PUTFIELD, enableAO),
-
-                        // ...
-                        getMatch(),
-
-                        // this.enableAO = false;
-                        ALOAD_0,
-                        push(0),
-                        reference(PUTFIELD, enableAO)
-                    );
-                }
-            }.targetMethod(renderBlockFluids));
         }
 
         private void setupBTW() {
