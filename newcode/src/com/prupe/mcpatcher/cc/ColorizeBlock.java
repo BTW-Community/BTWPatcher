@@ -423,7 +423,17 @@ public class ColorizeBlock {
     public static boolean setupBlockSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                               int i, int j, int k, int face,
                                               float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        return setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, topLeft, bottomLeft, bottomRight, topRight);
+        return RenderBlocksUtils.useColorMultiplier(face) &&
+            setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, topLeft, bottomLeft, bottomRight, topRight);
+    }
+
+    public static boolean setupBlockSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
+                                              int i, int j, int k, int face) {
+        if (RenderBlocksUtils.isAmbientOcclusionEnabled()) {
+            return setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, 1.0f, 1.0f, 1.0f, 1.0f);
+        } else {
+            return false;
+        }
     }
 
     public static void setupWaterSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
@@ -454,7 +464,7 @@ public class ColorizeBlock {
     private static boolean setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                                int i, int j, int k, int face,
                                                boolean useAO, float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        if (!RenderBlocksUtils.useColorMultiplier(face)) {
+        if (!RenderBlocksUtils.isAmbientOcclusionEnabled()) {
             return false;
         }
         if (i != lastI || j != lastJ || k != lastK) {

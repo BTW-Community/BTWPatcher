@@ -2665,6 +2665,7 @@ public class CustomColors extends Mod {
             final MethodRef renderBlockFallingSand = new MethodRef(getDeobfClass(), "renderBlockFallingSand", "(LBlock;LWorld;IIII)V");
             final MethodRef renderBlockCauldron = new MethodRef(getDeobfClass(), "renderBlockCauldron", "(LBlockCauldron;III)Z");
             final MethodRef renderBlockRedstoneWire = new MethodRef(getDeobfClass(), "renderBlockRedstoneWire", "(LBlock;III)Z");
+            final MethodRef setupBlockSmoothing = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIII)Z");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -2750,7 +2751,7 @@ public class CustomColors extends Mod {
             );
 
             addPatch(new TessellatorPatch() {
-                private boolean done;
+                private int patchCount;
 
                 @Override
                 public String getDescription() {
@@ -2760,59 +2761,32 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // tessellator.setColorOpaque_F($1 * f5, $1 * f5, $1 * f5);
+                        // tessellator.setColorOpaque_F(...);
                         ALOAD, tessellatorRegister,
-                        capture(anyFLOAD),
-                        capture(anyFLOAD),
-                        FMUL,
-                        backReference(1),
-                        backReference(2),
-                        FMUL,
-                        backReference(1),
-                        backReference(2),
-                        FMUL,
+                        any(0, 20),
                         reference(INVOKEVIRTUAL, setColorOpaque_F)
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    byte[] extraCode;
-                    if (done) {
-                        extraCode = new byte[0];
-                    } else {
-                        done = true;
-                        extraCode = buildCode(
-                            // setColorF(ColorizeBlock.getColorMultiplier(block, i, j, k));
-                            ALOAD_1,
-                            ILOAD_3,
-                            ILOAD, 4,
-                            ILOAD, 5,
-                            reference(INVOKESTATIC, getNewColorMultiplier),
-                            reference(INVOKESTATIC, setColorF)
-                        );
-                    }
                     return buildCode(
-                        extraCode,
+                        // if (!ColorizeBlock.setupBlockSmoothing(this, block, world, i, j, k, face)) {
+                        ALOAD_0,
+                        ALOAD_1,
+                        ALOAD_2,
+                        ILOAD_3,
+                        ILOAD, 4,
+                        ILOAD, 5,
+                        push(patchCount++),
+                        reference(INVOKESTATIC, setupBlockSmoothing),
+                        IFNE, branch("A"),
 
-                        // tessellator.setColorOpaque_F(Colorizer.setColor[0] * f5, Colorizer.setColor[1] * f5, Colorizer.setColor[2] * f5);
-                        ALOAD, tessellatorRegister,
-                        reference(GETSTATIC, setColor),
-                        push(0),
-                        FALOAD,
-                        getCaptureGroup(2),
-                        FMUL,
-                        reference(GETSTATIC, setColor),
-                        push(1),
-                        FALOAD,
-                        getCaptureGroup(2),
-                        FMUL,
-                        reference(GETSTATIC, setColor),
-                        push(2),
-                        FALOAD,
-                        getCaptureGroup(2),
-                        FMUL,
-                        reference(INVOKEVIRTUAL, setColorOpaque_F)
+                        // ...
+                        getMatch(),
+
+                        // }
+                        label("A")
                     );
                 }
             }.targetMethod(renderBlockFallingSand));
