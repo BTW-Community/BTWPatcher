@@ -2986,36 +2986,52 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // this.brightnessxxx = ...; x4
-                        lookBehind(build(
-                            getBrightnessSubExpression(),
-                            getBrightnessSubExpression(),
-                            getBrightnessSubExpression(),
-                            getBrightnessSubExpression()
-                        ), true),
+                        capture(repeat(build(
+                            // this.brightnessxxx = this.get/mixAoBrightness(...); x4
+                            ALOAD_0,
+                            ALOAD_0,
+                            nonGreedy(any(0, 100)),
+                            anyReference(INVOKESPECIAL),
+                            or(
+                                build(reference(PUTFIELD, brightnessFields[0])),
+                                build(reference(PUTFIELD, brightnessFields[1])),
+                                build(reference(PUTFIELD, brightnessFields[2])),
+                                build(reference(PUTFIELD, brightnessFields[3]))
+                            )
+                        ), 4)),
 
-                        // ...
-                        nonGreedy(any(0, 200)),
+                        capture(build(
+                            // ...
+                            nonGreedy(any(0, 200)),
 
-                        // this.colorRedTopLeft *= topLeft;
-                        getColorSubExpression(0),
-                        getColorSubExpression(1),
-                        getColorSubExpression(2),
-                        // this.colorRedBottomLeft *= bottomLeft;
-                        getColorSubExpression(3),
-                        getColorSubExpression(4),
-                        getColorSubExpression(5),
-                        // this.colorRedBottomRight *= bottomRight;
-                        getColorSubExpression(6),
-                        getColorSubExpression(7),
-                        getColorSubExpression(8),
-                        // this.colorRedTopRight *= topRight;
-                        getColorSubExpression(9),
-                        getColorSubExpression(10),
-                        getColorSubExpression(11),
+                            // this.colorRedTopLeft *= topLeft;
+                            // this.colorGreenTopLeft *= topLeft;
+                            // this.colorBlueTopLeft *= topLeft;
+                            getColorSubExpression(0),
+                            getColorSubExpression(1),
+                            getColorSubExpression(2),
 
-                        // this.getBlockIcon(block, this.blockAccess, i, j, k, ...);
+                            // this.colorRedBottomLeft *= bottomLeft;
+                            // ...
+                            getColorSubExpression(3),
+                            getColorSubExpression(4),
+                            getColorSubExpression(5),
+
+                            // this.colorRedBottomRight *= bottomRight;
+                            // ...
+                            getColorSubExpression(6),
+                            getColorSubExpression(7),
+                            getColorSubExpression(8),
+
+                            // this.colorRedTopRight *= topRight;
+                            // ...
+                            getColorSubExpression(9),
+                            getColorSubExpression(10),
+                            getColorSubExpression(11)
+                        )),
+
                         lookAhead(build(
+                            // this.getBlockIcon(block, this.blockAccess, i, j, k, ...);
                             nonGreedy(any(0, 30)),
                             ALOAD_0,
                             ALOAD_1,
@@ -3030,29 +3046,13 @@ public class CustomColors extends Mod {
                     );
                 }
 
-                private String getBrightnessSubExpression() {
-                    return build(
-                        // this.brightnessxxx = this.get/mixAoBrightness(...);
-                        ALOAD_0,
-                        ALOAD_0,
-                        nonGreedy(any(0, 100)),
-                        anyReference(INVOKESPECIAL),
-                        or(
-                            build(reference(PUTFIELD, brightnessFields[0])),
-                            build(reference(PUTFIELD, brightnessFields[1])),
-                            build(reference(PUTFIELD, brightnessFields[2])),
-                            build(reference(PUTFIELD, brightnessFields[3]))
-                        )
-                    );
-                }
-
                 private String getColorSubExpression(int index) {
                     return build(
                         // this.colorxxxyyy *= yyy;
                         ALOAD_0,
                         DUP,
                         reference(GETFIELD, vertexColorFields[index]),
-                        index % 3 == 0 ? capture(anyFLOAD) : backReference(index / 3 + 1),
+                        index % 3 == 0 ? capture(anyFLOAD) : backReference(index / 3 + 3),
                         FMUL,
                         reference(PUTFIELD, vertexColorFields[index])
                     );
@@ -3061,6 +3061,9 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // ...
+                        getCaptureGroup(1),
+
                         // if (!ColorizeBlock.setupBlockSmoothing(this, block, this.blockAccess,
                         //                                        i, j, k, face,
                         //                                        topLeft, bottomLeft, bottomRight, topRight)) {
@@ -3072,18 +3075,18 @@ public class CustomColors extends Mod {
                         ILOAD_2,
                         ILOAD_3,
                         ILOAD, 4,
-                        getCaptureGroup(5),
+                        getCaptureGroup(7),
 
-                        getCaptureGroup(1),
-                        getCaptureGroup(2),
                         getCaptureGroup(3),
                         getCaptureGroup(4),
+                        getCaptureGroup(5),
+                        getCaptureGroup(6),
 
                         reference(INVOKESTATIC, setupBlockSmoothing2),
                         IFNE, branch("A"),
 
                         // ...
-                        getMatch(),
+                        getCaptureGroup(2),
 
                         // }
                         label("A")
