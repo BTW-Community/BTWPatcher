@@ -89,6 +89,7 @@ final public class MCPatcher {
      * -showinternal: show hidden "internal" mods<br>
      * -experimental: load mods considered "experimental"<br>
      * -dumpjson: read contents of .json files and exit<br>
+     * -noproxy: do use system proxy settings<br>
      * -convert15 &lt;path&gt;: convert a texture pack from 1.4 to 1.5<br>
      * -convert16 &lt;path&gt;: convert a texture pack from 1.5 to 1.6<br>
      *
@@ -101,8 +102,7 @@ final public class MCPatcher {
         String profile = null;
         String mcVersion = null;
         boolean dumpJson = false;
-
-        System.setProperty("java.net.useSystemProxies", "true");
+        boolean useSystemProxy = true;
 
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-loglevel") && i + 1 < args.length) {
@@ -142,6 +142,8 @@ final public class MCPatcher {
             } else if (args[i].equals("-dumpjson")) {
                 guiEnabled = false;
                 dumpJson = true;
+            } else if (args[i].equals("-noproxy")) {
+                useSystemProxy = false;
             } else if (args[i].equals("-convert15") && i + 1 < args.length) {
                 i++;
                 try {
@@ -163,6 +165,10 @@ final public class MCPatcher {
                 }
                 System.exit(1);
             }
+        }
+
+        if (useSystemProxy) {
+            System.setProperty("java.net.useSystemProxies", "true");
         }
 
         if (guiEnabled) {
