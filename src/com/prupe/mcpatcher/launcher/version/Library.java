@@ -57,6 +57,7 @@ public class Library {
     public Library(String name, String url) {
         this.name = name;
         this.url = url;
+        rules = null;
     }
 
     public Library(String name) {
@@ -119,6 +120,9 @@ public class Library {
     }
 
     public boolean exclude() {
+        if (rules == null) {
+            return false;
+        }
         boolean allow = rules.isEmpty();
         for (Rule rule : rules) {
             allow = rule.evaluate(allow);
