@@ -9,6 +9,8 @@ import net.minecraft.src.BiomeGenBase;
 import net.minecraft.src.ResourceLocation;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -26,8 +28,8 @@ abstract class ColorMap {
     final int height;
     final float maxX;
     final float maxY;
-    private final int blendRadius;
-    private final float blendScale;
+    private final int[][] blendOffset;
+    private final float[] blendWeight;
 
     private final float[] xy = new float[2];
 
@@ -76,9 +78,36 @@ abstract class ColorMap {
         maxX = width - 1.0f;
         maxY = height - 1.0f;
         mapDefault = MCPatcherUtils.getHexProperty(properties, "defaultColor", getDefaultColor());
-        this.blendRadius = blendRadius;
-        int diameter = 2 * blendRadius + 1;
-        blendScale = 1.0f / (float) (diameter * diameter);
+        List<int[]> blendOffset = new ArrayList<int[]>();
+        List<Float> blendWeight = new ArrayList<Float>();
+        float blendScale = 0.0f;
+        for (int r = 0; r <= blendRadius; r++) {
+            if (r == 0) {
+                blendScale += addSample(blendOffset, blendWeight, 0, 0);
+            } else if (r % 2 == 0) {
+                blendScale += addSample(blendOffset, blendWeight, r, r);
+                blendScale += addSample(blendOffset, blendWeight, -r, r);
+                blendScale += addSample(blendOffset, blendWeight, -r, -r);
+                blendScale += addSample(blendOffset, blendWeight, r, -r);
+            } else {
+                blendScale += addSample(blendOffset, blendWeight, r, 0);
+                blendScale += addSample(blendOffset, blendWeight, 0, r);
+                blendScale += addSample(blendOffset, blendWeight, -r, 0);
+                blendScale += addSample(blendOffset, blendWeight, 0, -r);
+            }
+        }
+        this.blendOffset = blendOffset.toArray(new int[blendOffset.size()][]);
+        this.blendWeight = new float[blendWeight.size()];
+        for (int i = 0; i < blendWeight.size(); i++) {
+            this.blendWeight[i] = blendWeight.get(i) / blendScale;
+        }
+    }
+
+    private static float addSample(List<int[]> blendOffset, List<Float> blendWeight, int di, int dk) {
+        float weight = (float) Math.pow(1.0f + Math.max(Math.abs(di), Math.abs(dk)), -0.5);
+        blendOffset.add(new int[]{di, dk});
+        blendWeight.add(weight);
+        return weight;
     }
 
     int getColorMultiplier(int i, int j, int k) {
@@ -102,18 +131,15 @@ abstract class ColorMap {
         lastBlendResult[0] = 0.0f;
         lastBlendResult[1] = 0.0f;
         lastBlendResult[2] = 0.0f;
-        for (int di = -blendRadius; di <= blendRadius; di++) {
-            for (int dk = -blendRadius; dk <= blendRadius; dk++) {
-                int rgb = getColorMultiplier(i + di, j, k + dk);
-                intToFloat3(rgb, tmpBlendResult);
-                lastBlendResult[0] += tmpBlendResult[0];
-                lastBlendResult[1] += tmpBlendResult[1];
-                lastBlendResult[2] += tmpBlendResult[2];
-            }
+        for (int n = 0; n < blendWeight.length; n++) {
+            int[] offset = blendOffset[n];
+            float weight = blendWeight[n];
+            int rgb = getColorMultiplier(i + offset[0], j, k + offset[1]);
+            intToFloat3(rgb, tmpBlendResult);
+            lastBlendResult[0] += tmpBlendResult[0] * weight;
+            lastBlendResult[1] += tmpBlendResult[1] * weight;
+            lastBlendResult[2] += tmpBlendResult[2] * weight;
         }
-        lastBlendResult[0] *= blendScale;
-        lastBlendResult[1] *= blendScale;
-        lastBlendResult[2] *= blendScale;
         lastBlendI = i;
         lastBlendJ = j;
         lastBlendK = k;
