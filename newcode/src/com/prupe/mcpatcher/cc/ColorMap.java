@@ -28,6 +28,7 @@ abstract class ColorMap {
     final int height;
     final float maxX;
     final float maxY;
+    private final boolean isHeightDependent = isHeightDependent();
     private final int[][] blendOffset;
     private final float[] blendWeight;
 
@@ -145,11 +146,17 @@ abstract class ColorMap {
     }
 
     int getColorMultiplier(BiomeGenBase biome, int i, int j, int k) {
+        if (!isHeightDependent) {
+            j = 64;
+        }
         computeXY(biome, i, j, k, xy);
         return getRGB(xy[0], xy[1]);
     }
 
     int getColorMultiplierWithBlending(int i, int j, int k) {
+        if (!isHeightDependent) {
+            j = 64;
+        }
         float[] f = getColorMultiplierWithBlendingF(i, j, k);
         return Colorizer.float3ToInt(f);
     }
@@ -255,6 +262,8 @@ abstract class ColorMap {
 
     abstract int getDefaultColor();
 
+    abstract boolean isHeightDependent();
+
     abstract void computeXY(BiomeGenBase biome, int i, int j, int k, float[] f);
 
     static final class Water extends ColorMap {
@@ -265,6 +274,11 @@ abstract class ColorMap {
         @Override
         int getDefaultColor() {
             return BiomeAPI.findBiomeByName("Ocean").waterColorMultiplier;
+        }
+
+        @Override
+        boolean isHeightDependent() {
+            return false;
         }
 
         @Override
@@ -285,6 +299,11 @@ abstract class ColorMap {
         @Override
         int getDefaultColor() {
             return getRGB(maxX * 0.5f, maxY * 0.5f);
+        }
+
+        @Override
+        boolean isHeightDependent() {
+            return BiomeAPI.isColorHeightDependent;
         }
 
         @Override
@@ -363,6 +382,11 @@ abstract class ColorMap {
         @Override
         int getDefaultColor() {
             return getRGB(biomeStart[1], getY(64));
+        }
+
+        @Override
+        boolean isHeightDependent() {
+            return true;
         }
 
         @Override

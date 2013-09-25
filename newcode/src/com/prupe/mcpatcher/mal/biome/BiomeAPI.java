@@ -12,6 +12,7 @@ import java.util.BitSet;
 abstract public class BiomeAPI {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
     private static final BiomeAPI instance = MAL.newInstance(BiomeAPI.class, "biome");
+    public static final boolean isColorHeightDependent = instance.isColorHeightDependent();
 
     private static boolean biomesLogged;
 
@@ -123,6 +124,8 @@ abstract public class BiomeAPI {
 
     abstract protected float getTemperaturef_Impl(BiomeGenBase biome, int i, int j, int k);
 
+    abstract protected boolean isColorHeightDependent();
+
     BiomeAPI() {
     }
 
@@ -131,12 +134,22 @@ abstract public class BiomeAPI {
         protected float getTemperaturef_Impl(BiomeGenBase biome, int i, int j, int k) {
             return biome.getTemperaturef();
         }
+
+        @Override
+        protected boolean isColorHeightDependent() {
+            return false;
+        }
     }
 
     final private static class V2 extends BiomeAPI {
         @Override
         protected float getTemperaturef_Impl(BiomeGenBase biome, int i, int j, int k) {
             return biome.getTemperaturef(i, j, k);
+        }
+
+        @Override
+        protected boolean isColorHeightDependent() {
+            return true;
         }
     }
 }
