@@ -84,16 +84,31 @@ abstract class ColorMap {
         for (int r = 0; r <= blendRadius; r++) {
             if (r == 0) {
                 blendScale += addSample(blendOffset, blendWeight, 0, 0);
-            } else if (r % 2 == 0) {
-                blendScale += addSample(blendOffset, blendWeight, r, r);
-                blendScale += addSample(blendOffset, blendWeight, -r, r);
-                blendScale += addSample(blendOffset, blendWeight, -r, -r);
-                blendScale += addSample(blendOffset, blendWeight, r, -r);
             } else {
-                blendScale += addSample(blendOffset, blendWeight, r, 0);
-                blendScale += addSample(blendOffset, blendWeight, 0, r);
-                blendScale += addSample(blendOffset, blendWeight, -r, 0);
-                blendScale += addSample(blendOffset, blendWeight, 0, -r);
+                switch (r % 8) {
+                    case 1:
+                        blendScale += addSamples(blendOffset, blendWeight, r, 0, 1);
+                        break;
+
+                    case 2:
+                        blendScale += addSamples(blendOffset, blendWeight, r, 1, 1);
+                        break;
+
+                    case 3:
+                    case 4:
+                        blendScale += addSamples(blendOffset, blendWeight, r, 1, 2);
+                        break;
+
+                    case 5:
+                    case 6:
+                        blendScale += addSamples(blendOffset, blendWeight, r, 1, 3);
+                        break;
+
+                    case 7:
+                    default:
+                        blendScale += addSamples(blendOffset, blendWeight, r, 2, 3);
+                        break;
+                }
             }
         }
         this.blendOffset = blendOffset.toArray(new int[blendOffset.size()][]);
@@ -108,6 +123,21 @@ abstract class ColorMap {
         blendOffset.add(new int[]{di, dk});
         blendWeight.add(weight);
         return weight;
+    }
+
+    private static float addSamples(List<int[]> blendOffset, List<Float> blendWeight, int r, int num, int denom) {
+        int s = num * r / denom;
+        float sum = 0.0f;
+        if (r % 2 == 0) {
+            r ^= s;
+            s ^= r;
+            r ^= s;
+        }
+        sum += addSample(blendOffset, blendWeight, r, s);
+        sum += addSample(blendOffset, blendWeight, -s, r);
+        sum += addSample(blendOffset, blendWeight, -r, -s);
+        sum += addSample(blendOffset, blendWeight, s, -r);
+        return sum;
     }
 
     int getColorMultiplier(int i, int j, int k) {
