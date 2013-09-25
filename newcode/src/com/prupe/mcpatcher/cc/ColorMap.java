@@ -362,7 +362,7 @@ abstract class ColorMap {
 
         @Override
         int getDefaultColor() {
-            return getRGB(1.0f, 64.0f);
+            return getRGB(biomeStart[1], getY(64));
         }
 
         @Override
@@ -381,8 +381,12 @@ abstract class ColorMap {
             return x;
         }
 
+        private float getY(int j) {
+            return (float) (255 - j) * yScale;
+        }
+
         private float getY(BiomeGenBase biome, int i, int j, int k) {
-            float y = (float) (255 - j) * yScale;
+            float y = getY(j);
             if (yVariance != 0.0f) {
                 y += yVariance * noiseMinus1to1(k, -j, i, ~biome.biomeID);
             }
