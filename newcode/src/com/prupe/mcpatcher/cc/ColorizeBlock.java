@@ -1,9 +1,6 @@
 package com.prupe.mcpatcher.cc;
 
-import com.prupe.mcpatcher.Config;
-import com.prupe.mcpatcher.MCLogger;
-import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
 import net.minecraft.client.Minecraft;
@@ -427,17 +424,19 @@ public class ColorizeBlock {
     public static boolean setupBlockSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                               int i, int j, int k, int face,
                                               float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        return enableSmoothBiomes &&
-            RenderBlocksUtils.isAmbientOcclusionEnabled() &&
+        return checkBiomeSmoothing(block) &&
             RenderBlocksUtils.useColorMultiplier(face) &&
-            setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, false, topLeft, bottomLeft, bottomRight, topRight);
+            setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, topLeft, bottomLeft, bottomRight, topRight);
     }
 
     public static boolean setupBlockSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                               int i, int j, int k, int face) {
-        return enableSmoothBiomes &&
-            RenderBlocksUtils.isAmbientOcclusionEnabled() &&
+        return checkBiomeSmoothing(block) &&
             setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, 1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
+    private static boolean checkBiomeSmoothing(Block block) {
+        return enableSmoothBiomes && RenderBlocksUtils.isAmbientOcclusionEnabled() && BlockAPI.getBlockLightValue(block) == 0;
     }
 
     private static boolean setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,

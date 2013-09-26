@@ -95,8 +95,7 @@ abstract public class BiomeAPI {
         return getRainfall(getBiomeGenAt(i, j, k), i, j, k);
     }
 
-    public static int getWaterColorMultiplier(int i, int j, int k) {
-        BiomeGenBase biome = getBiomeGenAt(i, j, k);
+    public static int getWaterColorMultiplier(BiomeGenBase biome) {
         if (getWaterColorMultiplier != null) {
             try {
                 return (Integer) getWaterColorMultiplier.invoke(biome);
@@ -105,7 +104,7 @@ abstract public class BiomeAPI {
                 getWaterColorMultiplier = null;
             }
         }
-        return biome.waterColorMultiplier;
+        return biome == null ? 0xffffff : biome.waterColorMultiplier;
     }
 
     private static void logBiomes() {

@@ -59,11 +59,13 @@ abstract class ColorMap {
         }
         int format = MCPatcherUtils.getIntProperty(properties, "format", 1);
         if (format <= 1) {
-            if (swampResource == null) {
-                return new TempHumiditySwamp(swampResource, image, properties, blendRadius);
-            } else {
-                return new TempHumidity(image, properties, blendRadius);
+            if (TexturePackAPI.hasResource(swampResource)) {
+                ColorMap swampMap = loadColorMap(Colorizer.useSwampColors, swampResource, blendRadius);
+                if (swampMap != null) {
+                    return new TempHumiditySwamp(swampMap, image, properties, blendRadius);
+                }
             }
+            return new TempHumidity(image, properties, blendRadius);
         } else if (format == 2) {
             return new Grid(image, properties, blendRadius);
         } else {
@@ -141,7 +143,7 @@ abstract class ColorMap {
         return sum;
     }
 
-    int getColorMultiplier(int i, int j, int k) {
+    final int getColorMultiplier(int i, int j, int k) {
         return getColorMultiplier(BiomeAPI.getBiomeGenAt(i, j, k), i, j, k);
     }
 
@@ -273,7 +275,7 @@ abstract class ColorMap {
 
         @Override
         int getDefaultColor() {
-            return BiomeAPI.findBiomeByName("Ocean").waterColorMultiplier;
+            return BiomeAPI.getWaterColorMultiplier(BiomeAPI.findBiomeByName("Ocean"));
         }
 
         @Override
@@ -286,8 +288,8 @@ abstract class ColorMap {
         }
 
         @Override
-        int getColorMultiplier(int i, int j, int k) {
-            return BiomeAPI.getWaterColorMultiplier(i, j, k);
+        int getColorMultiplier(BiomeGenBase biome, int i, int j, int k) {
+            return BiomeAPI.getWaterColorMultiplier(biome);
         }
     }
 
@@ -319,20 +321,18 @@ abstract class ColorMap {
         private final ColorMap swampMap;
         private final BiomeGenBase swampBiome;
 
-        private TempHumiditySwamp(ResourceLocation swampResource, BufferedImage image, Properties properties, int blendRadius) {
+        private TempHumiditySwamp(ColorMap swampMap, BufferedImage image, Properties properties, int blendRadius) {
             super(image, properties, blendRadius);
             swampBiome = BiomeAPI.findBiomeByName("Swampland");
-            ColorMap tmpMap = loadColorMap(Colorizer.useSwampColors, swampResource, blendRadius);
-            swampMap = tmpMap == null ? this : tmpMap;
+            this.swampMap = swampMap;
         }
 
         @Override
-        int getColorMultiplier(int i, int j, int k) {
-            BiomeGenBase biome = BiomeAPI.getBiomeGenAt(i, j, k);
+        int getColorMultiplier(BiomeGenBase biome, int i, int j, int k) {
             if (biome == swampBiome) {
                 return swampMap.getColorMultiplier(biome, i, j, k);
             } else {
-                return getColorMultiplier(biome, i, j, k);
+                return super.getColorMultiplier(biome, i, j, k);
             }
         }
     }
