@@ -1079,10 +1079,12 @@ public final class BaseMod extends Mod {
         public TextureUtilMod(Mod mod) {
             super(mod);
 
-            addClassSignature(new ConstSignature(glTexSubImage2D));
-            addClassSignature(new ConstSignature(glTexParameteri));
-            addClassSignature(new ConstSignature(glTexParameterf));
             addClassSignature(new ConstSignature(glTexImage2D));
+            addClassSignature(new ConstSignature(glTexSubImage2D));
+            addClassSignature(new OrSignature(
+                new ConstSignature(glTexParameteri),
+                new ConstSignature(glTexParameterf)
+            ));
         }
     }
 
