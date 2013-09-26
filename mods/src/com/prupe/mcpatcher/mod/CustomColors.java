@@ -77,6 +77,7 @@ public class CustomColors extends Mod {
 
         addClassMod(new BlockMod());
         addClassMod(new BlockFluidMod());
+        addClassMod(new BlockGrassMod());
         addClassMod(new BlockLeavesMod());
         addClassMod(new BlockLeavesBaseMod());
         addClassMod(new BlockLilyPadMod());
@@ -470,6 +471,19 @@ public class CustomColors extends Mod {
                 .setMethod(colorMultiplier)
                 .addXref(1, waterColorMultiplier)
             );
+
+            addBlockColorPatch(this);
+        }
+    }
+
+    private class BlockGrassMod extends ClassMod {
+        BlockGrassMod() {
+            setParentClass("Block");
+
+            addClassSignature(new ConstSignature("_side"));
+            addClassSignature(new ConstSignature("_top"));
+            addClassSignature(new ConstSignature("_side_snowed"));
+            addClassSignature(new ConstSignature("_side_overlay"));
 
             addBlockColorPatch(this);
         }
