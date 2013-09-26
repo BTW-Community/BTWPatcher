@@ -264,6 +264,10 @@ abstract public class BlockAPI {
         return name == null ? null : name.indexOf(':') >= 0 ? name : "minecraft:" + name;
     }
 
+    public static int getBlockLightValue(Block block) {
+        return instance.getBlockLightValue_Impl(block);
+    }
+
     abstract protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k);
 
     abstract protected Iterator<Block> iterator_Impl();
@@ -273,6 +277,8 @@ abstract public class BlockAPI {
     abstract protected Block getBlockByName_Impl(String name);
 
     abstract protected String getBlockName_Impl(Block block);
+
+    abstract protected int getBlockLightValue_Impl(Block block);
 
     BlockAPI() {
     }
@@ -308,6 +314,11 @@ abstract public class BlockAPI {
                 }
             }
             return String.valueOf(id);
+        }
+
+        @Override
+        protected int getBlockLightValue_Impl(Block block) {
+            return Block.lightValue[block.blockID];
         }
     }
 
@@ -369,6 +380,11 @@ abstract public class BlockAPI {
                 }
             }
             return String.valueOf(Block.blockRegistry.getId(block));
+        }
+
+        @Override
+        protected int getBlockLightValue_Impl(Block block) {
+            return block.getLightValue();
         }
     }
 }

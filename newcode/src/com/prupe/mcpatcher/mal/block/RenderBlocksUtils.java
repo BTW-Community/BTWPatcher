@@ -56,12 +56,14 @@ public class RenderBlocksUtils {
             useColorMultiplier[4] = true;
             useColorMultiplier[5] = true;
         }
-        setupColorMultiplier(0, r, g, b);
-        setupColorMultiplier(1, r, g, b);
-        setupColorMultiplier(2, r, g, b);
-        setupColorMultiplier(3, r, g, b);
-        setupColorMultiplier(4, r, g, b);
-        setupColorMultiplier(5, r, g, b);
+        if (!isAmbientOcclusionEnabled() || BlockAPI.getBlockLightValue(block) != 0) {
+            setupColorMultiplier(0, r, g, b);
+            setupColorMultiplier(1, r, g, b);
+            setupColorMultiplier(2, r, g, b);
+            setupColorMultiplier(3, r, g, b);
+            setupColorMultiplier(4, r, g, b);
+            setupColorMultiplier(5, r, g, b);
+        }
     }
 
     private static void setupColorMultiplier(int face, float r, float g, float b) {

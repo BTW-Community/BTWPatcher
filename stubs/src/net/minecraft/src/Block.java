@@ -3,7 +3,9 @@ package net.minecraft.src;
 public class Block {
     public static Registry<Block> blockRegistry; // 13w36a+
 
-    public static Block blocksList[]; // pre-13w36a
+    // pre-13w36a
+    public static Block[] blocksList;
+    public static int[] lightValue;
 
     public int blockID;
     public Material blockMaterial;
@@ -50,5 +52,10 @@ public class Block {
 
     public int colorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
         return 0xffffff;
+    }
+
+    // 13w36a+
+    public int getLightValue() {
+        return 0;
     }
 }

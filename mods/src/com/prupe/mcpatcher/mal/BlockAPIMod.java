@@ -142,6 +142,8 @@ public class BlockAPIMod extends Mod {
             final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;III)Z");
             final MethodRef isAmbientOcclusionEnabled = new MethodRef("Minecraft", "isAmbientOcclusionEnabled", "()Z");
             final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
+            final FieldRef lightValue = new FieldRef("Block", "lightValue", "[I");
+            final MethodRef getLightValue = new MethodRef("Block", "getLightValue", "()I");
             final MethodRef setupColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "setupColorMultiplier", "(LBlock;LIBlockAccess;IIIZFFF)V");
             final MethodRef useColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(I)Z");
             final MethodRef getColorMultiplierRed = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierRed", "(I)F");
@@ -152,8 +154,31 @@ public class BlockAPIMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // Minecraft.isAmbientOcclusionEnabled() && ... == 0
                         captureReference(INVOKESTATIC),
-                        IFEQ, any(2)
+                        IFEQ, any(2),
+                        malVersion == 1 ? getSubExpression1() : getSubExpression2(),
+                        IFEQ_or_IFNE, any(2)
+                    );
+                }
+
+                private String getSubExpression1() {
+                    addXref(2, lightValue);
+                    return build(
+                        // 1.6: Block.lightValue[block.blockId]
+                        captureReference(GETSTATIC),
+                        ALOAD_1,
+                        anyReference(GETFIELD),
+                        IALOAD
+                    );
+                }
+
+                private String getSubExpression2() {
+                    addXref(2, getLightValue);
+                    return build(
+                        // 1.7: block.getLightValue()
+                        ALOAD_1,
+                        captureReference(INVOKEVIRTUAL)
                     );
                 }
             }
