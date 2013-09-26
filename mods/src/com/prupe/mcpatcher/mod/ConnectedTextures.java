@@ -205,6 +205,7 @@ public class ConnectedTextures extends Mod {
                 }
             }.setMethod(getShortName));
 
+            addPatch(new MakeMemberPublicPatch(blockMaterial));
             addPatch(new MakeMemberPublicPatch(getShortName));
         }
     }
