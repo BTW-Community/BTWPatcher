@@ -1319,11 +1319,16 @@ public class CustomColors extends Mod {
 
     private class EntityMod extends ClassMod {
         EntityMod() {
-            addClassSignature(new ConstSignature("tilecrack_"));
-            addClassSignature(new OrSignature(
-                new ConstSignature("random.splash"),
-                new ConstSignature("liquid.splash") // 12w38a+
-            ));
+            if (getMinecraftVersion().compareTo("13w39a") < 0) {
+                addClassSignature(new ConstSignature("tilecrack_"));
+                addClassSignature(new OrSignature(
+                    new ConstSignature("random.splash"),
+                    new ConstSignature("liquid.splash") // 12w38a+
+                ));
+            } else {
+                addClassSignature(new ConstSignature(1.8f));
+                addClassSignature(new ConstSignature("blockcrack_"));
+            }
 
             addClassSignature(new BytecodeSignature() {
                 @Override

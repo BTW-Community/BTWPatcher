@@ -321,8 +321,8 @@ public final class BaseMod extends Mod {
             haveGetInstance = getMinecraftVersion().compareTo("1.3") >= 0;
 
             if (getMinecraftVersion().compareTo("13w16a") >= 0) {
-                addClassSignature(new ConstSignature("Minecraft-Client"));
                 addClassSignature(new ConstSignature("textures/gui/title/mojang.png"));
+                addClassSignature(new ConstSignature("crash-reports"));
             } else {
                 addClassSignature(new FilenameSignature("net/minecraft/client/Minecraft.class"));
             }
@@ -1073,16 +1073,16 @@ public final class BaseMod extends Mod {
     public static class TextureUtilMod extends com.prupe.mcpatcher.ClassMod {
         protected final MethodRef glTexSubImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
         protected final MethodRef glTexParameteri = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexParameteri", "(III)V");
+        protected final MethodRef glTexParameterf = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexParameterf", "(IIF)V");
         protected final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
-        protected final MethodRef glGenTextures = new MethodRef(MCPatcherUtils.GL11_CLASS, "glGenTextures", "()I");
 
         public TextureUtilMod(Mod mod) {
             super(mod);
 
             addClassSignature(new ConstSignature(glTexSubImage2D));
             addClassSignature(new ConstSignature(glTexParameteri));
+            addClassSignature(new ConstSignature(glTexParameterf));
             addClassSignature(new ConstSignature(glTexImage2D));
-            addClassSignature(new ConstSignature(glGenTextures));
         }
     }
 
