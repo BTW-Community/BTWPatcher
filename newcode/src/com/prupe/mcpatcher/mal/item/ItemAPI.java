@@ -276,7 +276,7 @@ abstract public class ItemAPI {
                     ps = new PrintStream(outputFile);
                     String[] nameList = new String[32000];
                     for (String name17 : Item.itemRegistry.getKeys()) {
-                        Item item = Item.itemRegistry.get(name17);
+                        Item item = Item.itemRegistry.getValue(name17);
                         if (item != null) {
                             int id = Item.itemRegistry.getId(item);
                             if (id >= 256 && id < nameList.length) {
@@ -309,13 +309,13 @@ abstract public class ItemAPI {
 
         @Override
         protected Item getItemByName_Impl(String name) {
-            return Item.itemRegistry.get(name);
+            return Item.itemRegistry.getValue(name);
         }
 
         @Override
         protected String getItemName_Impl(Item item) {
             for (String name : Item.itemRegistry.getKeys()) {
-                if (item == Item.itemRegistry.get(name)) {
+                if (item == Item.itemRegistry.getValue(name)) {
                     return name;
                 }
             }

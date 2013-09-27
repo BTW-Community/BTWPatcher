@@ -331,7 +331,7 @@ abstract public class BlockAPI {
                     ps = new PrintStream(outputFile);
                     String[] nameList = new String[4096];
                     for (String name17 : Block.blockRegistry.getKeys()) {
-                        Block block = Block.blockRegistry.get(name17);
+                        Block block = Block.blockRegistry.getValue(name17);
                         if (block != null) {
                             int id = Block.blockRegistry.getId(block);
                             if (id >= 0 && id < nameList.length) {
@@ -369,13 +369,13 @@ abstract public class BlockAPI {
 
         @Override
         protected Block getBlockByName_Impl(String name) {
-            return Block.blockRegistry.get(name);
+            return Block.blockRegistry.getValue(name);
         }
 
         @Override
         protected String getBlockName_Impl(Block block) {
             for (String name : Block.blockRegistry.getKeys()) {
-                if (block == Block.blockRegistry.get(name)) {
+                if (block == Block.blockRegistry.getValue(name)) {
                     return name;
                 }
             }

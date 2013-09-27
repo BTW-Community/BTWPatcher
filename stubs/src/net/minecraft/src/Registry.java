@@ -7,8 +7,9 @@ public class Registry<T> extends RegistryBase<String, T> implements RegistryIter
     public void register(int id, String name, T object) {
     }
 
-    public String getFullName(String name) {
-        return name;
+    // 13w39b
+    public String getKey(T object) {
+        return null;
     }
 
     public int getId(T object) {
@@ -17,6 +18,11 @@ public class Registry<T> extends RegistryBase<String, T> implements RegistryIter
 
     public T getById(int id) {
         return null;
+    }
+
+    // 13w39b
+    public boolean containsId(int id) {
+        return false;
     }
 
     // 13w38a
@@ -29,5 +35,9 @@ public class Registry<T> extends RegistryBase<String, T> implements RegistryIter
     @Override
     public Iterator<T> iterator() {
         return null;
+    }
+
+    public static String getFullName(String name) {
+        return name;
     }
 }

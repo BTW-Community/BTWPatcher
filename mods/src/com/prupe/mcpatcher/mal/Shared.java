@@ -12,7 +12,7 @@ class Shared {
 
             addClassSignature(new InterfaceSignature(
                 new MethodRef(getDeobfClass(), "<init>", "()V"),
-                new MethodRef(getDeobfClass(), "newHashMap", "()Ljava/util/HashMap;"),
+                new MethodRef(getDeobfClass(), "newMap", "()Ljava/util/Map;"),
                 new MethodRef(getDeobfClass(), "get", "(Ljava/lang/Object;)Ljava/lang/Object;"),
                 new MethodRef(getDeobfClass(), "put", "(Ljava/lang/Object;Ljava/lang/Object;)V"),
                 new MethodRef(getDeobfClass(), "getKeys", "()Ljava/util/Set;"),
@@ -44,12 +44,15 @@ class Shared {
             addClassSignature(new InterfaceSignature(
                 new MethodRef(getDeobfClass(), "<init>", "()V"),
                 new MethodRef(getDeobfClass(), "register", "(ILjava/lang/String;Ljava/lang/Object;)V"),
-                getFullName,
-                new MethodRef(getDeobfClass(), "get", "(Ljava/lang/String;)Ljava/lang/Object;"),
+                new MethodRef(getDeobfClass(), "newMap", "Ljava/util/Map;"),
+                new MethodRef(getDeobfClass(), "getValue", "(Ljava/lang/String;)Ljava/lang/Object;"),
+                new MethodRef(getDeobfClass(), "getKey", "(Ljava/lang/Object;)Ljava/lang/String;"),
                 new MethodRef(getDeobfClass(), "containsKey", "(Ljava/lang/String;)Z"),
                 new MethodRef(getDeobfClass(), "getId", "(Ljava/lang/Object;)I"),
                 new MethodRef(getDeobfClass(), "getById", "(I)Ljava/lang/Object;"),
-                new MethodRef(getDeobfClass(), "iterator", "()Ljava/util/Iterator;")
+                new MethodRef(getDeobfClass(), "iterator", "()Ljava/util/Iterator;"),
+                new MethodRef(getDeobfClass(), "containsId", "(I)Z"),
+                getFullName
             ).setInterfaceOnly(false));
         }
     }
