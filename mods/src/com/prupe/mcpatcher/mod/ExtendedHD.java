@@ -67,6 +67,7 @@ public class ExtendedHD extends Mod {
         }
         addClassFile(MCPatcherUtils.FANCY_DIAL_CLASS);
         addClassFile(MCPatcherUtils.FANCY_DIAL_CLASS + "$Layer");
+        addClassFile(MCPatcherUtils.FANCY_DIAL_CLASS + "$FBO");
 
         if (!haveMipmapping) {
             getClassMap().addInheritance("TextureAtlasSprite", MCPatcherUtils.BORDERED_TEXTURE_CLASS);
