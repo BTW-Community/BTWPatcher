@@ -28,9 +28,6 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new MinecraftMod());
         addClassMod(new TextureManagerMod());
         addClassMod(new BaseMod.TextureUtilMod(this));
-        //addClassMod(new ResourcePackRepositoryMod());
-        //addClassMod(new BaseMod.ITexturePackMod(this));
-        //addClassMod(new BaseMod.TextureObjectMod(this));
         addClassMod(new AbstractTextureMod());
         addClassMod(new BaseMod.SimpleTextureMod(this));
         addClassMod(new BaseMod.IconMod(this));
@@ -245,62 +242,6 @@ public class BaseTexturePackMod extends Mod {
                     );
                 }
             });
-        }
-    }
-
-    private class ResourcePackRepositoryMod extends ClassMod {
-        ResourcePackRepositoryMod() {
-            final FieldRef selectedTexturePack = new FieldRef(getDeobfClass(), "selectedTexturePack", "LITexturePack;");
-            final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
-            final MethodRef getSelectedTexturePack = new MethodRef(getDeobfClass(), "getSelectedTexturePack", "()LITexturePack;");
-            final MethodRef setTexturePack = new MethodRef(getDeobfClass(), "setTexturePack", "(LITexturePack;)Z");
-            final MethodRef updateAvailableTexturePacks = new MethodRef(getDeobfClass(), "updateAvailableTexturePacks", "()V");
-            final MethodRef onDownloadFinished = new MethodRef(getDeobfClass(), "onDownloadFinished", "()V");
-            final MethodRef scheduleTexturePackRefresh = new MethodRef("Minecraft", "scheduleTexturePackRefresh", "()V");
-
-            addClassSignature(new ConstSignature(".zip"));
-            addClassSignature(new ConstSignature("texturepacks"));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        ALOAD_1,
-                        reference(INVOKEINTERFACE, new InterfaceMethodRef("java/util/List", "removeAll", "(Ljava/util/Collection;)Z")),
-                        POP
-                    );
-                }
-            }.setMethod(updateAvailableTexturePacks));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        captureReference(INVOKEVIRTUAL)
-                    );
-                }
-            }
-                .setMethod(onDownloadFinished)
-                .addXref(1, mc)
-                .addXref(2, scheduleTexturePackRefresh)
-            );
-
-            addMemberMapper(new MethodMapper(setTexturePack));
-
-            addMemberMapper(new FieldMapper(selectedTexturePack)
-                .accessFlag(AccessFlag.PRIVATE, true)
-                .accessFlag(AccessFlag.STATIC, false)
-                .accessFlag(AccessFlag.FINAL, false)
-            );
-
-            addMemberMapper(new MethodMapper(getSelectedTexturePack)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
-            );
         }
     }
 
