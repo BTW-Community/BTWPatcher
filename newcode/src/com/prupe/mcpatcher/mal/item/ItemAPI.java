@@ -314,12 +314,8 @@ abstract public class ItemAPI {
 
         @Override
         protected String getItemName_Impl(Item item) {
-            for (String name : Item.itemRegistry.getKeys()) {
-                if (item == Item.itemRegistry.getValue(name)) {
-                    return name;
-                }
-            }
-            return String.valueOf(Item.itemRegistry.getId(item));
+            String name = Item.itemRegistry.getKey(item);
+            return name == null ? String.valueOf(Item.itemRegistry.getId(item)) : name;
         }
     }
 }

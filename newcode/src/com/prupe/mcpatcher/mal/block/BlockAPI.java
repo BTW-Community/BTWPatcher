@@ -374,12 +374,8 @@ abstract public class BlockAPI {
 
         @Override
         protected String getBlockName_Impl(Block block) {
-            for (String name : Block.blockRegistry.getKeys()) {
-                if (block == Block.blockRegistry.getValue(name)) {
-                    return name;
-                }
-            }
-            return String.valueOf(Block.blockRegistry.getId(block));
+            String name = Block.blockRegistry.getKey(block);
+            return name == null ? String.valueOf(Block.blockRegistry.getId(block)) : name;
         }
 
         @Override
