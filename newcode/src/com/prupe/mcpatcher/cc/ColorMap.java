@@ -22,6 +22,8 @@ abstract class ColorMap {
     private static final int COLORMAP_WIDTH = 256;
     private static final int COLORMAP_HEIGHT = 256;
 
+    private static final float SMOOTH_TIME = 3000.0f;
+
     private final int[] map;
     private final int mapDefault;
     final int width;
@@ -39,6 +41,9 @@ abstract class ColorMap {
     private int lastBlendK = Integer.MIN_VALUE;
     private final float[] tmpBlendResult = new float[3];
     private final float[] lastBlendResult = new float[3];
+
+    private final float[] lastSmoothedColor = new float[3];
+    private long lastSmoothTime;
 
     static ColorMap loadColorMap(boolean useCustom, ResourceLocation resource, int blendRadius) {
         return loadColorMap(useCustom, resource, null, blendRadius);
@@ -187,6 +192,27 @@ abstract class ColorMap {
 
     int getColorMultiplier() {
         return mapDefault;
+    }
+
+    int getColorMultiplierWithSmoothing(int i, int j, int k) {
+        if (!isHeightDependent) {
+            j = 64;
+        }
+        float[] currentColor = getColorMultiplierWithBlendingF(i, j, k);
+        long now = System.currentTimeMillis();
+        if (lastSmoothTime == 0L) {
+            lastSmoothedColor[0] = currentColor[0];
+            lastSmoothedColor[1] = currentColor[1];
+            lastSmoothedColor[2] = currentColor[2];
+        } else {
+            float r = Colorizer.clamp((float) (now - lastSmoothTime) / SMOOTH_TIME);
+            float s = 1.0f - r;
+            lastSmoothedColor[0] = r * currentColor[0] + s * lastSmoothedColor[0];
+            lastSmoothedColor[1] = r * currentColor[1] + s * lastSmoothedColor[1];
+            lastSmoothedColor[2] = r * currentColor[2] + s * lastSmoothedColor[2];
+        }
+        lastSmoothTime = now;
+        return Colorizer.float3ToInt(lastSmoothedColor);
     }
 
     int getRGB(float x, float y) {

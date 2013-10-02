@@ -136,7 +136,7 @@ public class ColorizeWorld {
         int i = (int) fogCamera.posX;
         int j = (int) fogCamera.posY;
         int k = (int) fogCamera.posZ;
-        int rgb = colorMap.getColorMultiplierWithBlending(i, j, k);
+        int rgb = colorMap.getColorMultiplierWithSmoothing(i, j, k);
         Colorizer.setColorF(rgb);
         return true;
     }
