@@ -316,7 +316,7 @@ final public class MCPatcher {
             String name = entry.getName();
 
             if (MinecraftJar.isClassFile(name)) {
-                ClassFile classFile = new ClassFile(new DataInputStream(origJar.getInputStream(entry)));
+                ClassFile classFile = minecraft.getClassFile(entry);
 
                 for (Mod mod : modList.getAll()) {
                     for (ClassMod classMod : mod.getClassMods()) {
@@ -410,7 +410,7 @@ final public class MCPatcher {
                 if (!MinecraftJar.isClassFile(entry.getName())) {
                     continue;
                 }
-                ClassFile classFile = new ClassFile(new DataInputStream(origJar.getInputStream(entry)));
+                ClassFile classFile = minecraft.getClassFile(entry);
                 try {
                     if (classMod.matchClassFile(entry.getName(), classFile)) {
                         checkInterrupt();
@@ -483,7 +483,7 @@ final public class MCPatcher {
                     if (!classMod.global && classMod.okToApply()) {
                         String name = ClassMap.classNameToFilename(classMod.getTargetClasses().get(0));
                         Logger.log(Logger.LOG_CLASS, "%s (%s)", classMod.getDeobfClass(), name);
-                        ClassFile classFile = new ClassFile(new DataInputStream(origJar.getInputStream(new ZipEntry(name))));
+                        ClassFile classFile = minecraft.getClassFile(new ZipEntry(name));
                         classMod.addToConstPool = false;
                         classMod.mapClassMembers(name, classFile);
                         mappingProgress += classMod.memberMappers.size();
@@ -792,7 +792,7 @@ final public class MCPatcher {
 
             if (MinecraftJar.isClassFile(name)) {
                 ArrayList<ClassMod> classMods = new ArrayList<ClassMod>();
-                ClassFile classFile = new ClassFile(new DataInputStream(inputStream));
+                ClassFile classFile = fromMod == null ? minecraft.getClassFile(entry) : new ClassFile(new DataInputStream(inputStream));
                 String className = ClassMap.filenameToClassName(name);
 
                 for (Mod mod : modList.getSelected()) {

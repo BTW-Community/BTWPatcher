@@ -3,6 +3,7 @@ package com.prupe.mcpatcher;
 import com.prupe.mcpatcher.launcher.profile.Profile;
 import com.prupe.mcpatcher.launcher.version.Library;
 import com.prupe.mcpatcher.launcher.version.Version;
+import javassist.bytecode.ClassFile;
 
 import java.io.*;
 import java.util.*;
@@ -19,6 +20,7 @@ class MinecraftJar {
     private final String inputMD5;
     private final String origMD5;
     private final MinecraftVersion inputVersion;
+    private final Map<String, ClassFile> classes = new HashMap<String, ClassFile>();
 
     private JarFile inputJar;
     private JarOutputStream outputJar;
@@ -121,6 +123,22 @@ class MinecraftJar {
 
     File getOutputFile() {
         return outputFile;
+    }
+
+    ClassFile getClassFile(ZipEntry entry) throws IOException {
+        String name = entry.getName();
+        ClassFile classFile = classes.get(name);
+        if (classFile == null) {
+            InputStream input = null;
+            try {
+                input = getInputJar().getInputStream(entry);
+                classFile = new ClassFile(new DataInputStream(input));
+                classes.put(name, classFile);
+            } finally {
+                MCPatcherUtils.close(input);
+            }
+        }
+        return classFile;
     }
 
     void writeProperties(Properties properties) throws IOException {
