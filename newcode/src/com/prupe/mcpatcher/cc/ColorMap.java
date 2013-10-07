@@ -9,10 +9,7 @@ import net.minecraft.src.BiomeGenBase;
 import net.minecraft.src.ResourceLocation;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static com.prupe.mcpatcher.cc.Colorizer.intToFloat3;
 
@@ -25,7 +22,7 @@ abstract class ColorMap {
     private static final float SMOOTH_TIME = 3000.0f;
 
     private final ResourceLocation resource;
-    private final int[] map;
+    final int[] map;
     private final int mapDefault;
     final int width;
     final int height;
@@ -85,6 +82,9 @@ abstract class ColorMap {
         map = MCPatcherUtils.getImageRGB(image);
         width = image.getWidth();
         height = image.getHeight();
+        for (int i = 0; i < map.length; i++) {
+            map[i] &= 0xffffff;
+        }
         maxX = width - 1.0f;
         maxY = height - 1.0f;
         mapDefault = MCPatcherUtils.getHexProperty(properties, "defaultColor", getDefaultColor());
@@ -380,6 +380,14 @@ abstract class ColorMap {
         private Grid(ResourceLocation resource, BufferedImage image, Properties properties, int blendRadius) {
             super(resource, image, properties, blendRadius);
 
+            int[] temp = new int[width];
+            for (int i = 0; i < map.length / 2; i += width) {
+                int j = map.length - width - i;
+                System.arraycopy(map, i, temp, 0, width);
+                System.arraycopy(map, j, map, i, width);
+                System.arraycopy(temp, 0, map, j, width);
+            }
+
             float xScale = (float) width / (float) COLORMAP_WIDTH;
             yScale = (float) height / (float) COLORMAP_HEIGHT;
             yVariance = MCPatcherUtils.getFloatProperty(properties, "yVariance", yScale - 1.0f);
@@ -439,7 +447,7 @@ abstract class ColorMap {
         }
 
         private float getY(int j) {
-            return (float) (255 - j) * yScale;
+            return (float) j * yScale;
         }
 
         private float getY(BiomeGenBase biome, int i, int j, int k) {
