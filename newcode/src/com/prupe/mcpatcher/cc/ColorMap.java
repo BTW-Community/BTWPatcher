@@ -19,6 +19,8 @@ abstract class ColorMap {
     private static final int COLORMAP_WIDTH = 256;
     private static final int COLORMAP_HEIGHT = 256;
 
+    private static final int DEFAULT_HEIGHT = 64;
+
     private static final float SMOOTH_TIME = 3000.0f;
 
     private final ResourceLocation resource;
@@ -161,7 +163,7 @@ abstract class ColorMap {
 
     int getColorMultiplier(BiomeGenBase biome, int i, int j, int k) {
         if (!isHeightDependent) {
-            j = 64;
+            j = DEFAULT_HEIGHT;
         }
         computeXY(biome, i, j, k, xy);
         return getRGB(xy[0], xy[1]);
@@ -169,7 +171,7 @@ abstract class ColorMap {
 
     int getColorMultiplierWithBlending(int i, int j, int k) {
         if (!isHeightDependent) {
-            j = 64;
+            j = DEFAULT_HEIGHT;
         }
         float[] f = getColorMultiplierWithBlendingF(i, j, k);
         return Colorizer.float3ToInt(f);
@@ -203,7 +205,7 @@ abstract class ColorMap {
 
     int getColorMultiplierWithSmoothing(int i, int j, int k) {
         if (!isHeightDependent) {
-            j = 64;
+            j = DEFAULT_HEIGHT;
         }
         float[] currentColor = getColorMultiplierWithBlendingF(i, j, k);
         long now = System.currentTimeMillis();
@@ -422,7 +424,7 @@ abstract class ColorMap {
 
         @Override
         int getDefaultColor() {
-            return getRGB(biomeStart[1], getY(64));
+            return getRGB(biomeStart[1], getY(DEFAULT_HEIGHT));
         }
 
         @Override
