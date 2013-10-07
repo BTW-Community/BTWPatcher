@@ -24,6 +24,7 @@ abstract class ColorMap {
 
     private static final float SMOOTH_TIME = 3000.0f;
 
+    private final ResourceLocation resource;
     private final int[] map;
     private final int mapDefault;
     final int width;
@@ -67,19 +68,20 @@ abstract class ColorMap {
             if (TexturePackAPI.hasResource(swampResource)) {
                 ColorMap swampMap = loadColorMap(Colorizer.useSwampColors, swampResource, blendRadius);
                 if (swampMap != null) {
-                    return new TempHumiditySwamp(swampMap, image, properties, blendRadius);
+                    return new TempHumiditySwamp(resource, swampMap, image, properties, blendRadius);
                 }
             }
-            return new TempHumidity(image, properties, blendRadius);
+            return new TempHumidity(resource, image, properties, blendRadius);
         } else if (format == 2) {
-            return new Grid(image, properties, blendRadius);
+            return new Grid(resource, image, properties, blendRadius);
         } else {
             logger.error("%s: unknown format %d", propertiesResource, format);
             return null;
         }
     }
 
-    ColorMap(BufferedImage image, Properties properties, int blendRadius) {
+    ColorMap(ResourceLocation resource, BufferedImage image, Properties properties, int blendRadius) {
+        this.resource = resource;
         map = MCPatcherUtils.getImageRGB(image);
         width = image.getWidth();
         height = image.getHeight();
@@ -124,6 +126,11 @@ abstract class ColorMap {
         for (int i = 0; i < blendWeight.size(); i++) {
             this.blendWeight[i] = blendWeight.get(i) / blendScale;
         }
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{" + resource + "}";
     }
 
     private static float addSample(List<int[]> blendOffset, List<Float> blendWeight, int di, int dk) {
@@ -296,7 +303,7 @@ abstract class ColorMap {
 
     static final class Water extends ColorMap {
         Water(int blendRadius) {
-            super(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), null, blendRadius);
+            super(new ResourceLocation("textures/colormap/water.png"), new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), null, blendRadius);
         }
 
         @Override
@@ -320,8 +327,8 @@ abstract class ColorMap {
     }
 
     private static class TempHumidity extends ColorMap {
-        private TempHumidity(BufferedImage image, Properties properties, int blendRadius) {
-            super(image, properties, blendRadius);
+        private TempHumidity(ResourceLocation resource, BufferedImage image, Properties properties, int blendRadius) {
+            super(resource, image, properties, blendRadius);
         }
 
         @Override
@@ -347,8 +354,8 @@ abstract class ColorMap {
         private final ColorMap swampMap;
         private final BiomeGenBase swampBiome;
 
-        private TempHumiditySwamp(ColorMap swampMap, BufferedImage image, Properties properties, int blendRadius) {
-            super(image, properties, blendRadius);
+        private TempHumiditySwamp(ResourceLocation resource, ColorMap swampMap, BufferedImage image, Properties properties, int blendRadius) {
+            super(resource, image, properties, blendRadius);
             swampBiome = BiomeAPI.findBiomeByName("Swampland");
             this.swampMap = swampMap;
         }
@@ -370,8 +377,8 @@ abstract class ColorMap {
         private final float yScale;
         private final float yVariance;
 
-        private Grid(BufferedImage image, Properties properties, int blendRadius) {
-            super(image, properties, blendRadius);
+        private Grid(ResourceLocation resource, BufferedImage image, Properties properties, int blendRadius) {
+            super(resource, image, properties, blendRadius);
 
             float xScale = (float) width / (float) COLORMAP_WIDTH;
             yScale = (float) height / (float) COLORMAP_HEIGHT;

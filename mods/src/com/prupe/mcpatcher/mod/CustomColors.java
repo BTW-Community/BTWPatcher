@@ -145,6 +145,7 @@ public class CustomColors extends Mod {
         addClassFile(MCPatcherUtils.COLORIZE_ENTITY_CLASS);
         addClassFile(MCPatcherUtils.COLORIZE_BLOCK_CLASS);
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS);
+        addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$1");
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$Water");
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$TempHumidity");
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$TempHumiditySwamp");
