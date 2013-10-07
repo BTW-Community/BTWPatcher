@@ -1,6 +1,9 @@
 package com.prupe.mcpatcher.cc;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.Config;
+import com.prupe.mcpatcher.MCLogger;
+import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
 import net.minecraft.client.Minecraft;
@@ -140,13 +143,6 @@ public class ColorizeBlock {
         },
     };
 
-    private static ColorMap lastColorMap;
-    private static int lastI = Integer.MIN_VALUE;
-    private static int lastJ = Integer.MIN_VALUE;
-    private static int lastK = Integer.MIN_VALUE;
-
-    private static final float[][][][] cubeColors = new float[2][2][2][3];
-
     static {
         try {
             reset();
@@ -163,7 +159,6 @@ public class ColorizeBlock {
 
         blockColorMaps.clear();
         waterColorMap = null;
-        lastColorMap = null;
 
         lilypadColor = 0x208030;
         waterColor = new float[]{0.2f, 0.3f, 1.0f};
@@ -393,32 +388,17 @@ public class ColorizeBlock {
         }
     }
 
-    private static void computeCubeColors(Block block, IBlockAccess blockAccess, ColorMap colorMap, int i, int j, int k, int di, int dj, int dk) {
+    private static void computeVertexColor(ColorMap colorMap, int i, int j, int k, int[] offsets, float[] color) {
         int rgb;
         if (enableTestColorSmoothing) {
             rgb = 0;
-            rgb |= (i + di) % 2 == 0 ? 0 : 0xff0000;
-            rgb |= (j + dj) % 2 == 0 ? 0 : 0xff00;
-            rgb |= (k + dk) % 2 == 0 ? 0 : 0xff;
+            rgb |= (i + offsets[0]) % 2 == 0 ? 0 : 0xff0000;
+            rgb |= (j + offsets[1]) % 2 == 0 ? 0 : 0xff00;
+            rgb |= (k + offsets[2]) % 2 == 0 ? 0 : 0xff;
         } else {
-            rgb = colorMap.getColorMultiplierWithBlending(i + di, j + dj, k + dk);
+            rgb = colorMap.getColorMultiplierWithBlending2(i + offsets[0], j + offsets[1], k + offsets[2]);
         }
-        Colorizer.intToFloat3(rgb, cubeColors[di][dj][dk]);
-    }
-
-    private static ColorMap computeCubeColors(Block block, IBlockAccess blockAccess, int i, int j, int k) {
-        ColorMap colorMap = findColorMap(block, blockAccess, i, j, k);
-        if (colorMap != null) {
-            computeCubeColors(block, blockAccess, colorMap, i, j, k, 0, 0, 0);
-            computeCubeColors(block, blockAccess, colorMap, i, j, k, 0, 1, 0);
-            computeCubeColors(block, blockAccess, colorMap, i, j, k, 0, 0, 1);
-            computeCubeColors(block, blockAccess, colorMap, i, j, k, 0, 1, 1);
-            computeCubeColors(block, blockAccess, colorMap, i, j, k, 1, 0, 0);
-            computeCubeColors(block, blockAccess, colorMap, i, j, k, 1, 1, 0);
-            computeCubeColors(block, blockAccess, colorMap, i, j, k, 1, 0, 1);
-            computeCubeColors(block, blockAccess, colorMap, i, j, k, 1, 1, 1);
-        }
-        return colorMap;
+        Colorizer.intToFloat3(rgb, color);
     }
 
     public static boolean setupBlockSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
@@ -442,13 +422,8 @@ public class ColorizeBlock {
     private static boolean setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                                int i, int j, int k, int face,
                                                boolean useAO, float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        if (i != lastI || j != lastJ || k != lastK) {
-            lastColorMap = computeCubeColors(block, blockAccess, i, j, k);
-            lastI = i;
-            lastJ = j;
-            lastK = k;
-        }
-        if (lastColorMap == null) {
+        ColorMap colorMap = findColorMap(block, blockAccess, i, j, k);
+        if (colorMap == null) {
             return false;
         }
 
@@ -461,29 +436,24 @@ public class ColorizeBlock {
         }
 
         int[][] offsets = FACE_VERTICES[face];
-        int[] offset;
-        float[] color;
+        float[] color = Colorizer.setColor;
 
-        offset = offsets[0];
-        color = cubeColors[offset[0]][offset[1]][offset[2]];
+        computeVertexColor(colorMap, i, j, k, offsets[0], color);
         renderBlocks.colorRedTopLeft = topLeft * color[0];
         renderBlocks.colorGreenTopLeft = topLeft * color[1];
         renderBlocks.colorBlueTopLeft = topLeft * color[2];
 
-        offset = offsets[1];
-        color = cubeColors[offset[0]][offset[1]][offset[2]];
+        computeVertexColor(colorMap, i, j, k, offsets[1], color);
         renderBlocks.colorRedBottomLeft = bottomLeft * color[0];
         renderBlocks.colorGreenBottomLeft = bottomLeft * color[1];
         renderBlocks.colorBlueBottomLeft = bottomLeft * color[2];
 
-        offset = offsets[2];
-        color = cubeColors[offset[0]][offset[1]][offset[2]];
+        computeVertexColor(colorMap, i, j, k, offsets[2], color);
         renderBlocks.colorRedBottomRight = bottomRight * color[0];
         renderBlocks.colorGreenBottomRight = bottomRight * color[1];
         renderBlocks.colorBlueBottomRight = bottomRight * color[2];
 
-        offset = offsets[3];
-        color = cubeColors[offset[0]][offset[1]][offset[2]];
+        computeVertexColor(colorMap, i, j, k, offsets[3], color);
         renderBlocks.colorRedTopRight = topRight * color[0];
         renderBlocks.colorGreenTopRight = topRight * color[1];
         renderBlocks.colorBlueTopRight = topRight * color[2];

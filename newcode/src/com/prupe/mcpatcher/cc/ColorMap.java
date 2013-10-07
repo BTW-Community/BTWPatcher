@@ -460,4 +460,82 @@ abstract class ColorMap {
             return y;
         }
     }
+
+    private static final int CHUNK_I_MASK = ~0xf;
+    private static final int CHUNK_K_MASK = ~0xf;
+
+    private static final int CHUNK_I_SIZE = 17;
+    private static final int CHUNK_J_SIZE = 2;
+    private static final int CHUNK_K_SIZE = 17;
+    private static final int CHUNK_IK_SIZE = CHUNK_I_SIZE * CHUNK_K_SIZE;
+    private static final int CHUNK_IJK_SIZE = CHUNK_I_SIZE * CHUNK_J_SIZE * CHUNK_K_SIZE;
+    private static final int CHUNK_IK_J_MINUS_1_SIZE = CHUNK_IJK_SIZE - CHUNK_IK_SIZE;
+
+    private static final int NO_COLOR = 0x7f000000;
+
+    private int currentChunkI = Integer.MIN_VALUE;
+    private int currentChunkJ = Integer.MIN_VALUE;
+    private int currentChunkK = Integer.MIN_VALUE;
+
+    private final int[] chunkData = new int[CHUNK_IJK_SIZE];
+
+    private long lastCC = System.currentTimeMillis();
+    private int calls;
+    private int miss1;
+    private int miss2;
+    private int miss3;
+
+    int getColorMultiplierWithBlending2(int i, int j, int k) {
+        if (!isHeightDependent) {
+            j = DEFAULT_HEIGHT;
+        }
+        int offset = getChunkOffset(i, j, k);
+        calls++;
+        if (offset < 0) {
+            setChunkBase(i, j, k);
+            offset = getChunkOffset(i, j, k);
+            miss1++;
+        }
+        if (chunkData[offset] == NO_COLOR) {
+            chunkData[offset] = getColorMultiplierWithBlending(i, j, k);
+            miss3++;
+        }
+        long now = System.currentTimeMillis();
+        if (now - lastCC > 5000L) {
+            logger.info("%s: calls: %d, miss chunk: %.2f%%, miss sheet: %.2f%%, miss block: %.2f%%",
+                this,
+                calls,
+                100.0f * (float) miss1 / (float) calls,
+                100.0f * (float) miss2 / (float) calls,
+                100.0f * (float) miss3 / (float) calls
+            );
+            lastCC = now;
+        }
+        return chunkData[offset];
+    }
+
+    private void setChunkBase(int i, int j, int k) {
+        currentChunkI = i & CHUNK_I_MASK;
+        currentChunkJ = j;
+        currentChunkK = k & CHUNK_K_MASK;
+        Arrays.fill(chunkData, NO_COLOR);
+    }
+
+    private int getChunkOffset(int i, int j, int k) {
+        i -= currentChunkI;
+        j -= currentChunkJ;
+        k -= currentChunkK;
+        if (j >= 0 && j <= CHUNK_J_SIZE && k >= 0 && k < CHUNK_K_SIZE && i >= 0 && i < CHUNK_I_SIZE) {
+            if (j == CHUNK_J_SIZE) {
+                j--;
+                currentChunkJ++;
+                miss2++;
+                System.arraycopy(chunkData, CHUNK_IK_SIZE, chunkData, 0, CHUNK_IK_J_MINUS_1_SIZE);
+                Arrays.fill(chunkData, CHUNK_IK_J_MINUS_1_SIZE, CHUNK_IJK_SIZE, NO_COLOR);
+            }
+            return j * CHUNK_IK_SIZE + k * CHUNK_I_SIZE + i;
+        } else {
+            return -1;
+        }
+    }
 }
