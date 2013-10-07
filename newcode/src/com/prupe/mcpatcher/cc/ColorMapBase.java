@@ -101,7 +101,7 @@ abstract class ColorMapBase {
         }
     }
 
-    abstract private static class Blended implements IColorMap {
+    static class Blended implements IColorMap {
         private final IColorMap parent;
         private final int[][] offset;
         private final float[] weight;

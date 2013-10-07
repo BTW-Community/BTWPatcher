@@ -36,9 +36,9 @@ public class ColorizeWorld {
     private static final boolean[] textCodeColorSet = new boolean[32];
     private static int signTextColor; // text.sign
 
-    static ColorMap underwaterColor;
-    private static ColorMap fogColorMap;
-    private static ColorMap skyColorMap;
+    static IColorMap underwaterColor;
+    private static IColorMap fogColorMap;
+    private static IColorMap skyColorMap;
 
     public static float[] netherFogColor;
     public static float[] endFogColor;
@@ -71,13 +71,24 @@ public class ColorizeWorld {
     }
 
     static void reloadFogColors(Properties properties) {
-        underwaterColor = ColorMap.loadColorMap(Colorizer.useFogColors, UNDERWATERCOLOR, fogBlendRadius);
-        fogColorMap = ColorMap.loadColorMap(Colorizer.useFogColors, FOGCOLOR0, fogBlendRadius);
-        skyColorMap = ColorMap.loadColorMap(Colorizer.useFogColors, SKYCOLOR0, fogBlendRadius);
+        underwaterColor = wrapFogMap(ColorMap.loadColorMap(Colorizer.useFogColors, UNDERWATERCOLOR));
+        fogColorMap = wrapFogMap(ColorMap.loadColorMap(Colorizer.useFogColors, FOGCOLOR0));
+        skyColorMap = wrapFogMap(ColorMap.loadColorMap(Colorizer.useFogColors, SKYCOLOR0));
 
         loadFloatColor("fog.nether", netherFogColor);
         loadFloatColor("fog.end", endFogColor);
         endSkyColor = loadIntColor("sky.end", endSkyColor);
+    }
+
+    static IColorMap wrapFogMap(IColorMap map) {
+        if (map == null) {
+            return null;
+        } else {
+            map = new ColorMapBase.Blended(map, fogBlendRadius);
+            map = new ColorMapBase.Cached(map);
+            map = new ColorMapBase.Smoothed(map, 3000.0f);
+            return map;
+        }
     }
 
     static void reloadCloudType(Properties properties) {
@@ -129,14 +140,14 @@ public class ColorizeWorld {
         fogCamera = entity;
     }
 
-    private static boolean computeFogColor(ColorMap colorMap) {
+    private static boolean computeFogColor(IColorMap colorMap) {
         if (colorMap == null || fogCamera == null) {
             return false;
         }
         int i = (int) fogCamera.posX;
         int j = (int) fogCamera.posY;
         int k = (int) fogCamera.posZ;
-        int rgb = colorMap.getColorMultiplierWithSmoothing(i, j, k);
+        int rgb = colorMap.getColorMultiplier(i, j, k);
         Colorizer.setColorF(rgb);
         return true;
     }

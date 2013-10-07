@@ -32,11 +32,11 @@ abstract class ColorMap implements IColorMap {
     private final float[] xy = new float[2];
     private final float[] lastResult = new float[3];
 
-    static IColorMap loadColorMap(boolean useCustom, ResourceLocation resource, int blendRadius) {
-        return loadColorMap(useCustom, resource, null, blendRadius);
+    static IColorMap loadColorMap(boolean useCustom, ResourceLocation resource) {
+        return loadColorMap(useCustom, resource, null);
     }
 
-    static IColorMap loadColorMap(boolean useCustom, ResourceLocation resource, ResourceLocation swampResource, int blendRadius) {
+    static IColorMap loadColorMap(boolean useCustom, ResourceLocation resource, ResourceLocation swampResource) {
         if (!useCustom) {
             return null;
         }
@@ -53,7 +53,7 @@ abstract class ColorMap implements IColorMap {
         if (format <= 1) {
             IColorMap defaultMap = new TempHumidity(resource, image, properties);
             if (TexturePackAPI.hasResource(swampResource)) {
-                IColorMap swampMap = loadColorMap(Colorizer.useSwampColors, swampResource, blendRadius);
+                IColorMap swampMap = loadColorMap(Colorizer.useSwampColors, swampResource);
                 if (swampMap != null) {
                     return new ColorMapBase.Swamp(defaultMap, swampMap);
                 }

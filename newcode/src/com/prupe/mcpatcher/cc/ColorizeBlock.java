@@ -42,8 +42,8 @@ public class ColorizeBlock {
     private static Block pumpkinStemBlock;
     private static Block melonStemBlock;
 
-    private static final Map<Block, ColorMap[]> blockColorMaps = new IdentityHashMap<Block, ColorMap[]>(); // bitmaps from palette.block.*
-    private static ColorMap waterColorMap;
+    private static final Map<Block, IColorMap[]> blockColorMaps = new IdentityHashMap<Block, IColorMap[]>(); // bitmaps from palette.block.*
+    private static IColorMap waterColorMap;
     private static int lilypadColor; // lilypad
     private static float[][] redstoneColor; // colormap/redstone.png
     private static int[] pumpkinStemColors; // colormap/pumpkinstem.png
@@ -168,18 +168,28 @@ public class ColorizeBlock {
     }
 
     static void reloadFoliageColors(Properties properties) {
-        ColorMap colorMap = ColorMap.loadColorMap(true, DEFAULT_GRASSCOLOR, SWAMPGRASSCOLOR, blockBlendRadius);
+        IColorMap colorMap = ColorMap.loadColorMap(true, DEFAULT_GRASSCOLOR, SWAMPGRASSCOLOR);
         registerColorMap(colorMap, DEFAULT_GRASSCOLOR, "minecraft:grass minecraft:tallgrass:1,2");
-        colorMap = ColorMap.loadColorMap(true, DEFAULT_FOLIAGECOLOR, SWAMPFOLIAGECOLOR, blockBlendRadius);
+        colorMap = ColorMap.loadColorMap(true, DEFAULT_FOLIAGECOLOR, SWAMPFOLIAGECOLOR);
         registerColorMap(colorMap, DEFAULT_FOLIAGECOLOR, "minecraft:leaves:0,4,8,12 minecraft:vine");
         registerColorMap(PINECOLOR, "minecraft:leaves:1,5,9,13");
         registerColorMap(BIRCHCOLOR, "minecraft:leaves:2,6,10,14");
     }
 
+    private static IColorMap wrapBlockMap(IColorMap map) {
+        if (map == null) {
+            return null;
+        } else {
+            map = new ColorMapBase.Blended(map, blockBlendRadius);
+            map = new ColorMapBase.Chunked(map);
+            return map;
+        }
+    }
+
     static void reloadWaterColors(Properties properties) {
         waterColorMap = registerColorMap(WATERCOLOR, "minecraft:flowing_water minecraft:water");
         if (waterColorMap == null) {
-            waterColorMap = new ColorMap.Water(blockBlendRadius);
+            waterColorMap = new ColorMapBase.Water();
             registerColorMap(waterColorMap, null, "minecraft:flowing_water minecraft:water");
         } else {
             Colorizer.intToFloat3(waterColorMap.getColorMultiplier(), waterColor);
@@ -211,20 +221,20 @@ public class ColorizeBlock {
         }
     }
 
-    private static ColorMap registerColorMap(ResourceLocation resource, String idList) {
-        ColorMap colorMap = ColorMap.loadColorMap(true, resource, blockBlendRadius);
+    private static IColorMap registerColorMap(ResourceLocation resource, String idList) {
+        IColorMap colorMap = ColorMap.loadColorMap(true, resource);
         if (colorMap == null) {
             return null;
         }
-        return registerColorMap(colorMap, resource, idList);
+        return registerColorMap(wrapBlockMap(colorMap), resource, idList);
     }
 
-    private static ColorMap registerColorMap(ColorMap colorMap, ResourceLocation resource, String idList) {
+    private static IColorMap registerColorMap(IColorMap colorMap, ResourceLocation resource, String idList) {
         int[] metadata = new int[1];
         for (String idString : idList.split("\\s+")) {
             Block block = BlockAPI.parseBlockAndMetadata(idString, metadata);
             if (block != null) {
-                ColorMap[] maps = blockColorMaps.get(block);
+                IColorMap[] maps = blockColorMaps.get(block);
                 if (maps == null) {
                     maps = new ColorMap[BlockAPI.METADATA_ARRAY_SIZE];
                     blockColorMaps.put(block, maps);
@@ -273,19 +283,19 @@ public class ColorizeBlock {
         return rgb == null || rgb.length < 8 ? null : rgb;
     }
 
-    private static ColorMap findColorMap(Block block, int metadata) {
-        ColorMap[] maps = blockColorMaps.get(block);
+    private static IColorMap findColorMap(Block block, int metadata) {
+        IColorMap[] maps = blockColorMaps.get(block);
         if (maps == null) {
             return null;
         }
-        ColorMap colorMap = maps[metadata];
+        IColorMap colorMap = maps[metadata];
         if (colorMap != null) {
             return colorMap;
         }
         return maps[BlockAPI.NO_METADATA];
     }
 
-    private static ColorMap findColorMap(Block block, IBlockAccess blockAccess, int i, int j, int k) {
+    private static IColorMap findColorMap(Block block, IBlockAccess blockAccess, int i, int j, int k) {
         int metadata = blockAccess.getBlockMetadata(i, j, k);
         return findColorMap(block, metadata);
     }
@@ -295,7 +305,7 @@ public class ColorizeBlock {
     }
 
     public static boolean colorizeBlock(Block block, int metadata) {
-        ColorMap colorMap = findColorMap(block, metadata);
+        IColorMap colorMap = findColorMap(block, metadata);
         if (colorMap == null) {
             return false;
         } else {
@@ -305,15 +315,15 @@ public class ColorizeBlock {
     }
 
     public static boolean colorizeBlock(Block block, IBlockAccess blockAccess, int i, int j, int k) {
-        ColorMap colorMap = findColorMap(block, blockAccess, i, j, k);
+        IColorMap colorMap = findColorMap(block, blockAccess, i, j, k);
         return colorizeBlock(block, blockAccess, colorMap, i, j, k);
     }
 
-    private static boolean colorizeBlock(Block block, IBlockAccess blockAccess, ColorMap colorMap, int i, int j, int k) {
+    private static boolean colorizeBlock(Block block, IBlockAccess blockAccess, IColorMap colorMap, int i, int j, int k) {
         if (colorMap == null) {
             return false;
         } else {
-            blockColor = colorMap.getColorMultiplierWithBlending(i, j, k);
+            blockColor = colorMap.getColorMultiplier(i, j, k);
             return true;
         }
     }
@@ -335,7 +345,7 @@ public class ColorizeBlock {
         if (waterColorMap == null) {
             return false;
         } else {
-            Colorizer.setColorF(waterColorMap.getColorMultiplierWithBlending(i, j, k));
+            Colorizer.setColorF(waterColorMap.getColorMultiplier(i, j, k));
             return true;
         }
     }
@@ -388,7 +398,7 @@ public class ColorizeBlock {
         }
     }
 
-    private static void computeVertexColor(ColorMap colorMap, int i, int j, int k, int[] offsets, float[] color) {
+    private static void computeVertexColor(IColorMap colorMap, int i, int j, int k, int[] offsets, float[] color) {
         int rgb;
         if (enableTestColorSmoothing) {
             rgb = 0;
@@ -396,7 +406,7 @@ public class ColorizeBlock {
             rgb |= (j + offsets[1]) % 2 == 0 ? 0 : 0xff00;
             rgb |= (k + offsets[2]) % 2 == 0 ? 0 : 0xff;
         } else {
-            rgb = colorMap.getColorMultiplierWithBlending2(i + offsets[0], j + offsets[1], k + offsets[2]);
+            rgb = colorMap.getColorMultiplier(i + offsets[0], j + offsets[1], k + offsets[2]);
         }
         Colorizer.intToFloat3(rgb, color);
     }
@@ -422,7 +432,7 @@ public class ColorizeBlock {
     private static boolean setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                                int i, int j, int k, int face,
                                                boolean useAO, float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        ColorMap colorMap = findColorMap(block, blockAccess, i, j, k);
+        IColorMap colorMap = findColorMap(block, blockAccess, i, j, k);
         if (colorMap == null) {
             return false;
         }
