@@ -236,7 +236,7 @@ public class ColorizeBlock {
             if (block != null) {
                 IColorMap[] maps = blockColorMaps.get(block);
                 if (maps == null) {
-                    maps = new ColorMap[BlockAPI.METADATA_ARRAY_SIZE];
+                    maps = new IColorMap[BlockAPI.METADATA_ARRAY_SIZE];
                     blockColorMaps.put(block, maps);
                 }
                 for (int i = 0; i < maps.length; i++) {
