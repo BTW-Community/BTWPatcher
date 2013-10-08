@@ -441,8 +441,8 @@ abstract class ColorMapBase {
 
         Outer(IColorMap parent) {
             this.parent = parent;
-            isHeightDependent = isHeightDependent();
-            mapDefault = getColorMultiplier();
+            isHeightDependent = parent.isHeightDependent();
+            mapDefault = parent.getColorMultiplier();
         }
 
         @Override
