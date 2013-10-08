@@ -255,7 +255,7 @@ abstract class ColorMapBase {
 
         @Override
         public int getColorMultiplier(int i, int j, int k) {
-            if (i != lastI || j != lastJ || k == lastK) {
+            if (i != lastI || j != lastJ || k != lastK) {
                 lastColorI = parent.getColorMultiplier(i, j, k);
                 lastI = i;
                 lastJ = j;
@@ -266,7 +266,7 @@ abstract class ColorMapBase {
 
         @Override
         public float[] getColorMultiplierF(int i, int j, int k) {
-            if (i != lastI || j != lastJ || k == lastK) {
+            if (i != lastI || j != lastJ || k != lastK) {
                 lastColorF = parent.getColorMultiplierF(i, j, k);
                 lastI = i;
                 lastJ = j;
