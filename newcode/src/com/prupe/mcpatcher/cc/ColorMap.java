@@ -168,7 +168,7 @@ abstract class ColorMap implements IColorMap {
         }
     }
 
-    static class TempHumidity extends ColorMap {
+    static final class TempHumidity extends ColorMap {
         private TempHumidity(ResourceLocation resource, BufferedImage image, Properties properties) {
             super(resource, image, properties);
         }

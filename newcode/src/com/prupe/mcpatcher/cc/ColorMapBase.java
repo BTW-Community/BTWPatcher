@@ -14,7 +14,7 @@ abstract class ColorMapBase {
 
     static final int DEFAULT_HEIGHT = 64;
 
-    static class Water implements IColorMap {
+    static final class Water implements IColorMap {
         private final float[] lastColor = new float[3];
 
         @Override
@@ -44,7 +44,7 @@ abstract class ColorMapBase {
         }
     }
 
-    static class Swamp implements IColorMap {
+    static final class Swamp implements IColorMap {
         private final IColorMap defaultMap;
         private final IColorMap swampMap;
         private final BiomeGenBase swampBiome;
@@ -83,7 +83,7 @@ abstract class ColorMapBase {
         }
     }
 
-    static class Fixed implements IColorMap {
+    static final class Fixed implements IColorMap {
         private final int colorI;
         private final float[] colorF = new float[3];
 
@@ -118,7 +118,7 @@ abstract class ColorMapBase {
         }
     }
 
-    static class Blended implements IColorMap {
+    static final class Blended implements IColorMap {
         private final IColorMap parent;
         private final int[][] offset;
         private final float[] weight;
@@ -225,7 +225,7 @@ abstract class ColorMapBase {
         }
     }
 
-    static class Cached implements IColorMap {
+    static final class Cached implements IColorMap {
         private final IColorMap parent;
 
         private int lastI = Integer.MIN_VALUE;
@@ -276,7 +276,7 @@ abstract class ColorMapBase {
         }
     }
 
-    static class Smoothed implements IColorMap {
+    static final class Smoothed implements IColorMap {
         private final IColorMap parent;
         private final float smoothTime;
 
@@ -328,7 +328,7 @@ abstract class ColorMapBase {
         }
     }
 
-    static class Chunked implements IColorMap {
+    static final class Chunked implements IColorMap {
         private static final int I_MASK = ~0xf;
         private static final int K_MASK = ~0xf;
 
@@ -434,7 +434,7 @@ abstract class ColorMapBase {
         }
     }
 
-    static class Outer implements IColorMap {
+    static final class Outer implements IColorMap {
         private final IColorMap parent;
         private final boolean isHeightDependent;
         private final int mapDefault;
