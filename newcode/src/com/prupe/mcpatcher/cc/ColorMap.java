@@ -46,20 +46,25 @@ abstract class ColorMap implements IColorMap {
             properties = new Properties();
         }
         int format = MCPatcherUtils.getIntProperty(properties, "format", 1);
-        if (format <= 1) {
-            IColorMap defaultMap = new TempHumidity(resource, image, properties);
-            if (TexturePackAPI.hasResource(swampResource)) {
+        switch (format) {
+            case 0:
+                int color = MCPatcherUtils.getHexProperty(properties, "color", 0xffffff);
+                return new ColorMapBase.Fixed(color);
+
+            case 1:
+                IColorMap defaultMap = new TempHumidity(resource, image, properties);
                 IColorMap swampMap = loadColorMap(Colorizer.useSwampColors, swampResource);
                 if (swampMap != null) {
                     return new ColorMapBase.Swamp(defaultMap, swampMap);
                 }
-            }
-            return defaultMap;
-        } else if (format == 2) {
-            return new Grid(resource, image, properties);
-        } else {
-            logger.error("%s: unknown format %d", propertiesResource, format);
-            return null;
+                return defaultMap;
+
+            case 2:
+                return new Grid(resource, image, properties);
+
+            default:
+                logger.error("%s: unknown format %d", propertiesResource, format);
+                return null;
         }
     }
 
