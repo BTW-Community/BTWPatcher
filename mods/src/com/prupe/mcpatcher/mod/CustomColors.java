@@ -144,11 +144,18 @@ public class CustomColors extends Mod {
         addClassFile(MCPatcherUtils.COLORIZE_ITEM_CLASS);
         addClassFile(MCPatcherUtils.COLORIZE_ENTITY_CLASS);
         addClassFile(MCPatcherUtils.COLORIZE_BLOCK_CLASS);
+        addClassFile(MCPatcherUtils.ICOLOR_MAP_CLASS);
+        addClassFile(MCPatcherUtils.COLOR_MAP_BASE_CLASS);
+        addClassFile(MCPatcherUtils.COLOR_MAP_BASE_CLASS + "$Blended");
+        addClassFile(MCPatcherUtils.COLOR_MAP_BASE_CLASS + "$Cached");
+        addClassFile(MCPatcherUtils.COLOR_MAP_BASE_CLASS + "$Chunked");
+        addClassFile(MCPatcherUtils.COLOR_MAP_BASE_CLASS + "$Fixed");
+        addClassFile(MCPatcherUtils.COLOR_MAP_BASE_CLASS + "$Smoothed");
+        addClassFile(MCPatcherUtils.COLOR_MAP_BASE_CLASS + "$Swamp");
+        addClassFile(MCPatcherUtils.COLOR_MAP_BASE_CLASS + "$Water");
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS);
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$1");
-        addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$Water");
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$TempHumidity");
-        addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$TempHumiditySwamp");
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$Grid");
         addClassFile(MCPatcherUtils.LIGHTMAP_CLASS);
 

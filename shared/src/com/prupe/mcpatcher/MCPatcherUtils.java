@@ -94,6 +94,8 @@ public class MCPatcherUtils {
     public static final String COLORIZE_ITEM_CLASS = "com.prupe.mcpatcher.cc.ColorizeItem";
     public static final String COLORIZE_ENTITY_CLASS = "com.prupe.mcpatcher.cc.ColorizeEntity";
     public static final String COLORIZE_BLOCK_CLASS = "com.prupe.mcpatcher.cc.ColorizeBlock";
+    public static final String ICOLOR_MAP_CLASS = "com.prupe.mcpatcher.cc.IColorMap";
+    public static final String COLOR_MAP_BASE_CLASS = "com.prupe.mcpatcher.cc.ColorMapBase";
     public static final String COLOR_MAP_CLASS = "com.prupe.mcpatcher.cc.ColorMap";
     public static final String LIGHTMAP_CLASS = "com.prupe.mcpatcher.cc.Lightmap";
 
