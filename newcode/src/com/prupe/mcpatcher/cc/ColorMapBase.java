@@ -16,6 +16,11 @@ abstract class ColorMapBase {
         private final float[] lastColor = new float[3];
 
         @Override
+        public String toString() {
+            return String.format("Water{%06x}", getColorMultiplier());
+        }
+
+        @Override
         public boolean isHeightDependent() {
             return false;
         }
@@ -46,6 +51,11 @@ abstract class ColorMapBase {
             this.defaultMap = defaultMap;
             this.swampMap = swampMap;
             swampBiome = BiomeAPI.findBiomeByName("Swampland");
+        }
+
+        @Override
+        public String toString() {
+            return defaultMap.toString();
         }
 
         @Override
@@ -173,6 +183,11 @@ abstract class ColorMapBase {
         }
 
         @Override
+        public String toString() {
+            return parent.toString();
+        }
+
+        @Override
         public boolean isHeightDependent() {
             return parent.isHeightDependent();
         }
@@ -219,6 +234,11 @@ abstract class ColorMapBase {
         }
 
         @Override
+        public String toString() {
+            return parent.toString();
+        }
+
+        @Override
         public boolean isHeightDependent() {
             return parent.isHeightDependent();
         }
@@ -261,6 +281,11 @@ abstract class ColorMapBase {
         Smoothed(IColorMap parent, float smoothTime) {
             this.parent = parent;
             this.smoothTime = smoothTime;
+        }
+
+        @Override
+        public String toString() {
+            return parent.toString();
         }
 
         @Override
@@ -328,6 +353,11 @@ abstract class ColorMapBase {
 
         Chunked(IColorMap parent) {
             this.parent = parent;
+        }
+
+        @Override
+        public String toString() {
+            return parent.toString();
         }
 
         @Override
