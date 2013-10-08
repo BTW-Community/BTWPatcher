@@ -87,6 +87,7 @@ public class ColorizeWorld {
             map = new ColorMapBase.Blended(map, fogBlendRadius);
             map = new ColorMapBase.Cached(map);
             map = new ColorMapBase.Smoothed(map, 3000.0f);
+            map = new ColorMapBase.Outer(map);
             return map;
         }
     }

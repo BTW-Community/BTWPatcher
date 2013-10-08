@@ -182,6 +182,7 @@ public class ColorizeBlock {
         } else {
             map = new ColorMapBase.Blended(map, blockBlendRadius);
             map = new ColorMapBase.Chunked(map);
+            map = new ColorMapBase.Outer(map);
             return map;
         }
     }
@@ -226,10 +227,11 @@ public class ColorizeBlock {
         if (colorMap == null) {
             return null;
         }
-        return registerColorMap(wrapBlockMap(colorMap), resource, idList);
+        return registerColorMap(colorMap, resource, idList);
     }
 
     private static IColorMap registerColorMap(IColorMap colorMap, ResourceLocation resource, String idList) {
+        colorMap = wrapBlockMap(colorMap);
         int[] metadata = new int[1];
         for (String idString : idList.split("\\s+")) {
             Block block = BlockAPI.parseBlockAndMetadata(idString, metadata);

@@ -12,6 +12,8 @@ import java.util.List;
 abstract class ColorMapBase {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
+    static final int DEFAULT_HEIGHT = 64;
+
     static class Water implements IColorMap {
         private final float[] lastColor = new float[3];
 
@@ -91,6 +93,11 @@ abstract class ColorMapBase {
         }
 
         @Override
+        public String toString() {
+            return String.format("Fixed{%06x}", colorI);
+        }
+
+        @Override
         public boolean isHeightDependent() {
             return false;
         }
@@ -115,7 +122,6 @@ abstract class ColorMapBase {
         private final IColorMap parent;
         private final int[][] offset;
         private final float[] weight;
-        private final float[] tmpColor = new float[3];
         private final float[] lastColor = new float[3];
 
         Blended(IColorMap parent, int blendRadius) {
@@ -210,8 +216,7 @@ abstract class ColorMapBase {
             for (int n = 0; n < weight.length; n++) {
                 int[] offset = this.offset[n];
                 float weight = this.weight[n];
-                int rgb = parent.getColorMultiplier(i + offset[0], j, k + offset[1]);
-                Colorizer.intToFloat3(rgb, tmpColor);
+                float[] tmpColor = parent.getColorMultiplierF(i + offset[0], j, k + offset[1]);
                 lastColor[0] += tmpColor[0] * weight;
                 lastColor[1] += tmpColor[1] * weight;
                 lastColor[2] += tmpColor[2] * weight;
@@ -426,6 +431,49 @@ abstract class ColorMapBase {
             } else {
                 return -1;
             }
+        }
+    }
+
+    static class Outer implements IColorMap {
+        private final IColorMap parent;
+        private final boolean isHeightDependent;
+        private final int mapDefault;
+
+        Outer(IColorMap parent) {
+            this.parent = parent;
+            isHeightDependent = isHeightDependent();
+            mapDefault = getColorMultiplier();
+        }
+
+        @Override
+        public String toString() {
+            return parent.toString();
+        }
+
+        @Override
+        public boolean isHeightDependent() {
+            return parent.isHeightDependent();
+        }
+
+        @Override
+        public int getColorMultiplier() {
+            return mapDefault;
+        }
+
+        @Override
+        public int getColorMultiplier(int i, int j, int k) {
+            if (!isHeightDependent) {
+                j = DEFAULT_HEIGHT;
+            }
+            return parent.getColorMultiplier(i, j, k);
+        }
+
+        @Override
+        public float[] getColorMultiplierF(int i, int j, int k) {
+            if (!isHeightDependent) {
+                j = DEFAULT_HEIGHT;
+            }
+            return parent.getColorMultiplierF(i, j, k);
         }
     }
 }

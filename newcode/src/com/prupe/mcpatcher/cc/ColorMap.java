@@ -18,16 +18,12 @@ abstract class ColorMap implements IColorMap {
     private static final int COLORMAP_WIDTH = 256;
     private static final int COLORMAP_HEIGHT = 256;
 
-    private static final int DEFAULT_HEIGHT = 64;
-
     private final ResourceLocation resource;
     protected final int[] map;
-    private final int mapDefault;
     protected final int width;
     protected final int height;
     protected final float maxX;
     protected final float maxY;
-    private final boolean isHeightDependent = isHeightDependent();
 
     private final float[] xy = new float[2];
     private final float[] lastResult = new float[3];
@@ -77,10 +73,7 @@ abstract class ColorMap implements IColorMap {
         }
         maxX = width - 1.0f;
         maxY = height - 1.0f;
-        mapDefault = MCPatcherUtils.getHexProperty(properties, "defaultColor", getDefaultColor());
     }
-
-    abstract protected int getDefaultColor();
 
     abstract protected void computeXY(BiomeGenBase biome, int i, int j, int k, float[] f);
 
@@ -90,15 +83,7 @@ abstract class ColorMap implements IColorMap {
     }
 
     @Override
-    public final int getColorMultiplier() {
-        return mapDefault;
-    }
-
-    @Override
     public final int getColorMultiplier(int i, int j, int k) {
-        if (!isHeightDependent) {
-            j = DEFAULT_HEIGHT;
-        }
         computeXY(BiomeAPI.getBiomeGenAt(i, j, k), i, j, k, xy);
         return getRGB(xy[0], xy[1]);
     }
@@ -189,13 +174,13 @@ abstract class ColorMap implements IColorMap {
         }
 
         @Override
-        protected int getDefaultColor() {
-            return getRGB(maxX * 0.5f, maxY * 0.5f);
+        public boolean isHeightDependent() {
+            return BiomeAPI.isColorHeightDependent;
         }
 
         @Override
-        public boolean isHeightDependent() {
-            return BiomeAPI.isColorHeightDependent;
+        public int getColorMultiplier() {
+            return getRGB(maxX * 0.5f, maxY * 0.5f);
         }
 
         @Override
@@ -258,13 +243,13 @@ abstract class ColorMap implements IColorMap {
         }
 
         @Override
-        protected int getDefaultColor() {
-            return getRGB(biomeStart[1], getY(DEFAULT_HEIGHT));
+        public boolean isHeightDependent() {
+            return true;
         }
 
         @Override
-        public boolean isHeightDependent() {
-            return true;
+        public int getColorMultiplier() {
+            return getRGB(biomeStart[1], getY(ColorMapBase.DEFAULT_HEIGHT));
         }
 
         @Override

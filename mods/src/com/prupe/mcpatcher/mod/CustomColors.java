@@ -150,6 +150,7 @@ public class CustomColors extends Mod {
         addClassFile(MCPatcherUtils.COLOR_MAP_BASE_CLASS + "$Cached");
         addClassFile(MCPatcherUtils.COLOR_MAP_BASE_CLASS + "$Chunked");
         addClassFile(MCPatcherUtils.COLOR_MAP_BASE_CLASS + "$Fixed");
+        addClassFile(MCPatcherUtils.COLOR_MAP_BASE_CLASS + "$Outer");
         addClassFile(MCPatcherUtils.COLOR_MAP_BASE_CLASS + "$Smoothed");
         addClassFile(MCPatcherUtils.COLOR_MAP_BASE_CLASS + "$Swamp");
         addClassFile(MCPatcherUtils.COLOR_MAP_BASE_CLASS + "$Water");
