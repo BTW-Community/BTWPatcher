@@ -248,7 +248,7 @@ public class ColorizeBlock {
                 }
                 if (resource != null) {
                     logger.finer("using %s for block %s, default color %06x",
-                        resource, BlockAPI.getBlockName(block, metadata[0]), colorMap.getColorMultiplier()
+                        colorMap, BlockAPI.getBlockName(block, metadata[0]), colorMap.getColorMultiplier()
                     );
                 }
             }
