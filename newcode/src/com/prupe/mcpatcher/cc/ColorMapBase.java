@@ -235,16 +235,14 @@ abstract class ColorMapBase {
         private static final int IJK_SIZE = I_SIZE * J_SIZE * K_SIZE;
         private static final int IK_J_MINUS_1_SIZE = IJK_SIZE - IK_SIZE;
 
-        private static final int NO_COLOR = 0x7f000000;
-
         private final IColorMap parent;
 
         private int baseI = Integer.MIN_VALUE;
         private int baseJ = Integer.MIN_VALUE;
         private int baseK = Integer.MIN_VALUE;
 
-        private final int[] data = new int[IJK_SIZE];
-        private final float[] lastColor = new float[3];
+        private final float[][] data = new float[IJK_SIZE][];
+        private final float[][] data1 = new float[IJK_SIZE][3];
 
         private long lastCC = System.currentTimeMillis();
         private int calls;
@@ -273,6 +271,11 @@ abstract class ColorMapBase {
 
         @Override
         public int getColorMultiplier(int i, int j, int k) {
+            return Colorizer.float3ToInt(getColorMultiplierF(i, j, k));
+        }
+
+        @Override
+        public float[] getColorMultiplierF(int i, int j, int k) {
             int offset = getChunkOffset(i, j, k);
             calls++;
             if (offset < 0) {
@@ -280,8 +283,10 @@ abstract class ColorMapBase {
                 offset = getChunkOffset(i, j, k);
                 miss1++;
             }
-            if (data[offset] == NO_COLOR) {
-                data[offset] = parent.getColorMultiplier(i, j, k);
+            float[] color = data[offset];
+            if (color == null) {
+                color = data[offset] = data1[offset];
+                copy3f(color, parent.getColorMultiplierF(i, j, k));
                 miss3++;
             }
             long now = System.currentTimeMillis();
@@ -295,20 +300,20 @@ abstract class ColorMapBase {
                 );
                 lastCC = now;
             }
-            return data[offset];
+            return color;
         }
 
-        @Override
-        public float[] getColorMultiplierF(int i, int j, int k) {
-            Colorizer.intToFloat3(getColorMultiplier(i, j, k), lastColor);
-            return lastColor;
+        private static void copy3f(float[] dst, float[] src) {
+            dst[0] = src[0];
+            dst[1] = src[1];
+            dst[2] = src[2];
         }
 
         private void setChunkBase(int i, int j, int k) {
             baseI = i & I_MASK;
             baseJ = j;
             baseK = k & K_MASK;
-            Arrays.fill(data, NO_COLOR);
+            Arrays.fill(data, null);
         }
 
         private int getChunkOffset(int i, int j, int k) {
@@ -321,7 +326,7 @@ abstract class ColorMapBase {
                     baseJ++;
                     miss2++;
                     System.arraycopy(data, IK_SIZE, data, 0, IK_J_MINUS_1_SIZE);
-                    Arrays.fill(data, IK_J_MINUS_1_SIZE, IJK_SIZE, NO_COLOR);
+                    Arrays.fill(data, IK_J_MINUS_1_SIZE, IJK_SIZE, null);
                 }
                 return j * IK_SIZE + k * I_SIZE + i;
             } else {
