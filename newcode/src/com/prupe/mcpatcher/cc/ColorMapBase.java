@@ -233,13 +233,13 @@ abstract class ColorMapBase {
         private static final int K_SIZE = 17;
         private static final int IK_SIZE = I_SIZE * K_SIZE;
         private static final int IJK_SIZE = I_SIZE * J_SIZE * K_SIZE;
-        private static final int IK_J_MINUS_1_SIZE = IJK_SIZE - IK_SIZE;
 
         private final IColorMap parent;
 
         private int baseI = Integer.MIN_VALUE;
         private int baseJ = Integer.MIN_VALUE;
         private int baseK = Integer.MIN_VALUE;
+        private int baseOffset;
 
         private final float[][] data = new float[IJK_SIZE][];
         private final float[][] data1 = new float[IJK_SIZE][3];
@@ -313,6 +313,7 @@ abstract class ColorMapBase {
             baseI = i & I_MASK;
             baseJ = j;
             baseK = k & K_MASK;
+            baseOffset = 0;
             Arrays.fill(data, null);
         }
 
@@ -325,10 +326,10 @@ abstract class ColorMapBase {
                     j--;
                     baseJ++;
                     miss2++;
-                    System.arraycopy(data, IK_SIZE, data, 0, IK_J_MINUS_1_SIZE);
-                    Arrays.fill(data, IK_J_MINUS_1_SIZE, IJK_SIZE, null);
+                    Arrays.fill(data, baseOffset, IJK_SIZE, null);
+                    baseOffset ^= IK_SIZE;
                 }
-                return j * IK_SIZE + k * I_SIZE + i;
+                return (baseOffset + j * IK_SIZE + k * I_SIZE + i) % IJK_SIZE;
             } else {
                 return -1;
             }
