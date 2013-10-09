@@ -190,7 +190,7 @@ public class ColorizeBlock {
     static void reloadWaterColors(Properties properties) {
         waterColorMap = registerColorMap(WATERCOLOR, "minecraft:flowing_water minecraft:water");
         if (waterColorMap == null) {
-            waterColorMap = new ColorMapBase.Water();
+            waterColorMap = new ColorMap.Water();
             registerColorMap(waterColorMap, null, "minecraft:flowing_water minecraft:water");
         } else {
             Colorizer.intToFloat3(waterColorMap.getColorMultiplier(), waterColor);

@@ -49,13 +49,13 @@ abstract class ColorMap implements IColorMap {
         switch (format) {
             case 0:
                 int color = MCPatcherUtils.getHexProperty(properties, "color", 0xffffff);
-                return new ColorMapBase.Fixed(color);
+                return new Fixed(color);
 
             case 1:
                 IColorMap defaultMap = new TempHumidity(resource, image, properties);
                 IColorMap swampMap = loadColorMap(Colorizer.useSwampColors, swampResource);
                 if (swampMap != null) {
-                    return new ColorMapBase.Swamp(defaultMap, swampMap);
+                    return new Swamp(defaultMap, swampMap);
                 }
                 return defaultMap;
 
@@ -195,6 +195,110 @@ abstract class ColorMap implements IColorMap {
             System.arraycopy(map, i, temp, 0, width);
             System.arraycopy(map, j, map, i, width);
             System.arraycopy(temp, 0, map, j, width);
+        }
+    }
+
+    static final class Fixed implements IColorMap {
+        private final int colorI;
+        private final float[] colorF = new float[3];
+
+        Fixed(int color) {
+            colorI = color;
+            Colorizer.intToFloat3(colorI, colorF);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Fixed{%06x}", colorI);
+        }
+
+        @Override
+        public boolean isHeightDependent() {
+            return false;
+        }
+
+        @Override
+        public int getColorMultiplier() {
+            return colorI;
+        }
+
+        @Override
+        public int getColorMultiplier(int i, int j, int k) {
+            return colorI;
+        }
+
+        @Override
+        public float[] getColorMultiplierF(int i, int j, int k) {
+            return colorF;
+        }
+    }
+
+    static final class Water implements IColorMap {
+        private final float[] lastColor = new float[3];
+
+        @Override
+        public String toString() {
+            return String.format("Water{%06x}", getColorMultiplier());
+        }
+
+        @Override
+        public boolean isHeightDependent() {
+            return false;
+        }
+
+        @Override
+        public int getColorMultiplier() {
+            return BiomeAPI.getWaterColorMultiplier(BiomeAPI.findBiomeByName("Ocean"));
+        }
+
+        @Override
+        public int getColorMultiplier(int i, int j, int k) {
+            return BiomeAPI.getWaterColorMultiplier(BiomeAPI.getBiomeGenAt(i, j, k));
+        }
+
+        @Override
+        public float[] getColorMultiplierF(int i, int j, int k) {
+            Colorizer.intToFloat3(getColorMultiplier(i, j, k), lastColor);
+            return lastColor;
+        }
+    }
+
+    static final class Swamp implements IColorMap {
+        private final IColorMap defaultMap;
+        private final IColorMap swampMap;
+        private final BiomeGenBase swampBiome;
+
+        Swamp(IColorMap defaultMap, IColorMap swampMap) {
+            this.defaultMap = defaultMap;
+            this.swampMap = swampMap;
+            swampBiome = BiomeAPI.findBiomeByName("Swampland");
+        }
+
+        @Override
+        public String toString() {
+            return defaultMap.toString();
+        }
+
+        @Override
+        public boolean isHeightDependent() {
+            return defaultMap.isHeightDependent() || swampMap.isHeightDependent();
+        }
+
+        @Override
+        public int getColorMultiplier() {
+            return defaultMap.getColorMultiplier();
+        }
+
+        @Override
+        public int getColorMultiplier(int i, int j, int k) {
+            IColorMap map = BiomeAPI.getBiomeGenAt(i, j, k) == swampBiome ? swampMap : defaultMap;
+            return map.getColorMultiplier(i, j, k);
+        }
+
+        @Override
+        public float[] getColorMultiplierF(int i, int j, int k) {
+            IColorMap map = BiomeAPI.getBiomeGenAt(i, j, k) == swampBiome ? swampMap : defaultMap;
+            return map.getColorMultiplierF(i, j, k);
         }
     }
 
