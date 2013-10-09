@@ -6,7 +6,6 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.RenderBlocks;
@@ -330,14 +329,6 @@ public class ColorizeBlock {
         }
     }
 
-    public static int getColorMultiplier(Block block, int i, int j, int k) {
-        if (colorizeBlock(block, Minecraft.getInstance().theWorld, i, j, k)) {
-            return blockColor;
-        } else {
-            return 0xffffff;
-        }
-    }
-
     public static void computeWaterColor() {
         int color = waterColorMap == null ? waterBlock.getBlockColor() : waterColorMap.getColorMultiplier();
         Colorizer.setColorF(color);
@@ -347,7 +338,7 @@ public class ColorizeBlock {
         if (waterColorMap == null) {
             return false;
         } else {
-            Colorizer.setColorF(waterColorMap.getColorMultiplier(i, j, k));
+            Colorizer.setColorF(waterColorMap.getColorMultiplierF(i, j, k));
             return true;
         }
     }
@@ -368,19 +359,11 @@ public class ColorizeBlock {
         return lilypadColor;
     }
 
-    public static int getItemColorFromDamage(int defaultColor, Block block, int damage) {
-        if (block == waterBlock || block == staticWaterBlock) {
-            return colorizeBlock(block, damage) ? blockColor : defaultColor;
-        } else {
-            return defaultColor;
-        }
-    }
-
     public static boolean computeRedstoneWireColor(int current) {
         if (redstoneColor == null) {
             return false;
         } else {
-            System.arraycopy(redstoneColor[Math.max(Math.min(current, 15), 0)], 0, Colorizer.setColor, 0, 3);
+            System.arraycopy(redstoneColor[current & 0xf], 0, Colorizer.setColor, 0, 3);
             return true;
         }
     }
@@ -400,17 +383,23 @@ public class ColorizeBlock {
         }
     }
 
-    private static void computeVertexColor(IColorMap colorMap, int i, int j, int k, int[] offsets, float[] color) {
-        int rgb;
+    private static float[] getVertexColor(IColorMap colorMap, int i, int j, int k, int[] offsets) {
         if (enableTestColorSmoothing) {
-            rgb = 0;
-            rgb |= (i + offsets[0]) % 2 == 0 ? 0 : 0xff0000;
-            rgb |= (j + offsets[1]) % 2 == 0 ? 0 : 0xff00;
-            rgb |= (k + offsets[2]) % 2 == 0 ? 0 : 0xff;
+            int rgb = 0;
+            if ((i + offsets[0]) % 2 == 0) {
+                rgb |= 0xff0000;
+            }
+            if ((j + offsets[1]) % 2 == 0) {
+                rgb |= 0x00ff00;
+            }
+            if ((k + offsets[2]) % 2 == 0) {
+                rgb |= 0x0000ff;
+            }
+            Colorizer.intToFloat3(rgb, Colorizer.setColor);
+            return Colorizer.setColor;
         } else {
-            rgb = colorMap.getColorMultiplier(i + offsets[0], j + offsets[1], k + offsets[2]);
+            return colorMap.getColorMultiplierF(i + offsets[0], j + offsets[1], k + offsets[2]);
         }
-        Colorizer.intToFloat3(rgb, color);
     }
 
     public static boolean setupBlockSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
@@ -448,24 +437,24 @@ public class ColorizeBlock {
         }
 
         int[][] offsets = FACE_VERTICES[face];
-        float[] color = Colorizer.setColor;
+        float[] color;
 
-        computeVertexColor(colorMap, i, j, k, offsets[0], color);
+        color = getVertexColor(colorMap, i, j, k, offsets[0]);
         renderBlocks.colorRedTopLeft = topLeft * color[0];
         renderBlocks.colorGreenTopLeft = topLeft * color[1];
         renderBlocks.colorBlueTopLeft = topLeft * color[2];
 
-        computeVertexColor(colorMap, i, j, k, offsets[1], color);
+        color = getVertexColor(colorMap, i, j, k, offsets[1]);
         renderBlocks.colorRedBottomLeft = bottomLeft * color[0];
         renderBlocks.colorGreenBottomLeft = bottomLeft * color[1];
         renderBlocks.colorBlueBottomLeft = bottomLeft * color[2];
 
-        computeVertexColor(colorMap, i, j, k, offsets[2], color);
+        color = getVertexColor(colorMap, i, j, k, offsets[2]);
         renderBlocks.colorRedBottomRight = bottomRight * color[0];
         renderBlocks.colorGreenBottomRight = bottomRight * color[1];
         renderBlocks.colorBlueBottomRight = bottomRight * color[2];
 
-        computeVertexColor(colorMap, i, j, k, offsets[3], color);
+        color = getVertexColor(colorMap, i, j, k, offsets[3]);
         renderBlocks.colorRedTopRight = topRight * color[0];
         renderBlocks.colorGreenTopRight = topRight * color[1];
         renderBlocks.colorBlueTopRight = topRight * color[2];

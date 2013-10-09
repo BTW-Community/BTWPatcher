@@ -8,7 +8,9 @@ import net.minecraft.src.Entity;
 import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.World;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 import static com.prupe.mcpatcher.cc.Colorizer.*;
 
@@ -144,13 +146,13 @@ public class ColorizeWorld {
     private static boolean computeFogColor(IColorMap colorMap) {
         if (colorMap == null || fogCamera == null) {
             return false;
+        } else {
+            int i = (int) fogCamera.posX;
+            int j = (int) fogCamera.posY;
+            int k = (int) fogCamera.posZ;
+            Colorizer.setColorF(colorMap.getColorMultiplierF(i, j, k));
+            return true;
         }
-        int i = (int) fogCamera.posX;
-        int j = (int) fogCamera.posY;
-        int k = (int) fogCamera.posZ;
-        int rgb = colorMap.getColorMultiplier(i, j, k);
-        Colorizer.setColorF(rgb);
-        return true;
     }
 
     public static boolean computeFogColor(World world, float f) {

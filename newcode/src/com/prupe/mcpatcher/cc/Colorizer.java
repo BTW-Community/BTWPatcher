@@ -95,6 +95,12 @@ public class Colorizer {
         intToFloat3(color, setColor);
     }
 
+    static void setColorF(float[] color) {
+        setColor[0] = color[0];
+        setColor[1] = color[1];
+        setColor[2] = color[2];
+    }
+
     static void init() {
     }
 

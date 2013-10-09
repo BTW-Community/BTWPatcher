@@ -18,7 +18,6 @@ public class CustomColors extends Mod {
     private static final MethodRef colorizeBlock1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;)Z");
     private static final MethodRef colorizeBlock2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;I)Z");
     private static final MethodRef colorizeBlock3 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;LIBlockAccess;III)Z");
-    private static final MethodRef getNewColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "getColorMultiplier", "(LBlock;III)I");
     private static final MethodRef colorizeRedstoneWire = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeRedstoneWire", "(LIBlockAccess;IIII)I");
     private static final MethodRef colorizeStem = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeStem", "(ILBlock;I)I");
     private static final MethodRef colorizeWaterBlockGL = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeWaterBlockGL", "(LBlock;)V");
