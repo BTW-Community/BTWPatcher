@@ -60,7 +60,12 @@ abstract class ColorMap implements IColorMap {
                 return defaultMap;
 
             case 2:
-                return new Grid(resource, image, properties);
+                Grid grid = new Grid(resource, image, properties);
+                if (grid.isInteger()) {
+                    return new IntegerGrid(resource, image, properties);
+                } else {
+                    return grid;
+                }
 
             default:
                 logger.error("%s: unknown format %d", propertiesResource, format);
@@ -173,6 +178,26 @@ abstract class ColorMap implements IColorMap {
         }
     }
 
+    protected static int clamp(int i, int min, int max) {
+        if (i < min) {
+            return min;
+        } else if (i > max) {
+            return max;
+        } else {
+            return i;
+        }
+    }
+
+    protected static void flipY(int[] map, int width, int height) {
+        int[] temp = new int[width];
+        for (int i = 0; i < map.length / 2; i += width) {
+            int j = map.length - width - i;
+            System.arraycopy(map, i, temp, 0, width);
+            System.arraycopy(map, j, map, i, width);
+            System.arraycopy(temp, 0, map, j, width);
+        }
+    }
+
     static final class TempHumidity extends ColorMap {
         private TempHumidity(ResourceLocation resource, BufferedImage image, Properties properties) {
             super(resource, image, properties);
@@ -207,17 +232,11 @@ abstract class ColorMap implements IColorMap {
         private Grid(ResourceLocation resource, BufferedImage image, Properties properties) {
             super(resource, image, properties);
 
-            int[] temp = new int[width];
-            for (int i = 0; i < map.length / 2; i += width) {
-                int j = map.length - width - i;
-                System.arraycopy(map, i, temp, 0, width);
-                System.arraycopy(map, j, map, i, width);
-                System.arraycopy(temp, 0, map, j, width);
-            }
+            flipY(map, width, height);
 
             float xScale = (float) width / (float) COLORMAP_WIDTH;
             yScale = (float) height / (float) COLORMAP_HEIGHT;
-            yVariance = MCPatcherUtils.getFloatProperty(properties, "yVariance", yScale - 1.0f);
+            yVariance = Math.max(MCPatcherUtils.getFloatProperty(properties, "yVariance", yScale - 1.0f), 0.0f);
             for (int i = 0; i < biomeStart.length; i++) {
                 if (xScale > 1.0f) {
                     biomeStart[i] = (float) i * xScale;
@@ -245,6 +264,21 @@ abstract class ColorMap implements IColorMap {
                     }
                 }
             }
+        }
+
+        boolean isInteger() {
+            if (width != COLORMAP_WIDTH || height != COLORMAP_HEIGHT) {
+                return false;
+            }
+            if (yVariance != 0.0f) {
+                return false;
+            }
+            for (int i = 0; i < biomeStart.length; i++) {
+                if (biomeStart[i] != i || biomeWidth[i] != 0.0f) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         @Override
@@ -283,6 +317,54 @@ abstract class ColorMap implements IColorMap {
                 y += yVariance * noiseMinus1to1(k, -j, i, ~biome.biomeID);
             }
             return y;
+        }
+    }
+
+    static final class IntegerGrid implements IColorMap {
+        private final ResourceLocation resource;
+        private final int[] map;
+        private final float[] lastColor = new float[3];
+
+        IntegerGrid(ResourceLocation resource, BufferedImage image, Properties properties) {
+            this.resource = resource;
+            map = MCPatcherUtils.getImageRGB(image);
+            for (int i = 0; i < map.length; i++) {
+                map[i] &= 0xffffff;
+            }
+            flipY(map, image.getWidth(), image.getHeight());
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "{" + resource + "}";
+        }
+
+        @Override
+        public boolean isHeightDependent() {
+            return true;
+        }
+
+        @Override
+        public int getColorMultiplier() {
+            return getRGB(1, ColorMapBase.DEFAULT_HEIGHT);
+        }
+
+        @Override
+        public int getColorMultiplier(int i, int j, int k) {
+            int x = clamp(BiomeAPI.getBiomeIDAt(i, j, k), 0, COLORMAP_WIDTH - 1);
+            int y = clamp(j, 0, COLORMAP_HEIGHT - 1);
+            return getRGB(x, y);
+        }
+
+        @Override
+        public float[] getColorMultiplierF(int i, int j, int k) {
+            int rgb = getColorMultiplier(i, j, k);
+            Colorizer.intToFloat3(rgb, lastColor);
+            return lastColor;
+        }
+
+        private int getRGB(int x, int y) {
+            return map[y * COLORMAP_WIDTH + x];
         }
     }
 }

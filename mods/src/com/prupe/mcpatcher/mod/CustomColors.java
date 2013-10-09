@@ -158,6 +158,7 @@ public class CustomColors extends Mod {
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$1");
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$TempHumidity");
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$Grid");
+        addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$IntegerGrid");
         addClassFile(MCPatcherUtils.LIGHTMAP_CLASS);
 
         BaseTexturePackMod.earlyInitialize(3, MCPatcherUtils.COLORIZER_CLASS, "init");
