@@ -26,7 +26,7 @@ abstract class ColorMap implements IColorMap {
     protected final float maxY;
 
     private final float[] xy = new float[2];
-    private final float[] lastResult = new float[3];
+    private final float[] lastColor = new float[3];
 
     static IColorMap loadColorMap(boolean useCustom, ResourceLocation resource) {
         return loadColorMap(useCustom, resource, null);
@@ -62,7 +62,7 @@ abstract class ColorMap implements IColorMap {
             case 2:
                 Grid grid = new Grid(resource, image, properties);
                 if (grid.isInteger()) {
-                    return new IntegerGrid(resource, image, properties);
+                    return new IntegerGrid(resource, grid.map);
                 } else {
                     return grid;
                 }
@@ -101,8 +101,8 @@ abstract class ColorMap implements IColorMap {
     @Override
     public final float[] getColorMultiplierF(int i, int j, int k) {
         int rgb = getColorMultiplier(i, j, k);
-        Colorizer.intToFloat3(rgb, lastResult);
-        return lastResult;
+        Colorizer.intToFloat3(rgb, lastColor);
+        return lastColor;
     }
 
     protected int getRGB(float x, float y) {
@@ -185,16 +185,6 @@ abstract class ColorMap implements IColorMap {
             return max;
         } else {
             return i;
-        }
-    }
-
-    protected static void flipY(int[] map, int width, int height) {
-        int[] temp = new int[width];
-        for (int i = 0; i < map.length / 2; i += width) {
-            int j = map.length - width - i;
-            System.arraycopy(map, i, temp, 0, width);
-            System.arraycopy(map, j, map, i, width);
-            System.arraycopy(temp, 0, map, j, width);
         }
     }
 
@@ -336,7 +326,13 @@ abstract class ColorMap implements IColorMap {
         private Grid(ResourceLocation resource, BufferedImage image, Properties properties) {
             super(resource, image, properties);
 
-            flipY(map, width, height);
+            int[] temp = new int[width];
+            for (int i = 0; i < map.length / 2; i += width) {
+                int j = map.length - width - i;
+                System.arraycopy(map, i, temp, 0, width);
+                System.arraycopy(map, j, map, i, width);
+                System.arraycopy(temp, 0, map, j, width);
+            }
 
             float xScale = (float) width / (float) COLORMAP_WIDTH;
             yScale = (float) height / (float) COLORMAP_HEIGHT;
@@ -429,13 +425,9 @@ abstract class ColorMap implements IColorMap {
         private final int[] map;
         private final float[] lastColor = new float[3];
 
-        IntegerGrid(ResourceLocation resource, BufferedImage image, Properties properties) {
+        IntegerGrid(ResourceLocation resource, int[] map) {
             this.resource = resource;
-            map = MCPatcherUtils.getImageRGB(image);
-            for (int i = 0; i < map.length; i++) {
-                map[i] &= 0xffffff;
-            }
-            flipY(map, image.getWidth(), image.getHeight());
+            this.map = map;
         }
 
         @Override
