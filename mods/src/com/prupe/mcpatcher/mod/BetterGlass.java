@@ -67,9 +67,11 @@ public class BetterGlass extends Mod {
                         any(0, 30),
 
                         // if (j3 != i2)
+                        // -or-
+                        // if (j3 > i2)
                         ILOAD, backReference(2),
                         ILOAD, any(),
-                        IF_ICMPEQ, any(2),
+                        subset(new int[]{IF_ICMPEQ, IF_ICMPLE}, true), any(2),
 
                         // flag = true;
                         push(1),
@@ -343,13 +345,17 @@ public class BetterGlass extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // (var =) renderGlobal.sortAndRender(camera, 1, (double) partialTick);
                         ALOAD, 5,
                         ALOAD, 4,
                         push(1),
                         FLOAD_1,
                         F2D,
                         captureReference(INVOKEVIRTUAL),
-                        ISTORE, any()
+                        or(
+                            build(ISTORE, any()), // pre-13w41a
+                            build(POP) // 13w41a+
+                        )
                     );
                 }
             }
