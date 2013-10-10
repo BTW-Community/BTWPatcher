@@ -859,6 +859,64 @@ public final class BaseMod extends Mod {
         }
     }
 
+    public static class WorldRendererMod extends com.prupe.mcpatcher.ClassMod {
+        protected final FieldRef posX = new FieldRef(getDeobfClass(), "posX", "I");
+        protected final FieldRef posY = new FieldRef(getDeobfClass(), "posY", "I");
+        protected final FieldRef posZ = new FieldRef(getDeobfClass(), "posZ", "I");
+        protected final FieldRef[] pos = new FieldRef[]{posX, posY, posZ};
+        protected final MethodRef updateRenderer;
+
+        public WorldRendererMod(Mod mod) {
+            super(mod);
+
+            final MethodRef glNewList = new MethodRef(MCPatcherUtils.GL11_CLASS, "glNewList", "(II)V");
+            final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
+
+            updateRenderer = new MethodRef(getDeobfClass(), "updateRenderer",
+                getMinecraftVersion().compareTo("13w41a") < 0 ? "()V" : "(LEntityLivingBase;)V"
+            );
+
+            addClassSignature(new ConstSignature(glNewList));
+            addClassSignature(new ConstSignature(glTranslatef));
+            addClassSignature(new ConstSignature(1.000001f));
+
+            addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(updateRenderer);
+                    for (int i = 0; i < pos.length; i++) {
+                        addXref(i + 1, pos[i]);
+                    }
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    String exp0 = "";
+                    String exp1 = "";
+                    for (int i = 0; i < 3; i++) {
+                        exp0 += build(
+                            // i/j/k0 = this.posX/Y/Z;
+                            ALOAD_0,
+                            captureReference(GETFIELD),
+                            anyISTORE
+                        );
+                        exp1 += build(
+                            // i/j/k1 = this.posX/Y/Z + 16;
+                            ALOAD_0,
+                            backReference(i + 1),
+                            push(16),
+                            IADD,
+                            anyISTORE
+                        );
+                    }
+                    return buildExpression(
+                        exp0,
+                        exp1
+                    );
+                }
+            });
+        }
+    }
+
     public static class EntityLivingBaseMod extends com.prupe.mcpatcher.ClassMod {
         public EntityLivingBaseMod(Mod mod) {
             super(mod);

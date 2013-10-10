@@ -808,20 +808,9 @@ public class ConnectedTextures extends Mod {
         }
     }
 
-    private class WorldRendererMod extends ClassMod {
+    private class WorldRendererMod extends BaseMod.WorldRendererMod {
         WorldRendererMod() {
-            final MethodRef updateRenderer = new MethodRef(getDeobfClass(), "updateRenderer", "()V");
-
-            addClassSignature(new ConstSignature(new MethodRef(MCPatcherUtils.GL11_CLASS, "glNewList", "(II)V")));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push(1.000001F)
-                    );
-                }
-            }.setMethod(updateRenderer));
+            super(ConnectedTextures.this);
 
             addPatch(new BytecodePatch() {
                 @Override

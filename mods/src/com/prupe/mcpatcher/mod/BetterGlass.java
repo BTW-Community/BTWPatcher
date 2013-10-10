@@ -42,11 +42,12 @@ public class BetterGlass extends Mod {
         addClassFile(MCPatcherUtils.RENDER_PASS_CLASS + "$2");
     }
 
-    private class WorldRendererMod extends ClassMod {
+    private class WorldRendererMod extends BaseMod.WorldRendererMod {
         private int loopRegister;
 
         WorldRendererMod() {
-            final MethodRef updateRenderer = new MethodRef(getDeobfClass(), "updateRenderer", "()V");
+            super(BetterGlass.this);
+
             final FieldRef glRenderList = new FieldRef(getDeobfClass(), "glRenderList", "I");
             final FieldRef skipRenderPass = new FieldRef(getDeobfClass(), "skipRenderPass", "[Z");
             final MethodRef startPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "start", "(I)V");
