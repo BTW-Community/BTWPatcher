@@ -434,6 +434,7 @@ public final class BaseMod extends Mod {
 
         public TessellatorMod(Mod mod) {
             super(mod);
+
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {

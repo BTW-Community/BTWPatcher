@@ -57,33 +57,53 @@ public class BaseTilesheetMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // if (this.addedVertices % 4 == 0 ...)
                         ALOAD_0,
                         captureReference(GETFIELD),
                         push(4),
                         IREM,
-
-                        any(0, 1000),
-
-                        ALOAD_0,
-                        DUP,
-                        captureReference(GETFIELD),
-                        ICONST_1,
-                        IADD,
-                        anyReference(PUTFIELD),
-
-                        ALOAD_0,
-                        DUP,
-                        captureReference(GETFIELD),
-                        push(8),
-                        IADD,
-                        anyReference(PUTFIELD)
+                        IFNE_or_IFEQ, any(2)
                     );
                 }
             }
                 .setMethod(addVertex)
                 .addXref(1, addedVertices)
-                .addXref(2, vertexCount)
-                .addXref(3, rawBufferIndex)
+            );
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.vertexCount++;
+                        ALOAD_0,
+                        DUP,
+                        capture(build(GETFIELD, capture(any(2)))),
+                        push(1),
+                        IADD,
+                        PUTFIELD, backReference(2)
+                    );
+                }
+            }
+                .setMethod(addVertex)
+                .addXref(1, vertexCount)
+            );
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.rawBufferIndex += 8;
+                        ALOAD_0,
+                        DUP,
+                        capture(build(GETFIELD, capture(any(2)))),
+                        push(8),
+                        IADD,
+                        PUTFIELD, backReference(2)
+                    );
+                }
+            }
+                .setMethod(addVertex)
+                .addXref(1, rawBufferIndex)
             );
 
             addClassSignature(new BytecodeSignature() {
