@@ -54,6 +54,9 @@ public class RandomMobs extends Mod {
 
     private class EntityMod extends ClassMod {
         EntityMod() {
+            final FieldRef entityId = new FieldRef(getDeobfClass(), "entityId", "I");
+            final FieldRef nextEntityID = new FieldRef(getDeobfClass(), "nextEntityID", "I");
+
             addClassSignature(new ConstSignature("Pos"));
             addClassSignature(new ConstSignature("Motion"));
             addClassSignature(new ConstSignature("Rotation"));
@@ -99,14 +102,27 @@ public class RandomMobs extends Mod {
                 .addXref(6, new FieldRef(getDeobfClass(), "prevPosZ", "D"))
             );
 
-            addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "entityId", "I"))
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.entityId = Entity.nextEntityID++;
+                        ALOAD_0,
+                        capture(build(GETSTATIC, capture(any(2)))),
+                        DUP,
+                        push(1),
+                        IADD,
+                        PUTSTATIC, backReference(2),
+                        captureReference(PUTFIELD)
+                    );
+                }
+            }
+                .matchConstructorOnly(true)
+                .addXref(1, nextEntityID)
+                .addXref(3, entityId)
             );
-            addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "nextEntityID", "I"))
-                .accessFlag(AccessFlag.PRIVATE, true)
-                .accessFlag(AccessFlag.STATIC, true)
-            );
+
+            addPatch(new MakeMemberPublicPatch(entityId));
         }
     }
 
