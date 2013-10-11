@@ -351,11 +351,12 @@ public class BaseTilesheetMod extends Mod {
             final ClassRef objClass = new ClassRef("java/lang/Object");
             final MethodRef stringValueOf = new MethodRef("java/lang/String", "valueOf", "(Ljava/lang/Object;)Ljava/lang/String;");
             final MethodRef stringFormat = new MethodRef("java/lang/String", "format", "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;");
+            final MethodRef stringIndexOf = new MethodRef("java/lang/String", "indexOf", "(I)I");
+            final MethodRef stringEquals = new MethodRef("java/lang/String", "equals", "(Ljava/lang/Object;)Z");
             final MethodRef sbInit0 = new MethodRef("java/lang/StringBuilder", "<init>", "()V");
             final MethodRef sbInit1 = new MethodRef("java/lang/StringBuilder", "<init>", "(Ljava/lang/String;)V");
             final MethodRef sbAppend = new MethodRef("java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;");
             final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
-            final MethodRef strEquals = new MethodRef("java/lang/String", "equals", "(Ljava/lang/Object;)Z");
             final MethodRef readImage = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
 
             addClassSignature(new BaseMod.ResourceLocationSignature(this, blocksAtlas, "textures/atlas/blocks.png"));
@@ -540,7 +541,7 @@ public class BaseTilesheetMod extends Mod {
                             build(push("compass"))
                         )),
                         ALOAD_1,
-                        reference(INVOKEVIRTUAL, strEquals)
+                        reference(INVOKEVIRTUAL, stringEquals)
                     );
                 }
 
@@ -581,6 +582,34 @@ public class BaseTilesheetMod extends Mod {
                     );
                 }
             });
+
+            if (getMinecraftVersion().compareTo("13w41a") >= 0) {
+                addPatch(new BytecodePatch() {
+                    @Override
+                    public String getDescription() {
+                        return "allow slashes in texture names";
+                    }
+
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // if (name.indexOf('/') != -1 ...)
+                            ALOAD_1,
+                            push(47),
+                            reference(INVOKEVIRTUAL, stringIndexOf),
+                            push(-1),
+                            IF_ICMPNE, any(2)
+                        );
+                    }
+
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            // *burp*
+                        );
+                    }
+                });
+            }
         }
     }
 
