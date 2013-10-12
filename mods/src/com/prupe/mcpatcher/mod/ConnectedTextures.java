@@ -602,6 +602,9 @@ public class ConnectedTextures extends Mod {
             final FieldRef forgeEast = new FieldRef("net/minecraftforge/common/ForgeDirection", "EAST", "Lnet/minecraftforge/common/ForgeDirection;");
             final MethodRef canPaneConnectToForge = new MethodRef("BlockPane", "canPaneConnectTo", "(LIBlockAccess;IIILnet/minecraftforge/common/ForgeDirection;)Z");
             final boolean haveThickPanes = getMinecraftVersion().compareTo("13w41a") >= 0;
+            final MethodRef newRenderPaneThin = new MethodRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "renderThin", "(LRenderBlocks;LBlock;LIcon;IIIZZZZ)V");
+            final MethodRef newRenderPaneThick = new MethodRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "renderThick", "(LRenderBlocks;LBlock;LIcon;IIIZZZZ)V");
+            final MethodRef newRenderPane = haveThickPanes ? newRenderPaneThick : newRenderPaneThin;
 
             mapRenderTypeMethod(18, renderBlockPane1);
             if (haveThickPanes) {
@@ -684,7 +687,7 @@ public class ConnectedTextures extends Mod {
                         ILOAD, reg - 2,
                         ILOAD, reg - 1,
                         ILOAD, reg,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "render", "(LRenderBlocks;LBlock;LIcon;IIIZZZZ)V"))
+                        reference(INVOKESTATIC, newRenderPane)
                     );
                 }
             }
