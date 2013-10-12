@@ -2,7 +2,6 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.mal.BaseTexturePackMod;
-import javassist.bytecode.AccessFlag;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -213,16 +212,14 @@ public class ConnectedTextures extends Mod {
     private class RenderBlocksMod extends BaseMod.RenderBlocksMod {
         private final MethodRef[] faceMethods = new MethodRef[6];
         private final FieldRef overrideBlockTexture = new FieldRef(getDeobfClass(), "overrideBlockTexture", "LIcon;");
-        private final FieldRef fancyGrass = new FieldRef(getDeobfClass(), "fancyGrass", "Z");
         private final FieldRef instance = new FieldRef("Tessellator", "instance", "LTessellator;");
         private final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;III)Z");
         private final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;III)Z");
-        private final MethodRef renderStandardBlockWithColorMultiplier = new MethodRef(getDeobfClass(), "renderStandardBlockWithColorMultiplier", "(LBlock;IIIFFF)Z");
         private final MethodRef hasOverrideTexture = new MethodRef(getDeobfClass(), "hasOverrideTexture", "()Z");
-        private final MethodRef renderBlockPane = new MethodRef(getDeobfClass(), "renderBlockPane", "(LBlockPane;III)Z");
+        private final MethodRef renderBlockPane1 = new MethodRef(getDeobfClass(), "renderBlockPane1", "(LBlockPane;III)Z");
+        private final MethodRef renderBlockPane2 = new MethodRef(getDeobfClass(), "renderBlockPane2", "(LBlock;III)Z");
         private final MethodRef renderBlockBrewingStand = new MethodRef(getDeobfClass(), "renderBlockBrewingStand", "(LBlockBrewingStand;III)Z");
         private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
-        private final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
         private final MethodRef renderBlockAsItem = new MethodRef(getDeobfClass(), "renderBlockAsItem", "(LBlock;IF)V");
         private final MethodRef renderBlockAsItemVanilla = new MethodRef(getDeobfClass(), "renderBlockAsItemVanilla", "(LBlock;IF)V"); // added by BTW 4.68
         private final MethodRef getIconBySideAndMetadata = new MethodRef(getDeobfClass(), "getIconBySideAndMetadata", "(LBlock;II)LIcon;");
@@ -479,7 +476,8 @@ public class ConnectedTextures extends Mod {
             addPatch(new RenderBlocksPatch() {
                 {
                     setInsertBefore(true);
-                    skipMethod(renderBlockPane);
+                    skipMethod(renderBlockPane1);
+                    skipMethod(renderBlockPane2);
                 }
 
                 @Override
@@ -602,7 +600,10 @@ public class ConnectedTextures extends Mod {
             final FieldRef forgeEast = new FieldRef("net/minecraftforge/common/ForgeDirection", "EAST", "Lnet/minecraftforge/common/ForgeDirection;");
             final MethodRef canPaneConnectToForge = new MethodRef("BlockPane", "canPaneConnectTo", "(LIBlockAccess;IIILnet/minecraftforge/common/ForgeDirection;)Z");
 
-            mapRenderTypeMethod(18, renderBlockPane);
+            mapRenderTypeMethod(18, renderBlockPane1);
+            if (getMinecraftVersion().compareTo("13w41a") >= 0) {
+                mapRenderTypeMethod(41, renderBlockPane2);
+            }
 
             addPatch(new BytecodePatch() {
                 private int iconRegister;
@@ -684,7 +685,7 @@ public class ConnectedTextures extends Mod {
                 }
             }
                 .setInsertAfter(true)
-                .targetMethod(renderBlockPane)
+                .targetMethod(renderBlockPane1, renderBlockPane2)
             );
 
             addPatch(new BytecodePatch() {
@@ -746,7 +747,7 @@ public class ConnectedTextures extends Mod {
                         label("A")
                     );
                 }
-            }.targetMethod(renderBlockPane));
+            }.targetMethod(renderBlockPane1, renderBlockPane2));
         }
 
         private void setupHeldBlocks() {
