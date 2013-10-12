@@ -6,6 +6,8 @@ import com.prupe.mcpatcher.mal.BaseTexturePackMod;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -599,9 +601,10 @@ public class ConnectedTextures extends Mod {
         private void setupGlassPanes() {
             final FieldRef forgeEast = new FieldRef("net/minecraftforge/common/ForgeDirection", "EAST", "Lnet/minecraftforge/common/ForgeDirection;");
             final MethodRef canPaneConnectToForge = new MethodRef("BlockPane", "canPaneConnectTo", "(LIBlockAccess;IIILnet/minecraftforge/common/ForgeDirection;)Z");
+            final boolean haveThickPanes = getMinecraftVersion().compareTo("13w41a") >= 0;
 
             mapRenderTypeMethod(18, renderBlockPane1);
-            if (getMinecraftVersion().compareTo("13w41a") >= 0) {
+            if (haveThickPanes) {
                 mapRenderTypeMethod(41, renderBlockPane2);
             }
 
@@ -633,8 +636,9 @@ public class ConnectedTextures extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    return buildExpression(
+                    return buildExpression(lookBehind(build(
                         ALOAD_1,
+                        optional(anyReference(CHECKCAST)),
                         ALOAD_0,
                         reference(GETFIELD, blockAccess),
                         ILOAD_2,
@@ -659,7 +663,7 @@ public class ConnectedTextures extends Mod {
                             )
                         ),
                         capture(anyISTORE)
-                    );
+                    ), true));
                 }
 
                 @Override
@@ -684,7 +688,6 @@ public class ConnectedTextures extends Mod {
                     );
                 }
             }
-                .setInsertAfter(true)
                 .targetMethod(renderBlockPane1, renderBlockPane2)
             );
 
@@ -696,22 +699,37 @@ public class ConnectedTextures extends Mod {
                         @Override
                         public String getMatchExpression() {
                             return buildExpression(
-                                // var28 = (double) var65.interpolateX(7.0);
-                                ALOAD, any(),
-                                push(7.0),
-                                reference(INVOKEINTERFACE, getInterpolatedU),
-                                F2D,
-                                DSTORE, capture(any())
+                                // var32 = ...;
+                                // var34 = (double) i;
+                                capture(anyDSTORE),
+                                ILOAD_2,
+                                I2D,
+                                anyDSTORE
                             );
                         }
 
                         @Override
                         public boolean afterMatch() {
-                            int reg = getCaptureGroup(1)[0] & 0xff;
-                            sideUVRegisters = new int[]{reg, reg + 2, reg + 4, reg + 6, reg + 8};
-                            Logger.log(Logger.LOG_CONST, "glass side texture uv registers (%d %d %d %d %d)",
-                                reg, reg + 2, reg + 4, reg + 6, reg + 8
-                            );
+                            int reg = extractRegisterNum(getCaptureGroup(1));
+                            List<Integer> tmp = new ArrayList<Integer>();
+                            if (haveThickPanes) {
+                                tmp.add(reg - 10);
+                            }
+                            tmp.add(reg - 8);
+                            tmp.add(reg - 6);
+                            tmp.add(reg - 4);
+                            tmp.add(reg - 2);
+                            tmp.add(reg);
+                            sideUVRegisters = new int[tmp.size()];
+                            StringBuilder sb = new StringBuilder();
+                            for (int i = 0; i < tmp.size(); i++) {
+                                sideUVRegisters[i] = tmp.get(i);
+                                if (sb.length() > 0) {
+                                    sb.append(' ');
+                                }
+                                sb.append(sideUVRegisters[i]);
+                            }
+                            Logger.log(Logger.LOG_CONST, "glass side texture uv registers (%s)", sb.toString());
                             return true;
                         }
                     });
@@ -730,7 +748,7 @@ public class ConnectedTextures extends Mod {
                         DLOAD, subset(sideUVRegisters, false),
                         DLOAD, subset(sideUVRegisters, false),
                         reference(INVOKEVIRTUAL, addVertexWithUV)
-                    ), 8));
+                    ), 4, 8));
                 }
 
                 @Override
