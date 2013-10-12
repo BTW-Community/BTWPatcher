@@ -291,7 +291,7 @@ abstract class ColorMapBase {
             }
             long now = System.currentTimeMillis();
             if (now - lastCC > 5000L) {
-                logger.info("%s: calls: %d, miss chunk: %.2f%%, miss sheet: %.2f%%, miss block: %.2f%%",
+                logger.finer("%s: calls: %d, miss chunk: %.2f%%, miss sheet: %.2f%%, miss block: %.2f%%",
                     this,
                     calls,
                     100.0f * (float) miss1 / (float) calls,
