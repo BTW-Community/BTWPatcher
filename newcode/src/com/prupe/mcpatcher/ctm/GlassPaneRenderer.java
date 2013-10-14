@@ -83,42 +83,42 @@ public class GlassPaneRenderer {
         if ((connectEast && connectWest) || !connectAny) {
             // full west-east pane
             setupTileCoords(TileOverride.SOUTH_FACE);
-            tessellator.addVertexWithUV(i0, j1, k1, u0, v0);
-            tessellator.addVertexWithUV(i0, j0, k1, u0, v1);
-            tessellator.addVertexWithUV(i3, j0, k1, u3, v1);
-            tessellator.addVertexWithUV(i3, j1, k1, u3, v0);
+            tessellator.addVertexWithUV(i0, j1, k2, u0, v0);
+            tessellator.addVertexWithUV(i0, j0, k2, u0, v1);
+            tessellator.addVertexWithUV(i3, j0, k2, u3, v1);
+            tessellator.addVertexWithUV(i3, j1, k2, u3, v0);
 
             setupTileCoords(TileOverride.NORTH_FACE);
-            tessellator.addVertexWithUV(i3, j1, k2, u0, v0);
-            tessellator.addVertexWithUV(i3, j0, k2, u0, v1);
-            tessellator.addVertexWithUV(i0, j0, k2, u3, v1);
-            tessellator.addVertexWithUV(i0, j1, k2, u3, v0);
+            tessellator.addVertexWithUV(i3, j1, k1, u0, v0);
+            tessellator.addVertexWithUV(i3, j0, k1, u0, v1);
+            tessellator.addVertexWithUV(i0, j0, k1, u3, v1);
+            tessellator.addVertexWithUV(i0, j1, k1, u3, v0);
         } else if (connectWest && !connectEast) {
             // west half-pane
             setupTileCoords(TileOverride.SOUTH_FACE);
-            tessellator.addVertexWithUV(i0, j1, k1, u2, v0);
-            tessellator.addVertexWithUV(i0, j0, k1, u2, v1);
-            tessellator.addVertexWithUV(i1, j0, k1, u3, v1);
-            tessellator.addVertexWithUV(i1, j1, k1, u3, v0);
+            tessellator.addVertexWithUV(i0, j1, k2, u2, v0);
+            tessellator.addVertexWithUV(i0, j0, k2, u2, v1);
+            tessellator.addVertexWithUV(i1, j0, k2, u3, v1);
+            tessellator.addVertexWithUV(i1, j1, k2, u3, v0);
 
             setupTileCoords(TileOverride.NORTH_FACE);
-            tessellator.addVertexWithUV(i1, j1, k2, u0, v0);
-            tessellator.addVertexWithUV(i1, j0, k2, u0, v1);
-            tessellator.addVertexWithUV(i0, j0, k2, u1, v1);
-            tessellator.addVertexWithUV(i0, j1, k2, u1, v0);
+            tessellator.addVertexWithUV(i1, j1, k1, u0, v0);
+            tessellator.addVertexWithUV(i1, j0, k1, u0, v1);
+            tessellator.addVertexWithUV(i0, j0, k1, u1, v1);
+            tessellator.addVertexWithUV(i0, j1, k1, u1, v0);
         } else if (!connectWest && connectEast) {
             // east half-pane
             setupTileCoords(TileOverride.SOUTH_FACE);
-            tessellator.addVertexWithUV(i2, j1, k1, u0, v0);
-            tessellator.addVertexWithUV(i2, j0, k1, u0, v1);
-            tessellator.addVertexWithUV(i3, j0, k1, u1, v1);
-            tessellator.addVertexWithUV(i3, j1, k1, u1, v0);
+            tessellator.addVertexWithUV(i2, j1, k2, u0, v0);
+            tessellator.addVertexWithUV(i2, j0, k2, u0, v1);
+            tessellator.addVertexWithUV(i3, j0, k2, u1, v1);
+            tessellator.addVertexWithUV(i3, j1, k2, u1, v0);
 
             setupTileCoords(TileOverride.NORTH_FACE);
-            tessellator.addVertexWithUV(i3, j1, k2, u2, v0);
-            tessellator.addVertexWithUV(i3, j0, k2, u2, v1);
-            tessellator.addVertexWithUV(i2, j0, k2, u3, v1);
-            tessellator.addVertexWithUV(i2, j1, k2, u3, v0);
+            tessellator.addVertexWithUV(i3, j1, k1, u2, v0);
+            tessellator.addVertexWithUV(i3, j0, k1, u2, v1);
+            tessellator.addVertexWithUV(i2, j0, k1, u3, v1);
+            tessellator.addVertexWithUV(i2, j1, k1, u3, v0);
         }
 
         if ((connectNorth && connectSouth) || !connectAny) {
