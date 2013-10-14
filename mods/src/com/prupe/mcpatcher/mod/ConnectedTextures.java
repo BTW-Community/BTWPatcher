@@ -695,8 +695,8 @@ public class ConnectedTextures extends Mod {
                         reference(GETSTATIC, skipAllRendering),
                         IFEQ, branch("A"),
 
-                        // return false;
-                        push(0),
+                        // return true;
+                        push(1),
                         IRETURN,
 
                         // }
