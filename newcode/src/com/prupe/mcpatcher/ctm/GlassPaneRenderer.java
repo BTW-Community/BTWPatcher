@@ -14,7 +14,8 @@ import java.util.Arrays;
 public class GlassPaneRenderer {
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "glassPane", true);
 
-    public static boolean active;
+    public static boolean skipAllRendering;
+    public static boolean skipPaneRendering;
 
     private static final Icon[] icons = new Icon[6];
     private static Tessellator tessellator;
@@ -44,21 +45,21 @@ public class GlassPaneRenderer {
     }
 
     private static boolean setupIcons(RenderBlocks renderBlocks, Block blockPane, Icon origIcon, int i, int j, int k) {
+        skipAllRendering = RenderPassAPI.instance.skipDefaultRendering(blockPane);
+        skipPaneRendering = skipAllRendering;
         if (!enable) {
-            active = false;
             return false;
         }
-        active = false;
         for (int face = TileOverride.NORTH_FACE; face <= TileOverride.EAST_FACE; face++) {
             icons[face] = CTMUtils.getTile(renderBlocks, blockPane, i, j, k, face, origIcon, Tessellator.instance);
             if (icons[face] == null) {
-                active = RenderPassAPI.instance.skipDefaultRendering(blockPane);
+                skipPaneRendering = skipAllRendering;
                 return false;
             } else if (icons[face] != origIcon) {
-                active = true;
+                skipPaneRendering = true;
             }
         }
-        return active;
+        return skipPaneRendering;
     }
 
     private static void render(int i, int j, int k,
@@ -237,7 +238,6 @@ public class GlassPaneRenderer {
         }
     }
 
-
     private static void setupTileCoords(int face) {
         Icon icon = icons[face];
         tessellator = TessellatorUtils.getTessellator(Tessellator.instance, icons[face]);
@@ -252,6 +252,7 @@ public class GlassPaneRenderer {
     static void clear() {
         Arrays.fill(icons, null);
         tessellator = null;
-        active = false;
+        skipAllRendering = false;
+        skipPaneRendering = false;
     }
 }

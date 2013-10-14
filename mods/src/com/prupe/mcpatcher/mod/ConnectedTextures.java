@@ -605,6 +605,8 @@ public class ConnectedTextures extends Mod {
             final MethodRef newRenderPaneThin = new MethodRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "renderThin", "(LRenderBlocks;LBlock;LIcon;IIIZZZZ)V");
             final MethodRef newRenderPaneThick = new MethodRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "renderThick", "(LRenderBlocks;LBlock;LIcon;IIIZZZZ)V");
             final MethodRef newRenderPane = haveThickPanes ? newRenderPaneThick : newRenderPaneThin;
+            final FieldRef skipPaneRendering = new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "skipPaneRendering", "Z");
+            final FieldRef skipAllRendering = new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "skipAllRendering", "Z");
 
             mapRenderTypeMethod(18, renderBlockPane1);
             if (haveThickPanes) {
@@ -687,7 +689,18 @@ public class ConnectedTextures extends Mod {
                         ILOAD, reg - 2,
                         ILOAD, reg - 1,
                         ILOAD, reg,
-                        reference(INVOKESTATIC, newRenderPane)
+                        reference(INVOKESTATIC, newRenderPane),
+
+                        // if (GlassPaneRenderer.skipAllRendering) {
+                        reference(GETSTATIC, skipAllRendering),
+                        IFEQ, branch("A"),
+
+                        // return false;
+                        push(0),
+                        IRETURN,
+
+                        // }
+                        label("A")
                     );
                 }
             }
@@ -758,7 +771,7 @@ public class ConnectedTextures extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         // if (!GlassPaneRenderer.active) {
-                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "active", "Z")),
+                        reference(GETSTATIC, skipPaneRendering),
                         IFNE, branch("A"),
 
                         // ...
