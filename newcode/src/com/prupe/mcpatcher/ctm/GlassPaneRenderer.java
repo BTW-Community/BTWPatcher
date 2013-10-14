@@ -9,6 +9,8 @@ import net.minecraft.src.Icon;
 import net.minecraft.src.RenderBlocks;
 import net.minecraft.src.Tessellator;
 
+import java.util.Arrays;
+
 public class GlassPaneRenderer {
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "glassPane", true);
 
@@ -32,7 +34,6 @@ public class GlassPaneRenderer {
         if (setupIcons(renderBlocks, blockPane, origIcon, i, j, k)) {
             render(i, j, k, connectNorth, connectSouth, connectWest, connectEast, 0.0, 0.0, 0.0);
         }
-        clear();
     }
 
     public static void renderThick(RenderBlocks renderBlocks, Block blockPane, Icon origIcon, int i, int j, int k,
@@ -40,7 +41,6 @@ public class GlassPaneRenderer {
         if (setupIcons(renderBlocks, blockPane, origIcon, i, j, k)) {
             render(i, j, k, connectNorth, connectSouth, connectWest, connectEast, 0.0625, 1.0, 0.001);
         }
-        clear();
     }
 
     private static boolean setupIcons(RenderBlocks renderBlocks, Block blockPane, Icon origIcon, int i, int j, int k) {
@@ -175,13 +175,9 @@ public class GlassPaneRenderer {
         v1 = icon.getMaxV();
     }
 
-    private static void clear() {
-        icons[0] = null;
-        icons[1] = null;
-        icons[2] = null;
-        icons[3] = null;
-        icons[4] = null;
-        icons[5] = null;
+    static void clear() {
+        Arrays.fill(icons, null);
         tessellator = null;
+        active = false;
     }
 }

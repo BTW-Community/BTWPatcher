@@ -36,6 +36,7 @@ public class CTMUtils {
             @Override
             public void beforeChange() {
                 RenderPassAPI.instance.clear();
+                GlassPaneRenderer.clear();
                 allOverrides.clear();
                 blockOverrides.clear();
                 tileOverrides.clear();
