@@ -48,15 +48,17 @@ public class GlassPaneRenderer {
             active = false;
             return false;
         }
-        active = true;
+        active = false;
         for (int face = TileOverride.NORTH_FACE; face <= TileOverride.EAST_FACE; face++) {
             icons[face] = CTMUtils.getTile(renderBlocks, blockPane, i, j, k, face, origIcon, Tessellator.instance);
             if (icons[face] == null) {
                 active = RenderPassAPI.instance.skipDefaultRendering(blockPane);
                 return false;
+            } else if (icons[face] != origIcon) {
+                active = true;
             }
         }
-        return true;
+        return active;
     }
 
     private static void render(int i, int j, int k,
