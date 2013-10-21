@@ -58,6 +58,8 @@ public class CustomColors extends Mod {
     private static final MethodRef getRenderColor = new MethodRef("Block", "getRenderColor", "(I)I");
     private static final MethodRef colorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;III)I");
 
+    private final boolean haveLeavesBaseBase;
+
     public CustomColors() {
         name = MCPatcherUtils.CUSTOM_COLORS;
         author = "MCPatcher";
@@ -67,6 +69,8 @@ public class CustomColors extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BLOCK_API_MOD);
         addDependency(MCPatcherUtils.BIOME_API_MOD);
+
+        haveLeavesBaseBase = getMinecraftVersion().compareTo("13w43a") >= 0;
 
         configPanel = new ConfigPanel();
 
@@ -79,6 +83,9 @@ public class CustomColors extends Mod {
         addClassMod(new BlockGrassMod());
         addClassMod(new BlockLeavesMod());
         addClassMod(new BlockLeavesBaseMod());
+        if (haveLeavesBaseBase) {
+            addClassMod(new BlockLeavesBaseBaseMod());
+        }
         addClassMod(new BlockLilyPadMod());
         addClassMod(new BlockTallGrassMod());
         addClassMod(new BlockFlowerMod());
@@ -498,9 +505,16 @@ public class CustomColors extends Mod {
         }
     }
 
+    private class BlockLeavesBaseBaseMod extends ClassMod {
+        BlockLeavesBaseBaseMod() {
+            setParentClass("Block");
+            addPrerequisiteClass("BlockLeavesBase");
+        }
+    }
+
     private class BlockLeavesBaseMod extends ClassMod {
         BlockLeavesBaseMod() {
-            setParentClass("Block");
+            setParentClass(haveLeavesBaseBase ? "BlockLeavesBaseBase" : "Block");
             addPrerequisiteClass("BlockLeaves");
         }
     }
