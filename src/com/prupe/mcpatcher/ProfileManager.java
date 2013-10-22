@@ -6,10 +6,18 @@ import com.prupe.mcpatcher.launcher.profile.ProfileList;
 import com.prupe.mcpatcher.launcher.version.Library;
 import com.prupe.mcpatcher.launcher.version.Version;
 import com.prupe.mcpatcher.launcher.version.VersionList;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.StringWriter;
 import java.util.*;
 
 class ProfileManager {
@@ -559,6 +567,44 @@ class ProfileManager {
         for (Version version : remoteVersions.getVersions()) {
             out.printf("  %1s %s%s\n", version.isComplete() ? "*" : "", version.getId(), version.isSnapshot() ? " (snapshot)" : "");
         }
+    }
+
+    void dumpLibs(String versionString) throws Exception {
+        if (MCPatcherUtils.isNullOrEmpty(versionString)) {
+            versionString = getInputVersion();
+        }
+        Version version = Version.getLocalVersion(versionString);
+        if (version == null) {
+            return;
+        }
+
+        Document xml = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        xml.setXmlStandalone(true);
+        Element userlibrary = xml.createElement("userlibrary");
+        userlibrary.setAttribute("systemlibrary", "false");
+        userlibrary.setAttribute("version", "2");
+        xml.appendChild(userlibrary);
+
+        File libDir = MCPatcherUtils.getMinecraftPath("libraries");
+        for (Library library : version.getLibraries()) {
+            if (library != null) {
+                Element archive = xml.createElement("archive");
+                File path = library.getPath(libDir);
+                if (path.isFile()) {
+                    archive.setAttribute("path", path.getAbsolutePath());
+                    userlibrary.appendChild(archive);
+                }
+            }
+        }
+
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        StringWriter writer = new StringWriter();
+        transformer.transform(new DOMSource(xml), new StreamResult(writer));
+        String output = writer.getBuffer().toString();
+
+        Properties properties = new Properties();
+        properties.setProperty("org.eclipse.jdt.core.userLibrary.mclibs", output);
+        properties.store(System.out, "$ECLIPSE/.metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.jdt.core.prefs");
     }
 
     private static class OriginalVersion {
