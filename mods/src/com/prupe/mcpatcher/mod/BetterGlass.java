@@ -387,9 +387,11 @@ public class BetterGlass extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push(516), // GL_GREATER
-                        anyLDC, // pre-13w38a 0.01f, 13w38a 0.5f, 13w38b+ 0.1f
-                        reference(INVOKESTATIC, glAlphaFunc)
+                        // this.rainXCoords = new float[1024];
+                        ALOAD_0,
+                        push(1024),
+                        NEWARRAY, T_FLOAT,
+                        anyReference(PUTFIELD)
                     );
                 }
             }.setMethod(renderRainSnow));
