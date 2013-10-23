@@ -569,7 +569,7 @@ class ProfileManager {
         }
     }
 
-    void dumpLibs(String versionString) throws Exception {
+    void dumpLibs(PrintStream out, String versionString) throws Exception {
         if (MCPatcherUtils.isNullOrEmpty(versionString)) {
             versionString = getInputVersion();
         }
@@ -587,7 +587,7 @@ class ProfileManager {
 
         File libDir = MCPatcherUtils.getMinecraftPath("libraries");
         for (Library library : version.getLibraries()) {
-            if (library != null) {
+            if (library != null && !library.exclude()) {
                 Element archive = xml.createElement("archive");
                 File path = library.getPath(libDir);
                 if (path.isFile()) {
@@ -604,7 +604,7 @@ class ProfileManager {
 
         Properties properties = new Properties();
         properties.setProperty("org.eclipse.jdt.core.userLibrary.mclibs", output);
-        properties.store(System.out, "$ECLIPSE/.metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.jdt.core.prefs");
+        properties.store(out, "$ECLIPSE/.metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.jdt.core.prefs");
     }
 
     private static class OriginalVersion {

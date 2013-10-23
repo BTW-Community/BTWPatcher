@@ -203,7 +203,7 @@ final public class MCPatcher {
         if (dumpLibs) {
             try {
                 profileManager.refresh(ui);
-                profileManager.dumpLibs(mcVersion);
+                profileManager.dumpLibs(System.out, mcVersion);
             } catch (Throwable e) {
                 e.printStackTrace();
             }
