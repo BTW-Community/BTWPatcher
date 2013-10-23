@@ -29,7 +29,7 @@ final class Enchantment extends OverrideBase {
 
     static void beginOuter2D() {
         GL11.glEnable(GL11.GL_BLEND);
-        GL11.glDepthFunc(GL11.GL_GREATER);
+        GL11.glDepthFunc(GL11.GL_EQUAL);
         GL11.glDepthMask(false);
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glMatrixMode(GL11.GL_TEXTURE);

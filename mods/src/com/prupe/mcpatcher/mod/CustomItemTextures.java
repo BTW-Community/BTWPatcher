@@ -16,6 +16,11 @@ public class CustomItemTextures extends Mod {
     private static final String GLINT_PNG = "textures/misc/enchanted_item_glint.png";
 
     private static final MethodRef glDepthFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthFunc", "(I)V");
+    private static final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
+    private static final MethodRef glEnable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glEnable", "(I)V");
+    private static final MethodRef glAlphaFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glAlphaFunc", "(IF)V");
+    private static final MethodRef glDisable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDisable", "(I)V");
+
     private static final MethodRef getEntityItem = new MethodRef("EntityItem", "getEntityItem", "()LItemStack;");
     private static final FieldRef itemsList = new FieldRef("Item", "itemsList", "[LItem;");
     private static final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffectVanilla", "()Z");
@@ -436,7 +441,7 @@ public class CustomItemTextures extends Mod {
             final MethodRef renderItemIntoGUI = new MethodRef(getDeobfClass(), "renderItemIntoGUIVanilla", "(LFontRenderer;LTextureManager;LItemStack;II)V");
             final MethodRef renderItemIntoGUIForge = new MethodRef(getDeobfClass(), "renderItemIntoGUI", "(LFontRenderer;LTextureManager;LItemStack;IIZ)V");
             final MethodRef renderEffectForge = new MethodRef(getDeobfClass(), "renderEffect", "(LTextureManager;II)V");
-            final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
+            final boolean needAlphaTest = getMinecraftVersion().compareTo("13w42a") >= 0;
 
             addClassSignature(new ConstSignature("missingno"));
             addGlintSignature(this, renderDroppedItem);
@@ -553,6 +558,53 @@ public class CustomItemTextures extends Mod {
                     );
                 }
             }.targetMethod(renderItemAndEffectIntoGUI));
+
+            if (needAlphaTest) {
+                addPatch(new BytecodePatch() {
+                    @Override
+                    public String getDescription() {
+                        return "enable alpha test in gui";
+                    }
+
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // this.renderItemIntoGUI(fontRenderer, textureManager, itemStack, x, y);
+                            ALOAD_0,
+                            ALOAD_1,
+                            ALOAD_2,
+                            ALOAD_3,
+                            ILOAD, 4,
+                            ILOAD, 5,
+                            or(
+                                build(reference(INVOKEVIRTUAL, renderItemIntoGUI)),
+                                build(reference(INVOKEVIRTUAL, renderItemIntoGUIForge))
+                            )
+                        );
+                    }
+
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            // GL11.glEnable(GL11.GL_ALPHA_TEST);
+                            push(3008),
+                            reference(INVOKESTATIC, glEnable),
+
+                            // GL11.glAlphaFunc(GL11.GL_GREATER, 0.01f);
+                            push(516),
+                            push(0.01f),
+                            reference(INVOKESTATIC, glAlphaFunc),
+
+                            // ...
+                            getMatch(),
+
+                            // GL11.glDisable(GL11.GL_ALPHA_TEST);
+                            push(3008),
+                            reference(INVOKESTATIC, glDisable)
+                        );
+                    }
+                }.targetMethod(renderItemAndEffectIntoGUI));
+            }
 
             addPatch(new BytecodePatch() {
                 @Override

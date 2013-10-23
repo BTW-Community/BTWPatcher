@@ -3,6 +3,8 @@ package com.prupe.mcpatcher.cit;
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.mal.item.ItemAPI;
 import net.minecraft.src.*;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.GL11;
 
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;
@@ -263,7 +265,7 @@ public class CITUtils {
         }
         Enchantment.beginOuter2D();
         for (int i = 0; i < matches.size(); i++) {
-            matches.getEnchantment(i).render2D(Tessellator.instance, matches.getIntensity(i), x, y, x + 16, y + 16, z - 50.0f);
+            matches.getEnchantment(i).render2D(Tessellator.instance, matches.getIntensity(i), x, y, x + 16, y + 16, z);
         }
         Enchantment.endOuter2D();
         return !useGlint;
