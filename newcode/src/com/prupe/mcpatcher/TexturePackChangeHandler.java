@@ -135,7 +135,7 @@ abstract public class TexturePackChangeHandler {
             for (Map.Entry<ResourceLocation, TextureObject> entry : textureManager.texturesByName.entrySet()) {
                 ResourceLocation resource = entry.getKey();
                 TextureObject texture = entry.getValue();
-                if (texture instanceof SimpleTexture && !TexturePackAPI.hasResource(resource)) {
+                if (texture instanceof SimpleTexture && !(texture instanceof ThreadDownloadImageData) && !TexturePackAPI.hasResource(resource)) {
                     texturesToUnload.add(resource);
                 }
             }

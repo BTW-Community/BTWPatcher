@@ -29,6 +29,7 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new TextureManagerMod());
         addClassMod(new BaseMod.TextureUtilMod(this));
         addClassMod(new AbstractTextureMod());
+        addClassMod(new ThreadDownloadImageDataMod());
         addClassMod(new BaseMod.SimpleTextureMod(this));
         addClassMod(new BaseMod.IconMod(this));
         addClassMod(new BaseMod.TextureAtlasMod(this));
@@ -242,6 +243,19 @@ public class BaseTexturePackMod extends Mod {
                     );
                 }
             });
+        }
+    }
+
+    private class ThreadDownloadImageDataMod extends ClassMod {
+        ThreadDownloadImageDataMod() {
+            setParentClass(getMinecraftVersion().compareTo("13w41a") < 0 ? "AbstractTexture" : "SimpleTexture");
+
+            final MethodRef atomicIncrementAndGet = new MethodRef("java/util/concurrent/atomic/AtomicInteger", "incrementAndGet", "()I");
+            final MethodRef setThreadName = new MethodRef("java/lang/Thread", "setName", "(Ljava/lang/String;)V");
+
+            addClassSignature(new ConstSignature(atomicIncrementAndGet));
+            addClassSignature(new ConstSignature(setThreadName));
+            addClassSignature(new ConstSignature("Texture Downloader #"));
         }
     }
 
