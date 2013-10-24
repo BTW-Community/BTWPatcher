@@ -10,6 +10,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -579,11 +580,14 @@ class ProfileManager {
         }
 
         Document xml = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-        xml.setXmlStandalone(true);
-        Element userlibrary = xml.createElement("userlibrary");
+        Element userlibraries = xml.createElement("eclipse-userlibraries");
+        userlibraries.setAttribute("version", "2");
+        xml.appendChild(xml.createComment(" Window > Preferences > Java > Build Path > User Libraries > Import "));
+        xml.appendChild(userlibraries);
+        Element userlibrary = xml.createElement("library");
+        userlibrary.setAttribute("name", "mclibs");
         userlibrary.setAttribute("systemlibrary", "false");
-        userlibrary.setAttribute("version", "2");
-        xml.appendChild(userlibrary);
+        userlibraries.appendChild(userlibrary);
 
         File libDir = MCPatcherUtils.getMinecraftPath("libraries");
         for (Library library : version.getLibraries()) {
@@ -597,14 +601,18 @@ class ProfileManager {
             }
         }
 
-        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        transformerFactory.setAttribute("indent-number", 4);
+
+        Transformer transformer = transformerFactory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
         StringWriter writer = new StringWriter();
         transformer.transform(new DOMSource(xml), new StreamResult(writer));
         String output = writer.getBuffer().toString();
 
-        Properties properties = new Properties();
-        properties.setProperty("org.eclipse.jdt.core.userLibrary.mclibs", output);
-        properties.store(out, "$ECLIPSE/.metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.jdt.core.prefs");
+        out.println(output);
     }
 
     private static class OriginalVersion {
