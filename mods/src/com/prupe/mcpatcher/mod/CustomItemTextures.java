@@ -59,6 +59,7 @@ public class CustomItemTextures extends Mod {
         addClassMod(new EntityLivingBaseMod());
         addClassMod(new BaseMod.EntityLivingMod(this));
         addClassMod(new EntityPlayerMod());
+        addClassMod(new AbstractClientPlayerMod());
         addClassMod(new PotionMod());
         addClassMod(new PotionHelperMod());
 
@@ -912,7 +913,7 @@ public class CustomItemTextures extends Mod {
 
         @Override
         String getEntityClass() {
-            return "EntityPlayer";
+            return "AbstractClientPlayer";
         }
     }
 
@@ -1088,6 +1089,14 @@ public class CustomItemTextures extends Mod {
                     );
                 }
             }.setMethod(getCurrentArmor));
+        }
+    }
+
+    private class AbstractClientPlayerMod extends ClassMod {
+        AbstractClientPlayerMod() {
+            setParentClass("EntityPlayer");
+
+            addClassSignature(new ConstSignature("http://skins.minecraft.net/MinecraftSkins/%s.png"));
         }
     }
 
