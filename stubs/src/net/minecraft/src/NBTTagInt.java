@@ -1,5 +1,5 @@
 package net.minecraft.src;
 
-public class NBTTagInteger extends NBTBase {
+public class NBTTagInt extends NBTBase {
     public int data;
 }

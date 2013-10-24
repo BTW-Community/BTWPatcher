@@ -104,8 +104,8 @@ abstract public class NBTRule {
             return false;
         } else if (nbt instanceof NBTTagString) {
             return match((NBTTagString) nbt);
-        } else if (nbt instanceof NBTTagInteger) {
-            return match((NBTTagInteger) nbt);
+        } else if (nbt instanceof NBTTagInt) {
+            return match((NBTTagInt) nbt);
         } else if (nbt instanceof NBTTagDouble) {
             return match((NBTTagDouble) nbt);
         } else if (nbt instanceof NBTTagFloat) {
@@ -133,7 +133,7 @@ abstract public class NBTRule {
         return false;
     }
 
-    protected boolean match(NBTTagInteger nbt) {
+    protected boolean match(NBTTagInt nbt) {
         return false;
     }
 
@@ -209,7 +209,7 @@ abstract public class NBTRule {
         }
 
         @Override
-        protected boolean match(NBTTagInteger nbt) {
+        protected boolean match(NBTTagInt nbt) {
             return integerValue != null && integerValue == nbt.data;
         }
 
