@@ -3,8 +3,6 @@ package com.prupe.mcpatcher.cit;
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.mal.item.ItemAPI;
 import net.minecraft.src.*;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11;
 
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;

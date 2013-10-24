@@ -2,8 +2,6 @@ package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.mal.biome.BiomeAPI;
-import net.minecraft.src.BiomeGenBase;
 
 import java.util.ArrayList;
 import java.util.Arrays;

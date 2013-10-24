@@ -7,7 +7,6 @@ import com.prupe.mcpatcher.WeightedIndex;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import net.minecraft.src.ResourceLocation;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 class MobRuleList {

@@ -2577,99 +2577,99 @@ public class CustomColors extends Mod {
     }
 
     private void setupRedstoneWire(com.prupe.mcpatcher.ClassMod classMod, final String description, final MethodRef method) {
-            classMod.addClassSignature(new BytecodeSignature(classMod) {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // f = (float) l / 15.0f;
-                        anyILOAD,
-                        I2F,
-                        push(15.0f),
-                        FDIV,
-                        anyFSTORE,
+        classMod.addClassSignature(new BytecodeSignature(classMod) {
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // f = (float) l / 15.0f;
+                    anyILOAD,
+                    I2F,
+                    push(15.0f),
+                    FDIV,
+                    anyFSTORE,
 
-                        // f1 = f * 0.6f + 0.4f;
-                        anyFLOAD,
-                        push(0.6f),
-                        FMUL,
-                        push(0.4f),
-                        FADD,
-                        anyFSTORE
-                    );
-                }
-            }.setMethod(method));
+                    // f1 = f * 0.6f + 0.4f;
+                    anyFLOAD,
+                    push(0.6f),
+                    FMUL,
+                    push(0.4f),
+                    FADD,
+                    anyFSTORE
+                );
+            }
+        }.setMethod(method));
 
-            classMod.addPatch(new BytecodePatch(classMod) {
-                @Override
-                public String getDescription() {
-                    return description;
-                }
+        classMod.addPatch(new BytecodePatch(classMod) {
+            @Override
+            public String getDescription() {
+                return description;
+            }
 
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ILOAD, capture(any()),
-                        I2F,
-                        push(15.0f),
-                        FDIV,
-                        FSTORE, capture(any()),
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    ILOAD, capture(any()),
+                    I2F,
+                    push(15.0f),
+                    FDIV,
+                    FSTORE, capture(any()),
 
-                        FLOAD, backReference(2),
-                        push(0.6f),
-                        FMUL,
-                        push(0.4f),
-                        FADD,
-                        FSTORE, capture(any()),
+                    FLOAD, backReference(2),
+                    push(0.6f),
+                    FMUL,
+                    push(0.4f),
+                    FADD,
+                    FSTORE, capture(any()),
 
-                        any(0, 10),
+                    any(0, 10),
 
-                        FLOAD, backReference(2),
-                        FLOAD, backReference(2),
-                        FMUL,
-                        push(0.7f),
-                        FMUL,
-                        push(0.5f),
-                        FSUB,
-                        FSTORE, capture(any()),
+                    FLOAD, backReference(2),
+                    FLOAD, backReference(2),
+                    FMUL,
+                    push(0.7f),
+                    FMUL,
+                    push(0.5f),
+                    FSUB,
+                    FSTORE, capture(any()),
 
-                        FLOAD, backReference(2),
-                        FLOAD, backReference(2),
-                        FMUL,
-                        push(0.6f),
-                        FMUL,
-                        push(0.7f),
-                        FSUB,
-                        FSTORE, capture(any())
-                    );
-                }
+                    FLOAD, backReference(2),
+                    FLOAD, backReference(2),
+                    FMUL,
+                    push(0.6f),
+                    FMUL,
+                    push(0.7f),
+                    FSUB,
+                    FSTORE, capture(any())
+                );
+            }
 
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        ILOAD, getCaptureGroup(1),
-                        reference(INVOKESTATIC, computeRedstoneWireColor),
-                        IFEQ, branch("A"),
+            @Override
+            public byte[] getReplacementBytes() {
+                return buildCode(
+                    ILOAD, getCaptureGroup(1),
+                    reference(INVOKESTATIC, computeRedstoneWireColor),
+                    IFEQ, branch("A"),
 
-                        reference(GETSTATIC, setColor),
-                        ICONST_0,
-                        FALOAD,
-                        FSTORE, getCaptureGroup(3),
-                        reference(GETSTATIC, setColor),
-                        ICONST_1,
-                        FALOAD,
-                        FSTORE, getCaptureGroup(4),
-                        reference(GETSTATIC, setColor),
-                        ICONST_2,
-                        FALOAD,
-                        FSTORE, getCaptureGroup(5),
-                        GOTO, branch("B"),
+                    reference(GETSTATIC, setColor),
+                    ICONST_0,
+                    FALOAD,
+                    FSTORE, getCaptureGroup(3),
+                    reference(GETSTATIC, setColor),
+                    ICONST_1,
+                    FALOAD,
+                    FSTORE, getCaptureGroup(4),
+                    reference(GETSTATIC, setColor),
+                    ICONST_2,
+                    FALOAD,
+                    FSTORE, getCaptureGroup(5),
+                    GOTO, branch("B"),
 
-                        label("A"),
-                        getMatch(),
-                        label("B")
-                    );
-                }
-            }.targetMethod(method));
+                    label("A"),
+                    getMatch(),
+                    label("B")
+                );
+            }
+        }.targetMethod(method));
     }
 
     private class BlockRedstoneWireMod extends ClassMod {

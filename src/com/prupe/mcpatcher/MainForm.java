@@ -3,7 +3,6 @@ package com.prupe.mcpatcher;
 import com.prupe.mcpatcher.converter.TexturePackConverter;
 import com.prupe.mcpatcher.converter.TexturePackConverter15;
 import com.prupe.mcpatcher.converter.TexturePackConverter16;
-import com.prupe.mcpatcher.launcher.version.VersionList;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
