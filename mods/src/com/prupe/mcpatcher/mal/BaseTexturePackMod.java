@@ -250,12 +250,15 @@ public class BaseTexturePackMod extends Mod {
         ThreadDownloadImageDataMod() {
             setParentClass(getMinecraftVersion().compareTo("13w41a") < 0 ? "AbstractTexture" : "SimpleTexture");
 
-            final MethodRef atomicIncrementAndGet = new MethodRef("java/util/concurrent/atomic/AtomicInteger", "incrementAndGet", "()I");
             final MethodRef setThreadName = new MethodRef("java/lang/Thread", "setName", "(Ljava/lang/String;)V");
+            final MethodRef startThread = new MethodRef("java/lang/Thread", "start", "()V");
 
-            addClassSignature(new ConstSignature(atomicIncrementAndGet));
             addClassSignature(new ConstSignature(setThreadName));
-            addClassSignature(new ConstSignature("Texture Downloader #"));
+            addClassSignature(new ConstSignature(startThread));
+            addClassSignature(new OrSignature(
+                new ConstSignature("Skin downloader: "),
+                new ConstSignature("Texture Downloader #")
+            ));
         }
     }
 
