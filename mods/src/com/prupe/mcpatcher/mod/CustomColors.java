@@ -19,7 +19,6 @@ public class CustomColors extends Mod {
     private static final MethodRef colorizeBlock2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;I)Z");
     private static final MethodRef colorizeBlock3 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;LIBlockAccess;III)Z");
     private static final MethodRef colorizeRedstoneWire = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeRedstoneWire", "(LIBlockAccess;IIII)I");
-    private static final MethodRef colorizeStem = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeStem", "(ILBlock;I)I");
     private static final MethodRef colorizeWaterBlockGL = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeWaterBlockGL", "(LBlock;)V");
     private static final MethodRef colorizeSpawnerEgg = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "colorizeSpawnerEgg", "(III)I");
     private static final MethodRef colorizeText1 = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "colorizeText", "(I)I");
@@ -35,7 +34,6 @@ public class CustomColors extends Mod {
     private static final MethodRef computeMyceliumParticleColor = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "computeMyceliumParticleColor", "()Z");
     private static final MethodRef computeRedstoneWireColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeRedstoneWireColor", "(I)Z");
     private static final MethodRef getWaterBottleColor = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "getWaterBottleColor", "()I");
-    private static final MethodRef getLilyPadColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "getLilyPadColor", "()I");
     private static final MethodRef setupPotion = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "setupPotion", "(LPotion;)V");
     private static final MethodRef setupForFog = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "setupForFog", "(LEntity;)V");
     private static final MethodRef setupSpawnerEgg = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "setupSpawnerEgg", "(Ljava/lang/String;III)V");
@@ -110,8 +108,6 @@ public class CustomColors extends Mod {
         addClassMod(new EntityReddustFXMod());
 
         addClassMod(new RenderGlobalMod());
-
-        addClassMod(new BlockStemMod());
 
         addClassMod(new MapColorMod());
 
@@ -3358,75 +3354,6 @@ public class CustomColors extends Mod {
                     );
                 }
             }.matchConstructorOnly(true));
-        }
-    }
-
-    public class BlockStemMod extends ClassMod {
-        BlockStemMod() {
-            MethodRef getRenderColor = new MethodRef(getDeobfClass(), "getRenderColor", "(I)I");
-
-            addClassSignature(new FixedBytecodeSignature(
-                // j = i * 32;
-                begin(),
-                ILOAD_1,
-                BIPUSH, 32,
-                IMUL,
-                ISTORE_2,
-
-                // k = 255 - i * 8;
-                SIPUSH, 0, 255,
-                ILOAD_1,
-                BIPUSH, 8,
-                IMUL,
-                ISUB,
-                ISTORE_3,
-
-                // l = i * 4;
-                ILOAD_1,
-                ICONST_4,
-                IMUL,
-                ISTORE, 4,
-
-                // return j << 16 | k << 8 | l;
-                ILOAD_2,
-                BIPUSH, 16,
-                ISHL,
-                ILOAD_3,
-                BIPUSH, 8,
-                ISHL,
-                IOR,
-                ILOAD, 4,
-                IOR,
-                IRETURN,
-                end()
-            ).setMethod(getRenderColor));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override pumpkin and melon stem color";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        IRETURN,
-                        end()
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        ALOAD_0,
-                        ILOAD_1,
-                        reference(INVOKESTATIC, colorizeStem)
-                    );
-                }
-            }
-                .setInsertBefore(true)
-                .targetMethod(getRenderColor)
-            );
         }
     }
 

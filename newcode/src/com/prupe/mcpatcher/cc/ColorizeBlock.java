@@ -38,14 +38,10 @@ public class ColorizeBlock {
 
     private static Block waterBlock;
     private static Block staticWaterBlock;
-    private static Block pumpkinStemBlock;
-    private static Block melonStemBlock;
 
     private static final Map<Block, IColorMap[]> blockColorMaps = new IdentityHashMap<Block, IColorMap[]>(); // bitmaps from palette.block.*
     private static IColorMap waterColorMap;
     private static float[][] redstoneColor; // colormap/redstone.png
-    private static int[] pumpkinStemColors; // colormap/pumpkinstem.png
-    private static int[] melonStemColors; // colormap/melonstem.png
 
     private static final int blockBlendRadius = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius", 1);
 
@@ -152,16 +148,11 @@ public class ColorizeBlock {
     static void reset() {
         waterBlock = BlockAPI.getFixedBlock("minecraft:flowing_water");
         staticWaterBlock = BlockAPI.getFixedBlock("minecraft:water");
-        pumpkinStemBlock = BlockAPI.getFixedBlock("minecraft:pumpkin_stem");
-        melonStemBlock = BlockAPI.getFixedBlock("minecraft:melon_stem");
 
         blockColorMaps.clear();
         waterColorMap = null;
 
         waterColor = new float[]{0.2f, 0.3f, 1.0f};
-        redstoneColor = null;
-        pumpkinStemColors = null;
-        melonStemColors = null;
     }
 
     static void reloadFoliageColors(Properties properties) {
@@ -273,20 +264,21 @@ public class ColorizeBlock {
     }
 
     static void reloadStemColors(Properties properties) {
-        int[] stemColors = getStemRGB(STEM_COLORS);
-        pumpkinStemColors = getStemRGB(PUMPKIN_STEM_COLORS);
-        if (pumpkinStemColors == null) {
-            pumpkinStemColors = stemColors;
-        }
-        melonStemColors = getStemRGB(MELON_STEM_COLORS);
-        if (melonStemColors == null) {
-            melonStemColors = stemColors;
-        }
+        ResourceLocation resource = TexturePackAPI.hasResource(PUMPKIN_STEM_COLORS) ? PUMPKIN_STEM_COLORS : STEM_COLORS;
+        registerMetadataRGB("minecraft:pumpkin_stem", resource, 8);
+        resource = TexturePackAPI.hasResource(MELON_STEM_COLORS) ? MELON_STEM_COLORS : STEM_COLORS;
+        registerMetadataRGB("minecraft:melon_stem", resource, 8);
     }
 
-    private static int[] getStemRGB(ResourceLocation resource) {
+    private static void registerMetadataRGB(String blockName, ResourceLocation resource, int length) {
         int[] rgb = MCPatcherUtils.getImageRGB(TexturePackAPI.getImage(resource));
-        return rgb == null || rgb.length < 8 ? null : rgb;
+        if (rgb == null || rgb.length < length) {
+            return;
+        }
+        for (int i = 0; i < length; i++) {
+            IColorMap colorMap = new ColorMap.Fixed(rgb[i] & 0xffffff);
+            registerColorMap(colorMap, resource, blockName + ":" + i + "," + ((i + length) & 0xf));
+        }
     }
 
     private static IColorMap findColorMap(Block block, int metadata) {
@@ -346,18 +338,6 @@ public class ColorizeBlock {
             Colorizer.setColorF(waterColorMap.getColorMultiplierF(i, j, k));
             return true;
         }
-    }
-
-    public static int colorizeStem(int defaultColor, Block block, int blockMetadata) {
-        int[] colors;
-        if (block == pumpkinStemBlock) {
-            colors = pumpkinStemColors;
-        } else if (block == melonStemBlock) {
-            colors = melonStemColors;
-        } else {
-            return defaultColor;
-        }
-        return colors == null ? defaultColor : colors[blockMetadata & 0x7];
     }
 
     public static boolean computeRedstoneWireColor(int current) {
