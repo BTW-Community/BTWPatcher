@@ -332,33 +332,25 @@ abstract class ColorMap implements IColorMap {
     }
 
     static final class Grid extends ColorMap {
-        private final float[] biomeStart = new float[BiomeGenBase.biomeList.length];
-        private final float[] biomeWidth = new float[BiomeGenBase.biomeList.length];
-
-        private final float yScale;
+        private final float[] biomeX = new float[BiomeGenBase.biomeList.length];
         private final float yVariance;
 
         private Grid(ResourceLocation resource, BufferedImage image, Properties properties) {
             super(resource, image, properties);
 
-            int[] temp = new int[width];
-            for (int i = 0; i < map.length / 2; i += width) {
-                int j = map.length - width - i;
-                System.arraycopy(map, i, temp, 0, width);
-                System.arraycopy(map, j, map, i, width);
-                System.arraycopy(temp, 0, map, j, width);
+            if (MCPatcherUtils.getBooleanProperty(properties, "flipY", false)) {
+                int[] temp = new int[width];
+                for (int i = 0; i < map.length / 2; i += width) {
+                    int j = map.length - width - i;
+                    System.arraycopy(map, i, temp, 0, width);
+                    System.arraycopy(map, j, map, i, width);
+                    System.arraycopy(temp, 0, map, j, width);
+                }
             }
 
-            float xScale = (float) width / (float) COLORMAP_WIDTH;
-            yScale = (float) height / (float) COLORMAP_HEIGHT;
-            yVariance = Math.max(MCPatcherUtils.getFloatProperty(properties, "yVariance", yScale - 1.0f), 0.0f);
-            for (int i = 0; i < biomeStart.length; i++) {
-                if (xScale > 1.0f) {
-                    biomeStart[i] = (float) i * xScale;
-                    biomeWidth[i] = xScale - 1.0f;
-                } else {
-                    biomeStart[i] = i % width;
-                }
+            yVariance = Math.max(MCPatcherUtils.getFloatProperty(properties, "yVariance", 0.0f), 0.0f);
+            for (int i = 0; i < biomeX.length; i++) {
+                biomeX[i] = i % width;
             }
             for (Map.Entry<Object, Object> entry : properties.entrySet()) {
                 String key = (String) entry.getKey();
@@ -366,13 +358,9 @@ abstract class ColorMap implements IColorMap {
                 if (key.endsWith(".x") && !MCPatcherUtils.isNullOrEmpty(value)) {
                     key = key.substring(0, key.length() - 2);
                     BiomeGenBase biome = BiomeAPI.findBiomeByName(key);
-                    if (biome != null) {
-                        String[] token = value.trim().split("-");
+                    if (biome != null && biome.biomeID >= 0 && biome.biomeID < BiomeGenBase.biomeList.length) {
                         try {
-                            float start = clamp(Float.parseFloat(token[0]), 0.0f, maxX);
-                            float end = clamp(token.length > 1 ? Float.parseFloat(token[1]) : start, 0.0f, maxX);
-                            biomeStart[biome.biomeID] = start;
-                            biomeWidth[biome.biomeID] = end - start;
+                            biomeX[biome.biomeID] = Float.parseFloat(value);
                         } catch (NumberFormatException e) {
                             e.printStackTrace();
                         }
@@ -388,8 +376,8 @@ abstract class ColorMap implements IColorMap {
             if (yVariance != 0.0f) {
                 return false;
             }
-            for (int i = 0; i < biomeStart.length; i++) {
-                if (biomeStart[i] != i || biomeWidth[i] != 0.0f) {
+            for (int i = 0; i < biomeX.length; i++) {
+                if (biomeX[i] != i) {
                     return false;
                 }
             }
@@ -403,7 +391,7 @@ abstract class ColorMap implements IColorMap {
 
         @Override
         public int getColorMultiplier() {
-            return getRGB(biomeStart[1], getY(ColorMapBase.DEFAULT_HEIGHT));
+            return getRGB(biomeX[1], getY(ColorMapBase.DEFAULT_HEIGHT));
         }
 
         @Override
@@ -413,17 +401,11 @@ abstract class ColorMap implements IColorMap {
         }
 
         private float getX(BiomeGenBase biome, int i, int j, int k) {
-            int id = biome.biomeID;
-            float x = biomeStart[id];
-            float w = biomeWidth[id];
-            if (w != 0.0f) {
-                x += w * noise0to1(i, j, k, id);
-            }
-            return x;
+            return biomeX[biome.biomeID];
         }
 
         private float getY(int j) {
-            return (float) j * yScale;
+            return (float) j;
         }
 
         private float getY(BiomeGenBase biome, int i, int j, int k) {
