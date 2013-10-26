@@ -435,7 +435,6 @@ final public class MCPatcher {
                                 Logger.log(Logger.LOG_METHOD, "%s matches %s %s", e.getKey(), e.getValue().name, e.getValue().type);
                             }
                         }
-                        iterator.remove();
                         progress = true;
                     }
                 } catch (InterruptedException e) {
@@ -445,6 +444,9 @@ final public class MCPatcher {
                     Logger.log(e);
                 }
             }
+            if (progress) {
+                iterator.remove();
+            }
         }
         return progress && !done;
     }
@@ -452,6 +454,7 @@ final public class MCPatcher {
     private static void checkAllClassesMapped() throws IOException, InterruptedException {
         for (Mod mod : modList.getAll()) {
             for (ClassMod classMod : mod.getClassMods()) {
+                classMod.pruneTargetClasses();
                 if (!classMod.global && classMod.okToApply()) {
                     checkInterrupt();
                     if (classMod.targetClasses.size() > 1) {

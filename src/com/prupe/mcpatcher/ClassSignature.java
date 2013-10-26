@@ -29,6 +29,10 @@ abstract public class ClassSignature implements PatchComponent {
 
     abstract public boolean match(String filename, ClassFile classFile, ClassMap tempClassMap);
 
+    public boolean confirmMatch(String className) {
+        return true;
+    }
+
     // PatchComponent methods
 
     final public ClassFile getClassFile() {

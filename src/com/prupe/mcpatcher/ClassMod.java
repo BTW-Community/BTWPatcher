@@ -121,6 +121,17 @@ abstract public class ClassMod implements PatchComponent {
         errors.add(error);
     }
 
+    void pruneTargetClasses() {
+        for (com.prupe.mcpatcher.ClassSignature signature : classSignatures) {
+            for (Iterator<String> iterator = targetClasses.iterator(); iterator.hasNext(); ) {
+                String name = iterator.next();
+                if (!signature.confirmMatch(name)) {
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
     List<String> getTargetClasses() {
         ArrayList<String> sortedList = new ArrayList<String>(targetClasses.size());
         sortedList.addAll(targetClasses);
@@ -362,6 +373,12 @@ abstract public class ClassMod implements PatchComponent {
     abstract public class ClassSignature extends com.prupe.mcpatcher.ClassSignature {
         public ClassSignature() {
             super(ClassMod.this);
+        }
+    }
+
+    public class AncestorClassSignature extends com.prupe.mcpatcher.AncestorClassSignature {
+        public AncestorClassSignature(String baseClass) {
+            super(ClassMod.this, baseClass);
         }
     }
 
