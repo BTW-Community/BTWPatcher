@@ -45,6 +45,7 @@ public class Colorizer {
             @Override
             public void afterChange() {
                 reloadColorProperties();
+                ColorMap.reloadColorMapSettings(properties);
                 if (useParticleColors) {
                     ColorizeEntity.reloadParticleColors(properties);
                 }
@@ -107,6 +108,7 @@ public class Colorizer {
     private static void reset() {
         properties = new Properties();
 
+        ColorMap.reset();
         ColorizeBlock.reset();
         Lightmap.reset();
         ColorizeItem.reset();

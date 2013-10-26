@@ -18,6 +18,8 @@ abstract class ColorMap implements IColorMap {
     private static final int COLORMAP_WIDTH = 256;
     private static final int COLORMAP_HEIGHT = 256;
 
+    private static int defaultColorMapFormat;
+
     private final ResourceLocation resource;
     protected final int[] map;
     protected final int width;
@@ -45,7 +47,12 @@ abstract class ColorMap implements IColorMap {
         if (properties == null) {
             properties = new Properties();
         }
-        int format = MCPatcherUtils.getIntProperty(properties, "format", 1);
+        int format;
+        if (resource.toString().startsWith("minecraft:textures/")) {
+            format = 1;
+        } else {
+            format = MCPatcherUtils.getIntProperty(properties, "format", defaultColorMapFormat);
+        }
         switch (format) {
             case 0:
                 int color = MCPatcherUtils.getHexProperty(properties, "color", 0xffffff);
@@ -71,6 +78,14 @@ abstract class ColorMap implements IColorMap {
                 logger.error("%s: unknown format %d", propertiesResource, format);
                 return null;
         }
+    }
+
+    static void reset() {
+        defaultColorMapFormat = 1;
+    }
+
+    static void reloadColorMapSettings(Properties properties) {
+        defaultColorMapFormat = MCPatcherUtils.getIntProperty(properties, "palette.format", 1);
     }
 
     ColorMap(ResourceLocation resource, BufferedImage image, Properties properties) {
