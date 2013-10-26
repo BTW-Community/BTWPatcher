@@ -2298,21 +2298,21 @@ public class CustomColors extends Mod {
                         reference(INVOKESTATIC, computeFogColor),
                         IFEQ, branch("A"),
 
-                        // fogColorRed = Colorizer.setColor[0];
+                        // this.fogColorRed = Colorizer.setColor[0];
                         ALOAD_0,
                         reference(GETSTATIC, setColor),
                         ICONST_0,
                         FALOAD,
                         reference(PUTFIELD, fogColorRed),
 
-                        // fogColorGreen = Colorizer.setColor[1];
+                        // this.fogColorGreen = Colorizer.setColor[1];
                         ALOAD_0,
                         reference(GETSTATIC, setColor),
                         ICONST_1,
                         FALOAD,
                         reference(PUTFIELD, fogColorGreen),
 
-                        // fogColorBlue = Colorizer.setColor[2];
+                        // this.fogColorBlue = Colorizer.setColor[2];
                         ALOAD_0,
                         reference(GETSTATIC, setColor),
                         ICONST_2,
@@ -2324,7 +2324,7 @@ public class CustomColors extends Mod {
                     );
                 }
             }
-                .setInsertBefore(true)
+                .setInsertAfter(true)
                 .targetMethod(updateFogColor)
             );
 
