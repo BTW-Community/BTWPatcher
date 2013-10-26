@@ -141,6 +141,10 @@ class MinecraftJar {
         return classFile;
     }
 
+    void clearClassFileCache() {
+        classes.clear();
+    }
+
     void writeProperties(Properties properties) throws IOException {
         if (origMD5 != null) {
             properties.setProperty(Config.TAG_PRE_PATCH_STATE, isModded() ? "modded" : "unmodded");

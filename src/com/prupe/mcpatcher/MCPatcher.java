@@ -754,6 +754,7 @@ final public class MCPatcher {
             writeProperties();
             minecraft.checkOutput();
             minecraft.closeStreams();
+            minecraft.clearClassFileCache();
             profileManager.createOutputProfile(modList.getOverrideVersionJson(), modList.getExtraJavaArguments(), modList.getExtraLibraries());
 
             Logger.log(Logger.LOG_MAIN);
