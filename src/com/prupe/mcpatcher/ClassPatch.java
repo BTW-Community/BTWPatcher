@@ -7,7 +7,9 @@ import javassist.bytecode.MethodInfo;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Base class of all class patches.
@@ -15,6 +17,7 @@ import java.util.Map;
 abstract public class ClassPatch implements PatchComponent {
     final ClassMod classMod;
     final Map<String, Integer> numMatches = new HashMap<String, Integer>();
+    final Set<String> patchedClasses = new HashSet<String>();
     boolean optional;
 
     public ClassPatch(ClassMod classMod) {

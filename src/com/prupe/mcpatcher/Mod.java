@@ -159,6 +159,7 @@ public abstract class Mod {
         filesAdded.clear();
         for (com.prupe.mcpatcher.ClassMod classMod : getClassMods()) {
             for (ClassPatch classPatch : classMod.patches) {
+                classPatch.patchedClasses.clear();
                 classPatch.numMatches.clear();
             }
         }

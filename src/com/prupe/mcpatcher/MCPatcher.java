@@ -637,7 +637,12 @@ final public class MCPatcher {
                         out.printf(" (%s)", ClassMap.classNameToFilename(tc.get(0)));
                     } else {
                         out.print(" (multiple matches:");
-                        for (String s : tc) {
+                        List<String> patchedClasses = new ArrayList<String>();
+                        for (ClassPatch classPatch : classMod.patches) {
+                            patchedClasses.addAll(classPatch.patchedClasses);
+                        }
+                        Collections.sort(patchedClasses);
+                        for (String s : patchedClasses) {
                             out.print(' ');
                             out.print(s);
                         }
@@ -947,6 +952,7 @@ final public class MCPatcher {
                 }
                 for (ClassPatch cp : cm.patches) {
                     if (cp.apply(classFile)) {
+                        cp.patchedClasses.add(classFile.getName());
                         patched = true;
                     }
                 }
