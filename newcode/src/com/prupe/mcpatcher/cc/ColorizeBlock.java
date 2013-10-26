@@ -165,9 +165,9 @@ public class ColorizeBlock {
     }
 
     static void reloadFoliageColors(Properties properties) {
-        IColorMap colorMap = ColorMap.loadColorMap(true, DEFAULT_GRASSCOLOR, SWAMPGRASSCOLOR);
-        registerColorMap(colorMap, DEFAULT_GRASSCOLOR, "minecraft:grass minecraft:tallgrass:1,2");
-        colorMap = ColorMap.loadColorMap(true, DEFAULT_FOLIAGECOLOR, SWAMPFOLIAGECOLOR);
+        IColorMap colorMap = ColorMap.loadVanillaColorMap(DEFAULT_GRASSCOLOR, SWAMPGRASSCOLOR);
+        registerColorMap(colorMap, DEFAULT_GRASSCOLOR, "minecraft:grass minecraft:tallgrass:1,2 minecraft:reeds");
+        colorMap = ColorMap.loadVanillaColorMap(DEFAULT_FOLIAGECOLOR, SWAMPFOLIAGECOLOR);
         registerColorMap(colorMap, DEFAULT_FOLIAGECOLOR, "minecraft:leaves:0,4,8,12 minecraft:vine");
         registerColorMap(PINECOLOR, "minecraft:leaves:1,5,9,13");
         registerColorMap(BIRCHCOLOR, "minecraft:leaves:2,6,10,14");
@@ -219,17 +219,22 @@ public class ColorizeBlock {
             }
             registerColorMap(resource, value);
         }
+        for (ResourceLocation resource : TexturePackAPI.listResources(TexturePackAPI.MCPATCHER_SUBDIR + "colormap/custom", ".properties", true, false, false)) {
+            Properties properties1 = TexturePackAPI.getProperties(resource);
+            IColorMap colorMap = ColorMap.loadColorMap(true, resource, properties1);
+            registerColorMap(colorMap, resource, MCPatcherUtils.getStringProperty(properties1, "blocks", ""));
+        }
     }
 
     private static IColorMap registerColorMap(ResourceLocation resource, String idList) {
-        IColorMap colorMap = ColorMap.loadColorMap(true, resource);
-        if (colorMap == null) {
-            return null;
-        }
+        IColorMap colorMap = ColorMap.loadColorMap(true, resource, null);
         return registerColorMap(colorMap, resource, idList);
     }
 
     private static IColorMap registerColorMap(IColorMap colorMap, ResourceLocation resource, String idList) {
+        if (colorMap == null) {
+            return null;
+        }
         colorMap = wrapBlockMap(colorMap);
         int[] metadata = new int[1];
         for (String idString : idList.split("\\s+")) {

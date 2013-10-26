@@ -73,9 +73,9 @@ public class ColorizeWorld {
     }
 
     static void reloadFogColors(Properties properties) {
-        underwaterColor = wrapFogMap(ColorMap.loadColorMap(Colorizer.useFogColors, UNDERWATERCOLOR));
-        fogColorMap = wrapFogMap(ColorMap.loadColorMap(Colorizer.useFogColors, FOGCOLOR0));
-        skyColorMap = wrapFogMap(ColorMap.loadColorMap(Colorizer.useFogColors, SKYCOLOR0));
+        underwaterColor = wrapFogMap(ColorMap.loadFixedColorMap(Colorizer.useFogColors, UNDERWATERCOLOR));
+        fogColorMap = wrapFogMap(ColorMap.loadFixedColorMap(Colorizer.useFogColors, FOGCOLOR0));
+        skyColorMap = wrapFogMap(ColorMap.loadFixedColorMap(Colorizer.useFogColors, SKYCOLOR0));
 
         loadFloatColor("fog.nether", netherFogColor);
         loadFloatColor("fog.end", endFogColor);

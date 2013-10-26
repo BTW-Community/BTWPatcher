@@ -30,52 +30,79 @@ abstract class ColorMap implements IColorMap {
     private final float[] xy = new float[2];
     private final float[] lastColor = new float[3];
 
-    static IColorMap loadColorMap(boolean useCustom, ResourceLocation resource) {
-        return loadColorMap(useCustom, resource, null);
+    static IColorMap loadVanillaColorMap(ResourceLocation vanillaImage, ResourceLocation swampImage) {
+        Properties properties = new Properties();
+        properties.setProperty("format", "1");
+        properties.setProperty("source", vanillaImage.toString());
+        if (swampImage != null) {
+            properties.setProperty("altSource", swampImage.toString());
+        }
+        return loadColorMap(true, vanillaImage, properties);
     }
 
-    static IColorMap loadColorMap(boolean useCustom, ResourceLocation resource, ResourceLocation swampResource) {
-        if (!useCustom) {
+    static IColorMap loadFixedColorMap(boolean useCustom, ResourceLocation propertiesResource) {
+        return loadColorMap(useCustom, propertiesResource, null);
+    }
+
+    static IColorMap loadColorMap(boolean useCustom, ResourceLocation resource, Properties properties) {
+        if (!useCustom || resource == null) {
             return null;
         }
-        BufferedImage image = TexturePackAPI.getImage(resource);
+
+        ResourceLocation propertiesResource;
+        ResourceLocation imageResource;
+        if (resource.toString().endsWith(".png")) {
+            propertiesResource = TexturePackAPI.transformResourceLocation(resource, ".png", ".properties");
+            imageResource = resource;
+        } else if (resource.toString().endsWith(".properties")) {
+            propertiesResource = resource;
+            imageResource = TexturePackAPI.transformResourceLocation(resource, ".properties", ".png");
+        } else {
+            return null;
+        }
+        if (properties == null) {
+            properties = TexturePackAPI.getProperties(propertiesResource);
+        }
+
+        int format = MCPatcherUtils.getIntProperty(properties, "format", defaultColorMapFormat);
+        if (format == 0) {
+            int color = MCPatcherUtils.getHexProperty(properties, "color", 0xffffff);
+            return new Fixed(color);
+        }
+
+        String path = MCPatcherUtils.getStringProperty(properties, "source", "");
+        if (!MCPatcherUtils.isNullOrEmpty(path)) {
+            imageResource = TexturePackAPI.parseResourceLocation(resource, path);
+        }
+        BufferedImage image = TexturePackAPI.getImage(imageResource);
         if (image == null) {
             return null;
         }
-        ResourceLocation propertiesResource = TexturePackAPI.transformResourceLocation(resource, ".png", ".properties");
-        Properties properties = TexturePackAPI.getProperties(propertiesResource);
-        if (properties == null) {
-            properties = new Properties();
-        }
-        int format;
-        if (resource.toString().startsWith("minecraft:textures/")) {
-            format = 1;
-        } else {
-            format = MCPatcherUtils.getIntProperty(properties, "format", defaultColorMapFormat);
-        }
-        switch (format) {
-            case 0:
-                int color = MCPatcherUtils.getHexProperty(properties, "color", 0xffffff);
-                return new Fixed(color);
 
+        switch (format) {
             case 1:
-                IColorMap defaultMap = new TempHumidity(resource, image, properties);
-                IColorMap swampMap = loadColorMap(Colorizer.useSwampColors, swampResource);
-                if (swampMap != null) {
-                    return new Swamp(defaultMap, swampMap);
+                IColorMap defaultMap = new TempHumidity(imageResource, properties, image);
+                path = MCPatcherUtils.getStringProperty(properties, "altSource", "");
+                if (Colorizer.useSwampColors && !MCPatcherUtils.isNullOrEmpty(path)) {
+                    ResourceLocation swampResource = TexturePackAPI.parseResourceLocation(resource, path);
+                    image = TexturePackAPI.getImage(swampResource);
+                    if (image != null) {
+                        IColorMap swampMap = new TempHumidity(swampResource, properties, image);
+                        return new Swamp(defaultMap, swampMap);
+                    }
                 }
                 return defaultMap;
 
             case 2:
-                Grid grid = new Grid(resource, image, properties);
+                Grid grid = new Grid(imageResource, properties, image);
                 if (grid.isInteger()) {
-                    return new IntegerGrid(resource, grid.map);
+                    return new IntegerGrid(imageResource, properties, grid.map);
                 } else {
                     return grid;
                 }
 
             default:
-                logger.error("%s: unknown format %d", propertiesResource, format);
+                logger.error("%s: unknown format %d", resource, format);
                 return null;
         }
     }
@@ -88,7 +115,7 @@ abstract class ColorMap implements IColorMap {
         defaultColorMapFormat = MCPatcherUtils.getIntProperty(properties, "palette.format", 1);
     }
 
-    ColorMap(ResourceLocation resource, BufferedImage image, Properties properties) {
+    ColorMap(ResourceLocation resource, Properties properties, BufferedImage image) {
         this.resource = resource;
         map = MCPatcherUtils.getImageRGB(image);
         width = image.getWidth();
@@ -308,8 +335,12 @@ abstract class ColorMap implements IColorMap {
     }
 
     static final class TempHumidity extends ColorMap {
-        private TempHumidity(ResourceLocation resource, BufferedImage image, Properties properties) {
-            super(resource, image, properties);
+        private final int defaultColor;
+
+        private TempHumidity(ResourceLocation resource, Properties properties, BufferedImage image) {
+            super(resource, properties, image);
+
+            defaultColor = MCPatcherUtils.getHexProperty(properties, "color", getRGB(maxX * 0.5f, maxY * 0.5f));
         }
 
         @Override
@@ -319,7 +350,7 @@ abstract class ColorMap implements IColorMap {
 
         @Override
         public int getColorMultiplier() {
-            return getRGB(maxX * 0.5f, maxY * 0.5f);
+            return defaultColor;
         }
 
         @Override
@@ -334,9 +365,10 @@ abstract class ColorMap implements IColorMap {
     static final class Grid extends ColorMap {
         private final float[] biomeX = new float[BiomeGenBase.biomeList.length];
         private final float yVariance;
+        private final int defaultColor;
 
-        private Grid(ResourceLocation resource, BufferedImage image, Properties properties) {
-            super(resource, image, properties);
+        private Grid(ResourceLocation resource, Properties properties, BufferedImage image) {
+            super(resource, properties, image);
 
             if (MCPatcherUtils.getBooleanProperty(properties, "flipY", false)) {
                 int[] temp = new int[width];
@@ -367,6 +399,8 @@ abstract class ColorMap implements IColorMap {
                     }
                 }
             }
+
+            defaultColor = MCPatcherUtils.getHexProperty(properties, "color", getRGB(biomeX[1], getY(ColorMapBase.DEFAULT_HEIGHT)));
         }
 
         boolean isInteger() {
@@ -391,7 +425,7 @@ abstract class ColorMap implements IColorMap {
 
         @Override
         public int getColorMultiplier() {
-            return getRGB(biomeX[1], getY(ColorMapBase.DEFAULT_HEIGHT));
+            return defaultColor;
         }
 
         @Override
@@ -421,10 +455,12 @@ abstract class ColorMap implements IColorMap {
         private final ResourceLocation resource;
         private final int[] map;
         private final float[] lastColor = new float[3];
+        private final int defaultColor;
 
-        IntegerGrid(ResourceLocation resource, int[] map) {
+        IntegerGrid(ResourceLocation resource, Properties properties, int[] map) {
             this.resource = resource;
             this.map = map;
+            defaultColor = MCPatcherUtils.getHexProperty(properties, "color", getRGB(1, ColorMapBase.DEFAULT_HEIGHT));
         }
 
         @Override
@@ -439,7 +475,7 @@ abstract class ColorMap implements IColorMap {
 
         @Override
         public int getColorMultiplier() {
-            return getRGB(1, ColorMapBase.DEFAULT_HEIGHT);
+            return defaultColor;
         }
 
         @Override
