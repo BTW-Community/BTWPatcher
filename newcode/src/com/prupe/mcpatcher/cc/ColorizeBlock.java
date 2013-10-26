@@ -43,7 +43,6 @@ public class ColorizeBlock {
 
     private static final Map<Block, IColorMap[]> blockColorMaps = new IdentityHashMap<Block, IColorMap[]>(); // bitmaps from palette.block.*
     private static IColorMap waterColorMap;
-    private static int lilypadColor; // lilypad
     private static float[][] redstoneColor; // colormap/redstone.png
     private static int[] pumpkinStemColors; // colormap/pumpkinstem.png
     private static int[] melonStemColors; // colormap/melonstem.png
@@ -159,7 +158,6 @@ public class ColorizeBlock {
         blockColorMaps.clear();
         waterColorMap = null;
 
-        lilypadColor = 0x208030;
         waterColor = new float[]{0.2f, 0.3f, 1.0f};
         redstoneColor = null;
         pumpkinStemColors = null;
@@ -197,9 +195,11 @@ public class ColorizeBlock {
     }
 
     static void reloadSwampColors(Properties properties) {
-        int[] temp = new int[]{lilypadColor};
-        Colorizer.loadIntColor("lilypad", temp, 0);
-        lilypadColor = temp[0];
+        int[] lilypadColor = new int[]{0x020830};
+        if (Colorizer.loadIntColor("lilypad", lilypadColor, 0)) {
+            IColorMap colorMap = new ColorMap.Fixed(lilypadColor[0]);
+            registerColorMap(colorMap, Colorizer.COLOR_PROPERTIES, "minecraft:waterlily");
+        }
     }
 
     static void reloadBlockColors(Properties properties) {
@@ -353,10 +353,6 @@ public class ColorizeBlock {
             return defaultColor;
         }
         return colors == null ? defaultColor : colors[blockMetadata & 0x7];
-    }
-
-    public static int getLilyPadColor() {
-        return lilypadColor;
     }
 
     public static boolean computeRedstoneWireColor(int current) {

@@ -58,8 +58,6 @@ public class CustomColors extends Mod {
     private static final MethodRef getRenderColor = new MethodRef("Block", "getRenderColor", "(I)I");
     private static final MethodRef colorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;III)I");
 
-    private final boolean haveLeavesBaseBase;
-
     public CustomColors() {
         name = MCPatcherUtils.CUSTOM_COLORS;
         author = "MCPatcher";
@@ -70,8 +68,6 @@ public class CustomColors extends Mod {
         addDependency(MCPatcherUtils.BLOCK_API_MOD);
         addDependency(MCPatcherUtils.BIOME_API_MOD);
 
-        haveLeavesBaseBase = getMinecraftVersion().compareTo("13w43a") >= 0;
-
         configPanel = new ConfigPanel();
 
         addClassMod(new BaseMod.MinecraftMod(this).mapWorldClient());
@@ -79,17 +75,7 @@ public class CustomColors extends Mod {
         addClassMod(new BaseMod.TessellatorMod(this));
 
         addClassMod(new BlockMod());
-        addClassMod(new BlockFluidMod());
-        addClassMod(new BlockGrassMod());
-        addClassMod(new BlockLeavesMod());
-        addClassMod(new BlockLeavesBaseMod());
-        if (haveLeavesBaseBase) {
-            addClassMod(new BlockLeavesBaseBaseMod());
-        }
-        addClassMod(new BlockLilyPadMod());
-        addClassMod(new BlockTallGrassMod());
-        addClassMod(new BlockFlowerMod());
-        addClassMod(new BlockVineMod());
+        addClassMod(new BlockSubclassMod());
         addClassMod(new BlockCauldronMod());
 
         addClassMod(new BaseMod.BiomeGenBaseMod(this));
@@ -366,53 +352,6 @@ public class CustomColors extends Mod {
         }
     }
 
-    private void addBlockColorPatch(com.prupe.mcpatcher.ClassMod classMod) {
-        classMod.addPatch(new com.prupe.mcpatcher.BytecodePatch(classMod) {
-            @Override
-            public String getDescription() {
-                return "override color multiplier";
-            }
-
-            @Override
-            public String getMatchExpression() {
-                return buildExpression(
-                    begin()
-                );
-            }
-
-            @Override
-            public byte[] getReplacementBytes() {
-                String desc = getMethodInfo().getDescriptor();
-                final MethodRef newMethod;
-                final byte[] args;
-                if (desc.contains("III)")) {
-                    newMethod = colorizeBlock3;
-                    args = new byte[]{ALOAD_1, ILOAD_2, ILOAD_3, ILOAD, 4};
-                } else if (desc.contains("I)")) {
-                    newMethod = colorizeBlock2;
-                    args = new byte[]{ILOAD_1};
-                } else {
-                    newMethod = colorizeBlock1;
-                    args = new byte[0];
-                }
-                return buildCode(
-                    // if (ColorizeBlock.colorizeBlock(this, ...)) {
-                    ALOAD_0,
-                    args,
-                    reference(INVOKESTATIC, newMethod),
-                    IFEQ, branch("A"),
-
-                    // return ColorizeBlock.blockColor;
-                    reference(GETSTATIC, blockColor),
-                    IRETURN,
-
-                    // }
-                    label("A")
-                );
-            }
-        }.targetMethod(getBlockColor, getRenderColor, colorMultiplier));
-    }
-
     private class BlockMod extends BaseMod.BlockMod {
         BlockMod() {
             super(CustomColors.this);
@@ -420,8 +359,6 @@ public class CustomColors extends Mod {
             match0xffffff(getBlockColor);
             match0xffffff(getRenderColor);
             match0xffffff(colorMultiplier);
-
-            addBlockColorPatch(this);
         }
 
         private void match0xffffff(MethodRef method) {
@@ -436,6 +373,59 @@ public class CustomColors extends Mod {
                     );
                 }
             }.setMethod(method));
+        }
+    }
+
+    private class BlockSubclassMod extends ClassMod {
+        public BlockSubclassMod() {
+            setMultipleMatchesAllowed(true);
+
+            addClassSignature(new AncestorClassSignature("Block"));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override color multiplier";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    String desc = getMethodInfo().getDescriptor();
+                    final MethodRef newMethod;
+                    final byte[] args;
+                    if (desc.contains("III)")) {
+                        newMethod = colorizeBlock3;
+                        args = new byte[]{ALOAD_1, ILOAD_2, ILOAD_3, ILOAD, 4};
+                    } else if (desc.contains("I)")) {
+                        newMethod = colorizeBlock2;
+                        args = new byte[]{ILOAD_1};
+                    } else {
+                        newMethod = colorizeBlock1;
+                        args = new byte[0];
+                    }
+                    return buildCode(
+                        // if (ColorizeBlock.colorizeBlock(this, ...)) {
+                        ALOAD_0,
+                        args,
+                        reference(INVOKESTATIC, newMethod),
+                        IFEQ, branch("A"),
+
+                        // return ColorizeBlock.blockColor;
+                        reference(GETSTATIC, blockColor),
+                        IRETURN,
+
+                        // }
+                        label("A")
+                    );
+                }
+            }.targetMethod(getBlockColor, getRenderColor, colorMultiplier));
         }
     }
 
@@ -455,170 +445,6 @@ public class CustomColors extends Mod {
                 new ConstSignature(s),
                 new ConstSignature("_" + s)
             ));
-        }
-    }
-
-    private class BlockFluidMod extends ClassMod {
-        BlockFluidMod() {
-            setParentClass("Block");
-
-            addClassSignature(new ConstSignature("splash"));
-            addClassSignature(new ConstSignature("liquid.water"));
-
-            final MethodRef colorMultiplier = new MethodRef(getDeobfClass(), "colorMultiplier", "(LIBlockAccess;III)I");
-            final FieldRef waterColorMultiplier = new FieldRef("BiomeGenBase", "waterColorMultiplier", "I");
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_1,
-                        ILOAD_2,
-                        anyILOAD,
-                        IADD,
-                        ILOAD, 4,
-                        anyILOAD,
-                        IADD,
-                        anyReference(INVOKEINTERFACE),
-                        captureReference(GETFIELD)
-                    );
-                }
-            }
-                .setMethod(colorMultiplier)
-                .addXref(1, waterColorMultiplier)
-            );
-
-            addBlockColorPatch(this);
-        }
-    }
-
-    private class BlockGrassMod extends ClassMod {
-        BlockGrassMod() {
-            setParentClass("Block");
-
-            addClassSignature(new ConstSignature("_side"));
-            addClassSignature(new ConstSignature("_top"));
-            addClassSignature(new ConstSignature("_side_snowed"));
-            addClassSignature(new ConstSignature("_side_overlay"));
-
-            addBlockColorPatch(this);
-        }
-    }
-
-    private class BlockLeavesBaseBaseMod extends ClassMod {
-        BlockLeavesBaseBaseMod() {
-            setParentClass("Block");
-            addPrerequisiteClass("BlockLeavesBase");
-        }
-    }
-
-    private class BlockLeavesBaseMod extends ClassMod {
-        BlockLeavesBaseMod() {
-            setParentClass(haveLeavesBaseBase ? "BlockLeavesBaseBase" : "Block");
-            addPrerequisiteClass("BlockLeaves");
-        }
-    }
-
-    private class BlockLeavesMod extends ClassMod {
-        BlockLeavesMod() {
-            setParentClass("BlockLeavesBase");
-
-            addLeafType("oak");
-            addLeafType("spruce");
-            addLeafType("birch");
-            addLeafType("jungle");
-
-            addBlockColorPatch(this);
-        }
-
-        private void addLeafType(String type) {
-            addClassSignature(new ConstSignature(type));
-            addClassSignature(new ConstSignature("leaves_" + type));
-            addClassSignature(new ConstSignature("leaves_" + type + "_opaque"));
-        }
-    }
-
-    private class BlockFlowerMod extends ClassMod {
-        BlockFlowerMod() {
-            setParentClass("Block");
-            addPrerequisiteClass("BlockLilyPad");
-        }
-    }
-
-    private class BlockLilyPadMod extends ClassMod {
-        BlockLilyPadMod() {
-            setParentClass("BlockFlower");
-
-            addClassSignature(new ConstSignature(0x208030));
-            addClassSignature(new ConstSignature(0.5f));
-            addClassSignature(new ConstSignature(0.015625f));
-
-            addBlockColorPatch(this);
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override fixed lily pad color";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push(0x208030)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, getLilyPadColor)
-                    );
-                }
-            }.targetMethod(getBlockColor, getRenderColor, colorMultiplier));
-        }
-    }
-
-    private class BlockTallGrassMod extends ClassMod {
-        BlockTallGrassMod() {
-            setParentClass("BlockFlower");
-
-            addClassSignature(new ConstSignature("deadbush"));
-            addClassSignature(new ConstSignature("tallgrass"));
-            addClassSignature(new ConstSignature("fern"));
-            addClassSignature(new ConstSignature("stone").negate(true));
-
-            addBlockColorPatch(this);
-        }
-    }
-
-    private class BlockVineMod extends ClassMod {
-        private final MethodRef setBlockBoundsBasedOnState = new MethodRef(getDeobfClass(), "setBlockBoundsBasedOnState", "(LIBlockAccess;III)V");
-
-        BlockVineMod() {
-            setParentClass("Block");
-
-            addClassSignature(new ConstSignature(0.0625f));
-            addClassSignature(new ConstSignature(0.9375f));
-
-            addAndSignature(2, 0.0625f);
-            addAndSignature(8, 0.9375f);
-
-            addBlockColorPatch(this);
-        }
-
-        private void addAndSignature(final int mask, final float bounds) {
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        capture(anyILOAD),
-                        push(mask),
-                        IAND,
-                        any(0, 10),
-                        push(bounds)
-                    );
-                }
-            }.setMethod(setBlockBoundsBasedOnState));
         }
     }
 
