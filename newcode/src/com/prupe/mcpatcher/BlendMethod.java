@@ -1,6 +1,8 @@
 package com.prupe.mcpatcher;
 
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL14;
+import org.lwjgl.opengl.GLContext;
 
 public class BlendMethod {
     public static final BlendMethod ALPHA = new BlendMethod("alpha", GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, true, false, true);
@@ -12,6 +14,8 @@ public class BlendMethod {
     public static final BlendMethod SCREEN = new BlendMethod("screen", GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_COLOR, true, true, false);
     public static final BlendMethod OVERLAY = new BlendMethod("overlay", GL11.GL_DST_COLOR, GL11.GL_SRC_COLOR, true, true, false);
     public static final BlendMethod REPLACE = new BlendMethod("replace", 0, 0, false, false, true);
+
+    private static final boolean gl14Available = GLContext.getCapabilities().OpenGL14;
 
     private final int srcBlend;
     private final int dstBlend;
@@ -38,7 +42,7 @@ public class BlendMethod {
             return SCREEN;
         } else if (text.equals("overlay") || text.equals("color")) {
             return OVERLAY;
-        } else if (text.equals("replace")) {
+        } else if (text.equals("replace") || text.equals("none")) {
             return REPLACE;
         } else {
             String[] tokens = text.split("\\s+");
@@ -89,7 +93,11 @@ public class BlendMethod {
     public void applyBlending() {
         if (blend) {
             GL11.glEnable(GL11.GL_BLEND);
-            GL11.glBlendFunc(srcBlend, dstBlend);
+            if (gl14Available) {
+                GL14.glBlendFuncSeparate(srcBlend, dstBlend, GL11.GL_ONE, GL11.GL_ZERO);
+            } else {
+                GL11.glBlendFunc(srcBlend, dstBlend);
+            }
         } else {
             GL11.glDisable(GL11.GL_BLEND);
         }
