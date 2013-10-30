@@ -30,7 +30,7 @@ public class RenderPass {
         RenderPassAPI.instance = new RenderPassAPI() {
             @Override
             public boolean skipDefaultRendering(Block block) {
-                return renderPass > 1;
+                return renderPass > 2;
             }
 
             @Override
