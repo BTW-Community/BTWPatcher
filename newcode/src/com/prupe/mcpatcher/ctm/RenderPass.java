@@ -20,6 +20,7 @@ public class RenderPass {
 
     private static BlendMethod blendMethod;
     private static boolean enableLightmap;
+    private static boolean backfaceCulling;
 
     private static int renderPass = -1;
     private static int maxRenderPass = 1;
@@ -75,6 +76,7 @@ public class RenderPass {
             public void beforeChange() {
                 blendMethod = BlendMethod.ALPHA;
                 enableLightmap = true;
+                backfaceCulling = true;
             }
 
             @Override
@@ -88,6 +90,7 @@ public class RenderPass {
                         blendMethod = BlendMethod.ALPHA;
                     }
                     enableLightmap = MCPatcherUtils.getBooleanProperty(properties, "enableLightmap.3", !blendMethod.isColorBased());
+                    backfaceCulling = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.3", true);
                 }
             }
         });
@@ -161,7 +164,11 @@ public class RenderPass {
                 GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
                 GL11.glPolygonOffset(-2.0f, -2.0f);
                 GL11.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
-                GL11.glEnable(GL11.GL_CULL_FACE);
+                if (backfaceCulling) {
+                    GL11.glEnable(GL11.GL_CULL_FACE);
+                } else {
+                    GL11.glDisable(GL11.GL_CULL_FACE);
+                }
                 if (ambientOcclusion) {
                     GL11.glShadeModel(GL11.GL_SMOOTH);
                 }
@@ -171,6 +178,9 @@ public class RenderPass {
 
                 GL11.glPolygonOffset(0.0f, 0.0f);
                 GL11.glDisable(GL11.GL_POLYGON_OFFSET_FILL);
+                if (!backfaceCulling) {
+                    GL11.glEnable(GL11.GL_CULL_FACE);
+                }
                 GL11.glDisable(GL11.GL_BLEND);
                 GL11.glShadeModel(GL11.GL_FLAT);
                 break;
