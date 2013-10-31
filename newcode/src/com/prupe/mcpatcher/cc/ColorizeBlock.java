@@ -168,7 +168,9 @@ public class ColorizeBlock {
         if (map == null) {
             return null;
         } else {
-            map = new ColorMapBase.Blended(map, blockBlendRadius);
+            if (blockBlendRadius > 0) {
+                map = new ColorMapBase.Blended(map, blockBlendRadius);
+            }
             map = new ColorMapBase.Chunked(map);
             map = new ColorMapBase.Outer(map);
             return map;
