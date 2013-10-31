@@ -293,7 +293,8 @@ public class CustomColors extends Mod {
                         value = Math.min(Math.max(0, value), 99);
                     } catch (NumberFormatException e1) {
                     }
-                    Config.set(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius", value);
+                    Config.set(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius2", value);
+                    Config.remove(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius");
                     blockBlendRadiusSpinner.setValue(value);
                 }
             });
@@ -337,7 +338,7 @@ public class CustomColors extends Mod {
             textCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "text", true));
             xpOrbCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "xporb", true));
             fogBlendRadiusSpinner.setValue(Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "fogBlendRadius", 7));
-            blockBlendRadiusSpinner.setValue(Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius", 1));
+            blockBlendRadiusSpinner.setValue(Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius2", 4));
             smoothBiomesCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "smoothBiomes", true));
             testBiomeColorsCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "testColorSmoothing", false));
             showAdvancedOption(testBiomeColorsCheckBox);

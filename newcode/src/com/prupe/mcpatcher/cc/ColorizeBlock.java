@@ -43,7 +43,7 @@ public class ColorizeBlock {
     private static IColorMap waterColorMap;
     private static float[][] redstoneColor; // colormap/redstone.png
 
-    private static final int blockBlendRadius = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius", 1);
+    private static final int blockBlendRadius = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius2", 4);
 
     public static int blockColor;
     public static float[] waterColor;
