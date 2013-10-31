@@ -1,9 +1,6 @@
 package com.prupe.mcpatcher.cc;
 
-import com.prupe.mcpatcher.MCLogger;
-import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.TexturePackAPI;
-import com.prupe.mcpatcher.WeightedIndex;
+import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import net.minecraft.src.BiomeGenBase;
 import net.minecraft.src.ResourceLocation;
@@ -126,7 +123,7 @@ abstract class ColorMap implements IColorMap {
         unusedPNGs.clear();
         defaultColorMapFormat = 1;
         defaultFlipY = false;
-        defaultYVariance = 0.0f;
+        defaultYVariance = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "yVariance", 0);
     }
 
     static void reloadColorMapSettings(Properties properties) {

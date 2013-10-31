@@ -175,6 +175,7 @@ public class CustomColors extends Mod {
         private JCheckBox xpOrbCheckBox;
         private JCheckBox smoothBiomesCheckBox;
         private JCheckBox testBiomeColorsCheckBox;
+        private JSpinner yVarianceSpinner;
 
         ConfigPanel() {
             waterCheckBox.addActionListener(new ActionListener() {
@@ -300,6 +301,19 @@ public class CustomColors extends Mod {
                 }
             });
 
+            yVarianceSpinner.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    int value = 0;
+                    try {
+                        value = Integer.parseInt(yVarianceSpinner.getValue().toString());
+                        value = Math.min(Math.max(0, value), 255);
+                    } catch (NumberFormatException e1) {
+                    }
+                    Config.set(MCPatcherUtils.CUSTOM_COLORS, "yVariance", value);
+                    yVarianceSpinner.setValue(value);
+                }
+            });
+
             smoothBiomesCheckBox.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -340,6 +354,7 @@ public class CustomColors extends Mod {
             xpOrbCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "xporb", true));
             fogBlendRadiusSpinner.setValue(Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "fogBlendRadius", 7));
             blockBlendRadiusSpinner.setValue(Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius2", 4));
+            yVarianceSpinner.setValue(Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "yVariance", 0));
             smoothBiomesCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "smoothBiomes", true));
             testBiomeColorsCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "testColorSmoothing", false));
             showAdvancedOption(testBiomeColorsCheckBox);
