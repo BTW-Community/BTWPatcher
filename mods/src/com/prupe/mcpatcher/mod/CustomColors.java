@@ -71,6 +71,7 @@ public class CustomColors extends Mod {
         addClassMod(new BaseMod.MinecraftMod(this).mapWorldClient());
         addClassMod(new BaseMod.IBlockAccessMod(this));
         addClassMod(new BaseMod.TessellatorMod(this));
+        addClassMod(new BaseMod.ResourceLocationMod(this));
 
         addClassMod(new BlockMod());
         addClassMod(new BlockSubclassMod());

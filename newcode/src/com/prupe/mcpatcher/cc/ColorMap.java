@@ -9,6 +9,8 @@ import net.minecraft.src.BiomeGenBase;
 import net.minecraft.src.ResourceLocation;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -17,6 +19,9 @@ abstract class ColorMap implements IColorMap {
 
     private static final int COLORMAP_WIDTH = 256;
     private static final int COLORMAP_HEIGHT = 256;
+
+    static final String CUSTOM_COLORMAP_DIR = TexturePackAPI.MCPATCHER_SUBDIR + "colormap/custom";
+    static final List<ResourceLocation> unusedPNGs = new ArrayList<ResourceLocation>();
 
     private static int defaultColorMapFormat;
     private static boolean defaultFlipY;
@@ -47,6 +52,14 @@ abstract class ColorMap implements IColorMap {
     }
 
     static IColorMap loadColorMap(boolean useCustom, ResourceLocation resource, Properties properties) {
+        IColorMap map = loadColorMap1(useCustom, resource, properties);
+        if (map instanceof ColorMap) {
+            unusedPNGs.remove(((ColorMap) map).resource);
+        }
+        return map;
+    }
+
+    private static IColorMap loadColorMap1(boolean useCustom, ResourceLocation resource, Properties properties) {
         if (!useCustom || resource == null) {
             return null;
         }
@@ -110,12 +123,14 @@ abstract class ColorMap implements IColorMap {
     }
 
     static void reset() {
+        unusedPNGs.clear();
         defaultColorMapFormat = 1;
         defaultFlipY = false;
         defaultYVariance = 0.0f;
     }
 
     static void reloadColorMapSettings(Properties properties) {
+        unusedPNGs.addAll(TexturePackAPI.listResources(CUSTOM_COLORMAP_DIR, ".png", true, false, false));
         defaultColorMapFormat = MCPatcherUtils.getIntProperty(properties, "palette.format", 1);
         defaultFlipY = MCPatcherUtils.getBooleanProperty(properties, "palette.flipY", false);
         defaultYVariance = MCPatcherUtils.getFloatProperty(properties, "palette.yVariance", 0.0f);

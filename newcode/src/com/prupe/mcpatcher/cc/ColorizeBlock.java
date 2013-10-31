@@ -12,9 +12,7 @@ import net.minecraft.src.RenderBlocks;
 import net.minecraft.src.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public class ColorizeBlock {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
@@ -212,11 +210,22 @@ public class ColorizeBlock {
             }
             registerColorMap(resource, value);
         }
-        for (ResourceLocation resource : TexturePackAPI.listResources(TexturePackAPI.MCPATCHER_SUBDIR + "colormap/custom", ".properties", true, false, false)) {
+
+        for (ResourceLocation resource : TexturePackAPI.listResources(ColorMap.CUSTOM_COLORMAP_DIR, ".properties", true, false, false)) {
             Properties properties1 = TexturePackAPI.getProperties(resource);
             IColorMap colorMap = ColorMap.loadColorMap(true, resource, properties1);
-            registerColorMap(colorMap, resource, MCPatcherUtils.getStringProperty(properties1, "blocks", ""));
+            registerColorMap(colorMap, resource, MCPatcherUtils.getStringProperty(properties1, "blocks", getDefaultBlockName(resource)));
         }
+        List<ResourceLocation> unusedPNGs = new ArrayList<ResourceLocation>(ColorMap.unusedPNGs);
+        for (ResourceLocation resource : unusedPNGs) {
+            Properties properties1 = new Properties();
+            IColorMap colorMap = ColorMap.loadColorMap(true, resource, properties1);
+            registerColorMap(colorMap, resource, getDefaultBlockName(resource));
+        }
+    }
+
+    private static String getDefaultBlockName(ResourceLocation resource) {
+        return resource.getNamespace() + ":" + resource.getPath().replaceFirst(".*/", "").replaceFirst("\\.[^.]*$", "");
     }
 
     private static IColorMap registerColorMap(ResourceLocation resource, String idList) {
