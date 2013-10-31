@@ -19,6 +19,8 @@ abstract class ColorMap implements IColorMap {
     private static final int COLORMAP_HEIGHT = 256;
 
     private static int defaultColorMapFormat;
+    private static boolean defaultFlipY;
+    private static float defaultYVariance;
 
     private final ResourceLocation resource;
     protected final int[] map;
@@ -109,10 +111,14 @@ abstract class ColorMap implements IColorMap {
 
     static void reset() {
         defaultColorMapFormat = 1;
+        defaultFlipY = false;
+        defaultYVariance = 0.0f;
     }
 
     static void reloadColorMapSettings(Properties properties) {
         defaultColorMapFormat = MCPatcherUtils.getIntProperty(properties, "palette.format", 1);
+        defaultFlipY = MCPatcherUtils.getBooleanProperty(properties, "palette.flipY", false);
+        defaultYVariance = MCPatcherUtils.getFloatProperty(properties, "palette.yVariance", 0.0f);
     }
 
     ColorMap(ResourceLocation resource, Properties properties, BufferedImage image) {
@@ -370,7 +376,7 @@ abstract class ColorMap implements IColorMap {
         private Grid(ResourceLocation resource, Properties properties, BufferedImage image) {
             super(resource, properties, image);
 
-            if (MCPatcherUtils.getBooleanProperty(properties, "flipY", false)) {
+            if (MCPatcherUtils.getBooleanProperty(properties, "flipY", defaultFlipY)) {
                 int[] temp = new int[width];
                 for (int i = 0; i < map.length / 2; i += width) {
                     int j = map.length - width - i;
@@ -380,7 +386,7 @@ abstract class ColorMap implements IColorMap {
                 }
             }
 
-            yVariance = Math.max(MCPatcherUtils.getFloatProperty(properties, "yVariance", 0.0f), 0.0f);
+            yVariance = Math.max(MCPatcherUtils.getFloatProperty(properties, "yVariance", defaultYVariance), 0.0f);
             for (int i = 0; i < biomeX.length; i++) {
                 biomeX[i] = i % width;
             }
