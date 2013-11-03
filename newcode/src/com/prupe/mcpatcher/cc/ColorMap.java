@@ -74,6 +74,9 @@ abstract class ColorMap implements IColorMap {
         }
         if (properties == null) {
             properties = TexturePackAPI.getProperties(propertiesResource);
+            if (properties == null) {
+                properties = new Properties();
+            }
         }
 
         int format = MCPatcherUtils.getIntProperty(properties, "format", defaultColorMapFormat);
