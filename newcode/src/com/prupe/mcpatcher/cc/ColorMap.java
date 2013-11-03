@@ -115,7 +115,7 @@ abstract class ColorMap implements IColorMap {
             case BIOME_HEIGHT:
                 Grid grid = new Grid(imageResource, properties, image);
                 if (grid.isInteger()) {
-                    return new IntegerGrid(imageResource, properties, grid.map);
+                    return new IntegerGrid(imageResource, properties, grid.map, grid.width, grid.height);
                 } else {
                     return grid;
                 }
@@ -448,14 +448,11 @@ abstract class ColorMap implements IColorMap {
         }
 
         boolean isInteger() {
-            if (width != COLORMAP_WIDTH || height != COLORMAP_HEIGHT) {
-                return false;
-            }
             if (yVariance != 0.0f) {
                 return false;
             }
             for (int i = 0; i < biomeX.length; i++) {
-                if (biomeX[i] != i) {
+                if (biomeX[i] != i % width) {
                     return false;
                 }
             }
@@ -498,12 +495,16 @@ abstract class ColorMap implements IColorMap {
     static final class IntegerGrid implements IColorMap {
         private final ResourceLocation resource;
         private final int[] map;
+        private final int width;
+        private final int height;
         private final float[] lastColor = new float[3];
         private final int defaultColor;
 
-        IntegerGrid(ResourceLocation resource, Properties properties, int[] map) {
+        IntegerGrid(ResourceLocation resource, Properties properties, int[] map, int width, int height) {
             this.resource = resource;
             this.map = map;
+            this.width = width;
+            this.height = height;
             defaultColor = MCPatcherUtils.getHexProperty(properties, "color", getRGB(1, ColorMapBase.DEFAULT_HEIGHT));
         }
 
@@ -524,8 +525,8 @@ abstract class ColorMap implements IColorMap {
 
         @Override
         public int getColorMultiplier(int i, int j, int k) {
-            int x = clamp(BiomeAPI.getBiomeIDAt(i, j, k), 0, COLORMAP_WIDTH - 1);
-            int y = clamp(j, 0, COLORMAP_HEIGHT - 1);
+            int x = clamp(BiomeAPI.getBiomeIDAt(i, j, k), 0, COLORMAP_WIDTH - 1) % width;
+            int y = clamp(j, 0, height - 1);
             return getRGB(x, y);
         }
 
@@ -537,7 +538,7 @@ abstract class ColorMap implements IColorMap {
         }
 
         private int getRGB(int x, int y) {
-            return map[y * COLORMAP_WIDTH + x];
+            return map[y * width + x];
         }
     }
 }
