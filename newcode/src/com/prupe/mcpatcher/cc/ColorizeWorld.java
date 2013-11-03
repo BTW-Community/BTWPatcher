@@ -7,6 +7,7 @@ import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.Entity;
 import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.World;
+import net.minecraft.src.WorldProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -157,13 +158,8 @@ public class ColorizeWorld {
         }
     }
 
-    public static boolean computeFogColor(World world, float f) {
-        if (world.worldProvider.worldType == 0 && computeFogColor(fogColorMap)) {
-            computeLightningFlash(world, f);
-            return true;
-        } else {
-            return false;
-        }
+    public static boolean computeFogColor(WorldProvider worldProvider, float f) {
+        return worldProvider.worldType == 0 && computeFogColor(fogColorMap);
     }
 
     public static boolean computeSkyColor(World world, float f) {

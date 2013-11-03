@@ -26,7 +26,7 @@ public class CustomColors extends Mod {
     private static final MethodRef colorizeSignText = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "colorizeSignText", "()I");
     private static final MethodRef colorizeXPOrb = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "colorizeXPOrb", "(IF)I");
     private static final MethodRef computeUnderwaterColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeUnderwaterColor", "()Z");
-    private static final MethodRef computeFogColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeFogColor", "(LWorld;F)Z");
+    private static final MethodRef computeFogColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeFogColor", "(LWorldProvider;F)Z");
     private static final MethodRef computeSkyColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeSkyColor", "(LWorld;F)Z");
     private static final MethodRef computeLavaDropColor = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "computeLavaDropColor", "(I)Z");
     private static final MethodRef computeWaterColor1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeWaterColor", "(III)Z");
@@ -1029,6 +1029,63 @@ public class CustomColors extends Mod {
                     );
                 }
             }.setMethod(getFogColor));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override fog color";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // r = 0.7529412f;
+                        // g = 0.84705883f;
+                        // b = 1.0F;
+                        anyLDC,
+                        capture(anyFSTORE),
+                        anyLDC,
+                        capture(anyFSTORE),
+                        push(1.0f),
+                        capture(anyFSTORE)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // if (ColorizeWorld.computeFogColor(this, partialTick)) {
+                        ALOAD_0,
+                        FLOAD_1,
+                        reference(INVOKESTATIC, computeFogColor),
+                        IFEQ, branch("A"),
+
+                        // r = Colorizer.setColor[0];
+                        reference(GETSTATIC, setColor),
+                        push(0),
+                        FALOAD,
+                        getCaptureGroup(1),
+
+                        // g = Colorizer.setColor[1];
+                        reference(GETSTATIC, setColor),
+                        push(1),
+                        FALOAD,
+                        getCaptureGroup(2),
+
+                        // b = Colorizer.setColor[2];
+                        reference(GETSTATIC, setColor),
+                        push(2),
+                        FALOAD,
+                        getCaptureGroup(3),
+
+                        // }
+                        label("A")
+                    );
+                }
+            }
+                .setInsertAfter(true)
+                .targetMethod(getFogColor)
+            );
         }
     }
 
@@ -2265,80 +2322,6 @@ public class CustomColors extends Mod {
             }
                 .setInsertAfter(true)
                 .targetMethod(updateLightmap)
-            );
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override fog color";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // f1 = 1.0f - Math.pow(f1, 0.25);
-                        push(1.0f),
-                        FLOAD, capture(any()),
-                        F2D,
-                        push(0.25),
-                        reference(INVOKESTATIC, new MethodRef("java/lang/Math", "pow", "(DD)D")),
-                        D2F,
-                        FSUB,
-                        FSTORE, backReference(1),
-
-                        // ...
-                        any(0, 100),
-
-                        // fogColorBlue = vec3d1.zCoord;
-                        ALOAD_0,
-                        anyALOAD,
-                        anyReference(GETFIELD),
-                        D2F,
-                        reference(PUTFIELD, fogColorBlue)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // ColorizeWorld.setupForFog(entityliving);
-                        ALOAD_3,
-                        reference(INVOKESTATIC, setupForFog),
-
-                        // if (ColorizeWorld.computeFogColor(world, f)) {
-                        ALOAD_2,
-                        FLOAD_1,
-                        reference(INVOKESTATIC, computeFogColor),
-                        IFEQ, branch("A"),
-
-                        // this.fogColorRed = Colorizer.setColor[0];
-                        ALOAD_0,
-                        reference(GETSTATIC, setColor),
-                        ICONST_0,
-                        FALOAD,
-                        reference(PUTFIELD, fogColorRed),
-
-                        // this.fogColorGreen = Colorizer.setColor[1];
-                        ALOAD_0,
-                        reference(GETSTATIC, setColor),
-                        ICONST_1,
-                        FALOAD,
-                        reference(PUTFIELD, fogColorGreen),
-
-                        // this.fogColorBlue = Colorizer.setColor[2];
-                        ALOAD_0,
-                        reference(GETSTATIC, setColor),
-                        ICONST_2,
-                        FALOAD,
-                        reference(PUTFIELD, fogColorBlue),
-
-                        // }
-                        label("A")
-                    );
-                }
-            }
-                .setInsertAfter(true)
-                .targetMethod(updateFogColor)
             );
 
             addPatch(new BytecodePatch() {
