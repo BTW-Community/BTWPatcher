@@ -14,6 +14,10 @@ import java.util.Properties;
 abstract class ColorMap implements IColorMap {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
+    private static final int FIXED = 0;
+    private static final int TEMPERATURE_HUMIDITY = 1;
+    private static final int BIOME_HEIGHT = 2;
+
     private static final int COLORMAP_WIDTH = 256;
     private static final int COLORMAP_HEIGHT = 256;
 
@@ -44,8 +48,8 @@ abstract class ColorMap implements IColorMap {
         return loadColorMap(true, vanillaImage, properties);
     }
 
-    static IColorMap loadFixedColorMap(boolean useCustom, ResourceLocation propertiesResource) {
-        return loadColorMap(useCustom, propertiesResource, null);
+    static IColorMap loadFixedColorMap(boolean useCustom, ResourceLocation resource) {
+        return loadColorMap(useCustom, resource, null);
     }
 
     static IColorMap loadColorMap(boolean useCustom, ResourceLocation resource, Properties properties) {
@@ -79,8 +83,8 @@ abstract class ColorMap implements IColorMap {
             }
         }
 
-        int format = MCPatcherUtils.getIntProperty(properties, "format", defaultColorMapFormat);
-        if (format == 0) {
+        int format = parseFormat(MCPatcherUtils.getStringProperty(properties, "format", ""));
+        if (format == FIXED) {
             int color = MCPatcherUtils.getHexProperty(properties, "color", 0xffffff);
             return new Fixed(color);
         }
@@ -95,7 +99,7 @@ abstract class ColorMap implements IColorMap {
         }
 
         switch (format) {
-            case 1:
+            case TEMPERATURE_HUMIDITY:
                 IColorMap defaultMap = new TempHumidity(imageResource, properties, image);
                 path = MCPatcherUtils.getStringProperty(properties, "altSource", "");
                 if (Colorizer.useSwampColors && !MCPatcherUtils.isNullOrEmpty(path)) {
@@ -108,7 +112,7 @@ abstract class ColorMap implements IColorMap {
                 }
                 return defaultMap;
 
-            case 2:
+            case BIOME_HEIGHT:
                 Grid grid = new Grid(imageResource, properties, image);
                 if (grid.isInteger()) {
                     return new IntegerGrid(imageResource, properties, grid.map);
@@ -124,16 +128,35 @@ abstract class ColorMap implements IColorMap {
 
     static void reset() {
         unusedPNGs.clear();
-        defaultColorMapFormat = 1;
+        defaultColorMapFormat = TEMPERATURE_HUMIDITY;
         defaultFlipY = false;
         defaultYVariance = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "yVariance", 0);
     }
 
     static void reloadColorMapSettings(Properties properties) {
         unusedPNGs.addAll(TexturePackAPI.listResources(CUSTOM_COLORMAP_DIR, ".png", true, false, false));
-        defaultColorMapFormat = MCPatcherUtils.getIntProperty(properties, "palette.format", 1);
+        defaultColorMapFormat = parseFormat(MCPatcherUtils.getStringProperty(properties, "palette.format", ""));
         defaultFlipY = MCPatcherUtils.getBooleanProperty(properties, "palette.flipY", false);
         defaultYVariance = MCPatcherUtils.getFloatProperty(properties, "palette.yVariance", 0.0f);
+    }
+
+    private static int parseFormat(String value) {
+        if (MCPatcherUtils.isNullOrEmpty(value)) {
+            return defaultColorMapFormat;
+        }
+        value = value.toLowerCase();
+        if (value.matches("^\\d+$")) {
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        } else if (value.equals("temperature+humidity") || value.equals("t+h") || value.equals("vanilla")) {
+            return TEMPERATURE_HUMIDITY;
+        } else if (value.equals("biome+height") || value.equals("b+h") || value.equals("grid")) {
+            return BIOME_HEIGHT;
+        }
+        return defaultColorMapFormat;
     }
 
     ColorMap(ResourceLocation resource, Properties properties, BufferedImage image) {
