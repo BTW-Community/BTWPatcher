@@ -87,6 +87,16 @@ public class BlendMethod {
             GL11.glDisable(GL11.GL_ALPHA_TEST);
         } else {
             GL11.glEnable(GL11.GL_ALPHA_TEST);
+            GL11.glAlphaFunc(GL11.GL_GREATER, 0.01f);
+        }
+    }
+
+    public void applyDepthFunc() {
+        if (blend) {
+            GL11.glDepthFunc(GL11.GL_EQUAL);
+        } else {
+            GL11.glDepthFunc(GL11.GL_LEQUAL);
+            GL11.glDepthMask(true);
         }
     }
 

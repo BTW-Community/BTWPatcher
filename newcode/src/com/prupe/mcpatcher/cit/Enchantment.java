@@ -152,6 +152,8 @@ final class Enchantment extends OverrideBase {
     private void begin(float intensity) {
         TexturePackAPI.bindTexture(textureName);
         blendMethod.applyBlending();
+        blendMethod.applyAlphaTest();
+        blendMethod.applyDepthFunc();
         blendMethod.applyFade(intensity);
         GL11.glPushMatrix();
         if (speed != 0.0) {
