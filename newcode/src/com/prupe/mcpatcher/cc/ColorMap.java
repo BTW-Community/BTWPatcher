@@ -151,6 +151,8 @@ abstract class ColorMap implements IColorMap {
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
+        } else if (value.equals("fixed")) {
+            return FIXED;
         } else if (value.equals("temperature+humidity") || value.equals("t+h") || value.equals("vanilla")) {
             return TEMPERATURE_HUMIDITY;
         } else if (value.equals("biome+height") || value.equals("b+h") || value.equals("grid")) {
