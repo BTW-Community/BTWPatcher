@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 
 abstract class ColorMapBase {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
@@ -242,11 +243,12 @@ abstract class ColorMapBase {
         private final float[][] data = new float[IJK_SIZE][];
         private final float[][] data1 = new float[IJK_SIZE][3];
 
-        private long lastCC = System.currentTimeMillis();
+        private final boolean logEnabled = logger.isLoggable(Level.FINEST);
+        private long lastLogTime = System.currentTimeMillis();
         private int calls;
-        private int miss1;
-        private int miss2;
-        private int miss3;
+        private int missChunk;
+        private int missSheet;
+        private int missBlock;
 
         Chunked(IColorMap parent) {
             this.parent = parent;
@@ -279,24 +281,23 @@ abstract class ColorMapBase {
             if (offset < 0) {
                 setChunkBase(i, j, k);
                 offset = getChunkOffset(i, j, k);
-                miss1++;
+                missChunk++;
             }
             float[] color = data[offset];
             if (color == null) {
                 color = data[offset] = data1[offset];
                 copy3f(color, parent.getColorMultiplierF(i, j, k));
-                miss3++;
+                missBlock++;
             }
-            long now = System.currentTimeMillis();
-            if (now - lastCC > 5000L) {
-                logger.finer("%s: calls: %d, miss chunk: %.2f%%, miss sheet: %.2f%%, miss block: %.2f%%",
-                    this,
-                    calls,
-                    100.0f * (float) miss1 / (float) calls,
-                    100.0f * (float) miss2 / (float) calls,
-                    100.0f * (float) miss3 / (float) calls
-                );
-                lastCC = now;
+            if (logEnabled) {
+                long now = System.currentTimeMillis();
+                if (now - lastLogTime > 5000L) {
+                    float mult = 100.0f / (float) calls;
+                    logger.finest("%s: calls: %d, miss chunk: %.2f%%, miss sheet: %.2f%%, miss block: %.2f%%",
+                        this, calls, (float) missChunk * mult, (float) missSheet * mult, (float) missBlock * mult
+                    );
+                    lastLogTime = now;
+                }
             }
             return color;
         }
@@ -323,7 +324,7 @@ abstract class ColorMapBase {
                 if (j == J_SIZE) {
                     j--;
                     baseJ++;
-                    miss2++;
+                    missSheet++;
                     Arrays.fill(data, baseOffset, IJK_SIZE, null);
                     baseOffset ^= IK_SIZE;
                 }
