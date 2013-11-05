@@ -590,7 +590,10 @@ class ProfileManager {
         userlibraries.appendChild(userlibrary);
 
         File libDir = MCPatcherUtils.getMinecraftPath("libraries");
-        for (Library library : version.getLibraries()) {
+        List<Library> allLibraries = version.getLibraries();
+        allLibraries.add(new Library("org.bouncycastle:bcprov-jdk15on:1.47"));
+        allLibraries.add(new Library("argo:argo:2.25_fixed"));
+        for (Library library : allLibraries) {
             if (library != null && !library.exclude()) {
                 Element archive = xml.createElement("archive");
                 File path = library.getPath(libDir);
