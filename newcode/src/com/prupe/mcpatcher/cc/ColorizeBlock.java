@@ -211,7 +211,7 @@ public class ColorizeBlock {
             registerColorMap(resource, value);
         }
 
-        for (ResourceLocation resource : TexturePackAPI.listResources(ColorMap.CUSTOM_COLORMAP_DIR, ".properties", true, false, false)) {
+        for (ResourceLocation resource : TexturePackAPI.listResources(ColorMap.BLOCK_COLORMAP_DIR, ".properties", true, false, false)) {
             Properties properties1 = TexturePackAPI.getProperties(resource);
             IColorMap colorMap = ColorMap.loadColorMap(true, resource, properties1);
             registerColorMap(colorMap, resource, MCPatcherUtils.getStringProperty(properties1, "blocks", getDefaultBlockName(resource)));

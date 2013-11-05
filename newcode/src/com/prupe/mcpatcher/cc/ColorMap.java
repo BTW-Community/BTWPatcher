@@ -21,7 +21,7 @@ abstract class ColorMap implements IColorMap {
     private static final int COLORMAP_WIDTH = 256;
     private static final int COLORMAP_HEIGHT = 256;
 
-    static final String CUSTOM_COLORMAP_DIR = TexturePackAPI.MCPATCHER_SUBDIR + "colormap/custom";
+    static final String BLOCK_COLORMAP_DIR = TexturePackAPI.MCPATCHER_SUBDIR + "colormap/blocks";
     static final List<ResourceLocation> unusedPNGs = new ArrayList<ResourceLocation>();
 
     private static int defaultColorMapFormat;
@@ -134,7 +134,7 @@ abstract class ColorMap implements IColorMap {
     }
 
     static void reloadColorMapSettings(Properties properties) {
-        unusedPNGs.addAll(TexturePackAPI.listResources(CUSTOM_COLORMAP_DIR, ".png", true, false, false));
+        unusedPNGs.addAll(TexturePackAPI.listResources(BLOCK_COLORMAP_DIR, ".png", true, false, false));
         defaultColorMapFormat = parseFormat(MCPatcherUtils.getStringProperty(properties, "palette.format", ""));
         defaultFlipY = MCPatcherUtils.getBooleanProperty(properties, "palette.flipY", false);
         defaultYVariance = MCPatcherUtils.getFloatProperty(properties, "palette.yVariance", 0.0f);
