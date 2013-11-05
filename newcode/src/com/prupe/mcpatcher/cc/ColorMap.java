@@ -498,7 +498,7 @@ abstract class ColorMap implements IColorMap {
         private final ResourceLocation resource;
         private final int[] map;
         private final int width;
-        private final int height;
+        private final int maxHeight;
         private final float[] lastColor = new float[3];
         private final int defaultColor;
 
@@ -506,8 +506,9 @@ abstract class ColorMap implements IColorMap {
             this.resource = resource;
             this.map = map;
             this.width = width;
-            this.height = height;
-            defaultColor = MCPatcherUtils.getHexProperty(properties, "color", getRGB(1, ColorMapBase.DEFAULT_HEIGHT));
+            maxHeight = height - 1;
+            int rgb = getRGB(1 % width, Math.min(maxHeight, ColorMapBase.DEFAULT_HEIGHT));
+            defaultColor = MCPatcherUtils.getHexProperty(properties, "color", rgb);
         }
 
         @Override
@@ -528,7 +529,7 @@ abstract class ColorMap implements IColorMap {
         @Override
         public int getColorMultiplier(int i, int j, int k) {
             int x = clamp(BiomeAPI.getBiomeIDAt(i, j, k), 0, COLORMAP_WIDTH - 1) % width;
-            int y = clamp(j, 0, height - 1);
+            int y = clamp(j, 0, maxHeight);
             return getRGB(x, y);
         }
 
