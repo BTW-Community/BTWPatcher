@@ -2807,10 +2807,12 @@ public class CustomColors extends Mod {
                         // if (this.enableAO)
                         ALOAD_0,
                         captureReference(GETFIELD),
-                        IFEQ_or_IFNE, any(2),
+                        IFEQ, any(2),
 
-                        nonGreedy(any(0, 200)),
-
+                        // tessellator.setColorOpaque_F(...);
+                        // tessellator.setBrightness(...);
+                        // tessellator.addVertexWithUV(...);
+                        // x4
                         getSubExpression(0),
                         getSubExpression(1),
                         getSubExpression(2),
@@ -3057,9 +3059,8 @@ public class CustomColors extends Mod {
                             return null;
                     }
                     return buildCode(
-                        // isSmooth = ColorizeBlock.setupBlockSmoothing(this, block, this,blockAccess,
-                        //                                              i, j, k, face + 6);
-                        // if (!ColorizeBlock.isSmooth) { //
+                        // ColorizeBlock.isSmooth = ColorizeBlock.setupBlockSmoothing(this, block, this,blockAccess,
+                        //                                                            i, j, k, face + 6);
                         ALOAD_0,
                         ALOAD_1,
                         ALOAD_0,
@@ -3075,6 +3076,7 @@ public class CustomColors extends Mod {
                         reference(INVOKESTATIC, setupBlockSmoothing1),
                         reference(PUTSTATIC, isSmooth),
 
+                        // if (!ColorizeBlock.isSmooth) {
                         reference(GETSTATIC, isSmooth),
                         IFNE, branch("A"),
 
