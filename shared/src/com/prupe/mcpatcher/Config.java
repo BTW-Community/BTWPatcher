@@ -206,6 +206,19 @@ public class Config {
         instance.getModConfig(mod).remove(tag);
     }
 
+    public static File getOptionsTxt(File mcDir, String name) {
+        File origFile = new File(mcDir, name);
+        String minecraftVersion = MCPatcherUtils.getMinecraftVersion();
+        if (!MCPatcherUtils.isNullOrEmpty(minecraftVersion)) {
+            File newFile = new File(mcDir, name.replace(".txt", "." + minecraftVersion + ".txt"));
+            if (newFile.isFile()) {
+                System.out.printf("Using %s instead of %s\n", newFile.getName(), name);
+                return newFile;
+            }
+        }
+        return origFile;
+    }
+
     String getSelectedProfileName() {
         if (MCPatcherUtils.isNullOrEmpty(selectedProfile)) {
             selectedProfile = MCPATCHER_PROFILE_NAME;

@@ -252,21 +252,6 @@ class MinecraftJar {
         pb.redirectErrorStream(true);
         pb.directory(profile.getGameDir());
 
-        File optionsTxt = MCPatcherUtils.getMinecraftPath("options.txt");
-        File optionsTxtSaved = MCPatcherUtils.getMinecraftPath("options.save.txt");
-        File optionsTxtVersion = MCPatcherUtils.getMinecraftPath("options." + getVersion().getVersionString() + ".txt");
-        boolean copiedOptionsTxt = false;
-        if (optionsTxt.isFile() && optionsTxtVersion.isFile()) {
-            try {
-                Util.copyFile(optionsTxt, optionsTxtSaved);
-                Util.copyFile(optionsTxtVersion, optionsTxt);
-                copiedOptionsTxt = true;
-                Logger.log(Logger.LOG_MAIN, "Using %s", optionsTxtVersion.getName());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
         Logger.log(Logger.LOG_MAIN);
         Logger.log(Logger.LOG_MAIN, "Launching %s", jarFile.getPath());
         sb = new StringBuilder();
@@ -311,17 +296,6 @@ class MinecraftJar {
         } catch (InterruptedException e) {
         } catch (IOException e) {
             Logger.log(e);
-        } finally {
-            if (copiedOptionsTxt) {
-                try {
-                    Util.copyFile(optionsTxt, optionsTxtVersion);
-                    Util.copyFile(optionsTxtSaved, optionsTxt);
-                    optionsTxtSaved.delete();
-                    Logger.log(Logger.LOG_MAIN, "Restoring %s", optionsTxt.getName());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 }

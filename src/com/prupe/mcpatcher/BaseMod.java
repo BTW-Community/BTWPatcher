@@ -43,6 +43,7 @@ public final class BaseMod extends Mod {
         haveProfiler = getMinecraftVersion().compareTo("1.3") >= 0;
 
         addClassMod(new XMinecraftMod());
+        addClassMod(new XGameSettingsMod());
         if (haveProfiler) {
             addClassMod(new ProfilerMod(this));
         }
@@ -305,6 +306,54 @@ public final class BaseMod extends Mod {
         @Override
         public String getDeobfClass() {
             return "Minecraft";
+        }
+    }
+
+    private class XGameSettingsMod extends ClassMod {
+        private static final String OPTIONS_TXT = "options.txt";
+
+        XGameSettingsMod() {
+            final ClassRef fileClass = new ClassRef("java/io/File");
+            final MethodRef fileConstructor = new MethodRef("java/io/File", "<init>", "(Ljava/io/File;Ljava/lang/String;)V");
+            final MethodRef getOptionsTxt = new MethodRef(MCPatcherUtils.CONFIG_CLASS, "getOptionsTxt", "(Ljava/io/File;Ljava/lang/String;)Ljava/io/File;");
+
+            setMultipleMatchesAllowed(true);
+
+            addClassSignature(new ConstSignature(OPTIONS_TXT));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "use options.<version>.txt if present";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // new File(mcDir, "options.txt")
+                        reference(NEW, fileClass),
+                        DUP,
+                        ALOAD_2,
+                        push(OPTIONS_TXT),
+                        reference(INVOKESPECIAL, fileConstructor)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // Config.getOptionsTxt(mcDir, "options.txt")
+                        ALOAD_2,
+                        push(OPTIONS_TXT),
+                        reference(INVOKESTATIC, getOptionsTxt)
+                    );
+                }
+            }.matchConstructorOnly(true));
+        }
+
+        @Override
+        public String getDeobfClass() {
+            return "GameSettings";
         }
     }
 
