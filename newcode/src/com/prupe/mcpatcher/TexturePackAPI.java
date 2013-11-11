@@ -29,7 +29,9 @@ public class TexturePackAPI {
             for (Map.Entry<String, FallbackResourceManager> entry : ((SimpleReloadableResourceManager) resourceManager).namespaceMap.entrySet()) {
                 if (namespace == null || namespace.equals(entry.getKey())) {
                     FallbackResourceManager resourceManager1 = entry.getValue();
-                    list.addAll(resourceManager1.resourcePacks);
+                    if (resourceManager1.resourcePacks != null) {
+                        list.addAll(resourceManager1.resourcePacks);
+                    }
                 }
             }
         }
