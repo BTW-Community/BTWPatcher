@@ -51,7 +51,9 @@ public class AAHelper {
             addressField = null;
             return input;
         }
-        input = MipmapHelper.fixTransparency(name, input);
+        if (name != null && MipmapHelper.useMipmapsForTexture(name.getPath())) {
+            input = MipmapHelper.fixTransparency(name, input);
+        }
         if (!(stitched instanceof BorderedTexture)) {
             return input;
         }
