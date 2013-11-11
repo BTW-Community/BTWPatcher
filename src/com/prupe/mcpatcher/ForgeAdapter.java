@@ -20,9 +20,13 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 class ForgeAdapter extends Mod {
-    static final String FORGE_LIB_NAME = "minecraftforge";
+    private static final String FORGE_LIB_NAME = "minecraftforge";
     private static final int FORGE_MIN_VERSION = 804;
     private static final String FORGE_MIN_VERSION_STR = "9.10.0.804";
+
+    private static final String FML_LIB_NAME = "fml";
+    private static final int FML_MIN_VERSION = 787;
+    private static final String FML_MIN_VERSION_STR = "6.4.41.787";
 
     private static final String GDIFF_CLASS = "cpw.mods.fml.repackage.com.nothome.delta.GDiffPatcher";
     private static final String GDIFF_PATCH_METHOD = "patch";
@@ -51,14 +55,25 @@ class ForgeAdapter extends Mod {
     ForgeAdapter(UserInterface ui, Library forgeLibrary) throws Exception {
         mcLibDir = MCPatcherUtils.getMinecraftPath("libraries");
         forgeJarPath = forgeLibrary.getPath(mcLibDir);
-        name = "Minecraft Forge";
-        author = "Minecraft Forge team";
-        description = "Minecraft Forge";
         version = forgeLibrary.getVersion();
         website = "http://minecraftforge.net/";
         clearDependencies();
 
-        if (!FORGE_LIB_NAME.equalsIgnoreCase(forgeLibrary.getName())) {
+        int minVersion;
+        String minVersionStr;
+        if (FORGE_LIB_NAME.equalsIgnoreCase(forgeLibrary.getName())) {
+            minVersion = FORGE_MIN_VERSION;
+            minVersionStr = FORGE_MIN_VERSION_STR;
+            name = "Minecraft Forge";
+            author = "Minecraft Forge team";
+            description = "Minecraft Forge";
+        } else if (FML_LIB_NAME.equalsIgnoreCase(forgeLibrary.getName())) {
+            minVersion = FML_MIN_VERSION;
+            minVersionStr = FML_MIN_VERSION_STR;
+            name = "Forge Modloader";
+            author = "FML team";
+            description = "Minecraft Forge Modloader";
+        } else {
             throw new IOException("Invalid filename " + forgeJarPath.getName());
         }
 
@@ -71,8 +86,8 @@ class ForgeAdapter extends Mod {
             }
         }
 
-        if (buildNumber != 0 && buildNumber < FORGE_MIN_VERSION) {
-            addError("Requires Forge " + FORGE_MIN_VERSION_STR + " or newer");
+        if (buildNumber != 0 && buildNumber < minVersion) {
+            addError("Requires " + name + " " + minVersionStr + " or newer");
             return;
         }
 
@@ -94,6 +109,14 @@ class ForgeAdapter extends Mod {
         }
 
         description = String.format("%d classes modified", patches.size());
+    }
+
+    static boolean isForgeLibrary(Library library) {
+        if (library == null || library.exclude()) {
+            return false;
+        }
+        String name = library.getName();
+        return name.equalsIgnoreCase(FORGE_LIB_NAME) || name.equals(FML_LIB_NAME);
     }
 
     @Override
