@@ -28,6 +28,8 @@ final class Enchantment extends OverrideBase {
     private float armorScaleY;
 
     static void beginOuter2D() {
+        GL11.glEnable(GL11.GL_ALPHA_TEST);
+        GL11.glAlphaFunc(GL11.GL_GREATER, 0.01f);
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glDepthFunc(GL11.GL_EQUAL);
         GL11.glDepthMask(false);
@@ -45,6 +47,8 @@ final class Enchantment extends OverrideBase {
     }
 
     static void beginOuter3D() {
+        GL11.glEnable(GL11.GL_ALPHA_TEST);
+        GL11.glAlphaFunc(GL11.GL_GREATER, 0.01f);
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glDepthFunc(GL11.GL_EQUAL);
         GL11.glDisable(GL11.GL_LIGHTING);
@@ -152,7 +156,6 @@ final class Enchantment extends OverrideBase {
     private void begin(float intensity) {
         TexturePackAPI.bindTexture(textureName);
         blendMethod.applyBlending();
-        blendMethod.applyAlphaTest();
         blendMethod.applyDepthFunc();
         blendMethod.applyFade(intensity);
         GL11.glPushMatrix();
