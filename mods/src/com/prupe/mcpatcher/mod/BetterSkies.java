@@ -3,6 +3,8 @@ package com.prupe.mcpatcher.mod;
 import com.prupe.mcpatcher.*;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -42,6 +44,7 @@ public class BetterSkies extends Mod {
         private JPanel panel;
         private JCheckBox skyCheckBox;
         private JCheckBox fireworksCheckBox;
+        private JSpinner horizonSpinner;
 
         ConfigPanel() {
             skyCheckBox.addActionListener(new ActionListener() {
@@ -55,6 +58,20 @@ public class BetterSkies extends Mod {
                     Config.set(MCPatcherUtils.BETTER_SKIES, "brightenFireworks", fireworksCheckBox.isSelected());
                 }
             });
+
+            horizonSpinner.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    int value = 16;
+                    try {
+                        value = Integer.parseInt(horizonSpinner.getValue().toString());
+                        value = Math.min(Math.max(-99, value), 99);
+                    } catch (NumberFormatException e1) {
+                    }
+                    Config.set(MCPatcherUtils.BETTER_SKIES, "horizon", value);
+                    horizonSpinner.setValue(value);
+                }
+            });
         }
 
         @Override
@@ -66,6 +83,7 @@ public class BetterSkies extends Mod {
         public void load() {
             skyCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "skybox", true));
             fireworksCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "brightenFireworks", true));
+            horizonSpinner.setValue(Config.getInt(MCPatcherUtils.BETTER_SKIES, "horizon", 16));
         }
 
         @Override
@@ -95,6 +113,7 @@ public class BetterSkies extends Mod {
             final MethodRef draw = new MethodRef("Tessellator", "draw", "()I");
             final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
             final MethodRef glCallList = new MethodRef(MCPatcherUtils.GL11_CLASS, "glCallList", "(I)V");
+            final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
             final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final FieldRef worldProvider = new FieldRef("World", "worldProvider", "LWorldProvider;");
@@ -104,6 +123,7 @@ public class BetterSkies extends Mod {
             final FieldRef glSkyList2 = new FieldRef(getDeobfClass(), "glSkyList2", "I");
             final FieldRef glStarList = new FieldRef(getDeobfClass(), "glStarList", "I");
             final FieldRef active = new FieldRef(MCPatcherUtils.SKY_RENDERER_CLASS, "active", "Z");
+            final FieldRef horizonHeight = new FieldRef(MCPatcherUtils.SKY_RENDERER_CLASS, "horizonHeight", "D");
 
             addClassSignature(new ConstSignature("smoke"));
             addClassSignature(new ConstSignature("textures/environment/clouds.png"));
@@ -354,6 +374,42 @@ public class BetterSkies extends Mod {
                         IFNE, branch("A"),
                         getMatch(),
                         label("A")
+                    );
+                }
+            }.targetMethod(renderSky));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override horizon position";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // GL11.glTranslatef(0.0F, -((float) (horizon - 16.0)), 0.0F);
+                        capture(build(
+                            push(0.0f),
+                            anyDLOAD
+                        )),
+                        push(16.0),
+                        capture(build(
+                            DSUB,
+                            D2F,
+                            FNEG,
+                            push(0.0f),
+                            reference(INVOKESTATIC, glTranslatef)
+                        ))
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // GL11.glTranslatef(..., (horizon - horizonHeight), ...);
+                        getCaptureGroup(1),
+                        reference(GETSTATIC, horizonHeight),
+                        getCaptureGroup(2)
                     );
                 }
             }.targetMethod(renderSky));

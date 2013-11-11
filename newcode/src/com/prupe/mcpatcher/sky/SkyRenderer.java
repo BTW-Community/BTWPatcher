@@ -13,6 +13,7 @@ public class SkyRenderer {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.BETTER_SKIES);
 
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "skybox", true);
+    public static final double horizonHeight = Config.getInt(MCPatcherUtils.BETTER_SKIES, "horizon", 16);
 
     private static double worldTime;
     private static float celestialAngle;
