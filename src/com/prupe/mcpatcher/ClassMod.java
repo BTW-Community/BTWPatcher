@@ -164,7 +164,12 @@ abstract public class ClassMod implements PatchComponent {
         for (MemberMapper mapper : memberMappers) {
             String mapperType = mapper.getMapperType();
             mapper.mapDescriptor(mod.getClassMap());
-            for (Object o : mapper.getMatchingObjects(classFile)) {
+            List<?> matchingObjects = mapper.getMatchingObjects(classFile);
+            if (mapper.reverse) {
+                matchingObjects = new ArrayList<Object>(matchingObjects);
+                Collections.reverse(matchingObjects);
+            }
+            for (Object o : matchingObjects) {
                 if (o instanceof MethodInfo) {
                     methodInfo = (MethodInfo) o;
                 }

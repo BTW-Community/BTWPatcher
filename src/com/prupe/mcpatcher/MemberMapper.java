@@ -22,6 +22,7 @@ public abstract class MemberMapper {
 
     private int mapSuperclass;
     int mapInterface = -1;
+    boolean reverse;
 
     private int setAccessFlags;
     private int clearAccessFlags;
@@ -61,6 +62,17 @@ public abstract class MemberMapper {
             throw new IllegalArgumentException("ancestry " + ancestry + " is not supported");
         }
         this.mapSuperclass = ancestry;
+        return this;
+    }
+
+    /**
+     * Specify that the methods/fields should be searched in reverse order, starting at the end of the class file.
+     *
+     * @param reverse if true, reverse the mapping order
+     * @return this
+     */
+    public MemberMapper reverse(boolean reverse) {
+        this.reverse = reverse;
         return this;
     }
 
