@@ -2,6 +2,8 @@ package com.prupe.mcpatcher;
 
 import javassist.bytecode.*;
 
+import java.util.List;
+
 import static javassist.bytecode.Opcode.*;
 
 /**
@@ -536,6 +538,26 @@ public class BytecodeMatcher extends BinaryMatcher {
             default:
                 throw new IllegalArgumentException("invalid opcode " + Mnemonic.OPCODE[code[0]]);
         }
+    }
+
+    public static String parseDescriptor(String descriptor, boolean isStatic, List<String> types, List<Integer> registers) {
+        int register = 0;
+        if (!isStatic) {
+            types.add("L...;");
+            registers.add(register++);
+        }
+        List<String> parsed = ConstPoolUtils.parseDescriptor(descriptor);
+        String returnType = parsed.remove(parsed.size() - 1);
+        for (String s : parsed) {
+            types.add(s);
+            registers.add(register);
+            if (s.equals("D") || s.equals("J")) {
+                register += 2;
+            } else {
+                register++;
+            }
+        }
+        return returnType;
     }
 
     /**
