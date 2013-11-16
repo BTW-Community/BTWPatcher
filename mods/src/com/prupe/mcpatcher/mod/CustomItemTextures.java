@@ -20,6 +20,8 @@ public class CustomItemTextures extends Mod {
     private static final MethodRef glEnable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glEnable", "(I)V");
     private static final MethodRef glAlphaFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glAlphaFunc", "(IF)V");
     private static final MethodRef glDisable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDisable", "(I)V");
+    private static final MethodRef glColorMask = new MethodRef(MCPatcherUtils.GL11_CLASS, "glColorMask", "(ZZZZ)V");
+    private static final MethodRef glDepthMask = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthMask", "(Z)V");
 
     private static final MethodRef getEntityItem = new MethodRef("EntityItem", "getEntityItem", "()LItemStack;");
     private static final FieldRef itemsList = new FieldRef("Item", "itemsList", "[LItem;");
@@ -605,6 +607,51 @@ public class CustomItemTextures extends Mod {
                         );
                     }
                 }.targetMethod(renderItemAndEffectIntoGUI));
+
+                addPatch(new BytecodePatch() {
+                    @Override
+                    public String getDescription() {
+                        return "enable alpha test in gui (multiple render passes)";
+                    }
+
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // GL11.glColorMask(false, false, false, true);
+                            push(0),
+                            push(0),
+                            push(0),
+                            push(1),
+                            reference(INVOKESTATIC, glColorMask),
+
+                            // ...
+                            any(0, 500),
+
+                            // GL11.glColorMask(true, true, true, true);
+                            push(1),
+                            push(1),
+                            push(1),
+                            push(1),
+                            reference(INVOKESTATIC, glColorMask)
+                        );
+                    }
+
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            // GL11.glDepthMask(false);
+                            push(0),
+                            reference(INVOKESTATIC, glDepthMask),
+
+                            // ...
+                            getMatch(),
+
+                            // GL11.glDepthMask(true);
+                            push(1),
+                            reference(INVOKESTATIC, glDepthMask)
+                        );
+                    }
+                }.targetMethod(renderItemIntoGUI, renderItemIntoGUIForge));
             }
 
             addPatch(new BytecodePatch() {
