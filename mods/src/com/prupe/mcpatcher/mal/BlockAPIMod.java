@@ -39,6 +39,7 @@ public class BlockAPIMod extends Mod {
 
         addClassFile(MCPatcherUtils.BLOCK_API_CLASS);
         addClassFile(MCPatcherUtils.BLOCK_API_CLASS + "$V" + malVersion);
+        addClassFile(MCPatcherUtils.BLOCK_AND_METADATA_CLASS);
         addClassFile(MCPatcherUtils.RENDER_PASS_API_MAL_CLASS);
         addClassFile(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS);
     }

@@ -78,6 +78,7 @@ public class MCPatcherUtils {
     public static final String TILE_SIZE_CLASS = "com.prupe.mcpatcher.hd.TileSize";
 
     public static final String BLOCK_API_CLASS = "com.prupe.mcpatcher.mal.block.BlockAPI";
+    public static final String BLOCK_AND_METADATA_CLASS = "com.prupe.mcpatcher.mal.block.BlockAndMetadata";
     public static final String RENDER_PASS_API_MAL_CLASS = "com.prupe.mcpatcher.mal.block.RenderPassAPI";
     public static final String RENDER_BLOCKS_UTILS_CLASS = "com.prupe.mcpatcher.mal.block.RenderBlocksUtils";
     public static final String ITEM_API_CLASS = "com.prupe.mcpatcher.mal.item.ItemAPI";

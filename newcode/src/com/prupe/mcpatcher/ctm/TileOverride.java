@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.TileLoader;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
+import com.prupe.mcpatcher.mal.block.BlockAndMetadata;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
@@ -146,15 +147,13 @@ abstract class TileOverride implements ITileOverride {
     private static final int CONNECT_BY_MATERIAL = 2;
 
     private final ResourceLocation propertiesFile;
-    private final String texturesDirectory;
     private final String baseFilename;
     private final TileLoader tileLoader;
     private final int renderPass;
     private final int weight;
-    private final Set<Block> matchBlocks;
+    private final Map<Block, Integer> matchBlocks;
     private final Set<String> matchTiles;
     private final int faces;
-    private final int metadata;
     private final int connectType;
     private final boolean innerSeams;
     private final BitSet biomes;
@@ -165,6 +164,7 @@ abstract class TileOverride implements ITileOverride {
     protected Icon[] icons;
     private boolean disabled;
     private int warnCount;
+    private int matchMetadata;
     private int[] reorient;
     private int rotateUV;
     protected boolean rotateTop;
@@ -218,7 +218,7 @@ abstract class TileOverride implements ITileOverride {
 
     protected TileOverride(ResourceLocation propertiesFile, Properties properties, TileLoader tileLoader) {
         this.propertiesFile = propertiesFile;
-        texturesDirectory = propertiesFile.getPath().replaceFirst("/[^/]*$", "");
+        String texturesDirectory = propertiesFile.getPath().replaceFirst("/[^/]*$", "");
         baseFilename = propertiesFile.getPath().replaceFirst(".*/", "").replaceFirst("\\.properties$", "");
         this.tileLoader = tileLoader;
 
@@ -233,7 +233,10 @@ abstract class TileOverride implements ITileOverride {
         } else {
             value = "";
         }
-        matchBlocks = getBlockList(MCPatcherUtils.getStringProperty(properties, "matchBlocks", value));
+        matchBlocks = getBlockList(
+            MCPatcherUtils.getStringProperty(properties, "matchBlocks", value),
+            MCPatcherUtils.getStringProperty(properties, "metadata", "")
+        );
         matchTiles = getTileList(properties, "matchTiles");
         if (matchBlocks.isEmpty() && matchTiles.isEmpty()) {
             matchTiles.add(baseFilename);
@@ -260,12 +263,6 @@ abstract class TileOverride implements ITileOverride {
             }
         }
         faces = flags;
-
-        int meta = 0;
-        for (int i : MCPatcherUtils.parseIntegerList(properties.getProperty("metadata", "0-31"), 0, 31)) {
-            meta |= (1 << i);
-        }
-        metadata = meta;
 
         String connectType1 = properties.getProperty("connect", "").trim().toLowerCase();
         if (connectType1.equals("")) {
@@ -359,28 +356,34 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    private Set<Block> getBlockList(String property) {
-        Set<Block> blocks = new HashSet<Block>();
+    private Map<Block, Integer> getBlockList(String property, String defaultMetadata) {
+        Map<Block, BlockAndMetadata> blockMetas = new IdentityHashMap<Block, BlockAndMetadata>();
         for (String token : property.split("\\s+")) {
             if (token.equals("")) {
                 // nothing
             } else if (token.matches("\\d+-\\d+")) {
                 for (int id : MCPatcherUtils.parseIntegerList(token, 0, 65535)) {
-                    Block block = BlockAPI.parseBlockName(String.valueOf(id));
-                    if (block == null) {
+                    BlockAndMetadata blockMeta = BlockAndMetadata.parse(String.valueOf(id), defaultMetadata);
+                    if (blockMeta == null) {
                         warn("unknown block id %d", id);
                     } else {
-                        blocks.add(block);
+                        BlockAndMetadata oldBlockMeta = blockMetas.get(blockMeta.getBlock());
+                        blockMetas.put(blockMeta.getBlock(), blockMeta.combine(oldBlockMeta));
                     }
                 }
             } else {
-                Block block = BlockAPI.parseBlockName(token);
-                if (block == null) {
+                BlockAndMetadata blockMeta = BlockAndMetadata.parse(token, defaultMetadata);
+                if (blockMeta == null) {
                     warn("unknown block %s", token);
                 } else {
-                    blocks.add(block);
+                    BlockAndMetadata oldBlockMeta = blockMetas.get(blockMeta.getBlock());
+                    blockMetas.put(blockMeta.getBlock(), blockMeta.combine(oldBlockMeta));
                 }
             }
+        }
+        Map<Block, Integer> blocks = new IdentityHashMap<Block, Integer>();
+        for (Map.Entry<Block, BlockAndMetadata> entry : blockMetas.entrySet()) {
+            blocks.put(entry.getKey(), entry.getValue().getMetadataBits());
         }
         return blocks;
     }
@@ -460,7 +463,7 @@ abstract class TileOverride implements ITileOverride {
     }
 
     final public Set<Block> getMatchingBlocks() {
-        return matchBlocks;
+        return matchBlocks.keySet();
     }
 
     final public Set<String> getMatchingTiles() {
@@ -502,7 +505,7 @@ abstract class TileOverride implements ITileOverride {
         if ((orientation & ~META_MASK) != (neighborOrientation & ~META_MASK)) {
             return false;
         }
-        if (this.metadata != -1) {
+        if (matchMetadata != -1) {
             if ((orientation & META_MASK) != (neighborOrientation & META_MASK)) {
                 return false;
             }
@@ -545,9 +548,10 @@ abstract class TileOverride implements ITileOverride {
             return true;
         } else if ((faces & (1 << reorient(face))) == 0) {
             return true;
-        } else if (this.metadata != -1 && metadata >= 0 && metadata < 32) {
+        }
+        if (matchMetadata != META_MASK && metadata >= 0 && metadata < BlockAndMetadata.MAX_METADATA) {
             int altMetadata = getOrientationFromMetadata(block, metadata) & META_MASK;
-            if ((this.metadata & ((1 << metadata) | (1 << altMetadata))) == 0) {
+            if ((matchMetadata & ((1 << metadata) | (1 << altMetadata))) == 0) {
                 return true;
             }
         }
@@ -692,6 +696,8 @@ abstract class TileOverride implements ITileOverride {
         if (block == null || RenderPassAPI.instance.skipThisRenderPass(block, renderPass)) {
             return null;
         }
+        Integer metadataEntry = matchBlocks.get(block);
+        matchMetadata = metadataEntry == null ? META_MASK : metadataEntry;
         int metadata = blockAccess.getBlockMetadata(i, j, k);
         setupOrientation(getOrientationFromMetadata(block, metadata), face);
         face = remapFaceByRenderType(block, metadata, face);
@@ -721,6 +727,8 @@ abstract class TileOverride implements ITileOverride {
         if (minHeight >= 0 || maxHeight < Integer.MAX_VALUE || biomes != null) {
             return null;
         }
+        Integer metadataEntry = matchBlocks.get(block);
+        matchMetadata = metadataEntry == null ? META_MASK : metadataEntry;
         setupOrientation(getOrientationFromMetadata(block, metadata), face);
         if (exclude(block, face, metadata)) {
             return null;

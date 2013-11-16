@@ -11,10 +11,6 @@ import java.io.PrintStream;
 import java.util.*;
 
 abstract public class BlockAPI {
-    public static final int MAX_METADATA = 15;
-    public static final int NO_METADATA = MAX_METADATA + 1;
-    public static final int METADATA_ARRAY_SIZE = NO_METADATA + 1;
-
     private static final HashMap<String, Integer> canonicalIdByName = new HashMap<String, Integer>();
 
     static {
@@ -208,36 +204,8 @@ abstract public class BlockAPI {
         return instance.getBlockByName_Impl(name);
     }
 
-    public static Block parseBlockAndMetadata(String name, int[] metadata) {
-        metadata[0] = (1 << NO_METADATA);
-        if (name.matches(".*:[-0-9, ]+")) {
-            metadata[0] = 0;
-            int pos = name.lastIndexOf(':');
-            for (int meta : MCPatcherUtils.parseIntegerList(name.substring(pos + 1), 0, MAX_METADATA)) {
-                metadata[0] |= (1 << meta);
-            }
-            name = name.substring(0, pos);
-        }
-        return parseBlockName(name);
-    }
-
     public static String getBlockName(Block block) {
         return block == null ? "(null)" : instance.getBlockName_Impl(block);
-    }
-
-    public static String getBlockName(Block block, int metadata) {
-        StringBuilder sb = new StringBuilder(getBlockName(block));
-        if (metadata != NO_METADATA) {
-            boolean first = true;
-            for (int i = 0; i <= MAX_METADATA; i++) {
-                if ((metadata & (1 << i)) != 0) {
-                    sb.append(first ? ':' : ',');
-                    sb.append(i);
-                    first = false;
-                }
-            }
-        }
-        return sb.toString();
     }
 
     public static List<Block> getAllBlocks() {

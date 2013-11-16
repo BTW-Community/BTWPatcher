@@ -5,6 +5,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
+import com.prupe.mcpatcher.mal.block.BlockAndMetadata;
 import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
@@ -33,6 +34,9 @@ public class ColorizeBlock {
     private static final ResourceLocation WATERCOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/water.png");
 
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
+
+    private static final int NO_METADATA = BlockAndMetadata.MAX_METADATA + 1;
+    private static final int METADATA_ARRAY_SIZE = NO_METADATA + 1;
 
     private static Block waterBlock;
     private static Block staticWaterBlock;
@@ -238,23 +242,23 @@ public class ColorizeBlock {
             return null;
         }
         colorMap = wrapBlockMap(colorMap);
-        int[] metadata = new int[1];
         for (String idString : idList.split("\\s+")) {
-            Block block = BlockAPI.parseBlockAndMetadata(idString, metadata);
-            if (block != null) {
-                IColorMap[] maps = blockColorMaps.get(block);
+            BlockAndMetadata blockMeta = BlockAndMetadata.parse(idString, "");
+            if (blockMeta != null) {
+                IColorMap[] maps = blockColorMaps.get(blockMeta.getBlock());
                 if (maps == null) {
-                    maps = new IColorMap[BlockAPI.METADATA_ARRAY_SIZE];
-                    blockColorMaps.put(block, maps);
+                    maps = new IColorMap[METADATA_ARRAY_SIZE];
+                    blockColorMaps.put(blockMeta.getBlock(), maps);
                 }
-                for (int i = 0; i < maps.length; i++) {
-                    if ((metadata[0] & (1 << i)) != 0) {
-                        maps[i] = colorMap;
-                    }
+                for (int i : blockMeta.getMetadataList()) {
+                    maps[i] = colorMap;
+                }
+                if (!blockMeta.hasMetadata()) {
+                    maps[NO_METADATA] = colorMap;
                 }
                 if (resource != null) {
                     logger.fine("using %s for block %s, default color %06x",
-                        colorMap, BlockAPI.getBlockName(block, metadata[0]), colorMap.getColorMultiplier()
+                        colorMap, blockMeta, colorMap.getColorMultiplier()
                     );
                 }
             }
@@ -301,7 +305,7 @@ public class ColorizeBlock {
         if (colorMap != null) {
             return colorMap;
         }
-        return maps[BlockAPI.NO_METADATA];
+        return maps[NO_METADATA];
     }
 
     private static IColorMap findColorMap(Block block, IBlockAccess blockAccess, int i, int j, int k) {
@@ -310,7 +314,7 @@ public class ColorizeBlock {
     }
 
     public static boolean colorizeBlock(Block block) {
-        return colorizeBlock(block, BlockAPI.NO_METADATA);
+        return colorizeBlock(block, NO_METADATA);
     }
 
     public static boolean colorizeBlock(Block block, int metadata) {
