@@ -184,7 +184,7 @@ abstract public class BytecodePatch extends ClassPatch {
             }
         }
         for (BytecodeSignature signature : preMatchSignatures) {
-            if (!signature.match(null, methodInfo, null)) {
+            if (signature.match(null, methodInfo, null) == signature.negate) {
                 return false;
             }
         }
