@@ -23,7 +23,7 @@ public class BaseTexturePackMod extends Mod {
         name = MCPatcherUtils.BASE_TEXTURE_PACK_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
-        version = "4.0";
+        version = "4.1";
 
         addClassMod(new MinecraftMod());
         addClassMod(new TextureManagerMod());

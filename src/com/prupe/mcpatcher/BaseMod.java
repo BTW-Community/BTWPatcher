@@ -36,7 +36,7 @@ public final class BaseMod extends Mod {
         name = MCPatcherUtils.BASE_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
-        version = "1.3";
+        version = "1.4";
         configPanel = new ConfigPanel();
         clearDependencies();
 

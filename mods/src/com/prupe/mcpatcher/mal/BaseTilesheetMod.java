@@ -12,7 +12,7 @@ public class BaseTilesheetMod extends Mod {
         name = MCPatcherUtils.BASE_TILESHEET_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
-        version = "2.1";
+        version = "2.2";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 

@@ -35,7 +35,7 @@ public class CustomItemTextures extends Mod {
         name = MCPatcherUtils.CUSTOM_ITEM_TEXTURES;
         author = "MCPatcher";
         description = "Enables support for custom item textures, enchantments, and armor.";
-        version = "0.5";
+        version = "0.6";
         configPanel = new ConfigPanel();
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);

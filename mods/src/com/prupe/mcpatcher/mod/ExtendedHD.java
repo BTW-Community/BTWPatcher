@@ -25,7 +25,7 @@ public class ExtendedHD extends Mod {
         name = MCPatcherUtils.EXTENDED_HD;
         author = "MCPatcher";
         description = "Provides support for custom animations, HD fonts, mipmapping, and other graphical features.";
-        version = "3.1";
+        version = "3.2";
 
         haveMipmapping = getMinecraftVersion().compareTo("13w38a") >= 0;
         configPanel = new HDConfig(!haveMipmapping);
