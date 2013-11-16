@@ -2,11 +2,13 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.mal.BaseTexturePackMod;
+import javassist.bytecode.AccessFlag;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -217,6 +219,7 @@ public class ConnectedTextures extends Mod {
         private final FieldRef instance = new FieldRef("Tessellator", "instance", "LTessellator;");
         private final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;III)Z");
         private final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;III)Z");
+        private final MethodRef drawCrossedSquares = new MethodRef(getDeobfClass(), "drawCrossedSquares", "(LIcon;DDDF)V");
         private final MethodRef hasOverrideTexture = new MethodRef(getDeobfClass(), "hasOverrideTexture", "()Z");
         private final MethodRef renderBlockPane1 = new MethodRef(getDeobfClass(), "renderBlockPane1", "(LBlockPane;III)Z");
         private final MethodRef renderBlockPane2 = new MethodRef(getDeobfClass(), "renderBlockPane2", "(LBlock;III)Z");
@@ -228,7 +231,6 @@ public class ConnectedTextures extends Mod {
         private final MethodRef getIconBySide = new MethodRef(getDeobfClass(), "getIconBySide", "(LBlock;I)LIcon;");
         private final InterfaceMethodRef getMinU = new InterfaceMethodRef("Icon", "getMinU", "()F");
         private final InterfaceMethodRef getMinV = new InterfaceMethodRef("Icon", "getMinV", "()F");
-        private final InterfaceMethodRef getInterpolatedU = new InterfaceMethodRef("Icon", "getInterpolatedU", "(D)F");
         private final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
         private final MethodRef getTile = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIIILIcon;LTessellator;)LIcon;");
         private final MethodRef getTileNoFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIILIcon;LTessellator;)LIcon;");
@@ -236,6 +238,7 @@ public class ConnectedTextures extends Mod {
         private final MethodRef getTileBySideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IILTessellator;)LIcon;");
         private final MethodRef getTileBySide = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;ILTessellator;)LIcon;");
         private final MethodRef getTessellator = new MethodRef(MCPatcherUtils.TESSELLATOR_UTILS_CLASS, "getTessellator", "(LTessellator;LIcon;)LTessellator;");
+        private final MethodRef round = new MethodRef("java/lang/Math", "round", "(D)J");
 
         RenderBlocksMod() {
             super(ConnectedTextures.this);
@@ -278,14 +281,14 @@ public class ConnectedTextures extends Mod {
             addMemberMapper(new FieldMapper(blockAccess));
 
             setupStandardBlocks();
-            setupNonStandardBlocks();
+            setupGlassPanes();
+            setupHeldBlocks();
             if (haveBlockRegistry) {
                 setupCrossedSquares17();
             } else {
                 setupCrossedSquares16();
             }
-            setupGlassPanes();
-            setupHeldBlocks();
+            setupNonStandardBlocks();
         }
 
         abstract private class RenderBlocksPatch extends BytecodePatch {
@@ -309,7 +312,26 @@ public class ConnectedTextures extends Mod {
                     }
                 });
 
+                addPreMatchSignature((BytecodeSignature) new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(or(
+                            build(reference(INVOKESTATIC, getTile)),
+                            build(reference(INVOKESTATIC, getTileNoFace)),
+                            build(reference(INVOKESTATIC, getTileNoFaceOrBlock)),
+                            build(reference(INVOKESTATIC, getTileBySide)),
+                            build(reference(INVOKESTATIC, getTileBySideAndMetadata))
+                        ));
+                    }
+                }.negate(true));
+
                 setInsertAfter(true);
+            }
+
+            @Override
+            public boolean filterMethod() {
+                return (getMethodInfo().getAccessFlags() & AccessFlag.STATIC) == 0 &&
+                    getMethodInfo().getDescriptor().matches("\\(L[a-z]+;.*");
             }
 
             @Override
@@ -484,7 +506,7 @@ public class ConnectedTextures extends Mod {
 
                 @Override
                 public boolean filterMethod() {
-                    return getMethodInfo().getDescriptor().matches("\\(L[a-z]+;III.*[IVZ]");
+                    return super.filterMethod() && getMethodInfo().getDescriptor().matches("\\(L[a-z]+;III.*[IVZ]");
                 }
 
                 @Override
@@ -514,6 +536,71 @@ public class ConnectedTextures extends Mod {
                         ILOAD_2,
                         ILOAD_3,
                         ILOAD, 4
+                    );
+                }
+
+                @Override
+                protected MethodRef getCTMUtilsMethod() {
+                    return getTileNoFace;
+                }
+            });
+
+            addPatch(new RenderBlocksPatch() {
+                private final int[] coordRegisters = new int[3];
+
+                {
+                    skipMethod(drawCrossedSquares);
+                }
+
+                @Override
+                public boolean filterMethod() {
+                    if (!super.filterMethod()) {
+                        return false;
+                    }
+                    String descriptor = getMethodInfo().getDescriptor();
+                    List<String> types = new ArrayList<String>();
+                    List<Integer> registers = new ArrayList<Integer>();
+                    parseDescriptor(descriptor, false, types, registers);
+                    // renderBlockStemBig/Small have an extra parameter renderMaxY before the x,y,z coords
+                    boolean skipOne = descriptor.contains("IDDDD");
+                    for (int i = 0; i + 2 < types.size(); i++) {
+                        String threeTypes = types.get(i) + types.get(i + 1) + types.get(i + 2);
+                        if (threeTypes.equals("III")) {
+                            return false;
+                        } else if (threeTypes.equals("DDD")) {
+                            if (skipOne) {
+                                skipOne = false;
+                            } else {
+                                coordRegisters[0] = registers.get(i);
+                                coordRegisters[1] = registers.get(i + 1);
+                                coordRegisters[2] = registers.get(i + 2);
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+
+                @Override
+                protected String getTextureType() {
+                    return "other blocks (double)";
+                }
+
+                @Override
+                protected byte[] getCTMUtilsArgs() {
+                    Logger.log(Logger.LOG_CONST, "coord double registers: %d %d %d",
+                        coordRegisters[0], coordRegisters[1], coordRegisters[2]
+                    );
+                    return buildCode(
+                        registerLoadStore(DLOAD, coordRegisters[0]),
+                        reference(INVOKESTATIC, round),
+                        L2I,
+                        registerLoadStore(DLOAD, coordRegisters[1]),
+                        reference(INVOKESTATIC, round),
+                        L2I,
+                        registerLoadStore(DLOAD, coordRegisters[2]),
+                        reference(INVOKESTATIC, round),
+                        L2I
                     );
                 }
 
@@ -555,9 +642,6 @@ public class ConnectedTextures extends Mod {
         }
 
         private void setupCrossedSquares17() {
-            final MethodRef drawCrossedSquares = new MethodRef(getDeobfClass(), "drawCrossedSquares", "(LIcon;DDDF)V");
-            final MethodRef round = new MethodRef("java/lang/Math", "round", "(D)J");
-
             addMemberMapper(new MethodMapper(drawCrossedSquares));
 
             addPatch(new RenderBlocksPatch() {
