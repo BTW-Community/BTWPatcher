@@ -285,8 +285,6 @@ public class ConnectedTextures extends Mod {
             setupHeldBlocks();
             if (haveBlockRegistry) {
                 setupCrossedSquares17();
-            } else {
-                setupCrossedSquares16();
             }
             setupNonStandardBlocks();
         }
@@ -609,36 +607,6 @@ public class ConnectedTextures extends Mod {
                     return getTileNoFace;
                 }
             });
-        }
-
-        private void setupCrossedSquares16() {
-            final MethodRef drawCrossedSquares = new MethodRef(getDeobfClass(), "drawCrossedSquares", "(LBlock;IDDDF)V");
-
-            addMemberMapper(new MethodMapper(drawCrossedSquares));
-
-            addPatch(new RenderBlocksPatch() {
-                @Override
-                protected String getTextureType() {
-                    return "crossed squares";
-                }
-
-                @Override
-                protected byte[] getCTMUtilsArgs() {
-                    return buildCode(
-                        DLOAD_3,
-                        D2I,
-                        DLOAD, 5,
-                        D2I,
-                        DLOAD, 7,
-                        D2I
-                    );
-                }
-
-                @Override
-                protected MethodRef getCTMUtilsMethod() {
-                    return getTileNoFace;
-                }
-            }.targetMethod(drawCrossedSquares));
         }
 
         private void setupCrossedSquares17() {
