@@ -40,6 +40,7 @@ public class ColorizeBlock {
 
     private static Block waterBlock;
     private static Block staticWaterBlock;
+    private static Block doublePlantBlock;
 
     private static final Map<Block, IColorMap[]> blockColorMaps = new IdentityHashMap<Block, IColorMap[]>(); // bitmaps from palette.block.*
     private static IColorMap waterColorMap;
@@ -150,6 +151,7 @@ public class ColorizeBlock {
     static void reset() {
         waterBlock = BlockAPI.getFixedBlock("minecraft:flowing_water");
         staticWaterBlock = BlockAPI.getFixedBlock("minecraft:water");
+        doublePlantBlock = BlockAPI.parseBlockName("minecraft:double_plant");
 
         blockColorMaps.clear();
         waterColorMap = null;
@@ -310,6 +312,12 @@ public class ColorizeBlock {
 
     private static IColorMap findColorMap(Block block, IBlockAccess blockAccess, int i, int j, int k) {
         int metadata = blockAccess.getBlockMetadata(i, j, k);
+        if (block == doublePlantBlock) {
+            if ((metadata & 0x8) != 0 && BlockAPI.getBlockAt(blockAccess, i, j - 1, k) == block) {
+                metadata = blockAccess.getBlockMetadata(i, j - 1, k);
+            }
+            metadata &= 0x7;
+        }
         return findColorMap(block, metadata);
     }
 
