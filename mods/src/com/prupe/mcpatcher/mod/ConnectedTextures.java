@@ -16,7 +16,7 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class ConnectedTextures extends Mod {
-    private final MethodRef startCTM = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "start", "()V");
+    private final MethodRef startCTM = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "start", "(Z)V");
     private final MethodRef finishCTM = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "finish", "()V");
 
     private final boolean haveBlockRegistry;
@@ -626,7 +626,8 @@ public class ConnectedTextures extends Mod {
                         reference(INVOKESTATIC, round),
                         L2I,
                         DLOAD, 4,
-                        D2I,
+                        reference(INVOKESTATIC, round),
+                        L2I,
                         DLOAD, 6,
                         reference(INVOKESTATIC, round),
                         L2I
@@ -886,6 +887,8 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // CTMUtils.startCTM(false);
+                        push(0),
                         reference(INVOKESTATIC, startCTM),
                         ALOAD, 4,
                         reference(INVOKESTATIC, to)
@@ -915,6 +918,8 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // CTMUtils.startCTM(true);
+                        push(1),
                         reference(INVOKESTATIC, startCTM)
                     );
                 }

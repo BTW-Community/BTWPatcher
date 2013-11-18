@@ -20,6 +20,7 @@ public class CTMUtils {
     private static TileLoader tileLoader;
 
     static boolean active;
+    private static boolean renderWorld;
     static ITileOverride lastOverride;
 
     static {
@@ -77,13 +78,17 @@ public class CTMUtils {
         });
     }
 
-    public static void start() {
+    public static void start(boolean renderWorld) {
         lastOverride = null;
         active = tileLoader.setDefaultTextureMap(Tessellator.instance);
+        CTMUtils.renderWorld = renderWorld;
     }
 
     // called by drawCrossedSquares, which in 1.7 no longer has a Block parameter
     public static Icon getTile(RenderBlocks renderBlocks, int i, int j, int k, Icon origIcon, Tessellator tessellator) {
+        if (!renderWorld) {
+            return origIcon;
+        }
         if (renderBlocks.blockAccess == null) {
             return null;
         }
