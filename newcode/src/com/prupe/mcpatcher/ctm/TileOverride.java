@@ -549,7 +549,7 @@ abstract class TileOverride implements ITileOverride {
         } else if ((faces & (1 << reorient(face))) == 0) {
             return true;
         }
-        if (matchMetadata != META_MASK && metadata >= 0 && metadata < BlockAndMetadata.MAX_METADATA) {
+        if (matchMetadata != META_MASK && metadata >= 0 && metadata <= BlockAndMetadata.MAX_METADATA) {
             int altMetadata = getOrientationFromMetadata(block, metadata) & META_MASK;
             if ((matchMetadata & ((1 << metadata) | (1 << altMetadata))) == 0) {
                 return true;
