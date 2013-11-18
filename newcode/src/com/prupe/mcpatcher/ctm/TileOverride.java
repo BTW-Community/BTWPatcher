@@ -505,7 +505,7 @@ abstract class TileOverride implements ITileOverride {
         if ((orientation & ~META_MASK) != (neighborOrientation & ~META_MASK)) {
             return false;
         }
-        if (matchMetadata != -1) {
+        if (matchMetadata != META_MASK) {
             if ((orientation & META_MASK) != (neighborOrientation & META_MASK)) {
                 return false;
             }
