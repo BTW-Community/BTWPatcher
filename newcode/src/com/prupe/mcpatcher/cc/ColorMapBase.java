@@ -2,9 +2,11 @@ package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import net.minecraft.src.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -118,6 +120,11 @@ abstract class ColorMapBase {
             }
             return lastColor;
         }
+
+        @Override
+        public void claimResources(Collection<ResourceLocation> resources) {
+            parent.claimResources(resources);
+        }
     }
 
     static final class Cached implements IColorMap {
@@ -168,6 +175,11 @@ abstract class ColorMapBase {
                 lastK = k;
             }
             return lastColorF;
+        }
+
+        @Override
+        public void claimResources(Collection<ResourceLocation> resources) {
+            parent.claimResources(resources);
         }
     }
 
@@ -220,6 +232,11 @@ abstract class ColorMapBase {
             }
             lastTime = now;
             return lastColor;
+        }
+
+        @Override
+        public void claimResources(Collection<ResourceLocation> resources) {
+            parent.claimResources(resources);
         }
     }
 
@@ -302,6 +319,11 @@ abstract class ColorMapBase {
             return color;
         }
 
+        @Override
+        public void claimResources(Collection<ResourceLocation> resources) {
+            parent.claimResources(resources);
+        }
+
         private static void copy3f(float[] dst, float[] src) {
             dst[0] = src[0];
             dst[1] = src[1];
@@ -375,6 +397,11 @@ abstract class ColorMapBase {
                 j = DEFAULT_HEIGHT;
             }
             return parent.getColorMultiplierF(i, j, k);
+        }
+
+        @Override
+        public void claimResources(Collection<ResourceLocation> resources) {
+            parent.claimResources(resources);
         }
     }
 }

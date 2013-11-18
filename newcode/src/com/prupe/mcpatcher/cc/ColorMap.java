@@ -6,10 +6,7 @@ import net.minecraft.src.BiomeGenBase;
 import net.minecraft.src.ResourceLocation;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 abstract class ColorMap implements IColorMap {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
@@ -54,8 +51,8 @@ abstract class ColorMap implements IColorMap {
 
     static IColorMap loadColorMap(boolean useCustom, ResourceLocation resource, Properties properties) {
         IColorMap map = loadColorMap1(useCustom, resource, properties);
-        if (map instanceof ColorMap) {
-            unusedPNGs.remove(((ColorMap) map).resource);
+        if (map != null) {
+            map.claimResources(unusedPNGs);
         }
         return map;
     }
@@ -193,6 +190,11 @@ abstract class ColorMap implements IColorMap {
         return lastColor;
     }
 
+    @Override
+    public void claimResources(Collection<ResourceLocation> resources) {
+        resources.remove(resource);
+    }
+
     protected int getRGB(float x, float y) {
         x = clamp(x, 0.0f, maxX);
         y = clamp(y, 0.0f, maxY);
@@ -309,6 +311,10 @@ abstract class ColorMap implements IColorMap {
         public float[] getColorMultiplierF(int i, int j, int k) {
             return colorF;
         }
+
+        @Override
+        public void claimResources(Collection<ResourceLocation> resources) {
+        }
     }
 
     static final class Water implements IColorMap {
@@ -338,6 +344,10 @@ abstract class ColorMap implements IColorMap {
         public float[] getColorMultiplierF(int i, int j, int k) {
             Colorizer.intToFloat3(getColorMultiplier(i, j, k), lastColor);
             return lastColor;
+        }
+
+        @Override
+        public void claimResources(Collection<ResourceLocation> resources) {
         }
     }
 
@@ -377,6 +387,12 @@ abstract class ColorMap implements IColorMap {
         public float[] getColorMultiplierF(int i, int j, int k) {
             IColorMap map = BiomeAPI.getBiomeGenAt(i, j, k) == swampBiome ? swampMap : defaultMap;
             return map.getColorMultiplierF(i, j, k);
+        }
+
+        @Override
+        public void claimResources(Collection<ResourceLocation> resources) {
+            defaultMap.claimResources(resources);
+            swampMap.claimResources(resources);
         }
     }
 
@@ -538,6 +554,11 @@ abstract class ColorMap implements IColorMap {
             int rgb = getColorMultiplier(i, j, k);
             Colorizer.intToFloat3(rgb, lastColor);
             return lastColor;
+        }
+
+        @Override
+        public void claimResources(Collection<ResourceLocation> resources) {
+            resources.remove(resource);
         }
 
         private int getRGB(int x, int y) {
