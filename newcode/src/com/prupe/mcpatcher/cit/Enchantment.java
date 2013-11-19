@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.cit;
 import com.prupe.mcpatcher.BlendMethod;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
+import net.minecraft.src.Icon;
 import net.minecraft.src.ItemRenderer;
 import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.Tessellator;
@@ -66,7 +67,7 @@ final class Enchantment extends OverrideBase {
     Enchantment(ResourceLocation propertiesName, Properties properties) {
         super(propertiesName, properties);
 
-        if (!error && textureName == null) {
+        if (!error && textureName == null && alternateTextures == null) {
             error("no source texture specified");
         }
 
@@ -105,6 +106,9 @@ final class Enchantment extends OverrideBase {
         if (intensity > 1.0f) {
             intensity = 1.0f;
         }
+        if (!bindTexture(CITUtils.lastOrigIcon)) {
+            return;
+        }
         begin(intensity);
         tessellator.startDrawingQuads();
         tessellator.addVertexWithUV(x0, y0, z, 0.0f, 0.0f);
@@ -122,9 +126,30 @@ final class Enchantment extends OverrideBase {
         if (intensity > 1.0f) {
             intensity = 1.0f;
         }
+        if (!bindTexture(CITUtils.lastOrigIcon)) {
+            return;
+        }
         begin(intensity);
         ItemRenderer.renderItemIn2D(tessellator, 1.0f, 0.0f, 0.0f, 1.0f, width, height, ITEM_2D_THICKNESS);
         end();
+    }
+
+    boolean bindTexture(Icon icon) {
+        ResourceLocation texture;
+        if (alternateTextures != null && icon != null) {
+            texture = alternateTextures.get(icon.getIconName());
+            if (texture == null) {
+                texture = textureName;
+            }
+        } else {
+            texture = textureName;
+        }
+        if (texture == null) {
+            return false;
+        } else {
+            TexturePackAPI.bindTexture(texture);
+            return true;
+        }
     }
 
     void beginArmor(float intensity) {
@@ -154,7 +179,6 @@ final class Enchantment extends OverrideBase {
     }
 
     private void begin(float intensity) {
-        TexturePackAPI.bindTexture(textureName);
         blendMethod.applyBlending();
         blendMethod.applyDepthFunc();
         blendMethod.applyFade(intensity);

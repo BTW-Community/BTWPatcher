@@ -39,6 +39,7 @@ public class CITUtils {
 
     private static ItemStack lastItemStack;
     private static int lastRenderPass;
+    static Icon lastOrigIcon;
     private static Icon lastIcon;
 
     private static Field potionItemStackField;
@@ -64,6 +65,7 @@ public class CITUtils {
                 enchantments.clear();
                 allItemEnchantments.clear();
                 armors.clear();
+                lastOrigIcon = null;
                 lastIcon = null;
 
                 BufferedImage image = TexturePackAPI.getImage(FIXED_ARMOR_RESOURCE);
@@ -165,7 +167,7 @@ public class CITUtils {
         if (icon == lastIcon && itemStack == lastItemStack && renderPass == lastRenderPass) {
             return icon;
         }
-        lastIcon = icon;
+        lastOrigIcon = lastIcon = icon;
         lastItemStack = itemStack;
         lastRenderPass = renderPass;
         if (enableItems) {
@@ -285,8 +287,12 @@ public class CITUtils {
     public static boolean preRenderArmorEnchantment() {
         if (armorMatchIndex < armorMatches.size()) {
             Enchantment enchantment = armorMatches.getEnchantment(armorMatchIndex);
-            enchantment.beginArmor(armorMatches.getIntensity(armorMatchIndex));
-            return true;
+            if (enchantment.bindTexture(lastOrigIcon)) {
+                enchantment.beginArmor(armorMatches.getIntensity(armorMatchIndex));
+                return true;
+            } else {
+                return false;
+            }
         } else {
             armorMatches = null;
             armorMatchIndex = 0;
