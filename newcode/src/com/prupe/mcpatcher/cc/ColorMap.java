@@ -427,6 +427,7 @@ abstract class ColorMap implements IColorMap {
     static final class Grid extends ColorMap {
         private final float[] biomeX = new float[BiomeGenBase.biomeList.length];
         private final float yVariance;
+        private final float yOffset;
         private final int defaultColor;
 
         private Grid(ResourceLocation resource, Properties properties, BufferedImage image) {
@@ -443,6 +444,7 @@ abstract class ColorMap implements IColorMap {
             }
 
             yVariance = Math.max(MCPatcherUtils.getFloatProperty(properties, "yVariance", defaultYVariance), 0.0f);
+            yOffset = MCPatcherUtils.getFloatProperty(properties, "yOffset", 0.0f);
             for (int i = 0; i < biomeX.length; i++) {
                 biomeX[i] = i % width;
             }
@@ -466,7 +468,7 @@ abstract class ColorMap implements IColorMap {
         }
 
         boolean isInteger() {
-            if (yVariance != 0.0f) {
+            if (yVariance != 0.0f || Math.floor(yOffset) != yOffset) {
                 return false;
             }
             for (int i = 0; i < biomeX.length; i++) {
@@ -498,7 +500,7 @@ abstract class ColorMap implements IColorMap {
         }
 
         private float getY(int j) {
-            return (float) j;
+            return (float) j - yOffset;
         }
 
         private float getY(BiomeGenBase biome, int i, int j, int k) {
@@ -515,15 +517,17 @@ abstract class ColorMap implements IColorMap {
         private final int[] map;
         private final int width;
         private final int maxHeight;
-        private final float[] lastColor = new float[3];
+        private final int yOffset;
         private final int defaultColor;
+        private final float[] lastColor = new float[3];
 
         IntegerGrid(ResourceLocation resource, Properties properties, int[] map, int width, int height) {
             this.resource = resource;
             this.map = map;
             this.width = width;
             maxHeight = height - 1;
-            int rgb = getRGB(1 % width, Math.min(maxHeight, ColorMapBase.DEFAULT_HEIGHT));
+            yOffset = (int) MCPatcherUtils.getFloatProperty(properties, "yOffset", 0.0f);
+            int rgb = getRGB(1, ColorMapBase.DEFAULT_HEIGHT);
             defaultColor = MCPatcherUtils.getHexProperty(properties, "color", rgb);
         }
 
@@ -544,9 +548,7 @@ abstract class ColorMap implements IColorMap {
 
         @Override
         public int getColorMultiplier(int i, int j, int k) {
-            int x = clamp(BiomeAPI.getBiomeIDAt(i, j, k), 0, COLORMAP_WIDTH - 1) % width;
-            int y = clamp(j, 0, maxHeight);
-            return getRGB(x, y);
+            return getRGB(BiomeAPI.getBiomeIDAt(i, j, k), j);
         }
 
         @Override
@@ -562,6 +564,8 @@ abstract class ColorMap implements IColorMap {
         }
 
         private int getRGB(int x, int y) {
+            x = clamp(x, 0, COLORMAP_WIDTH - 1) % width;
+            y = clamp(y - yOffset, 0, maxHeight);
             return map[y * width + x];
         }
     }
