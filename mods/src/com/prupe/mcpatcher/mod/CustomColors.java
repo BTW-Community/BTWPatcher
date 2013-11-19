@@ -101,7 +101,9 @@ public class CustomColors extends Mod {
         addClassMod(new EntityPortalFXMod());
         addClassMod(new EntityAuraFXMod());
 
-        addClassMod(new EntityLivingBaseMod());
+        // This patch enables custom potion particle effects around players in SMP.
+        // Removed because it causes beacon effect particles to become opaque for some reason.
+        //addClassMod(new EntityLivingBaseMod());
         addClassMod(new EntityRendererMod());
 
         addClassMod(new BlockRedstoneWireMod());
