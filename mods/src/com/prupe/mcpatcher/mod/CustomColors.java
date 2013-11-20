@@ -1014,6 +1014,7 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature(0.91f));
             addClassSignature(new ConstSignature(0.94f));
 
+            final FieldRef worldObj = new FieldRef(getDeobfClass(), "worldObj", "LWorld;");
             final MethodRef getFogColor = new MethodRef(getDeobfClass(), "getFogColor", "(FF)LVec3D;");
 
             addClassSignature(new BytecodeSignature() {
@@ -1031,6 +1032,8 @@ public class CustomColors extends Mod {
                     );
                 }
             }.setMethod(getFogColor));
+
+            addMemberMapper(new FieldMapper(worldObj));
 
             addPatch(new BytecodePatch() {
                 @Override

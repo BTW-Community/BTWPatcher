@@ -27,6 +27,7 @@ public class RandomMobs extends Mod {
         addClassMod(new BaseMod.ResourceLocationMod(this));
         addClassMod(new BaseMod.NBTTagCompoundMod(this));
         addClassMod(new BaseMod.TessellatorMod(this));
+        addClassMod(new BaseMod.IBlockAccessMod(this));
         addClassMod(new EntityMod());
         addClassMod(new EntityLivingBaseMod());
         addClassMod(new RenderMod());
