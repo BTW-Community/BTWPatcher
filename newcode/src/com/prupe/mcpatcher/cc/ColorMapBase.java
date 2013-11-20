@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.ResourceLocation;
 
 import java.util.ArrayList;
@@ -101,19 +102,19 @@ abstract class ColorMapBase {
         }
 
         @Override
-        public int getColorMultiplier(int i, int j, int k) {
-            return Colorizer.float3ToInt(getColorMultiplierF(i, j, k));
+        public int getColorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
+            return Colorizer.float3ToInt(getColorMultiplierF(blockAccess, i, j, k));
         }
 
         @Override
-        public float[] getColorMultiplierF(int i, int j, int k) {
+        public float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k) {
             lastColor[0] = 0.0f;
             lastColor[1] = 0.0f;
             lastColor[2] = 0.0f;
             for (int n = 0; n < weight.length; n++) {
                 int[] offset = this.offset[n];
                 float weight = this.weight[n];
-                float[] tmpColor = parent.getColorMultiplierF(i + offset[0], j, k + offset[1]);
+                float[] tmpColor = parent.getColorMultiplierF(blockAccess, i + offset[0], j, k + offset[1]);
                 lastColor[0] += tmpColor[0] * weight;
                 lastColor[1] += tmpColor[1] * weight;
                 lastColor[2] += tmpColor[2] * weight;
@@ -156,9 +157,9 @@ abstract class ColorMapBase {
         }
 
         @Override
-        public int getColorMultiplier(int i, int j, int k) {
+        public int getColorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
             if (i != lastI || j != lastJ || k != lastK) {
-                lastColorI = parent.getColorMultiplier(i, j, k);
+                lastColorI = parent.getColorMultiplier(blockAccess, i, j, k);
                 lastI = i;
                 lastJ = j;
                 lastK = k;
@@ -167,9 +168,9 @@ abstract class ColorMapBase {
         }
 
         @Override
-        public float[] getColorMultiplierF(int i, int j, int k) {
+        public float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k) {
             if (i != lastI || j != lastJ || k != lastK) {
-                lastColorF = parent.getColorMultiplierF(i, j, k);
+                lastColorF = parent.getColorMultiplierF(blockAccess, i, j, k);
                 lastI = i;
                 lastJ = j;
                 lastK = k;
@@ -211,13 +212,13 @@ abstract class ColorMapBase {
         }
 
         @Override
-        public int getColorMultiplier(int i, int j, int k) {
-            return Colorizer.float3ToInt(getColorMultiplierF(i, j, k));
+        public int getColorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
+            return Colorizer.float3ToInt(getColorMultiplierF(blockAccess, i, j, k));
         }
 
         @Override
-        public float[] getColorMultiplierF(int i, int j, int k) {
-            float[] currentColor = parent.getColorMultiplierF(i, j, k);
+        public float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k) {
+            float[] currentColor = parent.getColorMultiplierF(blockAccess, i, j, k);
             long now = System.currentTimeMillis();
             if (lastTime == 0L) {
                 lastColor[0] = currentColor[0];
@@ -287,12 +288,12 @@ abstract class ColorMapBase {
         }
 
         @Override
-        public int getColorMultiplier(int i, int j, int k) {
-            return Colorizer.float3ToInt(getColorMultiplierF(i, j, k));
+        public int getColorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
+            return Colorizer.float3ToInt(getColorMultiplierF(blockAccess, i, j, k));
         }
 
         @Override
-        public float[] getColorMultiplierF(int i, int j, int k) {
+        public float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k) {
             int offset = getChunkOffset(i, j, k);
             calls++;
             if (offset < 0) {
@@ -303,7 +304,7 @@ abstract class ColorMapBase {
             float[] color = data[offset];
             if (color == null) {
                 color = data[offset] = data1[offset];
-                copy3f(color, parent.getColorMultiplierF(i, j, k));
+                copy3f(color, parent.getColorMultiplierF(blockAccess, i, j, k));
                 missBlock++;
             }
             if (logEnabled) {
@@ -384,19 +385,19 @@ abstract class ColorMapBase {
         }
 
         @Override
-        public int getColorMultiplier(int i, int j, int k) {
+        public int getColorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
             if (!isHeightDependent) {
                 j = DEFAULT_HEIGHT;
             }
-            return parent.getColorMultiplier(i, j, k);
+            return parent.getColorMultiplier(blockAccess, i, j, k);
         }
 
         @Override
-        public float[] getColorMultiplierF(int i, int j, int k) {
+        public float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k) {
             if (!isHeightDependent) {
                 j = DEFAULT_HEIGHT;
             }
-            return parent.getColorMultiplierF(i, j, k);
+            return parent.getColorMultiplierF(blockAccess, i, j, k);
         }
 
         @Override

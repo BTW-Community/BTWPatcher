@@ -105,7 +105,7 @@ public class MobRandomizer {
 
         private void setBiome() {
             if (origBiome == null) {
-                origBiome = BiomeAPI.getBiomeIDAt(origX, origY, origZ);
+                origBiome = BiomeAPI.getBiomeIDAt(BiomeAPI.getWorld(), origX, origY, origZ);
             }
         }
 

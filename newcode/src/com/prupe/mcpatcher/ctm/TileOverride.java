@@ -707,7 +707,7 @@ abstract class TileOverride implements ITileOverride {
         if (j < minHeight || j > maxHeight) {
             return null;
         }
-        if (biomes != null && !biomes.get(BiomeAPI.getBiomeIDAt(i, j, k))) {
+        if (biomes != null && !biomes.get(BiomeAPI.getBiomeIDAt(blockAccess, i, j, k))) {
             return null;
         }
         return getTileImpl(blockAccess, block, origIcon, i, j, k, face);

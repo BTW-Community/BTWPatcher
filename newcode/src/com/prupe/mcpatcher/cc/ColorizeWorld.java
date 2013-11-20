@@ -4,10 +4,8 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
-import net.minecraft.src.Entity;
-import net.minecraft.src.ResourceLocation;
-import net.minecraft.src.World;
-import net.minecraft.src.WorldProvider;
+import com.prupe.mcpatcher.mal.biome.BiomeAPI;
+import net.minecraft.src.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -146,24 +144,24 @@ public class ColorizeWorld {
         fogCamera = entity;
     }
 
-    private static boolean computeFogColor(IColorMap colorMap) {
+    private static boolean computeFogColor(IBlockAccess blockAccess, IColorMap colorMap) {
         if (colorMap == null || fogCamera == null) {
             return false;
         } else {
             int i = (int) fogCamera.posX;
             int j = (int) fogCamera.posY;
             int k = (int) fogCamera.posZ;
-            Colorizer.setColorF(colorMap.getColorMultiplierF(i, j, k));
+            Colorizer.setColorF(colorMap.getColorMultiplierF(blockAccess, i, j, k));
             return true;
         }
     }
 
     public static boolean computeFogColor(WorldProvider worldProvider, float f) {
-        return worldProvider.worldType == 0 && computeFogColor(fogColorMap);
+        return worldProvider.worldType == 0 && computeFogColor(worldProvider.worldObj, fogColorMap);
     }
 
     public static boolean computeSkyColor(World world, float f) {
-        if (world.worldProvider.worldType == 0 && computeFogColor(skyColorMap)) {
+        if (world.worldProvider.worldType == 0 && computeFogColor(world, skyColorMap)) {
             computeLightningFlash(world, f);
             return true;
         } else {
@@ -172,7 +170,7 @@ public class ColorizeWorld {
     }
 
     public static boolean computeUnderwaterColor() {
-        return computeFogColor(underwaterColor);
+        return computeFogColor(BiomeAPI.getWorld(), underwaterColor);
     }
 
     private static void computeLightningFlash(World world, float f) {

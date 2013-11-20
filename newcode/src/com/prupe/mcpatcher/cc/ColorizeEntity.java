@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import net.minecraft.src.EntityLivingBase;
 import net.minecraft.src.EntitySheep;
 import net.minecraft.src.ItemDye;
@@ -125,7 +126,7 @@ public class ColorizeEntity {
 
     public static void computeSuspendColor(int defaultColor, int i, int j, int k) {
         if (ColorizeWorld.underwaterColor != null) {
-            defaultColor = ColorizeWorld.underwaterColor.getColorMultiplier(i, j, k);
+            defaultColor = ColorizeWorld.underwaterColor.getColorMultiplier(BiomeAPI.getWorld(), i, j, k);
         }
         Colorizer.setColorF(defaultColor);
     }

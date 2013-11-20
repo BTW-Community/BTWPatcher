@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.cc;
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import net.minecraft.src.BiomeGenBase;
+import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.ResourceLocation;
 
 import java.awt.image.BufferedImage;
@@ -178,14 +179,14 @@ abstract class ColorMap implements IColorMap {
     }
 
     @Override
-    public final int getColorMultiplier(int i, int j, int k) {
-        computeXY(BiomeAPI.getBiomeGenAt(i, j, k), i, j, k, xy);
+    public final int getColorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
+        computeXY(BiomeAPI.getBiomeGenAt(blockAccess, i, j, k), i, j, k, xy);
         return getRGB(xy[0], xy[1]);
     }
 
     @Override
-    public final float[] getColorMultiplierF(int i, int j, int k) {
-        int rgb = getColorMultiplier(i, j, k);
+    public final float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k) {
+        int rgb = getColorMultiplier(blockAccess, i, j, k);
         Colorizer.intToFloat3(rgb, lastColor);
         return lastColor;
     }
@@ -303,12 +304,12 @@ abstract class ColorMap implements IColorMap {
         }
 
         @Override
-        public int getColorMultiplier(int i, int j, int k) {
+        public int getColorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
             return colorI;
         }
 
         @Override
-        public float[] getColorMultiplierF(int i, int j, int k) {
+        public float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k) {
             return colorF;
         }
 
@@ -336,13 +337,13 @@ abstract class ColorMap implements IColorMap {
         }
 
         @Override
-        public int getColorMultiplier(int i, int j, int k) {
-            return BiomeAPI.getWaterColorMultiplier(BiomeAPI.getBiomeGenAt(i, j, k));
+        public int getColorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
+            return BiomeAPI.getWaterColorMultiplier(BiomeAPI.getBiomeGenAt(blockAccess, i, j, k));
         }
 
         @Override
-        public float[] getColorMultiplierF(int i, int j, int k) {
-            Colorizer.intToFloat3(getColorMultiplier(i, j, k), lastColor);
+        public float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k) {
+            Colorizer.intToFloat3(getColorMultiplier(blockAccess, i, j, k), lastColor);
             return lastColor;
         }
 
@@ -378,15 +379,15 @@ abstract class ColorMap implements IColorMap {
         }
 
         @Override
-        public int getColorMultiplier(int i, int j, int k) {
-            IColorMap map = BiomeAPI.getBiomeGenAt(i, j, k) == swampBiome ? swampMap : defaultMap;
-            return map.getColorMultiplier(i, j, k);
+        public int getColorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
+            IColorMap map = BiomeAPI.getBiomeGenAt(blockAccess, i, j, k) == swampBiome ? swampMap : defaultMap;
+            return map.getColorMultiplier(blockAccess, i, j, k);
         }
 
         @Override
-        public float[] getColorMultiplierF(int i, int j, int k) {
-            IColorMap map = BiomeAPI.getBiomeGenAt(i, j, k) == swampBiome ? swampMap : defaultMap;
-            return map.getColorMultiplierF(i, j, k);
+        public float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k) {
+            IColorMap map = BiomeAPI.getBiomeGenAt(blockAccess, i, j, k) == swampBiome ? swampMap : defaultMap;
+            return map.getColorMultiplierF(blockAccess, i, j, k);
         }
 
         @Override
@@ -547,13 +548,13 @@ abstract class ColorMap implements IColorMap {
         }
 
         @Override
-        public int getColorMultiplier(int i, int j, int k) {
-            return getRGB(BiomeAPI.getBiomeIDAt(i, j, k), j);
+        public int getColorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
+            return getRGB(BiomeAPI.getBiomeIDAt(blockAccess, i, j, k), j);
         }
 
         @Override
-        public float[] getColorMultiplierF(int i, int j, int k) {
-            int rgb = getColorMultiplier(i, j, k);
+        public float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k) {
+            int rgb = getColorMultiplier(blockAccess, i, j, k);
             Colorizer.intToFloat3(rgb, lastColor);
             return lastColor;
         }

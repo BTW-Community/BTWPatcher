@@ -5,6 +5,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.BiomeGenBase;
+import net.minecraft.src.IBlockAccess;
 
 import java.lang.reflect.Method;
 import java.util.BitSet;
@@ -65,16 +66,20 @@ abstract public class BiomeAPI {
         return null;
     }
 
-    public static int getBiomeIDAt(int i, int j, int k) {
-        BiomeGenBase biome = getBiomeGenAt(i, j, k);
+    public static IBlockAccess getWorld() {
+        return Minecraft.getInstance().theWorld;
+    }
+
+    public static int getBiomeIDAt(IBlockAccess blockAccess, int i, int j, int k) {
+        BiomeGenBase biome = getBiomeGenAt(blockAccess, i, j, k);
         return biome == null ? BiomeGenBase.biomeList.length : biome.biomeID;
     }
 
-    public static BiomeGenBase getBiomeGenAt(int i, int j, int k) {
+    public static BiomeGenBase getBiomeGenAt(IBlockAccess blockAccess, int i, int j, int k) {
         if (lastBiome == null || i != lastI || k != lastK) {
             lastI = i;
             lastK = k;
-            lastBiome = Minecraft.getInstance().theWorld.getBiomeGenAt(i, k);
+            lastBiome = blockAccess.getBiomeGenAt(i, k);
         }
         return lastBiome;
     }
@@ -83,16 +88,16 @@ abstract public class BiomeAPI {
         return instance.getTemperaturef_Impl(biome, i, j, k);
     }
 
-    public static float getTemperature(int i, int j, int k) {
-        return getTemperature(getBiomeGenAt(i, j, k), i, j, k);
+    public static float getTemperature(IBlockAccess blockAccess, int i, int j, int k) {
+        return getTemperature(getBiomeGenAt(blockAccess, i, j, k), i, j, k);
     }
 
     public static float getRainfall(BiomeGenBase biome, int i, int j, int k) {
         return biome.getRainfallf();
     }
 
-    public static float getRainfall(int i, int j, int k) {
-        return getRainfall(getBiomeGenAt(i, j, k), i, j, k);
+    public static float getRainfall(IBlockAccess blockAccess, int i, int j, int k) {
+        return getRainfall(getBiomeGenAt(blockAccess, i, j, k), i, j, k);
     }
 
     public static int getWaterColorMultiplier(BiomeGenBase biome) {

@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.BlockAndMetadata;
 import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
@@ -344,7 +345,7 @@ public class ColorizeBlock {
         if (colorMap == null) {
             return false;
         } else {
-            blockColor = colorMap.getColorMultiplier(i, j, k);
+            blockColor = colorMap.getColorMultiplier(blockAccess, i, j, k);
             return true;
         }
     }
@@ -358,7 +359,7 @@ public class ColorizeBlock {
         if (waterColorMap == null) {
             return false;
         } else {
-            Colorizer.setColorF(waterColorMap.getColorMultiplierF(i, j, k));
+            Colorizer.setColorF(waterColorMap.getColorMultiplierF(BiomeAPI.getWorld(), i, j, k));
             return true;
         }
     }
@@ -387,7 +388,7 @@ public class ColorizeBlock {
         }
     }
 
-    private static float[] getVertexColor(IColorMap colorMap, int i, int j, int k, int[] offsets) {
+    private static float[] getVertexColor(IBlockAccess blockAccess, IColorMap colorMap, int i, int j, int k, int[] offsets) {
         if (enableTestColorSmoothing) {
             int rgb = 0;
             if ((i + offsets[0]) % 2 == 0) {
@@ -402,7 +403,7 @@ public class ColorizeBlock {
             Colorizer.intToFloat3(rgb, Colorizer.setColor);
             return Colorizer.setColor;
         } else {
-            return colorMap.getColorMultiplierF(i + offsets[0], j + offsets[1], k + offsets[2]);
+            return colorMap.getColorMultiplierF(blockAccess, i + offsets[0], j + offsets[1], k + offsets[2]);
         }
     }
 
@@ -443,22 +444,22 @@ public class ColorizeBlock {
         int[][] offsets = FACE_VERTICES[face];
         float[] color;
 
-        color = getVertexColor(colorMap, i, j, k, offsets[0]);
+        color = getVertexColor(blockAccess, colorMap, i, j, k, offsets[0]);
         renderBlocks.colorRedTopLeft = topLeft * color[0];
         renderBlocks.colorGreenTopLeft = topLeft * color[1];
         renderBlocks.colorBlueTopLeft = topLeft * color[2];
 
-        color = getVertexColor(colorMap, i, j, k, offsets[1]);
+        color = getVertexColor(blockAccess, colorMap, i, j, k, offsets[1]);
         renderBlocks.colorRedBottomLeft = bottomLeft * color[0];
         renderBlocks.colorGreenBottomLeft = bottomLeft * color[1];
         renderBlocks.colorBlueBottomLeft = bottomLeft * color[2];
 
-        color = getVertexColor(colorMap, i, j, k, offsets[2]);
+        color = getVertexColor(blockAccess, colorMap, i, j, k, offsets[2]);
         renderBlocks.colorRedBottomRight = bottomRight * color[0];
         renderBlocks.colorGreenBottomRight = bottomRight * color[1];
         renderBlocks.colorBlueBottomRight = bottomRight * color[2];
 
-        color = getVertexColor(colorMap, i, j, k, offsets[3]);
+        color = getVertexColor(blockAccess, colorMap, i, j, k, offsets[3]);
         renderBlocks.colorRedTopRight = topRight * color[0];
         renderBlocks.colorGreenTopRight = topRight * color[1];
         renderBlocks.colorBlueTopRight = topRight * color[2];
