@@ -26,7 +26,7 @@ abstract class ColorMap implements IColorMap {
     private static boolean defaultFlipY;
     private static float defaultYVariance;
 
-    private final ResourceLocation resource;
+    protected final ResourceLocation resource;
     protected final int[] map;
     protected final int width;
     protected final int height;
@@ -113,7 +113,7 @@ abstract class ColorMap implements IColorMap {
             case BIOME_HEIGHT:
                 Grid grid = new Grid(imageResource, properties, image);
                 if (grid.isInteger()) {
-                    return new IntegerGrid(imageResource, properties, grid.map, grid.width, grid.height);
+                    return new IntegerGrid(grid);
                 } else {
                     return grid;
                 }
@@ -160,10 +160,14 @@ abstract class ColorMap implements IColorMap {
     }
 
     ColorMap(ResourceLocation resource, Properties properties, BufferedImage image) {
+        this(resource, MCPatcherUtils.getImageRGB(image), image.getWidth(), image.getHeight());
+    }
+
+    ColorMap(ResourceLocation resource, int[] map, int width, int height) {
         this.resource = resource;
-        map = MCPatcherUtils.getImageRGB(image);
-        width = image.getWidth();
-        height = image.getHeight();
+        this.map = map;
+        this.width = width;
+        this.height = height;
         for (int i = 0; i < map.length; i++) {
             map[i] &= 0xffffff;
         }
@@ -316,6 +320,11 @@ abstract class ColorMap implements IColorMap {
         @Override
         public void claimResources(Collection<ResourceLocation> resources) {
         }
+
+        @Override
+        public IColorMap copy() {
+            return this;
+        }
     }
 
     static final class Water implements IColorMap {
@@ -349,6 +358,11 @@ abstract class ColorMap implements IColorMap {
 
         @Override
         public void claimResources(Collection<ResourceLocation> resources) {
+        }
+
+        @Override
+        public IColorMap copy() {
+            return new Water();
         }
     }
 
@@ -395,6 +409,11 @@ abstract class ColorMap implements IColorMap {
             defaultMap.claimResources(resources);
             swampMap.claimResources(resources);
         }
+
+        @Override
+        public IColorMap copy() {
+            return new Swamp(defaultMap.copy(), swampMap.copy());
+        }
     }
 
     static final class TempHumidity extends ColorMap {
@@ -402,8 +421,12 @@ abstract class ColorMap implements IColorMap {
 
         private TempHumidity(ResourceLocation resource, Properties properties, BufferedImage image) {
             super(resource, properties, image);
-
             defaultColor = MCPatcherUtils.getHexProperty(properties, "color", getRGB(maxX * 0.5f, maxY * 0.5f));
+        }
+
+        private TempHumidity(ResourceLocation resource, int[] map, int width, int height, int defaultColor) {
+            super(resource, map, width, height);
+            this.defaultColor = defaultColor;
         }
 
         @Override
@@ -414,6 +437,11 @@ abstract class ColorMap implements IColorMap {
         @Override
         public int getColorMultiplier() {
             return defaultColor;
+        }
+
+        @Override
+        public IColorMap copy() {
+            return new TempHumidity(resource, map, width, height, defaultColor);
         }
 
         @Override
@@ -468,6 +496,14 @@ abstract class ColorMap implements IColorMap {
             defaultColor = MCPatcherUtils.getHexProperty(properties, "color", getRGB(biomeX[1], getY(ColorMapBase.DEFAULT_HEIGHT)));
         }
 
+        private Grid(ResourceLocation resource, int[] map, int width, int height, float[] biomeX, float yVariance, float yOffset, int defaultColor) {
+            super(resource, map, width, height);
+            System.arraycopy(biomeX, 0, this.biomeX, 0, biomeX.length);
+            this.yVariance = yVariance;
+            this.yOffset = yOffset;
+            this.defaultColor = defaultColor;
+        }
+
         boolean isInteger() {
             if (yVariance != 0.0f || Math.floor(yOffset) != yOffset) {
                 return false;
@@ -488,6 +524,11 @@ abstract class ColorMap implements IColorMap {
         @Override
         public int getColorMultiplier() {
             return defaultColor;
+        }
+
+        @Override
+        public IColorMap copy() {
+            return new Grid(resource, map, width, height, biomeX, yVariance, yOffset, defaultColor);
         }
 
         @Override
@@ -522,14 +563,17 @@ abstract class ColorMap implements IColorMap {
         private final int defaultColor;
         private final float[] lastColor = new float[3];
 
-        IntegerGrid(ResourceLocation resource, Properties properties, int[] map, int width, int height) {
+        IntegerGrid(Grid grid) {
+            this(grid.resource, grid.map, grid.width, grid.height - 1, (int) grid.yOffset, grid.defaultColor);
+        }
+
+        IntegerGrid(ResourceLocation resource, int[] map, int width, int maxHeight, int yOffset, int defaultColor) {
             this.resource = resource;
             this.map = map;
             this.width = width;
-            maxHeight = height - 1;
-            yOffset = (int) MCPatcherUtils.getFloatProperty(properties, "yOffset", 0.0f);
-            int rgb = getRGB(1, ColorMapBase.DEFAULT_HEIGHT);
-            defaultColor = MCPatcherUtils.getHexProperty(properties, "color", rgb);
+            this.maxHeight = maxHeight;
+            this.yOffset = yOffset;
+            this.defaultColor = defaultColor;
         }
 
         @Override
@@ -562,6 +606,11 @@ abstract class ColorMap implements IColorMap {
         @Override
         public void claimResources(Collection<ResourceLocation> resources) {
             resources.remove(resource);
+        }
+
+        @Override
+        public IColorMap copy() {
+            return new IntegerGrid(resource, map, width, maxHeight, yOffset, defaultColor);
         }
 
         private int getRGB(int x, int y) {

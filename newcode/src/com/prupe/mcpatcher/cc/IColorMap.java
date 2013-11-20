@@ -15,4 +15,6 @@ interface IColorMap {
     float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k);
 
     void claimResources(Collection<ResourceLocation> resources);
+
+    IColorMap copy();
 }

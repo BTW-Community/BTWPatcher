@@ -18,12 +18,14 @@ abstract class ColorMapBase {
 
     static final class Blended implements IColorMap {
         private final IColorMap parent;
+        private final int blendRadius;
         private final int[][] offset;
         private final float[] weight;
         private final float[] lastColor = new float[3];
 
         Blended(IColorMap parent, int blendRadius) {
             this.parent = parent;
+            this.blendRadius = blendRadius;
             List<int[]> blendOffset = new ArrayList<int[]>();
             List<Float> blendWeight = new ArrayList<Float>();
             float blendScale = 0.0f;
@@ -126,6 +128,11 @@ abstract class ColorMapBase {
         public void claimResources(Collection<ResourceLocation> resources) {
             parent.claimResources(resources);
         }
+
+        @Override
+        public IColorMap copy() {
+            return new Blended(parent.copy(), blendRadius);
+        }
     }
 
     static final class Cached implements IColorMap {
@@ -181,6 +188,11 @@ abstract class ColorMapBase {
         @Override
         public void claimResources(Collection<ResourceLocation> resources) {
             parent.claimResources(resources);
+        }
+
+        @Override
+        public IColorMap copy() {
+            return new Cached(parent.copy());
         }
     }
 
@@ -238,6 +250,11 @@ abstract class ColorMapBase {
         @Override
         public void claimResources(Collection<ResourceLocation> resources) {
             parent.claimResources(resources);
+        }
+
+        @Override
+        public IColorMap copy() {
+            return new Smoothed(parent.copy(), smoothTime);
         }
     }
 
@@ -325,6 +342,11 @@ abstract class ColorMapBase {
             parent.claimResources(resources);
         }
 
+        @Override
+        public IColorMap copy() {
+            return new Chunked(parent.copy());
+        }
+
         private static void copy3f(float[] dst, float[] src) {
             dst[0] = src[0];
             dst[1] = src[1];
@@ -403,6 +425,11 @@ abstract class ColorMapBase {
         @Override
         public void claimResources(Collection<ResourceLocation> resources) {
             parent.claimResources(resources);
+        }
+
+        @Override
+        public IColorMap copy() {
+            throw new RuntimeException(new CloneNotSupportedException());
         }
     }
 }
