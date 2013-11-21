@@ -42,6 +42,9 @@ public final class BaseMod extends Mod {
 
         haveProfiler = getMinecraftVersion().compareTo("1.3") >= 0;
 
+        if (getMinecraftVersion().compareTo("1.6") >= 0) {
+            addClassMod(new XMainMod());
+        }
         addClassMod(new XMinecraftMod());
         addClassMod(new XGameSettingsMod());
         if (haveProfiler) {
@@ -210,6 +213,43 @@ public final class BaseMod extends Mod {
 
         @Override
         public void save() {
+        }
+    }
+
+    private class XMainMod extends ClassMod {
+        XMainMod() {
+            addClassSignature(new FilenameSignature(ClassMap.classNameToFilename("net.minecraft.client.main.Main")));
+
+            final MethodRef main = new MethodRef(getDeobfClass(), "main", "([Ljava/lang/String;)V");
+            final MethodRef dumpCommandLine = new MethodRef(MCPatcherUtils.UTILS_CLASS, "dumpCommandLine", "([Ljava/lang/String;)V");
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "dump args";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // MCPatcherUtils.setCommandLine(args);
+                        ALOAD_0,
+                        reference(INVOKESTATIC, dumpCommandLine)
+                    );
+                }
+            }.targetMethod(main));
+        }
+
+        @Override
+        public String getDeobfClass() {
+            return "Main";
         }
     }
 

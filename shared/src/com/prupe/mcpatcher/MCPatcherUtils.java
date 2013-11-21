@@ -373,6 +373,23 @@ public class MCPatcherUtils {
         return m == null || m.isEmpty();
     }
 
+    public static void dumpCommandLine(String[] args) {
+        StringBuilder sb = new StringBuilder("Command line args:");
+        if (args == null) {
+            sb.append(" (null)");
+        } else {
+            for (String arg : args) {
+                sb.append(' ');
+                if (arg.matches("\\S+")) {
+                    sb.append(arg);
+                } else {
+                    sb.append('"').append(arg).append('"');
+                }
+            }
+        }
+        System.out.println(sb.toString());
+    }
+
     public static void setMinecraft(File gameDir, File assetsDir, String minecraftVersion, String patcherVersion) {
         isGame = true;
         Config.setReadOnly(true);
