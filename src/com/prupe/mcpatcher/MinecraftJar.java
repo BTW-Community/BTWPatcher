@@ -20,7 +20,9 @@ class MinecraftJar {
     private final String inputMD5;
     private final String origMD5;
     private final MinecraftVersion inputVersion;
+
     private final Map<String, ClassFile> classes = new HashMap<String, ClassFile>();
+    private final Map<String, ClassEntry> classHierarchy = new HashMap<String, ClassEntry>();
 
     private JarFile inputJar;
     private JarOutputStream outputJar;
@@ -134,6 +136,7 @@ class MinecraftJar {
                 input = getInputJar().getInputStream(entry);
                 classFile = new ClassFile(new DataInputStream(input));
                 classes.put(name, classFile);
+                registerClassFile(classFile);
             } finally {
                 MCPatcherUtils.close(input);
             }
@@ -143,6 +146,38 @@ class MinecraftJar {
 
     void clearClassFileCache() {
         classes.clear();
+    }
+
+    private void registerClassFile(ClassFile classFile) {
+        String name = classFile.getName();
+        ClassEntry entry = classHierarchy.get(name);
+        if (entry == null) {
+            entry = new ClassEntry();
+            classHierarchy.put(name, entry);
+        }
+        entry.load(classFile);
+    }
+
+    boolean isInstanceOf(String child, String parent) {
+        if (parent == null) {
+            return false;
+        }
+        if (parent.equals(child)) {
+            return true;
+        }
+        ClassEntry entry = classHierarchy.get(child);
+        if (entry == null) {
+            return false;
+        }
+        if (isInstanceOf(entry.parent, parent)) {
+            return true;
+        }
+        for (String i : entry.interfaces) {
+            if (isInstanceOf(i, parent)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     void writeProperties(Properties properties) throws IOException {
@@ -296,6 +331,18 @@ class MinecraftJar {
         } catch (InterruptedException e) {
         } catch (IOException e) {
             Logger.log(e);
+        }
+    }
+
+    private static class ClassEntry {
+        String parent;
+        final List<String> interfaces = new ArrayList<String>();
+
+        void load(ClassFile classFile) {
+            parent = classFile.getSuperclass();
+            for (String i : classFile.getInterfaces()) {
+                interfaces.add(i);
+            }
         }
     }
 }

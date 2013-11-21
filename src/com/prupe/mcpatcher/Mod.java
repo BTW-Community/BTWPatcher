@@ -225,6 +225,17 @@ public abstract class Mod {
         addFile(ClassMap.classNameToFilename(className));
     }
 
+    /**
+     * Checks if one class is a subclass of another.
+     *
+     * @param child potential child class name
+     * @param parent parent class name
+     * @return true if parent instanceof child
+     */
+    public boolean isInstanceOf(String child, String parent) {
+        return MCPatcher.minecraft.isInstanceOf(getClassMap().map(child), getClassMap().map(parent));
+    }
+
     ArrayList<String> getErrors() {
         ArrayList<String> errors = new ArrayList<String>(this.errors);
         for (com.prupe.mcpatcher.ClassMod classMod : classMods) {
