@@ -292,6 +292,11 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             addKnownVersion("1.7.1", "08c354313f902913b6e66f6d73938479");
             addKnownVersion("1.7.2", "7a304554fdea879a799efe6eaedd8c95");
 
+            // twitch.tv integration
+            addKnownVersion("13w47a", "913c58d836a89d8913bfcef1e6ab104c");
+            addKnownVersion("13w47b", "52697f0bdc81078fde1ae195c900a961");
+            addKnownVersion("13w47c", "586000b0009c5c691d0f74488b0cbfc4");
+
             for (int i = 0; i < versionOrdering.size(); i++) {
                 MinecraftVersion a = versionOrdering.get(i);
                 for (int j = 0; j < versionOrdering.size(); j++) {
