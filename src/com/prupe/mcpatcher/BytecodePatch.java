@@ -226,11 +226,11 @@ abstract public class BytecodePatch extends ClassPatch {
 
         while (matcher.match(mi, offset)) {
             byte repl[];
-            classMod.addToConstPool = false;
             classMod.addToConstPool = true;
             classMod.resetLabels();
             labelOffset = 0;
             repl = getReplacementBytes();
+            classMod.addToConstPool = false;
             if (repl == null) {
                 while (offset < matcher.getEnd() && ci.hasNext()) {
                     offset = ci.next();
