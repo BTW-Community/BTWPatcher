@@ -155,6 +155,7 @@ public class Profile {
                 args.put("auth_access_token", authentication.accessToken);
             }
         }
+        args.put("user_properties", "{}");
     }
 
     public void addGameArguments(Map<String, String> args, List<String> cmdLine) {
