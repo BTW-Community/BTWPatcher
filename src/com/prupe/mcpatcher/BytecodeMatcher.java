@@ -540,6 +540,16 @@ public class BytecodeMatcher extends BinaryMatcher {
         }
     }
 
+    public static int extractConstPoolIndex(byte[] code) {
+        switch (code[0]) {
+            case LDC:
+                return Util.demarshal(code, 1, 1);
+
+            default:
+                return Util.demarshal(code, 1, 2);
+        }
+    }
+
     public static String parseDescriptor(String descriptor, boolean isStatic, List<String> types, List<Integer> registers) {
         int register = 0;
         if (!isStatic) {
