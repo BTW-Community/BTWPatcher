@@ -44,6 +44,8 @@ public class ColorizeBlock {
     private static Block doublePlantBlock;
 
     private static final Map<Block, IColorMap[]> blockColorMaps = new IdentityHashMap<Block, IColorMap[]>(); // bitmaps from palette.block.*
+    private static final boolean isMultithreaded;
+    private static ThreadLocal<Map<Block, IColorMap[]>> threadColorMaps;
     private static IColorMap waterColorMap;
     private static float[][] redstoneColor; // colormap/redstone.png
 
@@ -142,6 +144,14 @@ public class ColorizeBlock {
     };
 
     static {
+        boolean threaded = false;
+        try {
+            Class<?> cl = Class.forName("com.thevoxelbox.voxelmap.VoxelMap");
+            threaded = true;
+            logger.info("%s detected, enabling colormap thread support", cl);
+        } catch (ClassNotFoundException e) {
+        }
+        isMultithreaded = threaded;
         try {
             reset();
         } catch (Throwable e) {
@@ -154,6 +164,10 @@ public class ColorizeBlock {
         staticWaterBlock = BlockAPI.getFixedBlock("minecraft:water");
         doublePlantBlock = BlockAPI.parseBlockName("minecraft:double_plant");
 
+        if (isMultithreaded) {
+            threadColorMaps = new ThreadLocal<Map<Block, IColorMap[]>>();
+            threadColorMaps.set(blockColorMaps);
+        }
         blockColorMaps.clear();
         waterColorMap = null;
 
@@ -300,7 +314,29 @@ public class ColorizeBlock {
     }
 
     private static IColorMap findColorMap(Block block, int metadata) {
-        IColorMap[] maps = blockColorMaps.get(block);
+        IColorMap[] maps;
+        if (isMultithreaded) {
+            Map<Block, IColorMap[]> blockMaps = threadColorMaps.get();
+            if (blockMaps == null) {
+                logger.info("copying colormaps for %s, free memory: %.1f",
+                    Thread.currentThread(), Runtime.getRuntime().freeMemory() / 1048576.0
+                );
+                blockMaps = new HashMap<Block, IColorMap[]>();
+                for (Map.Entry<Block, IColorMap[]> entry : blockColorMaps.entrySet()) {
+                    IColorMap[] oldMaps = entry.getValue();
+                    IColorMap[] newMaps = new IColorMap[oldMaps.length];
+                    for (int i = 0; i < newMaps.length; i++) {
+                        newMaps[i] = oldMaps[i] == null ? null : oldMaps[i].copy();
+                    }
+                    blockMaps.put(entry.getKey(), newMaps);
+                }
+                threadColorMaps.set(blockMaps);
+                logger.info("done, free memory: %.1f", Runtime.getRuntime().freeMemory() / 1048576.0);
+            }
+            maps = blockMaps.get(block);
+        } else {
+            maps = blockColorMaps.get(block);
+        }
         if (maps == null) {
             return null;
         }

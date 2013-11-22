@@ -429,7 +429,7 @@ abstract class ColorMapBase {
 
         @Override
         public IColorMap copy() {
-            throw new RuntimeException(new CloneNotSupportedException());
+            return new Outer(parent.copy());
         }
     }
 }
