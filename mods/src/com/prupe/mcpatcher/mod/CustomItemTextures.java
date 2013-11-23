@@ -444,6 +444,8 @@ public class CustomItemTextures extends Mod {
             final MethodRef renderItemIntoGUI = new MethodRef(getDeobfClass(), "renderItemIntoGUIVanilla", "(LFontRenderer;LTextureManager;LItemStack;II)V");
             final MethodRef renderItemIntoGUIForge = new MethodRef(getDeobfClass(), "renderItemIntoGUI", "(LFontRenderer;LTextureManager;LItemStack;IIZ)V");
             final MethodRef renderEffectForge = new MethodRef(getDeobfClass(), "renderEffect", "(LTextureManager;II)V");
+            final MethodRef renderItemOverlayIntoGUI = new MethodRef(getDeobfClass(), "renderItemOverlayIntoGUI", "(LFontRenderer;LTextureManager;LItemStack;IILjava/lang/String;)V");
+            final MethodRef getMaxDamage = new MethodRef("ItemStack", "getMaxDamage", "()I");
             final boolean needAlphaTest = getMinecraftVersion().compareTo("13w42a") >= 0;
 
             addClassSignature(new ConstSignature("missingno"));
@@ -463,6 +465,25 @@ public class CustomItemTextures extends Mod {
                     );
                 }
             }.setMethod(renderItemIntoGUI));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(13.0),
+                        ALOAD_3,
+                        anyReference(INVOKEVIRTUAL),
+                        I2D,
+                        push(13.0),
+                        DMUL,
+                        ALOAD_3,
+                        captureReference(INVOKEVIRTUAL)
+                    );
+                }
+            }
+                .setMethod(renderItemOverlayIntoGUI)
+                .addXref(1, getMaxDamage)
+            );
 
             addMemberMapper(new FieldMapper(zLevel).accessFlag(AccessFlag.STATIC, false));
 

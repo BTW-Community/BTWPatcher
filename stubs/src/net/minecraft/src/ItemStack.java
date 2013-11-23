@@ -16,6 +16,10 @@ public class ItemStack {
         return 0;
     }
 
+    public int getMaxDamage() {
+        return 0;
+    }
+
     public boolean hasEffectVanilla() {
         return false;
     }
