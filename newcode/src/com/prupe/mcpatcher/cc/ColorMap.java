@@ -22,6 +22,9 @@ abstract class ColorMap implements IColorMap {
     static final String BLOCK_COLORMAP_DIR = TexturePackAPI.MCPATCHER_SUBDIR + "colormap/blocks";
     static final List<ResourceLocation> unusedPNGs = new ArrayList<ResourceLocation>();
 
+    private static final String VANILLA_TYPE = "_vanillaType";
+    private static final String ALT_SOURCE = "_altSource";
+
     private static int defaultColorMapFormat;
     private static boolean defaultFlipY;
     private static float defaultYVariance;
@@ -40,8 +43,15 @@ abstract class ColorMap implements IColorMap {
         Properties properties = new Properties();
         properties.setProperty("format", "1");
         properties.setProperty("source", vanillaImage.toString());
+        if (!TexturePackAPI.hasCustomResource(vanillaImage)) {
+            if (vanillaImage.getPath().contains("grass")) {
+                properties.setProperty(VANILLA_TYPE, "grass");
+            } else if (vanillaImage.getPath().contains("foliage")) {
+                properties.setProperty(VANILLA_TYPE, "foliage");
+            }
+        }
         if (swampImage != null) {
-            properties.setProperty("altSource", swampImage.toString());
+            properties.setProperty(ALT_SOURCE, swampImage.toString());
         }
         return loadColorMap(true, vanillaImage, properties);
     }
@@ -98,8 +108,16 @@ abstract class ColorMap implements IColorMap {
 
         switch (format) {
             case TEMPERATURE_HUMIDITY:
-                IColorMap defaultMap = new TempHumidity(imageResource, properties, image);
-                path = MCPatcherUtils.getStringProperty(properties, "altSource", "");
+                String vanillaSource = MCPatcherUtils.getStringProperty(properties, VANILLA_TYPE, "");
+                IColorMap defaultMap;
+                if ("grass".equals(vanillaSource)) {
+                    defaultMap = new Grass(image);
+                } else if ("foliage".equals(vanillaSource)) {
+                    defaultMap = new Foliage(image);
+                } else {
+                    defaultMap = new TempHumidity(imageResource, properties, image);
+                }
+                path = MCPatcherUtils.getStringProperty(properties, ALT_SOURCE, "");
                 if (Colorizer.useSwampColors && !MCPatcherUtils.isNullOrEmpty(path)) {
                     ResourceLocation swampResource = TexturePackAPI.parseResourceLocation(resource, path);
                     image = TexturePackAPI.getImage(swampResource);
@@ -363,6 +381,91 @@ abstract class ColorMap implements IColorMap {
         @Override
         public IColorMap copy() {
             return new Water();
+        }
+    }
+
+    abstract static class Vanilla implements IColorMap {
+        protected final int defaultColor;
+        protected final float[] lastColor = new float[3];
+
+        Vanilla(BufferedImage image) {
+            this(image.getRGB(127, 127));
+        }
+
+        Vanilla(int defaultColor) {
+            this.defaultColor = defaultColor & 0xffffff;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s{%06x}", getClass().getSimpleName(), defaultColor);
+        }
+
+        @Override
+        final public boolean isHeightDependent() {
+            return BiomeAPI.isColorHeightDependent;
+        }
+
+        @Override
+        final public int getColorMultiplier() {
+            return defaultColor;
+        }
+
+        @Override
+        final public int getColorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
+            return getColorMultiplier(BiomeAPI.getBiomeGenAt(blockAccess, i, j, k), i, j, k);
+        }
+
+        @Override
+        final public float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k) {
+            Colorizer.intToFloat3(getColorMultiplier(blockAccess, i, j, k), lastColor);
+            return lastColor;
+        }
+
+        @Override
+        final public void claimResources(Collection<ResourceLocation> resources) {
+        }
+
+        abstract int getColorMultiplier(BiomeGenBase biome, int i, int j, int k);
+    }
+
+    static final class Grass extends Vanilla {
+        Grass(BufferedImage image) {
+            super(image);
+        }
+
+        Grass(int defaultColor) {
+            super(defaultColor);
+        }
+
+        @Override
+        public IColorMap copy() {
+            return new Grass(defaultColor);
+        }
+
+        @Override
+        int getColorMultiplier(BiomeGenBase biome, int i, int j, int k) {
+            return BiomeAPI.getGrassColor(biome, i, j, k);
+        }
+    }
+
+    static final class Foliage extends Vanilla {
+        Foliage(BufferedImage image) {
+            super(image);
+        }
+
+        Foliage(int defaultColor) {
+            super(defaultColor);
+        }
+
+        @Override
+        public IColorMap copy() {
+            return new Foliage(defaultColor);
+        }
+
+        @Override
+        int getColorMultiplier(BiomeGenBase biome, int i, int j, int k) {
+            return BiomeAPI.getFoliageColor(biome, i, j, k);
         }
     }
 

@@ -146,6 +146,9 @@ public class CustomColors extends Mod {
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$1");
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$Fixed");
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$Water");
+        addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$Vanilla");
+        addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$Grass");
+        addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$Foliage");
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$Swamp");
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$TempHumidity");
         addClassFile(MCPatcherUtils.COLOR_MAP_CLASS + "$Grid");
