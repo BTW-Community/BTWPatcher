@@ -24,6 +24,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
     final Map<String, ResourceLocation> alternateTextures;
     final int weight;
     final Set<Item> items;
+    final BitSet damagePercent;
     final BitSet damage;
     final int damageMask;
     final BitSet stackSize;
@@ -113,7 +114,17 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             }
         }
 
-        damage = parseBitSet(properties, "damage", 0, MAX_DAMAGE);
+        value = MCPatcherUtils.getStringProperty(properties, "damage", "");
+        if (value.equals("")) {
+            damage = null;
+            damagePercent = null;
+        } else if (value.contains("%")) {
+            damage = null;
+            damagePercent = parseBitSet(value.replace("%", ""), 0, 100);
+        } else {
+            damage = parseBitSet(value, 0, MAX_DAMAGE);
+            damagePercent = null;
+        }
         damageMask = MCPatcherUtils.getIntProperty(properties, "damageMask", MAX_DAMAGE);
         stackSize = parseBitSet(properties, "stackSize", 0, MAX_STACK_SIZE);
         enchantmentIDs = parseBitSet(properties, "enchantmentIDs", 0, CITUtils.MAX_ENCHANTMENTS - 1);
@@ -143,6 +154,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
 
     boolean match(ItemStack itemStack, int[] itemEnchantmentLevels, boolean hasEffect) {
         return matchDamage(itemStack) &&
+            matchDamagePercent(itemStack) &&
             matchStackSize(itemStack) &&
             matchEnchantment(itemEnchantmentLevels, hasEffect) &&
             matchNBT(itemStack);
@@ -181,6 +193,23 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
 
     private boolean matchDamage(ItemStack itemStack) {
         return damage == null || damage.get(itemStack.getItemDamage() & damageMask);
+    }
+
+    private boolean matchDamagePercent(ItemStack itemStack) {
+        if (damagePercent == null) {
+            return true;
+        }
+        int maxDamage = itemStack.getMaxDamage();
+        if (maxDamage == 0) {
+            return false;
+        }
+        int percent = (100 * itemStack.getItemDamage()) / maxDamage;
+        if (percent < 0) {
+            percent = 0;
+        } else if (percent > 100) {
+            percent = 100;
+        }
+        return damagePercent.get(percent);
     }
 
     private boolean matchStackSize(ItemStack itemStack) {
