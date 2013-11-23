@@ -21,6 +21,22 @@ class ConstPoolUtils {
 
     private static final int MAX_LDC_INDEX = 255;
 
+    private static final byte[] ARRAY_ACONST_NULL = new byte[]{ACONST_NULL};
+    private static final byte[] ARRAY_ICONST_M1 = new byte[]{ICONST_M1};
+    private static final byte[] ARRAY_ICONST_0 = new byte[]{ICONST_0};
+    private static final byte[] ARRAY_ICONST_1 = new byte[]{ICONST_1};
+    private static final byte[] ARRAY_ICONST_2 = new byte[]{ICONST_2};
+    private static final byte[] ARRAY_ICONST_3 = new byte[]{ICONST_3};
+    private static final byte[] ARRAY_ICONST_4 = new byte[]{ICONST_4};
+    private static final byte[] ARRAY_ICONST_5 = new byte[]{ICONST_5};
+    private static final byte[] ARRAY_LCONST_0 = new byte[]{LCONST_0};
+    private static final byte[] ARRAY_LCONST_1 = new byte[]{LCONST_1};
+    private static final byte[] ARRAY_FCONST_0 = new byte[]{FCONST_0};
+    private static final byte[] ARRAY_FCONST_1 = new byte[]{FCONST_1};
+    private static final byte[] ARRAY_FCONST_2 = new byte[]{FCONST_2};
+    private static final byte[] ARRAY_DCONST_0 = new byte[]{DCONST_0};
+    private static final byte[] ARRAY_DCONST_1 = new byte[]{DCONST_1};
+
     static int getTag(Object o) {
         if (o instanceof Float) {
             return ConstPool.CONST_Float;
@@ -140,11 +156,13 @@ class ConstPoolUtils {
     }
 
     static Object push(ConstPool cp, Object value, boolean add) {
-        if (value instanceof Boolean) {
+        if (value == null) {
+            return ARRAY_ACONST_NULL;
+        } else if (value instanceof Boolean) {
             if ((Boolean) value) {
-                return new byte[]{ICONST_1};
+                return ARRAY_ICONST_1;
             } else {
-                return new byte[]{ICONST_0};
+                return ARRAY_ICONST_0;
             }
         } else if (value instanceof Byte) {
             return push(cp, (int) (Byte) value, add);
@@ -154,19 +172,19 @@ class ConstPoolUtils {
             int i = (Integer) value;
             switch (i) {
                 case -1:
-                    return new byte[]{ICONST_M1};
+                    return ARRAY_ICONST_M1;
                 case 0:
-                    return new byte[]{ICONST_0};
+                    return ARRAY_ICONST_0;
                 case 1:
-                    return new byte[]{ICONST_1};
+                    return ARRAY_ICONST_1;
                 case 2:
-                    return new byte[]{ICONST_2};
+                    return ARRAY_ICONST_2;
                 case 3:
-                    return new byte[]{ICONST_3};
+                    return ARRAY_ICONST_3;
                 case 4:
-                    return new byte[]{ICONST_4};
+                    return ARRAY_ICONST_4;
                 case 5:
-                    return new byte[]{ICONST_5};
+                    return ARRAY_ICONST_5;
                 default:
                     break;
             }
@@ -178,25 +196,25 @@ class ConstPoolUtils {
         } else if (value instanceof Long) {
             long l = (Long) value;
             if (l == 0L) {
-                return new byte[]{LCONST_0};
+                return ARRAY_LCONST_0;
             } else if (l == 1L) {
-                return new byte[]{LCONST_1};
+                return ARRAY_LCONST_1;
             }
         } else if (value instanceof Float) {
             float f = (Float) value;
             if (f == 0.0F) {
-                return new byte[]{FCONST_0};
+                return ARRAY_FCONST_0;
             } else if (f == 1.0F) {
-                return new byte[]{FCONST_1};
+                return ARRAY_FCONST_1;
             } else if (f == 2.0F) {
-                return new byte[]{FCONST_2};
+                return ARRAY_FCONST_2;
             }
         } else if (value instanceof Double) {
             double d = (Double) value;
             if (d == 0.0) {
-                return new byte[]{DCONST_0};
+                return ARRAY_DCONST_0;
             } else if (d == 1.0) {
-                return new byte[]{DCONST_1};
+                return ARRAY_DCONST_1;
             }
         }
         int index = add ? findOrAdd(cp, value) : find(cp, value);
