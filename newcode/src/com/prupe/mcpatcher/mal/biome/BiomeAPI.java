@@ -100,6 +100,14 @@ abstract public class BiomeAPI {
         return getRainfall(getBiomeGenAt(blockAccess, i, j, k), i, j, k);
     }
 
+    public static int getGrassColor(BiomeGenBase biome, int i, int j, int k) {
+        return instance.getGrassColor_Impl(biome, i, j, k);
+    }
+
+    public static int getFoliageColor(BiomeGenBase biome, int i, int j, int k) {
+        return instance.getFoliageColor_Impl(biome, i, j, k);
+    }
+
     public static int getWaterColorMultiplier(BiomeGenBase biome) {
         if (getWaterColorMultiplier != null) {
             try {
@@ -128,6 +136,10 @@ abstract public class BiomeAPI {
 
     abstract protected float getTemperaturef_Impl(BiomeGenBase biome, int i, int j, int k);
 
+    abstract protected int getGrassColor_Impl(BiomeGenBase biome, int i, int j, int k);
+
+    abstract protected int getFoliageColor_Impl(BiomeGenBase biome, int i, int j, int k);
+
     abstract protected boolean isColorHeightDependent();
 
     BiomeAPI() {
@@ -140,6 +152,16 @@ abstract public class BiomeAPI {
         }
 
         @Override
+        protected int getGrassColor_Impl(BiomeGenBase biome, int i, int j, int k) {
+            return biome.getGrassColor();
+        }
+
+        @Override
+        protected int getFoliageColor_Impl(BiomeGenBase biome, int i, int j, int k) {
+            return biome.getFoliageColor();
+        }
+
+        @Override
         protected boolean isColorHeightDependent() {
             return false;
         }
@@ -149,6 +171,16 @@ abstract public class BiomeAPI {
         @Override
         protected float getTemperaturef_Impl(BiomeGenBase biome, int i, int j, int k) {
             return biome.getTemperaturef(i, j, k);
+        }
+
+        @Override
+        protected int getGrassColor_Impl(BiomeGenBase biome, int i, int j, int k) {
+            return biome.getGrassColor(i, j, k);
+        }
+
+        @Override
+        protected int getFoliageColor_Impl(BiomeGenBase biome, int i, int j, int k) {
+            return biome.getFoliageColor(i, j, k);
         }
 
         @Override
