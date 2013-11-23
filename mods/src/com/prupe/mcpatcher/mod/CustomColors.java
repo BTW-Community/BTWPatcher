@@ -3095,7 +3095,27 @@ public class CustomColors extends Mod {
             }.targetMethod(renderBlockFluids));
 
             addPatch(new BytecodePatch() {
+                private int tessellatorRegister;
                 private int patchCount;
+                private final int[] vertexOrder = new int[]{0, 1, 2, 3, 3, 2, 1, 0};
+
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                reference(GETSTATIC, tessellator),
+                                capture(anyASTORE)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            tessellatorRegister = extractRegisterNum(getCaptureGroup(1));
+                            return true;
+                        }
+                    });
+                }
 
                 @Override
                 public String getDescription() {
@@ -3104,47 +3124,65 @@ public class CustomColors extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    return buildExpression(
-                        // tessellator.addVertexWithUV(...);
-                        capture(anyALOAD),
+                    String expr = build(
+                        registerLoadStore(ALOAD, tessellatorRegister),
                         nonGreedy(any(0, 20)),
                         reference(INVOKEVIRTUAL, addVertexWithUV)
+                    );
+                    return buildExpression(
+                        // tessellator.addVertexWithUV(...); x4 or x8
+                        capture(expr),
+                        capture(expr),
+                        capture(expr),
+                        capture(expr),
+                        optional(build(
+                            capture(expr),
+                            capture(expr),
+                            capture(expr),
+                            capture(expr)
+                        ))
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // if (ColorizeBlock.isSmooth) {
-                        reference(GETSTATIC, isSmooth),
-                        IFEQ, branch("A"),
+                    byte[] code = new byte[0];
+                    for (int i = 0; i < 8; i++) {
+                        byte[] orig = getCaptureGroup(i + 1);
+                        if (orig == null) {
+                            break;
+                        }
+                        code = buildCode(
+                            code,
 
-                        // tessellator.setColorOpaque_F(this.colorRedxxx, this.colorGreenxxx, this.colorBluexxx);
-                        getCaptureGroup(1),
-                        getVertex(patchCount++),
-                        reference(INVOKEVIRTUAL, setColorOpaque_F),
+                            // if (ColorizeBlock.isSmooth) {
+                            reference(GETSTATIC, isSmooth),
+                            IFEQ, branch("A" + i),
 
-                        // }
-                        label("A")
-                    );
-                }
+                            // tessellator.setColorOpaque_F(this.colorRedxxx, this.colorGreenxxx, this.colorBluexxx);
+                            registerLoadStore(ALOAD, tessellatorRegister),
+                            getVertexColor(vertexOrder[i], 0),
+                            getVertexColor(vertexOrder[i], 1),
+                            getVertexColor(vertexOrder[i], 2),
+                            reference(INVOKEVIRTUAL, setColorOpaque_F),
 
-                private byte[] getVertex(int index) {
-                    return buildCode(
-                        getVertexColor(index, 0),
-                        getVertexColor(index, 1),
-                        getVertexColor(index, 2)
-                    );
+                            // }
+                            label("A" + i),
+
+                            // tessellator.addVertexWithUV(...);
+                            orig
+                        );
+                    }
+                    return code;
                 }
 
                 private byte[] getVertexColor(int vertex, int channel) {
                     return buildCode(
                         ALOAD_0,
-                        reference(GETFIELD, new FieldRef(getDeobfClass(), "color" + colorNames[channel % 3] + vertexNames[vertex % 4], "F"))
+                        reference(GETFIELD, new FieldRef(getDeobfClass(), "color" + colorNames[channel] + vertexNames[vertex], "F"))
                     );
                 }
             }
-                .setInsertBefore(true)
                 .targetMethod(renderBlockFluids)
             );
 
