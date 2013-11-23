@@ -596,17 +596,13 @@ public class CustomItemTextures extends Mod {
                             // GL11.glAlphaFunc(GL11.GL_GREATER, 0.01f);
                             push(516),
                             push(0.01f),
-                            reference(INVOKESTATIC, glAlphaFunc),
-
-                            // ...
-                            getMatch(),
-
-                            // GL11.glDisable(GL11.GL_ALPHA_TEST);
-                            push(3008),
-                            reference(INVOKESTATIC, glDisable)
+                            reference(INVOKESTATIC, glAlphaFunc)
                         );
                     }
-                }.targetMethod(renderItemAndEffectIntoGUI));
+                }
+                    .setInsertBefore(true)
+                    .targetMethod(renderItemAndEffectIntoGUI)
+                );
 
                 addPatch(new BytecodePatch() {
                     @Override
