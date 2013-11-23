@@ -109,6 +109,7 @@ public class CITUtils {
                     list.addAll(allItemEnchantments);
                     Collections.sort(list);
                 }
+                Collections.sort(allItemEnchantments);
                 for (List<ArmorOverride> list : armors.values()) {
                     Collections.sort(list);
                 }
