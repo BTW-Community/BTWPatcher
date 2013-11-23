@@ -3155,10 +3155,6 @@ public class CustomColors extends Mod {
                         code = buildCode(
                             code,
 
-                            // if (ColorizeBlock.isSmooth) {
-                            reference(GETSTATIC, isSmooth),
-                            IFEQ, branch("A" + i),
-
                             // tessellator.setColorOpaque_F(this.colorRedxxx, this.colorGreenxxx, this.colorBluexxx);
                             registerLoadStore(ALOAD, tessellatorRegister),
                             getVertexColor(vertexOrder[i], 0),
@@ -3166,14 +3162,31 @@ public class CustomColors extends Mod {
                             getVertexColor(vertexOrder[i], 2),
                             reference(INVOKEVIRTUAL, setColorOpaque_F),
 
-                            // }
-                            label("A" + i),
-
                             // tessellator.addVertexWithUV(...);
                             orig
                         );
                     }
-                    return code;
+                    return buildCode(
+                        // if (ColorizeBlock.isSmooth) {
+                        reference(GETSTATIC, isSmooth),
+                        IFEQ, branch("A"),
+
+                        // tessellator.setColorOpaque_F(this.colorRedxxx, this.colorGreenxxx, this.colorBluexxx);
+                        // tessellator.addVertexWithUV(...);
+                        // x4 or x8
+                        code,
+
+                        GOTO, branch("B"),
+
+                        // } else {
+                        label("A"),
+
+                        // ...
+                        getMatch(),
+
+                        // }
+                        label("B")
+                    );
                 }
 
                 private byte[] getVertexColor(int vertex, int channel) {
