@@ -74,6 +74,43 @@ public class TexturePackAPI {
         }
     }
 
+    public static boolean hasCustomResource(ResourceLocation resource) {
+        InputStream jar = null;
+        InputStream pack = null;
+        try {
+            String path = "assets/" + resource.getNamespace() + "/" + resource.getPath();
+            pack = getInputStream(resource);
+            if (pack == null) {
+                return false;
+            }
+            jar = Minecraft.class.getResourceAsStream(path);
+            if (jar == null) {
+                return true;
+            }
+            byte[] buffer1 = new byte[4096];
+            byte[] buffer2 = new byte[4096];
+            int read1;
+            int read2;
+            while ((read1 = pack.read(buffer1)) > 0) {
+                read2 = jar.read(buffer2);
+                if (read1 != read2) {
+                    return true;
+                }
+                for (int i = 0; i < read1; i++) {
+                    if (buffer1[i] != buffer2[i]) {
+                        return true;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            MCPatcherUtils.close(jar);
+            MCPatcherUtils.close(pack);
+        }
+        return false;
+    }
+
     public static BufferedImage getImage(ResourceLocation resource) {
         return resource == null ? null : instance.getImageImpl(resource);
     }
