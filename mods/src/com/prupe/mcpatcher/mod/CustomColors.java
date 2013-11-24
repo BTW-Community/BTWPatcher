@@ -29,7 +29,7 @@ public class CustomColors extends Mod {
     private static final MethodRef computeFogColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeFogColor", "(LWorldProvider;F)Z");
     private static final MethodRef computeSkyColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeSkyColor", "(LWorld;F)Z");
     private static final MethodRef computeLavaDropColor = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "computeLavaDropColor", "(I)Z");
-    private static final MethodRef computeWaterColor1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeWaterColor", "(III)Z");
+    private static final MethodRef computeWaterColor1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeWaterColor", "(ZIII)Z");
     private static final MethodRef computeWaterColor2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeWaterColor", "()V");
     private static final MethodRef computeMyceliumParticleColor = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "computeMyceliumParticleColor", "()Z");
     private static final MethodRef computeRedstoneWireColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeRedstoneWireColor", "(I)Z");
@@ -1359,11 +1359,11 @@ public class CustomColors extends Mod {
     }
 
     abstract private class WaterFXMod extends ClassMod {
-        void addWaterColorPatch(final String name, final float[] particleColors) {
-            addWaterColorPatch(name, particleColors, particleColors);
+        void addWaterColorPatch(final String name, final boolean includeBaseColor, final float[] particleColors) {
+            addWaterColorPatch(name, includeBaseColor, particleColors, particleColors);
         }
 
-        void addWaterColorPatch(final String name, final float[] origColors, final float[] newColors) {
+        void addWaterColorPatch(final String name, final boolean includeBaseColor, final float[] origColors, final float[] newColors) {
             final FieldRef particleRed = new FieldRef(getDeobfClass(), "particleRed", "F");
             final FieldRef particleGreen = new FieldRef(getDeobfClass(), "particleGreen", "F");
             final FieldRef particleBlue = new FieldRef(getDeobfClass(), "particleBlue", "F");
@@ -1372,6 +1372,12 @@ public class CustomColors extends Mod {
             final FieldRef posZ = new FieldRef(getDeobfClass(), "posZ", "D");
 
             addPatch(new BytecodePatch() {
+                {
+                    if (origColors == null) {
+                        setInsertBefore(true);
+                    }
+                }
+
                 @Override
                 public String getDescription() {
                     return "override " + name + " color";
@@ -1406,7 +1412,8 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (ColorizeBlock.computeWaterColor((int) this.posX, (int) this.posY, (int) this.posZ)) {
+                        // if (ColorizeBlock.computeWaterColor(includeBaseColor, (int) this.posX, (int) this.posY, (int) this.posZ)) {
+                        push(includeBaseColor),
                         ALOAD_0,
                         reference(GETFIELD, posX),
                         D2I,
@@ -1462,8 +1469,7 @@ public class CustomColors extends Mod {
                         ),
 
                         // }
-                        label("B"),
-                        (origColors == null ? new byte[]{(byte) RETURN} : new byte[]{})
+                        label("B")
                     );
                 }
             }.matchConstructorOnly(true));
@@ -1508,7 +1514,7 @@ public class CustomColors extends Mod {
                 }
             }.matchConstructorOnly(true));
 
-            addWaterColorPatch("rain drop", new float[]{1.0f, 1.0f, 1.0f}, new float[]{0.2f, 0.3f, 1.0f});
+            addWaterColorPatch("rain drop", false, new float[]{1.0f, 1.0f, 1.0f}, new float[]{0.2f, 0.3f, 1.0f});
         }
     }
 
@@ -1556,7 +1562,7 @@ public class CustomColors extends Mod {
                 .addXref(1, new FieldRef(getDeobfClass(), "timer", "I"))
             );
 
-            addWaterColorPatch("water drop", new float[]{0.0f, 0.0f, 1.0f}, new float[]{0.2f, 0.3f, 1.0f});
+            addWaterColorPatch("water drop", true, new float[]{0.0f, 0.0f, 1.0f}, new float[]{0.2f, 0.3f, 1.0f});
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -1692,7 +1698,7 @@ public class CustomColors extends Mod {
                 }
             }.matchConstructorOnly(true));
 
-            addWaterColorPatch("splash", null);
+            addWaterColorPatch("splash", false, null);
         }
     }
 
@@ -1718,7 +1724,7 @@ public class CustomColors extends Mod {
                 }
             }.matchConstructorOnly(true));
 
-            addWaterColorPatch("bubble", new float[]{1.0f, 1.0f, 1.0f});
+            addWaterColorPatch("bubble", false, new float[]{1.0f, 1.0f, 1.0f});
         }
     }
 

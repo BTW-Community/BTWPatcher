@@ -52,7 +52,6 @@ public class ColorizeBlock {
     private static final int blockBlendRadius = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "blockBlendRadius2", 4);
 
     public static int blockColor;
-    public static float[] waterColor;
     public static boolean isSmooth;
 
     private static final int[][][] FACE_VERTICES = new int[][][]{
@@ -170,8 +169,6 @@ public class ColorizeBlock {
         }
         blockColorMaps.clear();
         waterColorMap = null;
-
-        waterColor = new float[]{0.2f, 0.3f, 1.0f};
     }
 
     static void reloadFoliageColors(Properties properties) {
@@ -201,8 +198,6 @@ public class ColorizeBlock {
         if (waterColorMap == null) {
             waterColorMap = new ColorMap.Water();
             registerColorMap(waterColorMap, null, "minecraft:flowing_water minecraft:water");
-        } else {
-            Colorizer.intToFloat3(waterColorMap.getColorMultiplier(), waterColor);
         }
     }
 
@@ -387,16 +382,33 @@ public class ColorizeBlock {
     }
 
     public static void computeWaterColor() {
-        int color = waterColorMap == null ? waterBlock.getBlockColor() : waterColorMap.getColorMultiplier();
-        Colorizer.setColorF(color);
+        Colorizer.setColorF(ColorizeEntity.waterBaseColor);
     }
 
-    public static boolean computeWaterColor(int i, int j, int k) {
+    public static boolean computeWaterColor(boolean includeBaseColor, int i, int j, int k) {
         if (waterColorMap == null) {
             return false;
         } else {
             Colorizer.setColorF(waterColorMap.getColorMultiplierF(BiomeAPI.getWorld(), i, j, k));
+            if (includeBaseColor) {
+                Colorizer.setColor[0] *= ColorizeEntity.waterBaseColor[0];
+                Colorizer.setColor[1] *= ColorizeEntity.waterBaseColor[1];
+                Colorizer.setColor[2] *= ColorizeEntity.waterBaseColor[2];
+            }
             return true;
+        }
+    }
+
+    public static void colorizeWaterBlockGL(Block block) {
+        if (block == waterBlock || block == staticWaterBlock) {
+            float[] waterColor;
+            if (waterColorMap == null) {
+                waterColor = ColorizeEntity.waterBaseColor;
+            } else {
+                waterColor = new float[3];
+                Colorizer.intToFloat3(waterColorMap.getColorMultiplier(), waterColor);
+            }
+            GL11.glColor4f(waterColor[0], waterColor[1], waterColor[2], 1.0f);
         }
     }
 
@@ -415,12 +427,6 @@ public class ColorizeBlock {
         } else {
             int metadata = Math.max(Math.min(blockAccess.getBlockMetadata(i, j, k), 15), 0);
             return Colorizer.float3ToInt(redstoneColor[metadata]);
-        }
-    }
-
-    public static void colorizeWaterBlockGL(Block block) {
-        if (block == waterBlock || block == staticWaterBlock) {
-            GL11.glColor4f(waterColor[0], waterColor[1], waterColor[2], 1.0f);
         }
     }
 
