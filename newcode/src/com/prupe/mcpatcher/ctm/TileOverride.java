@@ -497,8 +497,14 @@ abstract class TileOverride implements ITileOverride {
         k += offset[2];
         int neighborMeta = blockAccess.getBlockMetadata(i, j, k);
         Block neighbor = BlockAPI.getBlockAt(blockAccess, i, j, k);
-        if (exclude(neighbor, face, neighborMeta)) {
-            return false;
+        if (connectType == CONNECT_BY_MATERIAL) {
+            if (neighbor == null) {
+                return false;
+            }
+        } else {
+            if (exclude(neighbor, face, neighborMeta)) {
+                return false;
+            }
         }
         int orientation = getOrientationFromMetadata(block, metadata);
         int neighborOrientation = getOrientationFromMetadata(neighbor, neighborMeta);
