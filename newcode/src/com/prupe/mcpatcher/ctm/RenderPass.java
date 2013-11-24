@@ -20,6 +20,7 @@ public class RenderPass {
 
     private static BlendMethod blendMethod;
     private static boolean enableLightmap;
+    private static boolean enableColormap;
     private static boolean backfaceCulling;
 
     private static int renderPass = -1;
@@ -39,6 +40,11 @@ public class RenderPass {
                     pass = block.getRenderBlockPass();
                 }
                 return pass != renderPass;
+            }
+
+            @Override
+            public boolean useColorMultiplierThisPass(Block block) {
+                return renderPass != 3 || enableColormap;
             }
 
             @Override
@@ -76,6 +82,7 @@ public class RenderPass {
             public void beforeChange() {
                 blendMethod = BlendMethod.ALPHA;
                 enableLightmap = true;
+                enableColormap = false;
                 backfaceCulling = true;
             }
 
@@ -90,6 +97,7 @@ public class RenderPass {
                         blendMethod = BlendMethod.ALPHA;
                     }
                     enableLightmap = MCPatcherUtils.getBooleanProperty(properties, "enableLightmap.3", !blendMethod.isColorBased());
+                    enableColormap = MCPatcherUtils.getBooleanProperty(properties, "enableColormap.3", false);
                     backfaceCulling = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.3", true);
                 }
             }

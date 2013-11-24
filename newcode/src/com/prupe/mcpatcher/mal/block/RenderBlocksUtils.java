@@ -21,7 +21,7 @@ public class RenderBlocksUtils {
 
     public static void setupColorMultiplier(Block block, IBlockAccess blockAccess, int i, int j, int k,
                                             boolean haveOverrideTexture, float r, float g, float b) {
-        if (haveOverrideTexture || RenderPassAPI.instance.skipDefaultRendering(block)) {
+        if (haveOverrideTexture || !RenderPassAPI.instance.useColorMultiplierThisPass(block)) {
             useColorMultiplier[0] = false;
             useColorMultiplier[2] = false;
             useColorMultiplier[3] = false;

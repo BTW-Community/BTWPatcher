@@ -13,6 +13,10 @@ public class RenderPassAPI {
         return pass > 2;
     }
 
+    public boolean useColorMultiplierThisPass(Block block) {
+        return true;
+    }
+
     public void clear() {
     }
 
