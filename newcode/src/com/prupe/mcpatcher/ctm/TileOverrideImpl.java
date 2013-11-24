@@ -367,6 +367,7 @@ class TileOverrideImpl {
             if (face < 0) {
                 face = 0;
             }
+            j = adjustJByRenderType(blockAccess, block, i, j, k);
             long hash = WeightedIndex.hash128To64(i, j, k, reorient(face) / symmetry);
             int index = chooser.choose(hash);
             return icons[index];

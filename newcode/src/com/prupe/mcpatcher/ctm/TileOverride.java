@@ -682,6 +682,27 @@ abstract class TileOverride implements ITileOverride {
         return face;
     }
 
+    protected int adjustJByRenderType(IBlockAccess blockAccess, Block block, int i, int j, int k) {
+        switch (block.getRenderType()) {
+            case 1: // renderCrossedSquares
+                while (j > 0 && block == BlockAPI.getBlockAt(blockAccess, i, j - 1, k)) {
+                    j--;
+                }
+                break;
+
+            case 40: // renderBlockDoublePlant
+                int metadata = blockAccess.getBlockMetadata(i, j, k);
+                if ((metadata & 0x8) != 0 && block == BlockAPI.getBlockAt(blockAccess, i, j - 1, k)) {
+                    j--;
+                }
+                break;
+
+            default:
+                break;
+        }
+        return j;
+    }
+
     public final Icon getTile(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int face) {
         if (icons == null) {
             error("no images loaded, disabling");
