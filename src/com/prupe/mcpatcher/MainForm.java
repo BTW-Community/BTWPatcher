@@ -331,6 +331,7 @@ class MainForm extends UserInterface {
 
         patchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                /*
                 if (MCPatcher.minecraft.isModded()) {
                     while (true) {
                         String answer = JOptionPane.showInputDialog(frame,
@@ -348,6 +349,7 @@ class MainForm extends UserInterface {
                         }
                     }
                 }
+                */
                 HashMap<String, ArrayList<Mod>> conflicts = MCPatcher.getConflicts();
                 if (!conflicts.isEmpty()) {
                     ConflictDialog dialog = new ConflictDialog(conflicts);
