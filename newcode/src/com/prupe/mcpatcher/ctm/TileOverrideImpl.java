@@ -337,6 +337,7 @@ class TileOverrideImpl {
 
     final static class Random1 extends TileOverride {
         private final int symmetry;
+        private final boolean linked;
         private final WeightedIndex chooser;
 
         Random1(ResourceLocation filePrefix, Properties properties, TileLoader tileLoader) {
@@ -350,6 +351,8 @@ class TileOverrideImpl {
             } else {
                 symmetry = 1;
             }
+
+            linked = MCPatcherUtils.getBooleanProperty(properties, "linked", false);
 
             chooser = WeightedIndex.create(getNumberOfTiles(), properties.getProperty("weights", ""));
             if (chooser == null) {
@@ -367,7 +370,9 @@ class TileOverrideImpl {
             if (face < 0) {
                 face = 0;
             }
-            j = adjustJByRenderType(blockAccess, block, i, j, k);
+            if (linked) {
+                j = adjustJByRenderType(blockAccess, block, i, j, k);
+            }
             long hash = WeightedIndex.hash128To64(i, j, k, reorient(face) / symmetry);
             int index = chooser.choose(hash);
             return icons[index];

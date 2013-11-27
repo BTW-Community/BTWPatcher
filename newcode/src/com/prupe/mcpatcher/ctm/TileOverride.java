@@ -696,6 +696,7 @@ abstract class TileOverride implements ITileOverride {
                 }
                 break;
 
+            case 7: // renderBlockDoor
             case 40: // renderBlockDoublePlant
                 int metadata = blockAccess.getBlockMetadata(i, j, k);
                 if ((metadata & 0x8) != 0 && block == BlockAPI.getBlockAt(blockAccess, i, j - 1, k)) {
