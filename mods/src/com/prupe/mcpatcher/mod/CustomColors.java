@@ -3107,8 +3107,11 @@ public class CustomColors extends Mod {
                 private int tessellatorRegister;
                 private int patchCount;
                 private final int[] vertexOrder = new int[]{0, 1, 2, 3, 3, 2, 1, 0};
+                private final int firstPatchOffset;
 
                 {
+                    firstPatchOffset = getMinecraftVersion().compareTo("13w48a") >= 0 ? 1 : 0;
+
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
                         public String getMatchExpression() {
@@ -3161,20 +3164,29 @@ public class CustomColors extends Mod {
                         if (orig == null) {
                             break;
                         }
+                        // *sigh*
+                        // 13w47e: draws top face in order 0 1 2 3 3 2 1 0
+                        // 13w48a: draws top face in order 0 1 2 3 0 3 2 1
+                        // side faces are drawn 0 1 2 3 3 2 1 0 regardless
+                        int vertex = vertexOrder[i];
+                        if (i >= 4 && patchCount == 0) {
+                            vertex = (vertex + firstPatchOffset) % 4;
+                        }
                         code = buildCode(
                             code,
 
                             // tessellator.setColorOpaque_F(this.colorRedxxx, this.colorGreenxxx, this.colorBluexxx);
                             registerLoadStore(ALOAD, tessellatorRegister),
-                            getVertexColor(vertexOrder[i], 0),
-                            getVertexColor(vertexOrder[i], 1),
-                            getVertexColor(vertexOrder[i], 2),
+                            getVertexColor(vertex, 0),
+                            getVertexColor(vertex, 1),
+                            getVertexColor(vertex, 2),
                             reference(INVOKEVIRTUAL, setColorOpaque_F),
 
                             // tessellator.addVertexWithUV(...);
                             orig
                         );
                     }
+                    patchCount++;
                     return buildCode(
                         // if (ColorizeBlock.isSmooth) {
                         reference(GETSTATIC, isSmooth),
