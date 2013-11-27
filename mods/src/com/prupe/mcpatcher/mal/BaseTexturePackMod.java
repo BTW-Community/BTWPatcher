@@ -98,6 +98,9 @@ public class BaseTexturePackMod extends Mod {
             final MethodRef setTitle = new MethodRef("org/lwjgl/opengl/Display", "setTitle", "(Ljava/lang/String;)V");
             final MethodRef isCloseRequested = new MethodRef("org/lwjgl/opengl/Display", "isCloseRequested", "()Z");
             final MethodRef glViewport = new MethodRef(MCPatcherUtils.GL11_CLASS, "glViewport", "(IIII)V");
+            final MethodRef imageIORead = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
+            final InterfaceMethodRef getResource = new InterfaceMethodRef("ResourceManager", "getResource", "(LResourceLocation;)LResource;");
+            final InterfaceMethodRef getResourceInputStream = new InterfaceMethodRef("Resource", "getInputStream", "()Ljava/io/InputStream;");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -178,6 +181,40 @@ public class BaseTexturePackMod extends Mod {
                     );
                 }
             }.targetMethod(runGameLoop));
+
+            if (getMinecraftVersion().compareTo("1.7.2") > 0) {
+                addPatch(new BytecodePatch() {
+                    @Override
+                    public String getDescription() {
+                        return "read startup logo from texture pack";
+                    }
+
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // ImageIO.read(this.defaultTexturePack.getInputStream(Minecraft.mojangPng));
+                            ALOAD_0,
+                            anyReference(GETFIELD),
+                            captureReference(GETSTATIC),
+                            anyReference(INVOKEVIRTUAL),
+                            reference(INVOKESTATIC, imageIORead)
+                        );
+                    }
+
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            // ImageIO.read(this.getResourceManager().getResource(Minecraft.mojangPng).getInputStream());
+                            ALOAD_0,
+                            reference(INVOKEVIRTUAL, getResourceManager),
+                            getCaptureGroup(1),
+                            reference(INVOKEINTERFACE, getResource),
+                            reference(INVOKEINTERFACE, getResourceInputStream),
+                            reference(INVOKESTATIC, imageIORead)
+                        );
+                    }
+                });
+            }
         }
     }
 
