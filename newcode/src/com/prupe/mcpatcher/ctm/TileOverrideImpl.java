@@ -370,8 +370,10 @@ class TileOverrideImpl {
             if (face < 0) {
                 face = 0;
             }
-            if (linked) {
-                j = adjustJByRenderType(blockAccess, block, i, j, k);
+            if (linked && setCoordOffsetsForRenderType(blockAccess, block, i, j, k)) {
+                i += di;
+                j += dj;
+                k += dk;
             }
             long hash = WeightedIndex.hash128To64(i, j, k, reorient(face) / symmetry);
             int index = chooser.choose(hash);

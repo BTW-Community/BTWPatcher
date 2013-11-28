@@ -169,6 +169,10 @@ abstract class TileOverride implements ITileOverride {
     private int rotateUV;
     protected boolean rotateTop;
 
+    protected int di;
+    protected int dj;
+    protected int dk;
+
     static TileOverride create(ResourceLocation propertiesFile, TileLoader tileLoader) {
         if (propertiesFile == null) {
             return null;
@@ -688,26 +692,61 @@ abstract class TileOverride implements ITileOverride {
         return face;
     }
 
-    protected int adjustJByRenderType(IBlockAccess blockAccess, Block block, int i, int j, int k) {
+    protected boolean setCoordOffsetsForRenderType(IBlockAccess blockAccess, Block block, int i, int j, int k) {
+        int metadata;
+        di = dj = dk = 0;
+        boolean changed = false;
         switch (block.getRenderType()) {
             case 1: // renderCrossedSquares
                 while (j > 0 && block == BlockAPI.getBlockAt(blockAccess, i, j - 1, k)) {
                     j--;
+                    dj--;
+                    changed = true;
                 }
                 break;
 
             case 7: // renderBlockDoor
             case 40: // renderBlockDoublePlant
-                int metadata = blockAccess.getBlockMetadata(i, j, k);
+                metadata = blockAccess.getBlockMetadata(i, j, k);
                 if ((metadata & 0x8) != 0 && block == BlockAPI.getBlockAt(blockAccess, i, j - 1, k)) {
-                    j--;
+                    dj--;
+                    changed = true;
                 }
+                break;
+
+            case 14: // renderBlockBed
+                metadata = blockAccess.getBlockMetadata(i, j, k);
+                switch (metadata) {
+                    case 0:
+                    case 4:
+                        dk = 1; // head is one block south
+                        break;
+
+                    case 1:
+                    case 5:
+                        di = -1; // head is one block west
+                        break;
+
+                    case 2:
+                    case 6:
+                        dk = -1; // head is one block north
+                        break;
+
+                    case 3:
+                    case 7:
+                        di = 1; // head is one block east
+                        break;
+
+                    default:
+                        return false; // head itself, no offset
+                }
+                changed = block == BlockAPI.getBlockAt(blockAccess, i + di, j, k + dk);
                 break;
 
             default:
                 break;
         }
-        return j;
+        return changed;
     }
 
     public final Icon getTile(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int face) {
