@@ -382,7 +382,9 @@ public class ColorizeBlock {
     }
 
     public static void computeWaterColor() {
-        Colorizer.setColorF(ColorizeEntity.waterBaseColor);
+        if (waterColorMap != null) {
+            Colorizer.setColorF(waterColorMap.getColorMultiplier());
+        }
     }
 
     public static boolean computeWaterColor(boolean includeBaseColor, int i, int j, int k) {
