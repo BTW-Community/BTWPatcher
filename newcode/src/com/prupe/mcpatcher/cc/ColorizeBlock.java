@@ -14,6 +14,7 @@ import net.minecraft.src.RenderBlocks;
 import net.minecraft.src.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
+import java.io.InputStream;
 import java.util.*;
 
 public class ColorizeBlock {
@@ -44,7 +45,7 @@ public class ColorizeBlock {
     private static Block doublePlantBlock;
 
     private static final Map<Block, IColorMap[]> blockColorMaps = new IdentityHashMap<Block, IColorMap[]>(); // bitmaps from palette.block.*
-    private static final boolean isMultithreaded;
+    private static boolean multithreadedCheckDone;
     private static ThreadLocal<Map<Block, IColorMap[]>> threadColorMaps;
     private static IColorMap waterColorMap;
     private static float[][] redstoneColor; // colormap/redstone.png
@@ -143,14 +144,6 @@ public class ColorizeBlock {
     };
 
     static {
-        boolean threaded = false;
-        try {
-            Class<?> cl = Class.forName("com.thevoxelbox.voxelmap.VoxelMap");
-            threaded = true;
-            logger.info("%s detected, enabling colormap thread support", cl);
-        } catch (ClassNotFoundException e) {
-        }
-        isMultithreaded = threaded;
         try {
             reset();
         } catch (Throwable e) {
@@ -163,10 +156,8 @@ public class ColorizeBlock {
         staticWaterBlock = BlockAPI.getFixedBlock("minecraft:water");
         doublePlantBlock = BlockAPI.parseBlockName("minecraft:double_plant");
 
-        if (isMultithreaded) {
-            threadColorMaps = new ThreadLocal<Map<Block, IColorMap[]>>();
-            threadColorMaps.set(blockColorMaps);
-        }
+        multithreadedCheckDone = false;
+        threadColorMaps = null;
         blockColorMaps.clear();
         waterColorMap = null;
     }
@@ -308,9 +299,27 @@ public class ColorizeBlock {
         }
     }
 
+    private static void checkMultithreaded() {
+        threadColorMaps = null;
+        try {
+            Class<?> cl = Class.forName("com.thevoxelbox.voxelmap.VoxelMap");
+            threadColorMaps = new ThreadLocal<Map<Block, IColorMap[]>>();
+            threadColorMaps.set(blockColorMaps);
+            logger.info("%s detected, enabling colormap thread support", cl);
+        } catch (ClassNotFoundException e) {
+        } finally {
+            multithreadedCheckDone = true;
+        }
+    }
+
     private static IColorMap findColorMap(Block block, int metadata) {
         IColorMap[] maps;
-        if (isMultithreaded) {
+        if (!multithreadedCheckDone) {
+            checkMultithreaded();
+        }
+        if (threadColorMaps == null) {
+            maps = blockColorMaps.get(block);
+        } else {
             Map<Block, IColorMap[]> blockMaps = threadColorMaps.get();
             if (blockMaps == null) {
                 logger.info("copying colormaps for %s, free memory: %.1f",
@@ -329,8 +338,6 @@ public class ColorizeBlock {
                 logger.info("done, free memory: %.1f", Runtime.getRuntime().freeMemory() / 1048576.0);
             }
             maps = blockMaps.get(block);
-        } else {
-            maps = blockColorMaps.get(block);
         }
         if (maps == null) {
             return null;
