@@ -12,8 +12,8 @@ import java.util.*;
 class PotionReplacer {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
-    private static final int ITEM_ID_POTION = 373;
-    private static final int ITEM_ID_GLASS_BOTTLE = 374;
+    private static final String ITEM_ID_POTION = "minecraft:potion";
+    private static final String ITEM_ID_GLASS_BOTTLE = "minecraft:glass_bottle";
 
     private static final String LAYER_POTION_CONTENTS = "potion_overlay";
     private static final String LAYER_POTION_DRINKABLE = "potion_bottle_drinkable";
@@ -95,17 +95,17 @@ class PotionReplacer {
         return TexturePackAPI.newMCPatcherResourceLocation("cit/potion/" + (splash ? "splash/" : "normal/") + name + ".png");
     }
 
-    private static Properties newProperties(ResourceLocation path, int itemID, String layer) {
+    private static Properties newProperties(ResourceLocation path, String itemID, String layer) {
         Properties properties = new Properties();
         properties.setProperty("type", "item");
-        properties.setProperty("items", String.valueOf(itemID));
+        properties.setProperty("items", itemID);
         properties.setProperty("texture." + layer, path.toString());
         properties.setProperty("texture." + LAYER_POTION_CONTENTS, "blank");
         properties.setProperty("weight", String.valueOf(weight));
         return properties;
     }
 
-    private static Properties newProperties(ResourceLocation path, int itemID, boolean splash) {
+    private static Properties newProperties(ResourceLocation path, String itemID, boolean splash) {
         String layer = splash ? LAYER_POTION_SPLASH : LAYER_POTION_DRINKABLE;
         return newProperties(path, itemID, layer);
     }
