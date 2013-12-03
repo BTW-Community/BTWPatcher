@@ -299,7 +299,7 @@ public class ColorizeBlock {
         }
     }
 
-    private static void checkMultithreaded() {
+    private static synchronized void checkMultithreaded() {
         threadColorMaps = null;
         try {
             Class<?> cl = Class.forName("com.thevoxelbox.voxelmap.VoxelMap");
