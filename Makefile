@@ -1,15 +1,14 @@
 MCVER ?= 1.7.2
+MCDIR ?= ..
 EXT_OPTS ?=
 
-VERSIONSDIR = ../versions
-VERSIONSURL = https://s3.amazonaws.com/Minecraft.Download/versions/versions.json
-VERSIONSLCL = src/resources/versions.json
-MCJAR = $(VERSIONSDIR)/$(MCVER)/$(MCVER).jar
-PATCHDIR = $(VERSIONSDIR)/$(MCVER)-mcpatcher
+VERSIONS_DIR = $(MCDIR)/versions
+VERSIONS_URL = https://s3.amazonaws.com/Minecraft.Download/versions/versions.json
+VERSIONS_LCL = src/resources/versions.json
+MCJAR = $(VERSIONS_DIR)/$(MCVER)/$(MCVER).jar
 MCPROFILE = MCPatcher
 
 MCPATCHER = out/artifacts/mcpatcher/mcpatcher.jar
-MODJAR = ../mcpatcher-mods/mcpatcher-builtin.jar
 
 JIP = $(HOME)/jip-1.2/profile/profile.jar
 LAUNCH4J = $(HOME)/launch4j/launch4j
@@ -21,15 +20,15 @@ DOC_OUT = doc/javadoc
 DOC_SRC = $(PACKAGE)
 DOC_SRCPATH = shared/src:stubs/src:newcode/src:src:
 
-TEST_OPTS = -ignoresavedmods -ignorecustommods -enableallmods -auto -loglevel 5 $(EXT_OPTS)
-TEST_CMD = java -jar $(MCPATCHER) $(TEST_OPTS) -profile "$(MCPROFILE)" -mcversion "$(MCVER)"
+TEST_OPTS = -ignoresavedmods -ignorecustommods -enableallmods -auto -loglevel 5 $(EXT_OPTS) -profile "$(MCPROFILE)" -mcversion "$(MCVER)"
+TEST_CMD = java -jar $(MCPATCHER) $(TEST_OPTS)
 TEST_LOG = test.log
 GOOD_LOG = good.log
 TMPDIR = t.1
 FILTER = ./testfilter.pl
 
-.PHONY: default build release run test testfilter control clean restore rmall
-.PHONY: javadoc profile modjar updversions
+.PHONY: default build release run test testfilter control testclean clean
+.PHONY: rmall javadoc profile updversions
 
 default:
 
@@ -64,13 +63,10 @@ testclean:
 	rm -f $(TEST_LOG) $(TEST_LOG).1 $(GOOD_LOG).1
 
 clean: testclean
-	rm -rf $(MCPATCHER) $(DOC_OUT) $(MODJAR) out $(LAUNCH4J_XML).tmp mcpatcher-*.jar mcpatcher-*.exe profile.txt profile.xml
-
-restore:
-	rm -rf $(PATCHDIR)
+	rm -rf $(MCPATCHER) $(DOC_OUT) out $(LAUNCH4J_XML).tmp mcpatcher-*.jar mcpatcher-*.exe profile.txt profile.xml
 
 rmall:
-	rm -rf $(VERSIONSDIR)/1*-*
+	rm -rf $(VERSIONS_DIR)/1*-*
 
 javadoc:
 	rm -rf $(DOC_OUT)
@@ -80,14 +76,6 @@ javadoc:
 profile: $(MCPATCHER) $(JIP)
 	java -Xmx512M -javaagent:$(JIP) -Dprofile.properties=profile.properties -jar $(MCPATCHER) $(TEST_OPTS) > $(TEST_LOG) 2>&1
 
-modjar: $(MCPATCHER)
-	rm -rf $(TMPDIR)
-	mkdir -p $(TMPDIR)
-	cd $(TMPDIR) && jar -xf ../$(MCPATCHER)
-	cd $(TMPDIR) && rm -rf javassist META-INF *.class com/intellij com/prupe/mcpatcher/*.class
-	cd $(TMPDIR) && jar -cf ../$(MODJAR) *
-	rm -rf $(TMPDIR)
-
 updversions:
-	wget -O $(VERSIONSLCL) $(VERSIONSURL)
-	dos2unix $(VERSIONSLCL)
+	wget -O $(VERSIONS_LCL) $(VERSIONS_URL)
+	dos2unix $(VERSIONS_LCL)
