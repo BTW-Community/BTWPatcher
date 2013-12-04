@@ -13,8 +13,21 @@ public class MethodRef extends JavaRef {
     @Override
     public boolean checkEqual(ConstPool constPool, int tag) {
         return constPool.getTag(tag) == ConstPool.CONST_Methodref &&
-            (className == null || constPool.getMethodrefClassName(tag).equals(className)) &&
-            (name == null || constPool.getMethodrefName(tag).equals(name)) &&
-            (type == null || constPool.getMethodrefType(tag).equals(type));
+            constPool.getMethodrefClassName(tag).equals(className) &&
+            constPool.getMethodrefName(tag).equals(name) &&
+            constPool.getMethodrefType(tag).equals(type);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        } else if (!(o instanceof MethodRef)) {
+            return false;
+        }
+        MethodRef that = (MethodRef) o;
+        return this.getClassName().equals(that.getClassName()) &&
+            this.getName().equals(that.getName()) &&
+            this.getType().equals(that.getType());
     }
 }

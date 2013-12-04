@@ -15,8 +15,21 @@ public class FieldRef extends JavaRef {
     @Override
     boolean checkEqual(ConstPool constPool, int tag) {
         return constPool.getTag(tag) == ConstPool.CONST_Fieldref &&
-            (className == null || constPool.getFieldrefClassName(tag).equals(className)) &&
-            (name == null || constPool.getFieldrefName(tag).equals(name)) &&
-            (type == null || constPool.getFieldrefType(tag).equals(type));
+            constPool.getFieldrefClassName(tag).equals(className) &&
+            constPool.getFieldrefName(tag).equals(name) &&
+            constPool.getFieldrefType(tag).equals(type);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        } else if (!(o instanceof FieldRef)) {
+            return false;
+        }
+        FieldRef that = (FieldRef) o;
+        return this.getClassName().equals(that.getClassName()) &&
+            this.getName().equals(that.getName()) &&
+            this.getType().equals(that.getType());
     }
 }
