@@ -73,15 +73,15 @@ class ConstPoolUtils {
             return cp.addStringInfo((String) o);
         } else if (o instanceof MethodRef) {
             MethodRef mr = (MethodRef) o;
-            int ci = findOrAdd(cp, new ClassRef(mr.getClassName().replaceAll("\\.", "/")));
+            int ci = findOrAdd(cp, new ClassRef(mr.getClassName()));
             return cp.addMethodrefInfo(ci, mr.getName(), mr.getType());
         } else if (o instanceof InterfaceMethodRef) {
             InterfaceMethodRef imr = (InterfaceMethodRef) o;
-            int ci = findOrAdd(cp, new ClassRef(imr.getClassName().replaceAll("\\.", "/")));
+            int ci = findOrAdd(cp, new ClassRef(imr.getClassName()));
             return cp.addInterfaceMethodrefInfo(ci, imr.getName(), imr.getType());
         } else if (o instanceof FieldRef) {
             FieldRef fr = (FieldRef) o;
-            int ci = findOrAdd(cp, new ClassRef(fr.getClassName().replaceAll("\\.", "/")));
+            int ci = findOrAdd(cp, new ClassRef(fr.getClassName()));
             return cp.addFieldrefInfo(ci, fr.getName(), fr.getType());
         } else if (o instanceof ClassRef) {
             return cp.addClassInfo(((ClassRef) o).getClassName());
