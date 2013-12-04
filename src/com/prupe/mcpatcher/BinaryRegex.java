@@ -5,10 +5,19 @@ package com.prupe.mcpatcher;
  */
 public class BinaryRegex {
     private static final String BYTE_REGEX = " \\p{XDigit}{2}";
-    private static final String BYTE_FORMAT = " %02x";
     static final int BYTE_LEN = 3;
     private static final String HEX_DIGIT_S = "0123456789abcdef";
     private static final char[] HEX_DIGIT = HEX_DIGIT_S.toCharArray();
+
+    private static final char[][] BYTES = new char[256][BYTE_LEN];
+
+    static {
+        for (int i = 0; i < BYTES.length; i++) {
+            BYTES[i][0] = ' ';
+            BYTES[i][1] = HEX_DIGIT[i >> 4];
+            BYTES[i][2] = HEX_DIGIT[i & 0xf];
+        }
+    }
 
     private BinaryRegex() {
     }
@@ -66,7 +75,7 @@ public class BinaryRegex {
      * @return String regex
      */
     public static String literal(byte b) {
-        return literal(new byte[]{b});
+        return new String(BYTES[b & 0xff]);
     }
 
     /**
@@ -251,7 +260,7 @@ public class BinaryRegex {
                 } else {
                     sb.append("|");
                 }
-                sb.append(String.format(BYTE_FORMAT, i));
+                sb.append(BYTES[i]);
             }
         }
         sb.append(")");
@@ -338,22 +347,23 @@ public class BinaryRegex {
     }
 
     static String binToStr(final byte[] b) {
-        final int l = b.length;
-        final StringBuilder sb = new StringBuilder(BYTE_LEN * l);
-        for (byte b1 : b) {
-            sb.append(' ');
-            sb.append(HEX_DIGIT[(b1 >> 4) & 0xf]);
-            sb.append(HEX_DIGIT[b1 & 0xf]);
+        final int length = b.length;
+        final char[] buffer = new char[length * BYTE_LEN];
+        for (int i = 0, j = 0; i < b.length; i++, j += BYTE_LEN) {
+            char[] src = BYTES[b[i] & 0xff];
+            buffer[j] = src[0];
+            buffer[j + 1] = src[1];
+            buffer[j + 2] = src[2];
         }
-        return sb.toString();
+        return new String(buffer);
     }
 
     static byte[] strToBin(final String s) {
-        final int l = s.length();
-        final byte[] b = new byte[l / BYTE_LEN];
-        for (int i = 0, j = 0; j < l; i++, j += BYTE_LEN) {
-            b[i] = (byte) ((HEX_DIGIT_S.indexOf(s.charAt(j + 1)) << 4) | HEX_DIGIT_S.indexOf(s.charAt(j + 2)));
+        final int length = s.length();
+        final byte[] buffer = new byte[length / BYTE_LEN];
+        for (int i = 0, j = 0; j < length; i++, j += BYTE_LEN) {
+            buffer[i] = (byte) ((HEX_DIGIT_S.indexOf(s.charAt(j + 1)) << 4) | HEX_DIGIT_S.indexOf(s.charAt(j + 2)));
         }
-        return b;
+        return buffer;
     }
 }
