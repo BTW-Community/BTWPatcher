@@ -22,7 +22,7 @@ abstract public class JavaRef {
         if (type != null) {
             ConstPoolUtils.checkTypeDescriptorSyntax(type);
         }
-        hashCode = className.hashCode() +
+        hashCode = this.className.hashCode() +
             (name == null ? 0 : name.hashCode()) +
             (type == null ? 0 : type.hashCode());
     }
@@ -39,11 +39,12 @@ abstract public class JavaRef {
         return type;
     }
 
+    abstract boolean checkEqual(ConstPool constPool, int tag);
+
+    @Override
     public String toString() {
         return String.format("%s{className='%s', name='%s', type='%s'}", getClass().getName(), className, name, type);
     }
-
-    abstract boolean checkEqual(ConstPool constPool, int tag);
 
     @Override
     public int hashCode() {
