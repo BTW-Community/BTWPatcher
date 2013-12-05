@@ -41,6 +41,7 @@ public class Version implements Comparable<Version> {
     String processArguments = USERNAME_SESSION_VERSION;
     String minecraftArguments = "";
     String mainClass = "net.minecraft.client.main.Main";
+    String assets = "";
     List<Library> libraries = new ArrayList<Library>();
 
     public static Version getLocalVersion(String id) {
@@ -267,7 +268,10 @@ public class Version implements Comparable<Version> {
 
     public void setGameArguments(Map<String, String> args) {
         args.put("version_name", id);
-        args.put("game_assets", MCPatcherUtils.getMinecraftPath("assets").getPath());
+        String assetsRoot = MCPatcherUtils.getMinecraftPath("assets").getPath();
+        args.put("game_assets", assetsRoot);
+        args.put("assets_root", assetsRoot);
+        args.put("assets_index_name", assets);
     }
 
     public void addGameArguments(Map<String, String> args, List<String> cmdLine) {
