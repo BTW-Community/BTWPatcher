@@ -770,8 +770,21 @@ final public class MCPatcher {
         } catch (Throwable e) {
             Logger.log(Logger.LOG_MAIN);
             Logger.log(Logger.LOG_MAIN, "Restoring original profile due to previous error");
-            profileManager.deleteProfile(profileManager.getOutputProfile(), true);
+            unpatch();
             throw new PatcherException.PatchError(e);
+        }
+    }
+
+    static void unpatch() {
+        try {
+            if (minecraft != null) {
+                minecraft.closeStreams();
+                minecraft.clearClassFileCache();
+            }
+            profileManager.deleteLocalVersion(profileManager.getOutputVersion());
+            profileManager.deleteProfile(profileManager.getOutputProfile(), true);
+        } catch (Throwable e) {
+            Logger.log(e);
         }
     }
 
