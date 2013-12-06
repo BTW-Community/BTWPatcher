@@ -39,7 +39,9 @@ abstract public class JavaRef {
         return type;
     }
 
-    abstract boolean checkEqual(ConstPool constPool, int tag);
+    abstract int getTag();
+
+    abstract boolean checkEqual(ConstPool constPool, int index);
 
     @Override
     public String toString() {

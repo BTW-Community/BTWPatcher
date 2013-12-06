@@ -48,14 +48,8 @@ class ConstPoolUtils {
             return ConstPool.CONST_Long;
         } else if (o instanceof String) {
             return ConstPool.CONST_String;
-        } else if (o instanceof MethodRef) {
-            return ConstPool.CONST_Methodref;
-        } else if (o instanceof InterfaceMethodRef) {
-            return ConstPool.CONST_InterfaceMethodref;
-        } else if (o instanceof FieldRef) {
-            return ConstPool.CONST_Fieldref;
-        } else if (o instanceof ClassRef) {
-            return ConstPool.CONST_Class;
+        } else if (o instanceof JavaRef) {
+            return ((JavaRef) o).getTag();
         }
         throw new IllegalArgumentException("Unhandled type: " + o.getClass().getName());
     }
@@ -89,7 +83,7 @@ class ConstPoolUtils {
         throw new IllegalArgumentException("Unhandled type: " + o.getClass().getName());
     }
 
-    static boolean checkEqual(ConstPool cp, int index, Object o) {
+    static boolean checkEqual(ConstPool cp, int index, int tag, Object o) {
         if (o instanceof Float) {
             return cp.getFloatInfo(index) == (Float) o;
         } else if (o instanceof Double) {
@@ -101,7 +95,8 @@ class ConstPoolUtils {
         } else if (o instanceof String) {
             return o.equals(cp.getStringInfo(index));
         } else if (o instanceof JavaRef) {
-            return ((JavaRef) o).checkEqual(cp, index);
+            JavaRef ref = (JavaRef) o;
+            return ref.getTag() == tag && ref.checkEqual(cp, index);
         }
         throw new IllegalArgumentException("Unhandled type: " + o.getClass().getName());
     }
@@ -112,7 +107,7 @@ class ConstPoolUtils {
 
     static int find(ConstPool cp, Object value, int tag) {
         for (int i = 1; i < cp.getSize(); i++) {
-            if (cp.getTag(i) == tag && checkEqual(cp, i, value)) {
+            if (cp.getTag(i) == tag && checkEqual(cp, i, tag, value)) {
                 return i;
             }
         }

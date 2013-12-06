@@ -13,11 +13,15 @@ public class InterfaceMethodRef extends JavaRef {
     }
 
     @Override
-    boolean checkEqual(ConstPool constPool, int tag) {
-        return constPool.getTag(tag) == ConstPool.CONST_InterfaceMethodref &&
-            constPool.getInterfaceMethodrefClassName(tag).equals(className) &&
-            constPool.getInterfaceMethodrefName(tag).equals(name) &&
-            constPool.getInterfaceMethodrefType(tag).equals(type);
+    int getTag() {
+        return ConstPool.CONST_InterfaceMethodref;
+    }
+
+    @Override
+    boolean checkEqual(ConstPool constPool, int index) {
+        return constPool.getInterfaceMethodrefClassName(index).equals(className) &&
+            constPool.getInterfaceMethodrefName(index).equals(name) &&
+            constPool.getInterfaceMethodrefType(index).equals(type);
     }
 
     @Override

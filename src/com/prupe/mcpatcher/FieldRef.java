@@ -13,11 +13,15 @@ public class FieldRef extends JavaRef {
     }
 
     @Override
-    boolean checkEqual(ConstPool constPool, int tag) {
-        return constPool.getTag(tag) == ConstPool.CONST_Fieldref &&
-            constPool.getFieldrefClassName(tag).equals(className) &&
-            constPool.getFieldrefName(tag).equals(name) &&
-            constPool.getFieldrefType(tag).equals(type);
+    int getTag() {
+        return ConstPool.CONST_Fieldref;
+    }
+
+    @Override
+    boolean checkEqual(ConstPool constPool, int index) {
+        return constPool.getFieldrefClassName(index).equals(className) &&
+            constPool.getFieldrefName(index).equals(name) &&
+            constPool.getFieldrefType(index).equals(type);
     }
 
     @Override

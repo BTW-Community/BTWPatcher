@@ -16,9 +16,13 @@ public class ClassRef extends JavaRef {
     }
 
     @Override
-    boolean checkEqual(ConstPool constPool, int tag) {
-        return constPool.getTag(tag) == ConstPool.CONST_Class &&
-            constPool.getClassInfo(tag).equals(className);
+    int getTag() {
+        return ConstPool.CONST_Class;
+    }
+
+    @Override
+    boolean checkEqual(ConstPool constPool, int index) {
+        return constPool.getClassInfo(index).equals(className);
     }
 
     @Override
