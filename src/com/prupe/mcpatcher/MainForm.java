@@ -363,6 +363,13 @@ class MainForm extends UserInterface {
                     void runImpl() throws Exception {
                         MCPatcher.patch();
                     }
+
+                    @Override
+                    void updateUI() {
+                        if (interrupted) {
+                            MCPatcher.unpatch();
+                        }
+                    }
                 });
             }
         });
@@ -1078,6 +1085,9 @@ class MainForm extends UserInterface {
             if (error != null) {
                 tabbedPane.setSelectedIndex(TAB_LOG);
                 showErrorMessage();
+            }
+            if (interrupted) {
+                Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
             }
         }
 
