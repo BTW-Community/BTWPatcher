@@ -306,7 +306,7 @@ public class TexturePackConverter15 extends TexturePackConverter {
                 image.getRGB((i % 16) * tileWidth, (i / 16) * tileHeight, tileWidth, tileHeight, rgb, 0, tileWidth);
                 newImage.setRGB(0, 0, tileWidth, tileHeight, rgb, 0, tileWidth);
                 for (String s : names) {
-                    if (!hasEntry(name)) {
+                    if (!hasEntry(s)) {
                         addMessage(0, "%s %d,%d -> %s", name, i % 16, i / 16, s);
                         addEntry(s, newImage);
                     }
