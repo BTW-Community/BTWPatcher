@@ -4,10 +4,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Set;
 
 public class DefaultResourcePack implements ResourcePack {
-    public File file; // made public by __TexturePackBase
+    public Map<String, File> map; // made public by __TexturePackBase
 
     public InputStream getInputStream(ResourceLocation var1) throws IOException {
         return null;

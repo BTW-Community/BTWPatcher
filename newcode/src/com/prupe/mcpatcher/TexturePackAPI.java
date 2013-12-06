@@ -229,9 +229,9 @@ public class TexturePackAPI {
                 if (!DEFAULT_NAMESPACE.equals(namespace)) {
                     continue;
                 }
-                File base = ((DefaultResourcePack) resourcePack).file;
-                if (base != null && base.isDirectory()) {
-                    findResources(base, namespace, directory, suffix, recursive, directories, resources);
+                Map<String, File> map = ((DefaultResourcePack) resourcePack).map;
+                if (map != null) {
+                    findResources(map, namespace, directory, suffix, recursive, directories, resources);
                 }
             } else if (resourcePack instanceof AbstractResourcePack) {
                 File base = ((AbstractResourcePack) resourcePack).file;
@@ -290,6 +290,35 @@ public class TexturePackAPI {
                     resources.add(new ResourceLocation(namespace, resourceName));
                 }
             }
+        }
+    }
+
+    private static void findResources(Map<String, File> map, String namespace, String directory, String suffix, boolean recursive, boolean directories, Collection<ResourceLocation> resources) {
+        String pathComponent = directory.equals("") ? "" : directory + "/";
+        for (Map.Entry<String, File> entry : map.entrySet()) {
+            String key = entry.getKey();
+            File file = entry.getValue();
+            if ((directories && !file.isDirectory()) || (!directories && !file.isFile())) {
+                continue;
+            }
+            ResourceLocation resource = new ResourceLocation(key);
+            if (!namespace.equals(resource.getNamespace())) {
+                continue;
+            }
+            String path = resource.getPath();
+            if (!path.startsWith(pathComponent)) {
+                continue;
+            }
+            if (!path.endsWith(suffix)) {
+                continue;
+            }
+            if (!recursive) {
+                String subPath = path.substring(pathComponent.length());
+                if (subPath.contains("/")) {
+                    continue;
+                }
+            }
+            resources.add(resource);
         }
     }
 

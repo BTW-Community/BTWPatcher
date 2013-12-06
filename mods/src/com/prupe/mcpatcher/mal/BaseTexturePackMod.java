@@ -321,14 +321,14 @@ public class BaseTexturePackMod extends Mod {
         DefaultResourcePackMod() {
             setInterfaces("ResourcePack");
 
-            final FieldRef file = new FieldRef(getDeobfClass(), "file", "Ljava/io/File;");
+            final FieldRef map = new FieldRef(getDeobfClass(), "map", "Ljava/util/Map;");
 
             addClassSignature(new ConstSignature("minecraft"));
             addClassSignature(new ConstSignature("/assets/minecraft/"));
 
-            addMemberMapper(new FieldMapper(file));
+            addMemberMapper(new FieldMapper(map));
 
-            addPatch(new MakeMemberPublicPatch(file));
+            addPatch(new MakeMemberPublicPatch(map));
         }
     }
 
