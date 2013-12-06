@@ -67,8 +67,25 @@ public class Version implements Comparable<Version> {
         }
     }
 
+    public static Version getLocalVersionIfComplete(String id) {
+        File jar = getJarPath(id);
+        File json = getJsonPath(id);
+        if (!jar.isFile() || !json.isFile()) {
+            return null;
+        }
+        Version version = getLocalVersion(id);
+        if (version == null || !version.isComplete()) {
+            return null;
+        } else {
+            return version;
+        }
+    }
+
     public static void fetchJson(String id, boolean forceRemote) throws PatcherException {
-        Util.fetchURL(getJsonURL(id), getJsonPath(id), forceRemote, Util.LONG_TIMEOUT, Util.JSON_SIGNATURE);
+        File path = getJsonPath(id);
+        if (forceRemote || !path.isFile()) {
+            Util.fetchURL(getJsonURL(id), path, forceRemote, Util.LONG_TIMEOUT, Util.JSON_SIGNATURE);
+        }
     }
 
     public static File getJsonPath(String id) {

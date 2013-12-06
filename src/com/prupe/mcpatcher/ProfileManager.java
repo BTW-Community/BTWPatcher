@@ -150,8 +150,8 @@ class ProfileManager {
             if (unmoddedVersions.contains(id)) {
                 continue;
             }
-            Version local = Version.getLocalVersion(id);
-            if (local == null || !local.isComplete()) {
+            Version local = Version.getLocalVersionIfComplete(id);
+            if (local == null) {
                 continue;
             }
             ui.setStatusText("Comparing %s...", id);
