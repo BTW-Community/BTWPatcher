@@ -190,14 +190,39 @@ public class TexturePackAPI {
         if (suffix == null) {
             suffix = "";
         }
-        List<ResourceLocation> resources = new ArrayList<ResourceLocation>();
-        if (MCPatcherUtils.isNullOrEmpty(namespace)) {
-            for (String namespace1 : getNamespaces()) {
-                findResources(namespace1, directory, suffix, recursive, directories, resources);
-            }
-        } else {
-            findResources(namespace, directory, suffix, recursive, directories, resources);
+        if (MCPatcherUtils.isNullOrEmpty(directory)) {
+            directory = "";
+        } else if (!directory.endsWith("/")) {
+            directory += '/';
         }
+
+        List<ResourceLocation> resources = new ArrayList<ResourceLocation>();
+        Set<ResourceLocation> allFiles = new HashSet<ResourceLocation>();
+        Set<ResourceLocation> allDirectories = new HashSet<ResourceLocation>();
+        listAllResources(allFiles, allDirectories);
+
+        boolean allNamespaces = MCPatcherUtils.isNullOrEmpty(namespace);
+        for (ResourceLocation resource : directories ? allDirectories : allFiles) {
+            if (!allNamespaces && !namespace.equals(resource.getNamespace())) {
+                continue;
+            }
+            String path = resource.getPath();
+            if (!path.endsWith(suffix)) {
+                continue;
+            }
+            if (!path.startsWith(directory)) {
+                continue;
+            }
+            if (!recursive) {
+                String subpath = path.substring(directory.length());
+                if (subpath.contains("/")) {
+                    continue;
+                }
+            }
+            resources.add(resource);
+        }
+
+        final String suffixExpr = Pattern.quote(suffix) + "$";
         Collections.sort(resources, new Comparator<ResourceLocation>() {
             @Override
             public int compare(ResourceLocation o1, ResourceLocation o2) {
@@ -210,8 +235,8 @@ public class TexturePackAPI {
                 String f1 = o1.getPath();
                 String f2 = o2.getPath();
                 if (sortByFilename) {
-                    f1 = f1.replaceAll(".*/", "").replaceFirst("\\.properties", "");
-                    f2 = f2.replaceAll(".*/", "").replaceFirst("\\.properties", "");
+                    f1 = f1.replaceAll(".*/", "").replaceFirst(suffixExpr, "");
+                    f2 = f2.replaceAll(".*/", "").replaceFirst(suffixExpr, "");
                 }
                 return f1.compareTo(f2);
             }
@@ -219,107 +244,101 @@ public class TexturePackAPI {
         return resources;
     }
 
-    private static void findResources(String namespace, String directory, String suffix, boolean recursive, boolean directories, Collection<ResourceLocation> resources) {
-        for (ResourcePack resourcePack : getResourcePacks(namespace)) {
+    private static void listAllResources(Set<ResourceLocation> files, Set<ResourceLocation> directories) {
+        for (ResourcePack resourcePack : getResourcePacks(null)) {
             if (resourcePack instanceof FileResourcePack) {
                 ZipFile zipFile = ((FileResourcePack) resourcePack).zipFile;
-                if (zipFile != null) {
-                    findResources(zipFile, namespace, "assets/" + namespace, directory, suffix, recursive, directories, resources);
-                }
+                listAllResources(zipFile, files, directories);
             } else if (resourcePack instanceof DefaultResourcePack) {
-                if (!DEFAULT_NAMESPACE.equals(namespace)) {
-                    continue;
-                }
                 Map<String, File> map = ((DefaultResourcePack) resourcePack).map;
-                if (map != null) {
-                    findResources(map, namespace, directory, suffix, recursive, directories, resources);
-                }
+                listAllResources(map, files, directories);
             } else if (resourcePack instanceof AbstractResourcePack) {
                 File base = ((AbstractResourcePack) resourcePack).file;
-                if (base == null || !base.isDirectory()) {
-                    continue;
-                }
-                base = new File(base, "assets/" + namespace);
-                if (base.isDirectory()) {
-                    findResources(base, namespace, directory, suffix, recursive, directories, resources);
-                }
+                listAllResources(base, files, directories);
             }
         }
     }
 
-    private static void findResources(ZipFile zipFile, String namespace, String root, String directory, String suffix, boolean recursive, boolean directories, Collection<ResourceLocation> resources) {
-        String base = root + "/" + directory;
+    private static void listAllResources(ZipFile zipFile, Set<ResourceLocation> files, Set<ResourceLocation> directories) {
+        if (zipFile == null) {
+            return;
+        }
         for (ZipEntry entry : Collections.list(zipFile.entries())) {
-            if (entry.isDirectory() != directories) {
+            String path = entry.getName();
+            if (!path.startsWith("assets/")) {
                 continue;
             }
-            String name = entry.getName().replaceFirst("^/", "");
-            if (!name.startsWith(base) || !name.endsWith(suffix)) {
+            path = path.substring(7);
+            int slash = path.indexOf('/');
+            if (slash < 0) {
                 continue;
             }
-            if (directory.equals("")) {
-                if (recursive || !name.contains("/")) {
-                    resources.add(new ResourceLocation(namespace, name));
-                }
+            String namespace = path.substring(0, slash);
+            path = path.substring(slash + 1);
+            ResourceLocation resource = new ResourceLocation(namespace, path);
+            if (entry.isDirectory()) {
+                directories.add(resource);
             } else {
-                String subpath = name.substring(base.length());
-                if (subpath.equals("") || subpath.startsWith("/")) {
-                    if (recursive || subpath.equals("") || !subpath.substring(1).contains("/")) {
-                        resources.add(new ResourceLocation(namespace, name.substring(root.length() + 1)));
-                    }
+                files.add(resource);
+            }
+        }
+    }
+
+    private static void listAllResources(File directory, Set<ResourceLocation> files, Set<ResourceLocation> directories) {
+        if (directory == null || !directory.isDirectory()) {
+            return;
+        }
+        directory = new File(directory, "assets");
+        if (!directory.isDirectory()) {
+            return;
+        }
+        File[] subdirs = directory.listFiles();
+        if (subdirs == null) {
+            return;
+        }
+        for (File subdir : subdirs) {
+            Set<String> allFiles = new HashSet<String>();
+            listAllFiles(subdir, "", allFiles);
+            for (String path : allFiles) {
+                File file = new File(subdir, path);
+                ResourceLocation resource = new ResourceLocation(subdir.getName(), path.replace(File.separatorChar, '/'));
+                if (file.isDirectory()) {
+                    directories.add(resource);
+                } else if (file.isFile()) {
+                    files.add(resource);
                 }
             }
         }
     }
 
-    private static void findResources(File base, String namespace, String directory, String suffix, boolean recursive, boolean directories, Collection<ResourceLocation> resources) {
-        File subdirectory = new File(base, directory);
-        String[] list = subdirectory.list();
-        if (list != null) {
-            String pathComponent = directory.equals("") ? "" : directory + "/";
-            for (String s : list) {
-                File entry = new File(subdirectory, s);
-                String resourceName = pathComponent + s;
-                if (entry.isDirectory()) {
-                    if (directories && s.endsWith(suffix)) {
-                        resources.add(new ResourceLocation(namespace, resourceName));
-                    }
-                    if (recursive) {
-                        findResources(base, namespace, pathComponent + s, suffix, recursive, directories, resources);
-                    }
-                } else if (s.endsWith(suffix) && !directories) {
-                    resources.add(new ResourceLocation(namespace, resourceName));
+    private static void listAllFiles(File base, String subdir, Set<String> files) {
+        File[] entries = new File(base, subdir).listFiles();
+        if (entries == null) {
+            return;
+        }
+        for (File file : entries) {
+            String newPath = subdir + file.getName();
+            if (files.add(newPath)) {
+                if (file.isDirectory()) {
+                    listAllFiles(base, subdir + file.getName() + '/', files);
                 }
             }
         }
     }
 
-    private static void findResources(Map<String, File> map, String namespace, String directory, String suffix, boolean recursive, boolean directories, Collection<ResourceLocation> resources) {
-        String pathComponent = directory.equals("") ? "" : directory + "/";
+    private static void listAllResources(Map<String, File> map, Set<ResourceLocation> files, Set<ResourceLocation> directories) {
+        if (map == null) {
+            return;
+        }
         for (Map.Entry<String, File> entry : map.entrySet()) {
             String key = entry.getKey();
             File file = entry.getValue();
-            if ((directories && !file.isDirectory()) || (!directories && !file.isFile())) {
-                continue;
-            }
             ResourceLocation resource = new ResourceLocation(key);
-            if (!namespace.equals(resource.getNamespace())) {
-                continue;
+            if (file.isDirectory()) {
+                directories.add(resource);
+            } else if (file.isFile()) {
+                files.add(resource);
             }
-            String path = resource.getPath();
-            if (!path.startsWith(pathComponent)) {
-                continue;
-            }
-            if (!path.endsWith(suffix)) {
-                continue;
-            }
-            if (!recursive) {
-                String subPath = path.substring(pathComponent.length());
-                if (subPath.contains("/")) {
-                    continue;
-                }
-            }
-            resources.add(resource);
         }
     }
 
