@@ -393,29 +393,33 @@ public class MCPatcherUtils {
     public static void setMinecraft(File gameDir, File assetsDir, String minecraftVersion, String patcherVersion) {
         isGame = true;
         Config.setReadOnly(true);
-        boolean defaultMCDir;
-        if (assetsDir == null) {
+        if (assetsDir == null || !assetsDir.isDirectory()) {
             minecraftDir = getDefaultGameDir();
-            defaultMCDir = true;
         } else {
-            minecraftDir = assetsDir.getParentFile().getAbsoluteFile();
-            defaultMCDir = false;
+            assetsDir = assetsDir.getAbsoluteFile();
+            if (assetsDir.getName().equals("legacy")) {
+                File parent = assetsDir.getParentFile();
+                if (parent != null && parent.getName().equals("virtual")) {
+                    parent = parent.getParentFile();
+                    if (parent != null && parent.getName().equals("assets")) {
+                        assetsDir = parent;
+                    }
+                }
+            }
+            minecraftDir = assetsDir.getParentFile();
         }
-        boolean defaultGameDir;
-        if (gameDir == null) {
+        if (gameDir == null || !gameDir.isDirectory()) {
             MCPatcherUtils.gameDir = minecraftDir;
-            defaultGameDir = true;
         } else {
             MCPatcherUtils.gameDir = gameDir.getAbsoluteFile();
-            defaultGameDir = false;
         }
         MCPatcherUtils.minecraftVersion = minecraftVersion;
         MCPatcherUtils.patcherVersion = patcherVersion;
         System.out.println();
         System.out.printf("MCPatcherUtils initialized:\n");
-        System.out.printf("Minecraft directory: %s%s\n", minecraftDir, defaultMCDir ? " (default)" : "");
+        System.out.printf("Minecraft directory: %s\n", minecraftDir);
         System.out.printf("  (assets, libraries, versions)\n");
-        System.out.printf("Game directory:      %s%s\n", MCPatcherUtils.gameDir, defaultGameDir ? " (default)" : "");
+        System.out.printf("Game directory:      %s\n", MCPatcherUtils.gameDir);
         System.out.printf("  (resourcepacks, saves)\n");
         System.out.printf("Minecraft version:   %s\n", minecraftVersion);
         System.out.printf("MCPatcher version:   %s\n", patcherVersion);

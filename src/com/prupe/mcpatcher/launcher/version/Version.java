@@ -285,9 +285,8 @@ public class Version implements Comparable<Version> {
 
     public void setGameArguments(Map<String, String> args) {
         args.put("version_name", id);
-        String assetsRoot = MCPatcherUtils.getMinecraftPath("assets").getPath();
-        args.put("game_assets", assetsRoot);
-        args.put("assets_root", assetsRoot);
+        args.put("assets_root", MCPatcherUtils.getMinecraftPath("assets").getPath());
+        args.put("game_assets", MCPatcherUtils.getMinecraftPath("assets", "virtual", "legacy").getPath());
         args.put("assets_index_name", assets);
     }
 
