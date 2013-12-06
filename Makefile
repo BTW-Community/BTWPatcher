@@ -1,12 +1,13 @@
 MCVER ?= 1.7.2
-MCDIR ?= ..
+MCPROFILE ?= MCPatcher
+MCDIR ?= $(HOME)/.minecraft
+JAVA_OPTS ?= -Xmx256M
 EXT_OPTS ?=
 
 VERSIONS_DIR = $(MCDIR)/versions
 VERSIONS_URL = https://s3.amazonaws.com/Minecraft.Download/versions/versions.json
 VERSIONS_LCL = src/resources/versions.json
 MCJAR = $(VERSIONS_DIR)/$(MCVER)/$(MCVER).jar
-MCPROFILE = MCPatcher
 
 MCPATCHER = out/artifacts/mcpatcher/mcpatcher.jar
 
@@ -14,14 +15,14 @@ JIP = $(HOME)/jip-1.2/profile/profile.jar
 LAUNCH4J = $(HOME)/launch4j/launch4j
 LAUNCH4J_XML = launch4j.xml
 
-CLASSPATH = lib/javassist.jar
-PACKAGE = com.prupe.mcpatcher
 DOC_OUT = doc/javadoc
-DOC_SRC = $(PACKAGE)
+DOC_SRC = com.prupe.mcpatcher
 DOC_SRCPATH = shared/src:stubs/src:newcode/src:src:
+DOC_CLASSPATH = $(shell ls -1 lib/*.jar | egrep -v "javadoc|sources|natives" | tr '\n' :)
 
-TEST_OPTS = -ignoresavedmods -ignorecustommods -enableallmods -auto -loglevel 5 $(EXT_OPTS) -profile "$(MCPROFILE)" -mcversion "$(MCVER)"
-TEST_CMD = java -jar $(MCPATCHER) $(TEST_OPTS)
+TEST_OPTS = -ignoresavedmods -ignorecustommods -enableallmods -auto -loglevel 5 -profile "$(MCPROFILE)" -mcversion "$(MCVER)"
+JAVA_CMD = java $(JAVA_OPTS) -jar $(MCPATCHER) $(EXT_OPTS)
+TEST_CMD = $(JAVA_CMD) $(TEST_OPTS)
 TEST_LOG = test.log
 GOOD_LOG = good.log
 TMPDIR = t.1
@@ -42,7 +43,7 @@ release: $(MCPATCHER)
 	rm -f $(LAUNCH4J_XML).tmp
 
 run: $(MCPATCHER)
-	java -jar $(MCPATCHER) $(EXT_OPTS)
+	$(JAVA_CMD)
 
 test: $(MCPATCHER)
 	time $(TEST_CMD) > $(TEST_LOG) 2>&1
@@ -71,7 +72,7 @@ rmall:
 javadoc:
 	rm -rf $(DOC_OUT)
 	mkdir -p $(DOC_OUT)
-	javadoc -protected -splitindex -classpath $(CLASSPATH) -d $(DOC_OUT) $(DOC_SRC) -sourcepath $(DOC_SRCPATH)
+	javadoc -protected -splitindex -classpath $(DOC_CLASSPATH) -d $(DOC_OUT) $(DOC_SRC) -sourcepath $(DOC_SRCPATH)
 
 profile: $(MCPATCHER) $(JIP)
 	java -Xmx512M -javaagent:$(JIP) -Dprofile.properties=profile.properties -jar $(MCPATCHER) $(TEST_OPTS) > $(TEST_LOG) 2>&1
