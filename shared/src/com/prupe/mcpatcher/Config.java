@@ -84,7 +84,7 @@ public class Config {
     static boolean save() {
         boolean success = false;
         if (jsonFile != null && !readOnly) {
-            JsonUtils.writeJson(instance, jsonFile);
+            success = JsonUtils.writeJson(instance, jsonFile);
         }
         return success;
     }
@@ -206,14 +206,24 @@ public class Config {
         instance.getModConfig(mod).remove(tag);
     }
 
-    public static File getOptionsTxt(File mcDir, String name) {
-        File origFile = new File(mcDir, name);
-        String minecraftVersion = MCPatcherUtils.getMinecraftVersion();
-        if (!MCPatcherUtils.isNullOrEmpty(minecraftVersion)) {
-            File newFile = new File(mcDir, name.replace(".txt", "." + minecraftVersion + ".txt"));
-            if (newFile.isFile()) {
-                System.out.printf("Using %s instead of %s\n", newFile.getName(), name);
-                return newFile;
+    public static File getOptionsTxt(File dir, String name) {
+        File origFile = new File(dir, name);
+        if (name.endsWith(".txt")) {
+            String version = MCPatcherUtils.getMinecraftVersion();
+            while (!MCPatcherUtils.isNullOrEmpty(version)) {
+                File newFile = new File(dir, name.replace(".txt", "." + version + ".txt"));
+                if (newFile.isFile()) {
+                    System.out.printf("Using %s instead of %s\n", newFile.getName(), name);
+                    return newFile;
+                }
+                int dot = version.lastIndexOf('.');
+                if (dot > 0) {
+                    version = version.substring(0, dot);
+                } else if (version.matches("\\d+w\\d+[a-z]")) {
+                    version = version.substring(0, version.length() - 1);
+                } else {
+                    break;
+                }
             }
         }
         return origFile;
