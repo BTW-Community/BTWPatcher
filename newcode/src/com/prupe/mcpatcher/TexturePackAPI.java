@@ -28,9 +28,10 @@ public class TexturePackAPI {
         if (resourceManager instanceof SimpleReloadableResourceManager) {
             for (Map.Entry<String, FallbackResourceManager> entry : ((SimpleReloadableResourceManager) resourceManager).namespaceMap.entrySet()) {
                 if (namespace == null || namespace.equals(entry.getKey())) {
-                    FallbackResourceManager resourceManager1 = entry.getValue();
-                    if (resourceManager1.resourcePacks != null) {
-                        list.addAll(resourceManager1.resourcePacks);
+                    List<ResourcePack> packs = entry.getValue().resourcePacks;
+                    if (packs != null) {
+                        list.removeAll(packs);
+                        list.addAll(packs);
                     }
                 }
             }
