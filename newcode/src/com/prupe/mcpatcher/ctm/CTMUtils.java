@@ -12,7 +12,6 @@ public class CTMUtils {
 
     private static final boolean enableStandard = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "standard", true);
     private static final boolean enableNonStandard = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "nonStandard", true);
-    private static final int maxRecursion = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "maxRecursion", 4);
 
     private static final List<ITileOverride> allOverrides = new ArrayList<ITileOverride>();
     private static final Map<Block, List<ITileOverride>> blockOverrides = new IdentityHashMap<Block, List<ITileOverride>>();
@@ -22,6 +21,9 @@ public class CTMUtils {
     static boolean active;
     private static boolean renderWorld;
     static ITileOverride lastOverride;
+
+    private static final TileOverrideIterator.IJK ijkIterator = new TileOverrideIterator.IJK(blockOverrides, tileOverrides);
+    private static final TileOverrideIterator.Metadata metadataIterator = new TileOverrideIterator.Metadata(blockOverrides, tileOverrides);
 
     static {
         try {
@@ -38,9 +40,12 @@ public class CTMUtils {
             public void beforeChange() {
                 RenderPassAPI.instance.clear();
                 GlassPaneRenderer.clear();
+                ijkIterator.clear();
+                metadataIterator.clear();
                 allOverrides.clear();
                 blockOverrides.clear();
                 tileOverrides.clear();
+                lastOverride = null;
                 tileLoader = new TileLoader("textures/blocks", true, logger);
 
                 if (enableStandard || enableNonStandard) {
@@ -104,19 +109,13 @@ public class CTMUtils {
         return getTile(renderBlocks, block, i, j, k, -1, origIcon, tessellator);
     }
 
-    public static Icon getTile(RenderBlocks renderBlocks, Block block, final int i, final int j, final int k, final int face, Icon icon, Tessellator tessellator) {
+    public static Icon getTile(RenderBlocks renderBlocks, Block block, int i, int j, int k, int face, Icon icon, Tessellator tessellator) {
         lastOverride = null;
         if (checkFace(face) && checkBlock(renderBlocks, block)) {
-            final IBlockAccess blockAccess = renderBlocks.blockAccess;
-            TileOverrideIterator iterator = new TileOverrideIterator(block, icon) {
-                @Override
-                Icon getTile(ITileOverride override, Block block, Icon currentIcon) {
-                    return override.getTile(blockAccess, block, currentIcon, i, j, k, face);
-                }
-            };
-            lastOverride = iterator.go();
+            ijkIterator.setup(renderBlocks.blockAccess, block, i, j, k, face, icon);
+            lastOverride = ijkIterator.go();
             if (lastOverride != null) {
-                icon = iterator.getIcon();
+                icon = ijkIterator.getIcon();
             }
         }
         return lastOverride == null && skipDefaultRendering(block) ? null : icon;
@@ -130,18 +129,13 @@ public class CTMUtils {
         return getTile(renderBlocks, block, face, 0, renderBlocks.getIconBySide(block, face), tessellator);
     }
 
-    private static Icon getTile(RenderBlocks renderBlocks, Block block, final int face, final int metadata, Icon icon, Tessellator tessellator) {
+    private static Icon getTile(RenderBlocks renderBlocks, Block block, int face, int metadata, Icon icon, Tessellator tessellator) {
         lastOverride = null;
         if (checkFace(face) && checkRenderType(block)) {
-            TileOverrideIterator iterator = new TileOverrideIterator(block, icon) {
-                @Override
-                Icon getTile(ITileOverride override, Block block, Icon currentIcon) {
-                    return override.getTile(block, currentIcon, face, metadata);
-                }
-            };
-            lastOverride = iterator.go();
+            metadataIterator.setup(block, face, metadata, icon);
+            lastOverride = metadataIterator.go();
             if (lastOverride != null) {
-                icon = iterator.getIcon();
+                icon = metadataIterator.getIcon();
             }
         }
         return icon;
@@ -215,103 +209,5 @@ public class CTMUtils {
                 allOverrides.add(override);
             }
         }
-    }
-
-    abstract private static class TileOverrideIterator implements Iterator<ITileOverride> {
-        private final Block block;
-        private Icon currentIcon;
-        private List<ITileOverride> blockOverride;
-        private List<ITileOverride> iconOverride;
-        private final Set<ITileOverride> skipOverrides = new HashSet<ITileOverride>();
-
-        private int blockPos;
-        private int iconPos;
-        private boolean foundNext;
-        private ITileOverride nextOverride;
-
-        private ITileOverride lastMatchedOverride;
-
-        TileOverrideIterator(Block block, Icon icon) {
-            this.block = block;
-            currentIcon = icon;
-            blockOverride = blockOverrides.get(block);
-            iconOverride = tileOverrides.get(currentIcon.getIconName());
-        }
-
-        private void resetForNextPass() {
-            blockOverride = null;
-            iconOverride = tileOverrides.get(currentIcon.getIconName());
-            blockPos = 0;
-            iconPos = 0;
-            foundNext = false;
-        }
-
-        public boolean hasNext() {
-            if (foundNext) {
-                return true;
-            }
-            if (iconOverride != null) {
-                while (iconPos < iconOverride.size()) {
-                    if (checkOverride(iconOverride.get(iconPos++))) {
-                        return true;
-                    }
-                }
-            }
-            if (blockOverride != null) {
-                while (blockPos < blockOverride.size()) {
-                    if (checkOverride(blockOverride.get(blockPos++))) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        public ITileOverride next() {
-            if (!foundNext) {
-                throw new IllegalStateException("next called before hasNext() == true");
-            }
-            foundNext = false;
-            return nextOverride;
-        }
-
-        public void remove() {
-            throw new UnsupportedOperationException("remove not supported");
-        }
-
-        private boolean checkOverride(ITileOverride override) {
-            if (override != null && !override.isDisabled() && !skipOverrides.contains(override)) {
-                foundNext = true;
-                nextOverride = override;
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        ITileOverride go() {
-            pass:
-            for (int pass = 0; pass < maxRecursion; pass++) {
-                while (hasNext()) {
-                    ITileOverride override = next();
-                    Icon newIcon = getTile(override, block, currentIcon);
-                    if (newIcon != null) {
-                        lastMatchedOverride = override;
-                        skipOverrides.add(override);
-                        currentIcon = newIcon;
-                        resetForNextPass();
-                        continue pass;
-                    }
-                }
-                break;
-            }
-            return lastMatchedOverride;
-        }
-
-        Icon getIcon() {
-            return currentIcon;
-        }
-
-        abstract Icon getTile(ITileOverride override, Block block, Icon currentIcon);
     }
 }

@@ -46,9 +46,6 @@ public class ConnectedTextures extends Mod {
 
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS);
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$1");
-        addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$2");
-        addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$3");
-        addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$TileOverrideIterator");
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_INTERFACE);
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_CLASS);
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS);
@@ -61,6 +58,9 @@ public class ConnectedTextures extends Mod {
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$VerticalHorizontal");
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$Top");
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$Repeat");
+        addClassFile(MCPatcherUtils.TILE_OVERRIDE_ITERATOR_CLASS);
+        addClassFile(MCPatcherUtils.TILE_OVERRIDE_ITERATOR_CLASS + "$IJK");
+        addClassFile(MCPatcherUtils.TILE_OVERRIDE_ITERATOR_CLASS + "$Metadata");
         addClassFile(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS);
 
         BaseTexturePackMod.earlyInitialize(2, MCPatcherUtils.CTM_UTILS_CLASS, "reset");
