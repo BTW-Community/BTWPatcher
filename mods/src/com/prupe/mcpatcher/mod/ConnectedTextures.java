@@ -768,27 +768,38 @@ public class ConnectedTextures extends Mod {
                         @Override
                         public String getMatchExpression() {
                             return buildExpression(
-                                // var32 = ...;
-                                // var34 = (double) i;
+                                // var26 = (double) sideIcon.getInterpolatedU(7.0);
+                                capture(anyALOAD),
+                                push(7.0),
+                                anyReference(INVOKEINTERFACE),
+                                F2D,
                                 capture(anyDSTORE),
+
+                                // var28 = (double) sideIcon.getXXX(...);
+                                // x4 or x5
+                                repeat(build(
+                                    backReference(1),
+                                    optional(anyLDC),
+                                    anyReference(INVOKEINTERFACE),
+                                    F2D,
+                                    anyDSTORE
+                                ), 4, 5),
+
+                                // var34 = (double) i;
                                 ILOAD_2,
                                 I2D,
-                                anyDSTORE
+                                capture(anyDSTORE)
                             );
                         }
 
                         @Override
                         public boolean afterMatch() {
-                            int reg = extractRegisterNum(getCaptureGroup(1));
+                            int firstReg = extractRegisterNum(getCaptureGroup(2));
+                            int lastReg = extractRegisterNum(getCaptureGroup(3));
                             List<Integer> tmp = new ArrayList<Integer>();
-                            if (haveThickPanes) {
-                                tmp.add(reg - 10);
+                            for (int i = firstReg; i < lastReg; i += 2) {
+                                tmp.add(i);
                             }
-                            tmp.add(reg - 8);
-                            tmp.add(reg - 6);
-                            tmp.add(reg - 4);
-                            tmp.add(reg - 2);
-                            tmp.add(reg);
                             sideUVRegisters = new int[tmp.size()];
                             StringBuilder sb = new StringBuilder();
                             for (int i = 0; i < tmp.size(); i++) {
