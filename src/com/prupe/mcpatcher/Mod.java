@@ -228,7 +228,7 @@ public abstract class Mod {
     /**
      * Checks if one class is a subclass of another.
      *
-     * @param child potential child class name
+     * @param child  potential child class name
      * @param parent parent class name
      * @return true if parent instanceof child
      */

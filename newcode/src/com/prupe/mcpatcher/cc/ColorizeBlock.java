@@ -14,7 +14,6 @@ import net.minecraft.src.RenderBlocks;
 import net.minecraft.src.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
-import java.io.InputStream;
 import java.util.*;
 
 public class ColorizeBlock {

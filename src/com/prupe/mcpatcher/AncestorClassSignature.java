@@ -2,8 +2,6 @@ package com.prupe.mcpatcher;
 
 import javassist.bytecode.ClassFile;
 
-import java.util.*;
-
 public class AncestorClassSignature extends ClassSignature {
     private final String baseClass;
 
