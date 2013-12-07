@@ -111,7 +111,8 @@ public class BytecodeMatcher extends BinaryMatcher {
      */
     public static final String anyLDC = BinaryRegex.or(
         BinaryRegex.build(LDC, BinaryRegex.any()),
-        BinaryRegex.build(LDC_W, BinaryRegex.any(2))
+        BinaryRegex.build(LDC_W, BinaryRegex.any(2)),
+        BinaryRegex.build(LDC2_W, BinaryRegex.any(2))
     );
 
     /**
