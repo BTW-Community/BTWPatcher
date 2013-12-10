@@ -15,7 +15,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class Library {
-    private static final String DEFAULT_URL = "https://s3.amazonaws.com/Minecraft.Download/libraries/";
+    private static final String DEFAULT_URL = "https://libraries.minecraft.net/";
 
     static final String NATIVES_TYPE;
     static final String OS_TYPE;
