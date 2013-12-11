@@ -659,6 +659,8 @@ public class ConnectedTextures extends Mod {
             final MethodRef newRenderPane = haveThickPanes ? newRenderPaneThick : newRenderPaneThin;
             final FieldRef skipPaneRendering = new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "skipPaneRendering", "Z");
             final FieldRef skipAllRendering = new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "skipAllRendering", "Z");
+            final FieldRef skipTopEdgeRendering = new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "skipTopEdgeRendering", "Z");
+            final FieldRef skipBottomEdgeRendering = new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "skipBottomEdgeRendering", "Z");
 
             mapRenderTypeMethod(18, renderBlockPane1);
             if (haveThickPanes) {
@@ -755,65 +757,9 @@ public class ConnectedTextures extends Mod {
                         label("A")
                     );
                 }
-            }
-                .targetMethod(renderBlockPane1, renderBlockPane2)
-            );
+            });
 
-            addPatch(new BytecodePatch() {
-                private int[] sideUVRegisters;
-
-                {
-                    addPreMatchSignature(new BytecodeSignature() {
-                        @Override
-                        public String getMatchExpression() {
-                            return buildExpression(
-                                // var26 = (double) sideIcon.getInterpolatedU(7.0);
-                                capture(anyALOAD),
-                                push(7.0),
-                                anyReference(INVOKEINTERFACE),
-                                F2D,
-                                capture(anyDSTORE),
-
-                                // var28 = (double) sideIcon.getXXX(...);
-                                // x4 or x5
-                                repeat(build(
-                                    backReference(1),
-                                    optional(anyLDC),
-                                    anyReference(INVOKEINTERFACE),
-                                    F2D,
-                                    anyDSTORE
-                                ), 4, 5),
-
-                                // var34 = (double) i;
-                                ILOAD_2,
-                                I2D,
-                                capture(anyDSTORE)
-                            );
-                        }
-
-                        @Override
-                        public boolean afterMatch() {
-                            int firstReg = extractRegisterNum(getCaptureGroup(2));
-                            int lastReg = extractRegisterNum(getCaptureGroup(3));
-                            List<Integer> tmp = new ArrayList<Integer>();
-                            for (int i = firstReg; i < lastReg; i += 2) {
-                                tmp.add(i);
-                            }
-                            sideUVRegisters = new int[tmp.size()];
-                            StringBuilder sb = new StringBuilder();
-                            for (int i = 0; i < tmp.size(); i++) {
-                                sideUVRegisters[i] = tmp.get(i);
-                                if (sb.length() > 0) {
-                                    sb.append(' ');
-                                }
-                                sb.append(sideUVRegisters[i]);
-                            }
-                            Logger.log(Logger.LOG_CONST, "glass side texture uv registers (%s)", sb.toString());
-                            return true;
-                        }
-                    });
-                }
-
+            addPatch(new RenderPanePatch() {
                 @Override
                 public String getDescription() {
                     return "disable default rendering (glass pane faces)";
@@ -822,6 +768,8 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(repeat(build(
+                        // tessellator.addVertexWithUV(..., paneU, paneV);
+                        // x4 or x8
                         ALOAD, any(),
                         nonGreedy(any(0, 15)),
                         DLOAD, subset(sideUVRegisters, false),
@@ -844,7 +792,152 @@ public class ConnectedTextures extends Mod {
                         label("A")
                     );
                 }
-            }.targetMethod(renderBlockPane1, renderBlockPane2));
+            });
+
+            addPatch(new RenderPanePatch() {
+                @Override
+                public String getDescription() {
+                    return "disable glass pane top and bottom edges";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // tesselator.addVertexWithUV(.., <same j expression>, ..., sideU, sideV);
+                        // x4 or x8
+                        getSubExpression(true),
+                        repeat(getSubExpression(false), 3, 7)
+                    );
+                }
+
+                private String getSubExpression(boolean first) {
+                    return build(
+                        ALOAD, any(),
+                        DLOAD, any(),
+                        ILOAD_3,
+                        first ? capture(getJExpression()) : backReference(1),
+                        DLOAD, any(),
+                        DLOAD, subset(sideUVRegisters, true),
+                        DLOAD, subset(sideUVRegisters, true),
+                        reference(INVOKEVIRTUAL, addVertexWithUV)
+                    );
+                }
+
+                private String getJExpression() {
+                    return or(
+                        // (double) (j + 1) + 0.005
+                        build(
+                            push(1),
+                            IADD,
+                            I2D,
+                            anyLDC,
+                            DADD
+                        ),
+                        // (double) j - 0.005
+                        build(
+                            I2D,
+                            anyLDC,
+                            DSUB
+                        ),
+                        // (double) j + <0.001|0.999>
+                        build(
+                            I2D,
+                            anyLDC,
+                            DADD
+                        )
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    boolean top;
+                    byte[] group = getCaptureGroup(1);
+                    if (group[0] == ICONST_1) {
+                        top = true;
+                    } else if (group[group.length - 1] == DSUB) {
+                        top = false;
+                    } else if (group[1] == LDC2_W && group.length >= 4) {
+                        byte[] tmp = new byte[3];
+                        tmp[0] = group[1];
+                        tmp[1] = group[2];
+                        tmp[2] = group[3];
+                        int index = extractConstPoolIndex(tmp);
+                        double value = getMethodInfo().getConstPool().getDoubleInfo(index);
+                        top = value > 0.5;
+                    } else {
+                        return null;
+                    }
+                    return buildCode(
+                        // if (!GlassPaneRenderer.skip<Top|Bottom>EdgeRendering) {
+                        reference(GETSTATIC, top ? skipTopEdgeRendering : skipBottomEdgeRendering),
+                        IFNE, branch("A"),
+
+                        // ...
+                        getMatch(),
+
+                        // }
+                        label("A")
+                    );
+                }
+            });
+        }
+
+        private abstract class RenderPanePatch extends BytecodePatch {
+            protected int[] sideUVRegisters;
+
+            {
+                targetMethod(renderBlockPane1, renderBlockPane2);
+
+                addPreMatchSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // var26 = (double) sideIcon.getInterpolatedU(7.0);
+                            capture(anyALOAD),
+                            push(7.0),
+                            anyReference(INVOKEINTERFACE),
+                            F2D,
+                            capture(anyDSTORE),
+
+                            // var28 = (double) sideIcon.getXXX(...);
+                            // x4 or x5
+                            repeat(build(
+                                backReference(1),
+                                optional(anyLDC),
+                                anyReference(INVOKEINTERFACE),
+                                F2D,
+                                anyDSTORE
+                            ), 4, 5),
+
+                            // var34 = (double) i;
+                            ILOAD_2,
+                            I2D,
+                            capture(anyDSTORE)
+                        );
+                    }
+
+                    @Override
+                    public boolean afterMatch() {
+                        int firstReg = extractRegisterNum(getCaptureGroup(2));
+                        int lastReg = extractRegisterNum(getCaptureGroup(3));
+                        List<Integer> tmp = new ArrayList<Integer>();
+                        for (int i = firstReg; i < lastReg; i += 2) {
+                            tmp.add(i);
+                        }
+                        sideUVRegisters = new int[tmp.size()];
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = 0; i < tmp.size(); i++) {
+                            sideUVRegisters[i] = tmp.get(i);
+                            if (sb.length() > 0) {
+                                sb.append(' ');
+                            }
+                            sb.append(sideUVRegisters[i]);
+                        }
+                        Logger.log(Logger.LOG_CONST, "glass side texture uv registers (%s)", sb.toString());
+                        return true;
+                    }
+                });
+            }
         }
 
         private void setupHeldBlocks() {
