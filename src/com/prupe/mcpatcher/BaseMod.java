@@ -89,7 +89,7 @@ public final class BaseMod extends Mod {
 
     @Override
     public void addExtraLibraries(List<Library> libraries) {
-        libraries.add(new Library("com.google.code.gson:gson:2.2.2"));
+        libraries.add(new Library("com.google.code.gson:gson:2.2.4"));
     }
 
     class ConfigPanel extends ModConfigPanel {
