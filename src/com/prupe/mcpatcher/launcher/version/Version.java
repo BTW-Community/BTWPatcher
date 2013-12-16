@@ -228,6 +228,7 @@ public class Version implements Comparable<Version> {
             return;
         }
         JsonArray libraries = element.getAsJsonArray();
+        String prefix = library.getPackageName() + ":" + library.getName() + ":";
         for (JsonElement lib : libraries) {
             if (lib == null || !lib.isJsonObject()) {
                 continue;
@@ -240,7 +241,7 @@ public class Version implements Comparable<Version> {
             if (MCPatcherUtils.isNullOrEmpty(name)) {
                 continue;
             }
-            if (name.startsWith(library.getPackageName() + ":" + library.getName() + ":")) {
+            if (name.startsWith(prefix)) {
                 return;
             }
         }

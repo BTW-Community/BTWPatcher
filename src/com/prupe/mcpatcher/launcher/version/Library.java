@@ -70,7 +70,7 @@ public class Library {
 
     public String getPackageName() {
         String[] split = splitName(name, null);
-        return split == null ? null : split[0];
+        return split == null ? null : split[0].replace('/', '.');
     }
 
     public String getName() {
