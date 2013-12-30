@@ -20,7 +20,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 class ForgeAdapter extends Mod {
-    private static final String FORGE_LIB_NAME = "minecraftforge";
+    private static final String FORGE_LIB_NAME = "forge";
     private static final int FORGE_MIN_VERSION = 804;
     private static final String FORGE_MIN_VERSION_STR = "9.10.0.804";
 
@@ -61,13 +61,14 @@ class ForgeAdapter extends Mod {
 
         int minVersion;
         String minVersionStr;
-        if (FORGE_LIB_NAME.equalsIgnoreCase(forgeLibrary.getName())) {
+        String libName = forgeLibrary.getName().toLowerCase();
+        if (libName.contains(FORGE_LIB_NAME)) {
             minVersion = FORGE_MIN_VERSION;
             minVersionStr = FORGE_MIN_VERSION_STR;
             name = "Minecraft Forge";
             author = "Minecraft Forge team";
             description = "Minecraft Forge";
-        } else if (FML_LIB_NAME.equalsIgnoreCase(forgeLibrary.getName())) {
+        } else if (libName.equals(FML_LIB_NAME)) {
             minVersion = FML_MIN_VERSION;
             minVersionStr = FML_MIN_VERSION_STR;
             name = "Forge Modloader";
@@ -115,8 +116,8 @@ class ForgeAdapter extends Mod {
         if (library == null || library.exclude()) {
             return false;
         }
-        String name = library.getName();
-        return name.equalsIgnoreCase(FORGE_LIB_NAME) || name.equals(FML_LIB_NAME);
+        String name = library.getName().toLowerCase();
+        return name.contains(FORGE_LIB_NAME) || name.equals(FML_LIB_NAME);
     }
 
     @Override
