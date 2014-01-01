@@ -1,10 +1,10 @@
-MCPatcher version is 4.3.1
-OS: Linux 3.11.9-200.fc19.x86_64 amd64
+MCPatcher version is 4.3.1_01
+OS: Linux 3.12.5-302.fc20.x86_64 amd64
 JVM: Sun Microsystems Inc. 1.6.0_45 (64 bit)
 Classpath: out/artifacts/mcpatcher/mcpatcher.jar
-Minecraft version is 1.7.3 (md5 6bffc630d8d3a0e834d2a91e5d9f5418)
+Minecraft version is 1.7.4 (md5 f9ffe7e56b26d459560c48e228cc6ad4)
 
-Analyzing /home/prupe/.minecraft/versions/1.7.3/1.7.3.jar (2866 files)
+Analyzing /home/prupe/.minecraft/versions/1.7.4/1.7.4.jar (2866 files)
   Minecraft matches azi.class
   Minecraft matches azi.class
    runGameLoop matches ah ()V
@@ -566,7 +566,7 @@ Analyzing /home/prupe/.minecraft/versions/1.7.3/1.7.3.jar (2866 files)
    getFogColor matches b (FF)Layp;
   MapColor matches avm.class
 
-Analyzing /home/prupe/.minecraft/versions/1.7.3/1.7.3.jar (methods and fields)
+Analyzing /home/prupe/.minecraft/versions/1.7.4/1.7.4.jar (methods and fields)
   Main (net/minecraft/client/main/Main.class)
   Minecraft (azi.class)
    method getInstance matches B ()Lazi;
@@ -2573,275 +2573,275 @@ Patching...
  applying Minecraft patch to azi.class for mod __Base
     MCPatcherUtils.setMinecraft(this) <init>(Lbal;IIZZLjava/io/File;Ljava/io/File;Ljava/io/File;Ljava/net/Proxy;Ljava/lang/String;Lcom/google/common/collect/Multimap;Ljava/lang/String;)V@0
      ALOAD_0                   ALOAD_0
-     INVOKESPECIAL 0x04 0x1d   INVOKESPECIAL 0x04 0x1d
+     INVOKESPECIAL 0x04 0x1f   INVOKESPECIAL 0x04 0x1f
                                ALOAD 0x06
                                ALOAD 0x07
-                               LDC_W 0x0b 0x02
-                               LDC_W 0x0b 0x04
-                               INVOKESTATIC 0x0b 0x0a
+                               LDC_W 0x0b 0x06
+                               LDC_W 0x0b 0x08
+                               INVOKESTATIC 0x0b 0x0e
  applying Minecraft patch to azi.class for mod __TexturePackBase
     init texture pack handlers on startup ad()V@570
-     NEW 0x01 0x4f             LDC_W 0x0b 0x0c
-     DUP                       LDC_W 0x0b 0x0e
-     ALOAD_0                   INVOKESTATIC 0x0b 0x14
-     GETFIELD 0x02 0x0f        LDC_W 0x0b 0x16
-     INVOKESPECIAL 0x03 0xe8   LDC_W 0x0b 0x18
-     PUTFIELD 0x02 0x0e        INVOKESTATIC 0x0b 0x14
-     ALOAD_0                   LDC_W 0x0b 0x1a
-     NEW 0x01 0x51             LDC_W 0x0b 0x0e
-     DUP                       INVOKESTATIC 0x0b 0x14
-     ALOAD_0                   LDC_W 0x0b 0x1c
-     GETFIELD 0x02 0x0f        LDC_W 0x0b 0x0e
-     ALOAD_0                   INVOKESTATIC 0x0b 0x14
-     GETFIELD 0x02 0x2d        LDC_W 0x0b 0x1e
-     GETFIELD 0x02 0x3b        LDC_W 0x0b 0x0e
-     INVOKESPECIAL 0x03 0xea   INVOKESTATIC 0x0b 0x14
-     PUTFIELD 0x02 0x13        LDC_W 0x0b 0x20
-     ALOAD_0                   LDC_W 0x0b 0x0e
-     GETFIELD 0x02 0x0e        INVOKESTATIC 0x0b 0x14
+     NEW 0x01 0x4e             LDC_W 0x0b 0x10
+     DUP                       LDC_W 0x0b 0x12
+     ALOAD_0                   INVOKESTATIC 0x0b 0x18
+     GETFIELD 0x02 0x10        LDC_W 0x0b 0x1a
+     INVOKESPECIAL 0x03 0xea   LDC_W 0x0b 0x1c
+     PUTFIELD 0x02 0x0f        INVOKESTATIC 0x0b 0x18
+     ALOAD_0                   LDC_W 0x0b 0x1e
+     NEW 0x01 0x50             LDC_W 0x0b 0x12
+     DUP                       INVOKESTATIC 0x0b 0x18
+     ALOAD_0                   LDC_W 0x0b 0x20
+     GETFIELD 0x02 0x10        LDC_W 0x0b 0x12
+     ALOAD_0                   INVOKESTATIC 0x0b 0x18
+     GETFIELD 0x02 0x2e        LDC_W 0x0b 0x22
+     GETFIELD 0x02 0x3c        LDC_W 0x0b 0x12
+     INVOKESPECIAL 0x03 0xec   INVOKESTATIC 0x0b 0x18
+     PUTFIELD 0x02 0x14        LDC_W 0x0b 0x24
+     ALOAD_0                   LDC_W 0x0b 0x12
+     GETFIELD 0x02 0x0f        INVOKESTATIC 0x0b 0x18
      ALOAD_0                   ICONST_1
-     GETFIELD 0x02 0x13        INVOKESTATIC 0x0b 0x23
-     INVOKEINTERFACE 0x04 0xab 0x02 0x00  NEW 0x01 0x4f
+     GETFIELD 0x02 0x14        INVOKESTATIC 0x0b 0x27
+     INVOKEINTERFACE 0x04 0xad 0x02 0x00  NEW 0x01 0x4e
      ALOAD_0                   DUP
-     INVOKEVIRTUAL 0x03 0x21   ALOAD_0
+     INVOKEVIRTUAL 0x03 0x23   ALOAD_0
+     ALOAD_0                   GETFIELD 0x02 0x10
+     NEW 0x01 0x45             INVOKESPECIAL 0x03 0xea
+     DUP                       PUTFIELD 0x02 0x0f
+     ALOAD_0                   ALOAD_0
+     GETFIELD 0x02 0x0f        NEW 0x01 0x50
+     INVOKESPECIAL 0x03 0xd5   DUP
+     PUTFIELD 0x01 0xf2        ALOAD_0
+     ALOAD_0                   GETFIELD 0x02 0x10
+     GETFIELD 0x02 0x0f        ALOAD_0
+     ALOAD_0                   GETFIELD 0x02 0x2e
+     GETFIELD 0x01 0xf2        GETFIELD 0x02 0x3c
+     INVOKEINTERFACE 0x04 0xad 0x02 0x00  INVOKESPECIAL 0x03 0xec
+     ALOAD_0                   PUTFIELD 0x02 0x14
+     INVOKESPECIAL 0x03 0x19   ALOAD_0
      ALOAD_0                   GETFIELD 0x02 0x0f
-     NEW 0x01 0x46             INVOKESPECIAL 0x03 0xe8
-     DUP                       PUTFIELD 0x02 0x0e
+     NEW 0x01 0x5f             ALOAD_0
+     DUP                       GETFIELD 0x02 0x14
+     ALOAD_0                   INVOKEINTERFACE 0x04 0xad 0x02 0x00
+     GETFIELD 0x02 0x0f        ALOAD_0
+     ALOAD_0                   INVOKEVIRTUAL 0x03 0x23
+     GETFIELD 0x02 0x2e        ALOAD_0
+     INVOKESPECIAL 0x04 0x02   NEW 0x01 0x45
+     PUTFIELD 0x02 0x18        DUP
      ALOAD_0                   ALOAD_0
-     GETFIELD 0x02 0x0e        NEW 0x01 0x51
-     INVOKESPECIAL 0x03 0xd3   DUP
-     PUTFIELD 0x01 0xf1        ALOAD_0
+     GETFIELD 0x02 0x0f        GETFIELD 0x02 0x0f
+     ALOAD_0                   INVOKESPECIAL 0x03 0xd5
+     GETFIELD 0x02 0x18        PUTFIELD 0x01 0xf2
+     INVOKEINTERFACE 0x04 0xad 0x02 0x00  ALOAD_0
      ALOAD_0                   GETFIELD 0x02 0x0f
-     GETFIELD 0x02 0x0e        ALOAD_0
-     ALOAD_0                   GETFIELD 0x02 0x2d
-     GETFIELD 0x01 0xf1        GETFIELD 0x02 0x3b
-     INVOKEINTERFACE 0x04 0xab 0x02 0x00  INVOKESPECIAL 0x03 0xea
-     ALOAD_0                   PUTFIELD 0x02 0x13
-     INVOKESPECIAL 0x03 0x17   ALOAD_0
-     ALOAD_0                   GETFIELD 0x02 0x0e
-     NEW 0x01 0x60             ALOAD_0
-     DUP                       GETFIELD 0x02 0x13
-     ALOAD_0                   INVOKEINTERFACE 0x04 0xab 0x02 0x00
-     GETFIELD 0x02 0x0e        ALOAD_0
-     ALOAD_0                   INVOKEVIRTUAL 0x03 0x21
-     GETFIELD 0x02 0x2d        ALOAD_0
-     INVOKESPECIAL 0x04 0x00   NEW 0x01 0x46
-     PUTFIELD 0x02 0x17        DUP
+     NEW 0x01 0x5d             ALOAD_0
+     DUP                       GETFIELD 0x01 0xf2
+     ALOAD_0                   INVOKEINTERFACE 0x04 0xad 0x02 0x00
+     INVOKESPECIAL 0x04 0x00   ALOAD_0
+     PUTFIELD 0x02 0x19        INVOKESPECIAL 0x03 0x19
      ALOAD_0                   ALOAD_0
-     GETFIELD 0x02 0x0e        GETFIELD 0x02 0x0e
-     ALOAD_0                   INVOKESPECIAL 0x03 0xd3
-     GETFIELD 0x02 0x17        PUTFIELD 0x01 0xf1
-     INVOKEINTERFACE 0x04 0xab 0x02 0x00  ALOAD_0
-     ALOAD_0                   GETFIELD 0x02 0x0e
-     NEW 0x01 0x5e             ALOAD_0
-     DUP                       GETFIELD 0x01 0xf1
-     ALOAD_0                   INVOKEINTERFACE 0x04 0xab 0x02 0x00
-     INVOKESPECIAL 0x03 0xfe   ALOAD_0
-     PUTFIELD 0x02 0x18        INVOKESPECIAL 0x03 0x17
-     ALOAD_0                   ALOAD_0
-     NEW 0x01 0x21             NEW 0x01 0x60
+     NEW 0x01 0x21             NEW 0x01 0x5f
      DUP                       DUP
      ALOAD_0                   ALOAD_0
-     GETFIELD 0x02 0x2d        GETFIELD 0x02 0x0e
-     NEW 0x01 0x4c             ALOAD_0
-     DUP                       GETFIELD 0x02 0x2d
-     LDC 0xe6                  INVOKESPECIAL 0x04 0x00
-     INVOKESPECIAL 0x03 0xe0   PUTFIELD 0x02 0x17
+     GETFIELD 0x02 0x2e        GETFIELD 0x02 0x0f
+     NEW 0x01 0x4b             ALOAD_0
+     DUP                       GETFIELD 0x02 0x2e
+     LDC 0xe6                  INVOKESPECIAL 0x04 0x02
+     INVOKESPECIAL 0x03 0xe2   PUTFIELD 0x02 0x18
      ALOAD_0                   ALOAD_0
-     GETFIELD 0x01 0xf1        GETFIELD 0x02 0x0e
+     GETFIELD 0x01 0xf2        GETFIELD 0x02 0x0f
      ICONST_0                  ALOAD_0
-     INVOKESPECIAL 0x03 0x56   GETFIELD 0x02 0x17
-     PUTFIELD 0x02 0x24        INVOKEINTERFACE 0x04 0xab 0x02 0x00
+     INVOKESPECIAL 0x03 0x58   GETFIELD 0x02 0x18
+     PUTFIELD 0x02 0x25        INVOKEINTERFACE 0x04 0xad 0x02 0x00
      ALOAD_0                   ALOAD_0
-     GETFIELD 0x02 0x2d        NEW 0x01 0x5e
-     GETFIELD 0x02 0x3b        DUP
+     GETFIELD 0x02 0x2e        NEW 0x01 0x5d
+     GETFIELD 0x02 0x3c        DUP
      IFNULL 0x00 0x1c          ALOAD_0
-     ALOAD_0                   INVOKESPECIAL 0x03 0xfe
-     GETFIELD 0x02 0x24        PUTFIELD 0x02 0x18
+     ALOAD_0                   INVOKESPECIAL 0x04 0x00
+     GETFIELD 0x02 0x25        PUTFIELD 0x02 0x19
      ALOAD_0                   ALOAD_0
-     INVOKEVIRTUAL 0x03 0x1d   NEW 0x01 0x21
-     INVOKEVIRTUAL 0x03 0x59   DUP
+     INVOKEVIRTUAL 0x03 0x1f   NEW 0x01 0x21
+     INVOKEVIRTUAL 0x03 0x5b   DUP
      ALOAD_0                   ALOAD_0
-     GETFIELD 0x02 0x24        GETFIELD 0x02 0x2d
-     ALOAD_0                   NEW 0x01 0x4c
-     GETFIELD 0x02 0x13        DUP
-     INVOKEVIRTUAL 0x03 0xed   LDC 0xe6
-     INVOKEVIRTUAL 0x03 0x5a   INVOKESPECIAL 0x03 0xe0
+     GETFIELD 0x02 0x25        GETFIELD 0x02 0x2e
+     ALOAD_0                   NEW 0x01 0x4b
+     GETFIELD 0x02 0x14        DUP
+     INVOKEVIRTUAL 0x03 0xef   LDC 0xe6
+     INVOKEVIRTUAL 0x03 0x5c   INVOKESPECIAL 0x03 0xe2
      ALOAD_0                   ALOAD_0
-     NEW 0x01 0x21             GETFIELD 0x01 0xf1
+     NEW 0x01 0x21             GETFIELD 0x01 0xf2
      DUP                       ICONST_0
-     ALOAD_0                   INVOKESPECIAL 0x03 0x56
-     GETFIELD 0x02 0x2d        PUTFIELD 0x02 0x24
-     NEW 0x01 0x4c             ALOAD_0
-     DUP                       GETFIELD 0x02 0x2d
-     LDC 0xe7                  GETFIELD 0x02 0x3b
-     INVOKESPECIAL 0x03 0xe0   IFNULL 0x00 0x1c
+     ALOAD_0                   INVOKESPECIAL 0x03 0x58
+     GETFIELD 0x02 0x2e        PUTFIELD 0x02 0x25
+     NEW 0x01 0x4b             ALOAD_0
+     DUP                       GETFIELD 0x02 0x2e
+     LDC 0xe7                  GETFIELD 0x02 0x3c
+     INVOKESPECIAL 0x03 0xe2   IFNULL 0x00 0x1c
      ALOAD_0                   ALOAD_0
-     GETFIELD 0x01 0xf1        GETFIELD 0x02 0x24
+     GETFIELD 0x01 0xf2        GETFIELD 0x02 0x25
      ICONST_0                  ALOAD_0
-     INVOKESPECIAL 0x03 0x56   INVOKEVIRTUAL 0x03 0x1d
-     PUTFIELD 0x02 0x25        INVOKEVIRTUAL 0x03 0x59
+     INVOKESPECIAL 0x03 0x58   INVOKEVIRTUAL 0x03 0x1f
+     PUTFIELD 0x02 0x26        INVOKEVIRTUAL 0x03 0x5b
      ALOAD_0                   ALOAD_0
-     GETFIELD 0x02 0x0e        GETFIELD 0x02 0x24
+     GETFIELD 0x02 0x0f        GETFIELD 0x02 0x25
      ALOAD_0                   ALOAD_0
-     GETFIELD 0x02 0x24        GETFIELD 0x02 0x13
-     INVOKEINTERFACE 0x04 0xab 0x02 0x00  INVOKEVIRTUAL 0x03 0xed
-     ALOAD_0                   INVOKEVIRTUAL 0x03 0x5a
-     GETFIELD 0x02 0x0e        ALOAD_0
+     GETFIELD 0x02 0x25        GETFIELD 0x02 0x14
+     INVOKEINTERFACE 0x04 0xad 0x02 0x00  INVOKEVIRTUAL 0x03 0xef
+     ALOAD_0                   INVOKEVIRTUAL 0x03 0x5c
+     GETFIELD 0x02 0x0f        ALOAD_0
      ALOAD_0                   NEW 0x01 0x21
-     GETFIELD 0x02 0x25        DUP
-     INVOKEINTERFACE 0x04 0xab 0x02 0x00  ALOAD_0
-     ALOAD_0                   GETFIELD 0x02 0x2d
-     GETFIELD 0x02 0x0e        NEW 0x01 0x4c
-     NEW 0x01 0x4a             DUP
+     GETFIELD 0x02 0x26        DUP
+     INVOKEINTERFACE 0x04 0xad 0x02 0x00  ALOAD_0
+     ALOAD_0                   GETFIELD 0x02 0x2e
+     GETFIELD 0x02 0x0f        NEW 0x01 0x4b
+     NEW 0x01 0x49             DUP
      DUP                       LDC 0xe7
-     INVOKESPECIAL 0x03 0xdf   INVOKESPECIAL 0x03 0xe0
-     INVOKEINTERFACE 0x04 0xab 0x02 0x00  ALOAD_0
-     ALOAD_0                   GETFIELD 0x01 0xf1
-     GETFIELD 0x02 0x0e        ICONST_0
-     NEW 0x01 0x49             INVOKESPECIAL 0x03 0x56
-     DUP                       PUTFIELD 0x02 0x25
-     INVOKESPECIAL 0x03 0xde   ALOAD_0
-     INVOKEINTERFACE 0x04 0xab 0x02 0x00  GETFIELD 0x02 0x0e
-     GETSTATIC 0x02 0x72       ALOAD_0
-     NEW 0x01 0x3e             GETFIELD 0x02 0x24
-     DUP                       INVOKEINTERFACE 0x04 0xab 0x02 0x00
+     INVOKESPECIAL 0x03 0xe1   INVOKESPECIAL 0x03 0xe2
+     INVOKEINTERFACE 0x04 0xad 0x02 0x00  ALOAD_0
+     ALOAD_0                   GETFIELD 0x01 0xf2
+     GETFIELD 0x02 0x0f        ICONST_0
+     NEW 0x01 0x48             INVOKESPECIAL 0x03 0x58
+     DUP                       PUTFIELD 0x02 0x26
+     INVOKESPECIAL 0x03 0xe0   ALOAD_0
+     INVOKEINTERFACE 0x04 0xad 0x02 0x00  GETFIELD 0x02 0x0f
+     GETSTATIC 0x02 0x74       ALOAD_0
+     NEW 0x01 0x3e             GETFIELD 0x02 0x25
+     DUP                       INVOKEINTERFACE 0x04 0xad 0x02 0x00
      ALOAD_0                   ALOAD_0
-     INVOKESPECIAL 0x03 0xb8   GETFIELD 0x02 0x0e
-     PUTFIELD 0x02 0x73        ALOAD_0
-     ALOAD_0                   GETFIELD 0x02 0x25
-     NEW 0x01 0x3d             INVOKEINTERFACE 0x04 0xab 0x02 0x00
+     INVOKESPECIAL 0x03 0xba   GETFIELD 0x02 0x0f
+     PUTFIELD 0x02 0x75        ALOAD_0
+     ALOAD_0                   GETFIELD 0x02 0x26
+     NEW 0x01 0x3d             INVOKEINTERFACE 0x04 0xad 0x02 0x00
      DUP                       ALOAD_0
-     ALOAD_0                   GETFIELD 0x02 0x0e
-     ALOAD_0                   NEW 0x01 0x4a
-     GETFIELD 0x02 0x0e        DUP
-     INVOKESPECIAL 0x03 0xb0   INVOKESPECIAL 0x03 0xdf
-     PUTFIELD 0x02 0x28        INVOKEINTERFACE 0x04 0xab 0x02 0x00
-     ALOAD_0                   ALOAD_0
-     GETFIELD 0x02 0x0e        GETFIELD 0x02 0x0e
+     ALOAD_0                   GETFIELD 0x02 0x0f
      ALOAD_0                   NEW 0x01 0x49
-     GETFIELD 0x02 0x28        DUP
-     INVOKEINTERFACE 0x04 0xab 0x02 0x00  INVOKESPECIAL 0x03 0xde
-     GETSTATIC 0x02 0x82       INVOKEINTERFACE 0x04 0xab 0x02 0x00
-     NEW 0x01 0x10             GETSTATIC 0x02 0x72
+     GETFIELD 0x02 0x0f        DUP
+     INVOKESPECIAL 0x03 0xb2   INVOKESPECIAL 0x03 0xe1
+     PUTFIELD 0x02 0x29        INVOKEINTERFACE 0x04 0xad 0x02 0x00
+     ALOAD_0                   ALOAD_0
+     GETFIELD 0x02 0x0f        GETFIELD 0x02 0x0f
+     ALOAD_0                   NEW 0x01 0x48
+     GETFIELD 0x02 0x29        DUP
+     INVOKEINTERFACE 0x04 0xad 0x02 0x00  INVOKESPECIAL 0x03 0xe0
+     GETSTATIC 0x02 0x84       INVOKEINTERFACE 0x04 0xad 0x02 0x00
+     NEW 0x01 0x10             GETSTATIC 0x02 0x74
      DUP                       NEW 0x01 0x3e
      ALOAD_0                   DUP
-     INVOKESPECIAL 0x03 0x36   ALOAD_0
-     INVOKEVIRTUAL 0x04 0x48   INVOKESPECIAL 0x03 0xb8
-     POP                       PUTFIELD 0x02 0x73
+     INVOKESPECIAL 0x03 0x38   ALOAD_0
+     INVOKEVIRTUAL 0x04 0x4a   INVOKESPECIAL 0x03 0xba
+     POP                       PUTFIELD 0x02 0x75
      ALOAD_0                   ALOAD_0
      NEW 0x01 0x18             NEW 0x01 0x3d
      DUP                       DUP
-     INVOKESPECIAL 0x03 0x3e   ALOAD_0
-     PUTFIELD 0x02 0x2e        ALOAD_0
-     ALOAD_0                   GETFIELD 0x02 0x0e
-     LDC 0x44                  INVOKESPECIAL 0x03 0xb0
-     INVOKESPECIAL 0x03 0x20   PUTFIELD 0x02 0x28
+     INVOKESPECIAL 0x03 0x40   ALOAD_0
+     PUTFIELD 0x02 0x2f        ALOAD_0
+     ALOAD_0                   GETFIELD 0x02 0x0f
+     LDC 0x44                  INVOKESPECIAL 0x03 0xb2
+     INVOKESPECIAL 0x03 0x22   PUTFIELD 0x02 0x29
      SIPUSH 0x0d 0xe1          ALOAD_0
-     INVOKESTATIC 0x04 0x77    GETFIELD 0x02 0x0e
+     INVOKESTATIC 0x04 0x79    GETFIELD 0x02 0x0f
      SIPUSH 0x1d 0x01          ALOAD_0
-     INVOKESTATIC 0x04 0x83    GETFIELD 0x02 0x28
-     DCONST_1                  INVOKEINTERFACE 0x04 0xab 0x02 0x00
-     INVOKESTATIC 0x04 0x72    GETSTATIC 0x02 0x82
+     INVOKESTATIC 0x04 0x85    GETFIELD 0x02 0x29
+     DCONST_1                  INVOKEINTERFACE 0x04 0xad 0x02 0x00
+     INVOKESTATIC 0x04 0x74    GETSTATIC 0x02 0x84
      SIPUSH 0x0b 0x71          NEW 0x01 0x10
-     INVOKESTATIC 0x04 0x77    DUP
+     INVOKESTATIC 0x04 0x79    DUP
      SIPUSH 0x02 0x03          ALOAD_0
-     INVOKESTATIC 0x04 0x75    INVOKESPECIAL 0x03 0x36
-     SIPUSH 0x0b 0xc0          INVOKEVIRTUAL 0x04 0x48
-     INVOKESTATIC 0x04 0x77    POP
+     INVOKESTATIC 0x04 0x77    INVOKESPECIAL 0x03 0x38
+     SIPUSH 0x0b 0xc0          INVOKEVIRTUAL 0x04 0x4a
+     INVOKESTATIC 0x04 0x79    POP
      SIPUSH 0x02 0x04          ALOAD_0
      LDC 0x0d                  NEW 0x01 0x18
-     INVOKESTATIC 0x04 0x70    DUP
-     SIPUSH 0x04 0x05          INVOKESPECIAL 0x03 0x3e
-     INVOKESTATIC 0x04 0x74    PUTFIELD 0x02 0x2e
+     INVOKESTATIC 0x04 0x72    DUP
+     SIPUSH 0x04 0x05          INVOKESPECIAL 0x03 0x40
+     INVOKESTATIC 0x04 0x76    PUTFIELD 0x02 0x2f
      SIPUSH 0x17 0x01          ALOAD_0
-     INVOKESTATIC 0x04 0x7f    LDC 0x44
-     INVOKESTATIC 0x04 0x7e    INVOKESPECIAL 0x03 0x20
+     INVOKESTATIC 0x04 0x81    LDC 0x44
+     INVOKESTATIC 0x04 0x80    INVOKESPECIAL 0x03 0x22
      SIPUSH 0x17 0x00          SIPUSH 0x0d 0xe1
-     INVOKESTATIC 0x04 0x7f    INVOKESTATIC 0x04 0x77
+     INVOKESTATIC 0x04 0x81    INVOKESTATIC 0x04 0x79
      ALOAD_0                   SIPUSH 0x1d 0x01
-     LDC 0x4d                  INVOKESTATIC 0x04 0x83
-     INVOKESPECIAL 0x03 0x20   DCONST_1
-     ALOAD_0                   INVOKESTATIC 0x04 0x72
+     LDC 0x4d                  INVOKESTATIC 0x04 0x85
+     INVOKESPECIAL 0x03 0x22   DCONST_1
+     ALOAD_0                   INVOKESTATIC 0x04 0x74
      NEW 0x01 0x3f             SIPUSH 0x0b 0x71
-     DUP                       INVOKESTATIC 0x04 0x77
+     DUP                       INVOKESTATIC 0x04 0x79
      ALOAD_0                   SIPUSH 0x02 0x03
-     INVOKESPECIAL 0x03 0xbb   INVOKESTATIC 0x04 0x75
-     PUTFIELD 0x02 0x20        SIPUSH 0x0b 0xc0
-     ALOAD_0                   INVOKESTATIC 0x04 0x77
-     NEW 0x01 0x45             SIPUSH 0x02 0x04
+     INVOKESPECIAL 0x03 0xbd   INVOKESTATIC 0x04 0x77
+     PUTFIELD 0x02 0x21        SIPUSH 0x0b 0xc0
+     ALOAD_0                   INVOKESTATIC 0x04 0x79
+     NEW 0x01 0x44             SIPUSH 0x02 0x04
      DUP                       LDC 0x0d
-     ICONST_0                  INVOKESTATIC 0x04 0x70
+     ICONST_0                  INVOKESTATIC 0x04 0x72
      LDC 0xe5                  SIPUSH 0x04 0x05
-     INVOKESPECIAL 0x03 0xd0   INVOKESTATIC 0x04 0x74
-     PUTFIELD 0x02 0x16        SIPUSH 0x17 0x01
-     ALOAD_0                   INVOKESTATIC 0x04 0x7f
-     GETFIELD 0x02 0x16        INVOKESTATIC 0x04 0x7e
+     INVOKESPECIAL 0x03 0xd2   INVOKESTATIC 0x04 0x76
+     PUTFIELD 0x02 0x17        SIPUSH 0x17 0x01
+     ALOAD_0                   INVOKESTATIC 0x04 0x81
+     GETFIELD 0x02 0x17        INVOKESTATIC 0x04 0x80
      ALOAD_0                   SIPUSH 0x17 0x00
-     GETFIELD 0x02 0x2d        INVOKESTATIC 0x04 0x7f
-     GETFIELD 0x02 0x37        ALOAD_0
-     INVOKEVIRTUAL 0x03 0xd2   LDC 0x4d
-     ALOAD_0                   INVOKESPECIAL 0x03 0x20
-     GETFIELD 0x02 0x16        ALOAD_0
+     GETFIELD 0x02 0x2e        INVOKESTATIC 0x04 0x81
+     GETFIELD 0x02 0x38        ALOAD_0
+     INVOKEVIRTUAL 0x03 0xd4   LDC 0x4d
+     ALOAD_0                   INVOKESPECIAL 0x03 0x22
+     GETFIELD 0x02 0x17        ALOAD_0
      ALOAD_0                   NEW 0x01 0x3f
-     GETFIELD 0x02 0x2d        DUP
-     GETFIELD 0x02 0x36        ALOAD_0
-     INVOKEVIRTUAL 0x03 0xd1   INVOKESPECIAL 0x03 0xbb
-     ALOAD_0                   PUTFIELD 0x02 0x20
-     GETFIELD 0x01 0xf1        ALOAD_0
-     GETSTATIC 0x02 0x75       NEW 0x01 0x45
+     GETFIELD 0x02 0x2e        DUP
+     GETFIELD 0x02 0x37        ALOAD_0
+     INVOKEVIRTUAL 0x03 0xd3   INVOKESPECIAL 0x03 0xbd
+     ALOAD_0                   PUTFIELD 0x02 0x21
+     GETFIELD 0x01 0xf2        ALOAD_0
+     GETSTATIC 0x02 0x77       NEW 0x01 0x44
      ALOAD_0                   DUP
-     GETFIELD 0x02 0x16        ICONST_0
-     INVOKEVIRTUAL 0x03 0xd5   LDC 0xe5
-     POP                       INVOKESPECIAL 0x03 0xd0
-     ALOAD_0                   PUTFIELD 0x02 0x16
-     GETFIELD 0x01 0xf1        ALOAD_0
-     GETSTATIC 0x02 0x76       GETFIELD 0x02 0x16
-     NEW 0x01 0x45             ALOAD_0
-     DUP                       GETFIELD 0x02 0x2d
-     ICONST_1                  GETFIELD 0x02 0x37
-     LDC 0xe9                  INVOKEVIRTUAL 0x03 0xd2
-     INVOKESPECIAL 0x03 0xd0   ALOAD_0
-     INVOKEVIRTUAL 0x03 0xd5   GETFIELD 0x02 0x16
+     GETFIELD 0x02 0x17        ICONST_0
+     INVOKEVIRTUAL 0x03 0xd7   LDC 0xe5
+     POP                       INVOKESPECIAL 0x03 0xd2
+     ALOAD_0                   PUTFIELD 0x02 0x17
+     GETFIELD 0x01 0xf2        ALOAD_0
+     GETSTATIC 0x02 0x78       GETFIELD 0x02 0x17
+     NEW 0x01 0x44             ALOAD_0
+     DUP                       GETFIELD 0x02 0x2e
+     ICONST_1                  GETFIELD 0x02 0x38
+     LDC 0xe9                  INVOKEVIRTUAL 0x03 0xd4
+     INVOKESPECIAL 0x03 0xd2   ALOAD_0
+     INVOKEVIRTUAL 0x03 0xd7   GETFIELD 0x02 0x17
      POP                       ALOAD_0
-     ICONST_0                  GETFIELD 0x02 0x2d
-     ICONST_0                  GETFIELD 0x02 0x36
-     ALOAD_0                   INVOKEVIRTUAL 0x03 0xd1
-     GETFIELD 0x02 0x1d        ALOAD_0
-     ALOAD_0                   GETFIELD 0x01 0xf1
-     GETFIELD 0x02 0x1e        GETSTATIC 0x02 0x75
-     INVOKESTATIC 0x04 0x86    ALOAD_0
-                               GETFIELD 0x02 0x16
-                               INVOKEVIRTUAL 0x03 0xd5
+     ICONST_0                  GETFIELD 0x02 0x2e
+     ICONST_0                  GETFIELD 0x02 0x37
+     ALOAD_0                   INVOKEVIRTUAL 0x03 0xd3
+     GETFIELD 0x02 0x1e        ALOAD_0
+     ALOAD_0                   GETFIELD 0x01 0xf2
+     GETFIELD 0x02 0x1f        GETSTATIC 0x02 0x77
+     INVOKESTATIC 0x04 0x88    ALOAD_0
+                               GETFIELD 0x02 0x17
+                               INVOKEVIRTUAL 0x03 0xd7
                                POP
                                ALOAD_0
-                               GETFIELD 0x01 0xf1
-                               GETSTATIC 0x02 0x76
-                               NEW 0x01 0x45
+                               GETFIELD 0x01 0xf2
+                               GETSTATIC 0x02 0x78
+                               NEW 0x01 0x44
                                DUP
                                ICONST_1
                                LDC 0xe9
-                               INVOKESPECIAL 0x03 0xd0
-                               INVOKEVIRTUAL 0x03 0xd5
+                               INVOKESPECIAL 0x03 0xd2
+                               INVOKEVIRTUAL 0x03 0xd7
                                POP
                                ICONST_0
                                ICONST_0
                                ALOAD_0
-                               GETFIELD 0x02 0x1d
-                               ALOAD_0
                                GETFIELD 0x02 0x1e
-                               INVOKESTATIC 0x04 0x86
+                               ALOAD_0
+                               GETFIELD 0x02 0x1f
+                               INVOKESTATIC 0x04 0x88
                                ICONST_1
-                               INVOKESTATIC 0x0b 0x26
+                               INVOKESTATIC 0x0b 0x2a
     check for texture pack change ah()V@0
-                               INVOKESTATIC 0x0b 0x29
+                               INVOKESTATIC 0x0b 0x2d
     read startup logo from texture pack ag()V@129
      ALOAD_0                   ALOAD_0
-     GETFIELD 0x02 0x11        INVOKEVIRTUAL 0x0b 0x2b
-     GETSTATIC 0x01 0xec       GETSTATIC 0x01 0xec
-     INVOKEVIRTUAL 0x03 0xdc   INVOKEINTERFACE 0x0b 0x30 0x02 0x00
-     INVOKESTATIC 0x04 0x3e    INVOKEINTERFACE 0x0b 0x35 0x01 0x00
-                               INVOKESTATIC 0x04 0x3e
+     GETFIELD 0x02 0x12        INVOKEVIRTUAL 0x0b 0x2f
+     GETSTATIC 0x01 0xed       GETSTATIC 0x01 0xed
+     INVOKEVIRTUAL 0x03 0xde   INVOKEINTERFACE 0x0b 0x34 0x02 0x00
+     INVOKESTATIC 0x04 0x40    INVOKEINTERFACE 0x0b 0x39 0x01 0x00
+                               INVOKESTATIC 0x04 0x40
  applying GameSettings patch to bac.class for mod __Base
     use options.<version>.txt if present <init>(Lazi;Ljava/io/File;)V@996
      NEW 0x00 0xf0             NOP
@@ -9559,251 +9559,2743 @@ Patching...
      INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x11
                                DLOAD 0x13
                                INVOKEVIRTUAL 0x02 0x2a
+   glass side texture uv registers (26 28 30 32 34 36)
+    disable glass pane top and bottom edges k(Lahz;III)Z@1262
+     label A -> instruction 1344
+     branch offset IFNE A -> +79 @1265
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x26                IFNE 0x00 0x4f
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x26
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0xe3
+     DLOAD 0x1c                DADD
+     DLOAD 0x1e                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x28                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x28
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0xe3
+     DLOAD 0x1c                DADD
+     DLOAD 0x20                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x20
+     DLOAD 0x28                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x28
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0xe3
+     DLOAD 0x1a                DADD
+     DLOAD 0x20                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x20
+     DLOAD 0x26                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x26
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0xe3
+     DLOAD 0x1a                DADD
+     DLOAD 0x1e                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+                               DLOAD 0x1e
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges k(Lahz;III)Z@1344
+     label A -> instruction 1426
+     branch offset IFNE A -> +79 @1347
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x28                IFNE 0x00 0x4f
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x28
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0x99
+     DLOAD 0x1a                DADD
+     DLOAD 0x20                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x20
+     DLOAD 0x26                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x26
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0x99
+     DLOAD 0x1a                DADD
+     DLOAD 0x1e                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x26                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x26
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0x99
+     DLOAD 0x1c                DADD
+     DLOAD 0x1e                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x28                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x28
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0x99
+     DLOAD 0x1c                DADD
+     DLOAD 0x20                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+                               DLOAD 0x20
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges k(Lahz;III)Z@1783
+     label A -> instruction 1865
+     branch offset IFNE A -> +79 @1786
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x26                IFNE 0x00 0x4f
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x26
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0xe3
+     DLOAD 0x1c                DADD
+     DLOAD 0x1e                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x2e                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0xe3
+     DLOAD 0x1c                DADD
+     DLOAD 0x22                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x22
+     DLOAD 0x2e                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0xe3
+     DLOAD 0x1a                DADD
+     DLOAD 0x22                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x22
+     DLOAD 0x26                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x26
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0xe3
+     DLOAD 0x1a                DADD
+     DLOAD 0x1e                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+                               DLOAD 0x1e
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges k(Lahz;III)Z@1865
+     label A -> instruction 1947
+     branch offset IFNE A -> +79 @1868
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x2e                IFNE 0x00 0x4f
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0x99
+     DLOAD 0x1a                DADD
+     DLOAD 0x22                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x22
+     DLOAD 0x26                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x26
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0x99
+     DLOAD 0x1a                DADD
+     DLOAD 0x1e                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x26                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x26
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0x99
+     DLOAD 0x1c                DADD
+     DLOAD 0x1e                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x2e                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0x99
+     DLOAD 0x1c                DADD
+     DLOAD 0x22                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+                               DLOAD 0x22
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges k(Lahz;III)Z@2411
+     label A -> instruction 2493
+     branch offset IFNE A -> +79 @2414
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x30                IFNE 0x00 0x4f
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0xe3
+     DLOAD 0x1c                DADD
+     DLOAD 0x24                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x24
+     DLOAD 0x28                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x28
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0xe3
+     DLOAD 0x1c                DADD
+     DLOAD 0x1e                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x28                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x28
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0xe3
+     DLOAD 0x1a                DADD
+     DLOAD 0x1e                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x30                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0xe3
+     DLOAD 0x1a                DADD
+     DLOAD 0x24                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+                               DLOAD 0x24
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges k(Lahz;III)Z@2493
+     label A -> instruction 2575
+     branch offset IFNE A -> +79 @2496
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x28                IFNE 0x00 0x4f
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x28
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0x99
+     DLOAD 0x1a                DADD
+     DLOAD 0x20                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x20
+     DLOAD 0x30                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0x99
+     DLOAD 0x1a                DADD
+     DLOAD 0x24                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x24
+     DLOAD 0x30                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0x99
+     DLOAD 0x1c                DADD
+     DLOAD 0x24                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x24
+     DLOAD 0x28                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x28
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0x99
+     DLOAD 0x1c                DADD
+     DLOAD 0x20                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+                               DLOAD 0x20
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges k(Lahz;III)Z@3191
+     label A -> instruction 3273
+     branch offset IFNE A -> +79 @3194
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x30                IFNE 0x00 0x4f
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2a                LDC2_W 0x00 0xe3
+     DLOAD 0x1c                DADD
+     DLOAD 0x1e                DLOAD 0x2a
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x2e                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2a                LDC2_W 0x00 0xe3
+     DLOAD 0x1a                DADD
+     DLOAD 0x1e                DLOAD 0x2a
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x2e                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2c                LDC2_W 0x00 0xe3
+     DLOAD 0x1a                DADD
+     DLOAD 0x20                DLOAD 0x2c
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x20
+     DLOAD 0x30                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2c                LDC2_W 0x00 0xe3
+     DLOAD 0x1c                DADD
+     DLOAD 0x20                DLOAD 0x2c
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+                               DLOAD 0x20
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges k(Lahz;III)Z@3273
+     label A -> instruction 3355
+     branch offset IFNE A -> +79 @3276
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x2e                IFNE 0x00 0x4f
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2a                LDC2_W 0x00 0x99
+     DLOAD 0x1a                DADD
+     DLOAD 0x1e                DLOAD 0x2a
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x30                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2a                LDC2_W 0x00 0x99
+     DLOAD 0x1c                DADD
+     DLOAD 0x1e                DLOAD 0x2a
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x30                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2c                LDC2_W 0x00 0x99
+     DLOAD 0x1c                DADD
+     DLOAD 0x20                DLOAD 0x2c
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x20
+     DLOAD 0x2e                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2c                LDC2_W 0x00 0x99
+     DLOAD 0x1a                DADD
+     DLOAD 0x20                DLOAD 0x2c
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+                               DLOAD 0x20
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges k(Lahz;III)Z@3712
+     label A -> instruction 3794
+     branch offset IFNE A -> +79 @3715
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x30                IFNE 0x00 0x4f
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2a                LDC2_W 0x00 0xe3
+     DLOAD 0x1c                DADD
+     DLOAD 0x1e                DLOAD 0x2a
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x2e                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2a                LDC2_W 0x00 0xe3
+     DLOAD 0x1a                DADD
+     DLOAD 0x1e                DLOAD 0x2a
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x2e                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0xe3
+     DLOAD 0x1a                DADD
+     DLOAD 0x22                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x22
+     DLOAD 0x30                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0xe3
+     DLOAD 0x1c                DADD
+     DLOAD 0x22                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+                               DLOAD 0x22
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges k(Lahz;III)Z@3794
+     label A -> instruction 3876
+     branch offset IFNE A -> +79 @3797
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x2e                IFNE 0x00 0x4f
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2a                LDC2_W 0x00 0x99
+     DLOAD 0x1a                DADD
+     DLOAD 0x1e                DLOAD 0x2a
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x30                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2a                LDC2_W 0x00 0x99
+     DLOAD 0x1c                DADD
+     DLOAD 0x1e                DLOAD 0x2a
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x1e
+     DLOAD 0x30                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0x99
+     DLOAD 0x1c                DADD
+     DLOAD 0x22                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x22
+     DLOAD 0x2e                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0x99
+     DLOAD 0x1a                DADD
+     DLOAD 0x22                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+                               DLOAD 0x22
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges k(Lahz;III)Z@4340
+     label A -> instruction 4422
+     branch offset IFNE A -> +79 @4343
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x30                IFNE 0x00 0x4f
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0xe3
+     DLOAD 0x1c                DADD
+     DLOAD 0x24                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x24
+     DLOAD 0x2e                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0xe3
+     DLOAD 0x1a                DADD
+     DLOAD 0x24                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x24
+     DLOAD 0x2e                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2c                LDC2_W 0x00 0xe3
+     DLOAD 0x1a                DADD
+     DLOAD 0x20                DLOAD 0x2c
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x20
+     DLOAD 0x30                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2c                LDC2_W 0x00 0xe3
+     DLOAD 0x1c                DADD
+     DLOAD 0x20                DLOAD 0x2c
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+                               DLOAD 0x20
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges k(Lahz;III)Z@4422
+     label A -> instruction 4504
+     branch offset IFNE A -> +79 @4425
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x2e                IFNE 0x00 0x4f
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0x99
+     DLOAD 0x1a                DADD
+     DLOAD 0x24                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x24
+     DLOAD 0x30                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0x99
+     DLOAD 0x1c                DADD
+     DLOAD 0x24                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x24
+     DLOAD 0x30                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2c                LDC2_W 0x00 0x99
+     DLOAD 0x1c                DADD
+     DLOAD 0x20                DLOAD 0x2c
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x20
+     DLOAD 0x2e                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x2c                LDC2_W 0x00 0x99
+     DLOAD 0x1a                DADD
+     DLOAD 0x20                DLOAD 0x2c
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+                               DLOAD 0x20
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges k(Lahz;III)Z@4604
+     label A -> instruction 4686
+     branch offset IFNE A -> +79 @4607
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x30                IFNE 0x00 0x4f
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0xe3
+     DLOAD 0x1c                DADD
+     DLOAD 0x22                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x22
+     DLOAD 0x2e                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0xe3
+     DLOAD 0x1a                DADD
+     DLOAD 0x22                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x22
+     DLOAD 0x2e                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0xe3
+     DLOAD 0x1a                DADD
+     DLOAD 0x24                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x24
+     DLOAD 0x30                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0xe3          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0xe3
+     DLOAD 0x1c                DADD
+     DLOAD 0x24                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+                               DLOAD 0x24
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges k(Lahz;III)Z@4686
+     label A -> instruction 4768
+     branch offset IFNE A -> +79 @4689
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x2e                IFNE 0x00 0x4f
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0x99
+     DLOAD 0x1a                DADD
+     DLOAD 0x22                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+     ALOAD 0x06                DLOAD 0x22
+     DLOAD 0x30                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x32                LDC2_W 0x00 0x99
+     DLOAD 0x1c                DADD
+     DLOAD 0x22                DLOAD 0x32
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x22
+     DLOAD 0x30                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x30
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0x99
+     DLOAD 0x1c                DADD
+     DLOAD 0x24                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1c
+     ALOAD 0x06                DLOAD 0x24
+     DLOAD 0x2e                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2e
+     LDC2_W 0x00 0x99          ILOAD_3
+     DADD                      I2D
+     DLOAD 0x34                LDC2_W 0x00 0x99
+     DLOAD 0x1a                DADD
+     DLOAD 0x24                DLOAD 0x34
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x1a
+                               DLOAD 0x24
+                               INVOKEVIRTUAL 0x02 0x2a
+   glass side texture uv registers (23 25 27 29 31)
+    disable glass pane top and bottom edges a(Lamr;III)Z@758
+     label A -> instruction 932
+     branch offset IFNE A -> +171 @761
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x21                IFNE 0x00 0xab
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x21
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1f                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x25
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1b                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x25
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1b                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x21
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1f                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x25
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1f                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x21
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1b                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x21
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1b                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x25
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1f                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1f
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@963
+     label A -> instruction 1137
+     branch offset IFNE A -> +171 @966
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x21                IFNE 0x00 0xab
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x21
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1f                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1f                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x21
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x21
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1f                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x21
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1f                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1d
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@1165
+     label A -> instruction 1339
+     branch offset IFNE A -> +171 @1168
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x23                IFNE 0x00 0xab
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1b                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x25
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x25
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1b                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x25
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1b                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x25
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1b                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1b
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@1344
+     label A -> instruction 1502
+     branch offset IFNE A -> +155 @1347
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x21                IFNE 0x00 0x9b
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x21
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1f                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x25
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1b                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x25
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1b                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x21
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1f                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x25
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1f                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x21
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1b                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x21
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1b                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x25
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1f                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1f
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@1530
+     label A -> instruction 1688
+     branch offset IFNE A -> +155 @1533
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x21                IFNE 0x00 0x9b
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x21
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1f                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1f                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x21
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x21
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1f                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x21
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1f                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1d
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@1713
+     label A -> instruction 1871
+     branch offset IFNE A -> +155 @1716
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x23                IFNE 0x00 0x9b
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1b                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x25
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x25
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1b                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x25
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1b                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x25
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1b                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1b
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@2205
+     label A -> instruction 2379
+     branch offset IFNE A -> +171 @2208
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x21                IFNE 0x00 0xab
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x21
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1f                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1f                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x21
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x21
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1f                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x21
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1f                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1d
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@2409
+     label A -> instruction 2567
+     branch offset IFNE A -> +155 @2412
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x21                IFNE 0x00 0x9b
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x21
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1f                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1f                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x21
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x21
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1f                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x21                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x21
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1f                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1d
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@2901
+     label A -> instruction 3075
+     branch offset IFNE A -> +171 @2904
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x23                IFNE 0x00 0xab
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1b                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x25
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x25
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1b                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x25
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1b                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x23
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x25
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0xa3          IADD
+     DADD                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DADD
+     DLOAD 0x1b                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1b
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@3105
+     label A -> instruction 3263
+     branch offset IFNE A -> +155 @3108
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x23                IFNE 0x00 0x9b
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1b                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x25
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x25
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1b                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x25
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1b                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x33                LDC2_W 0x00 0xa3
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x33
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x23                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x23
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x25                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x25
+     LDC2_W 0x00 0xa3          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x31                LDC2_W 0x00 0xa3
+     DLOAD 0x17                DSUB
+     DLOAD 0x1b                DLOAD 0x31
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1b
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@3440
+     label A -> instruction 3614
+     branch offset IFNE A -> +171 @3443
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x2f                IFNE 0x00 0xab
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1f                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1b                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1b                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1f                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1f                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1b                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1b                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1f                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1f
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@3645
+     label A -> instruction 3819
+     branch offset IFNE A -> +171 @3648
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x2d                IFNE 0x00 0xab
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1b                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1b                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1b                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1b                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1b
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@3847
+     label A -> instruction 4021
+     branch offset IFNE A -> +171 @3850
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x2d                IFNE 0x00 0xab
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1f                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1f                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1f                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1f                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+                               DLOAD 0x1d
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@4026
+     label A -> instruction 4184
+     branch offset IFNE A -> +155 @4029
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x2f                IFNE 0x00 0x9b
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1f                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1b                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1b                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1f                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1f                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1b                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1b                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1f                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1f
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@4212
+     label A -> instruction 4370
+     branch offset IFNE A -> +155 @4215
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x2d                IFNE 0x00 0x9b
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1b                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1b                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1b                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1b                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1b
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@4395
+     label A -> instruction 4553
+     branch offset IFNE A -> +155 @4398
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x2d                IFNE 0x00 0x9b
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1f                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1f                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1f                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1f                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+                               DLOAD 0x1d
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@4887
+     label A -> instruction 5061
+     branch offset IFNE A -> +171 @4890
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x2d                IFNE 0x00 0xab
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1b                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1b                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1b                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1b                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1b
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@5091
+     label A -> instruction 5249
+     branch offset IFNE A -> +155 @5094
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x2d                IFNE 0x00 0x9b
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1b                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1b                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1b                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1b
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x27                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x27
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1b                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+                               DLOAD 0x1b
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@5583
+     label A -> instruction 5757
+     branch offset IFNE A -> +171 @5586
+     ALOAD 0x06                GETSTATIC 0x04 0xce
+     DLOAD 0x2d                IFNE 0x00 0xab
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1f                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1f                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1d                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2d
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DADD
+     DLOAD 0x1f                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1f                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     ICONST_1                  DLOAD 0x2f
+     IADD                      ILOAD_3
+     I2D                       ICONST_1
+     LDC2_W 0x00 0x9f          IADD
+     DADD                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DADD
+     DLOAD 0x1d                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+                               DLOAD 0x1d
+                               INVOKEVIRTUAL 0x02 0x2a
+    disable glass pane top and bottom edges a(Lamr;III)Z@5787
+     label A -> instruction 5945
+     branch offset IFNE A -> +155 @5790
+     ALOAD 0x06                GETSTATIC 0x04 0xd1
+     DLOAD 0x2d                IFNE 0x00 0x9b
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1f                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1f                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1d                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1d
+     DLOAD 0x2d                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2d
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x17                DSUB
+     DLOAD 0x1f                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x17
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x29                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1f                DLOAD 0x29
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+     ALOAD 0x06                DLOAD 0x1f
+     DLOAD 0x2f                INVOKEVIRTUAL 0x02 0x2a
+     ILOAD_3                   ALOAD 0x06
+     I2D                       DLOAD 0x2f
+     LDC2_W 0x00 0x9f          ILOAD_3
+     DSUB                      I2D
+     DLOAD 0x2b                LDC2_W 0x00 0x9f
+     DLOAD 0x19                DSUB
+     DLOAD 0x1d                DLOAD 0x2b
+     INVOKEVIRTUAL 0x02 0x2a   DLOAD 0x19
+                               DLOAD 0x1d
+                               INVOKEVIRTUAL 0x02 0x2a
     setup held items (finish) a(Lahz;IF)V@3283
-                               INVOKESTATIC 0x04 0xce
+                               INVOKESTATIC 0x04 0xd4
     override texture (held blocks) a(Lahz;IF)V@704
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@743
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@792
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@851
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@909
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@968
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@1223
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@1262
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@1302
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@1341
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@1381
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@1420
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@1673
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@1701
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@1730
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@1758
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@1787
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@1815
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@2075
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@2114
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@2154
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@2193
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@2233
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@2272
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@2470
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@2509
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@2549
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@2588
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@2628
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks) a(Lahz;IF)V@2667
      INVOKEVIRTUAL 0x01 0xe9   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb6
     override texture (held blocks with metadata) a(Lahz;IF)V@225
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@342
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@402
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@442
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@483
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@523
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@577
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@2838
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@2878
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@2919
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@2959
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@3000
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@3040
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@3286
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@3326
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@3367
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@3407
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@3448
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (held blocks with metadata) a(Lahz;IF)V@3488
      INVOKEVIRTUAL 0x01 0xec   ICONST_0
-                               INVOKESTATIC 0x04 0xd1
+                               INVOKESTATIC 0x04 0xd7
                                ALOAD 0x04
                                INVOKESTATIC 0x04 0xb9
     override texture (crossed squares) a(Lpw;DDDF)V@5
@@ -9817,13 +12309,13 @@ Patching...
      ASTORE_1                  ASTORE_1
                                ALOAD_0
                                DLOAD_2
-                               INVOKESTATIC 0x04 0xd5
+                               INVOKESTATIC 0x04 0xdb
                                L2I
                                DLOAD 0x04
-                               INVOKESTATIC 0x04 0xd5
+                               INVOKESTATIC 0x04 0xdb
                                L2I
                                DLOAD 0x06
-                               INVOKESTATIC 0x04 0xd5
+                               INVOKESTATIC 0x04 0xdb
                                L2I
                                ALOAD_1
                                ALOAD 0x09
@@ -10379,13 +12871,13 @@ Patching...
                                ALOAD_0
                                ALOAD_1
                                DLOAD_2
-                               INVOKESTATIC 0x04 0xd5
+                               INVOKESTATIC 0x04 0xdb
                                L2I
                                DLOAD 0x04
-                               INVOKESTATIC 0x04 0xd5
+                               INVOKESTATIC 0x04 0xdb
                                L2I
                                DLOAD 0x06
-                               INVOKESTATIC 0x04 0xd5
+                               INVOKESTATIC 0x04 0xdb
                                L2I
                                ALOAD 0x0e
                                ALOAD 0x0d
@@ -10411,13 +12903,13 @@ Patching...
                                ALOAD_0
                                ALOAD_1
                                DLOAD 0x05
-                               INVOKESTATIC 0x04 0xd5
+                               INVOKESTATIC 0x04 0xdb
                                L2I
                                DLOAD 0x07
-                               INVOKESTATIC 0x04 0xd5
+                               INVOKESTATIC 0x04 0xdb
                                L2I
                                DLOAD 0x09
-                               INVOKESTATIC 0x04 0xd5
+                               INVOKESTATIC 0x04 0xdb
                                L2I
                                ALOAD 0x0c
                                ALOAD 0x0b
@@ -10443,13 +12935,13 @@ Patching...
                                ALOAD_0
                                ALOAD_1
                                DLOAD 0x06
-                               INVOKESTATIC 0x04 0xd5
+                               INVOKESTATIC 0x04 0xdb
                                L2I
                                DLOAD 0x08
-                               INVOKESTATIC 0x04 0xd5
+                               INVOKESTATIC 0x04 0xdb
                                L2I
                                DLOAD 0x0a
-                               INVOKESTATIC 0x04 0xd5
+                               INVOKESTATIC 0x04 0xdb
                                L2I
                                ALOAD 0x0d
                                ALOAD 0x0c
@@ -10475,13 +12967,13 @@ Patching...
                                ALOAD_0
                                ALOAD_1
                                DLOAD_3
-                               INVOKESTATIC 0x04 0xd5
+                               INVOKESTATIC 0x04 0xdb
                                L2I
                                DLOAD 0x05
-                               INVOKESTATIC 0x04 0xd5
+                               INVOKESTATIC 0x04 0xdb
                                L2I
                                DLOAD 0x07
-                               INVOKESTATIC 0x04 0xd5
+                               INVOKESTATIC 0x04 0xdb
                                L2I
                                ALOAD 0x0a
                                ALOAD 0x09
@@ -10497,154 +12989,154 @@ Patching...
  applying RenderBlocks patch to bmf.class for mod Better Glass
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@956
      LDC 0x1f                  LDC 0x1f
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@983
      LDC 0x1f                  LDC 0x1f
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@1010
      LDC 0x1f                  LDC 0x1f
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@1038
      LDC 0x1f                  LDC 0x1f
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@1062
      LDC 0x1f                  LDC 0x1f
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@1086
      LDC 0x1f                  LDC 0x1f
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@3224
      LDC 0x27                  LDC 0x27
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@3251
      LDC 0x27                  LDC 0x27
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@3278
      LDC 0x27                  LDC 0x27
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@3306
      LDC 0x27                  LDC 0x27
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@3330
      LDC 0x27                  LDC 0x27
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@3354
      LDC 0x27                  LDC 0x27
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@4587
      LDC 0x27                  LDC 0x27
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@4614
      LDC 0x27                  LDC 0x27
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@4641
      LDC 0x27                  LDC 0x27
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@4669
      LDC 0x27                  LDC 0x27
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@4693
      LDC 0x27                  LDC 0x27
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@4717
      LDC 0x27                  LDC 0x27
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@5962
      LDC 0x22                  LDC 0x22
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@5989
      LDC 0x22                  LDC 0x22
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@6016
      LDC 0x22                  LDC 0x22
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@6044
      LDC 0x22                  LDC 0x22
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@6068
      LDC 0x22                  LDC 0x22
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@6092
      LDC 0x22                  LDC 0x22
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@7325
      LDC 0x22                  LDC 0x22
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@7352
      LDC 0x22                  LDC 0x22
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@7379
      LDC 0x22                  LDC 0x22
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@7407
      LDC 0x22                  LDC 0x22
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@7431
      LDC 0x22                  LDC 0x22
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     override AO block brightness for extra render passes a(Lahz;IIIFFF)Z@7455
      LDC 0x22                  LDC 0x22
-                               INVOKESTATIC 0x04 0xda
+                               INVOKESTATIC 0x04 0xe0
     render all sides of adjacent blocks v(Lahz;III)Z@775
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks v(Lahz;III)Z@891
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks v(Lahz;III)Z@1007
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks v(Lahz;III)Z@1123
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks p(Lahz;III)Z@73
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks p(Lahz;III)Z@90
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks p(Lahz;III)Z@115
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks p(Lahz;III)Z@134
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks p(Lahz;III)Z@153
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks p(Lahz;III)Z@172
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks a(Lahz;IIIFFF)Z@102
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks a(Lahz;IIIFFF)Z@1286
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks a(Lahz;IIIFFF)Z@2370
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks a(Lahz;IIIFFF)Z@3733
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks a(Lahz;IIIFFF)Z@5108
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks a(Lahz;IIIFFF)Z@6471
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks b(Lahz;IIIFFF)Z@102
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks b(Lahz;IIIFFF)Z@1268
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks b(Lahz;IIIFFF)Z@2352
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks b(Lahz;IIIFFF)Z@4193
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks b(Lahz;IIIFFF)Z@6034
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks b(Lahz;IIIFFF)Z@7875
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks d(Lahz;IIIFFF)Z@188
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks d(Lahz;IIIFFF)Z@292
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks d(Lahz;IIIFFF)Z@396
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks d(Lahz;IIIFFF)Z@567
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks d(Lahz;IIIFFF)Z@738
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks d(Lahz;IIIFFF)Z@909
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks e(Lahz;IIIFFF)Z@144
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
     render all sides of adjacent blocks e(Lahz;IIIFFF)Z@239
-     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xde
+     INVOKEVIRTUAL 0x01 0x7f   INVOKESTATIC 0x04 0xe4
  applying WorldRenderer patch to bmh.class for mod Connected Textures
     pre render world a(Lrm;)V@0
                                ICONST_1
@@ -15825,71 +18317,88 @@ Patching...
    method signature (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIIZZZZ)V -> (Lbmf;Lahz;Lpw;IIIZZZZ)V
    method signature (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIIZZZZ)V -> (Lbmf;Lahz;Lpw;IIIZZZZ)V
    method signature (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;III)Z -> (Lbmf;Lahz;Lpw;III)Z
+   method signature (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;III)V -> (Lbmf;Lahz;III)V
    field signature [Lnet/minecraft/src/Icon; -> [Lpw;
    field signature Lnet/minecraft/src/Tessellator; -> Lbna;
     method ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.setupIcons (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;III)Z -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.setupIcons (Lbmf;Lahz;Lpw;III)Z renderThin(Lbmf;Lahz;Lpw;IIIZZZZ)V@8
-     INVOKESTATIC 0x00 0x02    INVOKESTATIC 0x00 0xc3
+     INVOKESTATIC 0x00 0x02    INVOKESTATIC 0x00 0xe2
     method ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.setupIcons (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;III)Z -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.setupIcons (Lbmf;Lahz;Lpw;III)Z renderThick(Lbmf;Lahz;Lpw;IIIZZZZ)V@8
-     INVOKESTATIC 0x00 0x02    INVOKESTATIC 0x00 0xc3
+     INVOKESTATIC 0x00 0x02    INVOKESTATIC 0x00 0xe2
+    method ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.setupPaneEdges (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;III)V -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.setupPaneEdges (Lbmf;Lahz;III)V renderThick(Lbmf;Lahz;Lpw;IIIZZZZ)V@21
+     INVOKESTATIC 0x00 0x04    INVOKESTATIC 0x00 0xe4
     method ref com/prupe/mcpatcher/mal/block/RenderPassAPI.skipDefaultRendering (Lnet/minecraft/src/Block;)Z -> com/prupe/mcpatcher/mal/block/RenderPassAPI.skipDefaultRendering (Lahz;)Z setupIcons(Lbmf;Lahz;Lpw;III)Z@4
-     INVOKEVIRTUAL 0x00 0x09   INVOKEVIRTUAL 0x00 0xc6
-    field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lpw; setupIcons(Lbmf;Lahz;Lpw;III)Z@33
-     GETSTATIC 0x00 0x0d       GETSTATIC 0x00 0xc8
-    field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lpw; setupIcons(Lbmf;Lahz;Lpw;III)Z@55
-     GETSTATIC 0x00 0x0d       GETSTATIC 0x00 0xc8
-    field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lpw; setupIcons(Lbmf;Lahz;Lpw;III)Z@72
-     GETSTATIC 0x00 0x0d       GETSTATIC 0x00 0xc8
+     INVOKEVIRTUAL 0x00 0x0a   INVOKEVIRTUAL 0x00 0xe7
+    field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lpw; setupIcons(Lbmf;Lahz;Lpw;III)Z@41
+     GETSTATIC 0x00 0x10       GETSTATIC 0x00 0xe9
+    field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lpw; setupIcons(Lbmf;Lahz;Lpw;III)Z@63
+     GETSTATIC 0x00 0x10       GETSTATIC 0x00 0xe9
+    field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lpw; setupIcons(Lbmf;Lahz;Lpw;III)Z@80
+     GETSTATIC 0x00 0x10       GETSTATIC 0x00 0xe9
     field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lpw; setupTileCoords(I)V@0
-     GETSTATIC 0x00 0x0d       GETSTATIC 0x00 0xc8
+     GETSTATIC 0x00 0x10       GETSTATIC 0x00 0xe9
     field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lpw; setupTileCoords(I)V@9
-     GETSTATIC 0x00 0x0d       GETSTATIC 0x00 0xc8
+     GETSTATIC 0x00 0x10       GETSTATIC 0x00 0xe9
     field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lpw; clear()V@0
-     GETSTATIC 0x00 0x0d       GETSTATIC 0x00 0xc8
+     GETSTATIC 0x00 0x10       GETSTATIC 0x00 0xe9
     field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.icons [Lpw; <clinit>()V@16
-     PUTSTATIC 0x00 0x0d       PUTSTATIC 0x00 0xc8
-    field ref net/minecraft/src/Tessellator.instance Lnet/minecraft/src/Tessellator; -> bna.a Lbna; setupIcons(Lbmf;Lahz;Lpw;III)Z@48
-     GETSTATIC 0x00 0x0e       GETSTATIC 0x00 0xcd
+     PUTSTATIC 0x00 0x10       PUTSTATIC 0x00 0xe9
+    field ref net/minecraft/src/Tessellator.instance Lnet/minecraft/src/Tessellator; -> bna.a Lbna; setupIcons(Lbmf;Lahz;Lpw;III)Z@56
+     GETSTATIC 0x00 0x11       GETSTATIC 0x00 0xee
     field ref net/minecraft/src/Tessellator.instance Lnet/minecraft/src/Tessellator; -> bna.a Lbna; setupTileCoords(I)V@6
-     GETSTATIC 0x00 0x0e       GETSTATIC 0x00 0xcd
-    method ref com/prupe/mcpatcher/ctm/CTMUtils.getTile (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;IIIILnet/minecraft/src/Icon;Lnet/minecraft/src/Tessellator;)Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/CTMUtils.getTile (Lbmf;Lahz;IIIILpw;Lbna;)Lpw; setupIcons(Lbmf;Lahz;Lpw;III)Z@51
-     INVOKESTATIC 0x00 0x0f    INVOKESTATIC 0x00 0xd0
+     GETSTATIC 0x00 0x11       GETSTATIC 0x00 0xee
+    method ref com/prupe/mcpatcher/ctm/CTMUtils.getTile (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;IIIILnet/minecraft/src/Icon;Lnet/minecraft/src/Tessellator;)Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/CTMUtils.getTile (Lbmf;Lahz;IIIILpw;Lbna;)Lpw; setupIcons(Lbmf;Lahz;Lpw;III)Z@59
+     INVOKESTATIC 0x00 0x12    INVOKESTATIC 0x00 0xf1
+    field ref net/minecraft/src/RenderBlocks.blockAccess Lnet/minecraft/src/IBlockAccess; -> bmf.a Lagc; setupPaneEdges(Lbmf;Lahz;III)V@1
+     GETFIELD 0x00 0x13        GETFIELD 0x00 0xf6
+    interface method ref net/minecraft/src/IBlockAccess.getBlockMetadata (III)I -> agc.e (III)I setupPaneEdges(Lbmf;Lahz;III)V@12
+     INVOKEINTERFACE 0x00 0x14 0x04 0x00  INVOKEINTERFACE 0x00 0xfb 0x04 0x00
+    interface method ref net/minecraft/src/IBlockAccess.getBlockMetadata (III)I -> agc.e (III)I setupPaneEdges(Lbmf;Lahz;III)V@42
+     INVOKEINTERFACE 0x00 0x14 0x04 0x00  INVOKEINTERFACE 0x00 0xfb 0x04 0x00
+    interface method ref net/minecraft/src/IBlockAccess.getBlockMetadata (III)I -> agc.e (III)I setupPaneEdges(Lbmf;Lahz;III)V@83
+     INVOKEINTERFACE 0x00 0x14 0x04 0x00  INVOKEINTERFACE 0x00 0xfb 0x04 0x00
+    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagc;III)Lahz; setupPaneEdges(Lbmf;Lahz;III)V@27
+     INVOKESTATIC 0x00 0x15    INVOKESTATIC 0x00 0xfe
+    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagc;III)Lahz; setupPaneEdges(Lbmf;Lahz;III)V@68
+     INVOKESTATIC 0x00 0x15    INVOKESTATIC 0x00 0xfe
     method ref com/prupe/mcpatcher/TessellatorUtils.getTessellator (Lnet/minecraft/src/Tessellator;Lnet/minecraft/src/Icon;)Lnet/minecraft/src/Tessellator; -> com/prupe/mcpatcher/TessellatorUtils.getTessellator (Lbna;Lpw;)Lbna; setupTileCoords(I)V@14
-     INVOKESTATIC 0x00 0x1e    INVOKESTATIC 0x00 0xd3
+     INVOKESTATIC 0x00 0x24    INVOKESTATIC 0x01 0x01
     field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.tessellator Lnet/minecraft/src/Tessellator; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.tessellator Lbna; setupTileCoords(I)V@17
-     PUTSTATIC 0x00 0x1f       PUTSTATIC 0x00 0xd5
+     PUTSTATIC 0x00 0x25       PUTSTATIC 0x01 0x03
     field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.tessellator Lnet/minecraft/src/Tessellator; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.tessellator Lbna; drawFace(DDDDDDDDDD)V@0
-     GETSTATIC 0x00 0x1f       GETSTATIC 0x00 0xd5
+     GETSTATIC 0x00 0x25       GETSTATIC 0x01 0x03
     field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.tessellator Lnet/minecraft/src/Tessellator; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.tessellator Lbna; drawFace(DDDDDDDDDD)V@14
-     GETSTATIC 0x00 0x1f       GETSTATIC 0x00 0xd5
+     GETSTATIC 0x00 0x25       GETSTATIC 0x01 0x03
     field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.tessellator Lnet/minecraft/src/Tessellator; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.tessellator Lbna; drawFace(DDDDDDDDDD)V@29
-     GETSTATIC 0x00 0x1f       GETSTATIC 0x00 0xd5
+     GETSTATIC 0x00 0x25       GETSTATIC 0x01 0x03
     field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.tessellator Lnet/minecraft/src/Tessellator; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.tessellator Lbna; drawFace(DDDDDDDDDD)V@45
-     GETSTATIC 0x00 0x1f       GETSTATIC 0x00 0xd5
+     GETSTATIC 0x00 0x25       GETSTATIC 0x01 0x03
     field ref com/prupe/mcpatcher/ctm/GlassPaneRenderer.tessellator Lnet/minecraft/src/Tessellator; -> com/prupe/mcpatcher/ctm/GlassPaneRenderer.tessellator Lbna; clear()V@8
-     PUTSTATIC 0x00 0x1f       PUTSTATIC 0x00 0xd5
+     PUTSTATIC 0x00 0x25       PUTSTATIC 0x01 0x03
     interface method ref net/minecraft/src/Icon.getMinU ()F -> pw.c ()F setupTileCoords(I)V@21
-     INVOKEINTERFACE 0x00 0x20 0x01 0x00  INVOKEINTERFACE 0x00 0xda 0x01 0x00
+     INVOKEINTERFACE 0x00 0x26 0x01 0x00  INVOKEINTERFACE 0x01 0x08 0x01 0x00
     interface method ref net/minecraft/src/Icon.getInterpolatedU (D)F -> pw.a (D)F setupTileCoords(I)V@34
-     INVOKEINTERFACE 0x00 0x21 0x03 0x00  INVOKEINTERFACE 0x00 0xdc 0x03 0x00
+     INVOKEINTERFACE 0x00 0x27 0x03 0x00  INVOKEINTERFACE 0x01 0x0a 0x03 0x00
     interface method ref net/minecraft/src/Icon.getInterpolatedU (D)F -> pw.a (D)F setupTileCoords(I)V@47
-     INVOKEINTERFACE 0x00 0x21 0x03 0x00  INVOKEINTERFACE 0x00 0xdc 0x03 0x00
+     INVOKEINTERFACE 0x00 0x27 0x03 0x00  INVOKEINTERFACE 0x01 0x0a 0x03 0x00
     interface method ref net/minecraft/src/Icon.getMaxU ()F -> pw.d ()F setupTileCoords(I)V@57
-     INVOKEINTERFACE 0x00 0x22 0x01 0x00  INVOKEINTERFACE 0x00 0xdf 0x01 0x00
+     INVOKEINTERFACE 0x00 0x28 0x01 0x00  INVOKEINTERFACE 0x01 0x0d 0x01 0x00
     interface method ref net/minecraft/src/Icon.getMinV ()F -> pw.e ()F setupTileCoords(I)V@67
-     INVOKEINTERFACE 0x00 0x23 0x01 0x00  INVOKEINTERFACE 0x00 0xe2 0x01 0x00
+     INVOKEINTERFACE 0x00 0x29 0x01 0x00  INVOKEINTERFACE 0x01 0x0f 0x01 0x00
     interface method ref net/minecraft/src/Icon.getMaxV ()F -> pw.f ()F setupTileCoords(I)V@77
-     INVOKEINTERFACE 0x00 0x24 0x01 0x00  INVOKEINTERFACE 0x00 0xe5 0x01 0x00
+     INVOKEINTERFACE 0x00 0x2a 0x01 0x00  INVOKEINTERFACE 0x01 0x12 0x01 0x00
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> bna.a (DDDDD)V drawFace(DDDDDDDDDD)V@11
-     INVOKEVIRTUAL 0x00 0x25   INVOKEVIRTUAL 0x00 0xe7
+     INVOKEVIRTUAL 0x00 0x2b   INVOKEVIRTUAL 0x01 0x14
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> bna.a (DDDDD)V drawFace(DDDDDDDDDD)V@26
-     INVOKEVIRTUAL 0x00 0x25   INVOKEVIRTUAL 0x00 0xe7
+     INVOKEVIRTUAL 0x00 0x2b   INVOKEVIRTUAL 0x01 0x14
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> bna.a (DDDDD)V drawFace(DDDDDDDDDD)V@42
-     INVOKEVIRTUAL 0x00 0x25   INVOKEVIRTUAL 0x00 0xe7
+     INVOKEVIRTUAL 0x00 0x2b   INVOKEVIRTUAL 0x01 0x14
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> bna.a (DDDDD)V drawFace(DDDDDDDDDD)V@57
-     INVOKEVIRTUAL 0x00 0x25   INVOKEVIRTUAL 0x00 0xe7
+     INVOKEVIRTUAL 0x00 0x2b   INVOKEVIRTUAL 0x01 0x14
     class ref net/minecraft/src/Icon -> pw <clinit>()V@13
-     ANEWARRAY 0x00 0x2a       ANEWARRAY 0x00 0xd7
+     ANEWARRAY 0x00 0x30       ANEWARRAY 0x01 0x05
    string replace Lnet/minecraft/src/Block; -> Lahz; @306
+   string replace net/minecraft/src/IBlockAccess -> agc @1129
+   string replace Lnet/minecraft/src/IBlockAccess; -> Lagc; @1083
    string replace Lnet/minecraft/src/RenderBlocks; -> Lbmf; @259
    string replace Lnet/minecraft/src/Icon; -> Lpw; @298
   adding com/prupe/mcpatcher/ctm/RenderPass.class for Better Glass
@@ -17022,6 +19531,7 @@ Connected Textures
     Icon (pw.class)
     RenderBlocks (bmf.class)
         [36] disable default rendering (glass pane faces)
+        [34] disable glass pane top and bottom edges
         [1] override texture (bottom face)
         [1] override texture (crossed squares)
         [1] override texture (east face)
