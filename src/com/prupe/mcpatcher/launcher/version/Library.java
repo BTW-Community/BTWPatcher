@@ -16,6 +16,7 @@ import java.util.zip.ZipFile;
 
 public class Library {
     private static final String DEFAULT_URL = "https://libraries.minecraft.net/";
+    private static final String ARCH = System.getProperty("os.arch").contains("64") ? "64" : "32";
 
     static final String NATIVES_TYPE;
     static final String OS_TYPE;
@@ -99,6 +100,14 @@ public class Library {
         return new File(jar, name.toString());
     }
 
+    private static String getSuffix(String suffix) {
+        if (MCPatcherUtils.isNullOrEmpty(suffix)) {
+            return "";
+        } else {
+            return "-" + suffix.replace("${arch}", ARCH);
+        }
+    }
+
     private static String[] splitName(String name, String suffix) {
         // org.lwjgl.lwjgl:lwjgl:2.9.0 ->
         //   libraries/        (base library dir)
@@ -114,7 +123,7 @@ public class Library {
                 tokens[0].replace('.', '/'),
                 tokens[1],
                 tokens[2],
-                tokens[1] + "-" + tokens[2] + (MCPatcherUtils.isNullOrEmpty(suffix) ? "" : "-" + suffix) + ".jar"
+                tokens[1] + "-" + tokens[2] + getSuffix(suffix) + ".jar"
             };
         }
     }
