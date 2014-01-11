@@ -1516,10 +1516,13 @@ public final class BaseMod extends Mod {
             super(mod);
             setParentClass("NBTBase");
 
-            addClassSignature(new ConstSignature(new ClassRef("java.util.HashMap")));
+            addClassSignature(new OrSignature(
+                new ConstSignature(new ClassRef("java.util.HashMap")),
+                new ConstSignature(new ClassRef("java.util.Map"))
+            ));
             if (getMinecraftVersion().compareTo("13w36a") >= 0) {
-                addClassSignature(new ConstSignature("{"));
-                addClassSignature(new ConstSignature("}"));
+                addClassSignature(new ConstSignature(new InterfaceMethodRef("java/io/DataInput", "readByte", "()B")));
+                addClassSignature(new ConstSignature(new InterfaceMethodRef("java/io/DataInput", "readUTF", "()Ljava/lang/String;")));
             } else {
                 addClassSignature(new ConstSignature(":["));
                 addClassSignature(new ConstSignature(":"));
