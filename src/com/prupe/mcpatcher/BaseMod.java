@@ -610,7 +610,7 @@ public final class BaseMod extends Mod {
                 methodsRemoved ?
                     null : new InterfaceMethodRef(getDeobfClass(), "isBlockNormalCube", "(III)Z"),
                 new InterfaceMethodRef(getDeobfClass(), "isAirBlock", "(" + d + ")Z"),
-                new InterfaceMethodRef(getDeobfClass(), "getBiomeGenAt", "(" + d.replaceFirst("^I", "") + ")LBiomeGenBase;"),
+                new InterfaceMethodRef(getDeobfClass(), "getBiomeGenAt", "(" + PositionMod.getDescriptorIKOnly() + ")LBiomeGenBase;"),
                 new InterfaceMethodRef(getDeobfClass(), "getHeight", "()I"),
                 new InterfaceMethodRef(getDeobfClass(), "extendedLevelsInChunkCache", "()Z"),
                 methodsRemoved ?

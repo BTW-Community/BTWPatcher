@@ -34,6 +34,14 @@ public class PositionMod extends com.prupe.mcpatcher.ClassMod {
         return havePositionClass() ? 1 : 3;
     }
 
+    public static String getDescriptorIKOnly() {
+        return havePositionClass() ? "LPosition;" : "II";
+    }
+
+    public static int getDescriptorLengthIKOnly() {
+        return havePositionClass() ? 1 : 2;
+    }
+
     public static Object unpackArguments(PatchComponent patchComponent, int register) {
         if (havePositionClass()) {
             // position.getI(), position.getJ(), position.getK()
