@@ -91,15 +91,15 @@ public class BiomeAPIMod extends Mod {
             addMemberMapper(new FieldMapper(color).accessFlag(AccessFlag.PUBLIC, true));
 
             if (malVersion == 1) {
-                mapTempAndRainfall("", new int[0]);
+                mapTempAndRainfall("", new byte[0]);
             } else {
-                mapTempAndRainfall("III", new int[]{ILOAD_1, ILOAD_2, ILOAD_3});
+                mapTempAndRainfall(PositionMod.getPositionDescriptor(), PositionMod.passArguments(1));
             }
 
             addPatch(new MakeMemberPublicPatch(biomeList));
         }
 
-        private void mapTempAndRainfall(String desc, final int[] arguments) {
+        private void mapTempAndRainfall(String desc, final byte[] arguments) {
             final MethodRef getTemperaturef = new MethodRef(getDeobfClass(), "getTemperaturef", "(" + desc + ")F");
             final MethodRef getRainfallf = new MethodRef(getDeobfClass(), "getRainfallf", "()F");
             final MethodRef getGrassColor = new MethodRef(getDeobfClass(), "getGrassColor", "(" + desc + ")I");

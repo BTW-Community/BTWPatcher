@@ -6,6 +6,10 @@ import com.prupe.mcpatcher.Mod;
 import com.prupe.mcpatcher.PatchComponent;
 import javassist.bytecode.AccessFlag;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOError;
+import java.io.IOException;
+
 import static com.prupe.mcpatcher.BytecodeMatcher.captureReference;
 import static com.prupe.mcpatcher.BytecodeMatcher.registerLoadStore;
 import static javassist.bytecode.Opcode.*;
@@ -41,6 +45,7 @@ public class PositionMod extends com.prupe.mcpatcher.ClassMod {
     public static Object[] getPositionObjects(PatchComponent patchComponent, int register) {
         if (havePositionClass()) {
             return new Object[]{
+                // position.getI(), position.getJ(), position.getK()
                 registerLoadStore(ALOAD, register),
                 patchComponent.reference(INVOKEVIRTUAL, getI),
                 registerLoadStore(ALOAD, register),
@@ -50,10 +55,29 @@ public class PositionMod extends com.prupe.mcpatcher.ClassMod {
             };
         } else {
             return new Object[]{
+                // i, j, k
                 registerLoadStore(ILOAD, register),
                 registerLoadStore(ILOAD, register + 1),
                 registerLoadStore(ILOAD, register + 2)
             };
+        }
+    }
+
+    public static byte[] passArguments(int register) {
+        if (havePositionClass()) {
+            // position
+            return registerLoadStore(ALOAD, register);
+        } else {
+            // i, j, k
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            try {
+                output.write(registerLoadStore(ILOAD, register));
+                output.write(registerLoadStore(ILOAD, register + 1));
+                output.write(registerLoadStore(ILOAD, register + 2));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return output.toByteArray();
         }
     }
 
