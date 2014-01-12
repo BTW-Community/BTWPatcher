@@ -39,4 +39,17 @@ public class BiomeGenBase {
     public float getRainfallf() { // 1.2 and up
         return 0.0f;
     }
+
+    // 14w02a+
+    public float getTemperaturef(Position position) {
+        return 0.0f;
+    }
+
+    public int getGrassColor(Position position) {
+        return 0;
+    }
+
+    public int getFoliageColor(Position position) {
+        return 0;
+    }
 }

@@ -37,9 +37,6 @@ public class BiomeAPIMod extends Mod {
 
         addClassFile(MCPatcherUtils.BIOME_API_CLASS);
         addClassFile(MCPatcherUtils.BIOME_API_CLASS + "$V" + malVersion);
-        if (malVersion == 3) {
-            addClassFile(MCPatcherUtils.BIOME_API_CLASS + "$V2");
-        }
     }
 
     @Override

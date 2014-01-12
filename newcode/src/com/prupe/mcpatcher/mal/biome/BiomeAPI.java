@@ -202,10 +202,30 @@ abstract public class BiomeAPI {
         }
     }
 
-    private static class V3 extends V2 {
+    private static class V3 extends BiomeAPI {
         @Override
         protected BiomeGenBase getBiomeGenAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
             return blockAccess.getBiomeGenAt(new Position(i, j, k));
+        }
+
+        @Override
+        protected float getTemperaturef_Impl(BiomeGenBase biome, int i, int j, int k) {
+            return biome.getTemperaturef(new Position(i, j, k));
+        }
+
+        @Override
+        protected int getGrassColor_Impl(BiomeGenBase biome, int i, int j, int k) {
+            return biome.getGrassColor(new Position(i, j, k));
+        }
+
+        @Override
+        protected int getFoliageColor_Impl(BiomeGenBase biome, int i, int j, int k) {
+            return biome.getFoliageColor(new Position(i, j, k));
+        }
+
+        @Override
+        protected boolean isColorHeightDependent() {
+            return true;
         }
     }
 }
