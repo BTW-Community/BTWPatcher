@@ -934,6 +934,7 @@ public class CustomColors extends Mod {
         WorldMod() {
             super(CustomColors.this);
             setInterfaces("IBlockAccess");
+            mapLightningFlash();
 
             final MethodRef getWorldChunkManager = new MethodRef(getDeobfClass(), "getWorldChunkManager", "()LWorldChunkManager;");
 
@@ -2150,10 +2151,11 @@ public class CustomColors extends Mod {
                         FADD,
                         FSTORE, 4,
 
-                        // lightsun = world.worldProvider.lightBrightnessTable[i / 16] * sun;
+                        // older: lightsun = world.worldProvider.lightBrightnessTable[i / 16] * sun;
+                        // 14w02a+: lightsun = world.worldProvider.getLightBrightnessTable()[i / 16] * sun;
                         ALOAD_2,
                         captureReference(GETFIELD),
-                        captureReference(GETFIELD),
+                        or(anyReference(GETFIELD), anyReference(INVOKEVIRTUAL)),
                         ILOAD_3,
                         BIPUSH, 16,
                         IDIV,
@@ -2162,7 +2164,8 @@ public class CustomColors extends Mod {
                         FMUL,
                         FSTORE, 5,
 
-                        // lighttorch = world.worldProvider.lightBrightnessTable[i % 16] * (torchFlickerX * 0.1F + 1.5F);
+                        // older: lighttorch = world.worldProvider.lightBrightnessTable[i % 16] * (torchFlickerX * 0.1f + 1.5f);
+                        // 14w02a+: lighttorch = world.worldProvider.getLightBrightnessTable()[i % 16] * (torchFlickerX * 0.1f + 1.5f);
                         any(0, 20),
                         ILOAD_3,
                         BIPUSH, 16,
@@ -2174,9 +2177,10 @@ public class CustomColors extends Mod {
                         // ...
                         any(0, 200),
 
-                        // if (world.lightningFlash > 0)
+                        // older: if (world.lightningFlash > 0)
+                        // 14w02a+: if (world.getLightningFlash() > 0)
                         ALOAD_2,
-                        captureReference(GETFIELD),
+                        captureReference(WorldMod.getLightningFlashOpcode()),
                         IFLE, any(2),
 
                         // ...
@@ -2227,17 +2231,16 @@ public class CustomColors extends Mod {
                 .setMethod(updateLightmap)
                 .addXref(1, new MethodRef("World", "getSunAngle", "(F)F"))
                 .addXref(2, new FieldRef("World", "worldProvider", "LWorldProvider;"))
-                .addXref(3, new FieldRef("WorldProvider", "lightBrightnessTable", "[F"))
-                .addXref(4, new FieldRef(getDeobfClass(), "torchFlickerX", "F"))
-                .addXref(5, new FieldRef("World", "lightningFlash", "I"))
-                .addXref(6, com.prupe.mcpatcher.basemod.WorldProviderMod.getWorldTypeRef())
-                .addXref(7, mc)
-                .addXref(8, new FieldRef("Minecraft", "gameSettings", "LGameSettings;"))
-                .addXref(9, new FieldRef("GameSettings", "gammaSetting", "F"))
-                .addXref(10, lightmapColors)
-                .addXref(11, lightmapTexture)
-                .addXref(12, reloadTexture)
-                .addXref(13, needLightmapUpdate)
+                .addXref(3, new FieldRef(getDeobfClass(), "torchFlickerX", "F"))
+                .addXref(4, WorldMod.getLightningFlashRef())
+                .addXref(5, com.prupe.mcpatcher.basemod.WorldProviderMod.getWorldTypeRef())
+                .addXref(6, mc)
+                .addXref(7, new FieldRef("Minecraft", "gameSettings", "LGameSettings;"))
+                .addXref(8, new FieldRef("GameSettings", "gammaSetting", "F"))
+                .addXref(9, lightmapColors)
+                .addXref(10, lightmapTexture)
+                .addXref(11, reloadTexture)
+                .addXref(12, needLightmapUpdate)
             );
 
             addClassSignature(new BytecodeSignature() {

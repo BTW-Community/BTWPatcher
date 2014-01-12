@@ -38,7 +38,7 @@ public class WorldProviderMod extends com.prupe.mcpatcher.ClassMod {
             }
         });
 
-        if (Mod.getMinecraftVersion().compareTo("14w02a") >= 0) {
+        if (haveGetWorldType()) {
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
