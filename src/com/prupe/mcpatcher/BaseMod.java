@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher;
 
+import com.prupe.mcpatcher.basemod.PositionMod;
 import com.prupe.mcpatcher.launcher.version.Library;
 import javassist.bytecode.AccessFlag;
 
@@ -588,32 +589,35 @@ public final class BaseMod extends Mod {
             super(mod);
             haveBlockRegistry = getMinecraftVersion().compareTo("13w36a") >= 0;
             methodsRemoved = getMinecraftVersion().compareTo("13w38b") >= 0;
+            final String d = PositionMod.getPositionDescriptor();
 
             addClassSignature(new InterfaceSignature(
                 haveBlockRegistry ?
-                    new InterfaceMethodRef(getDeobfClass(), "getBlock", "(III)LBlock;") :
+                    new InterfaceMethodRef(getDeobfClass(), "getBlock", "(" + d + ")LBlock;") :
                     new InterfaceMethodRef(getDeobfClass(), "getBlockId", "(III)I"),
-                new InterfaceMethodRef(getDeobfClass(), "getBlockTileEntity", "(III)LTileEntity;"),
-                new InterfaceMethodRef(getDeobfClass(), "getLightBrightnessForSkyBlocks", "(IIII)I"),
+                new InterfaceMethodRef(getDeobfClass(), "getBlockTileEntity", "(" + d + ")LTileEntity;"),
+                new InterfaceMethodRef(getDeobfClass(), "getLightBrightnessForSkyBlocks", "(" + d + "I)I"),
                 methodsRemoved ?
                     null : new InterfaceMethodRef(getDeobfClass(), "getBrightness", "(IIII)F"),
                 methodsRemoved ?
                     null : new InterfaceMethodRef(getDeobfClass(), "getLightBrightness", "(III)F"),
-                new InterfaceMethodRef(getDeobfClass(), "getBlockMetadata", "(III)I"),
+                new InterfaceMethodRef(getDeobfClass(), "getBlockMetadata", "(" + d + ")I"),
                 methodsRemoved ?
                     null : new InterfaceMethodRef(getDeobfClass(), "getBlockMaterial", "(III)LMaterial;"),
                 methodsRemoved ?
                     null : new InterfaceMethodRef(getDeobfClass(), "isBlockOpaqueCube", "(III)Z"),
                 methodsRemoved ?
                     null : new InterfaceMethodRef(getDeobfClass(), "isBlockNormalCube", "(III)Z"),
-                new InterfaceMethodRef(getDeobfClass(), "isAirBlock", "(III)Z"),
-                new InterfaceMethodRef(getDeobfClass(), "getBiomeGenAt", "(II)LBiomeGenBase;"),
+                new InterfaceMethodRef(getDeobfClass(), "isAirBlock", "(" + d + ")Z"),
+                new InterfaceMethodRef(getDeobfClass(), "getBiomeGenAt", "(" + d.replaceFirst("^I", "") + ")LBiomeGenBase;"),
                 new InterfaceMethodRef(getDeobfClass(), "getHeight", "()I"),
                 new InterfaceMethodRef(getDeobfClass(), "extendedLevelsInChunkCache", "()Z"),
                 methodsRemoved ?
                     null : new InterfaceMethodRef(getDeobfClass(), "doesBlockHaveSolidTopSurface", "(III)Z"),
-                new InterfaceMethodRef(getDeobfClass(), "getWorldVec3Pool", "()LVec3Pool;"),
-                new InterfaceMethodRef(getDeobfClass(), "isBlockProvidingPowerTo", "(IIII)I")
+                PositionMod.havePositionClass() ?
+                    null : new InterfaceMethodRef(getDeobfClass(), "getWorldVec3Pool", "()LVec3Pool;"),
+                new InterfaceMethodRef(getDeobfClass(), "isBlockProvidingPowerTo",
+                    PositionMod.havePositionClass() ? "(LPosition;LDirection;)I" : "(IIII)I")
             ).setInterfaceOnly(true));
         }
     }
