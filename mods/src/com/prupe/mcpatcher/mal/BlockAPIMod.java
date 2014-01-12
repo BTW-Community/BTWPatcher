@@ -112,10 +112,8 @@ public class BlockAPIMod extends Mod {
                         // if (BlockAPI.isBetterGrass(this, blockAccess, i, j, k, face)) {
                         ALOAD_0,
                         ALOAD_1,
-                        ILOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4,
-                        ILOAD, 5,
+                        PositionMod.unpackArguments(this, 2),
+                        DirectionMod.unpackArguments(this, 2 + PositionMod.getDescriptorLength()),
                         reference(INVOKESTATIC, isBetterGrass),
                         IFEQ, branch("A"),
 
