@@ -1,0 +1,92 @@
+package com.prupe.mcpatcher.basemod;
+
+import com.prupe.mcpatcher.*;
+import javassist.bytecode.AccessFlag;
+
+import static com.prupe.mcpatcher.BytecodeMatcher.*;
+import static javassist.bytecode.Opcode.*;
+
+public class DirectionMod extends com.prupe.mcpatcher.ClassMod {
+    public static final FieldRef id = new FieldRef("Direction", "id", "I");
+    public static final MethodRef getID = new MethodRef("Direction", "getID", "()I");
+
+    public static final FieldRef DOWN = new FieldRef("Direction", "DOWN", "LDirection;");
+    public static final FieldRef UP = new FieldRef("Direction", "UP", "LDirection;");
+    public static final FieldRef NORTH = new FieldRef("Direction", "NORTH", "LDirection;");
+    public static final FieldRef SOUTH = new FieldRef("Direction", "SOUTH", "LDirection;");
+    public static final FieldRef WEST = new FieldRef("Direction", "WEST", "LDirection;");
+    public static final FieldRef EAST = new FieldRef("Direction", "EAST", "LDirection;");
+
+    public static final FieldRef ALL = new FieldRef("Direction", "ALL", "[LDirection;");
+    public static final FieldRef SIDES = new FieldRef("Direction", "SIDES", "[LDirection;");
+
+    public static boolean haveDirectionClass() {
+        return PositionMod.havePositionClass();
+    }
+
+    public static String getDirectionDescriptor() {
+        return haveDirectionClass() ? "LDirection;" : "I";
+    }
+
+    public static String getDirectionExpression(PatchComponent patchComponent, int register) {
+        return patchComponent.buildExpression(getDirectionObjects(patchComponent, register));
+    }
+
+    public static byte[] getDirectionBytecode(PatchComponent patchComponent, int register) {
+        return patchComponent.buildCode(getDirectionObjects(patchComponent, register));
+    }
+
+    public static Object[] getDirectionObjects(PatchComponent patchComponent, int register) {
+        if (haveDirectionClass()) {
+            return new Object[]{
+                registerLoadStore(ALOAD, register),
+                patchComponent.reference(INVOKEVIRTUAL, getID),
+            };
+        } else {
+            return new Object[]{
+                registerLoadStore(ILOAD, register),
+            };
+        }
+    }
+
+    public DirectionMod(Mod mod) {
+        super(mod);
+
+        addClassSignature(new ConstSignature("DOWN"));
+        addClassSignature(new ConstSignature("UP"));
+        addClassSignature(new ConstSignature("NORTH"));
+        addClassSignature(new ConstSignature("SOUTH"));
+        addClassSignature(new ConstSignature("WEST"));
+        addClassSignature(new ConstSignature("EAST"));
+
+        addClassSignature(new BytecodeSignature() {
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // this.id = id;
+                    ALOAD_0,
+                    ILOAD_3,
+                    captureReference(PUTFIELD)
+                );
+            }
+        }
+            .matchConstructorOnly(true)
+            .addXref(1, id)
+        );
+
+        addMemberMapper(new MethodMapper(getID)
+            .accessFlag(AccessFlag.PUBLIC, true)
+            .accessFlag(AccessFlag.STATIC, false)
+        );
+
+        addMemberMapper(new FieldMapper(DOWN, UP, NORTH, SOUTH, WEST, EAST)
+            .accessFlag(AccessFlag.PUBLIC, true)
+            .accessFlag(AccessFlag.STATIC, true)
+        );
+
+        addMemberMapper(new FieldMapper(ALL, SIDES)
+            .accessFlag(AccessFlag.PRIVATE, true)
+            .accessFlag(AccessFlag.STATIC, true)
+        );
+    }
+}
