@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher;
 
+import com.prupe.mcpatcher.basemod.DirectionMod;
 import com.prupe.mcpatcher.basemod.PositionMod;
 import com.prupe.mcpatcher.launcher.version.Library;
 import javassist.bytecode.AccessFlag;
@@ -1144,10 +1145,10 @@ public final class BaseMod extends Mod {
      * Matches RenderBlocks class.
      */
     public static class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
-        protected final MethodRef renderStandardBlockWithAmbientOcclusion = new MethodRef(getDeobfClass(), "renderStandardBlockWithAmbientOcclusion", "(LBlock;IIIFFF)Z");
+        protected final MethodRef renderStandardBlockWithAmbientOcclusion = new MethodRef(getDeobfClass(), "renderStandardBlockWithAmbientOcclusion", "(LBlock;" + PositionMod.getPositionDescriptor() + "FFF)Z");
         protected final FieldRef renderAllFaces = new FieldRef(getDeobfClass(), "renderAllFaces", "Z");
         protected final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
-        protected final MethodRef shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;IIII)Z");
+        protected final MethodRef shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getPositionDescriptor() + DirectionMod.getDirectionDescriptor() + ")Z");
 
         protected final com.prupe.mcpatcher.BytecodeSignature grassTopSignature;
         protected int useColorRegister;
@@ -1170,18 +1171,31 @@ public final class BaseMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // if (this.renderAllFaces || block.shouldSideBeRendered(this.blockAccess, i, j - 1, k, 0))
+                        // - or -
+                        // if (this.renderAllFaces || block.shouldSideBeRendered(this.blockAccess, position.down(), Direction.DOWN)
                         ALOAD_0,
                         captureReference(GETFIELD),
                         IFNE, any(2),
                         ALOAD_1,
                         ALOAD_0,
                         captureReference(GETFIELD),
-                        ILOAD_2,
-                        ILOAD_3,
-                        push(1),
-                        ISUB,
-                        ILOAD, 4,
-                        push(0),
+
+                        PositionMod.havePositionClass() ?
+                            build(
+                                ALOAD_2,
+                                anyReference(INVOKEVIRTUAL),
+                                anyReference(GETSTATIC)
+                            ) :
+                            build(
+                                ILOAD_2,
+                                ILOAD_3,
+                                push(1),
+                                ISUB,
+                                ILOAD, 4,
+                                push(0)
+                            ),
+
                         captureReference(INVOKEVIRTUAL),
                         IFEQ, any(2)
                     );

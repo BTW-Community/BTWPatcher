@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.basemod.DirectionMod;
 import com.prupe.mcpatcher.basemod.PositionMod;
 import javassist.bytecode.MethodInfo;
 
@@ -9,9 +10,8 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class BlockAPIMod extends Mod {
-    private static final MethodRef getBlockIcon = new MethodRef("Block", "getBlockIcon", "(LIBlockAccess;IIII)LIcon;");
-
     private final int malVersion;
+    private final MethodRef getBlockIcon = new MethodRef("Block", "getBlockIcon", "(LIBlockAccess;" + PositionMod.getPositionDescriptor() + DirectionMod.getDirectionDescriptor() + ")LIcon;");
 
     public BlockAPIMod() {
         name = MCPatcherUtils.BLOCK_API_MOD;
@@ -41,6 +41,7 @@ public class BlockAPIMod extends Mod {
         }
         if (malVersion >= 3) {
             addClassMod(new PositionMod(this));
+            addClassMod(new DirectionMod(this));
         }
 
         addClassFile(MCPatcherUtils.BLOCK_API_CLASS);
@@ -75,7 +76,7 @@ public class BlockAPIMod extends Mod {
 
             addMemberMapper(new MethodMapper(getBlockIcon));
 
-            if (malVersion == 2) {
+            if (malVersion >= 2) {
                 final FieldRef blockRegistry = new FieldRef(getDeobfClass(), "blockRegistry", "LRegistry;");
 
                 addMemberMapper(new FieldMapper(blockRegistry));
@@ -149,7 +150,7 @@ public class BlockAPIMod extends Mod {
             super(BlockAPIMod.this);
 
             final MethodRef hasOverrideBlockTexture = new MethodRef(getDeobfClass(), "hasOverrideBlockTexture", "()Z");
-            final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;III)Z");
+            final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;" + PositionMod.getPositionDescriptor() + ")Z");
             final MethodRef isAmbientOcclusionEnabled = new MethodRef("Minecraft", "isAmbientOcclusionEnabled", "()Z");
             final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
             final FieldRef lightValue = new FieldRef("Block", "lightValue", "[I");
@@ -186,7 +187,7 @@ public class BlockAPIMod extends Mod {
                 private String getSubExpression2() {
                     addXref(2, getLightValue);
                     return build(
-                        // 1.7: block.getLightValue()
+                        // 1.7+: block.getLightValue()
                         ALOAD_1,
                         captureReference(INVOKEVIRTUAL)
                     );
@@ -201,11 +202,17 @@ public class BlockAPIMod extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         grassTopSignature.getMatchExpression(),
+
+                        // if (this.hasOverrideBlockTexture()) {
                         ALOAD_0,
                         captureReference(INVOKEVIRTUAL),
                         IFEQ, any(2),
+
+                        // useColor = false;
                         push(0),
-                        backReference(1)
+                        backReference(1) // NOTE: capture group 1 = useColor register in grassTopSignature
+
+                        // }
                     );
                 }
             }.addXref(2, hasOverrideBlockTexture));
@@ -225,19 +232,18 @@ public class BlockAPIMod extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
+                    int baseRegister = 3 + PositionMod.getPositionDescriptorLength();
                     return buildCode(
                         // RenderBlocksUtils.setupColorMultiplier(block, this.blockAccess, i, j, k, this.hasOverrideTexture(), r, g, b);
                         ALOAD_1,
                         ALOAD_0,
                         reference(GETFIELD, blockAccess),
-                        ILOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4,
+                        PositionMod.getPositionObjects(this, 2),
                         ALOAD_0,
                         reference(INVOKEVIRTUAL, hasOverrideBlockTexture),
-                        FLOAD, 6,
-                        FLOAD, 7,
-                        FLOAD, 8,
+                        FLOAD, baseRegister,
+                        FLOAD, baseRegister + 1,
+                        FLOAD, baseRegister + 2,
                         reference(INVOKESTATIC, setupColorMultiplier)
                     );
                 }
@@ -262,6 +268,7 @@ public class BlockAPIMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // useColor
                         ILOAD, useColorRegister
                     );
                 }
@@ -269,6 +276,7 @@ public class BlockAPIMod extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // RenderBlocksUtils.useColorMultiplier(face)
                         push(getPatchCount()),
                         reference(INVOKESTATIC, useColorMultiplier)
                     );
@@ -297,10 +305,13 @@ public class BlockAPIMod extends Mod {
                         @Override
                         public String getMatchExpression() {
                             return buildExpression(
+                                // if (block != Block.grass) {
                                 ALOAD_1,
                                 anyReference(GETSTATIC),
                                 IF_ACMPEQ, any(2),
 
+                                // floatValue *= red/green/blue;
+                                // x9
                                 getSubExpression(0),
                                 getSubExpression(1),
                                 getSubExpression(2),
@@ -316,7 +327,7 @@ public class BlockAPIMod extends Mod {
                         private String getSubExpression(int index) {
                             return build(
                                 FLOAD, capture(any()),
-                                FLOAD, 5 + index / 3,
+                                registerLoadStore(FLOAD, 2 + PositionMod.getPositionDescriptorLength() + index / 3),
                                 FMUL,
                                 FSTORE, backReference(index + 1)
                             );
@@ -332,6 +343,7 @@ public class BlockAPIMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // tessellator.setColorOpaque_F(...);
                         capture(anyALOAD),
                         anyFLOAD,
                         anyFLOAD,
@@ -343,6 +355,7 @@ public class BlockAPIMod extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     byte[] code = buildCode(
+                        // tessellator.setColorOpaque_F(RenderBlocksUtils.getColorMultiplierRed(face), ...);
                         getCaptureGroup(1),
                         push(patchCount),
                         reference(INVOKESTATIC, getColorMultiplierRed),
