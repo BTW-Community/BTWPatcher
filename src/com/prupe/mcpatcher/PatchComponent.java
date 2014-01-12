@@ -3,7 +3,7 @@ package com.prupe.mcpatcher;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.MethodInfo;
 
-interface PatchComponent {
+public interface PatchComponent {
     /**
      * Gets current javassist ClassFile object.
      *
