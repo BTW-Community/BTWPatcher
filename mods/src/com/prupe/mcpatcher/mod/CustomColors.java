@@ -63,7 +63,7 @@ public class CustomColors extends Mod {
         name = MCPatcherUtils.CUSTOM_COLORS;
         author = "MCPatcher";
         description = "Gives texture packs control over hardcoded colors in the game.";
-        version = "1.7";
+        version = "1.8";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BLOCK_API_MOD);
@@ -75,6 +75,10 @@ public class CustomColors extends Mod {
         addClassMod(new BaseMod.IBlockAccessMod(this));
         addClassMod(new BaseMod.TessellatorMod(this));
         addClassMod(new BaseMod.ResourceLocationMod(this));
+        if (PositionMod.havePositionClass()) {
+            addClassMod(new PositionMod(this));
+            addClassMod(new DirectionMod(this));
+        }
 
         addClassMod(new BlockMod());
         addClassMod(new BlockSubclassMod());
@@ -1082,6 +1086,8 @@ public class CustomColors extends Mod {
             }.setMethod(getFogColor));
 
             addMemberMapper(new FieldMapper(worldObj));
+
+            addPatch(new MakeMemberPublicPatch(worldObj));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -2714,9 +2720,7 @@ public class CustomColors extends Mod {
                         ALOAD_0,
                         ALOAD_1,
                         ALOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4,
-                        ILOAD, 5,
+                        PositionMod.unpackArguments(this, 3),
                         push(patchCount++),
                         reference(INVOKESTATIC, setupBlockSmoothing1),
                         IFNE, branch("A"),
@@ -2976,9 +2980,7 @@ public class CustomColors extends Mod {
                             ALOAD_1,
                             ALOAD_0,
                             reference(GETFIELD, blockAccess),
-                            ILOAD_2,
-                            ILOAD_3,
-                            ILOAD, 4,
+                            PositionMod.passArguments(2),
                             capture(any(0, 3)),
                             anyReference(INVOKEVIRTUAL)
                         ), true)
@@ -3011,10 +3013,10 @@ public class CustomColors extends Mod {
                         ALOAD_0,
                         reference(GETFIELD, blockAccess),
 
-                        ILOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4,
+                        PositionMod.unpackArguments(this, 2),
                         getCaptureGroup(7),
+                        DirectionMod.haveDirectionClass() ?
+                            reference(INVOKEVIRTUAL, DirectionMod.getID) : new byte[0],
 
                         getCaptureGroup(3),
                         getCaptureGroup(4),
@@ -3120,9 +3122,7 @@ public class CustomColors extends Mod {
                         ALOAD_0,
                         reference(GETFIELD, blockAccess),
 
-                        ILOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4,
+                        PositionMod.unpackArguments(this, 2),
                         faceCode,
                         push(6),
                         IADD,
@@ -3272,14 +3272,24 @@ public class CustomColors extends Mod {
                         // this.renderFaceYNeg(block, (double) i, (double) j + var32, (double) k, ...);
                         ALOAD_0,
                         ALOAD_1,
-                        ILOAD_2,
-                        I2D,
-                        ILOAD_3,
-                        I2D,
-                        anyDLOAD,
-                        DADD,
-                        ILOAD, 4,
-                        I2D,
+                        PositionMod.havePositionClass() ?
+                            build(
+                                anyDLOAD,
+                                anyDLOAD,
+                                anyDLOAD,
+                                DADD,
+                                anyDLOAD
+                            ) :
+                            build(
+                                ILOAD_2,
+                                I2D,
+                                ILOAD_3,
+                                I2D,
+                                anyDLOAD,
+                                DADD,
+                                ILOAD, 4,
+                                I2D
+                            ),
                         nonGreedy(any(0, 20)),
                         anyReference(INVOKEVIRTUAL),
                         anyReference(INVOKEVIRTUAL),
