@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.basemod.WorldProviderMod;
 import com.prupe.mcpatcher.mal.BaseTexturePackMod;
 import javassist.bytecode.AccessFlag;
 
@@ -1010,8 +1011,10 @@ public class CustomColors extends Mod {
         }
     }
 
-    private class WorldProviderMod extends ClassMod {
+    private class WorldProviderMod extends com.prupe.mcpatcher.basemod.WorldProviderMod {
         WorldProviderMod() {
+            super(CustomColors.this);
+
             addClassSignature(new ConstSignature(0.06f));
             addClassSignature(new ConstSignature(0.09f));
             addClassSignature(new ConstSignature(0.91f));
@@ -2139,10 +2142,11 @@ public class CustomColors extends Mod {
                         // ...
                         any(0, 300),
 
-                        // if (world.worldProvider.worldType == 1) {
+                        // older: if (world.worldProvider.worldType == 1) {
+                        // 14w02a+: if (world.worldProvider.getWorldType() == 1) {
                         ALOAD_2,
                         backReference(2),
-                        captureReference(GETFIELD),
+                        captureReference(com.prupe.mcpatcher.basemod.WorldProviderMod.getWorldTypeOpcode()),
                         ICONST_1,
                         IF_ICMPNE, any(2),
 
@@ -2186,7 +2190,7 @@ public class CustomColors extends Mod {
                 .addXref(3, new FieldRef("WorldProvider", "lightBrightnessTable", "[F"))
                 .addXref(4, new FieldRef(getDeobfClass(), "torchFlickerX", "F"))
                 .addXref(5, new FieldRef("World", "lightningFlash", "I"))
-                .addXref(6, new FieldRef("WorldProvider", "worldType", "I"))
+                .addXref(6, com.prupe.mcpatcher.basemod.WorldProviderMod.getWorldTypeRef())
                 .addXref(7, mc)
                 .addXref(8, new FieldRef("Minecraft", "gameSettings", "LGameSettings;"))
                 .addXref(9, new FieldRef("GameSettings", "gammaSetting", "F"))

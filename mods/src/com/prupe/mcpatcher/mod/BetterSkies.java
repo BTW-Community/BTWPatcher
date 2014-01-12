@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.basemod.WorldProviderMod;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -26,6 +27,7 @@ public class BetterSkies extends Mod {
         addClassMod(new BaseMod.MinecraftMod(this).mapWorldClient());
         addClassMod(new BaseMod.ResourceLocationMod(this));
         addClassMod(new WorldMod());
+        addClassMod(new WorldProviderMod(this));
         addClassMod(new BaseMod.WorldClientMod(this));
         addClassMod(new RenderGlobalMod());
 
@@ -117,15 +119,12 @@ public class BetterSkies extends Mod {
             final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final FieldRef worldProvider = new FieldRef("World", "worldProvider", "LWorldProvider;");
-            final FieldRef worldType = new FieldRef("WorldProvider", "worldType", "I");
-            final MethodRef getWorldType = new MethodRef("WorldProvider", "getWorldType", "()I");
             final FieldRef worldObj = new FieldRef(getDeobfClass(), "worldObj", "LWorldClient;");
             final FieldRef glSkyList = new FieldRef(getDeobfClass(), "glSkyList", "I");
             final FieldRef glSkyList2 = new FieldRef(getDeobfClass(), "glSkyList2", "I");
             final FieldRef glStarList = new FieldRef(getDeobfClass(), "glStarList", "I");
             final FieldRef active = new FieldRef(MCPatcherUtils.SKY_RENDERER_CLASS, "active", "Z");
             final FieldRef horizonHeight = new FieldRef(MCPatcherUtils.SKY_RENDERER_CLASS, "horizonHeight", "D");
-            final boolean haveGetWorldType = getMinecraftVersion().compareTo("14w02a") >= 0;
 
             addClassSignature(new ConstSignature("smoke"));
             addClassSignature(new ConstSignature("textures/environment/clouds.png"));
@@ -135,11 +134,12 @@ public class BetterSkies extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         // mc.theWorld.worldProvider.worldType == 1
+                        // 14w02a+: mc.theWorld.worldProvider.getWorldType() == 1
                         ALOAD_0,
                         captureReference(GETFIELD),
                         any(3),
                         captureReference(GETFIELD),
-                        captureReference(haveGetWorldType ? INVOKEVIRTUAL : GETFIELD),
+                        captureReference(WorldProviderMod.getWorldTypeOpcode()),
                         push(1),
 
                         // ...
@@ -189,7 +189,7 @@ public class BetterSkies extends Mod {
                 .setMethod(renderSky)
                 .addXref(1, mc)
                 .addXref(2, worldProvider)
-                .addXref(3, haveGetWorldType ? getWorldType : worldType)
+                .addXref(3, WorldProviderMod.getWorldTypeRef())
                 .addXref(4, tessellator)
                 .addXref(5, worldObj)
                 .addXref(6, getRainStrength)
