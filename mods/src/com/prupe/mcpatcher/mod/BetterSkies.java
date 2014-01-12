@@ -118,12 +118,14 @@ public class BetterSkies extends Mod {
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final FieldRef worldProvider = new FieldRef("World", "worldProvider", "LWorldProvider;");
             final FieldRef worldType = new FieldRef("WorldProvider", "worldType", "I");
+            final MethodRef getWorldType = new MethodRef("WorldProvider", "getWorldType", "()I");
             final FieldRef worldObj = new FieldRef(getDeobfClass(), "worldObj", "LWorldClient;");
             final FieldRef glSkyList = new FieldRef(getDeobfClass(), "glSkyList", "I");
             final FieldRef glSkyList2 = new FieldRef(getDeobfClass(), "glSkyList2", "I");
             final FieldRef glStarList = new FieldRef(getDeobfClass(), "glStarList", "I");
             final FieldRef active = new FieldRef(MCPatcherUtils.SKY_RENDERER_CLASS, "active", "Z");
             final FieldRef horizonHeight = new FieldRef(MCPatcherUtils.SKY_RENDERER_CLASS, "horizonHeight", "D");
+            final boolean haveGetWorldType = getMinecraftVersion().compareTo("14w02a") >= 0;
 
             addClassSignature(new ConstSignature("smoke"));
             addClassSignature(new ConstSignature("textures/environment/clouds.png"));
@@ -137,8 +139,8 @@ public class BetterSkies extends Mod {
                         captureReference(GETFIELD),
                         any(3),
                         captureReference(GETFIELD),
-                        captureReference(GETFIELD),
-                        ICONST_1,
+                        captureReference(haveGetWorldType ? INVOKEVIRTUAL : GETFIELD),
+                        push(1),
 
                         // ...
                         any(0, 100),
@@ -187,7 +189,7 @@ public class BetterSkies extends Mod {
                 .setMethod(renderSky)
                 .addXref(1, mc)
                 .addXref(2, worldProvider)
-                .addXref(3, worldType)
+                .addXref(3, haveGetWorldType ? getWorldType : worldType)
                 .addXref(4, tessellator)
                 .addXref(5, worldObj)
                 .addXref(6, getRainStrength)
