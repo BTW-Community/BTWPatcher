@@ -1525,38 +1525,31 @@ public class CustomColors extends Mod {
             setParentClass("EntityFX");
 
             final MethodRef random = new MethodRef("java/lang/Math", "random", "()D");
-            final MethodRef nextInt = new MethodRef("java/util/Random", "nextInt", "(I)I");
+
+            addClassSignature(new OrSignature(
+                new ConstSignature(0.1f),
+                new ConstSignature((double) 0.1f) // 14w02a+
+            ));
+
+            addClassSignature(new OrSignature(
+                new ConstSignature(0.2f),
+                new ConstSignature((double) 0.2f) // 14w02a+
+            ));
+
+            addClassSignature(new ConstSignature(0.30000001192092896));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // 0.2f * (float) Math.random() + 0.1f
+                        // if (Math.random() < 0.5)
                         reference(INVOKESTATIC, random),
-                        D2F,
-                        push(0.2f),
-                        FMUL,
-                        push(0.1f),
-                        FADD,
-                        F2D
+                        push(0.5),
+                        DCMPG,
+                        IFGE, any(2)
                     );
                 }
-            }.matchConstructorOnly(true));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // 19 + rand.nextInt(4)
-                        push(19),
-                        ALOAD_0,
-                        anyReference(GETFIELD),
-                        push(4),
-                        reference(INVOKEVIRTUAL, nextInt),
-                        IADD
-                    );
-                }
-            }.matchConstructorOnly(true));
+            });
 
             addWaterColorPatch("rain drop", false, new float[]{1.0f, 1.0f, 1.0f}, new float[]{0.2f, 0.3f, 1.0f});
         }
@@ -1958,6 +1951,12 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // this.setParticleTextureIndex(0);
+                        ALOAD_0,
+                        push(0),
+                        anyReference(INVOKEVIRTUAL),
+
+                        // this.setSize(0.02f, 0.02f);
                         ALOAD_0,
                         push(0.02f),
                         push(0.02f),
@@ -2557,7 +2556,7 @@ public class CustomColors extends Mod {
         BlockRedstoneWireMod() {
             setParentClass("Block");
 
-            final MethodRef randomDisplayTick = new MethodRef("BlockRedstoneWire", "randomDisplayTick", "(LWorld;IIILjava/util/Random;)V");
+            final MethodRef randomDisplayTick = new MethodRef("BlockRedstoneWire", "randomDisplayTick", "(LWorld;" + PositionMod.getDescriptor() + "Ljava/util/Random;)V");
 
             setupRedstoneWire(this, "override redstone wire particle color", randomDisplayTick);
 
@@ -2580,10 +2579,8 @@ public class CustomColors extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         ALOAD_1,
-                        ILOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4,
-                        push(0x800000),
+                        PositionMod.unpackArguments(this, 2),
+                        getMatch(),
                         reference(INVOKESTATIC, colorizeRedstoneWire)
                     );
                 }
