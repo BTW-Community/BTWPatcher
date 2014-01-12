@@ -3,8 +3,6 @@ package net.minecraft.src;
 import java.util.List;
 
 public class World implements IBlockAccess {
-    public WorldInfo worldInfo;
-    public List loadedEntityList;
     public WorldProvider worldProvider;
     public int lightningFlash;
 
