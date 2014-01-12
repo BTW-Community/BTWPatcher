@@ -26,6 +26,10 @@ public class PositionMod extends com.prupe.mcpatcher.ClassMod {
         return havePositionClass() ? "LPosition;" : "III";
     }
 
+    public static int getPositionDescriptorLength() {
+        return havePositionClass() ? 1 : 3;
+    }
+
     public static String getPositionExpression(PatchComponent patchComponent, int register) {
         return patchComponent.buildExpression(getPositionObjects(patchComponent, register));
     }

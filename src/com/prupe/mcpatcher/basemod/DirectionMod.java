@@ -20,6 +20,8 @@ public class DirectionMod extends com.prupe.mcpatcher.ClassMod {
     public static final FieldRef ALL = new FieldRef("Direction", "ALL", "[LDirection;");
     public static final FieldRef SIDES = new FieldRef("Direction", "SIDES", "[LDirection;");
 
+    private static final FieldRef[] ALL_FIELDS = new FieldRef[]{DOWN, UP, NORTH, SOUTH, WEST, EAST};
+
     public static boolean haveDirectionClass() {
         return PositionMod.havePositionClass();
     }
@@ -45,6 +47,18 @@ public class DirectionMod extends com.prupe.mcpatcher.ClassMod {
         } else {
             return new Object[]{
                 registerLoadStore(ILOAD, register),
+            };
+        }
+    }
+
+    public static Object[] getFixedDirectionObjects(PatchComponent patchComponent, int direction) {
+        if (haveDirectionClass()) {
+            return new Object[]{
+                patchComponent.reference(GETSTATIC, ALL_FIELDS[direction])
+            };
+        } else {
+            return new Object[]{
+                patchComponent.push(direction)
             };
         }
     }
@@ -79,7 +93,7 @@ public class DirectionMod extends com.prupe.mcpatcher.ClassMod {
             .accessFlag(AccessFlag.STATIC, false)
         );
 
-        addMemberMapper(new FieldMapper(DOWN, UP, NORTH, SOUTH, WEST, EAST)
+        addMemberMapper(new FieldMapper(ALL_FIELDS)
             .accessFlag(AccessFlag.PUBLIC, true)
             .accessFlag(AccessFlag.STATIC, true)
         );
