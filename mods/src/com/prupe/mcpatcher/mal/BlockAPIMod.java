@@ -11,7 +11,7 @@ import static javassist.bytecode.Opcode.*;
 
 public class BlockAPIMod extends Mod {
     private final int malVersion;
-    private final MethodRef getBlockIcon = new MethodRef("Block", "getBlockIcon", "(LIBlockAccess;" + PositionMod.getPositionDescriptor() + DirectionMod.getDirectionDescriptor() + ")LIcon;");
+    private final MethodRef getBlockIcon = new MethodRef("Block", "getBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
 
     public BlockAPIMod() {
         name = MCPatcherUtils.BLOCK_API_MOD;
@@ -150,7 +150,7 @@ public class BlockAPIMod extends Mod {
             super(BlockAPIMod.this);
 
             final MethodRef hasOverrideBlockTexture = new MethodRef(getDeobfClass(), "hasOverrideBlockTexture", "()Z");
-            final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;" + PositionMod.getPositionDescriptor() + ")Z");
+            final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
             final MethodRef isAmbientOcclusionEnabled = new MethodRef("Minecraft", "isAmbientOcclusionEnabled", "()Z");
             final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
             final FieldRef lightValue = new FieldRef("Block", "lightValue", "[I");
@@ -232,13 +232,13 @@ public class BlockAPIMod extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    int baseRegister = 3 + PositionMod.getPositionDescriptorLength();
+                    int baseRegister = 3 + PositionMod.getDescriptorLength();
                     return buildCode(
                         // RenderBlocksUtils.setupColorMultiplier(block, this.blockAccess, i, j, k, this.hasOverrideTexture(), r, g, b);
                         ALOAD_1,
                         ALOAD_0,
                         reference(GETFIELD, blockAccess),
-                        PositionMod.getPositionObjects(this, 2),
+                        PositionMod.unpackArguments(this, 2),
                         ALOAD_0,
                         reference(INVOKEVIRTUAL, hasOverrideBlockTexture),
                         FLOAD, baseRegister,
@@ -327,7 +327,7 @@ public class BlockAPIMod extends Mod {
                         private String getSubExpression(int index) {
                             return build(
                                 FLOAD, capture(any()),
-                                registerLoadStore(FLOAD, 2 + PositionMod.getPositionDescriptorLength() + index / 3),
+                                registerLoadStore(FLOAD, 2 + PositionMod.getDescriptorLength() + index / 3),
                                 FMUL,
                                 FSTORE, backReference(index + 1)
                             );

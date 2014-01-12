@@ -93,7 +93,7 @@ public class BiomeAPIMod extends Mod {
             if (malVersion == 1) {
                 mapTempAndRainfall("", new byte[0]);
             } else {
-                mapTempAndRainfall(PositionMod.getPositionDescriptor(), PositionMod.passArguments(1));
+                mapTempAndRainfall(PositionMod.getDescriptor(), PositionMod.passArguments(1));
             }
 
             addPatch(new MakeMemberPublicPatch(biomeList));

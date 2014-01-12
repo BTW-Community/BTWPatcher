@@ -26,41 +26,46 @@ public class DirectionMod extends com.prupe.mcpatcher.ClassMod {
         return PositionMod.havePositionClass();
     }
 
-    public static String getDirectionDescriptor() {
+    public static String getDescriptor() {
         return haveDirectionClass() ? "LDirection;" : "I";
     }
 
-    public static String getDirectionExpression(PatchComponent patchComponent, int register) {
-        return patchComponent.buildExpression(getDirectionObjects(patchComponent, register));
-    }
-
-    public static byte[] getDirectionBytecode(PatchComponent patchComponent, int register) {
-        return patchComponent.buildCode(getDirectionObjects(patchComponent, register));
-    }
-
-    public static Object[] getDirectionObjects(PatchComponent patchComponent, int register) {
+    public static Object unpackArguments(PatchComponent patchComponent, int register) {
         if (haveDirectionClass()) {
+            // direction.getID()
             return new Object[]{
                 registerLoadStore(ALOAD, register),
                 patchComponent.reference(INVOKEVIRTUAL, getID),
             };
         } else {
-            return new Object[]{
-                registerLoadStore(ILOAD, register),
-            };
+            // direction
+            return registerLoadStore(ILOAD, register);
         }
     }
 
-    public static Object[] getFixedDirectionObjects(PatchComponent patchComponent, int direction) {
+    public static byte[] passArguments(int register) {
         if (haveDirectionClass()) {
-            return new Object[]{
-                patchComponent.reference(GETSTATIC, ALL_FIELDS[direction])
-            };
+            return registerLoadStore(ALOAD, register);
         } else {
-            return new Object[]{
-                patchComponent.push(direction)
-            };
+            return registerLoadStore(ILOAD, register);
         }
+    }
+
+    public static Object getFixedDirection(PatchComponent patchComponent, int direction) {
+        if (haveDirectionClass()) {
+            return patchComponent.reference(GETSTATIC, ALL_FIELDS[direction]);
+        } else {
+            return patchComponent.push(direction);
+        }
+    }
+
+    public static Object getFixedDirection(PatchComponent patchComponent, FieldRef direction) {
+        for (int i = 0; i < ALL_FIELDS.length; i++) {
+            if (ALL_FIELDS[i].equals(direction)) {
+                return getFixedDirection(patchComponent, i);
+            }
+        }
+        return null;
     }
 
     public DirectionMod(Mod mod) {

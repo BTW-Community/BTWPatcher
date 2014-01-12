@@ -26,26 +26,18 @@ public class PositionMod extends com.prupe.mcpatcher.ClassMod {
         return Mod.getMinecraftVersion().compareTo("14w02a") >= 0;
     }
 
-    public static String getPositionDescriptor() {
+    public static String getDescriptor() {
         return havePositionClass() ? "LPosition;" : "III";
     }
 
-    public static int getPositionDescriptorLength() {
+    public static int getDescriptorLength() {
         return havePositionClass() ? 1 : 3;
     }
 
-    public static String getPositionExpression(PatchComponent patchComponent, int register) {
-        return patchComponent.buildExpression(getPositionObjects(patchComponent, register));
-    }
-
-    public static byte[] getPositionBytecode(PatchComponent patchComponent, int register) {
-        return patchComponent.buildCode(getPositionObjects(patchComponent, register));
-    }
-
-    public static Object[] getPositionObjects(PatchComponent patchComponent, int register) {
+    public static Object unpackArguments(PatchComponent patchComponent, int register) {
         if (havePositionClass()) {
+            // position.getI(), position.getJ(), position.getK()
             return new Object[]{
-                // position.getI(), position.getJ(), position.getK()
                 registerLoadStore(ALOAD, register),
                 patchComponent.reference(INVOKEVIRTUAL, getI),
                 registerLoadStore(ALOAD, register),
@@ -54,12 +46,8 @@ public class PositionMod extends com.prupe.mcpatcher.ClassMod {
                 patchComponent.reference(INVOKEVIRTUAL, getK)
             };
         } else {
-            return new Object[]{
-                // i, j, k
-                registerLoadStore(ILOAD, register),
-                registerLoadStore(ILOAD, register + 1),
-                registerLoadStore(ILOAD, register + 2)
-            };
+            // i, j, k
+            return passArguments(register);
         }
     }
 

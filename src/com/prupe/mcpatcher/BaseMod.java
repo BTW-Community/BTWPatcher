@@ -590,7 +590,7 @@ public final class BaseMod extends Mod {
             super(mod);
             haveBlockRegistry = getMinecraftVersion().compareTo("13w36a") >= 0;
             methodsRemoved = getMinecraftVersion().compareTo("13w38b") >= 0;
-            final String d = PositionMod.getPositionDescriptor();
+            final String d = PositionMod.getDescriptor();
 
             addClassSignature(new InterfaceSignature(
                 haveBlockRegistry ?
@@ -1145,10 +1145,10 @@ public final class BaseMod extends Mod {
      * Matches RenderBlocks class.
      */
     public static class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
-        protected final MethodRef renderStandardBlockWithAmbientOcclusion = new MethodRef(getDeobfClass(), "renderStandardBlockWithAmbientOcclusion", "(LBlock;" + PositionMod.getPositionDescriptor() + "FFF)Z");
+        protected final MethodRef renderStandardBlockWithAmbientOcclusion = new MethodRef(getDeobfClass(), "renderStandardBlockWithAmbientOcclusion", "(LBlock;" + PositionMod.getDescriptor() + "FFF)Z");
         protected final FieldRef renderAllFaces = new FieldRef(getDeobfClass(), "renderAllFaces", "Z");
         protected final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
-        protected final MethodRef shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getPositionDescriptor() + DirectionMod.getDirectionDescriptor() + ")Z");
+        protected final MethodRef shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
 
         protected final com.prupe.mcpatcher.BytecodeSignature grassTopSignature;
         protected int useColorRegister;
