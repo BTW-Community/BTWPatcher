@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.basemod.DirectionMod;
 import com.prupe.mcpatcher.basemod.PositionMod;
 import com.prupe.mcpatcher.basemod.WorldProviderMod;
 import com.prupe.mcpatcher.mal.BaseTexturePackMod;
@@ -56,7 +57,7 @@ public class CustomColors extends Mod {
     private static final FieldRef fleeceColorTable = new FieldRef("EntitySheep", "fleeceColorTable", "[[F");
     private static final MethodRef getBlockColor = new MethodRef("Block", "getBlockColor", "()I");
     private static final MethodRef getRenderColor = new MethodRef("Block", "getRenderColor", "(I)I");
-    private static final MethodRef colorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;III)I");
+    private final MethodRef colorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;" + PositionMod.getDescriptor() + ")I");
 
     public CustomColors() {
         name = MCPatcherUtils.CUSTOM_COLORS;
@@ -490,7 +491,7 @@ public class CustomColors extends Mod {
         ItemBlockMod() {
             setParentClass("Item");
 
-            final MethodRef onItemUse = new MethodRef(getDeobfClass(), "onItemUse", "(LItemStack;LEntityPlayer;LWorld;IIIIFFF)Z");
+            final MethodRef onItemUse = new MethodRef(getDeobfClass(), "onItemUse", "(LItemStack;LEntityPlayer;LWorld;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + "FFF)Z");
 
             addClassSignature(new ConstSignature(0.5f));
             addClassSignature(new ConstSignature(0.8f));
@@ -509,32 +510,47 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // if (face == 2) z--;
-                        ILOAD, 7,
-                        push(2),
-                        IF_ICMPNE, any(2),
-                        IINC, 6, -1,
-
-                        // if (face == 3) z++;
-                        ILOAD, 7,
-                        push(3),
-                        IF_ICMPNE, any(2),
-                        IINC, 6, 1
-                    );
-                }
-            }.setMethod(onItemUse));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // if (y == 255)
-                        ILOAD, 5,
+                        // if (... == 255)
                         push(255),
                         IF_ICMPNE, any(2)
                     );
                 }
             }.setMethod(onItemUse));
+
+            if (PositionMod.havePositionClass()) {
+                // TODO:
+            } else {
+                addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // if (face == 2) z--;
+                            ILOAD, 7,
+                            push(2),
+                            IF_ICMPNE, any(2),
+                            IINC, 6, -1,
+
+                            // if (face == 3) z++;
+                            ILOAD, 7,
+                            push(3),
+                            IF_ICMPNE, any(2),
+                            IINC, 6, 1
+                        );
+                    }
+                }.setMethod(onItemUse));
+
+                addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // if (y == 255)
+                            ILOAD, 5,
+                            push(255),
+                            IF_ICMPNE, any(2)
+                        );
+                    }
+                }.setMethod(onItemUse));
+            }
 
             if (getMinecraftVersion().compareTo("13w36a") < 0) {
                 final FieldRef blocksList = new FieldRef("Block", "blocksList", "[LBlock;");
