@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.MAL;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
+import net.minecraft.src.Position;
 
 import java.io.File;
 import java.io.IOException;
@@ -301,7 +302,7 @@ abstract public class BlockAPI {
         }
     }
 
-    final private static class V2 extends BlockAPI {
+    private static class V2 extends BlockAPI {
         {
             File outputFile = new File("blocks17.txt");
             if (outputFile.isFile()) {
@@ -365,6 +366,18 @@ abstract public class BlockAPI {
         @Override
         protected int getBlockLightValue_Impl(Block block) {
             return block.getLightValue();
+        }
+    }
+
+    final private static class V3 extends V2 {
+        @Override
+        protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
+            return blockAccess.getBlock(new Position(i, j, k));
+        }
+
+        @Override
+        protected int getMetadataAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
+            return blockAccess.getBlockMetadata(new Position(i, j, k));
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.basemod.PositionMod;
 import javassist.bytecode.MethodInfo;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -17,10 +18,12 @@ public class BlockAPIMod extends Mod {
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
 
-        if (getMinecraftVersion().compareTo("13w36a") < 0) {
-            malVersion = 1;
-        } else {
+        if (PositionMod.havePositionClass()) {
+            malVersion = 3;
+        } else if (getMinecraftVersion().compareTo("13w36a") >= 0) {
             malVersion = 2;
+        } else {
+            malVersion = 1;
         }
         version = String.valueOf(malVersion) + ".0";
         setMALVersion("block", malVersion);
@@ -36,9 +39,15 @@ public class BlockAPIMod extends Mod {
             addClassMod(new Shared.RegistryBaseMod(this));
             addClassMod(new Shared.RegistryMod(this));
         }
+        if (malVersion >= 3) {
+            addClassMod(new PositionMod(this));
+        }
 
         addClassFile(MCPatcherUtils.BLOCK_API_CLASS);
         addClassFile(MCPatcherUtils.BLOCK_API_CLASS + "$V" + malVersion);
+        if (malVersion == 3) {
+            addClassFile(MCPatcherUtils.BLOCK_API_CLASS + "$V2");
+        }
         addClassFile(MCPatcherUtils.BLOCK_AND_METADATA_CLASS);
         addClassFile(MCPatcherUtils.RENDER_PASS_API_MAL_CLASS);
         addClassFile(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS);
