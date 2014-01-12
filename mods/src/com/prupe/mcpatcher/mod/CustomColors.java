@@ -853,22 +853,36 @@ public class CustomColors extends Mod {
         private static final int MAGIC = 0x385dc6;
 
         PotionHelperMod() {
-            final FieldRef potionColorCache = new FieldRef(getDeobfClass(), "potionColorCache", "Ljava/util/HashMap;");
             final MethodRef getPotionColor = new MethodRef(getDeobfClass(), "getPotionColor", "(IZ)I");
             final MethodRef integerValueOf = new MethodRef("java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
-            final MethodRef hashMapContains = new MethodRef("java/util/HashMap", "containsKey", "(Ljava/lang/Object;)Z");
+            final MethodRef getPotionColorCache = new MethodRef(getDeobfClass(), "getPotionColorCache", "()Ljava/util/Map;");
 
             addClassSignature(new ConstSignature("potion.prefix.mundane"));
             addClassSignature(new ConstSignature(MAGIC));
+
+            final int mapOpcode;
+            final JavaRef mapContains;
+            final FieldRef potionColorCache;
+
+            if (getMinecraftVersion().compareTo("14w02a") >= 0) {
+                mapOpcode = INVOKEINTERFACE;
+                mapContains = new InterfaceMethodRef("java/util/Map", "containsKey", "(Ljava/lang/Object;)Z");
+                potionColorCache = new FieldRef(getDeobfClass(), "potionColorCache", "Ljava/util/Map;");
+            } else {
+                mapOpcode = INVOKEVIRTUAL;
+                mapContains = new MethodRef("java/util/HashMap", "containsKey", "(Ljava/lang/Object;)Z");
+                potionColorCache = new FieldRef(getDeobfClass(), "potionColorCache", "Ljava/util/HashMap;");
+            }
 
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // PotionHelper.potionColorCache.containsKey(id)
                         captureReference(GETSTATIC),
                         ILOAD_0,
                         reference(INVOKESTATIC, integerValueOf),
-                        reference(INVOKEVIRTUAL, hashMapContains)
+                        reference(mapOpcode, mapContains)
                     );
                 }
             }
@@ -900,6 +914,16 @@ public class CustomColors extends Mod {
                         // int i = ColorizeItem.getWaterBottleColor();
                         reference(INVOKESTATIC, getWaterBottleColor),
                         ISTORE_1
+                    );
+                }
+            });
+
+            addPatch(new AddMethodPatch(getPotionColorCache, AccessFlag.PUBLIC | AccessFlag.STATIC) {
+                @Override
+                public byte[] generateMethod() {
+                    return buildCode(
+                        reference(GETSTATIC, potionColorCache),
+                        ARETURN
                     );
                 }
             });

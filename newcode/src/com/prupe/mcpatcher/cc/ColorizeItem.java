@@ -47,8 +47,8 @@ public class ColorizeItem {
         spawnerEggShellColors.clear();
         spawnerEggSpotColors.clear();
 
-        if (PotionHelper.potionColorCache != null) {
-            PotionHelper.potionColorCache.clear();
+        if (PotionHelper.getPotionColorCache() != null) {
+            PotionHelper.getPotionColorCache().clear();
         }
         waterBottleColor = 0x385dc6;
         for (Potion potion : potions) {

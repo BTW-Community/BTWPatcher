@@ -1,11 +1,13 @@
 package net.minecraft.src;
 
-import java.util.HashMap;
+import java.util.Map;
 
 public class PotionHelper {
-    public static HashMap<Integer, Integer> potionColorCache; // made public by Custom Colors
-
     public static String getMundaneName(int damage) {
+        return null;
+    }
+
+    public static Map<Integer, Integer> getPotionColorCache() { // added by Custom Colors
         return null;
     }
 }
