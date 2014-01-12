@@ -2593,7 +2593,7 @@ public class CustomColors extends Mod {
 
     private class RenderBlocksMod extends BaseMod.RenderBlocksMod {
         private final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
-        private final MethodRef renderBlockFluids = new MethodRef(getDeobfClass(), "renderBlockFluids", "(LBlock;III)Z");
+        private final MethodRef renderBlockFluids = new MethodRef(getDeobfClass(), "renderBlockFluids", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
         private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
         private final MethodRef setupBlockSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIII)Z");
@@ -2602,27 +2602,22 @@ public class CustomColors extends Mod {
         RenderBlocksMod() {
             super(CustomColors.this);
 
-            addClassSignature(new ConstSignature(0.1875));
-            addClassSignature(new ConstSignature(0.01));
-
-            final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;III)Z");
-            final MethodRef renderBlockFallingSand = new MethodRef(getDeobfClass(), "renderBlockFallingSand", "(LBlock;LWorld;IIII)V");
-            final MethodRef renderBlockCauldron = new MethodRef(getDeobfClass(), "renderBlockCauldron", "(LBlockCauldron;III)Z");
-            final MethodRef renderBlockRedstoneWire = new MethodRef(getDeobfClass(), "renderBlockRedstoneWire", "(LBlock;III)Z");
+            final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+            final MethodRef renderBlockFallingSand = new MethodRef(getDeobfClass(), "renderBlockFallingSand", "(LBlock;LWorld;" + PositionMod.getDescriptor() + "I)V");
+            final MethodRef renderBlockCauldron = new MethodRef(getDeobfClass(), "renderBlockCauldron", "(LBlockCauldron;" + PositionMod.getDescriptor() + ")Z");
+            final MethodRef renderBlockRedstoneWire = new MethodRef(getDeobfClass(), "renderBlockRedstoneWire", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
                         // renderType == 4 ? this.renderBlockFluids(block, i, j, k) : ...
-                        ILOAD, 5,
+                        registerLoadStore(ILOAD, 2 + PositionMod.getDescriptorLength()),
                         push(4),
                         IF_ICMPNE, any(2),
                         ALOAD_0,
                         ALOAD_1,
-                        ILOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4,
+                        PositionMod.passArguments(2),
                         captureReference(INVOKEVIRTUAL),
                         subset(new int[]{GOTO, IRETURN}, true)
                     );
@@ -2635,16 +2630,17 @@ public class CustomColors extends Mod {
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
+                    int baseRegister = 4 + PositionMod.getDescriptorLength();
                     return buildExpression(
                         begin(),
                         push(0.5f),
-                        FSTORE, 7,
-                        FCONST_1,
-                        FSTORE, 8,
+                        FSTORE, baseRegister,
+                        push(1.0f),
+                        FSTORE, baseRegister + 1,
                         push(0.8f),
-                        FSTORE, 9,
+                        FSTORE, baseRegister + 2,
                         push(0.6f),
-                        FSTORE, 10
+                        FSTORE, baseRegister + 3
                     );
                 }
             }.setMethod(renderBlockFallingSand));
