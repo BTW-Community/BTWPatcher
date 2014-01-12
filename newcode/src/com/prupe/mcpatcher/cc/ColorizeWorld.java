@@ -157,11 +157,11 @@ public class ColorizeWorld {
     }
 
     public static boolean computeFogColor(WorldProvider worldProvider, float f) {
-        return worldProvider.worldType == 0 && computeFogColor(worldProvider.worldObj, fogColorMap);
+        return worldProvider.getWorldType() == 0 && computeFogColor(worldProvider.worldObj, fogColorMap);
     }
 
     public static boolean computeSkyColor(World world, float f) {
-        if (world.worldProvider.worldType == 0 && computeFogColor(world, skyColorMap)) {
+        if (world.worldProvider.getWorldType() == 0 && computeFogColor(world, skyColorMap)) {
             computeLightningFlash(world, f);
             return true;
         } else {

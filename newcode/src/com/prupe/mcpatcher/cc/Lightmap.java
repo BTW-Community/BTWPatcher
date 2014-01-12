@@ -44,7 +44,7 @@ public final class Lightmap {
             return false;
         }
         Lightmap lightmap = null;
-        int worldType = world.worldProvider.worldType;
+        int worldType = world.worldProvider.getWorldType();
         if (lightmaps.containsKey(worldType)) {
             lightmap = lightmaps.get(worldType);
         } else {

@@ -36,7 +36,7 @@ public class SkyRenderer {
                 if (enable) {
                     World world = Minecraft.getInstance().theWorld;
                     if (world != null) {
-                        getWorldEntry(world.worldProvider.worldType);
+                        getWorldEntry(world.worldProvider.getWorldType());
                     }
                 }
                 FireworksHelper.reload();
@@ -48,7 +48,7 @@ public class SkyRenderer {
         if (TexturePackAPI.isDefaultTexturePack()) {
             active = false;
         } else {
-            int worldType = Minecraft.getInstance().theWorld.worldProvider.worldType;
+            int worldType = Minecraft.getInstance().theWorld.worldProvider.getWorldType();
             WorldEntry newEntry = getWorldEntry(worldType);
             if (newEntry != currentWorld && currentWorld != null) {
                 currentWorld.unloadTextures();
