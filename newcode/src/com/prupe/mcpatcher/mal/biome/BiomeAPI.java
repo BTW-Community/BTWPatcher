@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.BiomeGenBase;
 import net.minecraft.src.IBlockAccess;
+import net.minecraft.src.Position;
 
 import java.lang.reflect.Method;
 import java.util.BitSet;
@@ -79,7 +80,7 @@ abstract public class BiomeAPI {
         if (lastBiome == null || i != lastI || k != lastK) {
             lastI = i;
             lastK = k;
-            lastBiome = blockAccess.getBiomeGenAt(i, k);
+            lastBiome = instance.getBiomeGenAt_Impl(blockAccess, i, j, k);
         }
         return lastBiome;
     }
@@ -134,6 +135,8 @@ abstract public class BiomeAPI {
         }
     }
 
+    abstract protected BiomeGenBase getBiomeGenAt_Impl(IBlockAccess blockAccess, int i, int j, int k);
+
     abstract protected float getTemperaturef_Impl(BiomeGenBase biome, int i, int j, int k);
 
     abstract protected int getGrassColor_Impl(BiomeGenBase biome, int i, int j, int k);
@@ -146,6 +149,11 @@ abstract public class BiomeAPI {
     }
 
     final private static class V1 extends BiomeAPI {
+        @Override
+        protected BiomeGenBase getBiomeGenAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
+            return blockAccess.getBiomeGenAt(i, k);
+        }
+
         @Override
         protected float getTemperaturef_Impl(BiomeGenBase biome, int i, int j, int k) {
             return biome.getTemperaturef();
@@ -167,7 +175,12 @@ abstract public class BiomeAPI {
         }
     }
 
-    final private static class V2 extends BiomeAPI {
+    private static class V2 extends BiomeAPI {
+        @Override
+        protected BiomeGenBase getBiomeGenAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
+            return blockAccess.getBiomeGenAt(i, k);
+        }
+
         @Override
         protected float getTemperaturef_Impl(BiomeGenBase biome, int i, int j, int k) {
             return biome.getTemperaturef(i, j, k);
@@ -186,6 +199,13 @@ abstract public class BiomeAPI {
         @Override
         protected boolean isColorHeightDependent() {
             return true;
+        }
+    }
+
+    private static class V3 extends V2 {
+        @Override
+        protected BiomeGenBase getBiomeGenAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
+            return blockAccess.getBiomeGenAt(new Position(i, j, k));
         }
     }
 }

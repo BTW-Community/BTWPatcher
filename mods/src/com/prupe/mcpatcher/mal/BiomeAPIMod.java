@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.basemod.PositionMod;
 import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -15,10 +16,12 @@ public class BiomeAPIMod extends Mod {
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
 
-        if (getMinecraftVersion().compareTo("13w36a") < 0) {
-            malVersion = 1;
-        } else {
+        if (PositionMod.havePositionClass()) {
+            malVersion = 3;
+        } else if (getMinecraftVersion().compareTo("13w36a") >= 0) {
             malVersion = 2;
+        } else {
+            malVersion = 1;
         }
         version = String.valueOf(malVersion) + ".0";
         setMALVersion("biome", malVersion);
@@ -28,9 +31,15 @@ public class BiomeAPIMod extends Mod {
         addClassMod(new BaseMod.WorldMod(this));
         addClassMod(new BaseMod.WorldClientMod(this));
         addClassMod(new BiomeGenBaseMod());
+        if (malVersion >= 3) {
+            addClassMod(new PositionMod(this));
+        }
 
         addClassFile(MCPatcherUtils.BIOME_API_CLASS);
         addClassFile(MCPatcherUtils.BIOME_API_CLASS + "$V" + malVersion);
+        if (malVersion == 3) {
+            addClassFile(MCPatcherUtils.BIOME_API_CLASS + "$V2");
+        }
     }
 
     @Override
