@@ -10,4 +10,13 @@ public interface IBlockAccess {
     public Block getBlock(int i, int j, int k); // 13w36a+
 
     public int getBlockMetadata(int i, int j, int k);
+
+    // 14w02a+
+    public BiomeGenBase getBiomeGenAt(Position position);
+
+    public int getBlockId(Position position);
+
+    public Block getBlock(Position position);
+
+    public int getBlockMetadata(Position position);
 }

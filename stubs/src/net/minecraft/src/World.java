@@ -62,4 +62,25 @@ public class World implements IBlockAccess {
     public int getBlockMetadata(int i, int j, int k) {
         return 0;
     }
+
+    // 14w02a+
+    @Override
+    public BiomeGenBase getBiomeGenAt(Position position) {
+        return null;
+    }
+
+    @Override
+    public int getBlockId(Position position) {
+        return 0;
+    }
+
+    @Override
+    public Block getBlock(Position position) {
+        return null;
+    }
+
+    @Override
+    public int getBlockMetadata(Position position) {
+        return 0;
+    }
 }
