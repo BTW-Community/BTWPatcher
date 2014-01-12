@@ -495,11 +495,11 @@ abstract class TileOverride implements ITileOverride {
     }
 
     final boolean shouldConnect(IBlockAccess blockAccess, Block block, Icon icon, int i, int j, int k, int face, int[] offset) {
-        int metadata = blockAccess.getBlockMetadata(i, j, k);
+        int metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         i += offset[0];
         j += offset[1];
         k += offset[2];
-        int neighborMeta = blockAccess.getBlockMetadata(i, j, k);
+        int neighborMeta = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         Block neighbor = BlockAPI.getBlockAt(blockAccess, i, j, k);
         if (connectType == CONNECT_BY_MATERIAL) {
             if (neighbor == null) {
@@ -707,7 +707,7 @@ abstract class TileOverride implements ITileOverride {
 
             case 7: // renderBlockDoor
             case 40: // renderBlockDoublePlant
-                metadata = blockAccess.getBlockMetadata(i, j, k);
+                metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
                 if ((metadata & 0x8) != 0 && block == BlockAPI.getBlockAt(blockAccess, i, j - 1, k)) {
                     dj--;
                     changed = true;
@@ -715,7 +715,7 @@ abstract class TileOverride implements ITileOverride {
                 break;
 
             case 14: // renderBlockBed
-                metadata = blockAccess.getBlockMetadata(i, j, k);
+                metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
                 switch (metadata) {
                     case 0:
                     case 4:
@@ -756,7 +756,7 @@ abstract class TileOverride implements ITileOverride {
         }
         if (face < 0 && requiresFace()) {
             warn("method=%s is not supported for non-standard block %s:%d @ %d %d %d",
-                getMethod(), BlockAPI.getBlockName(block), blockAccess.getBlockMetadata(i, j, k), i, j, k
+                getMethod(), BlockAPI.getBlockName(block), BlockAPI.getMetadataAt(blockAccess, i, j, k), i, j, k
             );
             return null;
         }
@@ -765,7 +765,7 @@ abstract class TileOverride implements ITileOverride {
         }
         Integer metadataEntry = matchBlocks.get(block);
         matchMetadata = metadataEntry == null ? META_MASK : metadataEntry;
-        int metadata = blockAccess.getBlockMetadata(i, j, k);
+        int metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         setupOrientation(getOrientationFromMetadata(block, metadata), face);
         face = remapFaceByRenderType(block, metadata, face);
         if (exclude(block, face, metadata)) {

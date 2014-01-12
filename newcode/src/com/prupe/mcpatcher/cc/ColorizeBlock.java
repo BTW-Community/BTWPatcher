@@ -349,10 +349,10 @@ public class ColorizeBlock {
     }
 
     private static IColorMap findColorMap(Block block, IBlockAccess blockAccess, int i, int j, int k) {
-        int metadata = blockAccess.getBlockMetadata(i, j, k);
+        int metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         if (block == doublePlantBlock) {
             if ((metadata & 0x8) != 0 && BlockAPI.getBlockAt(blockAccess, i, j - 1, k) == block) {
-                metadata = blockAccess.getBlockMetadata(i, j - 1, k);
+                metadata = BlockAPI.getMetadataAt(blockAccess, i, j - 1, k);
             }
             metadata &= 0x7;
         }
@@ -433,7 +433,7 @@ public class ColorizeBlock {
         if (redstoneColor == null) {
             return defaultColor;
         } else {
-            int metadata = Math.max(Math.min(blockAccess.getBlockMetadata(i, j, k), 15), 0);
+            int metadata = Math.max(Math.min(BlockAPI.getMetadataAt(blockAccess, i, j, k), 15), 0);
             return Colorizer.float3ToInt(redstoneColor[metadata]);
         }
     }

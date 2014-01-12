@@ -223,6 +223,10 @@ abstract public class BlockAPI {
         return instance.getBlockAt_Impl(blockAccess, i, j, k);
     }
 
+    public static int getMetadataAt(IBlockAccess blockAccess, int i, int j, int k) {
+        return instance.getMetadataAt_Impl(blockAccess, i, j, k);
+    }
+
     // used by custom colors ItemRenderer patch in 1.6 only
     public static Block getBlockById(int id) {
         return instance.getBlockById_Impl(id);
@@ -237,6 +241,8 @@ abstract public class BlockAPI {
     }
 
     abstract protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k);
+
+    abstract protected int getMetadataAt_Impl(IBlockAccess blockAccess, int i, int j, int k);
 
     abstract protected Iterator<Block> iterator_Impl();
 
@@ -255,6 +261,11 @@ abstract public class BlockAPI {
         @Override
         protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
             return Block.blocksList[blockAccess.getBlockId(i, j, k)];
+        }
+
+        @Override
+        protected int getMetadataAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
+            return blockAccess.getBlockMetadata(i, j, k);
         }
 
         @Override
@@ -323,6 +334,11 @@ abstract public class BlockAPI {
         @Override
         protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
             return blockAccess.getBlock(i, j, k);
+        }
+
+        @Override
+        protected int getMetadataAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
+            return blockAccess.getBlockMetadata(i, j, k);
         }
 
         @Override

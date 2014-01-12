@@ -65,11 +65,11 @@ public class GlassPaneRenderer {
 
     private static void setupPaneEdges(RenderBlocks renderBlocks, Block blockPane, int i, int j, int k) {
         IBlockAccess blockAccess = renderBlocks.blockAccess;
-        int metadata = blockAccess.getBlockMetadata(i, j, k);
+        int metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         skipBottomEdgeRendering = BlockAPI.getBlockAt(blockAccess, i, j - 1, k) == blockPane &&
-            blockAccess.getBlockMetadata(i, j - 1, k) == metadata;
+            BlockAPI.getMetadataAt(blockAccess, i, j - 1, k) == metadata;
         skipTopEdgeRendering = BlockAPI.getBlockAt(blockAccess, i, j + 1, k) == blockPane &&
-            blockAccess.getBlockMetadata(i, j + 1, k) == metadata;
+            BlockAPI.getMetadataAt(blockAccess, i, j + 1, k) == metadata;
     }
 
     private static void render(int i, int j, int k,
