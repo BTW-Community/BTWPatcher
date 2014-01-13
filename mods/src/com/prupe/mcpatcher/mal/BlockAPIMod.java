@@ -64,17 +64,7 @@ public class BlockAPIMod extends Mod {
         BlockMod() {
             super(BlockAPIMod.this);
 
-            final MethodRef getShortName = new MethodRef(getDeobfClass(), "getShortName", "()Ljava/lang/String;");
             final MethodRef shouldSideBeRendered = new MethodRef(getDeobfClass(), "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push("tile.")
-                    );
-                }
-            }.setMethod(getShortName));
 
             addMemberMapper(new MethodMapper(getBlockIcon));
             addMemberMapper(new MethodMapper(shouldSideBeRendered));

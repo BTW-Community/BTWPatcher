@@ -813,6 +813,8 @@ public final class BaseMod extends Mod {
             super(mod);
             haveBlockRegistry = getMinecraftVersion().compareTo("13w36a") >= 0;
 
+            final MethodRef getShortName = new MethodRef(getDeobfClass(), "getShortName", "()Ljava/lang/String;");
+
             if (haveBlockRegistry) {
                 addClassSignature(new ConstSignature("stone"));
                 addClassSignature(new ConstSignature("grass"));
@@ -833,6 +835,15 @@ public final class BaseMod extends Mod {
                     .accessFlag(AccessFlag.FINAL, true)
                 );
             }
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push("tile.")
+                    );
+                }
+            }.setMethod(getShortName));
         }
 
         protected void addBlockSignatures() {
