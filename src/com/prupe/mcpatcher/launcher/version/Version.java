@@ -302,14 +302,26 @@ public class Version implements Comparable<Version> {
         } else {
             argTemplate = USERNAME_SESSION_VERSION_VALUE;
         }
-        for (String s : argTemplate.split("\\s+")) {
-            if (s.equals("")) {
+        String[] argSplit = argTemplate.split("\\s+");
+        for (int i = 0; i < argSplit.length; i++) {
+            String s0 = argSplit[i];
+            String s1 = i + 1 < argSplit.length ? argSplit[i + 1] : null;
+            if (s0.equals("")) {
                 // nothing
-            } else if (s.startsWith("${") && s.endsWith("}")) {
-                String value = args.get(s.substring(2, s.length() - 1));
+            } else if (s0.startsWith("--") && s1 != null && s1.startsWith("${") && s1.endsWith("}")) {
+                String value = args.get(s1.substring(2, s1.length() - 1));
+                if (value == null) {
+                    Logger.log(Logger.LOG_MAIN, "WARNING: unknown argument %s %s", s0, s1);
+                } else {
+                    cmdLine.add(s0);
+                    cmdLine.add(value);
+                }
+                i++;
+            } else if (s0.startsWith("${") && s0.endsWith("}")) {
+                String value = args.get(s0.substring(2, s0.length() - 1));
                 cmdLine.add(value == null ? "" : value);
             } else {
-                cmdLine.add(s);
+                cmdLine.add(s0);
             }
         }
     }
