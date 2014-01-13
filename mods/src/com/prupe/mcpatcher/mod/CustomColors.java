@@ -40,7 +40,6 @@ public class CustomColors extends Mod {
     private static final MethodRef setupPotion = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "setupPotion", "(LPotion;)V");
     private static final MethodRef setupForFog = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "setupForFog", "(LEntity;)V");
     private static final MethodRef setupSpawnerEgg = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "setupSpawnerEgg", "(Ljava/lang/String;III)V");
-    private static final MethodRef setColorF = new MethodRef(MCPatcherUtils.COLORIZER_CLASS, "setColorF", "(I)V");
     private static final MethodRef drawFancyClouds = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "drawFancyClouds", "(Z)Z");
 
     private static final FieldRef setColor = new FieldRef(MCPatcherUtils.COLORIZER_CLASS, "setColor", "[F");
@@ -2591,7 +2590,7 @@ public class CustomColors extends Mod {
                         reference(INVOKESTATIC, colorizeRedstoneWire)
                     );
                 }
-            }.targetMethod(new MethodRef(getDeobfClass(), "colorMultiplier", "(LIBlockAccess;III)I")));
+            }.targetMethod(colorMultiplier));
         }
     }
 
@@ -2799,7 +2798,7 @@ public class CustomColors extends Mod {
                         // tessellator.setColorOpaque_F(k * l, k * l, k * l);
                         // -or-
                         // tessellator.setColorOpaque_F(k, k, k);
-                        ALOAD, tessellatorRegister,
+                        registerLoadStore(ALOAD, tessellatorRegister),
                         capture(build(
                             anyFLOAD,
                             optional(build(anyFLOAD, FMUL))
@@ -2814,7 +2813,7 @@ public class CustomColors extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         // tessellator.setColorOpaque_F(k * l * r, k * l * g, k * l * b);
-                        ALOAD, tessellatorRegister,
+                        registerLoadStore(ALOAD, tessellatorRegister),
                         getCaptureGroup(1),
                         FLOAD, waterRegisters[0],
                         FMUL,
