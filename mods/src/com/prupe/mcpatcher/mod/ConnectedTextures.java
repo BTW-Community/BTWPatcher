@@ -224,8 +224,8 @@ public class ConnectedTextures extends Mod {
         private final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef drawCrossedSquares = new MethodRef(getDeobfClass(), "drawCrossedSquares", "(LIcon;DDDF)V");
         private final MethodRef hasOverrideTexture = new MethodRef(getDeobfClass(), "hasOverrideTexture", "()Z");
-        private final MethodRef renderBlockPane1 = new MethodRef(getDeobfClass(), "renderBlockPane1", "(LBlockPane;" + PositionMod.getDescriptor() + ")Z");
-        private final MethodRef renderBlockPane2 = new MethodRef(getDeobfClass(), "renderBlockPane2", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+        private final MethodRef renderBlockGenericPane = new MethodRef(getDeobfClass(), "renderBlockGenericPane", "(LBlockPane;" + PositionMod.getDescriptor() + ")Z");
+        private final MethodRef renderBlockGlassPane17 = new MethodRef(getDeobfClass(), "renderBlockGlassPane17", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef renderBlockBrewingStand = new MethodRef(getDeobfClass(), "renderBlockBrewingStand", "(LBlockBrewingStand;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
         private final MethodRef renderBlockAsItem = new MethodRef(getDeobfClass(), "renderBlockAsItem", "(LBlock;IF)V");
@@ -505,8 +505,8 @@ public class ConnectedTextures extends Mod {
 
                 {
                     setInsertBefore(true);
-                    skipMethod(renderBlockPane1);
-                    skipMethod(renderBlockPane2);
+                    skipMethod(renderBlockGenericPane);
+                    skipMethod(renderBlockGlassPane17);
                 }
 
                 @Override
@@ -663,8 +663,6 @@ public class ConnectedTextures extends Mod {
         }
 
         private void setupGlassPanes() {
-            final FieldRef forgeEast = new FieldRef("net/minecraftforge/common/ForgeDirection", "EAST", "Lnet/minecraftforge/common/ForgeDirection;");
-            final MethodRef canPaneConnectToForge = new MethodRef("BlockPane", "canPaneConnectTo", "(LIBlockAccess;IIILnet/minecraftforge/common/ForgeDirection;)Z");
             final boolean haveThickPanes = getMinecraftVersion().compareTo("13w41a") >= 0;
             final MethodRef newRenderPaneThin = new MethodRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "renderThin", "(LRenderBlocks;LBlock;LIcon;IIIZZZZ)V");
             final MethodRef newRenderPaneThick = new MethodRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "renderThick", "(LRenderBlocks;LBlock;LIcon;IIIZZZZ)V");
@@ -674,9 +672,9 @@ public class ConnectedTextures extends Mod {
             final FieldRef skipTopEdgeRendering = new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "skipTopEdgeRendering", "Z");
             final FieldRef skipBottomEdgeRendering = new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "skipBottomEdgeRendering", "Z");
 
-            mapRenderTypeMethod(18, renderBlockPane1);
+            mapRenderTypeMethod(18, renderBlockGenericPane);
             if (haveThickPanes) {
-                mapRenderTypeMethod(41, renderBlockPane2);
+                mapRenderTypeMethod(41, renderBlockGlassPane17);
             }
 
             addPatch(new BytecodePatch() {
@@ -707,50 +705,46 @@ public class ConnectedTextures extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    return buildExpression(lookBehind(build(
-                        ALOAD_1,
-                        optional(anyReference(CHECKCAST)),
-                        ALOAD_0,
-                        reference(GETFIELD, blockAccess),
-                        ILOAD_2,
-                        or(
+                    return buildExpression(
+                        // connectEast = ...
+                        capture(anyISTORE),
+
+                        capture(or(
                             build(
-                                // vanilla:
-                                // connectEast = par1BlockPane.canThisPaneConnectToThisBlockID(this.blockAccess.getBlockId(i + 1, j, k));
-                                push(1),
-                                IADD,
-                                ILOAD_3,
-                                ILOAD, 4,
-                                anyReference(INVOKEINTERFACE),
-                                anyReference(INVOKEVIRTUAL)
+                                // 1.6 panes and 1.7+ thin panes
+                                push(0.01),
+                                anyDSTORE,
+                                push(0.005),
+                                anyDSTORE
                             ),
                             build(
-                                // forge:
-                                // connectEast = par1BlockPane.canPaneConnectTo(this.blockAccess, i, j, k, ForgeDirection.EAST);
-                                ILOAD_3,
-                                ILOAD, 4,
-                                reference(GETSTATIC, forgeEast),
-                                reference(INVOKEVIRTUAL, canPaneConnectToForge)
+                                // 1.7+ thick panes
+                                push(0.001),
+                                anyDSTORE,
+                                push(0.999),
+                                anyDSTORE,
+                                push(0.001),
+                                anyDSTORE
                             )
-                        ),
-                        capture(anyISTORE)
-                    ), true));
+                        ))
+                    );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     int reg = extractRegisterNum(getCaptureGroup(1));
-                    Logger.log(Logger.LOG_BYTECODE, "glass side connect flags (%d %d %d %d)",
+                    Logger.log(Logger.LOG_BYTECODE, "glass pane side connect flags (%d %d %d %d)",
                         reg - 3, reg - 2, reg - 1, reg
                     );
                     return buildCode(
+                        // ...
+                        getCaptureGroup(1),
+
                         // GlassPaneRenderer.render(renderBlocks, blockPane, i, j, k, connectNorth, ...);
                         ALOAD_0,
                         ALOAD_1,
                         ALOAD, iconRegister,
-                        ILOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4,
+                        PositionMod.unpackArguments(this, 2),
                         ILOAD, reg - 3,
                         ILOAD, reg - 2,
                         ILOAD, reg - 1,
@@ -766,7 +760,10 @@ public class ConnectedTextures extends Mod {
                         IRETURN,
 
                         // }
-                        label("A")
+                        label("A"),
+
+                        // ...
+                        getCaptureGroup(2)
                     );
                 }
             });
@@ -807,6 +804,36 @@ public class ConnectedTextures extends Mod {
             });
 
             addPatch(new RenderPanePatch() {
+                protected final int[] ijkRegisters = new int[3];
+
+                {
+
+                    if (PositionMod.havePositionClass()) {
+                        addPreMatchSignature(new BytecodeSignature() {
+                            @Override
+                            public String getMatchExpression() {
+                                String s = buildExpression(
+                                    // varXX = (double) position.getI/J/K();
+                                    ALOAD_2,
+                                    anyReference(INVOKEVIRTUAL),
+                                    I2D,
+                                    capture(anyDSTORE)
+                                );
+                                return s + s + s;
+                            }
+
+                            @Override
+                            public boolean afterMatch() {
+                                ijkRegisters[0] = extractRegisterNum(getCaptureGroup(1));
+                                ijkRegisters[1] = extractRegisterNum(getCaptureGroup(2));
+                                ijkRegisters[2] = extractRegisterNum(getCaptureGroup(3));
+                                Logger.log(Logger.LOG_CONST, "glass pane i j k registers %d %d %d", ijkRegisters[0], ijkRegisters[1], ijkRegisters[2]);
+                                return true;
+                            }
+                        });
+                    }
+                }
+
                 @Override
                 public String getDescription() {
                     return "disable glass pane top and bottom edges";
@@ -826,7 +853,6 @@ public class ConnectedTextures extends Mod {
                     return build(
                         ALOAD, any(),
                         DLOAD, any(),
-                        ILOAD_3,
                         first ? capture(getJExpression()) : backReference(1),
                         DLOAD, any(),
                         DLOAD, subset(sideUVRegisters, true),
@@ -836,47 +862,82 @@ public class ConnectedTextures extends Mod {
                 }
 
                 private String getJExpression() {
-                    return or(
-                        // (double) (j + 1) + 0.005
-                        build(
-                            push(1),
-                            IADD,
-                            I2D,
-                            anyLDC,
-                            DADD
-                        ),
-                        // (double) j - 0.005
-                        build(
-                            I2D,
-                            anyLDC,
-                            DSUB
-                        ),
-                        // (double) j + <0.001|0.999>
-                        build(
-                            I2D,
-                            anyLDC,
-                            DADD
-                        )
-                    );
+                    if (PositionMod.havePositionClass()) {
+                        return build(
+                            DLOAD, ijkRegisters[1],
+                            or(
+                                // (double) (j + 1) + 0.005
+                                build(
+                                    push(1.0),
+                                    DADD,
+                                    anyLDC,
+                                    DADD
+                                ),
+                                // (double) j - 0.005
+                                build(
+                                    anyLDC,
+                                    DSUB
+                                ),
+                                // (double) j + <0.001|0.999>
+                                build(
+                                    anyLDC,
+                                    DADD
+                                )
+                            )
+                        );
+                    } else {
+                        return build(
+                            ILOAD_3,
+                            or(
+                                // (double) (j + 1) + 0.005
+                                build(
+                                    push(1),
+                                    IADD,
+                                    I2D,
+                                    anyLDC,
+                                    DADD
+                                ),
+                                // (double) j - 0.005
+                                build(
+                                    I2D,
+                                    anyLDC,
+                                    DSUB
+                                ),
+                                // (double) j + <0.001|0.999>
+                                build(
+                                    I2D,
+                                    anyLDC,
+                                    DADD
+                                )
+                            )
+                        );
+                    }
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     boolean top;
                     byte[] group = getCaptureGroup(1);
-                    if (group[0] == ICONST_1) {
+                    int length = group.length;
+                    if (group[1] == ICONST_1 || group[1] == DCONST_1) {
+                        // if j-expression contains +1 or +1.0, it is always the top edge
                         top = true;
-                    } else if (group[group.length - 1] == DSUB) {
+                    } else if (group[length - 1] == DSUB) {
+                        // if j-expression is a subtraction, it is always the bottem edge
                         top = false;
-                    } else if (group[1] == LDC2_W && group.length >= 4) {
+                    } else if (length >= 4 && group[length - 4] == LDC2_W) {
+                        // otherwise determine based on the value of the double constant
                         byte[] tmp = new byte[3];
-                        tmp[0] = group[1];
-                        tmp[1] = group[2];
-                        tmp[2] = group[3];
+                        tmp[0] = group[length - 4];
+                        tmp[1] = group[length - 3];
+                        tmp[2] = group[length - 2];
                         int index = extractConstPoolIndex(tmp);
                         double value = getMethodInfo().getConstPool().getDoubleInfo(index);
                         top = value > 0.5;
                     } else {
+                        Logger.log(Logger.LOG_CONST, "WARNING: no j-expression match in %s(%s)@%d",
+                            getMethodInfo().getName(), getMethodInfo().getDescriptor(), matcher.getStart()
+                        );
                         return null;
                     }
                     return buildCode(
@@ -898,7 +959,7 @@ public class ConnectedTextures extends Mod {
             protected int[] sideUVRegisters;
 
             {
-                targetMethod(renderBlockPane1, renderBlockPane2);
+                targetMethod(renderBlockGenericPane, renderBlockGlassPane17);
 
                 addPreMatchSignature(new BytecodeSignature() {
                     @Override
@@ -921,8 +982,16 @@ public class ConnectedTextures extends Mod {
                                 anyDSTORE
                             ), 4, 5),
 
-                            // var34 = (double) i;
-                            ILOAD_2,
+                            // older: var34 = (double) i;
+                            // 14w02a+: var34 = (double) position.getI();
+                            PositionMod.havePositionClass() ?
+                                build(
+                                    ALOAD_2,
+                                    anyReference(INVOKEVIRTUAL)
+                                ) :
+                                build(
+                                    ILOAD_2
+                                ),
                             I2D,
                             capture(anyDSTORE)
                         );
@@ -945,7 +1014,7 @@ public class ConnectedTextures extends Mod {
                             }
                             sb.append(sideUVRegisters[i]);
                         }
-                        Logger.log(Logger.LOG_CONST, "glass side texture uv registers (%s)", sb.toString());
+                        Logger.log(Logger.LOG_CONST, "glass pane side texture uv registers (%s)", sb.toString());
                         return true;
                     }
                 });
