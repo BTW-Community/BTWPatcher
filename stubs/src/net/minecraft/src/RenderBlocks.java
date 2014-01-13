@@ -35,4 +35,13 @@ public class RenderBlocks {
     public Icon getIconBySide(Block block, int face) {
         return null;
     }
+
+    // 14w02a+
+    public Icon getIconBySideAndMetadata(Block block, Direction direction, int metadata) {
+        return null;
+    }
+
+    public Icon getIconBySide(Block block, Direction direction) {
+        return null;
+    }
 }

@@ -129,6 +129,14 @@ public class CTMUtils {
         return getTile(renderBlocks, block, face, 0, renderBlocks.getIconBySide(block, face), tessellator);
     }
 
+    public static Icon getTile(RenderBlocks renderBlocks, Block block, Direction direction, int metadata, Tessellator tessellator) {
+        return getTile(renderBlocks, block, direction.getID(), metadata, renderBlocks.getIconBySideAndMetadata(block, direction, metadata), tessellator);
+    }
+
+    public static Icon getTile(RenderBlocks renderBlocks, Block block, Direction direction, Tessellator tessellator) {
+        return getTile(renderBlocks, block, direction.getID(), 0, renderBlocks.getIconBySide(block, direction), tessellator);
+    }
+
     private static Icon getTile(RenderBlocks renderBlocks, Block block, int face, int metadata, Icon icon, Tessellator tessellator) {
         lastOverride = null;
         if (checkFace(face) && checkRenderType(block)) {

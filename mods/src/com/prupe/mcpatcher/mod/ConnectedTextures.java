@@ -41,6 +41,10 @@ public class ConnectedTextures extends Mod {
         addClassMod(new BaseMod.TessellatorMod(this));
         addClassMod(new BaseMod.IconMod(this));
         addClassMod(new BaseMod.ResourceLocationMod(this));
+        if (PositionMod.havePositionClass()) {
+            addClassMod(new PositionMod(this));
+            addClassMod(new DirectionMod(this));
+        }
         addClassMod(new BlockMod());
         addClassMod(new RenderBlocksMod());
         addClassMod(new WorldRendererMod());
@@ -216,18 +220,18 @@ public class ConnectedTextures extends Mod {
         private final MethodRef[] faceMethods = new MethodRef[6];
         private final FieldRef overrideBlockTexture = new FieldRef(getDeobfClass(), "overrideBlockTexture", "LIcon;");
         private final FieldRef instance = new FieldRef("Tessellator", "instance", "LTessellator;");
-        private final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;III)Z");
-        private final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;III)Z");
+        private final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+        private final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef drawCrossedSquares = new MethodRef(getDeobfClass(), "drawCrossedSquares", "(LIcon;DDDF)V");
         private final MethodRef hasOverrideTexture = new MethodRef(getDeobfClass(), "hasOverrideTexture", "()Z");
-        private final MethodRef renderBlockPane1 = new MethodRef(getDeobfClass(), "renderBlockPane1", "(LBlockPane;III)Z");
-        private final MethodRef renderBlockPane2 = new MethodRef(getDeobfClass(), "renderBlockPane2", "(LBlock;III)Z");
-        private final MethodRef renderBlockBrewingStand = new MethodRef(getDeobfClass(), "renderBlockBrewingStand", "(LBlockBrewingStand;III)Z");
+        private final MethodRef renderBlockPane1 = new MethodRef(getDeobfClass(), "renderBlockPane1", "(LBlockPane;" + PositionMod.getDescriptor() + ")Z");
+        private final MethodRef renderBlockPane2 = new MethodRef(getDeobfClass(), "renderBlockPane2", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+        private final MethodRef renderBlockBrewingStand = new MethodRef(getDeobfClass(), "renderBlockBrewingStand", "(LBlockBrewingStand;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
         private final MethodRef renderBlockAsItem = new MethodRef(getDeobfClass(), "renderBlockAsItem", "(LBlock;IF)V");
         private final MethodRef renderBlockAsItemVanilla = new MethodRef(getDeobfClass(), "renderBlockAsItemVanilla", "(LBlock;IF)V"); // added by BTW 4.68
-        private final MethodRef getIconBySideAndMetadata = new MethodRef(getDeobfClass(), "getIconBySideAndMetadata", "(LBlock;II)LIcon;");
-        private final MethodRef getIconBySide = new MethodRef(getDeobfClass(), "getIconBySide", "(LBlock;I)LIcon;");
+        private final MethodRef getIconBySideAndMetadata = new MethodRef(getDeobfClass(), "getIconBySideAndMetadata", "(LBlock;" + DirectionMod.getDescriptor() + "I)LIcon;");
+        private final MethodRef getIconBySide = new MethodRef(getDeobfClass(), "getIconBySide", "(LBlock;" + DirectionMod.getDescriptor() + ")LIcon;");
         private final InterfaceMethodRef getMinU = new InterfaceMethodRef("Icon", "getMinU", "()F");
         private final InterfaceMethodRef getMinV = new InterfaceMethodRef("Icon", "getMinV", "()F");
         private final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
@@ -236,6 +240,8 @@ public class ConnectedTextures extends Mod {
         private final MethodRef getTileNoFaceOrBlock = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;IIILIcon;LTessellator;)LIcon;");
         private final MethodRef getTileBySideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IILTessellator;)LIcon;");
         private final MethodRef getTileBySide = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;ILTessellator;)LIcon;");
+        private final MethodRef getTileByDirectionAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;" + DirectionMod.getDescriptor() + "ILTessellator;)LIcon;");
+        private final MethodRef getTileByDirection = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;" + DirectionMod.getDescriptor() + "LTessellator;)LIcon;");
         private final MethodRef getTessellator = new MethodRef(MCPatcherUtils.TESSELLATOR_UTILS_CLASS, "getTessellator", "(LTessellator;LIcon;)LTessellator;");
         private final MethodRef round = new MethodRef("java/lang/Math", "round", "(D)J");
 
@@ -268,7 +274,7 @@ public class ConnectedTextures extends Mod {
                     return buildExpression(
                         ALOAD_1,
                         captureReference(INVOKEVIRTUAL),
-                        ISTORE, 5
+                        registerLoadStore(ISTORE, 2 + PositionMod.getDescriptorLength())
                     );
                 }
             }
@@ -317,7 +323,9 @@ public class ConnectedTextures extends Mod {
                             build(reference(INVOKESTATIC, getTileNoFace)),
                             build(reference(INVOKESTATIC, getTileNoFaceOrBlock)),
                             build(reference(INVOKESTATIC, getTileBySide)),
-                            build(reference(INVOKESTATIC, getTileBySideAndMetadata))
+                            build(reference(INVOKESTATIC, getTileBySideAndMetadata)),
+                            build(reference(INVOKESTATIC, getTileByDirection)),
+                            build(reference(INVOKESTATIC, getTileByDirectionAndMetadata))
                         ));
                     }
                 }.negate(true));
@@ -408,7 +416,7 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        ILOAD, 5,
+                        registerLoadStore(ILOAD, 2 + PositionMod.getDescriptorLength()),
                         (type == 0 ?
                             build(IFNE) :
                             build(push(type), IF_ICMPNE)
@@ -417,9 +425,7 @@ public class ConnectedTextures extends Mod {
                         ALOAD_0,
                         ALOAD_1,
                         optional(anyReference(CHECKCAST)),
-                        ILOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4,
+                        PositionMod.passArguments(2),
                         capture(build(subset(new int[]{INVOKEVIRTUAL, INVOKESPECIAL}, true), any(2)))
                     );
                 }
@@ -495,6 +501,8 @@ public class ConnectedTextures extends Mod {
             mapRenderTypeMethod(25, renderBlockBrewingStand);
 
             addPatch(new RenderBlocksPatch() {
+                private String matchDescriptor;
+
                 {
                     setInsertBefore(true);
                     skipMethod(renderBlockPane1);
@@ -503,7 +511,13 @@ public class ConnectedTextures extends Mod {
 
                 @Override
                 public boolean filterMethod() {
-                    return super.filterMethod() && getMethodInfo().getDescriptor().matches("\\(L[a-z]+;III.*[IVZ]");
+                    if (!super.filterMethod()) {
+                        return false;
+                    }
+                    if (matchDescriptor == null) {
+                        matchDescriptor = "\\(L[a-z]+;" + getClassMap().mapTypeString(PositionMod.getDescriptor()) + ".*[IVZ]";
+                    }
+                    return super.filterMethod() && getMethodInfo().getDescriptor().matches(matchDescriptor);
                 }
 
                 @Override
@@ -530,9 +544,7 @@ public class ConnectedTextures extends Mod {
                 @Override
                 protected byte[] getCTMUtilsArgs() {
                     return buildCode(
-                        ILOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4
+                        PositionMod.unpackArguments(this, 2)
                     );
                 }
 
@@ -969,8 +981,8 @@ public class ConnectedTextures extends Mod {
                 .targetMethod(renderBlockAsItem, renderBlockAsItemVanilla)
             );
 
-            setupHeldBlocks(getIconBySide, getTileBySide, "held blocks");
-            setupHeldBlocks(getIconBySideAndMetadata, getTileBySideAndMetadata, "held blocks with metadata");
+            setupHeldBlocks(getIconBySide, getTileByDirection, "held blocks");
+            setupHeldBlocks(getIconBySideAndMetadata, getTileByDirectionAndMetadata, "held blocks with metadata");
         }
 
         private void setupHeldBlocks(final MethodRef from, final MethodRef to, final String name) {
