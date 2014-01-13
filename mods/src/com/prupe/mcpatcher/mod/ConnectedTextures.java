@@ -1,6 +1,8 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.basemod.DirectionMod;
+import com.prupe.mcpatcher.basemod.PositionMod;
 import com.prupe.mcpatcher.mal.BaseTexturePackMod;
 import javassist.bytecode.AccessFlag;
 
@@ -24,7 +26,7 @@ public class ConnectedTextures extends Mod {
         name = MCPatcherUtils.CONNECTED_TEXTURES;
         author = "MCPatcher";
         description = "Enables support for connected, randomized, and other custom terrain textures.";
-        version = "2.5";
+        version = "2.6";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
@@ -155,9 +157,9 @@ public class ConnectedTextures extends Mod {
             super(ConnectedTextures.this);
 
             final FieldRef blockMaterial = new FieldRef(getDeobfClass(), "blockMaterial", "LMaterial;");
-            final MethodRef getBlockIcon = new MethodRef(getDeobfClass(), "getBlockIcon", "(LIBlockAccess;IIII)LIcon;");
-            final InterfaceMethodRef getBlockMetadata = new InterfaceMethodRef("IBlockAccess", "getBlockMetadata", "(III)I");
-            final MethodRef getBlockIconFromSideAndMetadata = new MethodRef(getDeobfClass(), "getBlockIconFromSideAndMetadata", "(II)LIcon;");
+            final MethodRef getBlockIcon = new MethodRef(getDeobfClass(), "getBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
+            final InterfaceMethodRef getBlockMetadata = new InterfaceMethodRef("IBlockAccess", "getBlockMetadata", "(" + PositionMod.getDescriptor() + ")I");
+            final MethodRef getBlockIconFromSideAndMetadata = new MethodRef(getDeobfClass(), "getBlockIconFromSideAndMetadata", "(" + DirectionMod.getDescriptor() + "I)LIcon;");
             final MethodRef getShortName = new MethodRef(getDeobfClass(), "getShortName", "()Ljava/lang/String;");
             final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(" + (haveBlockRegistry ? "" : "I") + "LMaterial;)V");
 
@@ -167,11 +169,9 @@ public class ConnectedTextures extends Mod {
                     return buildExpression(
                         begin(),
                         ALOAD_0,
-                        ILOAD, 5,
+                        DirectionMod.passArguments(2 + PositionMod.getDescriptorLength()),
                         ALOAD_1,
-                        ILOAD_2,
-                        ILOAD_3,
-                        ILOAD, 4,
+                        PositionMod.passArguments(2),
                         captureReference(INVOKEINTERFACE),
                         captureReference(INVOKEVIRTUAL),
                         ARETURN,

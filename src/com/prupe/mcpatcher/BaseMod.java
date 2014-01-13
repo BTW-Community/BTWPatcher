@@ -1015,40 +1015,74 @@ public final class BaseMod extends Mod {
             addClassSignature(new ConstSignature(glTranslatef));
             addClassSignature(new ConstSignature(1.000001f));
 
-            addClassSignature(new BytecodeSignature() {
-                {
-                    setMethod(updateRenderer);
-                    for (int i = 0; i < pos.length; i++) {
-                        addXref(i + 1, pos[i]);
-                    }
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    String exp0 = "";
-                    String exp1 = "";
-                    for (int i = 0; i < 3; i++) {
-                        exp0 += build(
-                            // i/j/k0 = this.posX/Y/Z;
+            if (PositionMod.havePositionClass()) {
+                addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // position0 = new Position(this.posX, this.posY, this.posZ);
+                            anyReference(NEW),
+                            DUP,
                             ALOAD_0,
                             captureReference(GETFIELD),
-                            anyISTORE
-                        );
-                        exp1 += build(
-                            // i/j/k1 = this.posX/Y/Z + 16;
                             ALOAD_0,
-                            backReference(i + 1),
+                            captureReference(GETFIELD),
+                            ALOAD_0,
+                            captureReference(GETFIELD),
+                            anyReference(INVOKESPECIAL),
+                            anyASTORE,
+
+                            // position1 = position0.offsetBy(16, 16, 16);
+                            anyALOAD,
                             push(16),
-                            IADD,
-                            anyISTORE
+                            push(16),
+                            push(16),
+                            anyReference(INVOKEVIRTUAL),
+                            anyASTORE
                         );
                     }
-                    return buildExpression(
-                        exp0,
-                        exp1
-                    );
                 }
-            });
+                    .setMethod(updateRenderer)
+                    .addXref(1, posX)
+                    .addXref(2, posY)
+                    .addXref(3, posZ)
+                );
+            } else {
+                addClassSignature(new BytecodeSignature() {
+                    {
+                        setMethod(updateRenderer);
+                        for (int i = 0; i < pos.length; i++) {
+                            addXref(i + 1, pos[i]);
+                        }
+                    }
+
+                    @Override
+                    public String getMatchExpression() {
+                        String exp0 = "";
+                        String exp1 = "";
+                        for (int i = 0; i < 3; i++) {
+                            exp0 += build(
+                                // i0/j0/k0 = this.posX/Y/Z;
+                                ALOAD_0,
+                                captureReference(GETFIELD),
+                                anyISTORE
+                            );
+                            exp1 += build(
+                                // i1/j1/k1 = this.posX/Y/Z + 16;
+                                ALOAD_0,
+                                backReference(i + 1),
+                                push(16),
+                                IADD,
+                                anyISTORE
+                            );
+                        }
+                        return buildExpression(
+                            exp0,
+                            exp1
+                        );
+                    }
+                });
+            }
         }
     }
 
