@@ -894,8 +894,6 @@ public class CustomColors extends Mod {
                 .addXref(1, potionColorCache)
             );
 
-            addPatch(new MakeMemberPublicPatch(potionColorCache));
-
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
