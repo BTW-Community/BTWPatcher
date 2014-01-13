@@ -30,6 +30,21 @@ public class WorldProviderMod extends com.prupe.mcpatcher.ClassMod {
         addClassSignature(new ConstSignature(0.75f));
         addClassSignature(new ConstSignature(0.5f));
         addClassSignature(new ConstSignature(0.25f));
+        addClassSignature(new ConstSignature(15.0f));
+
+        addClassSignature(new BytecodeSignature() {
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // f * 3.0f + 1.0f
+                    anyFLOAD,
+                    push(3.0f),
+                    FMUL,
+                    push(1.0f),
+                    FADD
+                );
+            }
+        }.setMethod(new MethodRef(getDeobfClass(), "generateLightBrightnessTable", "()V")));
 
         addClassSignature(new ClassSignature() {
             @Override
