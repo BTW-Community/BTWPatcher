@@ -138,7 +138,7 @@ public class RenderPass {
     }
 
     public static boolean shouldSideBeRendered(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
-        if (block.shouldSideBeRendered(blockAccess, i, j, k, face)) {
+        if (BlockAPI.shouldSideBeRendered(block, blockAccess, i, j, k, face)) {
             return true;
         } else if (!extraRenderPass.containsKey(block)) {
             Block neighbor = BlockAPI.getBlockAt(blockAccess, i, j, k);

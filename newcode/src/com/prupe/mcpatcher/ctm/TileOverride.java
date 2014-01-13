@@ -522,7 +522,7 @@ abstract class TileOverride implements ITileOverride {
         }
         if (face >= 0 && innerSeams) {
             int[] normal = NORMALS[face];
-            if (!neighbor.shouldSideBeRendered(blockAccess, i + normal[0], j + normal[1], k + normal[2], face)) {
+            if (!BlockAPI.shouldSideBeRendered(neighbor, blockAccess, i + normal[0], j + normal[1], k + normal[2], face)) {
                 return false;
             }
         }
@@ -531,7 +531,7 @@ abstract class TileOverride implements ITileOverride {
                 return neighbor == block;
 
             case CONNECT_BY_TILE:
-                return neighbor.getBlockIcon(blockAccess, i, j, k, face) == icon;
+                return BlockAPI.getBlockIcon(neighbor, blockAccess, i, j, k, face) == icon;
 
             case CONNECT_BY_MATERIAL:
                 return block.blockMaterial == neighbor.blockMaterial;

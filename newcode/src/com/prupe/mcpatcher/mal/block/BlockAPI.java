@@ -2,9 +2,7 @@ package com.prupe.mcpatcher.mal.block;
 
 import com.prupe.mcpatcher.MAL;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import net.minecraft.src.Block;
-import net.minecraft.src.IBlockAccess;
-import net.minecraft.src.Position;
+import net.minecraft.src.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -228,6 +226,14 @@ abstract public class BlockAPI {
         return instance.getMetadataAt_Impl(blockAccess, i, j, k);
     }
 
+    public static Icon getBlockIcon(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
+        return instance.getBlockIcon_Impl(block, blockAccess, i, j, k, face);
+    }
+
+    public static boolean shouldSideBeRendered(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
+        return instance.shouldSideBeRendered_Impl(block, blockAccess, i, j, k, face);
+    }
+
     // used by custom colors ItemRenderer patch in 1.6 only
     public static Block getBlockById(int id) {
         return instance.getBlockById_Impl(id);
@@ -244,6 +250,10 @@ abstract public class BlockAPI {
     abstract protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k);
 
     abstract protected int getMetadataAt_Impl(IBlockAccess blockAccess, int i, int j, int k);
+
+    abstract protected Icon getBlockIcon_Impl(Block block, IBlockAccess blockAccess, int i, int j, int k, int face);
+
+    abstract protected boolean shouldSideBeRendered_Impl(Block block, IBlockAccess blockAccess, int i, int j, int k, int face);
 
     abstract protected Iterator<Block> iterator_Impl();
 
@@ -267,6 +277,16 @@ abstract public class BlockAPI {
         @Override
         protected int getMetadataAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
             return blockAccess.getBlockMetadata(i, j, k);
+        }
+
+        @Override
+        protected Icon getBlockIcon_Impl(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
+            return block.getBlockIcon(blockAccess, i, j, k, face);
+        }
+
+        @Override
+        protected boolean shouldSideBeRendered_Impl(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
+            return block.shouldSideBeRendered(blockAccess, i, j, k, face);
         }
 
         @Override
@@ -343,6 +363,16 @@ abstract public class BlockAPI {
         }
 
         @Override
+        protected Icon getBlockIcon_Impl(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
+            return block.getBlockIcon(blockAccess, i, j, k, face);
+        }
+
+        @Override
+        protected boolean shouldSideBeRendered_Impl(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
+            return block.shouldSideBeRendered(blockAccess, i, j, k, face);
+        }
+
+        @Override
         protected Iterator<Block> iterator_Impl() {
             return Block.blockRegistry.iterator();
         }
@@ -370,6 +400,15 @@ abstract public class BlockAPI {
     }
 
     final private static class V3 extends V2 {
+        private static final Direction[] DIRS = new Direction[]{
+            Direction.DOWN,
+            Direction.UP,
+            Direction.NORTH,
+            Direction.SOUTH,
+            Direction.WEST,
+            Direction.EAST
+        };
+
         @Override
         protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
             return blockAccess.getBlock(new Position(i, j, k));
@@ -378,6 +417,16 @@ abstract public class BlockAPI {
         @Override
         protected int getMetadataAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
             return blockAccess.getBlockMetadata(new Position(i, j, k));
+        }
+
+        @Override
+        protected Icon getBlockIcon_Impl(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
+            return block.getBlockIcon(blockAccess, new Position(i, j, k), DIRS[face]);
+        }
+
+        @Override
+        protected boolean shouldSideBeRendered_Impl(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
+            return block.shouldSideBeRendered(blockAccess, new Position(i, j, k), DIRS[face]);
         }
     }
 }

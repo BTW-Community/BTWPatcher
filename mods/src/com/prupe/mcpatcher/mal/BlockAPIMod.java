@@ -65,6 +65,7 @@ public class BlockAPIMod extends Mod {
             super(BlockAPIMod.this);
 
             final MethodRef getShortName = new MethodRef(getDeobfClass(), "getShortName", "()Ljava/lang/String;");
+            final MethodRef shouldSideBeRendered = new MethodRef(getDeobfClass(), "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -76,6 +77,7 @@ public class BlockAPIMod extends Mod {
             }.setMethod(getShortName));
 
             addMemberMapper(new MethodMapper(getBlockIcon));
+            addMemberMapper(new MethodMapper(shouldSideBeRendered));
 
             if (malVersion >= 2) {
                 final FieldRef blockRegistry = new FieldRef(getDeobfClass(), "blockRegistry", "LRegistry;");

@@ -10,10 +10,6 @@ public class Block {
     public int blockID;
     public Material blockMaterial;
 
-    public int getBlockTexture(IBlockAccess blockAccess, int i, int j, int k, int face) {
-        return 0;
-    }
-
     public Icon getBlockIcon(IBlockAccess blockAccess, int i, int j, int k, int face) {
         return null;
     }
@@ -23,10 +19,6 @@ public class Block {
     }
 
     public int getRenderBlockPass() {
-        return 0;
-    }
-
-    public float blockStrength(EntityPlayer thePlayer) {
         return 0;
     }
 
@@ -57,5 +49,14 @@ public class Block {
     // 13w36a+
     public int getLightValue() {
         return 0;
+    }
+
+    // 14w02a+
+    public Icon getBlockIcon(IBlockAccess blockAccess, Position position, Direction direction) {
+        return null;
+    }
+
+    public boolean shouldSideBeRendered(IBlockAccess blockAccess, Position position, Direction direction) {
+        return true;
     }
 }
