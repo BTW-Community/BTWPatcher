@@ -148,6 +148,17 @@ public class RenderPass {
         }
     }
 
+    public static boolean shouldSideBeRendered(Block block, IBlockAccess blockAccess, Position position, Direction direction) {
+        if (block.shouldSideBeRendered(blockAccess, position, direction)) {
+            return true;
+        } else if (!extraRenderPass.containsKey(block)) {
+            Block neighbor = blockAccess.getBlock(position);
+            return extraRenderPass.containsKey(neighbor);
+        } else {
+            return false;
+        }
+    }
+
     public static boolean setAmbientOcclusion(boolean ambientOcclusion) {
         RenderPass.ambientOcclusion = ambientOcclusion;
         return ambientOcclusion;
