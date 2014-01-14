@@ -1,9 +1,13 @@
 package com.prupe.mcpatcher.basemod;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.FieldRef;
+import com.prupe.mcpatcher.MethodRef;
+import com.prupe.mcpatcher.Mod;
+import com.prupe.mcpatcher.PatchComponent;
 import javassist.bytecode.AccessFlag;
 
-import static com.prupe.mcpatcher.BytecodeMatcher.*;
+import static com.prupe.mcpatcher.BytecodeMatcher.captureReference;
+import static com.prupe.mcpatcher.BytecodeMatcher.registerLoadStore;
 import static javassist.bytecode.Opcode.*;
 
 public class DirectionMod extends com.prupe.mcpatcher.ClassMod {

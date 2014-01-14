@@ -34,7 +34,7 @@ public class ItemAPIMod extends Mod {
         return null;
     }
 
-    private class ItemMod extends BaseMod.ItemMod {
+    private class ItemMod extends com.prupe.mcpatcher.basemod.ItemMod {
         ItemMod() {
             super(ItemAPIMod.this);
 

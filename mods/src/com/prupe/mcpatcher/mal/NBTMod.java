@@ -1,10 +1,10 @@
 package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.basemod.NBTTagListMod;
 import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
-import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class NBTMod extends Mod {
@@ -30,7 +30,7 @@ public class NBTMod extends Mod {
         addClassMod(new NBTTagNumberMod(6, "Double", "D"));
         addClassMod(new NBTSubclassMod(7, "ByteArray", "[B"));
         addClassMod(new NBTSubclassMod(8, "String", "Ljava/lang/String;"));
-        addClassMod(new BaseMod.NBTTagListMod(this)); // id=9
+        addClassMod(new NBTTagListMod(this)); // id=9
         addClassMod(new NBTTagCompoundMod()); // id=10
         addClassMod(new NBTSubclassMod(11, "IntArray", "[I"));
 
@@ -122,7 +122,7 @@ public class NBTMod extends Mod {
         }
     }
 
-    private class NBTTagCompoundMod extends BaseMod.NBTTagCompoundMod {
+    private class NBTTagCompoundMod extends com.prupe.mcpatcher.basemod.NBTTagCompoundMod {
         NBTTagCompoundMod() {
             super(NBTMod.this);
 

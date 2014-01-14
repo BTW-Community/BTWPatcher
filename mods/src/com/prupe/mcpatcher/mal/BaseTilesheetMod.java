@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.basemod.*;
 import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -16,10 +17,10 @@ public class BaseTilesheetMod extends Mod {
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
-        addClassMod(new BaseMod.IconMod(this));
-        addClassMod(new BaseMod.ResourceLocationMod(this));
-        addClassMod(new BaseMod.AbstractTextureMod(this));
-        addClassMod(new BaseMod.TextureMod(this));
+        addClassMod(new IconMod(this));
+        addClassMod(new ResourceLocationMod(this));
+        addClassMod(new AbstractTextureMod(this));
+        addClassMod(new TextureMod(this));
         addClassMod(new TessellatorMod());
         addClassMod(new IconRegisterMod());
         addClassMod(new TextureAtlasMod());
@@ -38,7 +39,7 @@ public class BaseTilesheetMod extends Mod {
         return new String[]{"Tilesheet"};
     }
 
-    private class TessellatorMod extends BaseMod.TessellatorMod {
+    private class TessellatorMod extends com.prupe.mcpatcher.basemod.TessellatorMod {
         TessellatorMod() {
             super(BaseTilesheetMod.this);
 
@@ -337,7 +338,7 @@ public class BaseTilesheetMod extends Mod {
         }
     }
 
-    private class TextureAtlasMod extends BaseMod.TextureAtlasMod {
+    private class TextureAtlasMod extends com.prupe.mcpatcher.basemod.TextureAtlasMod {
         TextureAtlasMod() {
             super(BaseTilesheetMod.this);
 
@@ -359,8 +360,8 @@ public class BaseTilesheetMod extends Mod {
             final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
             final MethodRef readImage = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
 
-            addClassSignature(new BaseMod.ResourceLocationSignature(this, blocksAtlas, "textures/atlas/blocks.png"));
-            addClassSignature(new BaseMod.ResourceLocationSignature(this, itemsAtlas, "textures/atlas/items.png"));
+            addClassSignature(new ResourceLocationSignature(this, blocksAtlas, "textures/atlas/blocks.png"));
+            addClassSignature(new ResourceLocationSignature(this, itemsAtlas, "textures/atlas/items.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -638,7 +639,7 @@ public class BaseTilesheetMod extends Mod {
         }
     }
 
-    private class TextureAtlasSpriteMod extends BaseMod.TextureAtlasSpriteMod {
+    private class TextureAtlasSpriteMod extends com.prupe.mcpatcher.basemod.TextureAtlasSpriteMod {
         TextureAtlasSpriteMod() {
             super(BaseTilesheetMod.this);
 

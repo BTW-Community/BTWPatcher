@@ -35,7 +35,7 @@ public class HDFont extends Mod {
         BaseTexturePackMod.earlyInitialize(3, MCPatcherUtils.FONT_UTILS_CLASS, "init");
     }
 
-    private static class FontRendererMod extends BaseMod.FontRendererMod {
+    private static class FontRendererMod extends com.prupe.mcpatcher.basemod.FontRendererMod {
         private final FieldRef fontAdj = new FieldRef(getDeobfClass(), "fontAdj", "F");
 
         FontRendererMod(Mod mod) {

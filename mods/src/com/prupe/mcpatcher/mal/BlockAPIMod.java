@@ -1,8 +1,7 @@
 package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
-import com.prupe.mcpatcher.basemod.DirectionMod;
-import com.prupe.mcpatcher.basemod.PositionMod;
+import com.prupe.mcpatcher.basemod.*;
 import javassist.bytecode.MethodInfo;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -31,9 +30,9 @@ public class BlockAPIMod extends Mod {
         addClassMod(new BlockMod());
         addClassMod(new BlockGrassMod());
         addClassMod(new BlockMyceliumMod());
-        addClassMod(new BaseMod.IBlockAccessMod(this));
-        addClassMod(new BaseMod.IconMod(this));
-        addClassMod(new BaseMod.TessellatorMod(this));
+        addClassMod(new IBlockAccessMod(this));
+        addClassMod(new IconMod(this));
+        addClassMod(new TessellatorMod(this));
         addClassMod(new RenderBlocksMod());
         if (malVersion >= 2) {
             addClassMod(new Shared.RegistryBaseMod(this));
@@ -60,7 +59,7 @@ public class BlockAPIMod extends Mod {
         return null;
     }
 
-    private class BlockMod extends BaseMod.BlockMod {
+    private class BlockMod extends com.prupe.mcpatcher.basemod.BlockMod {
         BlockMod() {
             super(BlockAPIMod.this);
 
@@ -136,7 +135,7 @@ public class BlockAPIMod extends Mod {
         }
     }
 
-    private class RenderBlocksMod extends BaseMod.RenderBlocksMod {
+    private class RenderBlocksMod extends com.prupe.mcpatcher.basemod.RenderBlocksMod {
         RenderBlocksMod() {
             super(BlockAPIMod.this);
 

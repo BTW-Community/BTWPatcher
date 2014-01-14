@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.basemod.*;
 import com.prupe.mcpatcher.mal.BaseTexturePackMod;
 import javassist.bytecode.AccessFlag;
 
@@ -24,10 +25,10 @@ public class RandomMobs extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BIOME_API_MOD);
 
-        addClassMod(new BaseMod.ResourceLocationMod(this));
-        addClassMod(new BaseMod.NBTTagCompoundMod(this));
-        addClassMod(new BaseMod.TessellatorMod(this));
-        addClassMod(new BaseMod.IBlockAccessMod(this));
+        addClassMod(new ResourceLocationMod(this));
+        addClassMod(new NBTTagCompoundMod(this));
+        addClassMod(new TessellatorMod(this));
+        addClassMod(new IBlockAccessMod(this));
         addClassMod(new EntityMod());
         addClassMod(new EntityLivingBaseMod());
         addClassMod(new RenderMod());
@@ -127,7 +128,7 @@ public class RandomMobs extends Mod {
         }
     }
 
-    private class EntityLivingBaseMod extends BaseMod.EntityLivingBaseMod {
+    private class EntityLivingBaseMod extends com.prupe.mcpatcher.basemod.EntityLivingBaseMod {
         EntityLivingBaseMod() {
             super(RandomMobs.this);
 
@@ -283,7 +284,7 @@ public class RandomMobs extends Mod {
             final FieldRef miscSkin = new FieldRef(getDeobfClass(), mob.toLowerCase() + "MiscSkin", "LResourceLocation;");
             final MethodRef randomTexture = new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(LEntityLivingBase;LResourceLocation;)LResourceLocation;");
 
-            addClassSignature(new BaseMod.ResourceLocationSignature(this, miscSkin, texture));
+            addClassSignature(new ResourceLocationSignature(this, miscSkin, texture));
 
             addPatch(new BytecodePatch() {
                 @Override

@@ -1,9 +1,7 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
-import com.prupe.mcpatcher.basemod.DirectionMod;
-import com.prupe.mcpatcher.basemod.PositionMod;
-import com.prupe.mcpatcher.basemod.WorldProviderMod;
+import com.prupe.mcpatcher.basemod.*;
 import com.prupe.mcpatcher.mal.BaseTexturePackMod;
 import javassist.bytecode.AccessFlag;
 
@@ -70,10 +68,10 @@ public class CustomColors extends Mod {
 
         configPanel = new ConfigPanel();
 
-        addClassMod(new BaseMod.MinecraftMod(this).mapWorldClient());
-        addClassMod(new BaseMod.IBlockAccessMod(this));
-        addClassMod(new BaseMod.TessellatorMod(this));
-        addClassMod(new BaseMod.ResourceLocationMod(this));
+        addClassMod(new MinecraftMod(this).mapWorldClient());
+        addClassMod(new IBlockAccessMod(this));
+        addClassMod(new TessellatorMod(this));
+        addClassMod(new ResourceLocationMod(this));
         if (PositionMod.havePositionClass()) {
             addClassMod(new PositionMod(this));
             addClassMod(new DirectionMod(this));
@@ -83,7 +81,7 @@ public class CustomColors extends Mod {
         addClassMod(new BlockSubclassMod());
         addClassMod(new BlockCauldronMod());
 
-        addClassMod(new BaseMod.BiomeGenBaseMod(this));
+        addClassMod(new BiomeGenBaseMod(this));
         addClassMod(new ItemMod());
         addClassMod(new ItemBlockMod());
         addClassMod(new ItemRendererMod());
@@ -92,7 +90,7 @@ public class CustomColors extends Mod {
         addClassMod(new PotionHelperMod());
 
         addClassMod(new WorldMod());
-        addClassMod(new BaseMod.WorldClientMod(this));
+        addClassMod(new WorldClientMod(this));
         addClassMod(new WorldProviderMod());
         addClassMod(new WorldProviderHellMod());
         addClassMod(new WorldProviderEndMod());
@@ -376,7 +374,7 @@ public class CustomColors extends Mod {
         }
     }
 
-    private class BlockMod extends BaseMod.BlockMod {
+    private class BlockMod extends com.prupe.mcpatcher.basemod.BlockMod {
         BlockMod() {
             super(CustomColors.this);
 
@@ -472,7 +470,7 @@ public class CustomColors extends Mod {
         }
     }
 
-    private class ItemMod extends BaseMod.ItemMod {
+    private class ItemMod extends com.prupe.mcpatcher.basemod.ItemMod {
         ItemMod() {
             super(CustomColors.this);
 
@@ -931,7 +929,7 @@ public class CustomColors extends Mod {
         }
     }
 
-    private class WorldMod extends BaseMod.WorldMod {
+    private class WorldMod extends com.prupe.mcpatcher.basemod.WorldMod {
         WorldMod() {
             super(CustomColors.this);
             setInterfaces("IBlockAccess");
@@ -2003,7 +2001,7 @@ public class CustomColors extends Mod {
         }
     }
 
-    private class EntityLivingBaseMod extends BaseMod.EntityLivingBaseMod {
+    private class EntityLivingBaseMod extends com.prupe.mcpatcher.basemod.EntityLivingBaseMod {
         public EntityLivingBaseMod() {
             super(CustomColors.this);
 
@@ -2594,7 +2592,7 @@ public class CustomColors extends Mod {
         }
     }
 
-    private class RenderBlocksMod extends BaseMod.RenderBlocksMod {
+    private class RenderBlocksMod extends com.prupe.mcpatcher.basemod.RenderBlocksMod {
         private final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
         private final MethodRef renderBlockFluids = new MethodRef(getDeobfClass(), "renderBlockFluids", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
@@ -3427,7 +3425,7 @@ public class CustomColors extends Mod {
             final MethodRef renderSky = new MethodRef(getDeobfClass(), "renderSky", "(F)V");
             final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
 
-            addClassSignature(new BaseMod.ResourceLocationSignature(this, clouds, "textures/environment/clouds.png"));
+            addClassSignature(new ResourceLocationSignature(this, clouds, "textures/environment/clouds.png"));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -3910,7 +3908,7 @@ public class CustomColors extends Mod {
         }
     }
 
-    private class FontRendererMod extends BaseMod.FontRendererMod {
+    private class FontRendererMod extends com.prupe.mcpatcher.basemod.FontRendererMod {
         FontRendererMod() {
             super(CustomColors.this);
 
@@ -4005,7 +4003,7 @@ public class CustomColors extends Mod {
             final MethodRef glDepthMask = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthMask", "(Z)V");
 
             addClassSignature(new ConstSignature(glDepthMask));
-            addClassSignature(new BaseMod.ResourceLocationSignature(this, sign, "textures/entity/sign.png"));
+            addClassSignature(new ResourceLocationSignature(this, sign, "textures/entity/sign.png"));
 
             addPatch(new BytecodePatch() {
                 {

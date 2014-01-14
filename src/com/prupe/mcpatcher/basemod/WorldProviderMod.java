@@ -4,8 +4,9 @@ import com.prupe.mcpatcher.*;
 import javassist.bytecode.AccessFlag;
 import javassist.bytecode.ClassFile;
 
-import static com.prupe.mcpatcher.BinaryRegex.*;
-import static com.prupe.mcpatcher.BytecodeMatcher.*;
+import static com.prupe.mcpatcher.BinaryRegex.begin;
+import static com.prupe.mcpatcher.BytecodeMatcher.anyFLOAD;
+import static com.prupe.mcpatcher.BytecodeMatcher.captureReference;
 import static javassist.bytecode.Opcode.*;
 
 public class WorldProviderMod extends com.prupe.mcpatcher.ClassMod {

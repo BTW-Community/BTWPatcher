@@ -1,8 +1,7 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
-import com.prupe.mcpatcher.basemod.DirectionMod;
-import com.prupe.mcpatcher.basemod.PositionMod;
+import com.prupe.mcpatcher.basemod.*;
 import com.prupe.mcpatcher.mal.BaseTexturePackMod;
 import javassist.bytecode.AccessFlag;
 
@@ -37,10 +36,10 @@ public class ConnectedTextures extends Mod {
 
         haveBlockRegistry = getMinecraftVersion().compareTo("13w36a") >= 0;
 
-        addClassMod(new BaseMod.IBlockAccessMod(this));
-        addClassMod(new BaseMod.TessellatorMod(this));
-        addClassMod(new BaseMod.IconMod(this));
-        addClassMod(new BaseMod.ResourceLocationMod(this));
+        addClassMod(new IBlockAccessMod(this));
+        addClassMod(new TessellatorMod(this));
+        addClassMod(new IconMod(this));
+        addClassMod(new ResourceLocationMod(this));
         if (PositionMod.havePositionClass()) {
             addClassMod(new PositionMod(this));
             addClassMod(new DirectionMod(this));
@@ -156,7 +155,7 @@ public class ConnectedTextures extends Mod {
         }
     }
 
-    private class BlockMod extends BaseMod.BlockMod {
+    private class BlockMod extends com.prupe.mcpatcher.basemod.BlockMod {
         BlockMod() {
             super(ConnectedTextures.this);
 
@@ -216,7 +215,7 @@ public class ConnectedTextures extends Mod {
         }
     }
 
-    private class RenderBlocksMod extends BaseMod.RenderBlocksMod {
+    private class RenderBlocksMod extends com.prupe.mcpatcher.basemod.RenderBlocksMod {
         private final MethodRef[] faceMethods = new MethodRef[6];
         private final FieldRef overrideBlockTexture = new FieldRef(getDeobfClass(), "overrideBlockTexture", "LIcon;");
         private final FieldRef instance = new FieldRef("Tessellator", "instance", "LTessellator;");
@@ -1082,7 +1081,7 @@ public class ConnectedTextures extends Mod {
         }
     }
 
-    private class WorldRendererMod extends BaseMod.WorldRendererMod {
+    private class WorldRendererMod extends com.prupe.mcpatcher.basemod.WorldRendererMod {
         WorldRendererMod() {
             super(ConnectedTextures.this);
 

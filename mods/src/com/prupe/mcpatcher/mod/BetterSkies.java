@@ -1,7 +1,7 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
-import com.prupe.mcpatcher.basemod.WorldProviderMod;
+import com.prupe.mcpatcher.basemod.*;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -24,11 +24,11 @@ public class BetterSkies extends Mod {
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
-        addClassMod(new BaseMod.MinecraftMod(this).mapWorldClient());
-        addClassMod(new BaseMod.ResourceLocationMod(this));
+        addClassMod(new MinecraftMod(this).mapWorldClient());
+        addClassMod(new ResourceLocationMod(this));
         addClassMod(new WorldMod());
         addClassMod(new WorldProviderMod(this));
-        addClassMod(new BaseMod.WorldClientMod(this));
+        addClassMod(new WorldClientMod(this));
         addClassMod(new RenderGlobalMod());
 
         addClassMod(new EffectRendererMod());
@@ -93,7 +93,7 @@ public class BetterSkies extends Mod {
         }
     }
 
-    private class WorldMod extends BaseMod.WorldMod {
+    private class WorldMod extends com.prupe.mcpatcher.basemod.WorldMod {
         WorldMod() {
             super(BetterSkies.this);
 
@@ -423,7 +423,7 @@ public class BetterSkies extends Mod {
         private void addCelestialObjectPatch(final String objName, String textureName) {
             final FieldRef textureField = new FieldRef(getDeobfClass(), objName, "LResourceLocation;");
 
-            addClassSignature(new BaseMod.ResourceLocationSignature(this, textureField, "textures/environment/" + textureName));
+            addClassSignature(new ResourceLocationSignature(this, textureField, "textures/environment/" + textureName));
 
             addPatch(new BytecodePatch() {
                 @Override

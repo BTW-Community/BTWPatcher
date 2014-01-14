@@ -1,8 +1,7 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
-import com.prupe.mcpatcher.basemod.DirectionMod;
-import com.prupe.mcpatcher.basemod.PositionMod;
+import com.prupe.mcpatcher.basemod.*;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -30,10 +29,10 @@ public class BetterGlass extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.CONNECTED_TEXTURES);
 
-        addClassMod(new BaseMod.MinecraftMod(this));
-        addClassMod(new BaseMod.ResourceLocationMod(this));
-        addClassMod(new BaseMod.BlockMod(this));
-        addClassMod(new BaseMod.IBlockAccessMod(this));
+        addClassMod(new MinecraftMod(this));
+        addClassMod(new ResourceLocationMod(this));
+        addClassMod(new BlockMod(this));
+        addClassMod(new IBlockAccessMod(this));
         addClassMod(new WorldRendererMod());
         addClassMod(new EntityRendererMod());
         addClassMod(new RenderGlobalMod());
@@ -44,7 +43,7 @@ public class BetterGlass extends Mod {
         addClassFile(MCPatcherUtils.RENDER_PASS_CLASS + "$2");
     }
 
-    private class WorldRendererMod extends BaseMod.WorldRendererMod {
+    private class WorldRendererMod extends com.prupe.mcpatcher.basemod.WorldRendererMod {
         private int loopRegister;
 
         WorldRendererMod() {
@@ -671,7 +670,7 @@ public class BetterGlass extends Mod {
         }
     }
 
-    private class RenderBlocksMod extends BaseMod.RenderBlocksMod {
+    private class RenderBlocksMod extends com.prupe.mcpatcher.basemod.RenderBlocksMod {
         RenderBlocksMod() {
             super(BetterGlass.this);
 

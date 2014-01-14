@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.basemod.*;
 import com.prupe.mcpatcher.mal.BaseTexturePackMod;
 import javassist.bytecode.AccessFlag;
 
@@ -43,11 +44,11 @@ public class CustomItemTextures extends Mod {
         addDependency(MCPatcherUtils.NBT_MOD);
         addDependency(MCPatcherUtils.ITEM_API_MOD);
 
-        addClassMod(new BaseMod.ResourceLocationMod(this));
-        addClassMod(new BaseMod.TessellatorMod(this));
-        addClassMod(new BaseMod.NBTTagCompoundMod(this));
-        addClassMod(new BaseMod.NBTTagListMod(this));
-        addClassMod(new BaseMod.IconMod(this));
+        addClassMod(new ResourceLocationMod(this));
+        addClassMod(new TessellatorMod(this));
+        addClassMod(new NBTTagCompoundMod(this));
+        addClassMod(new NBTTagListMod(this));
+        addClassMod(new IconMod(this));
         addClassMod(new ItemMod());
         addClassMod(new ItemArmorMod());
         addClassMod(new ItemStackMod());
@@ -59,7 +60,7 @@ public class CustomItemTextures extends Mod {
         addClassMod(new RenderPlayerMod());
         addClassMod(new RenderSnowballMod());
         addClassMod(new EntityLivingBaseMod());
-        addClassMod(new BaseMod.EntityLivingMod(this));
+        addClassMod(new EntityLivingMod(this));
         addClassMod(new EntityPlayerMod());
         addClassMod(new AbstractClientPlayerMod());
         addClassMod(new PotionMod());
@@ -148,7 +149,7 @@ public class CustomItemTextures extends Mod {
         return getHasEffectSignature(patch, itemStackRegister, renderPassRegister, "", "");
     }
 
-    private class ItemMod extends BaseMod.ItemMod {
+    private class ItemMod extends com.prupe.mcpatcher.basemod.ItemMod {
         ItemMod() {
             super(CustomItemTextures.this);
 
@@ -296,7 +297,7 @@ public class CustomItemTextures extends Mod {
     private void addGlintSignature(ClassMod classMod, MethodRef method, final String opcode) {
         final FieldRef glint = new FieldRef(classMod.getDeobfClass(), "glint", "LResourceLocation;");
 
-        classMod.addClassSignature(new BaseMod.ResourceLocationSignature(classMod, glint, GLINT_PNG));
+        classMod.addClassSignature(new ResourceLocationSignature(classMod, glint, GLINT_PNG));
 
         classMod.addClassSignature(new BytecodeSignature(classMod) {
             @Override
@@ -1119,7 +1120,7 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private class EntityLivingBaseMod extends BaseMod.EntityLivingBaseMod {
+    private class EntityLivingBaseMod extends com.prupe.mcpatcher.basemod.EntityLivingBaseMod {
         EntityLivingBaseMod() {
             super(CustomItemTextures.this);
 

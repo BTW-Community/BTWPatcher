@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.basemod.*;
 import javassist.bytecode.AccessFlag;
 
 import java.util.ArrayList;
@@ -27,13 +28,13 @@ public class BaseTexturePackMod extends Mod {
 
         addClassMod(new MinecraftMod());
         addClassMod(new TextureManagerMod());
-        addClassMod(new BaseMod.TextureUtilMod(this));
+        addClassMod(new TextureUtilMod(this));
         addClassMod(new AbstractTextureMod());
         addClassMod(new ThreadDownloadImageDataMod());
-        addClassMod(new BaseMod.SimpleTextureMod(this));
-        addClassMod(new BaseMod.IconMod(this));
-        addClassMod(new BaseMod.TextureAtlasMod(this));
-        addClassMod(new BaseMod.DynamicTextureMod(this));
+        addClassMod(new SimpleTextureMod(this));
+        addClassMod(new IconMod(this));
+        addClassMod(new TextureAtlasMod(this));
+        addClassMod(new DynamicTextureMod(this));
         addClassMod(new ResourcePackMod());
         addClassMod(new DefaultResourcePackMod());
         addClassMod(new AbstractResourcePackMod());
@@ -43,8 +44,8 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new ReloadableResourceManagerMod());
         addClassMod(new SimpleReloadableResourceManagerMod());
         addClassMod(new FallbackResourceManagerMod());
-        addClassMod(new BaseMod.ResourceMod(this));
-        addClassMod(new BaseMod.ResourceLocationMod(this));
+        addClassMod(new ResourceMod(this));
+        addClassMod(new ResourceLocationMod(this));
 
         addClassFile(MCPatcherUtils.TEXTURE_PACK_API_CLASS);
         addClassFile(MCPatcherUtils.TEXTURE_PACK_API_CLASS + "$1");
@@ -86,7 +87,7 @@ public class BaseTexturePackMod extends Mod {
         }
     }
 
-    private class MinecraftMod extends BaseMod.MinecraftMod {
+    private class MinecraftMod extends com.prupe.mcpatcher.basemod.MinecraftMod {
         MinecraftMod() {
             super(BaseTexturePackMod.this);
 
@@ -236,7 +237,7 @@ public class BaseTexturePackMod extends Mod {
         }
     }
 
-    private class AbstractTextureMod extends BaseMod.AbstractTextureMod {
+    private class AbstractTextureMod extends com.prupe.mcpatcher.basemod.AbstractTextureMod {
         AbstractTextureMod() {
             super(BaseTexturePackMod.this);
 

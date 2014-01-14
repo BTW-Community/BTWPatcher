@@ -7,7 +7,6 @@ import com.prupe.mcpatcher.PatchComponent;
 import javassist.bytecode.AccessFlag;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOError;
 import java.io.IOException;
 
 import static com.prupe.mcpatcher.BytecodeMatcher.captureReference;

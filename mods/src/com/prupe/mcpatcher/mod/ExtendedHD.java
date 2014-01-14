@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.basemod.*;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -37,16 +38,16 @@ public class ExtendedHD extends Mod {
             return;
         }
 
-        addClassMod(new BaseMod.ResourceLocationMod(this));
-        addClassMod(new BaseMod.ResourceMod(this));
-        addClassMod(new BaseMod.IconMod(this));
-        addClassMod(new BaseMod.TextureObjectMod(this));
-        addClassMod(new BaseMod.AbstractTextureMod(this));
-        addClassMod(new BaseMod.TextureMod(this));
+        addClassMod(new ResourceLocationMod(this));
+        addClassMod(new ResourceMod(this));
+        addClassMod(new IconMod(this));
+        addClassMod(new TextureObjectMod(this));
+        addClassMod(new AbstractTextureMod(this));
+        addClassMod(new TextureMod(this));
         addClassMod(new TextureManagerMod());
         addClassMod(new TextureAtlasMod());
         if (haveMipmapping) {
-            addClassMod(new BaseMod.TextureAtlasSpriteMod(this));
+            addClassMod(new com.prupe.mcpatcher.basemod.TextureAtlasSpriteMod(this));
         } else {
             addClassMod(new MinecraftMod());
             addClassMod(new TextureUtilMod());
@@ -83,7 +84,7 @@ public class ExtendedHD extends Mod {
         };
     }
 
-    private class MinecraftMod extends BaseMod.MinecraftMod {
+    private class MinecraftMod extends com.prupe.mcpatcher.basemod.MinecraftMod {
         MinecraftMod() {
             super(ExtendedHD.this);
 
@@ -110,7 +111,7 @@ public class ExtendedHD extends Mod {
         }
     }
 
-    private class TextureUtilMod extends BaseMod.TextureUtilMod {
+    private class TextureUtilMod extends com.prupe.mcpatcher.basemod.TextureUtilMod {
         TextureUtilMod() {
             super(ExtendedHD.this);
 
@@ -171,7 +172,7 @@ public class ExtendedHD extends Mod {
         }
     }
 
-    private class TextureAtlasMod extends BaseMod.TextureAtlasMod {
+    private class TextureAtlasMod extends com.prupe.mcpatcher.basemod.TextureAtlasMod {
         TextureAtlasMod() {
             super(ExtendedHD.this);
 
@@ -269,7 +270,7 @@ public class ExtendedHD extends Mod {
         }
     }
 
-    private class TextureAtlasSpriteMod extends BaseMod.TextureAtlasSpriteMod {
+    private class TextureAtlasSpriteMod extends com.prupe.mcpatcher.basemod.TextureAtlasSpriteMod {
         TextureAtlasSpriteMod() {
             super(ExtendedHD.this);
 
@@ -439,7 +440,7 @@ public class ExtendedHD extends Mod {
         }
     }
 
-    private class SimpleTextureMod extends BaseMod.SimpleTextureMod {
+    private class SimpleTextureMod extends com.prupe.mcpatcher.basemod.SimpleTextureMod {
         SimpleTextureMod() {
             super(ExtendedHD.this);
 
