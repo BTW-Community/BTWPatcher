@@ -1,6 +1,5 @@
 package com.prupe.mcpatcher;
 
-import com.prupe.mcpatcher.basemod.MinecraftMod;
 import com.prupe.mcpatcher.basemod.ProfilerMod;
 import com.prupe.mcpatcher.launcher.version.Library;
 import javassist.bytecode.AccessFlag;
@@ -25,11 +24,8 @@ import static com.prupe.mcpatcher.BytecodeMatcher.registerLoadStore;
 import static javassist.bytecode.Opcode.*;
 
 /**
- * Internal mod required by the patcher.  Responsible for injecting MCPatcherUtils classes
+ * Internal mod required by the patcher.  Responsible for injecting basic MCPatcher runtime classes
  * into minecraft.jar.
- * <p/>
- * Also provides a collection of commonly used ClassMods as public static inner classes that
- * can be instantiated or extended as needed.
  */
 public final class BaseMod extends Mod {
     private final boolean haveProfiler;
@@ -45,10 +41,10 @@ public final class BaseMod extends Mod {
         haveProfiler = getMinecraftVersion().compareTo("1.3") >= 0;
 
         if (getMinecraftVersion().compareTo("1.6") >= 0) {
-            addClassMod(new XMainMod());
+            addClassMod(new MainMod());
         }
         addClassMod(new XMinecraftMod());
-        addClassMod(new XGameSettingsMod());
+        addClassMod(new GameSettingsMod());
         if (haveProfiler) {
             addClassMod(new ProfilerMod(this));
         }
@@ -218,8 +214,8 @@ public final class BaseMod extends Mod {
         }
     }
 
-    private class XMainMod extends ClassMod {
-        XMainMod() {
+    private class MainMod extends ClassMod {
+        MainMod() {
             addClassSignature(new FilenameSignature(ClassMap.classNameToFilename("net.minecraft.client.main.Main")));
 
             final MethodRef main = new MethodRef(getDeobfClass(), "main", "([Ljava/lang/String;)V");
@@ -248,14 +244,9 @@ public final class BaseMod extends Mod {
                 }
             }.targetMethod(main));
         }
-
-        @Override
-        public String getDeobfClass() {
-            return "Main";
-        }
     }
 
-    private class XMinecraftMod extends MinecraftMod {
+    private class XMinecraftMod extends com.prupe.mcpatcher.basemod.MinecraftMod {
         XMinecraftMod() {
             super(BaseMod.this);
 
@@ -351,10 +342,10 @@ public final class BaseMod extends Mod {
         }
     }
 
-    private class XGameSettingsMod extends ClassMod {
+    private class GameSettingsMod extends ClassMod {
         private static final String OPTIONS_TXT = "options.txt";
 
-        XGameSettingsMod() {
+        GameSettingsMod() {
             final ClassRef fileClass = new ClassRef("java/io/File");
             final MethodRef fileConstructor = new MethodRef("java/io/File", "<init>", "(Ljava/io/File;Ljava/lang/String;)V");
             final MethodRef getOptionsTxt = new MethodRef(MCPatcherUtils.CONFIG_CLASS, "getOptionsTxt", "(Ljava/io/File;Ljava/lang/String;)Ljava/io/File;");
@@ -392,10 +383,27 @@ public final class BaseMod extends Mod {
                 }
             }.matchConstructorOnly(true));
         }
+    }
 
-        @Override
-        public String getDeobfClass() {
-            return "GameSettings";
+    @Deprecated
+    public static class MinecraftMod extends com.prupe.mcpatcher.basemod.MinecraftMod {
+        public MinecraftMod(Mod mod) {
+            super(mod);
+        }
+
+        public MinecraftMod mapWorldClient() {
+            super.mapWorldClient();
+            return this;
+        }
+
+        public MinecraftMod mapPlayer() {
+            super.mapPlayer();
+            return this;
+        }
+
+        public MinecraftMod addWorldGetter() {
+            super.addWorldGetter();
+            return this;
         }
     }
 }
