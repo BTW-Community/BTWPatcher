@@ -741,6 +741,87 @@ public class BetterGlass extends Mod {
     private class RenderPassEnumMod extends com.prupe.mcpatcher.basemod.RenderPassEnumMod {
         RenderPassEnumMod() {
             super(BetterGlass.this);
+
+            addPatch(new BytecodePatch() {
+                private final ClassRef classRef = new ClassRef(getDeobfClass());
+                private final MethodRef arraycopy = new MethodRef("java/lang/System", "arraycopy", "([Ljava/lang/Object;I[Ljava/lang/Object;II)V");
+                private final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(Ljava/lang/String;I)V");
+                private int tmp1;
+                private int tmp2;
+
+                @Override
+                public String getDescription() {
+                    return "add new render passes";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // RenderPassEnum.values = new RenderPassEnum[]{...};
+                        AASTORE,
+                        reference(PUTSTATIC, values)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    tmp1 = getMethodInfo().getCodeAttribute().getMaxLocals();
+                    tmp2 = tmp1 + 1;
+
+                    return buildCode(
+                        // RenderPassEnum[] tmp1 = new RenderPassEnum[]{...};
+                        AASTORE,
+                        registerLoadStore(ASTORE, tmp1),
+
+                        // RenderPassEnum[] tmp2 = new RenderPassEnum[tmp1.length + 2];
+                        registerLoadStore(ALOAD, tmp1),
+                        ARRAYLENGTH,
+                        push(2),
+                        IADD,
+                        reference(ANEWARRAY, classRef),
+                        registerLoadStore(ASTORE, tmp2),
+
+                        // System.arraycopy(tmp1, 0, tmp2, 0, tmp1.length);
+                        registerLoadStore(ALOAD, tmp1),
+                        push(0),
+                        registerLoadStore(ALOAD, tmp2),
+                        push(0),
+                        registerLoadStore(ALOAD, tmp1),
+                        ARRAYLENGTH,
+                        reference(INVOKESTATIC, arraycopy),
+
+                        // tmp2[tmp1.length] = new RenderPassEnum("BACKFACE", tmp1.length);
+                        newEnum("BACKFACE", 0),
+
+                        // tmp2[tmp1.length + 1] = new RenderPassEnum("OVERLAY", tmp1.length + 1)
+                        newEnum("OVERLAY", 1),
+
+                        // RenderPassEnum.values = tmp2;
+                        registerLoadStore(ALOAD, tmp2),
+                        reference(PUTSTATIC, values)
+                    );
+                }
+
+                private byte[] newEnum(String name, int offset) {
+                    return buildCode(
+                        // tmp2[tmp1.length + offset] = new RenderPassEnum(name, tmp1.length + offset)
+                        registerLoadStore(ALOAD, tmp2),
+                        registerLoadStore(ALOAD, tmp1),
+                        ARRAYLENGTH,
+                        push(offset),
+                        IADD,
+                        reference(NEW, classRef),
+                        DUP,
+                        push(name),
+                        registerLoadStore(ALOAD, tmp1),
+                        ARRAYLENGTH,
+                        push(offset),
+                        IADD,
+                        reference(INVOKESPECIAL, constructor),
+                        AASTORE
+                    );
+                }
+            }.matchStaticInitializerOnly(true));
         }
     }
 }
