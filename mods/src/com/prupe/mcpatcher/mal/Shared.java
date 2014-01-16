@@ -51,7 +51,7 @@ class Shared {
                 new MethodRef(getDeobfClass(), "getId", "(Ljava/lang/Object;)I"),
                 new MethodRef(getDeobfClass(), "getById", "(I)Ljava/lang/Object;"),
                 new MethodRef(getDeobfClass(), "iterator", "()Ljava/util/Iterator;"),
-                new MethodRef(getDeobfClass(), "containsId", "(I)Z"),
+                Mod.getMinecraftVersion().compareTo("14w03b") >= 0 ? null : new MethodRef(getDeobfClass(), "containsId", "(I)Z"),
                 getFullName
             ).setInterfaceOnly(false));
         }

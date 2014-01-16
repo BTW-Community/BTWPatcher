@@ -20,7 +20,8 @@ public class Registry<T> extends RegistryBase<String, T> implements RegistryIter
         return null;
     }
 
-    // 13w39b
+    // 13w39b-14w03a
+    @Deprecated
     public boolean containsId(int id) {
         return false;
     }
