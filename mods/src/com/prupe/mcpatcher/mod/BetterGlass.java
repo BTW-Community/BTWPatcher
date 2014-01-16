@@ -16,7 +16,6 @@ public class BetterGlass extends Mod {
     private static final MethodRef glShadeModel = new MethodRef(MCPatcherUtils.GL11_CLASS, "glShadeModel", "(I)V");
     private static final MethodRef glCallList = new MethodRef(MCPatcherUtils.GL11_CLASS, "glCallList", "(I)V");
     private static final MethodRef glAlphaFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glAlphaFunc", "(IF)V");
-    private static final MethodRef getRenderBlockPass = new MethodRef("Block", "getRenderBlockPass", "()I");
     private static final MethodRef enableLightmap = new MethodRef("EntityRenderer", "enableLightmap", "(D)V");
     private static final MethodRef disableLightmap = new MethodRef("EntityRenderer", "disableLightmap", "(D)V");
 
@@ -37,6 +36,9 @@ public class BetterGlass extends Mod {
         addClassMod(new EntityRendererMod());
         addClassMod(new RenderGlobalMod());
         addClassMod(new RenderBlocksMod());
+        if (RenderPassEnumMod.haveRenderPassEnum()) {
+            addClassMod(new RenderPassEnumMod());
+        }
 
         addClassFile(MCPatcherUtils.RENDER_PASS_CLASS);
         addClassFile(MCPatcherUtils.RENDER_PASS_CLASS + "$1");
@@ -44,13 +46,13 @@ public class BetterGlass extends Mod {
     }
 
     private class WorldRendererMod extends com.prupe.mcpatcher.basemod.WorldRendererMod {
+        private final FieldRef skipRenderPass = new FieldRef(getDeobfClass(), "skipRenderPass", "[Z");
         private int loopRegister;
 
         WorldRendererMod() {
             super(BetterGlass.this);
 
-            final FieldRef glRenderList = new FieldRef(getDeobfClass(), "glRenderList", "I");
-            final FieldRef skipRenderPass = new FieldRef(getDeobfClass(), "skipRenderPass", "[Z");
+            final MethodRef getRenderBlockPass = new MethodRef("Block", "getRenderBlockPass", "()" + RenderPassEnumMod.getDescriptor());
             final MethodRef startPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "start", "(I)V");
             final MethodRef canRenderInPass1 = new MethodRef("forge/ForgeHooksClient", "canRenderInPass", "(LBlock;I)Z");
             final MethodRef canRenderInPass2 = new MethodRef("Block", "canRenderInPass", "(I)Z");
@@ -62,7 +64,7 @@ public class BetterGlass extends Mod {
                         // j3 = block.getRenderBlockPass();
                         anyALOAD,
                         captureReference(INVOKEVIRTUAL),
-                        ISTORE, capture(any()),
+                        RenderPassEnumMod.getStoreOpcode(), capture(any()),
 
                         // ...
                         any(0, 30),
@@ -70,8 +72,10 @@ public class BetterGlass extends Mod {
                         // if (j3 != i2)
                         // -or-
                         // if (j3 > i2)
-                        ILOAD, backReference(2),
-                        ILOAD, any(),
+                        RenderPassEnumMod.getLoadOpcode(), backReference(2),
+                        RenderPassEnumMod.getOrdinalExpr(),
+                        RenderPassEnumMod.getLoadOpcode(), any(),
+                        RenderPassEnumMod.getOrdinalExpr(),
                         subset(new int[]{IF_ICMPEQ, IF_ICMPLE}, true), any(2),
 
                         // flag = true;
@@ -84,70 +88,11 @@ public class BetterGlass extends Mod {
                 .addXref(1, getRenderBlockPass)
             );
 
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        push(2),
-                        IADD,
-                        reference(INVOKESTATIC, glCallList)
-                    );
-                }
-            }.addXref(1, glRenderList));
-
             addMemberMapper(new FieldMapper(skipRenderPass));
 
-            addPatch(new RenderPassPatch("init") {
-                @Override
-                protected String getPrefix() {
-                    return buildExpression(
-                        ALOAD_0
-                    );
-                }
-
-                @Override
-                protected String getSuffix() {
-                    return buildExpression(
-                        NEWARRAY, T_BOOLEAN,
-                        reference(PUTFIELD, skipRenderPass)
-                    );
-                }
-            }.matchConstructorOnly(true));
-
-            addPatch(new RenderPassPatch("loop") {
-                @Override
-                protected String getPrefix() {
-                    return buildExpression(
-                        anyILOAD
-                    );
-                }
-
-                @Override
-                protected String getSuffix() {
-                    return buildExpression(
-                        IF_ICMPLT_or_IF_ICMPGE, any(2)
-                    );
-                }
-            });
-
-            addPatch(new RenderPassPatch("occlusion") {
-                @Override
-                protected String getPrefix() {
-                    return buildExpression(
-                        ALOAD_0,
-                        reference(GETFIELD, glRenderList)
-                    );
-                }
-
-                @Override
-                protected String getSuffix() {
-                    return buildExpression(
-                        IADD
-                    );
-                }
-            });
+            if (!RenderPassEnumMod.haveRenderPassEnum()) {
+                setupPre18();
+            }
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -211,50 +156,6 @@ public class BetterGlass extends Mod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "increase render passes from 2 to " + (2 + EXTRA_PASSES) + " (&&)";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // return skipRenderPass[0] && skipRenderPass[1];
-                        ALOAD_0,
-                        reference(GETFIELD, skipRenderPass),
-                        push(0),
-                        BALOAD,
-                        IFEQ, any(2),
-                        ALOAD_0,
-                        reference(GETFIELD, skipRenderPass),
-                        push(1),
-                        BALOAD,
-                        IFEQ, any(2),
-                        push(1),
-                        or(
-                            build(IRETURN),
-                            build(
-                                GOTO, any(2)
-                            )
-                        ),
-                        push(0),
-                        IRETURN
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // return RenderPass.skipAllRenderPasses(skipRenderPass);
-                        ALOAD_0,
-                        reference(GETFIELD, skipRenderPass),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "skipAllRenderPasses", "([Z)Z")),
-                        IRETURN
-                    );
-                }
-            });
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
                     return "set up extra render pass";
                 }
 
@@ -296,6 +197,117 @@ public class BetterGlass extends Mod {
                     );
                 }
             }.targetMethod(updateRenderer));
+        }
+
+        private void setupPre18() {
+            final FieldRef glRenderList = new FieldRef(getDeobfClass(), "glRenderList", "I");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        push(2),
+                        IADD,
+                        reference(INVOKESTATIC, glCallList)
+                    );
+                }
+            }.addXref(1, glRenderList));
+
+            addPatch(new RenderPassPatch("init") {
+                @Override
+                protected String getPrefix() {
+                    return buildExpression(
+                        ALOAD_0
+                    );
+                }
+
+                @Override
+                protected String getSuffix() {
+                    return buildExpression(
+                        NEWARRAY, T_BOOLEAN,
+                        reference(PUTFIELD, skipRenderPass)
+                    );
+                }
+            }.matchConstructorOnly(true));
+
+            addPatch(new RenderPassPatch("loop") {
+                @Override
+                protected String getPrefix() {
+                    return buildExpression(
+                        anyILOAD
+                    );
+                }
+
+                @Override
+                protected String getSuffix() {
+                    return buildExpression(
+                        IF_ICMPLT_or_IF_ICMPGE, any(2)
+                    );
+                }
+            });
+
+            addPatch(new RenderPassPatch("occlusion") {
+                @Override
+                protected String getPrefix() {
+                    return buildExpression(
+                        ALOAD_0,
+                        reference(GETFIELD, glRenderList)
+                    );
+                }
+
+                @Override
+                protected String getSuffix() {
+                    return buildExpression(
+                        IADD
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "increase render passes from 2 to " + (2 + EXTRA_PASSES) + " (&&)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // return skipRenderPass[0] && skipRenderPass[1];
+                        ALOAD_0,
+                        reference(GETFIELD, skipRenderPass),
+                        push(0),
+                        BALOAD,
+                        IFEQ, any(2),
+                        ALOAD_0,
+                        reference(GETFIELD, skipRenderPass),
+                        push(1),
+                        BALOAD,
+                        IFEQ, any(2),
+                        push(1),
+                        or(
+                            build(IRETURN),
+                            build(
+                                GOTO, any(2)
+                            )
+                        ),
+                        push(0),
+                        IRETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // return RenderPass.skipAllRenderPasses(skipRenderPass);
+                        ALOAD_0,
+                        reference(GETFIELD, skipRenderPass),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "skipAllRenderPasses", "([Z)Z")),
+                        IRETURN
+                    );
+                }
+            });
         }
 
         abstract private class RenderPassPatch extends BytecodePatch {
@@ -723,6 +735,12 @@ public class BetterGlass extends Mod {
                     );
                 }
             });
+        }
+    }
+
+    private class RenderPassEnumMod extends com.prupe.mcpatcher.basemod.RenderPassEnumMod {
+        RenderPassEnumMod() {
+            super(BetterGlass.this);
         }
     }
 }
