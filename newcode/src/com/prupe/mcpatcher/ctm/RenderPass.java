@@ -17,6 +17,7 @@ public class RenderPass {
 
     private static final Map<Block, Integer> baseRenderPass = new IdentityHashMap<Block, Integer>();
     private static final Map<Block, Integer> extraRenderPass = new IdentityHashMap<Block, Integer>();
+    private static final Map<Block, Integer> renderPassBits = new IdentityHashMap<Block, Integer>();
 
     private static BlendMethod blendMethod;
     private static boolean enableLightmap;
@@ -65,10 +66,10 @@ public class RenderPass {
                 maxRenderPass = MAX_BASE_RENDER_PASS - 1;
                 baseRenderPass.clear();
                 extraRenderPass.clear();
+                renderPassBits.clear();
 
                 for (Block block : BlockAPI.getAllBlocks()) {
                     baseRenderPass.put(block, WorldRenderer.getBlockRenderPass(block));
-                    extraRenderPass.put(block, -1);
                 }
             }
 
@@ -117,6 +118,18 @@ public class RenderPass {
                     enableColormap = MCPatcherUtils.getBooleanProperty(properties, "enableColormap.3", false);
                     backfaceCulling = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.3", true);
                 }
+                for (Block block : BlockAPI.getAllBlocks()) {
+                    int bits = 0;
+                    Integer i = baseRenderPass.get(block);
+                    if (i != null && i >= 0) {
+                        bits |= (1 << i);
+                    }
+                    i = extraRenderPass.get(block);
+                    if (i != null && i >= 0) {
+                        bits |= (1 << i);
+                    }
+                    renderPassBits.put(block, bits);
+                }
             }
         });
     }
@@ -145,13 +158,9 @@ public class RenderPass {
     }
 
     public static boolean checkRenderPasses(Block block, boolean moreRenderPasses) {
-        int base = baseRenderPass.get(block);
-        int extra = extraRenderPass.get(block);
-        if (!moreRenderPasses && (base > renderPass || extra > renderPass)) {
-            moreRenderPasses = true;
-        }
-        canRenderInThisPass = renderPass == base || renderPass == extra;
-        return moreRenderPasses;
+        int bits = renderPassBits.get(block) >>> renderPass;
+        canRenderInThisPass = (bits & 1) != 0;
+        return moreRenderPasses || (bits >>> 1) != 0;
     }
 
     public static boolean canRenderInPass(Block block, int pass, boolean renderThis) {
