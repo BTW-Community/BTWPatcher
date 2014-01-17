@@ -296,8 +296,8 @@ abstract class TileOverride implements ITileOverride {
         maxHeight = MCPatcherUtils.getIntProperty(properties, "maxHeight", Integer.MAX_VALUE);
 
         renderPass = MCPatcherUtils.getIntProperty(properties, "renderPass", -1);
-        if (renderPass > 3) {
-            error("renderPass must be 0-3");
+        if (renderPass > RenderPass.MAX_EXTRA_RENDER_PASS) {
+            error("renderPass must be 0-" + RenderPass.MAX_EXTRA_RENDER_PASS);
         } else if (renderPass >= 0 && !matchTiles.isEmpty()) {
             error("renderPass=%d must be block-based not tile-based", renderPass);
         }

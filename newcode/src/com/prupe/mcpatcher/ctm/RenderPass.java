@@ -30,6 +30,7 @@ public class RenderPass {
     private static final int BACKFACE_RENDER_PASS = 4;
     private static final int OVERLAY_RENDER_PASS = 5;
     private static final int MAX_BASE_RENDER_PASS = BACKFACE_RENDER_PASS;
+    static final int MAX_EXTRA_RENDER_PASS = OVERLAY_RENDER_PASS;
 
     static {
         RenderPassAPI.instance = new RenderPassAPI() {
