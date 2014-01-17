@@ -799,7 +799,7 @@ public class BetterGlass extends Mod {
 
             addPatch(new BytecodePatch() {
                 private final ClassRef classRef = new ClassRef(getDeobfClass());
-                private final MethodRef arraycopy = new MethodRef("java/lang/System", "arraycopy", "([Ljava/lang/Object;I[Ljava/lang/Object;II)V");
+                private final MethodRef arraycopy = new MethodRef("java/lang/System", "arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V");
                 private final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(Ljava/lang/String;I)V");
                 private int tmp1;
                 private int tmp2;
