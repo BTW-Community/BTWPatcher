@@ -12,7 +12,6 @@ public class Minecraft {
     public int displayWidth;
     public int displayHeight;
     public MovingObjectPosition objectMouseOver;
-    public RenderGlobal renderGlobal;
     public GuiScreen currentScreen;
     public Timer timer;
     public Profiler mcProfiler;
