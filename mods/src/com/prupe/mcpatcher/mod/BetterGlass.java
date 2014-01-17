@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
+import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -93,6 +94,20 @@ public class BetterGlass extends Mod {
             if (!RenderPassEnumMod.haveRenderPassEnum()) {
                 setupPre18();
             }
+
+            addPatch(new AddMethodPatch(new MethodRef(getDeobfClass(), "getBlockRenderPass", "(LBlock;)I"), AccessFlag.PUBLIC | AccessFlag.STATIC) {
+                @Override
+                public byte[] generateMethod() {
+                    return buildCode(
+                        // older: return block.getRenderPass();
+                        // 14w03a+: return block.getRenderPass().ordinal();
+                        ALOAD_0,
+                        reference(INVOKEVIRTUAL, getRenderBlockPass),
+                        RenderPassEnumMod.haveRenderPassEnum() ? reference(INVOKEVIRTUAL, RenderPassEnumMod.ordinal) : new byte[0],
+                        IRETURN
+                    );
+                }
+            });
 
             addPatch(new BytecodePatch() {
                 @Override

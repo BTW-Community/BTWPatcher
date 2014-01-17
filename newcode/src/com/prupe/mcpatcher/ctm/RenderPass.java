@@ -42,7 +42,7 @@ public class RenderPass {
             @Override
             public boolean skipThisRenderPass(Block block, int pass) {
                 if (pass < 0) {
-                    pass = block.getRenderBlockPass();
+                    pass = WorldRenderer.getBlockRenderPass(block);
                 }
                 return pass != renderPass;
             }
@@ -64,7 +64,7 @@ public class RenderPass {
                 extraRenderPass.clear();
 
                 for (Block block : BlockAPI.getAllBlocks()) {
-                    baseRenderPass.put(block, block.getRenderBlockPass());
+                    baseRenderPass.put(block, WorldRenderer.getBlockRenderPass(block));
                 }
             }
 
