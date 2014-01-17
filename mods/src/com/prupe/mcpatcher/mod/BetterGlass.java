@@ -439,15 +439,17 @@ public class BetterGlass extends Mod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "do extra render pass 2";
+                    return "do backface render pass";
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // renderGlobal.sortAndRender(camera, 0, (double) partialTick);
                         ALOAD, 5,
                         ALOAD, 4,
-                        push(0),
+                        RenderPassEnumMod.haveRenderPassEnum() ?
+                            reference(GETSTATIC, RenderPassEnumMod.SOLID) : push(0),
                         FLOAD_1,
                         F2D,
                         reference(INVOKEVIRTUAL, sortAndRender),
@@ -458,10 +460,10 @@ public class BetterGlass extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // RenderPass.doRenderPass(renderGlobal, camera, 2, par1);
+                        // RenderPass.doRenderPass(renderGlobal, camera, 4, (double) partialTick);
                         ALOAD, 5,
                         ALOAD, 4,
-                        push(2),
+                        push(4),
                         FLOAD_1,
                         F2D,
                         reference(INVOKESTATIC, doRenderPass)
@@ -472,7 +474,7 @@ public class BetterGlass extends Mod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "do extra render pass 3";
+                    return "do overlay render pass";
                 }
 
                 @Override
@@ -500,10 +502,10 @@ public class BetterGlass extends Mod {
                         FLOAD_1,
                         reference(INVOKEVIRTUAL, renderRainSnow),
 
-                        // RenderPass.doRenderPass(renderGlobal, camera, 3, par1);
+                        // RenderPass.doRenderPass(renderGlobal, camera, 5, par1);
                         ALOAD, 5,
                         ALOAD, 4,
-                        push(3),
+                        push(5),
                         FLOAD_1,
                         F2D,
                         reference(INVOKESTATIC, doRenderPass)

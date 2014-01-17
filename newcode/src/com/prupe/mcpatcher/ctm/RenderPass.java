@@ -27,11 +27,15 @@ public class RenderPass {
     private static int maxRenderPass = 1;
     private static boolean ambientOcclusion;
 
+    private static final int BACKFACE_RENDER_PASS = 4;
+    private static final int OVERLAY_RENDER_PASS = 5;
+    private static final int MAX_BASE_RENDER_PASS = BACKFACE_RENDER_PASS;
+
     static {
         RenderPassAPI.instance = new RenderPassAPI() {
             @Override
             public boolean skipDefaultRendering(Block block) {
-                return renderPass > 2;
+                return renderPass > MAX_BASE_RENDER_PASS;
             }
 
             @Override
@@ -44,12 +48,12 @@ public class RenderPass {
 
             @Override
             public boolean useColorMultiplierThisPass(Block block) {
-                return renderPass != 3 || enableColormap;
+                return renderPass != OVERLAY_RENDER_PASS || enableColormap;
             }
 
             @Override
             public void clear() {
-                maxRenderPass = 1;
+                maxRenderPass = MAX_BASE_RENDER_PASS - 1;
                 baseRenderPass.clear();
                 extraRenderPass.clear();
 
@@ -63,7 +67,10 @@ public class RenderPass {
                 if (pass < 0) {
                     return;
                 }
-                if (pass <= 2) {
+                if (pass == 2 || pass == 3) {
+                    pass += 2;
+                }
+                if (pass <= MAX_BASE_RENDER_PASS) {
                     baseRenderPass.put(block, pass);
                 } else {
                     extraRenderPass.put(block, pass);
@@ -119,7 +126,7 @@ public class RenderPass {
 
     public static int getBlockRenderPass(Block block) {
         Integer i;
-        if (renderPass <= 2) {
+        if (renderPass <= MAX_BASE_RENDER_PASS) {
             i = baseRenderPass.get(block);
         } else {
             i = extraRenderPass.get(block);
@@ -130,7 +137,7 @@ public class RenderPass {
     public static boolean canRenderInPass(Block block, int pass, boolean renderThis) {
         Integer base = baseRenderPass.get(block);
         Integer extra = extraRenderPass.get(block);
-        if ((base == null || base < 2) && extra == null) {
+        if ((base == null || base < BACKFACE_RENDER_PASS) && extra == null) {
             return renderThis;
         } else {
             return pass == getBlockRenderPass(block);
@@ -165,7 +172,7 @@ public class RenderPass {
     }
 
     public static float getAOBaseMultiplier(float multiplier) {
-        return renderPass > 2 && !enableLightmap ? 1.0f : multiplier;
+        return renderPass > MAX_BASE_RENDER_PASS && !enableLightmap ? 1.0f : multiplier;
     }
 
     public static void doRenderPass(RenderGlobal renderer, EntityLivingBase camera, int pass, double partialTick) {
@@ -173,13 +180,13 @@ public class RenderPass {
             return;
         }
         switch (pass) {
-            case 2:
+            case BACKFACE_RENDER_PASS:
                 GL11.glDisable(GL11.GL_CULL_FACE);
                 renderer.sortAndRender(camera, pass, partialTick);
                 GL11.glEnable(GL11.GL_CULL_FACE);
                 break;
 
-            case 3:
+            case OVERLAY_RENDER_PASS:
                 GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
                 GL11.glPolygonOffset(-2.0f, -2.0f);
                 GL11.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
@@ -210,7 +217,7 @@ public class RenderPass {
     }
 
     public static void enableDisableLightmap(EntityRenderer renderer, double partialTick) {
-        if (enableLightmap || renderPass != 3) {
+        if (enableLightmap || renderPass != OVERLAY_RENDER_PASS) {
             renderer.enableLightmap(partialTick);
         } else {
             renderer.disableLightmap(partialTick);
