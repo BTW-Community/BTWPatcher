@@ -33,6 +33,10 @@ public class RenderPassEnumMod extends com.prupe.mcpatcher.ClassMod {
         return haveRenderPassEnum() ? anyReference(INVOKEVIRTUAL) : "";
     }
 
+    public static Object getPassExpr(PatchComponent patchComponent, int pass) {
+        return haveRenderPassEnum() ? anyReference(GETSTATIC) : patchComponent.push(pass);
+    }
+
     public RenderPassEnumMod(Mod mod) {
         super(mod);
 

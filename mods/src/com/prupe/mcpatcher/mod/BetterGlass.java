@@ -348,7 +348,7 @@ public class BetterGlass extends Mod {
         EntityRendererMod() {
             final MethodRef renderWorld = new MethodRef(getDeobfClass(), "renderWorld", "(FJ)V");
             final MethodRef renderRainSnow = new MethodRef(getDeobfClass(), "renderRainSnow", "(F)V");
-            final MethodRef sortAndRender = new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLivingBase;ID)I");
+            final MethodRef sortAndRender = new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLivingBase;" + RenderPassEnumMod.getDescriptor() + "D)I");
             final MethodRef doRenderPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "doRenderPass", "(LRenderGlobal;LEntityLivingBase;ID)V");
 
             addClassSignature(new ConstSignature("textures/environment/snow.png"));
@@ -361,7 +361,7 @@ public class BetterGlass extends Mod {
                         // (var =) renderGlobal.sortAndRender(camera, 1, (double) partialTick);
                         ALOAD, 5,
                         ALOAD, 4,
-                        push(1),
+                        RenderPassEnumMod.getPassExpr(this, 1),
                         FLOAD_1,
                         F2D,
                         captureReference(INVOKEVIRTUAL),
@@ -520,7 +520,7 @@ public class BetterGlass extends Mod {
         RenderGlobalMod() {
             final FieldRef glRenderListBase = new FieldRef(getDeobfClass(), "glRenderListBase", "I");
             final MethodRef loadRenderers = new MethodRef(getDeobfClass(), "loadRenderers", "()V");
-            final MethodRef renderAllRenderLists = new MethodRef(getDeobfClass(), "renderAllRenderLists", "(ID)V");
+            final MethodRef renderAllRenderLists = new MethodRef(getDeobfClass(), "renderAllRenderLists", "(" + (RenderPassEnumMod.haveRenderPassEnum() ? "" : "I") + "D)V");
             final MethodRef generateDisplayLists = new MethodRef("GLAllocation", "generateDisplayLists", "(I)I");
 
             addClassSignature(new ConstSignature("smoke"));
@@ -530,7 +530,8 @@ public class BetterGlass extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push(3),
+                        // this.glRenderListBase = GLAlloctation.generateDisplayLists(... * 3);
+                        RenderPassEnumMod.haveRenderPassEnum() ? build(push(2), IADD) : push(3),
                         IMUL,
                         captureReference(INVOKESTATIC),
                         captureReference(PUTFIELD)
@@ -587,8 +588,8 @@ public class BetterGlass extends Mod {
                         return buildExpression(
                             // for (int var4 = 0; var4 < this.allRenderLists.length; var4++)
                             push(0),
-                            ISTORE, capture(any()),
-                            ILOAD, backReference(1),
+                            capture(anyISTORE),
+                            capture(anyILOAD),
 
                             ALOAD_0,
                             captureReference(GETFIELD),
@@ -597,10 +598,15 @@ public class BetterGlass extends Mod {
 
                             // this.allRenderLists[var4]...
                             ALOAD_0,
+                            backReference(3),
                             backReference(2),
-                            ILOAD, backReference(1),
                             AALOAD
                         );
+                    }
+
+                    @Override
+                    public boolean afterMatch() {
+                        return extractRegisterNum(getCaptureGroup(1)) == extractRegisterNum(getCaptureGroup(2));
                     }
                 }.setMethod(renderAllRenderLists)
             ));
