@@ -20,6 +20,11 @@ public class BetterGlass extends Mod {
     private static final MethodRef enableLightmap = new MethodRef("EntityRenderer", "enableLightmap", "(D)V");
     private static final MethodRef disableLightmap = new MethodRef("EntityRenderer", "disableLightmap", "(D)V");
 
+    private static final MethodRef pass17To18 = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "pass17To18", "(I)I");
+    private static final MethodRef pass18To17 = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "pass18To17", "(I)I");
+
+    private final MethodRef sortAndRender = new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLivingBase;" + RenderPassEnumMod.getDescriptor() + "D)I");
+
     public BetterGlass() {
         name = MCPatcherUtils.BETTER_GLASS;
         author = "MCPatcher";
@@ -134,6 +139,8 @@ public class BetterGlass extends Mod {
                     Logger.log(Logger.LOG_CONST, "loop register %d", loopRegister);
                     return buildCode(
                         registerLoadStore(ILOAD, loopRegister),
+                        RenderPassEnumMod.haveRenderPassEnum() ?
+                            new byte[0] : reference(INVOKESTATIC, pass17To18),
                         reference(INVOKESTATIC, startPass)
                     );
                 }
@@ -370,8 +377,6 @@ public class BetterGlass extends Mod {
         EntityRendererMod() {
             final MethodRef renderWorld = new MethodRef(getDeobfClass(), "renderWorld", "(FJ)V");
             final MethodRef renderRainSnow = new MethodRef(getDeobfClass(), "renderRainSnow", "(F)V");
-            final MethodRef sortAndRender = new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLivingBase;" + RenderPassEnumMod.getDescriptor() + "D)I");
-            final MethodRef doRenderPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "doRenderPass", "(LRenderGlobal;LEntityLivingBase;ID)V");
 
             addClassSignature(new ConstSignature("textures/environment/snow.png"));
             addClassSignature(new ConstSignature("ambient.weather.rain"));
@@ -482,13 +487,14 @@ public class BetterGlass extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // RenderPass.doRenderPass(renderGlobal, camera, 4, (double) partialTick);
+                        // renderGlobal.sortAndRender(camera, 4, (double) partialTick);
                         ALOAD, 5,
                         ALOAD, 4,
-                        push(4),
+                        RenderPassEnumMod.getPassByOrdinal(this, 4),
                         FLOAD_1,
                         F2D,
-                        reference(INVOKESTATIC, doRenderPass)
+                        reference(INVOKEVIRTUAL, sortAndRender),
+                        POP
                     );
                 }
             }.setInsertAfter(true));
@@ -519,18 +525,19 @@ public class BetterGlass extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // renderRainSnow(par1);
+                        // this.renderRainSnow(partialTick);
                         ALOAD_0,
                         FLOAD_1,
                         reference(INVOKEVIRTUAL, renderRainSnow),
 
-                        // RenderPass.doRenderPass(renderGlobal, camera, 5, par1);
+                        // renderGlobal.sortAndRender(camera, 5, (double) partialTick);
                         ALOAD, 5,
                         ALOAD, 4,
-                        push(5),
+                        RenderPassEnumMod.getPassByOrdinal(this, 5),
                         FLOAD_1,
                         F2D,
-                        reference(INVOKESTATIC, doRenderPass)
+                        reference(INVOKEVIRTUAL, sortAndRender),
+                        POP
                     );
                 }
             }
@@ -546,6 +553,8 @@ public class BetterGlass extends Mod {
             final MethodRef loadRenderers = new MethodRef(getDeobfClass(), "loadRenderers", "()V");
             final MethodRef renderAllRenderLists = new MethodRef(getDeobfClass(), "renderAllRenderLists", "(" + (RenderPassEnumMod.haveRenderPassEnum() ? "" : "I") + "D)V");
             final MethodRef generateDisplayLists = new MethodRef("GLAllocation", "generateDisplayLists", "(I)I");
+            final MethodRef preRenderPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "preRenderPass", "(I)Z");
+            final MethodRef postRenderPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "postRenderPass", "(I)I");
             final MethodRef enableDisableLightmap = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "enableDisableLightmap", "(LEntityRenderer;D)V");
 
             addClassSignature(new ConstSignature("smoke"));
@@ -741,6 +750,77 @@ public class BetterGlass extends Mod {
                     );
                 }
             }.targetMethod(renderAllRenderLists));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "set pre-render pass options";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // if (!RenderPass.preRenderPass(pass)) {
+                        RenderPassEnumMod.haveRenderPassEnum() ?
+                            buildCode(
+                                ALOAD_2,
+                                reference(INVOKEVIRTUAL, RenderPassEnumMod.ordinal)
+                            ) : build(
+                                ILOAD_2
+                            ),
+                        reference(INVOKESTATIC, preRenderPass),
+                        IFNE, branch("A"),
+
+                        // return 0;
+                        push(0),
+                        IRETURN,
+
+                        // }
+                        label("A"),
+
+                        // pass = RenderGlobal.pass18To17(pass);
+                        RenderPassEnumMod.haveRenderPassEnum() ?
+                            new byte[0] : buildCode(
+                                ILOAD_2,
+                                reference(INVOKESTATIC, pass18To17),
+                                ISTORE_2
+                            )
+                    );
+                }
+            }.targetMethod(sortAndRender));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "set post-render pass options";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // return ...;
+                        IRETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // return RenderPass.postRenderPass(...);
+                        reference(INVOKESTATIC, postRenderPass)
+                    );
+                }
+            }
+                .setInsertBefore(true)
+                .targetMethod(sortAndRender)
+            );
         }
     }
 

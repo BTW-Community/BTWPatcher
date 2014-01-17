@@ -134,6 +134,20 @@ public class RenderPass {
         });
     }
 
+    public static int pass17To18(int pass) {
+        if (pass == 2 || pass == 3) {
+            pass += 2;
+        }
+        return pass;
+    }
+
+    public static int pass18To17(int pass) {
+        if (pass >= MAX_BASE_RENDER_PASS) {
+            pass -= 2;
+        }
+        return pass;
+    }
+
     public static void start(int pass) {
         finish();
         renderPass = pass;
@@ -204,15 +218,14 @@ public class RenderPass {
         return RenderPassAPI.instance.useLightmapThisPass() ? multiplier : 1.0f;
     }
 
-    public static void doRenderPass(RenderGlobal renderer, EntityLivingBase camera, int pass, double partialTick) {
+    public static boolean preRenderPass(int pass) {
+        renderPass = pass;
         if (pass > maxRenderPass) {
-            return;
+            return false;
         }
         switch (pass) {
             case BACKFACE_RENDER_PASS:
                 GL11.glDisable(GL11.GL_CULL_FACE);
-                renderer.sortAndRender(camera, pass, partialTick);
-                GL11.glEnable(GL11.GL_CULL_FACE);
                 break;
 
             case OVERLAY_RENDER_PASS:
@@ -228,9 +241,21 @@ public class RenderPass {
                     GL11.glShadeModel(GL11.GL_SMOOTH);
                 }
                 blendMethod.applyBlending();
+                break;
 
-                renderer.sortAndRender(camera, pass, partialTick);
+            default:
+                break;
+        }
+        return true;
+    }
 
+    public static int postRenderPass(int value) {
+        switch (renderPass) {
+            case BACKFACE_RENDER_PASS:
+                GL11.glEnable(GL11.GL_CULL_FACE);
+                break;
+
+            case OVERLAY_RENDER_PASS:
                 GL11.glPolygonOffset(0.0f, 0.0f);
                 GL11.glDisable(GL11.GL_POLYGON_OFFSET_FILL);
                 if (!backfaceCulling) {
@@ -243,6 +268,8 @@ public class RenderPass {
             default:
                 break;
         }
+        renderPass = -1;
+        return value;
     }
 
     public static void enableDisableLightmap(EntityRenderer renderer, double partialTick) {

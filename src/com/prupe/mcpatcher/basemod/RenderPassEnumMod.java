@@ -43,6 +43,20 @@ public class RenderPassEnumMod extends com.prupe.mcpatcher.ClassMod {
         return haveRenderPassEnum() ? patchComponent.reference(GETSTATIC, pass) : patchComponent.push(passNum);
     }
 
+    public static byte[] getPassByOrdinal(PatchComponent patchComponent, int pass) {
+        if (haveRenderPassEnum()) {
+            return patchComponent.buildCode(
+                patchComponent.reference(INVOKESTATIC, values),
+                patchComponent.push(pass),
+                AALOAD
+            );
+        } else {
+            return patchComponent.buildCode(
+                patchComponent.push(pass)
+            );
+        }
+    }
+
     public RenderPassEnumMod(Mod mod) {
         super(mod);
 
