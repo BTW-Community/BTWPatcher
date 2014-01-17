@@ -611,51 +611,82 @@ public class BetterGlass extends Mod {
                 }.setMethod(renderAllRenderLists)
             ));
 
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "increase gl render lists per chunk from 3 to " + (3 + EXTRA_PASSES) + " (init)";
-                }
+            if (RenderPassEnumMod.haveRenderPassEnum()) {
+                addPatch(new BytecodePatch() {
+                    @Override
+                    public String getDescription() {
+                        return "increase gl render lists per chunk";
+                    }
 
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push(3),
-                        lookAhead(build(
-                            IMUL,
-                            reference(INVOKESTATIC, generateDisplayLists)
-                        ), true)
-                    );
-                }
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // RenderPassEnum.TRANSLUCENT.ordinal() + 2
+                            reference(GETSTATIC, RenderPassEnumMod.TRANSLUCENT),
+                            reference(INVOKEVIRTUAL, RenderPassEnumMod.ordinal),
+                            push(2),
+                            IADD
+                        );
+                    }
 
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        push(3 + EXTRA_PASSES)
-                    );
-                }
-            }.matchConstructorOnly(true));
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            // RenderPassEnum.values().length + 1
+                            reference(INVOKESTATIC, RenderPassEnumMod.values),
+                            ARRAYLENGTH,
+                            push(1),
+                            IADD
+                        );
+                    }
+                });
+            } else {
+                addPatch(new BytecodePatch() {
+                    @Override
+                    public String getDescription() {
+                        return "increase gl render lists per chunk from 3 to " + (3 + EXTRA_PASSES) + " (init)";
+                    }
 
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "increase gl render lists per chunk from 3 to " + (3 + EXTRA_PASSES) + " (loop)";
-                }
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            push(3),
+                            lookAhead(build(
+                                IMUL,
+                                reference(INVOKESTATIC, generateDisplayLists)
+                            ), true)
+                        );
+                    }
 
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        IINC, capture(any()), 3
-                    );
-                }
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            push(3 + EXTRA_PASSES)
+                        );
+                    }
+                }.matchConstructorOnly(true));
 
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        IINC, getCaptureGroup(1), 3 + EXTRA_PASSES
-                    );
-                }
-            }.targetMethod(loadRenderers));
+                addPatch(new BytecodePatch() {
+                    @Override
+                    public String getDescription() {
+                        return "increase gl render lists per chunk from 3 to " + (3 + EXTRA_PASSES) + " (loop)";
+                    }
+
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            IINC, capture(any()), 3
+                        );
+                    }
+
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            IINC, getCaptureGroup(1), 3 + EXTRA_PASSES
+                        );
+                    }
+                }.targetMethod(loadRenderers));
+            }
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -765,7 +796,7 @@ public class BetterGlass extends Mod {
                     return buildExpression(
                         // RenderPassEnum.values = new RenderPassEnum[]{...};
                         AASTORE,
-                        reference(PUTSTATIC, values)
+                        reference(PUTSTATIC, valuesArray)
                     );
                 }
 
@@ -804,7 +835,7 @@ public class BetterGlass extends Mod {
 
                         // RenderPassEnum.values = tmp2;
                         registerLoadStore(ALOAD, tmp2),
-                        reference(PUTSTATIC, values)
+                        reference(PUTSTATIC, valuesArray)
                     );
                 }
 

@@ -11,7 +11,9 @@ public class RenderPassEnumMod extends com.prupe.mcpatcher.ClassMod {
     public static final FieldRef CUTOUT_MIPPED = new FieldRef("RenderPassEnum", "CUTOUT_MIPPED", "LRenderPassEnum;");
     public static final FieldRef CUTOUT = new FieldRef("RenderPassEnum", "CUTOUT", "LRenderPassEnum;");
     public static final FieldRef TRANSLUCENT = new FieldRef("RenderPassEnum", "TRANSLUCENT", "LRenderPassEnum;");
-    public static final FieldRef values = new FieldRef("RenderPassEnum", "values", "[LRenderPassEnum;");
+    public static final FieldRef valuesArray = new FieldRef("RenderPassEnum", "values", "[LRenderPassEnum;");
+    public static final MethodRef values = new MethodRef("RenderPassEnum", "values", "()[LRenderPassEnum;");
+    public static final MethodRef ordinal = new MethodRef("RenderPassEnum", "ordinal", "()I");
 
     public static boolean haveRenderPassEnum() {
         return Mod.getMinecraftVersion().compareTo("14w03a") >= 0;
@@ -50,7 +52,7 @@ public class RenderPassEnumMod extends com.prupe.mcpatcher.ClassMod {
             .accessFlag(AccessFlag.STATIC, true)
         );
 
-        addMemberMapper(new FieldMapper(values)
+        addMemberMapper(new FieldMapper(valuesArray)
             .accessFlag(AccessFlag.STATIC, true)
         );
     }
