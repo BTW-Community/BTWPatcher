@@ -522,6 +522,7 @@ public class BetterGlass extends Mod {
             final MethodRef loadRenderers = new MethodRef(getDeobfClass(), "loadRenderers", "()V");
             final MethodRef renderAllRenderLists = new MethodRef(getDeobfClass(), "renderAllRenderLists", "(" + (RenderPassEnumMod.haveRenderPassEnum() ? "" : "I") + "D)V");
             final MethodRef generateDisplayLists = new MethodRef("GLAllocation", "generateDisplayLists", "(I)I");
+            final MethodRef enableDisableLightmap = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "enableDisableLightmap", "(LEntityRenderer;D)V");
 
             addClassSignature(new ConstSignature("smoke"));
             addClassSignature(new ConstSignature("textures/environment/clouds.png"));
@@ -697,12 +698,12 @@ public class BetterGlass extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // mc.entityRenderer.enableLightmap(par2);
+                        // mc.entityRenderer.enableLightmap(partialTick);
                         lookBehind(build(
                             ALOAD_0,
                             anyReference(GETFIELD),
                             anyReference(GETFIELD),
-                            DLOAD_2
+                            anyDLOAD
                         ), true),
                         reference(INVOKEVIRTUAL, enableLightmap)
                     );
@@ -711,8 +712,8 @@ public class BetterGlass extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        ILOAD_1,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "enableDisableLightmap", "(LEntityRenderer;DI)V"))
+                        // RenderPass.enableDisableLightmap(mc.entityRenderer, partialTick);
+                        reference(INVOKESTATIC, enableDisableLightmap)
                     );
                 }
             }.targetMethod(renderAllRenderLists));

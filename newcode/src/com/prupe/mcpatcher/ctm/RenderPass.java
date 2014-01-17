@@ -209,8 +209,8 @@ public class RenderPass {
         }
     }
 
-    public static void enableDisableLightmap(EntityRenderer renderer, double partialTick, int pass) {
-        if (enableLightmap || pass != 3) {
+    public static void enableDisableLightmap(EntityRenderer renderer, double partialTick) {
+        if (enableLightmap || renderPass != 3) {
             renderer.enableLightmap(partialTick);
         } else {
             renderer.disableLightmap(partialTick);
