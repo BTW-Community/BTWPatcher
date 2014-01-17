@@ -32,6 +32,8 @@ public class RenderPass {
     private static final int MAX_BASE_RENDER_PASS = BACKFACE_RENDER_PASS;
     static final int MAX_EXTRA_RENDER_PASS = OVERLAY_RENDER_PASS;
 
+    public static boolean canRenderInThisPass;
+
     static {
         RenderPassAPI.instance = new RenderPassAPI() {
             @Override
@@ -59,12 +61,14 @@ public class RenderPass {
 
             @Override
             public void clear() {
+                canRenderInThisPass = false;
                 maxRenderPass = MAX_BASE_RENDER_PASS - 1;
                 baseRenderPass.clear();
                 extraRenderPass.clear();
 
                 for (Block block : BlockAPI.getAllBlocks()) {
                     baseRenderPass.put(block, WorldRenderer.getBlockRenderPass(block));
+                    extraRenderPass.put(block, -1);
                 }
             }
 
@@ -140,20 +144,14 @@ public class RenderPass {
         return i == null ? -1 : i;
     }
 
-    public static boolean hasMoreRenderPasses(Block block, boolean moreRenderPasses) {
-        if (moreRenderPasses) {
-            return true;
+    public static boolean checkRenderPasses(Block block, boolean moreRenderPasses) {
+        int base = baseRenderPass.get(block);
+        int extra = extraRenderPass.get(block);
+        if (!moreRenderPasses && (base > renderPass || extra > renderPass)) {
+            moreRenderPasses = true;
         }
-        Integer base = baseRenderPass.get(block);
-        if (base != null && base > renderPass) {
-            return true;
-        }
-        Integer extra = extraRenderPass.get(block);
-        return extra != null && extra > renderPass;
-    }
-
-    public static boolean canRenderInThisPass(Block block) {
-        return renderPass == getBlockRenderPass(block);
+        canRenderInThisPass = renderPass == base || renderPass == extra;
+        return moreRenderPasses;
     }
 
     public static boolean canRenderInPass(Block block, int pass, boolean renderThis) {

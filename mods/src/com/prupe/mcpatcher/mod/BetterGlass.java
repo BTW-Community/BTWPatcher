@@ -183,15 +183,14 @@ public class BetterGlass extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // moreRenderPasses = RenderPass.hasMoreRenderPasses(block, moreRenderPasses))
+                        // moreRenderPasses = RenderPass.checkRenderPasses(block, moreRenderPasses))
                         getCaptureGroup(1),
                         flipLoadStore(getCaptureGroup(4)),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "hasMoreRenderPasses", "(LBlock;Z)Z")),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "checkRenderPasses", "(LBlock;Z)Z")),
                         getCaptureGroup(4),
 
-                        // if (RenderPass.canRenderInThisPass(block))
-                        getCaptureGroup(1),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "canRenderInThisPass", "(LBlock;)Z")),
+                        // if (RenderPass.canRenderInThisPass)
+                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.RENDER_PASS_CLASS, "canRenderInThisPass", "Z")),
                         IFEQ
                     );
                 }
