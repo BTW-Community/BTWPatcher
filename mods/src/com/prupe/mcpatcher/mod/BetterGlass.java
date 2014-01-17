@@ -48,7 +48,6 @@ public class BetterGlass extends Mod {
 
     private class WorldRendererMod extends com.prupe.mcpatcher.basemod.WorldRendererMod {
         private final FieldRef skipRenderPass = new FieldRef(getDeobfClass(), "skipRenderPass", "[Z");
-        private int loopRegister;
 
         WorldRendererMod() {
             super(BetterGlass.this);
@@ -110,6 +109,8 @@ public class BetterGlass extends Mod {
             });
 
             addPatch(new BytecodePatch() {
+                private int loopRegister;
+
                 @Override
                 public String getDescription() {
                     return "pre render pass";
@@ -119,7 +120,7 @@ public class BetterGlass extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         push(0),
-                        ISTORE, capture(any()),
+                        capture(anyISTORE),
                         push(0),
                         ISTORE, any(),
                         push(0),
@@ -129,10 +130,10 @@ public class BetterGlass extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    loopRegister = (getCaptureGroup(1)[0] & 0xff) - 1;
+                    loopRegister = extractRegisterNum(getCaptureGroup(1));
                     Logger.log(Logger.LOG_CONST, "loop register %d", loopRegister);
                     return buildCode(
-                        ILOAD, loopRegister,
+                        registerLoadStore(ILOAD, loopRegister),
                         reference(INVOKESTATIC, startPass)
                     );
                 }
@@ -144,47 +145,54 @@ public class BetterGlass extends Mod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "prevent early loop exit";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // if (!var12) {
-                        ILOAD, loopRegister + 1,
-                        IFNE, any(2),
-
-                        // break;
-                        GOTO, any(2)
-
-                        // }
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                    );
-                }
-            }.targetMethod(updateRenderer));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
                     return "set up extra render pass";
                 }
 
                 @Override
                 public String getMatchExpression() {
+                    int loadOpcode = RenderPassEnumMod.getLoadOpcode();
+                    int storeOpcode = RenderPassEnumMod.getStoreOpcode();
+                    int cmpOpcode = RenderPassEnumMod.haveRenderPassEnum() ? IF_ACMPNE : IF_ICMPNE;
+                    byte[] ordinalExpr = RenderPassEnumMod.haveRenderPassEnum() ? reference(INVOKEVIRTUAL, RenderPassEnumMod.ordinal) : new byte[0];
+
                     return buildExpression(
-                        reference(INVOKEVIRTUAL, getRenderBlockPass)
+                        // blockRenderPass = block.getBlockRenderPass();
+                        capture(anyALOAD),
+                        reference(INVOKEVIRTUAL, getRenderBlockPass),
+                        storeOpcode, any(),
+
+                        // if (blockRenderPass > thisRenderPass) {
+                        capture(build(loadOpcode, any())),
+                        ordinalExpr,
+                        capture(build(loadOpcode, any())),
+                        ordinalExpr,
+                        IF_ICMPLE, any(2),
+
+                        // moreRenderPasses = true;
+                        push(1),
+                        capture(anyISTORE),
+                        GOTO, any(2),
+
+                        // } else if (blockRenderPass == thisRenderPass)
+                        backReference(2),
+                        backReference(3),
+                        cmpOpcode
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "getBlockRenderPass", "(LBlock;)I"))
+                        // moreRenderPasses = RenderPass.hasMoreRenderPasses(block, moreRenderPasses))
+                        getCaptureGroup(1),
+                        flipLoadStore(getCaptureGroup(4)),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "hasMoreRenderPasses", "(LBlock;Z)Z")),
+                        getCaptureGroup(4),
+
+                        // if (RenderPass.canRenderInThisPass(block))
+                        getCaptureGroup(1),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "canRenderInThisPass", "(LBlock;)Z")),
+                        IFEQ
                     );
                 }
             }.targetMethod(updateRenderer));

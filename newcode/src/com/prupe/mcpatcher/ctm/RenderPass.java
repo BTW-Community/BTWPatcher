@@ -140,6 +140,22 @@ public class RenderPass {
         return i == null ? -1 : i;
     }
 
+    public static boolean hasMoreRenderPasses(Block block, boolean moreRenderPasses) {
+        if (moreRenderPasses) {
+            return true;
+        }
+        Integer base = baseRenderPass.get(block);
+        if (base != null && base > renderPass) {
+            return true;
+        }
+        Integer extra = extraRenderPass.get(block);
+        return extra != null && extra > renderPass;
+    }
+
+    public static boolean canRenderInThisPass(Block block) {
+        return renderPass == getBlockRenderPass(block);
+    }
+
     public static boolean canRenderInPass(Block block, int pass, boolean renderThis) {
         Integer base = baseRenderPass.get(block);
         Integer extra = extraRenderPass.get(block);
