@@ -17,6 +17,10 @@ public class RenderPassAPI {
         return true;
     }
 
+    public boolean useLightmapThisPass() {
+        return true;
+    }
+
     public void clear() {
     }
 

@@ -52,6 +52,11 @@ public class RenderPass {
             }
 
             @Override
+            public boolean useLightmapThisPass() {
+                return renderPass != OVERLAY_RENDER_PASS || enableLightmap;
+            }
+
+            @Override
             public void clear() {
                 maxRenderPass = MAX_BASE_RENDER_PASS - 1;
                 baseRenderPass.clear();
@@ -172,7 +177,7 @@ public class RenderPass {
     }
 
     public static float getAOBaseMultiplier(float multiplier) {
-        return renderPass > MAX_BASE_RENDER_PASS && !enableLightmap ? 1.0f : multiplier;
+        return RenderPassAPI.instance.useLightmapThisPass() ? multiplier : 1.0f;
     }
 
     public static void doRenderPass(RenderGlobal renderer, EntityLivingBase camera, int pass, double partialTick) {
@@ -217,7 +222,7 @@ public class RenderPass {
     }
 
     public static void enableDisableLightmap(EntityRenderer renderer, double partialTick) {
-        if (enableLightmap || renderPass != OVERLAY_RENDER_PASS) {
+        if (RenderPassAPI.instance.useLightmapThisPass()) {
             renderer.enableLightmap(partialTick);
         } else {
             renderer.disableLightmap(partialTick);
