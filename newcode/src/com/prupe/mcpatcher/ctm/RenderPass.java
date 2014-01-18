@@ -30,13 +30,30 @@ public class RenderPass {
 
     private static final int BACKFACE_RENDER_PASS = 4;
     private static final int OVERLAY_RENDER_PASS = 5;
-    private static final int MAX_BASE_RENDER_PASS = BACKFACE_RENDER_PASS;
-    static final int MAX_EXTRA_RENDER_PASS = OVERLAY_RENDER_PASS;
+    public static final int MAX_BASE_RENDER_PASS = BACKFACE_RENDER_PASS;
+    public static final int MAX_EXTRA_RENDER_PASS = OVERLAY_RENDER_PASS;
 
     public static boolean canRenderInThisPass;
 
     static {
         RenderPassAPI.instance = new RenderPassAPI() {
+            @Override
+            public int parseRenderPass(String value) {
+                if (value.matches("\\d+")) {
+                    return pass17To18(Integer.parseInt(value));
+                } else if (value.equalsIgnoreCase("solid")) {
+                    return 0;
+                } else if (value.equalsIgnoreCase("translucent")) {
+                    return 1;
+                } else if (value.equalsIgnoreCase("backface")) {
+                    return BACKFACE_RENDER_PASS;
+                } else if (value.equalsIgnoreCase("overlay")) {
+                    return OVERLAY_RENDER_PASS;
+                } else {
+                    return super.parseRenderPass(value);
+                }
+            }
+
             @Override
             public boolean skipDefaultRendering(Block block) {
                 return renderPass > MAX_BASE_RENDER_PASS;
@@ -77,9 +94,6 @@ public class RenderPass {
             public void setRenderPassForBlock(Block block, int pass) {
                 if (pass < 0) {
                     return;
-                }
-                if (pass == 2 || pass == 3) {
-                    pass += 2;
                 }
                 if (pass <= MAX_BASE_RENDER_PASS) {
                     baseRenderPass.put(block, pass);
