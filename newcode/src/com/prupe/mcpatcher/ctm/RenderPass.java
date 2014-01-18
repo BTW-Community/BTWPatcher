@@ -6,9 +6,7 @@ import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public class RenderPass {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.BETTER_GLASS);
@@ -18,6 +16,7 @@ public class RenderPass {
     private static final Map<Block, Integer> baseRenderPass = new IdentityHashMap<Block, Integer>();
     private static final Map<Block, Integer> extraRenderPass = new IdentityHashMap<Block, Integer>();
     private static final Map<Block, Integer> renderPassBits = new IdentityHashMap<Block, Integer>();
+    private static final Set<Block> customRenderPassBlocks = new HashSet<Block>();
 
     private static BlendMethod blendMethod;
     private static boolean enableLightmap;
@@ -84,6 +83,7 @@ public class RenderPass {
                 baseRenderPass.clear();
                 extraRenderPass.clear();
                 renderPassBits.clear();
+                customRenderPassBlocks.clear();
 
                 for (Block block : BlockAPI.getAllBlocks()) {
                     baseRenderPass.put(block, WorldRenderer.getBlockRenderPass(block));
@@ -97,9 +97,12 @@ public class RenderPass {
                 }
                 if (pass <= MAX_BASE_RENDER_PASS) {
                     baseRenderPass.put(block, pass);
+                    logger.fine("%s base render pass -> %d", BlockAPI.getBlockName(block), pass);
                 } else {
                     extraRenderPass.put(block, pass);
+                    logger.fine("%s extra render pass -> %d", BlockAPI.getBlockName(block), pass);
                 }
+                customRenderPassBlocks.add(block);
                 maxRenderPass = Math.max(maxRenderPass, pass);
             }
 
@@ -175,16 +178,6 @@ public class RenderPass {
         return skipRenderPass[0] && skipRenderPass[1] && skipRenderPass[2] && skipRenderPass[3];
     }
 
-    public static int getBlockRenderPass(Block block) {
-        Integer i;
-        if (renderPass <= MAX_BASE_RENDER_PASS) {
-            i = baseRenderPass.get(block);
-        } else {
-            i = extraRenderPass.get(block);
-        }
-        return i == null ? -1 : i;
-    }
-
     public static boolean checkRenderPasses(Block block, boolean moreRenderPasses) {
         int bits = renderPassBits.get(block) >>> renderPass;
         canRenderInThisPass = (bits & 1) != 0;
@@ -192,15 +185,15 @@ public class RenderPass {
     }
 
     public static boolean canRenderInPass(Block block, int pass, boolean renderThis) {
-        Integer base = baseRenderPass.get(block);
-        Integer extra = extraRenderPass.get(block);
-        if ((base == null || base < BACKFACE_RENDER_PASS) && extra == null) {
-            return renderThis;
+        if (customRenderPassBlocks.contains(block)) {
+            checkRenderPasses(block, true);
+            return canRenderInThisPass;
         } else {
-            return pass == getBlockRenderPass(block);
+            return renderThis;
         }
     }
 
+    // pre-14w02a
     public static boolean shouldSideBeRendered(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
         if (BlockAPI.shouldSideBeRendered(block, blockAccess, i, j, k, face)) {
             return true;
@@ -212,6 +205,7 @@ public class RenderPass {
         }
     }
 
+    // 14w02a+
     public static boolean shouldSideBeRendered(Block block, IBlockAccess blockAccess, Position position, Direction direction) {
         if (block.shouldSideBeRendered(blockAccess, position, direction)) {
             return true;
