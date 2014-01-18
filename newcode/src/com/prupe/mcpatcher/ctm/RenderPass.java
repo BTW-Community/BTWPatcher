@@ -23,7 +23,7 @@ public class RenderPass {
     private static boolean enableColormap;
     private static boolean backfaceCulling;
 
-    private static int renderPass = -1;
+    private static int currentRenderPass = -1;
     private static int maxRenderPass = 1;
     private static boolean ambientOcclusion;
 
@@ -55,7 +55,7 @@ public class RenderPass {
 
             @Override
             public boolean skipDefaultRendering(Block block) {
-                return renderPass > MAX_BASE_RENDER_PASS;
+                return currentRenderPass > MAX_BASE_RENDER_PASS;
             }
 
             @Override
@@ -63,17 +63,17 @@ public class RenderPass {
                 if (pass < 0) {
                     pass = WorldRenderer.getBlockRenderPass(block);
                 }
-                return pass != renderPass;
+                return pass != currentRenderPass;
             }
 
             @Override
             public boolean useColorMultiplierThisPass(Block block) {
-                return renderPass != OVERLAY_RENDER_PASS || enableColormap;
+                return currentRenderPass != OVERLAY_RENDER_PASS || enableColormap;
             }
 
             @Override
             public boolean useLightmapThisPass() {
-                return renderPass != OVERLAY_RENDER_PASS || enableLightmap;
+                return currentRenderPass != OVERLAY_RENDER_PASS || enableLightmap;
             }
 
             @Override
@@ -167,11 +167,11 @@ public class RenderPass {
 
     public static void start(int pass) {
         finish();
-        renderPass = pass;
+        currentRenderPass = pass;
     }
 
     public static void finish() {
-        renderPass = -1;
+        currentRenderPass = -1;
     }
 
     public static boolean skipAllRenderPasses(boolean[] skipRenderPass) {
@@ -179,7 +179,7 @@ public class RenderPass {
     }
 
     public static boolean checkRenderPasses(Block block, boolean moreRenderPasses) {
-        int bits = renderPassBits.get(block) >>> renderPass;
+        int bits = renderPassBits.get(block) >>> currentRenderPass;
         canRenderInThisPass = (bits & 1) != 0;
         return moreRenderPasses || (bits >>> 1) != 0;
     }
@@ -227,7 +227,7 @@ public class RenderPass {
     }
 
     public static boolean preRenderPass(int pass) {
-        renderPass = pass;
+        currentRenderPass = pass;
         if (pass > maxRenderPass) {
             return false;
         }
@@ -258,7 +258,7 @@ public class RenderPass {
     }
 
     public static int postRenderPass(int value) {
-        switch (renderPass) {
+        switch (currentRenderPass) {
             case BACKFACE_RENDER_PASS:
                 GL11.glEnable(GL11.GL_CULL_FACE);
                 break;
@@ -276,7 +276,7 @@ public class RenderPass {
             default:
                 break;
         }
-        renderPass = -1;
+        currentRenderPass = -1;
         return value;
     }
 
