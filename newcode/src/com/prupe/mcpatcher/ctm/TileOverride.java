@@ -296,8 +296,8 @@ abstract class TileOverride implements ITileOverride {
         maxHeight = MCPatcherUtils.getIntProperty(properties, "maxHeight", Integer.MAX_VALUE);
 
         renderPass = RenderPassAPI.instance.parseRenderPass(MCPatcherUtils.getStringProperty(properties, "renderPass", ""));
-        if (renderPass > RenderPass.MAX_EXTRA_RENDER_PASS) {
-            error("renderPass must be 0-" + RenderPass.MAX_EXTRA_RENDER_PASS);
+        if (renderPass > RenderPassAPI.MAX_EXTRA_RENDER_PASS) {
+            error("renderPass must be 0-" + RenderPassAPI.MAX_EXTRA_RENDER_PASS);
         } else if (renderPass >= 0 && !matchTiles.isEmpty()) {
             error("renderPass=%d must be block-based not tile-based", renderPass);
         }
@@ -307,7 +307,7 @@ abstract class TileOverride implements ITileOverride {
 
     private boolean addIcon(ResourceLocation resource) {
         tileNames.add(resource);
-        return tileLoader.preloadTile(resource, renderPass > RenderPass.MAX_BASE_RENDER_PASS);
+        return tileLoader.preloadTile(resource, renderPass > RenderPassAPI.MAX_BASE_RENDER_PASS);
     }
 
     private void loadIcons(Properties properties) {

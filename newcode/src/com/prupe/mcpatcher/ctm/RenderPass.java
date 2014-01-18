@@ -27,32 +27,10 @@ public class RenderPass {
     private static int maxRenderPass = 1;
     private static boolean ambientOcclusion;
 
-    private static final int BACKFACE_RENDER_PASS = 4;
-    private static final int OVERLAY_RENDER_PASS = 5;
-    public static final int MAX_BASE_RENDER_PASS = BACKFACE_RENDER_PASS;
-    public static final int MAX_EXTRA_RENDER_PASS = OVERLAY_RENDER_PASS;
-
     public static boolean canRenderInThisPass;
 
     static {
         RenderPassAPI.instance = new RenderPassAPI() {
-            @Override
-            public int parseRenderPass(String value) {
-                if (value.matches("\\d+")) {
-                    return pass17To18(Integer.parseInt(value));
-                } else if (value.equalsIgnoreCase("solid")) {
-                    return 0;
-                } else if (value.equalsIgnoreCase("translucent")) {
-                    return 1;
-                } else if (value.equalsIgnoreCase("backface")) {
-                    return BACKFACE_RENDER_PASS;
-                } else if (value.equalsIgnoreCase("overlay")) {
-                    return OVERLAY_RENDER_PASS;
-                } else {
-                    return super.parseRenderPass(value);
-                }
-            }
-
             @Override
             public boolean skipDefaultRendering(Block block) {
                 return currentRenderPass > MAX_BASE_RENDER_PASS;
@@ -61,7 +39,7 @@ public class RenderPass {
             @Override
             public boolean skipThisRenderPass(Block block, int pass) {
                 if (pass < 0) {
-                    pass = WorldRenderer.getBlockRenderPass(block);
+                    pass = RenderPassMap.instance.getDefaultRenderPass(block);
                 }
                 return pass != currentRenderPass;
             }
@@ -86,22 +64,26 @@ public class RenderPass {
                 customRenderPassBlocks.clear();
 
                 for (Block block : BlockAPI.getAllBlocks()) {
-                    baseRenderPass.put(block, WorldRenderer.getBlockRenderPass(block));
+                    baseRenderPass.put(block, RenderPassMap.instance.getDefaultRenderPass(block));
                 }
             }
 
             @Override
             public void setRenderPassForBlock(Block block, int pass) {
-                if (pass < 0) {
+                if (block == null || pass < 0) {
                     return;
                 }
+                String name;
                 if (pass <= MAX_BASE_RENDER_PASS) {
                     baseRenderPass.put(block, pass);
-                    logger.fine("%s base render pass -> %d", BlockAPI.getBlockName(block), pass);
+                    name = "base";
                 } else {
                     extraRenderPass.put(block, pass);
-                    logger.fine("%s extra render pass -> %d", BlockAPI.getBlockName(block), pass);
+                    name = "extra";
                 }
+                logger.fine("%s %s render pass -> %s",
+                    BlockAPI.getBlockName(block), name, RenderPassAPI.instance.getRenderPassName(pass)
+                );
                 customRenderPassBlocks.add(block);
                 maxRenderPass = Math.max(maxRenderPass, pass);
             }
@@ -151,23 +133,9 @@ public class RenderPass {
         });
     }
 
-    public static int pass17To18(int pass) {
-        if (pass == 2 || pass == 3) {
-            pass += 2;
-        }
-        return pass;
-    }
-
-    public static int pass18To17(int pass) {
-        if (pass >= MAX_BASE_RENDER_PASS) {
-            pass -= 2;
-        }
-        return pass;
-    }
-
     public static void start(int pass) {
         finish();
-        currentRenderPass = pass;
+        currentRenderPass = RenderPassMap.instance.vanillaToMCPatcher(pass);
     }
 
     public static void finish() {
@@ -232,11 +200,11 @@ public class RenderPass {
             return false;
         }
         switch (pass) {
-            case BACKFACE_RENDER_PASS:
+            case RenderPassAPI.BACKFACE_RENDER_PASS:
                 GL11.glDisable(GL11.GL_CULL_FACE);
                 break;
 
-            case OVERLAY_RENDER_PASS:
+            case RenderPassAPI.OVERLAY_RENDER_PASS:
                 GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
                 GL11.glPolygonOffset(-2.0f, -2.0f);
                 GL11.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
@@ -259,11 +227,11 @@ public class RenderPass {
 
     public static int postRenderPass(int value) {
         switch (currentRenderPass) {
-            case BACKFACE_RENDER_PASS:
+            case RenderPassAPI.BACKFACE_RENDER_PASS:
                 GL11.glEnable(GL11.GL_CULL_FACE);
                 break;
 
-            case OVERLAY_RENDER_PASS:
+            case RenderPassAPI.OVERLAY_RENDER_PASS:
                 GL11.glPolygonOffset(0.0f, 0.0f);
                 GL11.glDisable(GL11.GL_POLYGON_OFFSET_FILL);
                 if (!backfaceCulling) {

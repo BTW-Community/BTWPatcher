@@ -59,4 +59,9 @@ public class Block {
     public boolean shouldSideBeRendered(IBlockAccess blockAccess, Position position, Direction direction) {
         return true;
     }
+
+    // 14w03a+
+    public RenderPassEnum getRenderBlockPassEnum() {
+        return null;
+    }
 }

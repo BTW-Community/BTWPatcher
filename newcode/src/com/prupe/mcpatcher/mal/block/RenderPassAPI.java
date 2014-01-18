@@ -6,13 +6,43 @@ import net.minecraft.src.Block;
 public class RenderPassAPI {
     public static RenderPassAPI instance = new RenderPassAPI();
 
+    private static final String[] NAMES = new String[]{"solid", "cutout_mipped", "cutout", "translucent", "backface", "overlay"};
+
+    public static final int SOLID_RENDER_PASS = 0;
+    public static final int CUTOUT_MIPPED_RENDER_PASS = 1;
+    public static final int CUTOUT_RENDER_PASS = 2;
+    public static final int TRANSLUCENT_RENDER_PASS = 3;
+    public static final int BACKFACE_RENDER_PASS = 4;
+    public static final int OVERLAY_RENDER_PASS = 5;
+    public static final int MAX_BASE_RENDER_PASS = BACKFACE_RENDER_PASS;
+    public static final int MAX_EXTRA_RENDER_PASS = NAMES.length - 1;
+
     public int parseRenderPass(String value) {
-        if (value.matches("\\d+")) {
-            return Integer.parseInt(value);
-        } else if (value.equalsIgnoreCase("backface") || value.equalsIgnoreCase("overlay")) {
-            return RenderPass.MAX_EXTRA_RENDER_PASS;
+        int pass = value.matches("\\d+") ? Integer.parseInt(value) : -1;
+        if (value.equalsIgnoreCase("solid") || pass == 0) {
+            return SOLID_RENDER_PASS;
+        } else if (value.equalsIgnoreCase("cutout_mipped")) {
+            return CUTOUT_MIPPED_RENDER_PASS;
+        } else if (value.equalsIgnoreCase("cutout")) {
+            return CUTOUT_RENDER_PASS;
+        } else if (value.equalsIgnoreCase("translucent") || pass == 1) {
+            return TRANSLUCENT_RENDER_PASS;
+        } else if (value.equalsIgnoreCase("backface") || pass == 2) {
+            return BACKFACE_RENDER_PASS;
+        } else if (value.equalsIgnoreCase("overlay") || pass == 3) {
+            return OVERLAY_RENDER_PASS;
         } else {
-            return -1;
+            return pass;
+        }
+    }
+
+    public String getRenderPassName(int pass) {
+        if (pass < 0) {
+            return "(default)";
+        } else if (pass < NAMES.length) {
+            return NAMES[pass];
+        } else {
+            return "(unknown pass " + pass + ")";
         }
     }
 
@@ -21,7 +51,7 @@ public class RenderPassAPI {
     }
 
     public boolean skipThisRenderPass(Block block, int pass) {
-        return pass > 2;
+        return pass > MAX_BASE_RENDER_PASS;
     }
 
     public boolean useColorMultiplierThisPass(Block block) {

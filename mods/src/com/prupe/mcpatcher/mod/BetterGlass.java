@@ -16,12 +16,10 @@ public class BetterGlass extends Mod {
     private static final MethodRef glDepthMask = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthMask", "(Z)V");
     private static final MethodRef glShadeModel = new MethodRef(MCPatcherUtils.GL11_CLASS, "glShadeModel", "(I)V");
     private static final MethodRef glCallList = new MethodRef(MCPatcherUtils.GL11_CLASS, "glCallList", "(I)V");
-    private static final MethodRef glAlphaFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glAlphaFunc", "(IF)V");
     private static final MethodRef enableLightmap = new MethodRef("EntityRenderer", "enableLightmap", "(D)V");
     private static final MethodRef disableLightmap = new MethodRef("EntityRenderer", "disableLightmap", "(D)V");
 
-    private static final MethodRef pass17To18 = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "pass17To18", "(I)I");
-    private static final MethodRef pass18To17 = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "pass18To17", "(I)I");
+    private static final MethodRef pass18To17 = new MethodRef(MCPatcherUtils.RENDER_PASS_MAP_CLASS, "map18To17", "(I)I");
 
     private final MethodRef sortAndRender = new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLivingBase;" + RenderPassEnumMod.getDescriptor() + "D)I");
 
@@ -29,10 +27,12 @@ public class BetterGlass extends Mod {
         name = MCPatcherUtils.BETTER_GLASS;
         author = "MCPatcher";
         description = "Enables partial transparency for glass blocks.";
-        version = "2.4";
+        version = "2.5";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.CONNECTED_TEXTURES);
+
+        int malVersion;
 
         addClassMod(new MinecraftMod(this));
         addClassMod(new ResourceLocationMod(this));
@@ -44,11 +44,17 @@ public class BetterGlass extends Mod {
         addClassMod(new RenderBlocksMod());
         if (RenderPassEnumMod.haveRenderPassEnum()) {
             addClassMod(new RenderPassEnumMod());
+            malVersion = 2;
+        } else {
+            malVersion = 1;
         }
+        setMALVersion("renderpass", malVersion);
 
         addClassFile(MCPatcherUtils.RENDER_PASS_CLASS);
         addClassFile(MCPatcherUtils.RENDER_PASS_CLASS + "$1");
         addClassFile(MCPatcherUtils.RENDER_PASS_CLASS + "$2");
+        addClassFile(MCPatcherUtils.RENDER_PASS_MAP_CLASS);
+        addClassFile(MCPatcherUtils.RENDER_PASS_MAP_CLASS + "$V" + malVersion);
     }
 
     private class WorldRendererMod extends com.prupe.mcpatcher.basemod.WorldRendererMod {
@@ -57,7 +63,8 @@ public class BetterGlass extends Mod {
         WorldRendererMod() {
             super(BetterGlass.this);
 
-            final MethodRef getRenderBlockPass = new MethodRef("Block", "getRenderBlockPass", "()" + RenderPassEnumMod.getDescriptor());
+            final String renderBlockPassName = RenderPassEnumMod.haveRenderPassEnum() ? "Enum" : "";
+            final MethodRef getRenderBlockPass = new MethodRef("Block", "getRenderBlockPass" + renderBlockPassName, "()" + RenderPassEnumMod.getDescriptor());
             final MethodRef startPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "start", "(I)V");
             final MethodRef canRenderInPass1 = new MethodRef("forge/ForgeHooksClient", "canRenderInPass", "(LBlock;I)Z");
             final MethodRef canRenderInPass2 = new MethodRef("Block", "canRenderInPass", "(I)Z");
@@ -94,20 +101,6 @@ public class BetterGlass extends Mod {
             );
 
             addMemberMapper(new FieldMapper(skipRenderPass));
-
-            addPatch(new AddMethodPatch(new MethodRef(getDeobfClass(), "getBlockRenderPass", "(LBlock;)I"), AccessFlag.PUBLIC | AccessFlag.STATIC) {
-                @Override
-                public byte[] generateMethod() {
-                    return buildCode(
-                        // older: return block.getRenderPass();
-                        // 14w03a+: return block.getRenderPass().ordinal();
-                        ALOAD_0,
-                        reference(INVOKEVIRTUAL, getRenderBlockPass),
-                        RenderPassEnumMod.haveRenderPassEnum() ? reference(INVOKEVIRTUAL, RenderPassEnumMod.ordinal) : new byte[0],
-                        IRETURN
-                    );
-                }
-            });
 
             addPatch(new BytecodePatch() {
                 private int loopRegister;
@@ -172,8 +165,6 @@ public class BetterGlass extends Mod {
                     Logger.log(Logger.LOG_CONST, "loop register %d", loopRegister);
                     return buildCode(
                         registerLoadStore(ILOAD, loopRegister),
-                        RenderPassEnumMod.haveRenderPassEnum() ?
-                            new byte[0] : reference(INVOKESTATIC, pass17To18),
                         reference(INVOKESTATIC, startPass)
                     );
                 }
