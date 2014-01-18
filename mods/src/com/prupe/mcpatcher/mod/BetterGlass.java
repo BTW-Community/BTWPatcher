@@ -808,7 +808,7 @@ public class BetterGlass extends Mod {
                             buildCode(
                                 ALOAD_2,
                                 reference(INVOKEVIRTUAL, RenderPassEnumMod.ordinal)
-                            ) : build(
+                            ) : buildCode(
                                 ILOAD_2
                             ),
                         reference(INVOKESTATIC, preRenderPass),
