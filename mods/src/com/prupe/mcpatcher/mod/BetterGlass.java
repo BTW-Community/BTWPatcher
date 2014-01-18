@@ -512,7 +512,7 @@ public class BetterGlass extends Mod {
                         ALOAD, 5,
                         ALOAD, 4,
                         RenderPassEnumMod.haveRenderPassEnum() ?
-                            reference(GETSTATIC, RenderPassEnumMod.SOLID) : push(0),
+                            reference(GETSTATIC, RenderPassEnumMod.CUTOUT_MIPPED) : push(0),
                         FLOAD_1,
                         F2D,
                         reference(INVOKEVIRTUAL, sortAndRender),
