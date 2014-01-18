@@ -95,10 +95,6 @@ public class BetterGlass extends Mod {
 
             addMemberMapper(new FieldMapper(skipRenderPass));
 
-            if (!RenderPassEnumMod.haveRenderPassEnum()) {
-                setupPre18();
-            }
-
             addPatch(new AddMethodPatch(new MethodRef(getDeobfClass(), "getBlockRenderPass", "(LBlock;)I"), AccessFlag.PUBLIC | AccessFlag.STATIC) {
                 @Override
                 public byte[] generateMethod() {
@@ -138,7 +134,8 @@ public class BetterGlass extends Mod {
                                     ) : build(
                                         push(2),
                                         IF_ICMPGE, any(2)
-                                    )
+                                    ),
+                                push(0)
                             );
                         }
 
@@ -262,6 +259,10 @@ public class BetterGlass extends Mod {
                     );
                 }
             }.targetMethod(updateRenderer));
+
+            if (!RenderPassEnumMod.haveRenderPassEnum()) {
+                setupPre18();
+            }
         }
 
         private void setupPre18() {
