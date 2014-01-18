@@ -116,6 +116,40 @@ public class BetterGlass extends Mod {
             addPatch(new BytecodePatch() {
                 private int loopRegister;
 
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                // older: for (int pass = 0; pass < 2; ...)
+                                // 14w03a+: for (int pass = 0; pass < RenderPassEnum.values().length; ...)
+                                push(0),
+                                ISTORE, capture(any()),
+                                ILOAD, backReference(1),
+                                RenderPassEnumMod.haveRenderPassEnum() ?
+                                    build(
+                                        reference(INVOKESTATIC, RenderPassEnumMod.values),
+                                        ARRAYLENGTH,
+                                        IF_ICMPGE, any(2),
+                                        anyALOAD,
+                                        ILOAD, backReference(1),
+                                        AALOAD,
+                                        anyASTORE
+                                    ) : build(
+                                        push(2),
+                                        IF_ICMPGE, any(2)
+                                    )
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            loopRegister = getCaptureGroup(1)[0] & 0xff;
+                            return true;
+                        }
+                    });
+                }
+
                 @Override
                 public String getDescription() {
                     return "pre render pass";
@@ -124,18 +158,20 @@ public class BetterGlass extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // flag1 = false;
+                        // flag2 = false;
+                        // flag3 = false;
                         push(0),
-                        capture(anyISTORE),
+                        anyISTORE,
                         push(0),
-                        ISTORE, any(),
+                        anyISTORE,
                         push(0),
-                        ISTORE, any()
+                        anyISTORE
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    loopRegister = extractRegisterNum(getCaptureGroup(1));
                     Logger.log(Logger.LOG_CONST, "loop register %d", loopRegister);
                     return buildCode(
                         registerLoadStore(ILOAD, loopRegister),
