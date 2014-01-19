@@ -110,8 +110,8 @@ public class BlockAPIMod extends Mod {
                         IFEQ, branch("A"),
 
                         // face = 1;
-                        push(1),
-                        ISTORE, 5,
+                        DirectionMod.getFixedDirection(this, 1),
+                        registerLoadStore(DirectionMod.getStoreOpcode(), 2 + PositionMod.getDescriptorLength()),
 
                         // }
                         label("A")

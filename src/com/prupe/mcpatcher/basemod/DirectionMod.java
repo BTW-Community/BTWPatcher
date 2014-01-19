@@ -55,6 +55,10 @@ public class DirectionMod extends com.prupe.mcpatcher.ClassMod {
         }
     }
 
+    public static int getStoreOpcode() {
+        return haveDirectionClass() ? ASTORE : ISTORE;
+    }
+
     public static Object getFixedDirection(PatchComponent patchComponent, int direction) {
         if (haveDirectionClass()) {
             return patchComponent.reference(GETSTATIC, ALL_FIELDS[direction]);
