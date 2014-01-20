@@ -1,7 +1,8 @@
 package com.prupe.mcpatcher.mal.block;
 
-import com.prupe.mcpatcher.ctm.RenderPass;
+import com.prupe.mcpatcher.BlendMethod;
 import net.minecraft.src.Block;
+import net.minecraft.src.ResourceLocation;
 
 public class RenderPassAPI {
     public static RenderPassAPI instance = new RenderPassAPI();
@@ -69,5 +70,9 @@ public class RenderPassAPI {
     }
 
     public void finish() {
+    }
+
+    public ResourceLocation getNeutralResource() {
+        return BlendMethod.ALPHA.getNeutralResource();
     }
 }

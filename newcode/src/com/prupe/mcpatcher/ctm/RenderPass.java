@@ -19,6 +19,7 @@ public class RenderPass {
     private static final Set<Block> customRenderPassBlocks = new HashSet<Block>();
 
     private static BlendMethod blendMethod;
+    private static ResourceLocation blendNeutralResource;
     private static boolean enableLightmap;
     private static boolean enableColormap;
     private static boolean backfaceCulling;
@@ -92,6 +93,11 @@ public class RenderPass {
             public void finish() {
                 RenderPass.finish();
             }
+
+            @Override
+            public ResourceLocation getNeutralResource() {
+                return blendNeutralResource;
+            }
         };
 
         TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.BETTER_GLASS, 4) {
@@ -112,6 +118,10 @@ public class RenderPass {
                     if (blendMethod == null) {
                         logger.error("%s: unknown blend method '%s'", RENDERPASS_PROPERTIES, method);
                         blendMethod = BlendMethod.ALPHA;
+                    }
+                    blendNeutralResource = blendMethod.getNeutralResource();
+                    if (blendNeutralResource == null) {
+                        blendNeutralResource = BlendMethod.ALPHA.getNeutralResource();
                     }
                     enableLightmap = MCPatcherUtils.getBooleanProperty(properties, "enableLightmap.3", !blendMethod.isColorBased());
                     enableColormap = MCPatcherUtils.getBooleanProperty(properties, "enableColormap.3", false);

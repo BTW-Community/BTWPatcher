@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher;
 
+import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
 
@@ -14,8 +15,6 @@ public class TileLoader {
     private static final MCLogger logger = MCLogger.getLogger("Tilesheet");
 
     private static final List<TileLoader> loaders = new ArrayList<TileLoader>();
-
-    private static final ResourceLocation BLANK_RESOURCE = BlendMethod.ALPHA.getNeutralResource();
 
     private static final boolean debugTextures = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "debugTextures", false);
     private static final int splitTextures = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "splitTextures", 1);
@@ -240,7 +239,7 @@ public class TileLoader {
             return null;
         }
         if (value.equals("blank")) {
-            return BLANK_RESOURCE;
+            return RenderPassAPI.instance.getNeutralResource();
         }
         if (value.equals("null") || value.equals("none") || value.equals("default") || value.equals("")) {
             return null;
