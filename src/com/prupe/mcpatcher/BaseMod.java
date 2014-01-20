@@ -18,6 +18,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.prupe.mcpatcher.BinaryRegex.begin;
 import static com.prupe.mcpatcher.BytecodeMatcher.registerLoadStore;
@@ -28,6 +30,8 @@ import static javassist.bytecode.Opcode.*;
  * into minecraft.jar.
  */
 public final class BaseMod extends Mod {
+    private static final Pattern BLANK_PNG_PATTERN = Pattern.compile(MCPatcherUtils.BLANK_PNG_FORMAT.replaceFirst("%\\d*x", "(\\\\p{XDigit}+)"));
+
     private final boolean haveProfiler;
 
     BaseMod() {
@@ -65,7 +69,9 @@ public final class BaseMod extends Mod {
         }
         addClassFile(MCPatcherUtils.MAL_CLASS);
 
-        addFile("assets/minecraft/" + MCPatcherUtils.BLANK_PNG);
+        for (int i : new int[]{0, 0x80808080, 0xffffffff}) {
+            addFile(String.format("%s" + MCPatcherUtils.BLANK_PNG_FORMAT, "assets/minecraft/", i));
+        }
     }
 
     @Override
@@ -75,8 +81,20 @@ public final class BaseMod extends Mod {
 
     @Override
     public InputStream openFile(String name) throws IOException {
-        if (name.endsWith(MCPatcherUtils.BLANK_PNG)) {
+        Matcher m = BLANK_PNG_PATTERN.matcher(name);
+        if (m.find()) {
             BufferedImage image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+            int color = 0;
+            try {
+                color = (int) Long.parseLong(m.group(1), 16);
+            } catch (NumberFormatException e) {
+                Logger.log(e);
+            }
+            for (int i = 0; i < image.getWidth(); i++) {
+                for (int j = 0; j < image.getHeight(); j++) {
+                    image.setRGB(i, j, color);
+                }
+            }
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             ImageIO.write(image, "png", output);
             return new ByteArrayInputStream(output.toByteArray());

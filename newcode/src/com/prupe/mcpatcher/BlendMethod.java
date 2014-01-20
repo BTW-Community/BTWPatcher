@@ -1,19 +1,20 @@
 package com.prupe.mcpatcher;
 
+import net.minecraft.src.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GLContext;
 
 public class BlendMethod {
-    public static final BlendMethod ALPHA = new BlendMethod("alpha", GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, true, false, true);
-    public static final BlendMethod ADD = new BlendMethod("add", GL11.GL_SRC_ALPHA, GL11.GL_ONE, true, false, true);
-    public static final BlendMethod SUBTRACT = new BlendMethod("subtract", GL11.GL_ONE_MINUS_DST_COLOR, GL11.GL_ZERO, true, true, false);
-    public static final BlendMethod MULTIPLY = new BlendMethod("multiply", GL11.GL_DST_COLOR, GL11.GL_ONE_MINUS_SRC_ALPHA, true, true, true);
-    public static final BlendMethod DODGE = new BlendMethod("dodge", GL11.GL_ONE, GL11.GL_ONE, true, true, false);
-    public static final BlendMethod BURN = new BlendMethod("burn", GL11.GL_ZERO, GL11.GL_ONE_MINUS_SRC_COLOR, true, true, false);
-    public static final BlendMethod SCREEN = new BlendMethod("screen", GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_COLOR, true, true, false);
-    public static final BlendMethod OVERLAY = new BlendMethod("overlay", GL11.GL_DST_COLOR, GL11.GL_SRC_COLOR, true, true, false);
-    public static final BlendMethod REPLACE = new BlendMethod("replace", 0, 0, false, false, true);
+    public static final BlendMethod ALPHA = new BlendMethod("alpha", GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, true, false, true, 0);
+    public static final BlendMethod ADD = new BlendMethod("add", GL11.GL_SRC_ALPHA, GL11.GL_ONE, true, false, true, 0);
+    public static final BlendMethod SUBTRACT = new BlendMethod("subtract", GL11.GL_ONE_MINUS_DST_COLOR, GL11.GL_ZERO, true, true, false, 0);
+    public static final BlendMethod MULTIPLY = new BlendMethod("multiply", GL11.GL_DST_COLOR, GL11.GL_ONE_MINUS_SRC_ALPHA, true, true, true, 0xffffffff);
+    public static final BlendMethod DODGE = new BlendMethod("dodge", GL11.GL_ONE, GL11.GL_ONE, true, true, false, 0);
+    public static final BlendMethod BURN = new BlendMethod("burn", GL11.GL_ZERO, GL11.GL_ONE_MINUS_SRC_COLOR, true, true, false, null);
+    public static final BlendMethod SCREEN = new BlendMethod("screen", GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_COLOR, true, true, false, 0xffffffff);
+    public static final BlendMethod OVERLAY = new BlendMethod("overlay", GL11.GL_DST_COLOR, GL11.GL_SRC_COLOR, true, true, false, 0x80808080);
+    public static final BlendMethod REPLACE = new BlendMethod("replace", 0, 0, false, false, true, null);
 
     private static final boolean gl14Available = GLContext.getCapabilities().OpenGL14;
 
@@ -23,6 +24,7 @@ public class BlendMethod {
     private final boolean blend;
     private final boolean fadeRGB;
     private final boolean fadeAlpha;
+    private final ResourceLocation neutralResource;
 
     public static BlendMethod parse(String text) {
         text = text.toLowerCase().trim();
@@ -50,7 +52,7 @@ public class BlendMethod {
                 try {
                     int srcBlend = Integer.parseInt(tokens[0]);
                     int dstBlend = Integer.parseInt(tokens[1]);
-                    return new BlendMethod("custom(" + srcBlend + "," + dstBlend + ")", srcBlend, dstBlend, true, true, false);
+                    return new BlendMethod("custom(" + srcBlend + "," + dstBlend + ")", srcBlend, dstBlend, true, true, false, 0);
                 } catch (NumberFormatException e) {
                 }
             }
@@ -58,13 +60,14 @@ public class BlendMethod {
         return null;
     }
 
-    private BlendMethod(String name, int srcBlend, int dstBlend, boolean blend, boolean fadeRGB, boolean fadeAlpha) {
+    private BlendMethod(String name, int srcBlend, int dstBlend, boolean blend, boolean fadeRGB, boolean fadeAlpha, Integer neutralRGB) {
         this.name = name;
         this.srcBlend = srcBlend;
         this.dstBlend = dstBlend;
         this.blend = blend;
         this.fadeRGB = fadeRGB;
         this.fadeAlpha = fadeAlpha;
+        neutralResource = neutralRGB == null ? null : new ResourceLocation(String.format(MCPatcherUtils.BLANK_PNG_FORMAT, neutralRGB));
     }
 
     @Override
@@ -119,5 +122,9 @@ public class BlendMethod {
 
     public boolean canFade() {
         return blend && (fadeAlpha || fadeRGB);
+    }
+
+    public ResourceLocation getNeutralResource() {
+        return neutralResource;
     }
 }

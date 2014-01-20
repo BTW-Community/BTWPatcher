@@ -15,7 +15,7 @@ public class TileLoader {
 
     private static final List<TileLoader> loaders = new ArrayList<TileLoader>();
 
-    private static final ResourceLocation BLANK_RESOURCE = new ResourceLocation(MCPatcherUtils.BLANK_PNG);
+    private static final ResourceLocation BLANK_RESOURCE = BlendMethod.ALPHA.getNeutralResource();
 
     private static final boolean debugTextures = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "debugTextures", false);
     private static final int splitTextures = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "splitTextures", 1);

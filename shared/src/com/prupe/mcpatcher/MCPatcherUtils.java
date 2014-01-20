@@ -125,7 +125,7 @@ public class MCPatcherUtils {
 
     public static final String SHADERS_CLASS = "com.prupe.mcpatcher.glsl.Shaders";
 
-    public static final String BLANK_PNG = "mcpatcher/blank.png";
+    public static final String BLANK_PNG_FORMAT = "mcpatcher/blank_%08x.png";
 
     private MCPatcherUtils() {
     }
