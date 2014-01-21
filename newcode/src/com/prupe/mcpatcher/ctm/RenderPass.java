@@ -90,11 +90,6 @@ public class RenderPass {
             }
 
             @Override
-            public void finish() {
-                RenderPass.finish();
-            }
-
-            @Override
             public ResourceLocation getBlankResource(int pass) {
                 return pass == OVERLAY_RENDER_PASS ? blendBlankResource : super.getBlankResource(pass);
             }

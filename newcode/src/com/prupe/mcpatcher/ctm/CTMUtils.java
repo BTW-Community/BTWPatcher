@@ -18,8 +18,6 @@ public class CTMUtils {
     private static final Map<String, List<ITileOverride>> tileOverrides = new HashMap<String, List<ITileOverride>>();
     private static TileLoader tileLoader;
 
-    static boolean active;
-    private static boolean renderWorld;
     static ITileOverride lastOverride;
     private static Icon blankIcon;
 
@@ -83,17 +81,8 @@ public class CTMUtils {
         });
     }
 
-    public static void start(boolean renderWorld) {
-        lastOverride = null;
-        active = true;
-        CTMUtils.renderWorld = renderWorld;
-    }
-
     // called by drawCrossedSquares, which in 1.7 no longer has a Block parameter
     public static Icon getTile(RenderBlocks renderBlocks, int i, int j, int k, Icon origIcon) {
-        if (!renderWorld) {
-            return origIcon;
-        }
         if (renderBlocks.blockAccess == null) {
             return origIcon;
         }
@@ -152,19 +141,12 @@ public class CTMUtils {
     public static void reset() {
     }
 
-    public static void finish() {
-        reset();
-        RenderPassAPI.instance.finish();
-        lastOverride = null;
-        active = false;
-    }
-
     private static boolean checkBlock(RenderBlocks renderBlocks, Block block) {
-        return active && renderBlocks.blockAccess != null;
+        return renderBlocks.blockAccess != null;
     }
 
     private static boolean checkFace(int face) {
-        return active && (face < 0 ? enableNonStandard : enableStandard);
+        return face < 0 ? enableNonStandard : enableStandard;
     }
 
     private static boolean checkRenderType(Block block) {

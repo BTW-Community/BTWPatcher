@@ -69,9 +69,6 @@ public class RenderPassAPI {
     public void setRenderPassForBlock(Block block, int pass) {
     }
 
-    public void finish() {
-    }
-
     public ResourceLocation getBlankResource(int pass) {
         return BlendMethod.ALPHA.getBlankResource();
     }

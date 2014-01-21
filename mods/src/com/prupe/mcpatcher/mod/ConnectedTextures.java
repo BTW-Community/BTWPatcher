@@ -16,9 +16,6 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class ConnectedTextures extends Mod {
-    private final MethodRef startCTM = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "start", "(Z)V");
-    private final MethodRef finishCTM = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "finish", "()V");
-
     private final boolean haveBlockRegistry;
 
     public ConnectedTextures() {
@@ -46,7 +43,6 @@ public class ConnectedTextures extends Mod {
         }
         addClassMod(new BlockMod());
         addClassMod(new RenderBlocksMod());
-        addClassMod(new WorldRendererMod());
 
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS);
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$1");
@@ -979,30 +975,6 @@ public class ConnectedTextures extends Mod {
             addMemberMapper(new MethodMapper(getIconBySideAndMetadata));
             addMemberMapper(new MethodMapper(getIconBySide));
 
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "setup held items (finish)";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        RETURN
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, finishCTM)
-                    );
-                }
-            }
-                .setInsertBefore(true)
-                .targetMethod(renderBlockAsItem, renderBlockAsItemVanilla)
-            );
-
             setupHeldBlocks(getIconBySide, getTileByDirection, "held blocks");
             setupHeldBlocks(getIconBySideAndMetadata, getTileByDirectionAndMetadata, "held blocks with metadata");
         }
@@ -1024,66 +996,10 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // CTMUtils.startCTM(false);
-                        push(0),
-                        reference(INVOKESTATIC, startCTM),
                         reference(INVOKESTATIC, to)
                     );
                 }
             }.targetMethod(renderBlockAsItem, renderBlockAsItemVanilla));
-        }
-    }
-
-    private class WorldRendererMod extends com.prupe.mcpatcher.basemod.WorldRendererMod {
-        WorldRendererMod() {
-            super(ConnectedTextures.this);
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "pre render world";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        begin()
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // CTMUtils.startCTM(true);
-                        push(1),
-                        reference(INVOKESTATIC, startCTM)
-                    );
-                }
-            }.targetMethod(updateRenderer));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "post render world";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        RETURN
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, finishCTM)
-                    );
-                }
-            }
-                .setInsertBefore(true)
-                .targetMethod(updateRenderer)
-            );
         }
     }
 }
