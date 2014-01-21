@@ -96,7 +96,7 @@ public class RenderPass {
 
             @Override
             public ResourceLocation getNeutralResource(int pass) {
-                return pass == 3 ? blendNeutralResource : super.getNeutralResource(pass);
+                return pass == OVERLAY_RENDER_PASS ? blendNeutralResource : super.getNeutralResource(pass);
             }
 
             @Override
@@ -151,6 +151,7 @@ public class RenderPass {
     public static void start(int pass) {
         finish();
         currentRenderPass = RenderPassMap.instance.vanillaToMCPatcher(pass);
+        CTMUtils.setNeutralResource();
     }
 
     public static void finish() {

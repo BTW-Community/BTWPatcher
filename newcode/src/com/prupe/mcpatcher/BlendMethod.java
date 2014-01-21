@@ -5,7 +5,12 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GLContext;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class BlendMethod {
+    private static final Set<ResourceLocation> neutralResources = new HashSet<ResourceLocation>();
+
     public static final BlendMethod ALPHA = new BlendMethod("alpha", GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, true, false, true, 0);
     public static final BlendMethod ADD = new BlendMethod("add", GL11.GL_SRC_ALPHA, GL11.GL_ONE, true, false, true, 0);
     public static final BlendMethod SUBTRACT = new BlendMethod("subtract", GL11.GL_ONE_MINUS_DST_COLOR, GL11.GL_ZERO, true, true, false, 0);
@@ -60,6 +65,10 @@ public class BlendMethod {
         return null;
     }
 
+    public static Set<ResourceLocation> getAllNeutralResources() {
+        return neutralResources;
+    }
+
     private BlendMethod(String name, int srcBlend, int dstBlend, boolean blend, boolean fadeRGB, boolean fadeAlpha, Integer neutralRGB) {
         this.name = name;
         this.srcBlend = srcBlend;
@@ -68,6 +77,9 @@ public class BlendMethod {
         this.fadeRGB = fadeRGB;
         this.fadeAlpha = fadeAlpha;
         neutralResource = neutralRGB == null ? null : new ResourceLocation(String.format(MCPatcherUtils.BLANK_PNG_FORMAT, neutralRGB));
+        if (neutralResource != null) {
+            neutralResources.add(neutralResource);
+        }
     }
 
     @Override

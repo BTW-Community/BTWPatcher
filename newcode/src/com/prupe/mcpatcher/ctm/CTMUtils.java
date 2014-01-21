@@ -21,6 +21,7 @@ public class CTMUtils {
     static boolean active;
     private static boolean renderWorld;
     static ITileOverride lastOverride;
+    private static Icon neutralIcon;
 
     private static final TileOverrideIterator.IJK ijkIterator = new TileOverrideIterator.IJK(blockOverrides, tileOverrides);
     private static final TileOverrideIterator.Metadata metadataIterator = new TileOverrideIterator.Metadata(blockOverrides, tileOverrides);
@@ -46,12 +47,16 @@ public class CTMUtils {
                 blockOverrides.clear();
                 tileOverrides.clear();
                 lastOverride = null;
+                neutralIcon = null;
                 tileLoader = new TileLoader("textures/blocks", true, logger);
 
                 if (enableStandard || enableNonStandard) {
                     for (ResourceLocation resource : TexturePackAPI.listResources(TexturePackAPI.MCPATCHER_SUBDIR + "ctm", ".properties", true, false, true)) {
                         registerOverride(TileOverride.create(resource, tileLoader));
                     }
+                }
+                for (ResourceLocation resource : BlendMethod.getAllNeutralResources()) {
+                    tileLoader.preloadTile(resource, false);
                 }
             }
 
@@ -73,12 +78,7 @@ public class CTMUtils {
                 for (List<ITileOverride> overrides : tileOverrides.values()) {
                     Collections.sort(overrides);
                 }
-            }
-
-            private void sortOverrides(ITileOverride[] overrides) {
-                if (overrides != null) {
-                    Arrays.sort(overrides);
-                }
+                setNeutralResource();
             }
         });
     }
@@ -118,7 +118,7 @@ public class CTMUtils {
                 icon = ijkIterator.getIcon();
             }
         }
-        return lastOverride == null && skipDefaultRendering(block) ? tileLoader.getIcon(RenderPassAPI.instance.getNeutralResource()) : icon;
+        return lastOverride == null && skipDefaultRendering(block) ? neutralIcon : icon;
     }
 
     public static Icon getTile(RenderBlocks renderBlocks, Block block, int face, int metadata, Tessellator tessellator) {
@@ -217,5 +217,9 @@ public class CTMUtils {
                 allOverrides.add(override);
             }
         }
+    }
+
+    static void setNeutralResource() {
+        neutralIcon = tileLoader.getIcon(RenderPassAPI.instance.getNeutralResource());
     }
 }

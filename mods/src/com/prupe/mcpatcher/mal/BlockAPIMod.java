@@ -33,6 +33,7 @@ public class BlockAPIMod extends Mod {
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new IconMod(this));
         addClassMod(new TessellatorMod(this));
+        addClassMod(new ResourceLocationMod(this));
         addClassMod(new RenderBlocksMod());
         if (malVersion >= 2) {
             addClassMod(new Shared.RegistryBaseMod(this));
