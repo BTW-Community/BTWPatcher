@@ -98,6 +98,11 @@ public class RenderPass {
             public ResourceLocation getNeutralResource(int pass) {
                 return pass == 3 ? blendNeutralResource : super.getNeutralResource(pass);
             }
+
+            @Override
+            public ResourceLocation getNeutralResource() {
+                return getNeutralResource(renderPass);
+            }
         };
 
         TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.BETTER_GLASS, 4) {

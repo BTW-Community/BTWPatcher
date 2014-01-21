@@ -95,11 +95,11 @@ public class CTMUtils {
             return origIcon;
         }
         if (renderBlocks.blockAccess == null) {
-            return null;
+            return origIcon;
         }
         Block block = BlockAPI.getBlockAt(renderBlocks.blockAccess, i, j, k);
         if (block == null) {
-            return null;
+            return origIcon;
         } else {
             return getTile(renderBlocks, block, i, j, k, origIcon, tessellator);
         }
@@ -118,7 +118,7 @@ public class CTMUtils {
                 icon = ijkIterator.getIcon();
             }
         }
-        return lastOverride == null && skipDefaultRendering(block) ? null : icon;
+        return lastOverride == null && skipDefaultRendering(block) ? tileLoader.getIcon(RenderPassAPI.instance.getNeutralResource()) : icon;
     }
 
     public static Icon getTile(RenderBlocks renderBlocks, Block block, int face, int metadata, Tessellator tessellator) {

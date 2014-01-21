@@ -75,4 +75,8 @@ public class RenderPassAPI {
     public ResourceLocation getNeutralResource(int pass) {
         return BlendMethod.ALPHA.getNeutralResource();
     }
+
+    public ResourceLocation getNeutralResource() {
+        return BlendMethod.ALPHA.getNeutralResource();
+    }
 }
