@@ -2,7 +2,6 @@ package com.prupe.mcpatcher.ctm;
 
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.TessellatorUtils;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import net.minecraft.src.*;
@@ -18,7 +17,6 @@ public class GlassPaneRenderer {
     public static boolean skipBottomEdgeRendering;
 
     private static final Icon[] icons = new Icon[6];
-    private static Tessellator tessellator;
 
     private static double u0; // left edge
     private static double u1; // 7/16 point
@@ -316,7 +314,6 @@ public class GlassPaneRenderer {
 
     private static void setupTileCoords(int face) {
         Icon icon = icons[face];
-        tessellator = TessellatorUtils.getTessellator(Tessellator.instance, icons[face]);
         u0 = icon.getMinU();
         u1 = icon.getInterpolatedU(u1Scaled);
         u2 = icon.getInterpolatedU(u2Scaled);
@@ -327,6 +324,7 @@ public class GlassPaneRenderer {
 
     private static void drawFace(double x0, double y0, double z0, double u0, double v0,   // top left
                                  double x1, double y1, double z1, double u1, double v1) { // lower right
+        Tessellator tessellator = Tessellator.instance;
         tessellator.addVertexWithUV(x0, y0, z0, u0, v0);
         tessellator.addVertexWithUV(x0, y1, z0, u0, v1);
         tessellator.addVertexWithUV(x1, y1, z1, u1, v1);
@@ -335,7 +333,6 @@ public class GlassPaneRenderer {
 
     static void clear() {
         Arrays.fill(icons, null);
-        tessellator = null;
         skipAllRendering = false;
         skipPaneRendering = false;
     }

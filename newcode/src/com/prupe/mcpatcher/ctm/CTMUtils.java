@@ -48,7 +48,7 @@ public class CTMUtils {
                 tileOverrides.clear();
                 lastOverride = null;
                 neutralIcon = null;
-                tileLoader = new TileLoader("textures/blocks", true, logger);
+                tileLoader = new TileLoader("textures/blocks", logger);
 
                 if (enableStandard || enableNonStandard) {
                     for (ResourceLocation resource : TexturePackAPI.listResources(TexturePackAPI.MCPATCHER_SUBDIR + "ctm", ".properties", true, false, true)) {
@@ -155,7 +155,6 @@ public class CTMUtils {
     public static void finish() {
         reset();
         RenderPassAPI.instance.finish();
-        TessellatorUtils.clearDefaultTextureMap(Tessellator.instance);
         lastOverride = null;
         active = false;
     }

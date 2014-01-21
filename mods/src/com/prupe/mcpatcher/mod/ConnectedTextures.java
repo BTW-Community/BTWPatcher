@@ -77,7 +77,6 @@ public class ConnectedTextures extends Mod {
         private JCheckBox standardCheckBox;
         private JCheckBox nonStandardCheckBox;
         private JCheckBox debugCheckBox;
-        private JComboBox splitComboBox;
 
         public ConfigPanel() {
             standardCheckBox.addActionListener(new ActionListener() {
@@ -109,15 +108,6 @@ public class ConnectedTextures extends Mod {
                     Config.set(MCPatcherUtils.CONNECTED_TEXTURES, "debugTextures", debugCheckBox.isSelected());
                 }
             });
-
-            splitComboBox.addItem("Never");
-            splitComboBox.addItem("As needed");
-            splitComboBox.addItem("Always");
-            splitComboBox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    Config.set(MCPatcherUtils.CONNECTED_TEXTURES, "splitTextures", splitComboBox.getSelectedIndex());
-                }
-            });
         }
 
         @Override
@@ -135,19 +125,7 @@ public class ConnectedTextures extends Mod {
 
             showAdvancedOption(debugCheckBox);
 
-            switch (Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "splitTextures", 1)) {
-                case 0:
-                    splitComboBox.setSelectedIndex(0);
-                    break;
-
-                default:
-                    splitComboBox.setSelectedIndex(1);
-                    break;
-
-                case 2:
-                    splitComboBox.setSelectedIndex(2);
-                    break;
-            }
+            Config.remove(MCPatcherUtils.CONNECTED_TEXTURES, "splitTextures");
         }
 
         @Override
