@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class BlendMethod {
-    private static final Set<ResourceLocation> neutralResources = new HashSet<ResourceLocation>();
+    private static final Set<ResourceLocation> blankResources = new HashSet<ResourceLocation>();
 
     public static final BlendMethod ALPHA = new BlendMethod("alpha", GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, true, false, true, 0);
     public static final BlendMethod ADD = new BlendMethod("add", GL11.GL_SRC_ALPHA, GL11.GL_ONE, true, false, true, 0);
@@ -29,7 +29,7 @@ public class BlendMethod {
     private final boolean blend;
     private final boolean fadeRGB;
     private final boolean fadeAlpha;
-    private final ResourceLocation neutralResource;
+    private final ResourceLocation blankResource;
 
     public static BlendMethod parse(String text) {
         text = text.toLowerCase().trim();
@@ -65,8 +65,8 @@ public class BlendMethod {
         return null;
     }
 
-    public static Set<ResourceLocation> getAllNeutralResources() {
-        return neutralResources;
+    public static Set<ResourceLocation> getAllBlankResources() {
+        return blankResources;
     }
 
     private BlendMethod(String name, int srcBlend, int dstBlend, boolean blend, boolean fadeRGB, boolean fadeAlpha, Integer neutralRGB) {
@@ -76,9 +76,9 @@ public class BlendMethod {
         this.blend = blend;
         this.fadeRGB = fadeRGB;
         this.fadeAlpha = fadeAlpha;
-        neutralResource = neutralRGB == null ? null : new ResourceLocation(String.format(MCPatcherUtils.BLANK_PNG_FORMAT, neutralRGB));
-        if (neutralResource != null) {
-            neutralResources.add(neutralResource);
+        blankResource = neutralRGB == null ? null : new ResourceLocation(String.format(MCPatcherUtils.BLANK_PNG_FORMAT, neutralRGB));
+        if (blankResource != null) {
+            blankResources.add(blankResource);
         }
     }
 
@@ -136,7 +136,7 @@ public class BlendMethod {
         return blend && (fadeAlpha || fadeRGB);
     }
 
-    public ResourceLocation getNeutralResource() {
-        return neutralResource;
+    public ResourceLocation getBlankResource() {
+        return blankResource;
     }
 }

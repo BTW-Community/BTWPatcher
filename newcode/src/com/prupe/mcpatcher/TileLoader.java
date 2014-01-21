@@ -204,7 +204,7 @@ public class TileLoader {
             return null;
         }
         if (value.equals("blank")) {
-            return RenderPassAPI.instance.getNeutralResource(pass);
+            return RenderPassAPI.instance.getBlankResource(pass);
         }
         if (value.equals("null") || value.equals("none") || value.equals("default") || value.equals("")) {
             return null;

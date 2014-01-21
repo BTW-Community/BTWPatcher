@@ -21,7 +21,7 @@ public class CTMUtils {
     static boolean active;
     private static boolean renderWorld;
     static ITileOverride lastOverride;
-    private static Icon neutralIcon;
+    private static Icon blankIcon;
 
     private static final TileOverrideIterator.IJK ijkIterator = new TileOverrideIterator.IJK(blockOverrides, tileOverrides);
     private static final TileOverrideIterator.Metadata metadataIterator = new TileOverrideIterator.Metadata(blockOverrides, tileOverrides);
@@ -47,7 +47,7 @@ public class CTMUtils {
                 blockOverrides.clear();
                 tileOverrides.clear();
                 lastOverride = null;
-                neutralIcon = null;
+                blankIcon = null;
                 tileLoader = new TileLoader("textures/blocks", logger);
 
                 if (enableStandard || enableNonStandard) {
@@ -55,7 +55,7 @@ public class CTMUtils {
                         registerOverride(TileOverride.create(resource, tileLoader));
                     }
                 }
-                for (ResourceLocation resource : BlendMethod.getAllNeutralResources()) {
+                for (ResourceLocation resource : BlendMethod.getAllBlankResources()) {
                     tileLoader.preloadTile(resource, false);
                 }
             }
@@ -78,7 +78,7 @@ public class CTMUtils {
                 for (List<ITileOverride> overrides : tileOverrides.values()) {
                     Collections.sort(overrides);
                 }
-                setNeutralResource();
+                setBlankResource();
             }
         });
     }
@@ -118,7 +118,7 @@ public class CTMUtils {
                 icon = ijkIterator.getIcon();
             }
         }
-        return lastOverride == null && skipDefaultRendering(block) ? neutralIcon : icon;
+        return lastOverride == null && skipDefaultRendering(block) ? blankIcon : icon;
     }
 
     public static Icon getTile(RenderBlocks renderBlocks, Block block, int face, int metadata) {
@@ -218,7 +218,7 @@ public class CTMUtils {
         }
     }
 
-    static void setNeutralResource() {
-        neutralIcon = tileLoader.getIcon(RenderPassAPI.instance.getNeutralResource());
+    static void setBlankResource() {
+        blankIcon = tileLoader.getIcon(RenderPassAPI.instance.getBlankResource());
     }
 }

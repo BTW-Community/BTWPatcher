@@ -19,7 +19,7 @@ public class RenderPass {
     private static final Set<Block> customRenderPassBlocks = new HashSet<Block>();
 
     private static BlendMethod blendMethod;
-    private static ResourceLocation blendNeutralResource;
+    private static ResourceLocation blendBlankResource;
     private static boolean enableLightmap;
     private static boolean enableColormap;
     private static boolean backfaceCulling;
@@ -95,13 +95,13 @@ public class RenderPass {
             }
 
             @Override
-            public ResourceLocation getNeutralResource(int pass) {
-                return pass == OVERLAY_RENDER_PASS ? blendNeutralResource : super.getNeutralResource(pass);
+            public ResourceLocation getBlankResource(int pass) {
+                return pass == OVERLAY_RENDER_PASS ? blendBlankResource : super.getBlankResource(pass);
             }
 
             @Override
-            public ResourceLocation getNeutralResource() {
-                return getNeutralResource(renderPass);
+            public ResourceLocation getBlankResource() {
+                return getBlankResource(currentRenderPass);
             }
         };
 
@@ -124,9 +124,9 @@ public class RenderPass {
                         logger.error("%s: unknown blend method '%s'", RENDERPASS_PROPERTIES, method);
                         blendMethod = BlendMethod.ALPHA;
                     }
-                    blendNeutralResource = blendMethod.getNeutralResource();
-                    if (blendNeutralResource == null) {
-                        blendNeutralResource = BlendMethod.ALPHA.getNeutralResource();
+                    blendBlankResource = blendMethod.getBlankResource();
+                    if (blendBlankResource == null) {
+                        blendBlankResource = BlendMethod.ALPHA.getBlankResource();
                     }
                     enableLightmap = MCPatcherUtils.getBooleanProperty(properties, "enableLightmap.3", !blendMethod.isColorBased());
                     enableColormap = MCPatcherUtils.getBooleanProperty(properties, "enableColormap.3", false);
@@ -151,7 +151,7 @@ public class RenderPass {
     public static void start(int pass) {
         finish();
         currentRenderPass = RenderPassMap.instance.vanillaToMCPatcher(pass);
-        CTMUtils.setNeutralResource();
+        CTMUtils.setBlankResource();
     }
 
     public static void finish() {
