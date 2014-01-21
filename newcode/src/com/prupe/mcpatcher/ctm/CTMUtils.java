@@ -18,7 +18,7 @@ public class CTMUtils {
     private static final Map<String, List<ITileOverride>> tileOverrides = new HashMap<String, List<ITileOverride>>();
     private static TileLoader tileLoader;
 
-    static ITileOverride lastOverride;
+    private static ITileOverride lastOverride;
     private static Icon blankIcon;
 
     private static final TileOverrideIterator.IJK ijkIterator = new TileOverrideIterator.IJK(blockOverrides, tileOverrides);
@@ -82,20 +82,20 @@ public class CTMUtils {
     }
 
     // called by drawCrossedSquares, which in 1.7 no longer has a Block parameter
-    public static Icon getTile(RenderBlocks renderBlocks, int i, int j, int k, Icon origIcon) {
+    public static Icon getTile(RenderBlocks renderBlocks, int i, int j, int k, Icon icon) {
         if (renderBlocks.blockAccess == null) {
-            return origIcon;
+            return icon;
         }
         Block block = BlockAPI.getBlockAt(renderBlocks.blockAccess, i, j, k);
         if (block == null) {
-            return origIcon;
+            return icon;
         } else {
-            return getTile(renderBlocks, block, i, j, k, origIcon);
+            return getTile(renderBlocks, block, i, j, k, icon);
         }
     }
 
-    public static Icon getTile(RenderBlocks renderBlocks, Block block, int i, int j, int k, Icon origIcon) {
-        return getTile(renderBlocks, block, i, j, k, -1, origIcon);
+    public static Icon getTile(RenderBlocks renderBlocks, Block block, int i, int j, int k, Icon icon) {
+        return getTile(renderBlocks, block, i, j, k, -1, icon);
     }
 
     public static Icon getTile(RenderBlocks renderBlocks, Block block, int i, int j, int k, int face, Icon icon) {
