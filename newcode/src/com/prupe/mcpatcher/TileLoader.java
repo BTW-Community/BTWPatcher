@@ -235,11 +235,15 @@ public class TileLoader {
     }
 
     public static ResourceLocation parseTileAddress(ResourceLocation propertiesAddress, String value) {
+        return parseTileAddress(propertiesAddress, value, -1);
+    }
+
+    public static ResourceLocation parseTileAddress(ResourceLocation propertiesAddress, String value, int pass) {
         if (value == null) {
             return null;
         }
         if (value.equals("blank")) {
-            return RenderPassAPI.instance.getNeutralResource();
+            return RenderPassAPI.instance.getNeutralResource(pass);
         }
         if (value.equals("null") || value.equals("none") || value.equals("default") || value.equals("")) {
             return null;

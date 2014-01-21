@@ -95,8 +95,8 @@ public class RenderPass {
             }
 
             @Override
-            public ResourceLocation getNeutralResource() {
-                return blendNeutralResource;
+            public ResourceLocation getNeutralResource(int pass) {
+                return pass == 3 ? blendNeutralResource : super.getNeutralResource(pass);
             }
         };
 
