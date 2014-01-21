@@ -85,12 +85,12 @@ public class CTMUtils {
 
     public static void start(boolean renderWorld) {
         lastOverride = null;
-        active = tileLoader.setDefaultTextureMap(Tessellator.instance);
+        active = true;
         CTMUtils.renderWorld = renderWorld;
     }
 
     // called by drawCrossedSquares, which in 1.7 no longer has a Block parameter
-    public static Icon getTile(RenderBlocks renderBlocks, int i, int j, int k, Icon origIcon, Tessellator tessellator) {
+    public static Icon getTile(RenderBlocks renderBlocks, int i, int j, int k, Icon origIcon) {
         if (!renderWorld) {
             return origIcon;
         }
@@ -101,15 +101,15 @@ public class CTMUtils {
         if (block == null) {
             return origIcon;
         } else {
-            return getTile(renderBlocks, block, i, j, k, origIcon, tessellator);
+            return getTile(renderBlocks, block, i, j, k, origIcon);
         }
     }
 
-    public static Icon getTile(RenderBlocks renderBlocks, Block block, int i, int j, int k, Icon origIcon, Tessellator tessellator) {
-        return getTile(renderBlocks, block, i, j, k, -1, origIcon, tessellator);
+    public static Icon getTile(RenderBlocks renderBlocks, Block block, int i, int j, int k, Icon origIcon) {
+        return getTile(renderBlocks, block, i, j, k, -1, origIcon);
     }
 
-    public static Icon getTile(RenderBlocks renderBlocks, Block block, int i, int j, int k, int face, Icon icon, Tessellator tessellator) {
+    public static Icon getTile(RenderBlocks renderBlocks, Block block, int i, int j, int k, int face, Icon icon) {
         lastOverride = null;
         if (checkFace(face) && checkBlock(renderBlocks, block)) {
             ijkIterator.setup(renderBlocks.blockAccess, block, i, j, k, face, icon);
@@ -121,23 +121,23 @@ public class CTMUtils {
         return lastOverride == null && skipDefaultRendering(block) ? neutralIcon : icon;
     }
 
-    public static Icon getTile(RenderBlocks renderBlocks, Block block, int face, int metadata, Tessellator tessellator) {
-        return getTile(renderBlocks, block, face, metadata, renderBlocks.getIconBySideAndMetadata(block, face, metadata), tessellator);
+    public static Icon getTile(RenderBlocks renderBlocks, Block block, int face, int metadata) {
+        return getTile(renderBlocks, block, face, metadata, renderBlocks.getIconBySideAndMetadata(block, face, metadata));
     }
 
-    public static Icon getTile(RenderBlocks renderBlocks, Block block, int face, Tessellator tessellator) {
-        return getTile(renderBlocks, block, face, 0, renderBlocks.getIconBySide(block, face), tessellator);
+    public static Icon getTile(RenderBlocks renderBlocks, Block block, int face) {
+        return getTile(renderBlocks, block, face, 0, renderBlocks.getIconBySide(block, face));
     }
 
-    public static Icon getTile(RenderBlocks renderBlocks, Block block, Direction direction, int metadata, Tessellator tessellator) {
-        return getTile(renderBlocks, block, direction.getID(), metadata, renderBlocks.getIconBySideAndMetadata(block, direction, metadata), tessellator);
+    public static Icon getTile(RenderBlocks renderBlocks, Block block, Direction direction, int metadata) {
+        return getTile(renderBlocks, block, direction.getID(), metadata, renderBlocks.getIconBySideAndMetadata(block, direction, metadata));
     }
 
-    public static Icon getTile(RenderBlocks renderBlocks, Block block, Direction direction, Tessellator tessellator) {
-        return getTile(renderBlocks, block, direction.getID(), 0, renderBlocks.getIconBySide(block, direction), tessellator);
+    public static Icon getTile(RenderBlocks renderBlocks, Block block, Direction direction) {
+        return getTile(renderBlocks, block, direction.getID(), 0, renderBlocks.getIconBySide(block, direction));
     }
 
-    private static Icon getTile(RenderBlocks renderBlocks, Block block, int face, int metadata, Icon icon, Tessellator tessellator) {
+    private static Icon getTile(RenderBlocks renderBlocks, Block block, int face, int metadata, Icon icon) {
         lastOverride = null;
         if (checkFace(face) && checkRenderType(block)) {
             metadataIterator.setup(block, face, metadata, icon);

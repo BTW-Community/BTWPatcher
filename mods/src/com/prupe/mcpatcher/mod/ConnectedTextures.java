@@ -212,14 +212,13 @@ public class ConnectedTextures extends Mod {
         private final InterfaceMethodRef getMinU = new InterfaceMethodRef("Icon", "getMinU", "()F");
         private final InterfaceMethodRef getMinV = new InterfaceMethodRef("Icon", "getMinV", "()F");
         private final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
-        private final MethodRef getTile = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIIILIcon;LTessellator;)LIcon;");
-        private final MethodRef getTileNoFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIILIcon;LTessellator;)LIcon;");
-        private final MethodRef getTileNoFaceOrBlock = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;IIILIcon;LTessellator;)LIcon;");
-        private final MethodRef getTileBySideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IILTessellator;)LIcon;");
-        private final MethodRef getTileBySide = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;ILTessellator;)LIcon;");
-        private final MethodRef getTileByDirectionAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;" + DirectionMod.getDescriptor() + "ILTessellator;)LIcon;");
-        private final MethodRef getTileByDirection = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;" + DirectionMod.getDescriptor() + "LTessellator;)LIcon;");
-        private final MethodRef getTessellator = new MethodRef(MCPatcherUtils.TESSELLATOR_UTILS_CLASS, "getTessellator", "(LTessellator;LIcon;)LTessellator;");
+        private final MethodRef getTile = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIIILIcon;)LIcon;");
+        private final MethodRef getTileNoFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIILIcon;)LIcon;");
+        private final MethodRef getTileNoFaceOrBlock = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;IIILIcon;)LIcon;");
+        private final MethodRef getTileBySideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;II)LIcon;");
+        private final MethodRef getTileBySide = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;I)LIcon;");
+        private final MethodRef getTileByDirectionAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;" + DirectionMod.getDescriptor() + "I)LIcon;");
+        private final MethodRef getTileByDirection = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;" + DirectionMod.getDescriptor() + ")LIcon;");
         private final MethodRef round = new MethodRef("java/lang/Math", "round", "(D)J");
 
         RenderBlocksMod() {
@@ -339,37 +338,14 @@ public class ConnectedTextures extends Mod {
             @Override
             public byte[] getReplacementBytes() {
                 iconRegister = getIconRegister();
-                final byte[] returnCode;
-                if (getMethodInfo().getDescriptor().endsWith("V")) {
-                    returnCode = new byte[]{(byte) RETURN};
-                } else {
-                    returnCode = new byte[]{ICONST_0, (byte) IRETURN};
-                }
                 return buildCode(
-                    // icon = CTMUtils.getTile(this, block, ..., icon, tessellator);
+                    // icon = CTMUtils.getTile(this, block, ..., icon);
                     ALOAD_0,
                     getBlockCode(),
                     getCTMUtilsArgs(),
                     registerLoadStore(ALOAD, iconRegister),
-                    registerLoadStore(ALOAD, tessellatorRegister),
                     reference(INVOKESTATIC, getCTMUtilsMethod()),
-                    registerLoadStore(ASTORE, iconRegister),
-
-                    // if (icon == null) {
-                    registerLoadStore(ALOAD, iconRegister),
-                    IFNONNULL, branch("A"),
-
-                    // return ...;
-                    returnCode,
-
-                    // }
-                    label("A"),
-
-                    // tessellator = CTMUtils.getTessellator(tessellator, icon);
-                    registerLoadStore(ALOAD, tessellatorRegister),
-                    registerLoadStore(ALOAD, iconRegister),
-                    reference(INVOKESTATIC, getTessellator),
-                    registerLoadStore(ASTORE, tessellatorRegister)
+                    registerLoadStore(ASTORE, iconRegister)
                 );
             }
 
@@ -1051,7 +1027,6 @@ public class ConnectedTextures extends Mod {
                         // CTMUtils.startCTM(false);
                         push(0),
                         reference(INVOKESTATIC, startCTM),
-                        ALOAD, 4,
                         reference(INVOKESTATIC, to)
                     );
                 }

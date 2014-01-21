@@ -314,9 +314,4 @@ public class TileLoader {
     public Icon getIcon(ResourceLocation resource) {
         return resource == null ? null : getIcon(resource.toString());
     }
-
-    public boolean setDefaultTextureMap(Tessellator tessellator) {
-        tessellator.textureMap = baseTextureMap;
-        return baseTextureMap != null;
-    }
 }
