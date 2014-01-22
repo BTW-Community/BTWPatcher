@@ -257,6 +257,11 @@ public class ConnectedTextures extends Mod {
             addMemberMapper(new FieldMapper(overrideBlockTexture));
             addMemberMapper(new FieldMapper(blockAccess));
 
+            if (true) {
+                setupNew();
+                return;
+            }
+
             setupStandardBlocks();
             setupGlassPanes();
             setupHeldBlocks();
@@ -264,6 +269,101 @@ public class ConnectedTextures extends Mod {
                 setupCrossedSquares17();
             }
             setupNonStandardBlocks();
+        }
+
+        private void setupNew() {
+            final MethodRef getBlockIconFromPosition = new MethodRef(getDeobfClass(), "getBlockIconFromPosition", "(LBlock;LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
+            final MethodRef getBlockIconFromSideAndMetadata = new MethodRef(getDeobfClass(), "getBlockIconFromSideAndMetadata", "(LBlock;" + DirectionMod.getDescriptor() + "I)LIcon;");
+            final MethodRef getBlockIconFromSide = new MethodRef(getDeobfClass(), "getBlockIconFromSide", "(LBlock;" + DirectionMod.getDescriptor() + ")LIcon;");
+            final MethodRef getBlockIcon = new MethodRef(getDeobfClass(), "getBlockIcon", "(LBlock;)LIcon;");
+            final MethodRef newBlockIconFromPosition = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;LIBlockAccess;IIII)LIcon;");
+            final MethodRef newBlockIconFromSideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;II)LIcon;");
+            final MethodRef newBlockIconFromSide = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;I)LIcon;");
+            final MethodRef newBlockIcon = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;)LIcon;");
+
+            addMemberMapper(new MethodMapper(getBlockIconFromPosition));
+            addMemberMapper(new MethodMapper(getBlockIconFromSideAndMetadata));
+            addMemberMapper(new MethodMapper(getBlockIconFromSide));
+            addMemberMapper(new MethodMapper(getBlockIcon));
+
+            addPatch(new OverrideIconPatch(getBlockIconFromPosition, newBlockIconFromPosition, "position, side") {
+                @Override
+                byte[] getCTMUtilsArgs() {
+                    return buildCode(
+                        // blockAccess, i, j, k, face
+                        ALOAD_2,
+                        PositionMod.unpackArguments(this, 3),
+                        DirectionMod.unpackArguments(this, 3 + PositionMod.getDescriptorLength())
+                    );
+                }
+            });
+
+            addPatch(new OverrideIconPatch(getBlockIconFromSideAndMetadata, newBlockIconFromSideAndMetadata, "side, metadata") {
+                @Override
+                byte[] getCTMUtilsArgs() {
+                    return buildCode(
+                        // face, metadata
+                        DirectionMod.unpackArguments(this, 2),
+                        ILOAD_3
+                    );
+                }
+            });
+
+            addPatch(new OverrideIconPatch(getBlockIconFromSide, newBlockIconFromSide, "side") {
+                @Override
+                byte[] getCTMUtilsArgs() {
+                    return buildCode(
+                        // face
+                        DirectionMod.unpackArguments(this, 2)
+                    );
+                }
+            });
+
+            addPatch(new OverrideIconPatch(getBlockIcon, newBlockIcon, "block only") {
+                @Override
+                byte[] getCTMUtilsArgs() {
+                    // no additional args
+                    return new byte[0];
+                }
+            });
+        }
+
+        abstract private class OverrideIconPatch extends BytecodePatch {
+            private final MethodRef to;
+            private final String desc;
+
+            OverrideIconPatch(MethodRef from, MethodRef to, String desc) {
+                this.to = to;
+                this.desc = desc;
+                setInsertBefore(true);
+                targetMethod(from);
+            }
+
+            @Override
+            public String getDescription() {
+                return "override tile (by " + desc + ")";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // return icon;
+                    ARETURN
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                return buildCode(
+                    // return CTMUtils.getBlockIcon(icon, this, block, ...);
+                    ALOAD_0,
+                    ALOAD_1,
+                    getCTMUtilsArgs(),
+                    reference(INVOKESTATIC, to)
+                );
+            }
+
+            abstract byte[] getCTMUtilsArgs();
         }
 
         abstract private class RenderBlocksPatch extends BytecodePatch {
