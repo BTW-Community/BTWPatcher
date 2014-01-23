@@ -330,38 +330,15 @@ public class ConnectedTextures extends Mod {
 
             addPatch(new GetBlockIconPatch(getBlockIconFromSideAndMetadata, "side, metadata") {
                 @Override
-                protected String getFromArgs() {
+                protected String getMoreArgs() {
                     return buildExpression(
                         // this.getBlockIconFromSideAndMetadata(block, face, metadata)
-                        capture(any(1, 4)),
-                        anyILOAD
-                    );
-                }
-
-                @Override
-                protected byte[] getFaceArgs() {
-                    return buildCode(
-                        getCaptureGroup(1)
+                        any(0, 20)
                     );
                 }
             });
 
-            addPatch(new GetBlockIconPatch(getBlockIconFromSide, "side") {
-                @Override
-                protected String getFromArgs() {
-                    return buildExpression(
-                        // this.getBlockIconFromSide(block, face)
-                        capture(any(1, 4))
-                    );
-                }
-
-                @Override
-                protected byte[] getFaceArgs() {
-                    return buildCode(
-                        getCaptureGroup(1)
-                    );
-                }
-            });
+            addPatch(new GetBlockIconPatch(getBlockIconFromSide, "side"));
         }
 
         abstract private class OverrideIconPatch extends BytecodePatch {
@@ -402,7 +379,7 @@ public class ConnectedTextures extends Mod {
             abstract byte[] getCTMUtilsArgs();
         }
 
-        abstract private class GetBlockIconPatch extends BytecodePatch {
+        private class GetBlockIconPatch extends BytecodePatch {
             private final MethodRef from;
             private final String description;
             private String matchPrefix;
@@ -428,10 +405,24 @@ public class ConnectedTextures extends Mod {
             @Override
             public String getMatchExpression() {
                 return buildExpression(
-                    // this.getBlockIcon...(block, ...)
+                    // this.getBlockIconFromSide...(block, face, ...)
                     ALOAD_0,
                     ALOAD_1,
-                    getFromArgs(),
+                    capture(DirectionMod.haveDirectionClass() ?
+                        or(
+                            build(anyReference(GETSTATIC)),
+                            anyALOAD
+                        ) :
+                        or (
+                            build(push(0)),
+                            build(push(1)),
+                            build(push(2)),
+                            build(push(3)),
+                            build(push(4)),
+                            build(push(5)),
+                            anyILOAD
+                        )),
+                    getMoreArgs(),
                     reference(INVOKEVIRTUAL, from)
                 );
             }
@@ -445,14 +436,14 @@ public class ConnectedTextures extends Mod {
                     ALOAD_0,
                     reference(GETFIELD, blockAccess),
                     PositionMod.passArguments(2),
-                    getFaceArgs(),
+                    getCaptureGroup(1),
                     reference(INVOKEVIRTUAL, getBlockIconFromPosition)
                 );
             }
 
-            abstract protected String getFromArgs();
-
-            abstract protected byte[] getFaceArgs();
+            protected String getMoreArgs() {
+                return "";
+            }
         }
 
         abstract private class RenderBlocksPatch extends BytecodePatch {
