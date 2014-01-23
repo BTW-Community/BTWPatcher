@@ -81,6 +81,34 @@ public class CTMUtils {
         });
     }
 
+    public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
+        lastOverride = null;
+        if (checkFace(face) && checkBlock(renderBlocks, block)) {
+            ijkIterator.setup(renderBlocks.blockAccess, block, i, j, k, face, icon);
+            lastOverride = ijkIterator.go();
+            if (lastOverride != null) {
+                icon = ijkIterator.getIcon();
+            }
+        }
+        return lastOverride == null && skipDefaultRendering(block) ? blankIcon : icon;
+    }
+
+    public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, int face, int metadata) {
+        lastOverride = null;
+        if (checkFace(face) && checkRenderType(block)) {
+            metadataIterator.setup(block, face, metadata, icon);
+            lastOverride = metadataIterator.go();
+            if (lastOverride != null) {
+                icon = metadataIterator.getIcon();
+            }
+        }
+        return icon;
+    }
+
+    public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, int face) {
+        return getBlockIcon(icon, renderBlocks, block, face, 0);
+    }
+
     // called by drawCrossedSquares, which in 1.7 no longer has a Block parameter
     public static Icon getTile(RenderBlocks renderBlocks, int i, int j, int k, Icon icon) {
         if (renderBlocks.blockAccess == null) {
