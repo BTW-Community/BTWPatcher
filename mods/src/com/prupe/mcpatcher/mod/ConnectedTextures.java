@@ -271,8 +271,9 @@ public class ConnectedTextures extends Mod {
             setupNonStandardBlocks();
         }
 
+        private final MethodRef getBlockIconFromPosition = new MethodRef(getDeobfClass(), "getBlockIconFromPosition", "(LBlock;LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
+
         private void setupNew() {
-            final MethodRef getBlockIconFromPosition = new MethodRef(getDeobfClass(), "getBlockIconFromPosition", "(LBlock;LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
             final MethodRef getBlockIconFromSideAndMetadata = new MethodRef(getDeobfClass(), "getBlockIconFromSideAndMetadata", "(LBlock;" + DirectionMod.getDescriptor() + "I)LIcon;");
             final MethodRef getBlockIconFromSide = new MethodRef(getDeobfClass(), "getBlockIconFromSide", "(LBlock;" + DirectionMod.getDescriptor() + ")LIcon;");
             final MethodRef getBlockIcon = new MethodRef(getDeobfClass(), "getBlockIcon", "(LBlock;)LIcon;");
@@ -326,6 +327,41 @@ public class ConnectedTextures extends Mod {
                     return new byte[0];
                 }
             });
+
+            addPatch(new GetBlockIconPatch(getBlockIconFromSideAndMetadata, "side, metadata") {
+                @Override
+                protected String getFromArgs() {
+                    return buildExpression(
+                        // this.getBlockIconFromSideAndMetadata(block, face, metadata)
+                        capture(any(1, 4)),
+                        anyILOAD
+                    );
+                }
+
+                @Override
+                protected byte[] getFaceArgs() {
+                    return buildCode(
+                        getCaptureGroup(1)
+                    );
+                }
+            });
+
+            addPatch(new GetBlockIconPatch(getBlockIconFromSide, "side") {
+                @Override
+                protected String getFromArgs() {
+                    return buildExpression(
+                        // this.getBlockIconFromSide(block, face)
+                        capture(any(1, 4))
+                    );
+                }
+
+                @Override
+                protected byte[] getFaceArgs() {
+                    return buildCode(
+                        getCaptureGroup(1)
+                    );
+                }
+            });
         }
 
         abstract private class OverrideIconPatch extends BytecodePatch {
@@ -364,6 +400,59 @@ public class ConnectedTextures extends Mod {
             }
 
             abstract byte[] getCTMUtilsArgs();
+        }
+
+        abstract private class GetBlockIconPatch extends BytecodePatch {
+            private final MethodRef from;
+            private final String description;
+            private String matchPrefix;
+
+            GetBlockIconPatch(MethodRef from, String description) {
+                this.from = from;
+                this.description = description;
+            }
+
+            @Override
+            public boolean filterMethod() {
+                if (matchPrefix == null) {
+                    matchPrefix = getClassMap().mapTypeString("(LBlock;" + PositionMod.getDescriptor());
+                }
+                return getMethodInfo().getDescriptor().startsWith(matchPrefix);
+            }
+
+            @Override
+            public String getDescription() {
+                return "use block coordinates where possible (" + description + ")";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // this.getBlockIcon...(block, ...)
+                    ALOAD_0,
+                    ALOAD_1,
+                    getFromArgs(),
+                    reference(INVOKEVIRTUAL, from)
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                return buildCode(
+                    // this.getBlockIconFromPosition(block, this.blockAccess, i, j, k, face)
+                    ALOAD_0,
+                    ALOAD_1,
+                    ALOAD_0,
+                    reference(GETFIELD, blockAccess),
+                    PositionMod.passArguments(2),
+                    getFaceArgs(),
+                    reference(INVOKEVIRTUAL, getBlockIconFromPosition)
+                );
+            }
+
+            abstract protected String getFromArgs();
+
+            abstract protected byte[] getFaceArgs();
         }
 
         abstract private class RenderBlocksPatch extends BytecodePatch {
