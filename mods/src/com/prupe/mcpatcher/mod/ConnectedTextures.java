@@ -808,7 +808,6 @@ public class ConnectedTextures extends Mod {
             final MethodRef newRenderPaneThick = new MethodRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "renderThick", "(LRenderBlocks;LBlock;LIcon;IIIZZZZ)V");
             final MethodRef newRenderPane = haveThickPanes ? newRenderPaneThick : newRenderPaneThin;
             final FieldRef skipPaneRendering = new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "skipPaneRendering", "Z");
-            final FieldRef skipAllRendering = new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "skipAllRendering", "Z");
             final FieldRef skipTopEdgeRendering = new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "skipTopEdgeRendering", "Z");
             final FieldRef skipBottomEdgeRendering = new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "skipBottomEdgeRendering", "Z");
 
@@ -891,17 +890,6 @@ public class ConnectedTextures extends Mod {
                         ILOAD, reg,
                         reference(INVOKESTATIC, newRenderPane),
 
-                        // if (GlassPaneRenderer.skipAllRendering) {
-                        reference(GETSTATIC, skipAllRendering),
-                        IFEQ, branch("A"),
-
-                        // return true;
-                        push(1),
-                        IRETURN,
-
-                        // }
-                        label("A"),
-
                         // ...
                         getCaptureGroup(2)
                     );
@@ -930,7 +918,7 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (!GlassPaneRenderer.active) {
+                        // if (!GlassPaneRenderer.skipPaneRendering) {
                         reference(GETSTATIC, skipPaneRendering),
                         IFNE, branch("A"),
 

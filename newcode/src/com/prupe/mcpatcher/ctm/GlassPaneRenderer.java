@@ -11,7 +11,6 @@ import java.util.Arrays;
 public class GlassPaneRenderer {
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "glassPane", true);
 
-    public static boolean skipAllRendering;
     public static boolean skipPaneRendering;
     public static boolean skipTopEdgeRendering;
     public static boolean skipBottomEdgeRendering;
@@ -44,15 +43,14 @@ public class GlassPaneRenderer {
     }
 
     private static boolean setupIcons(RenderBlocks renderBlocks, Block blockPane, Icon origIcon, int i, int j, int k) {
-        skipAllRendering = RenderPassAPI.instance.skipDefaultRendering(blockPane);
-        skipPaneRendering = skipBottomEdgeRendering = skipTopEdgeRendering = skipAllRendering;
+        skipPaneRendering = skipBottomEdgeRendering = skipTopEdgeRendering = false;
         if (!enable) {
             return false;
         }
         for (int face = TileOverride.NORTH_FACE; face <= TileOverride.EAST_FACE; face++) {
             icons[face] = CTMUtils.getBlockIcon(origIcon, renderBlocks, blockPane, renderBlocks.blockAccess, i, j, k, face);
             if (icons[face] == null) {
-                skipPaneRendering = skipAllRendering;
+                skipPaneRendering = false;
                 return false;
             } else if (icons[face] != origIcon) {
                 skipPaneRendering = true;
@@ -333,7 +331,6 @@ public class GlassPaneRenderer {
 
     static void clear() {
         Arrays.fill(icons, null);
-        skipAllRendering = false;
         skipPaneRendering = false;
     }
 }
