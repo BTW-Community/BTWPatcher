@@ -50,7 +50,7 @@ public class GlassPaneRenderer {
             return false;
         }
         for (int face = TileOverride.NORTH_FACE; face <= TileOverride.EAST_FACE; face++) {
-            icons[face] = CTMUtils.getTile(renderBlocks, blockPane, i, j, k, face, origIcon);
+            icons[face] = CTMUtils.getBlockIcon(origIcon, renderBlocks, blockPane, renderBlocks.blockAccess, i, j, k, face);
             if (icons[face] == null) {
                 skipPaneRendering = skipAllRendering;
                 return false;

@@ -257,13 +257,14 @@ public class ConnectedTextures extends Mod {
             addMemberMapper(new FieldMapper(overrideBlockTexture));
             addMemberMapper(new FieldMapper(blockAccess));
 
+            setupGlassPanes();
+
             if (true) {
                 setupNew();
                 return;
             }
 
             setupStandardBlocks();
-            setupGlassPanes();
             setupHeldBlocks();
             if (haveBlockRegistry) {
                 setupCrossedSquares17();
