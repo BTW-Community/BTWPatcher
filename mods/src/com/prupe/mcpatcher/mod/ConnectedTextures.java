@@ -399,17 +399,23 @@ public class ConnectedTextures extends Mod {
                     ALOAD_1,
                     capture(DirectionMod.haveDirectionClass() ?
                         or(
+                            // Direction.get(...)
+                            build(any(0, 5), anyReference(INVOKESTATIC)),
+                            // Direction.DOWN, etc.
                             build(anyReference(GETSTATIC)),
+                            // variable direction
                             anyALOAD
                         ) :
                         or (
+                            // fixed direction
                             build(push(0)),
                             build(push(1)),
                             build(push(2)),
                             build(push(3)),
                             build(push(4)),
                             build(push(5)),
-                            anyILOAD
+                            // variable direction
+                            build(anyILOAD, optional(build(any(1, 4), IADD)))
                         )),
                     getMoreArgs(),
                     reference(INVOKEVIRTUAL, from)
