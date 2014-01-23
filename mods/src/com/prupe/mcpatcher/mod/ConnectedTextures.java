@@ -419,6 +419,18 @@ public class ConnectedTextures extends Mod {
             @Override
             public byte[] getReplacementBytes() {
                 return buildCode(
+                    // (this.blockAccess == null ?
+                    ALOAD_0,
+                    reference(GETFIELD, blockAccess),
+                    IFNONNULL, branch("A"),
+
+                    // ...
+                    getMatch(),
+                    GOTO, branch("B"),
+
+                    // :
+                    label("A"),
+
                     // this.getBlockIconFromPosition(block, this.blockAccess, i, j, k, face)
                     ALOAD_0,
                     ALOAD_1,
@@ -426,7 +438,10 @@ public class ConnectedTextures extends Mod {
                     reference(GETFIELD, blockAccess),
                     PositionMod.passArguments(2),
                     getCaptureGroup(1),
-                    reference(INVOKEVIRTUAL, getBlockIconFromPosition)
+                    reference(INVOKEVIRTUAL, getBlockIconFromPosition),
+
+                    // )
+                    label("B")
                 );
             }
 
