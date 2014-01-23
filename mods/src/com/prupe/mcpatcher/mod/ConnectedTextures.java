@@ -276,16 +276,13 @@ public class ConnectedTextures extends Mod {
         private void setupNew() {
             final MethodRef getBlockIconFromSideAndMetadata = new MethodRef(getDeobfClass(), "getBlockIconFromSideAndMetadata", "(LBlock;" + DirectionMod.getDescriptor() + "I)LIcon;");
             final MethodRef getBlockIconFromSide = new MethodRef(getDeobfClass(), "getBlockIconFromSide", "(LBlock;" + DirectionMod.getDescriptor() + ")LIcon;");
-            final MethodRef getBlockIcon = new MethodRef(getDeobfClass(), "getBlockIcon", "(LBlock;)LIcon;");
             final MethodRef newBlockIconFromPosition = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;LIBlockAccess;IIII)LIcon;");
             final MethodRef newBlockIconFromSideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;II)LIcon;");
             final MethodRef newBlockIconFromSide = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;I)LIcon;");
-            final MethodRef newBlockIcon = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;)LIcon;");
 
             addMemberMapper(new MethodMapper(getBlockIconFromPosition));
             addMemberMapper(new MethodMapper(getBlockIconFromSideAndMetadata));
             addMemberMapper(new MethodMapper(getBlockIconFromSide));
-            addMemberMapper(new MethodMapper(getBlockIcon));
 
             addPatch(new OverrideIconPatch(getBlockIconFromPosition, newBlockIconFromPosition, "position, side") {
                 @Override
@@ -317,14 +314,6 @@ public class ConnectedTextures extends Mod {
                         // face
                         DirectionMod.unpackArguments(this, 2)
                     );
-                }
-            });
-
-            addPatch(new OverrideIconPatch(getBlockIcon, newBlockIcon, "block only") {
-                @Override
-                byte[] getCTMUtilsArgs() {
-                    // no additional args
-                    return new byte[0];
                 }
             });
 
