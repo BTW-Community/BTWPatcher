@@ -10,7 +10,7 @@ import java.util.List;
  * the match is done by type signature, but this can be overridden.
  */
 public class MethodMapper extends MemberMapper {
-    protected MethodMapper(ClassMod classMod, MethodRef... refs) {
+    public MethodMapper(ClassMod classMod, MethodRef... refs) {
         super(classMod, refs);
     }
 
