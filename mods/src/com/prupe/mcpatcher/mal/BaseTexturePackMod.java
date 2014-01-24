@@ -288,10 +288,10 @@ public class BaseTexturePackMod extends Mod {
         ThreadDownloadImageDataMod() {
             setParentClass(getMinecraftVersion().compareTo("13w41a") < 0 ? "AbstractTexture" : "SimpleTexture");
 
-            final MethodRef setThreadName = new MethodRef("java/lang/Thread", "setName", "(Ljava/lang/String;)V");
+            final MethodRef setDaemon = new MethodRef("java/lang/Thread", "setDaemon", "(Z)V");
             final MethodRef startThread = new MethodRef("java/lang/Thread", "start", "()V");
 
-            addClassSignature(new ConstSignature(setThreadName));
+            addClassSignature(new ConstSignature(setDaemon));
             addClassSignature(new ConstSignature(startThread));
             addClassSignature(new OrSignature(
                 new ConstSignature("Skin downloader: "),
