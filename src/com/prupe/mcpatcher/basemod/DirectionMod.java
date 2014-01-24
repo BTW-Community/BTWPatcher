@@ -76,7 +76,7 @@ public class DirectionMod extends com.prupe.mcpatcher.ClassMod {
         return null;
     }
 
-    public DirectionMod(Mod mod) {
+    protected DirectionMod(Mod mod) {
         super(mod);
 
         addClassSignature(new ConstSignature("DOWN"));

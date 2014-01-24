@@ -73,8 +73,7 @@ public class CustomColors extends Mod {
         addClassMod(new TessellatorMod(this));
         addClassMod(new ResourceLocationMod(this));
         if (PositionMod.havePositionClass()) {
-            addClassMod(new PositionMod(this));
-            addClassMod(new DirectionMod(this));
+            PositionMod.setup(this);
         }
 
         addClassMod(new BlockMod());

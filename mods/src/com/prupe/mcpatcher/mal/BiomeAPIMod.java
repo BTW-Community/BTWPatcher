@@ -32,7 +32,7 @@ public class BiomeAPIMod extends Mod {
         addClassMod(new WorldClientMod(this));
         addClassMod(new BiomeGenBaseMod());
         if (malVersion >= 3) {
-            addClassMod(new PositionMod(this));
+            PositionMod.setup(this);
         }
 
         addClassFile(MCPatcherUtils.BIOME_API_CLASS);

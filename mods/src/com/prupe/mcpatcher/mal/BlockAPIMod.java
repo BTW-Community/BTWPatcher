@@ -40,8 +40,7 @@ public class BlockAPIMod extends Mod {
             addClassMod(new Shared.RegistryMod(this));
         }
         if (malVersion >= 3) {
-            addClassMod(new PositionMod(this));
-            addClassMod(new DirectionMod(this));
+            PositionMod.setup(this);
         }
 
         addClassFile(MCPatcherUtils.BLOCK_API_CLASS);
