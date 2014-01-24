@@ -250,13 +250,21 @@ public class RandomMobs extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        FCONST_0,
-                        push(-24.0f),
-                        anyFLOAD,
-                        FMUL,
-                        push(0.0078125f),
-                        FSUB,
-                        FCONST_0,
+                        push(0.0f),
+                        or(build(
+                                // pre-14w04a
+                                push(-24.0f),
+                                anyFLOAD,
+                                FMUL,
+                                push(0.0078125f),
+                                FSUB
+                            ),
+                            build(
+                                // 14w04a+
+                                push(-1.5078125f)
+                            )
+                        ),
+                        push(0.0f),
                         reference(INVOKESTATIC, glTranslatef)
                     );
                 }
@@ -404,13 +412,12 @@ public class RandomMobs extends Mod {
         RenderMooshroomMod() {
             setParentClass("RenderLiving");
 
-            final FieldRef renderBlocks = new FieldRef(getDeobfClass(), "renderBlocks", "LRenderBlocks;");
             final FieldRef mushroomRed = new FieldRef("BlockList", "mushroomRed", "LBlockFlower;");
             final FieldRef blocksAtlas = new FieldRef("TextureAtlas", "blocks", "LResourceLocation;");
             final MethodRef renderEquippedItems = new MethodRef(getDeobfClass(), "renderEquippedItems1", "(LEntityMooshroom;F)V");
             final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceLocation;)V");
             final MethodRef glPushMatrix = new MethodRef(MCPatcherUtils.GL11_CLASS, "glPushMatrix", "()V");
-            final MethodRef renderBlockAsItem = new MethodRef("RenderBlocks", "renderBlockAsItem", "(LBlock;IF)V");
+            final MethodRef renderBlockAsItem = new MethodRef("RenderBlockManager", "renderBlockAsItem", "(LBlock;IF)V");
 
             addClassSignature(new ConstSignature("textures/entity/cow/mooshroom.png"));
 
@@ -433,9 +440,9 @@ public class RandomMobs extends Mod {
                         // ...
                         any(0, 100),
 
-                        // renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
-                        ALOAD_0,
-                        captureReference(GETFIELD),
+                        // older: renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
+                        // 14w04a+: RenderBlockManager.instance.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
+                        any(3, 4),
                         captureReference(GETSTATIC),
                         push(0),
                         push(1.0f),
@@ -446,9 +453,8 @@ public class RandomMobs extends Mod {
                 .setMethod(renderEquippedItems)
                 .addXref(1, blocksAtlas)
                 .addXref(2, loadTexture)
-                .addXref(3, renderBlocks)
-                .addXref(4, mushroomRed)
-                .addXref(5, renderBlockAsItem)
+                .addXref(3, mushroomRed)
+                .addXref(4, renderBlockAsItem)
             );
 
             addPatch(new BytecodePatch() {
@@ -483,9 +489,9 @@ public class RandomMobs extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // renderBlocks.renderBlockAsItem(Block.mushroomRed, 0, 1.0f);
-                        ALOAD_0,
-                        reference(GETFIELD, renderBlocks),
+                        // older: renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
+                        // 14w04a+: RenderBlockManager.instance.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
+                        any(3, 4),
                         reference(GETSTATIC, mushroomRed),
                         push(0),
                         push(1.0f),

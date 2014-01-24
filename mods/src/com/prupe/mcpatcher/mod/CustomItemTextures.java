@@ -800,6 +800,8 @@ public class CustomItemTextures extends Mod {
     private class RenderLivingEntityMod extends ClassMod {
         RenderLivingEntityMod() {
             final MethodRef doRenderLiving = new MethodRef(getDeobfClass(), "doRenderLiving", "(LEntityLivingBase;DDDFF)V");
+            final MethodRef doRenderLivingPass = new MethodRef(getDeobfClass(), "doRenderLivingPass", "(LEntityLivingBase;FFFFFFFFI)V");
+            final MethodRef renderLivingPatchMethod = getMinecraftVersion().compareTo("14w04a") >= 0 ? doRenderLivingPass : doRenderLiving;
             final MethodRef glDisable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDisable", "(I)V");
 
             if (getMinecraftVersion().compareTo("13w36a") < 0) {
@@ -808,7 +810,7 @@ public class CustomItemTextures extends Mod {
                 addClassSignature(new ConstSignature(85.0f));
                 addClassSignature(new ConstSignature(-85.0f));
             }
-            addGlintSignature(this, doRenderLiving);
+            addGlintSignature(this, renderLivingPatchMethod);
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -930,7 +932,7 @@ public class CustomItemTextures extends Mod {
                         label("C")
                     );
                 }
-            }.targetMethod(doRenderLiving));
+            }.targetMethod(renderLivingPatchMethod));
         }
     }
 
