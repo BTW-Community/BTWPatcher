@@ -3,13 +3,14 @@ package com.prupe.mcpatcher.mod;
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
 import com.prupe.mcpatcher.mal.BaseTexturePackMod;
-import javassist.bytecode.AccessFlag;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -43,6 +44,7 @@ public class ConnectedTextures extends Mod {
         if (RenderBlocksMod.haveSubclasses()) {
             addClassMod(new RenderBlockManagerMod(this));
         }
+        addClassMod(new RenderBlocksSubclassMod());
 
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS);
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$1");
@@ -272,18 +274,6 @@ public class ConnectedTextures extends Mod {
                     );
                 }
             });
-
-            addPatch(new GetBlockIconPatch(getBlockIconFromSideAndMetadata, "side, metadata") {
-                @Override
-                protected String getMoreArgs() {
-                    return buildExpression(
-                        // this.getBlockIconFromSideAndMetadata(block, face, metadata)
-                        any(0, 20)
-                    );
-                }
-            });
-
-            addPatch(new GetBlockIconPatch(getBlockIconFromSide, "side"));
         }
 
         abstract private class OverrideIconPatch extends BytecodePatch {
@@ -322,94 +312,6 @@ public class ConnectedTextures extends Mod {
             }
 
             abstract byte[] getCTMUtilsArgs();
-        }
-
-        private class GetBlockIconPatch extends BytecodePatch {
-            private final MethodRef from;
-            private final String description;
-            private String matchPrefix;
-
-            GetBlockIconPatch(MethodRef from, String description) {
-                this.from = from;
-                this.description = description;
-            }
-
-            @Override
-            public boolean filterMethod() {
-                if (matchPrefix == null) {
-                    matchPrefix = getClassMap().mapTypeString("(LBlock;" + PositionMod.getDescriptor());
-                }
-                return getMethodInfo().getDescriptor().startsWith(matchPrefix);
-            }
-
-            @Override
-            public String getDescription() {
-                return "use block coordinates where possible (" + description + ")";
-            }
-
-            @Override
-            public String getMatchExpression() {
-                return buildExpression(
-                    // this.getBlockIconFromSide...(block, face, ...)
-                    ALOAD_0,
-                    ALOAD_1,
-                    capture(DirectionMod.haveDirectionClass() ?
-                        or(
-                            // Direction.get(...)
-                            build(any(0, 5), anyReference(INVOKESTATIC)),
-                            // Direction.DOWN, etc.
-                            build(anyReference(GETSTATIC)),
-                            // variable direction
-                            anyALOAD
-                        ) :
-                        or (
-                            // fixed direction
-                            build(push(0)),
-                            build(push(1)),
-                            build(push(2)),
-                            build(push(3)),
-                            build(push(4)),
-                            build(push(5)),
-                            // variable direction
-                            build(anyILOAD, optional(build(any(1, 4), IADD)))
-                        )),
-                    getMoreArgs(),
-                    reference(INVOKEVIRTUAL, from)
-                );
-            }
-
-            @Override
-            public byte[] getReplacementBytes() {
-                return buildCode(
-                    // (this.blockAccess == null ?
-                    ALOAD_0,
-                    reference(GETFIELD, blockAccess),
-                    IFNONNULL, branch("A"),
-
-                    // ...
-                    getMatch(),
-                    GOTO, branch("B"),
-
-                    // :
-                    label("A"),
-
-                    // this.getBlockIconFromPosition(block, this.blockAccess, i, j, k, face)
-                    ALOAD_0,
-                    ALOAD_1,
-                    ALOAD_0,
-                    reference(GETFIELD, blockAccess),
-                    PositionMod.passArguments(2),
-                    getCaptureGroup(1),
-                    reference(INVOKEVIRTUAL, getBlockIconFromPosition),
-
-                    // )
-                    label("B")
-                );
-            }
-
-            protected String getMoreArgs() {
-                return "";
-            }
         }
 
         private void mapRenderTypeMethod(final int type, MethodRef renderMethod) {
@@ -795,6 +697,127 @@ public class ConnectedTextures extends Mod {
                         return true;
                     }
                 });
+            }
+        }
+    }
+
+    private class RenderBlocksSubclassMod extends ClassMod {
+        private final MethodRef getBlockIconFromSideAndMetadata = new MethodRef("RenderBlocks", "getBlockIconFromSideAndMetadata", "(LBlock;" + DirectionMod.getDescriptor() + "I)LIcon;");
+        private final MethodRef getBlockIconFromSide = new MethodRef("RenderBlocks", "getBlockIconFromSide", "(LBlock;" + DirectionMod.getDescriptor() + ")LIcon;");
+        private final MethodRef getBlockIconFromPosition = new MethodRef("RenderBlocks", "getBlockIconFromPosition", "(LBlock;LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
+        private final FieldRef blockAccess = new FieldRef("RenderBlocks", "blockAccess", "LIBlockAccess;");
+
+        RenderBlocksSubclassMod() {
+            setMultipleMatchesAllowed(true);
+            addClassSignature(new AncestorClassSignature("RenderBlocks"));
+
+            addPatch(new GetBlockIconPatch(getBlockIconFromSideAndMetadata, "side, metadata") {
+                @Override
+                protected String getMoreArgs() {
+                    return buildExpression(
+                        // this.getBlockIconFromSideAndMetadata(block, face, metadata)
+                        any(0, 20)
+                    );
+                }
+            });
+
+            addPatch(new GetBlockIconPatch(getBlockIconFromSide, "side"));
+        }
+
+        private class GetBlockIconPatch extends BytecodePatch {
+            private final MethodRef from;
+            private final String description;
+            private Pattern matchPrefix;
+
+            GetBlockIconPatch(MethodRef from, String description) {
+                this.from = from;
+                this.description = description;
+            }
+
+            private FieldRef remap(FieldRef field) {
+                return new FieldRef(getClassFile().getName(), field.getName(), field.getType());
+            }
+
+            private MethodRef remap(MethodRef method) {
+                return new MethodRef(getClassFile().getName(), method.getName(), method.getType());
+            }
+
+            @Override
+            public boolean filterMethod() {
+                if (matchPrefix == null) {
+                    matchPrefix = Pattern.compile("^\\(L([a-z]+);" + getClassMap().mapTypeString(Pattern.quote(PositionMod.getDescriptor())) + ".*");
+                }
+                Matcher matcher = matchPrefix.matcher(getMethodInfo().getDescriptor());
+                return matcher.matches() && isInstanceOf(matcher.group(1), "Block");
+            }
+
+            @Override
+            public String getDescription() {
+                return "use block coordinates where possible (" + description + ")";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // this.getBlockIconFromSide...(block, face, ...)
+                    ALOAD_0,
+                    ALOAD_1,
+                    capture(DirectionMod.haveDirectionClass() ?
+                        or(
+                            // Direction.get(...)
+                            build(any(0, 5), anyReference(INVOKESTATIC)),
+                            // Direction.DOWN, etc.
+                            build(anyReference(GETSTATIC)),
+                            // variable direction
+                            anyALOAD
+                        ) :
+                        or(
+                            // fixed direction
+                            build(push(0)),
+                            build(push(1)),
+                            build(push(2)),
+                            build(push(3)),
+                            build(push(4)),
+                            build(push(5)),
+                            // variable direction
+                            build(anyILOAD, optional(build(any(1, 4), IADD)))
+                        )),
+                    getMoreArgs(),
+                    reference(INVOKEVIRTUAL, remap(from))
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                return buildCode(
+                    // (this.blockAccess == null ?
+                    ALOAD_0,
+                    reference(GETFIELD, remap(blockAccess)),
+                    IFNONNULL, branch("A"),
+
+                    // ...
+                    getMatch(),
+                    GOTO, branch("B"),
+
+                    // :
+                    label("A"),
+
+                    // this.getBlockIconFromPosition(block, this.blockAccess, i, j, k, face)
+                    ALOAD_0,
+                    ALOAD_1,
+                    ALOAD_0,
+                    reference(GETFIELD, remap(blockAccess)),
+                    PositionMod.passArguments(2),
+                    getCaptureGroup(1),
+                    reference(INVOKEVIRTUAL, getBlockIconFromPosition),
+
+                    // )
+                    label("B")
+                );
+            }
+
+            protected String getMoreArgs() {
+                return "";
             }
         }
     }
