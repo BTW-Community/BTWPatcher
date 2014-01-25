@@ -30,8 +30,6 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
     public RenderBlocksMod(Mod mod) {
         super(mod);
 
-        final MethodRef strEquals = new MethodRef("java/lang/String", "equals", "(Ljava/lang/Object;)Z");
-
         addClassSignature(new BytecodeSignature() {
             @Override
             public String getMatchExpression() {
@@ -85,13 +83,16 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
             @Override
             public String getMatchExpression() {
                 return buildExpression(
-                    push("grass_top"),
-                    reference(INVOKEVIRTUAL, strEquals),
+                    // if (this.hasOverrideTexture()) {
+                    ALOAD_0,
+                    anyReference(INVOKEVIRTUAL),
                     IFEQ, any(2),
+
                     // useColor = false;
                     push(0),
-                    capture(anyISTORE),
-                    GOTO, any(2)
+                    capture(anyISTORE)
+
+                    // }
                 );
             }
 
