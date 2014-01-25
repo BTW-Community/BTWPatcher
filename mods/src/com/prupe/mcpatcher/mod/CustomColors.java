@@ -3010,7 +3010,7 @@ public class CustomColors extends Mod {
                         PositionMod.unpackArguments(this, 2),
                         getCaptureGroup(7),
                         DirectionMod.haveDirectionClass() ?
-                            reference(INVOKEVIRTUAL, DirectionMod.getID) : new byte[0],
+                            reference(INVOKEVIRTUAL, DirectionMod.ordinal) : new byte[0],
 
                         getCaptureGroup(3),
                         getCaptureGroup(4),

@@ -348,7 +348,7 @@ public class BlockAPIMod extends Mod {
                     return buildCode(
                         // RenderBlocksUtils.useColorMultiplier(Direction.xxx.ordinal())
                         getCaptureGroup(1),
-                        reference(INVOKEVIRTUAL, DirectionMod.getID),
+                        reference(INVOKEVIRTUAL, DirectionMod.ordinal),
                         reference(INVOKESTATIC, useColorMultiplier)
                     );
                 }
@@ -378,7 +378,7 @@ public class BlockAPIMod extends Mod {
                     return buildCode(
                         // RenderBlocksUtils.getSecondaryBlockIcon(..., Direction.xxx.ordinal());
                         getCaptureGroup(1),
-                        reference(INVOKEVIRTUAL, DirectionMod.getID),
+                        reference(INVOKEVIRTUAL, DirectionMod.ordinal),
                         reference(INVOKESTATIC, getSecondaryIcon)
                     );
                 }
