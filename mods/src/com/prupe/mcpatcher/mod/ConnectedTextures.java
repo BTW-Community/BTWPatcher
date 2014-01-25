@@ -40,6 +40,9 @@ public class ConnectedTextures extends Mod {
         PositionMod.setup(this);
         addClassMod(new BlockMod());
         addClassMod(new RenderBlocksMod());
+        if (RenderBlocksMod.haveSubclasses()) {
+            addClassMod(new RenderBlockManagerMod(this));
+        }
 
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS);
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$1");
@@ -188,10 +191,7 @@ public class ConnectedTextures extends Mod {
 
     private class RenderBlocksMod extends com.prupe.mcpatcher.basemod.RenderBlocksMod {
         private final MethodRef[] faceMethods = new MethodRef[6];
-        private final FieldRef overrideBlockTexture = new FieldRef(getDeobfClass(), "overrideBlockTexture", "LIcon;");
         private final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
-        private final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
-        private final MethodRef hasOverrideTexture = new MethodRef(getDeobfClass(), "hasOverrideTexture", "()Z");
         private final MethodRef renderBlockGenericPane = new MethodRef(getDeobfClass(), "renderBlockGenericPane", "(LBlockPane;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef renderBlockGlassPane17 = new MethodRef(getDeobfClass(), "renderBlockGlassPane17", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
@@ -207,45 +207,31 @@ public class ConnectedTextures extends Mod {
         RenderBlocksMod() {
             super(ConnectedTextures.this);
 
-            mapRenderTypeMethod(0, renderStandardBlock);
+            mapRenderStandardBlock();
+            mapHasOverrideTexture();
 
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        begin(),
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        or(
-                            build(IFNULL, any(2), push(1)),
-                            build(IFNONNULL, any(2), push(0))
-                        )
-                    );
+            if (!haveSubclasses()) {
+                addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            ALOAD_1,
+                            captureReference(INVOKEVIRTUAL),
+                            registerLoadStore(ISTORE, 2 + PositionMod.getDescriptorLength())
+                        );
+                    }
                 }
+                    .setMethod(renderBlockByRenderType)
+                    .addXref(1, getRenderType)
+                );
             }
-                .setMethod(hasOverrideTexture)
-                .addXref(1, overrideBlockTexture)
-            );
 
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_1,
-                        captureReference(INVOKEVIRTUAL),
-                        registerLoadStore(ISTORE, 2 + PositionMod.getDescriptorLength())
-                    );
-                }
-            }
-                .setMethod(renderBlockByRenderType)
-                .addXref(1, getRenderType)
-            );
-
-            addMemberMapper(new FieldMapper(overrideBlockTexture));
             addMemberMapper(new FieldMapper(blockAccess));
 
             setupStandardBlocks();
-            setupGlassPanes();
+            if (!haveSubclasses()) {
+                setupGlassPanes();
+            }
             setupTileOverrides();
         }
 

@@ -19,6 +19,12 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
     protected final FieldRef renderAllFaces = new FieldRef(getDeobfClass(), "renderAllFaces", "Z");
     protected final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
     protected final MethodRef shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
+    protected final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), haveSubclasses() ? "renderBlock" : "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+    protected final MethodRef isAmbientOcclusionEnabled = new MethodRef("Minecraft", "isAmbientOcclusionEnabled", "()Z");
+    protected final FieldRef lightValue = new FieldRef("Block", "lightValue", "[I");
+    protected final MethodRef getLightValue = new MethodRef("Block", "getLightValue", "()I");
+    protected final MethodRef hasOverrideBlockTexture = new MethodRef(getDeobfClass(), "hasOverrideBlockTexture", "()Z");
+    protected final FieldRef overrideBlockTexture = new FieldRef(getDeobfClass(), "overrideBlockTexture", "LIcon;");
 
     protected final com.prupe.mcpatcher.BytecodeSignature grassTopSignature;
     protected int useColorRegister;
@@ -102,5 +108,66 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
                 return true;
             }
         };
+    }
+
+    public RenderBlocksMod mapRenderStandardBlock() {
+        addClassSignature(new BytecodeSignature() {
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // Minecraft.isAmbientOcclusionEnabled() && ... == 0
+                    captureReference(INVOKESTATIC),
+                    IFEQ, any(2),
+                    Mod.getMinecraftVersion().compareTo("13w36a") < 0 ? getSubExpression1() : getSubExpression2(),
+                    IFEQ_or_IFNE, any(2)
+                );
+            }
+
+            private String getSubExpression1() {
+                addXref(2, lightValue);
+                return build(
+                    // 1.6: Block.lightValue[block.blockId]
+                    captureReference(GETSTATIC),
+                    ALOAD_1,
+                    anyReference(GETFIELD),
+                    IALOAD
+                );
+            }
+
+            private String getSubExpression2() {
+                addXref(2, getLightValue);
+                return build(
+                    // 1.7+: block.getLightValue()
+                    ALOAD_1,
+                    captureReference(INVOKEVIRTUAL)
+                );
+            }
+        }
+            .setMethod(renderStandardBlock)
+            .addXref(1, isAmbientOcclusionEnabled)
+        );
+        return this;
+    }
+
+    public RenderBlocksMod mapHasOverrideTexture() {
+        addClassSignature(new BytecodeSignature() {
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // return this.overrideBlockTexture != null;
+                    begin(),
+                    ALOAD_0,
+                    captureReference(GETFIELD),
+                    IFNULL_or_IFNONNULL, any(2),
+                    any(4, 8),
+                    IRETURN,
+                    end()
+                );
+            }
+        }
+            .setMethod(hasOverrideBlockTexture)
+            .addXref(1, overrideBlockTexture)
+        );
+        return this;
     }
 }

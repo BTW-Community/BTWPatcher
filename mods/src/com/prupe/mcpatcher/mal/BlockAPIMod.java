@@ -2,7 +2,6 @@ package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
-import javassist.bytecode.AccessFlag;
 import javassist.bytecode.MethodInfo;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -37,7 +36,7 @@ public class BlockAPIMod extends Mod {
         addClassMod(new ResourceLocationMod(this));
         addClassMod(new RenderBlocksMod());
         if (RenderBlocksMod.haveSubclasses()) {
-            addClassMod(new RenderBlockManagerMod());
+            addClassMod(new RenderBlockManagerMod(this));
         }
         if (malVersion >= 2) {
             addClassMod(new Shared.RegistryBaseMod(this));
@@ -143,73 +142,15 @@ public class BlockAPIMod extends Mod {
         RenderBlocksMod() {
             super(BlockAPIMod.this);
 
-            final MethodRef hasOverrideBlockTexture = new MethodRef(getDeobfClass(), "hasOverrideBlockTexture", "()Z");
-            final FieldRef overrideBlockTexture = new FieldRef(getDeobfClass(), "overrideBlockTexture", "LIcon;");
-            final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
-            final MethodRef isAmbientOcclusionEnabled = new MethodRef("Minecraft", "isAmbientOcclusionEnabled", "()Z");
             final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
-            final FieldRef lightValue = new FieldRef("Block", "lightValue", "[I");
-            final MethodRef getLightValue = new MethodRef("Block", "getLightValue", "()I");
             final MethodRef setupColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "setupColorMultiplier", "(LBlock;LIBlockAccess;IIIZFFF)V");
             final MethodRef useColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(I)Z");
             final MethodRef getColorMultiplierRed = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierRed", "(I)F");
             final MethodRef getColorMultiplierGreen = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierGreen", "(I)F");
             final MethodRef getColorMultiplierBlue = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierBlue", "(I)F");
 
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // Minecraft.isAmbientOcclusionEnabled() && ... == 0
-                        captureReference(INVOKESTATIC),
-                        IFEQ, any(2),
-                        malVersion == 1 ? getSubExpression1() : getSubExpression2(),
-                        IFEQ_or_IFNE, any(2)
-                    );
-                }
-
-                private String getSubExpression1() {
-                    addXref(2, lightValue);
-                    return build(
-                        // 1.6: Block.lightValue[block.blockId]
-                        captureReference(GETSTATIC),
-                        ALOAD_1,
-                        anyReference(GETFIELD),
-                        IALOAD
-                    );
-                }
-
-                private String getSubExpression2() {
-                    addXref(2, getLightValue);
-                    return build(
-                        // 1.7+: block.getLightValue()
-                        ALOAD_1,
-                        captureReference(INVOKEVIRTUAL)
-                    );
-                }
-            }
-                .setMethod(renderStandardBlock)
-                .addXref(1, isAmbientOcclusionEnabled)
-            );
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // return this.overrideBlockTexture != null;
-                        begin(),
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        IFNULL_or_IFNONNULL, any(2),
-                        any(4, 8),
-                        IRETURN,
-                        end()
-                    );
-                }
-            }
-                .setMethod(hasOverrideBlockTexture)
-                .addXref(1, overrideBlockTexture)
-            );
+            mapRenderStandardBlock();
+            mapHasOverrideTexture();
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -363,97 +304,6 @@ public class BlockAPIMod extends Mod {
                     return code;
                 }
             });
-        }
-    }
-
-    private class RenderBlockManagerMod extends ClassMod {
-        RenderBlockManagerMod() {
-            final FieldRef instance = new FieldRef(getDeobfClass(), "instance", "LRenderBlockManager;");
-            final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
-            final MethodRef registerRenderType = new MethodRef(getDeobfClass(), "registerRenderType", "(ILRenderBlocks;)V");
-            final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
-            final ClassRef renderBlocksClass = new ClassRef("RenderBlocks");
-            final MethodRef renderBlockAsItem = new MethodRef(getDeobfClass(), "renderBlockAsItem", "(LBlock;IF)V");
-            final MethodRef renderBlockAsItem1 = new MethodRef("RenderBlocks", "renderBlockAsItem", "(LBlock;IF)V");
-            final InterfaceMethodRef listGet = new InterfaceMethodRef("java/util/List", "get", "(I)Ljava/lang/Object;");
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // this.registerRenderType(0, new RenderBlocks());
-                        ALOAD_0,
-                        push(0),
-                        captureReference(NEW),
-                        DUP,
-                        anyReference(INVOKESPECIAL),
-                        captureReference(INVOKEVIRTUAL),
-
-                        repeat(build(
-                            // this.registerRenderType(renderType, new RenderBlocksSubclass());
-                            // x40 or more
-                            ALOAD_0,
-                            any(1, 3), // ICONST_*, BIPUSH x, SIPUSH x x
-                            anyReference(NEW),
-                            DUP,
-                            anyReference(INVOKESPECIAL),
-                            backReference(2)
-                        ), 40)
-                    );
-                }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, renderBlocksClass)
-                .addXref(2, registerRenderType)
-            );
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // renderType = block.getRenderType();
-                        begin(),
-                        ALOAD_1,
-                        captureReference(INVOKEVIRTUAL),
-                        ISTORE_3,
-
-                        // return renderType >= 0 ? ...;
-                        ILOAD_3,
-                        IFGE_or_IFLT, any(2)
-                    );
-                }
-            }
-                .setMethod(renderBlockByRenderType)
-                .addXref(1, getRenderType)
-            );
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // this.renderers.get(renderType).renderBlockAsItem(block, metadata, brightness);
-                        ALOAD_0,
-                        anyReference(GETFIELD),
-                        ILOAD, 4,
-                        reference(INVOKEINTERFACE, listGet),
-                        captureReference(CHECKCAST),
-
-                        ALOAD_1,
-                        ILOAD_2,
-                        FLOAD_3,
-                        captureReference(INVOKEVIRTUAL)
-                    );
-                }
-            }
-                .setMethod(renderBlockAsItem)
-                .addXref(1, renderBlocksClass)
-                .addXref(2, renderBlockAsItem1)
-            );
-
-            addMemberMapper(new FieldMapper(instance)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
-            );
         }
     }
 }
