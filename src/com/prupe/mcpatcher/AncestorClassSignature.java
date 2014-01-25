@@ -17,6 +17,11 @@ public class AncestorClassSignature extends ClassSignature {
 
     @Override
     public boolean confirmMatch(String className) {
-        return classMod.mod.isInstanceOf(className, baseClass);
+        if (classMod.mod.isInstanceOf(className, baseClass)) {
+            getClassMap().addInheritance(baseClass, className, true);
+            return true;
+        } else {
+            return false;
+        }
     }
 }

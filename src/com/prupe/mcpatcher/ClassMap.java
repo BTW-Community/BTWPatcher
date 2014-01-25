@@ -234,6 +234,10 @@ public class ClassMap {
      * @param child  name of child class that should inherit its method/field mappings
      */
     public void addInheritance(String parent, String child) {
+        addInheritance(parent, child, false);
+    }
+
+    void addInheritance(String parent, String child, boolean hidden) {
         ClassMapEntry parentEntry = getEntry(parent);
         if (parentEntry == null) {
             parentEntry = new ClassMapEntry(parent);
@@ -247,6 +251,7 @@ public class ClassMap {
         ClassMapEntry childEntry = getEntry(child);
         if (childEntry == null) {
             childEntry = new ClassMapEntry(child, child, parentEntry);
+            childEntry.hidden = hidden;
             putEntry(childEntry);
         } else {
             childEntry.setParent(parentEntry);
@@ -280,7 +285,11 @@ public class ClassMap {
     public HashMap<String, String> getClassMap() {
         HashMap<String, String> map = new HashMap<String, String>();
         for (Entry<String, ClassMapEntry> e : classMap.entrySet()) {
-            map.put(e.getKey(), e.getValue().getObfName());
+            String from = e.getKey();
+            String to = e.getValue().getObfName();
+            if (from != null && !from.equals(to)) {
+                map.put(from, to);
+            }
         }
         return map;
     }
@@ -293,7 +302,7 @@ public class ClassMap {
     public HashMap<String, String> getReverseClassMap() {
         HashMap<String, String> map = new HashMap<String, String>();
         for (Entry<String, ClassMapEntry> e : classMap.entrySet()) {
-            if (e.getValue().aliasFor == null) {
+            if (!e.getValue().hidden && e.getValue().aliasFor == null) {
                 map.put(e.getValue().getObfName(), e.getKey());
             }
         }
@@ -336,6 +345,9 @@ public class ClassMap {
             }
         });
         for (Entry<String, ClassMapEntry> e : sortedClasses) {
+            if (e.getValue().hidden) {
+                continue;
+            }
             out.printf("%1$sclass %2$s\n", indent, e.getValue().toString());
             if (e.getValue().aliasFor != null) {
                 continue;
@@ -920,6 +932,7 @@ public class ClassMap {
         private final HashMap<String, MemberEntry> methodMap = new HashMap<String, MemberEntry>();
         private final HashMap<String, MemberEntry> fieldMap = new HashMap<String, MemberEntry>();
         private ClassMapEntry parent = null;
+        private boolean hidden;
         private final ArrayList<ClassMapEntry> interfaces = new ArrayList<ClassMapEntry>();
         private ClassMapEntry aliasFor = null;
 
