@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
+import javassist.bytecode.AccessFlag;
 import javassist.bytecode.MethodInfo;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -35,6 +36,9 @@ public class BlockAPIMod extends Mod {
         addClassMod(new TessellatorMod(this));
         addClassMod(new ResourceLocationMod(this));
         addClassMod(new RenderBlocksMod());
+        if (getMinecraftVersion().compareTo("14w04a") >= 0) {
+            addClassMod(new RenderBlockManagerMod());
+        }
         if (malVersion >= 2) {
             addClassMod(new Shared.RegistryBaseMod(this));
             addClassMod(new Shared.RegistryMod(this));
@@ -140,6 +144,7 @@ public class BlockAPIMod extends Mod {
             super(BlockAPIMod.this);
 
             final MethodRef hasOverrideBlockTexture = new MethodRef(getDeobfClass(), "hasOverrideBlockTexture", "()Z");
+            final FieldRef overrideBlockTexture = new FieldRef(getDeobfClass(), "overrideBlockTexture", "LIcon;");
             final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
             final MethodRef isAmbientOcclusionEnabled = new MethodRef("Minecraft", "isAmbientOcclusionEnabled", "()Z");
             final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
@@ -191,21 +196,20 @@ public class BlockAPIMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        grassTopSignature.getMatchExpression(),
-
-                        // if (this.hasOverrideBlockTexture()) {
+                        // return this.overrideBlockTexture != null;
+                        begin(),
                         ALOAD_0,
-                        captureReference(INVOKEVIRTUAL),
-                        IFEQ, any(2),
-
-                        // useColor = false;
-                        push(0),
-                        backReference(1) // NOTE: capture group 1 = useColor register in grassTopSignature
-
-                        // }
+                        captureReference(GETFIELD),
+                        IFNULL_or_IFNONNULL, any(2),
+                        any(4, 8),
+                        IRETURN,
+                        end()
                     );
                 }
-            }.addXref(2, hasOverrideBlockTexture));
+            }
+                .setMethod(hasOverrideBlockTexture)
+                .addXref(1, overrideBlockTexture)
+            );
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -359,6 +363,70 @@ public class BlockAPIMod extends Mod {
                     return code;
                 }
             });
+        }
+    }
+
+    private class RenderBlockManagerMod extends ClassMod {
+        RenderBlockManagerMod() {
+            final FieldRef instance = new FieldRef(getDeobfClass(), "instance", "LRenderBlockManager;");
+            final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+            final MethodRef registerRenderType = new MethodRef(getDeobfClass(), "registerRenderType", "(ILRenderBlocks;)V");
+            final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.registerRenderType(0, new RenderBlocks());
+                        ALOAD_0,
+                        push(0),
+                        captureReference(NEW),
+                        DUP,
+                        anyReference(INVOKESPECIAL),
+                        captureReference(INVOKEVIRTUAL),
+
+                        repeat(build(
+                            // this.registerRenderType(renderType, new RenderBlocksSubclass());
+                            // x40 or more
+                            ALOAD_0,
+                            any(1, 3), // ICONST_*, BIPUSH x, SIPUSH x x
+                            anyReference(NEW),
+                            DUP,
+                            anyReference(INVOKESPECIAL),
+                            backReference(2)
+                        ), 40)
+                    );
+                }
+            }
+                .matchConstructorOnly(true)
+                .addXref(1, new ClassRef("RenderBlocks"))
+                .addXref(2, registerRenderType)
+            );
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // renderType = block.getRenderType();
+                        begin(),
+                        ALOAD_1,
+                        captureReference(INVOKEVIRTUAL),
+                        ISTORE_3,
+
+                        // return renderType >= 0 ? ...;
+                        ILOAD_3,
+                        IFGE_or_IFLT, any(2)
+                    );
+                }
+            }
+                .setMethod(renderBlockByRenderType)
+                .addXref(1, getRenderType)
+            );
+
+            addMemberMapper(new FieldMapper(instance)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, true)
+            );
         }
     }
 }

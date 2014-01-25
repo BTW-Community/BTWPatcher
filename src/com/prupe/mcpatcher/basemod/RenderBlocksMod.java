@@ -74,9 +74,6 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
             .addXref(3, shouldSideBeRendered)
         );
 
-        addClassSignature(new ConstSignature(0.1875));
-        addClassSignature(new ConstSignature(0.01));
-
         grassTopSignature = new BytecodeSignature() {
             @Override
             public String getMatchExpression() {
