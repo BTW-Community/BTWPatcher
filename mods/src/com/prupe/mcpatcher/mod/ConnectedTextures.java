@@ -254,14 +254,14 @@ public class ConnectedTextures extends Mod {
             addMemberMapper(new FieldMapper(overrideBlockTexture));
             addMemberMapper(new FieldMapper(blockAccess));
 
+            setupStandardBlocks();
             setupGlassPanes();
+            setupTileOverrides();
 
             if (true) {
-                setupNew();
                 return;
             }
 
-            setupStandardBlocks();
             setupHeldBlocks();
             if (haveBlockRegistry) {
                 setupCrossedSquares17();
@@ -271,7 +271,7 @@ public class ConnectedTextures extends Mod {
 
         private final MethodRef getBlockIconFromPosition = new MethodRef(getDeobfClass(), "getBlockIconFromPosition", "(LBlock;LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
 
-        private void setupNew() {
+        private void setupTileOverrides() {
             final MethodRef getBlockIconFromSideAndMetadata = new MethodRef(getDeobfClass(), "getBlockIconFromSideAndMetadata", "(LBlock;" + DirectionMod.getDescriptor() + "I)LIcon;");
             final MethodRef getBlockIconFromSide = new MethodRef(getDeobfClass(), "getBlockIconFromSide", "(LBlock;" + DirectionMod.getDescriptor() + ")LIcon;");
             final MethodRef newBlockIconFromPosition = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;LIBlockAccess;IIII)LIcon;");
@@ -573,65 +573,18 @@ public class ConnectedTextures extends Mod {
         }
 
         private void setupStandardBlocks() {
-            setupBlockFace(0, "Bottom", "Bottom");
-            setupBlockFace(1, "Top", "Top");
-            setupBlockFace(2, "North", "East");
-            setupBlockFace(3, "South", "West");
-            setupBlockFace(4, "West", "North");
-            setupBlockFace(5, "East", "South");
+            setupBlockFace(0, "Bottom");
+            setupBlockFace(1, "Top");
+            setupBlockFace(2, "North");
+            setupBlockFace(3, "South");
+            setupBlockFace(4, "West");
+            setupBlockFace(5, "East");
 
             addMemberMapper(new MethodMapper(faceMethods));
         }
 
-        private void setupBlockFace(final int face, final String direction, String altDirection) {
-            final MethodRef altMethod = new MethodRef(getDeobfClass(), "RenderFull" + altDirection + "Face", "(LBlock;DDDLIcon;)V");
+        private void setupBlockFace(final int face, final String direction) {
             faceMethods[face] = new MethodRef(getDeobfClass(), "render" + direction + "Face", "(LBlock;DDDLIcon;)V");
-
-            addPatch(new RenderBlocksPatch() {
-                @Override
-                protected int getIconRegister() {
-                    return 8;
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    if (isAlternateMethod()) {
-                        return buildExpression(
-                            reference(GETSTATIC, instance),
-                            anyASTORE
-                        );
-                    } else {
-                        return super.getMatchExpression();
-                    }
-                }
-
-                @Override
-                protected String getTextureType() {
-                    return direction.toLowerCase() + " face";
-                }
-
-                @Override
-                protected byte[] getCTMUtilsArgs() {
-                    return buildCode(
-                        DLOAD_2,
-                        D2I,
-                        DLOAD, 4,
-                        D2I,
-                        DLOAD, 6,
-                        D2I,
-                        push(face)
-                    );
-                }
-
-                @Override
-                protected MethodRef getCTMUtilsMethod() {
-                    return getTile;
-                }
-
-                private boolean isAlternateMethod() {
-                    return getMethodInfo().getName().startsWith("RenderFull");
-                }
-            }.targetMethod(faceMethods[face], altMethod));
         }
 
         private void setupNonStandardBlocks() {
