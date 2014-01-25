@@ -11,7 +11,7 @@ import static javassist.bytecode.Opcode.*;
 public class BlockAPIMod extends Mod {
     private final int malVersion;
     private final MethodRef getBlockIcon = new MethodRef("Block", "getBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
-    private final MethodRef getSecondaryBlockIcon = new MethodRef("Block", "getSecondaryBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
+    private final MethodRef getSecondaryBlockIcon = RenderBlocksMod.haveSubclasses() ? new MethodRef("Block", "getSecondaryBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;") : null;
     private final MethodRef useColorMultiplierOnFace = new MethodRef("Block", "useColorMultiplierOnFace", "(" + DirectionMod.getDescriptor() + ")Z");
 
     public BlockAPIMod() {
@@ -70,11 +70,7 @@ public class BlockAPIMod extends Mod {
 
             final MethodRef shouldSideBeRendered = new MethodRef(getDeobfClass(), "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
 
-            if (RenderBlocksMod.haveSubclasses()) {
-                addMemberMapper(new MethodMapper(getSecondaryBlockIcon, getBlockIcon));
-            } else {
-                addMemberMapper(new MethodMapper(getBlockIcon));
-            }
+            addMemberMapper(new MethodMapper(getSecondaryBlockIcon, getBlockIcon));
             addMemberMapper(new MethodMapper(shouldSideBeRendered));
 
             if (malVersion >= 2) {
@@ -90,13 +86,13 @@ public class BlockAPIMod extends Mod {
     }
 
     abstract private class BetterGrassMod extends ClassMod {
+        protected final MethodRef isBetterGrass = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "isBetterGrass", "(LBlock;LIBlockAccess;IIII)Z");
+
         BetterGrassMod() {
             setParentClass("Block");
 
             addClassSignature(new ConstSignature("_side"));
             addClassSignature(new ConstSignature("_top"));
-
-            final MethodRef isBetterGrass = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "isBetterGrass", "(LBlock;LIBlockAccess;IIII)Z");
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -138,6 +134,42 @@ public class BlockAPIMod extends Mod {
         BlockGrassMod() {
             addClassSignature(new ConstSignature("_side_snowed"));
             addClassSignature(new ConstSignature("_side_overlay"));
+
+            if (getSecondaryBlockIcon != null) {
+                addPatch(new BytecodePatch() {
+                    @Override
+                    public String getDescription() {
+                        return "disable overlay texture if better grass";
+                    }
+
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            begin()
+                        );
+                    }
+
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            // if (BlockAPI.isBetterGrass(this, blockAccess, i, j, k, face)) {
+                            ALOAD_0,
+                            ALOAD_1,
+                            PositionMod.unpackArguments(this, 2),
+                            DirectionMod.unpackArguments(this, 2 + PositionMod.getDescriptorLength()),
+                            reference(INVOKESTATIC, isBetterGrass),
+                            IFEQ, branch("A"),
+
+                            // return null;
+                            ACONST_NULL,
+                            ARETURN,
+
+                            // }
+                            label("A")
+                        );
+                    }
+                }.targetMethod(getSecondaryBlockIcon));
+            }
         }
     }
 
@@ -353,36 +385,6 @@ public class BlockAPIMod extends Mod {
                     );
                 }
             });
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "disable grass overlay texture with better grass";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // block.getSecondaryBlockIcon(this.blockAccess, position, Direction.xxx)
-                        ALOAD_1,
-                        ALOAD_0,
-                        reference(GETFIELD, blockAccess),
-                        ALOAD_2,
-                        captureReference(GETSTATIC),
-                        reference(INVOKEVIRTUAL, getSecondaryBlockIcon)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // RenderBlocksUtils.getSecondaryBlockIcon(..., Direction.xxx.ordinal());
-                        getCaptureGroup(1),
-                        reference(INVOKEVIRTUAL, DirectionMod.ordinal),
-                        reference(INVOKESTATIC, getSecondaryIcon)
-                    );
-                }
-            }.setInsertAfter(true));
         }
     }
 }

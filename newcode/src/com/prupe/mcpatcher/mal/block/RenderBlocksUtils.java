@@ -16,17 +16,12 @@ public class RenderBlocksUtils {
     private static final Block craftedSnowBlock = BlockAPI.getFixedBlock("minecraft:snow");
 
     private static final boolean[] useColorMultiplier = new boolean[]{true, true, true, true, true, true};
-    private static final boolean[] useBetterGrass = new boolean[6];
     private static final float[][] nonAOMultipliers = new float[6][3];
 
     public static final float[] AO_BASE = new float[]{0.5f, 1.0f, 0.8f, 0.8f, 0.6f, 0.6f};
 
     public static void setupColorMultiplier(Block block, IBlockAccess blockAccess, int i, int j, int k,
                                             boolean haveOverrideTexture, float r, float g, float b) {
-        useBetterGrass[2] = false;
-        useBetterGrass[3] = false;
-        useBetterGrass[4] = false;
-        useBetterGrass[5] = false;
         if (haveOverrideTexture || !RenderPassAPI.instance.useColorMultiplierThisPass(block)) {
             useColorMultiplier[0] = false;
             useColorMultiplier[2] = false;
@@ -44,10 +39,10 @@ public class RenderBlocksUtils {
                     useColorMultiplier[5] = false;
                 } else {
                     j--;
-                    useBetterGrass[2] = useColorMultiplier[2] = block == BlockAPI.getBlockAt(blockAccess, i, j, k - 1);
-                    useBetterGrass[3] = useColorMultiplier[3] = block == BlockAPI.getBlockAt(blockAccess, i, j, k + 1);
-                    useBetterGrass[4] = useColorMultiplier[4] = block == BlockAPI.getBlockAt(blockAccess, i - 1, j, k);
-                    useBetterGrass[5] = useColorMultiplier[5] = block == BlockAPI.getBlockAt(blockAccess, i + 1, j, k);
+                    useColorMultiplier[2] = block == BlockAPI.getBlockAt(blockAccess, i, j, k - 1);
+                    useColorMultiplier[3] = block == BlockAPI.getBlockAt(blockAccess, i, j, k + 1);
+                    useColorMultiplier[4] = block == BlockAPI.getBlockAt(blockAccess, i - 1, j, k);
+                    useColorMultiplier[5] = block == BlockAPI.getBlockAt(blockAccess, i + 1, j, k);
                 }
             } else {
                 useColorMultiplier[2] = false;
@@ -129,9 +124,5 @@ public class RenderBlocksUtils {
 
     public static boolean isAmbientOcclusionEnabled() {
         return Minecraft.isAmbientOcclusionEnabled();
-    }
-
-    public static Icon getSecondaryIcon(Icon icon, int face) {
-        return useBetterGrass[face] ? null : icon;
     }
 }
