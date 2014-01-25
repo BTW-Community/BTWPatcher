@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.basemod;
 
 import com.prupe.mcpatcher.FieldRef;
 import com.prupe.mcpatcher.MethodRef;
+import com.prupe.mcpatcher.MinecraftVersion;
 import com.prupe.mcpatcher.Mod;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -12,6 +13,8 @@ import static javassist.bytecode.Opcode.*;
  * Matches RenderBlocks class.
  */
 public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
+    private static final MinecraftVersion MIN_VERSION_SUBCLASS = MinecraftVersion.parseVersion("14w04a");
+
     protected final MethodRef renderStandardBlockWithAmbientOcclusion = new MethodRef(getDeobfClass(), "renderStandardBlockWithAmbientOcclusion", "(LBlock;" + PositionMod.getDescriptor() + "FFF)Z");
     protected final FieldRef renderAllFaces = new FieldRef(getDeobfClass(), "renderAllFaces", "Z");
     protected final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
@@ -19,6 +22,10 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
 
     protected final com.prupe.mcpatcher.BytecodeSignature grassTopSignature;
     protected int useColorRegister;
+
+    public static boolean haveSubclasses() {
+        return Mod.getMinecraftVersion().compareTo(MIN_VERSION_SUBCLASS) >= 0;
+    }
 
     public RenderBlocksMod(Mod mod) {
         super(mod);

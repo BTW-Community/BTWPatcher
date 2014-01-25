@@ -36,7 +36,7 @@ public class BlockAPIMod extends Mod {
         addClassMod(new TessellatorMod(this));
         addClassMod(new ResourceLocationMod(this));
         addClassMod(new RenderBlocksMod());
-        if (getMinecraftVersion().compareTo("14w04a") >= 0) {
+        if (RenderBlocksMod.haveSubclasses()) {
             addClassMod(new RenderBlockManagerMod());
         }
         if (malVersion >= 2) {
