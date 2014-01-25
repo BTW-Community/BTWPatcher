@@ -19,7 +19,8 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
     protected final FieldRef renderAllFaces = new FieldRef(getDeobfClass(), "renderAllFaces", "Z");
     protected final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
     protected final MethodRef shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
-    protected final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), haveSubclasses() ? "renderBlock" : "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+    protected final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+    protected final MethodRef renderBlock = new MethodRef(getDeobfClass(), "renderBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
     protected final MethodRef isAmbientOcclusionEnabled = new MethodRef("Minecraft", "isAmbientOcclusionEnabled", "()Z");
     protected final FieldRef lightValue = new FieldRef("Block", "lightValue", "[I");
     protected final MethodRef getLightValue = new MethodRef("Block", "getLightValue", "()I");
@@ -146,6 +147,10 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
             .setMethod(renderStandardBlock)
             .addXref(1, isAmbientOcclusionEnabled)
         );
+
+        if (haveSubclasses()) {
+            addMemberMapper(new MethodMapper(renderBlock));
+        }
         return this;
     }
 

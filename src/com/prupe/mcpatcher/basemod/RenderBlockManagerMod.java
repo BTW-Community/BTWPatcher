@@ -104,4 +104,25 @@ public class RenderBlockManagerMod extends ClassMod {
             .accessFlag(AccessFlag.STATIC, true)
         );
     }
+
+    public RenderBlockManagerMod mapRenderType(final int type, String className) {
+        addClassSignature(new BytecodeSignature() {
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // this.registerRenderType(renderType, new RenderBlocksSubclass());
+                    ALOAD_0,
+                    push(type),
+                    captureReference(NEW),
+                    DUP,
+                    anyReference(INVOKESPECIAL),
+                    anyReference(INVOKEVIRTUAL)
+                );
+            }
+        }
+            .matchConstructorOnly(true)
+            .addXref(1, new ClassRef(className))
+        );
+        return this;
+    }
 }
