@@ -11,6 +11,8 @@ import static javassist.bytecode.Opcode.*;
 public class BlockAPIMod extends Mod {
     private final int malVersion;
     private final MethodRef getBlockIcon = new MethodRef("Block", "getBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
+    private final MethodRef getSecondaryBlockIcon = new MethodRef("Block", "getSecondaryBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
+    private final MethodRef useColorMultiplierOnFace = new MethodRef("Block", "useColorMultiplierOnFace", "(" + DirectionMod.getDescriptor() + ")Z");
 
     public BlockAPIMod() {
         name = MCPatcherUtils.BLOCK_API_MOD;
@@ -69,7 +71,7 @@ public class BlockAPIMod extends Mod {
             final MethodRef shouldSideBeRendered = new MethodRef(getDeobfClass(), "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
 
             if (RenderBlocksMod.haveSubclasses()) {
-                addMemberMapper(new MethodMapper(null, getBlockIcon));
+                addMemberMapper(new MethodMapper(getSecondaryBlockIcon, getBlockIcon));
             } else {
                 addMemberMapper(new MethodMapper(getBlockIcon));
             }
@@ -79,6 +81,10 @@ public class BlockAPIMod extends Mod {
                 final FieldRef blockRegistry = new FieldRef(getDeobfClass(), "blockRegistry", "LRegistry;");
 
                 addMemberMapper(new FieldMapper(blockRegistry));
+            }
+
+            if (RenderBlocksMod.haveSubclasses()) {
+                addMemberMapper(new MethodMapper(useColorMultiplierOnFace));
             }
         }
     }
@@ -143,15 +149,15 @@ public class BlockAPIMod extends Mod {
     }
 
     private class RenderBlocksMod extends com.prupe.mcpatcher.basemod.RenderBlocksMod {
+        private final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
+        private final MethodRef setupColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "setupColorMultiplier", "(LBlock;LIBlockAccess;IIIZFFF)V");
+        private final MethodRef useColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(I)Z");
+        private final MethodRef getColorMultiplierRed = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierRed", "(I)F");
+        private final MethodRef getColorMultiplierGreen = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierGreen", "(I)F");
+        private final MethodRef getColorMultiplierBlue = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierBlue", "(I)F");
+
         RenderBlocksMod() {
             super(BlockAPIMod.this);
-
-            final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
-            final MethodRef setupColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "setupColorMultiplier", "(LBlock;LIBlockAccess;IIIZFFF)V");
-            final MethodRef useColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(I)Z");
-            final MethodRef getColorMultiplierRed = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierRed", "(I)F");
-            final MethodRef getColorMultiplierGreen = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierGreen", "(I)F");
-            final MethodRef getColorMultiplierBlue = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierBlue", "(I)F");
 
             mapRenderStandardBlock();
             mapHasOverrideTexture();
@@ -191,50 +197,11 @@ public class BlockAPIMod extends Mod {
                 .targetMethod(renderStandardBlock)
             );
 
-            addPatch(new BytecodePatch() {
-                private MethodInfo lastMethod;
-                private int patchCount;
-
-                {
-                    addPreMatchSignature(grassTopSignature);
-                }
-
-                @Override
-                public String getDescription() {
-                    return "use per-face color multiplier flags";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // useColor
-                        ILOAD, useColorRegister
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // RenderBlocksUtils.useColorMultiplier(face)
-                        push(getPatchCount()),
-                        reference(INVOKESTATIC, useColorMultiplier)
-                    );
-                }
-
-                private int getPatchCount() {
-                    if (lastMethod != getMethodInfo()) {
-                        lastMethod = getMethodInfo();
-                        patchCount = 0;
-                    }
-                    int oldPatchCount = patchCount;
-                    patchCount++;
-                    if (patchCount == 1) {
-                        patchCount++;
-                    }
-                    patchCount %= 6;
-                    return oldPatchCount;
-                }
-            });
+            if (haveSubclasses()) {
+                setupColorMultipliers18();
+            } else {
+                setupColorMultipliers17();
+            }
 
             addPatch(new BytecodePatch() {
                 private int patchCount;
@@ -308,6 +275,114 @@ public class BlockAPIMod extends Mod {
                     return code;
                 }
             });
+        }
+
+        private void setupColorMultipliers17() {
+            addPatch(new BytecodePatch() {
+                private MethodInfo lastMethod;
+                private int patchCount;
+
+                {
+                    addPreMatchSignature(grassTopSignature);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "use per-face color multiplier flags";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // useColor
+                        ILOAD, useColorRegister
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // RenderBlocksUtils.useColorMultiplier(face)
+                        push(getPatchCount()),
+                        reference(INVOKESTATIC, useColorMultiplier)
+                    );
+                }
+
+                private int getPatchCount() {
+                    if (lastMethod != getMethodInfo()) {
+                        lastMethod = getMethodInfo();
+                        patchCount = 0;
+                    }
+                    int oldPatchCount = patchCount;
+                    patchCount++;
+                    if (patchCount == 1) {
+                        patchCount++;
+                    }
+                    patchCount %= 6;
+                    return oldPatchCount;
+                }
+            });
+        }
+
+        private void setupColorMultipliers18() {
+            final MethodRef getSecondaryIcon = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getSecondaryIcon", "(LIcon;I)LIcon;");
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "use per-face color multiplier flags";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // block.useColorMultiplierOnFace(Direction.xxx)
+                        ALOAD_1,
+                        captureReference(GETSTATIC),
+                        reference(INVOKEVIRTUAL, useColorMultiplierOnFace)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // RenderBlocksUtils.useColorMultiplier(Direction.xxx.ordinal())
+                        getCaptureGroup(1),
+                        reference(INVOKEVIRTUAL, DirectionMod.getID),
+                        reference(INVOKESTATIC, useColorMultiplier)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "disable grass overlay texture with better grass";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // block.getSecondaryBlockIcon(this.blockAccess, position, Direction.xxx)
+                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, blockAccess),
+                        ALOAD_2,
+                        captureReference(GETSTATIC),
+                        reference(INVOKEVIRTUAL, getSecondaryBlockIcon)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // RenderBlocksUtils.getSecondaryBlockIcon(..., Direction.xxx.ordinal());
+                        getCaptureGroup(1),
+                        reference(INVOKEVIRTUAL, DirectionMod.getID),
+                        reference(INVOKESTATIC, getSecondaryIcon)
+                    );
+                }
+            }.setInsertAfter(true));
         }
     }
 }
