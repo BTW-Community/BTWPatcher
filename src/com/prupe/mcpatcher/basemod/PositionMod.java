@@ -6,15 +6,13 @@ import javassist.bytecode.AccessFlag;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static com.prupe.mcpatcher.BytecodeMatcher.anyReference;
-import static com.prupe.mcpatcher.BytecodeMatcher.captureReference;
-import static com.prupe.mcpatcher.BytecodeMatcher.registerLoadStore;
+import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class PositionMod extends com.prupe.mcpatcher.ClassMod {
-    private static FieldRef i = new FieldRef("Position", "i", "I");
-    private static FieldRef j = new FieldRef("Position", "j", "I");
-    private static FieldRef k = new FieldRef("Position", "k", "I");
+    private static final MinecraftVersion MIN_VERSION = MinecraftVersion.parseVersion("14w02a");
+    private static final MinecraftVersion MIN_VERSION_SUBCLASS = MinecraftVersion.parseVersion("14w04a");
+
     private static MethodRef getI = new MethodRef("Position", "getI", "()I");
     private static MethodRef getJ = new MethodRef("Position", "getJ", "()I");
     private static MethodRef getK = new MethodRef("Position", "getK", "()I");
@@ -22,7 +20,7 @@ public class PositionMod extends com.prupe.mcpatcher.ClassMod {
     public static boolean setup(Mod mod) {
         if (havePositionClass()) {
             mod.addClassMod(new PositionMod(mod));
-            if (Mod.getMinecraftVersion().compareTo("14w04a") >= 0) {
+            if (Mod.getMinecraftVersion().compareTo(MIN_VERSION_SUBCLASS) >= 0) {
                 mod.addClassMod(new PositionBaseMod(mod));
             }
             mod.addClassMod(new DirectionMod(mod));
@@ -33,7 +31,7 @@ public class PositionMod extends com.prupe.mcpatcher.ClassMod {
     }
 
     public static boolean havePositionClass() {
-        return Mod.getMinecraftVersion().compareTo("14w02a") >= 0;
+        return Mod.getMinecraftVersion().compareTo(MIN_VERSION) >= 0;
     }
 
     public static String getDescriptor() {
@@ -90,7 +88,7 @@ public class PositionMod extends com.prupe.mcpatcher.ClassMod {
     protected PositionMod(Mod mod) {
         super(mod);
 
-        if (Mod.getMinecraftVersion().compareTo("14w04a") >= 0) {
+        if (Mod.getMinecraftVersion().compareTo(MIN_VERSION_SUBCLASS) >= 0) {
             setParentClass("PositionBase");
 
             addClassSignature(new BytecodeSignature() {
@@ -124,9 +122,9 @@ public class PositionMod extends com.prupe.mcpatcher.ClassMod {
         String deobfClass = classMod.getDeobfClass();
         final MethodRef hashCode = new MethodRef(deobfClass, "hashCode", "()I");
 
-        i = new FieldRef(deobfClass, "i", "I");
-        j = new FieldRef(deobfClass, "j", "I");
-        k = new FieldRef(deobfClass, "k", "I");
+        final FieldRef i = new FieldRef(deobfClass, "i", "I");
+        final FieldRef j = new FieldRef(deobfClass, "j", "I");
+        final FieldRef k = new FieldRef(deobfClass, "k", "I");
         getI = new MethodRef(deobfClass, "getI", "()I");
         getJ = new MethodRef(deobfClass, "getJ", "()I");
         getK = new MethodRef(deobfClass, "getK", "()I");
