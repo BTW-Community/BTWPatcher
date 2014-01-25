@@ -442,6 +442,7 @@ abstract class TileOverride implements ITileOverride {
         return String.format("%s[%s] (%d tiles)", getMethod(), propertiesFile, getNumberOfTiles());
     }
 
+    @Override
     public final void registerIcons() {
         icons = new Icon[tileNames.size()];
         for (int i = 0; i < icons.length; i++) {
@@ -463,26 +464,32 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
+    @Override
     final public boolean isDisabled() {
         return disabled;
     }
 
+    @Override
     final public Set<Block> getMatchingBlocks() {
         return matchBlocks.keySet();
     }
 
+    @Override
     final public Set<String> getMatchingTiles() {
         return matchTiles;
     }
 
+    @Override
     final public int getRenderPass() {
         return renderPass;
     }
 
+    @Override
     final public int getWeight() {
         return weight;
     }
 
+    @Override
     public int compareTo(ITileOverride o) {
         int result = o.getWeight() - getWeight();
         if (result != 0) {
@@ -750,6 +757,7 @@ abstract class TileOverride implements ITileOverride {
         return changed;
     }
 
+    @Override
     public final Icon getTile(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int face) {
         if (icons == null) {
             error("no images loaded, disabling");
@@ -781,6 +789,7 @@ abstract class TileOverride implements ITileOverride {
         return getTileImpl(blockAccess, block, origIcon, i, j, k, face);
     }
 
+    @Override
     public final Icon getTile(Block block, Icon origIcon, int face, int metadata) {
         if (icons == null) {
             error("no images loaded, disabling");
