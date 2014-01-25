@@ -372,6 +372,10 @@ public class BlockAPIMod extends Mod {
             final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
             final MethodRef registerRenderType = new MethodRef(getDeobfClass(), "registerRenderType", "(ILRenderBlocks;)V");
             final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
+            final ClassRef renderBlocksClass = new ClassRef("RenderBlocks");
+            final MethodRef renderBlockAsItem = new MethodRef(getDeobfClass(), "renderBlockAsItem", "(LBlock;IF)V");
+            final MethodRef renderBlockAsItem1 = new MethodRef("RenderBlocks", "renderBlockAsItem", "(LBlock;IF)V");
+            final InterfaceMethodRef listGet = new InterfaceMethodRef("java/util/List", "get", "(I)Ljava/lang/Object;");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -399,7 +403,7 @@ public class BlockAPIMod extends Mod {
                 }
             }
                 .matchConstructorOnly(true)
-                .addXref(1, new ClassRef("RenderBlocks"))
+                .addXref(1, renderBlocksClass)
                 .addXref(2, registerRenderType)
             );
 
@@ -421,6 +425,29 @@ public class BlockAPIMod extends Mod {
             }
                 .setMethod(renderBlockByRenderType)
                 .addXref(1, getRenderType)
+            );
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.renderers.get(renderType).renderBlockAsItem(block, metadata, brightness);
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        ILOAD, 4,
+                        reference(INVOKEINTERFACE, listGet),
+                        captureReference(CHECKCAST),
+
+                        ALOAD_1,
+                        ILOAD_2,
+                        FLOAD_3,
+                        captureReference(INVOKEVIRTUAL)
+                    );
+                }
+            }
+                .setMethod(renderBlockAsItem)
+                .addXref(1, renderBlocksClass)
+                .addXref(2, renderBlockAsItem1)
             );
 
             addMemberMapper(new FieldMapper(instance)
