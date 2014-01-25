@@ -83,8 +83,9 @@ public class CTMUtils {
 
     public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
         lastOverride = null;
-        if (checkFace(face) && checkBlock(renderBlocks, block)) {
-            ijkIterator.setup(renderBlocks.blockAccess, block, i, j, k, face, icon);
+        face = remapFace(block, face);
+        if (checkFace(face)) {
+            ijkIterator.setup(blockAccess, block, i, j, k, face, icon);
             lastOverride = ijkIterator.go();
             if (lastOverride != null) {
                 icon = ijkIterator.getIcon();
@@ -95,6 +96,7 @@ public class CTMUtils {
 
     public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, int face, int metadata) {
         lastOverride = null;
+        face = remapFace(block, face);
         if (checkFace(face) && checkRenderType(block)) {
             metadataIterator.setup(block, face, metadata, icon);
             lastOverride = metadataIterator.go();
@@ -112,8 +114,14 @@ public class CTMUtils {
     public static void reset() {
     }
 
-    private static boolean checkBlock(RenderBlocks renderBlocks, Block block) {
-        return renderBlocks.blockAccess != null;
+    private static int remapFace(Block block, int face) {
+        switch (block.getRenderType()) {
+            case 1: // renderCrossedSquares
+                return -1;
+
+            default:
+                return face;
+        }
     }
 
     private static boolean checkFace(int face) {
