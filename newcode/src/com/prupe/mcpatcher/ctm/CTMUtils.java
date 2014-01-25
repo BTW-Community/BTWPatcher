@@ -109,63 +109,6 @@ public class CTMUtils {
         return getBlockIcon(icon, renderBlocks, block, face, 0);
     }
 
-    // called by drawCrossedSquares, which in 1.7 no longer has a Block parameter
-    public static Icon getTile(RenderBlocks renderBlocks, int i, int j, int k, Icon icon) {
-        if (renderBlocks.blockAccess == null) {
-            return icon;
-        }
-        Block block = BlockAPI.getBlockAt(renderBlocks.blockAccess, i, j, k);
-        if (block == null) {
-            return icon;
-        } else {
-            return getTile(renderBlocks, block, i, j, k, icon);
-        }
-    }
-
-    public static Icon getTile(RenderBlocks renderBlocks, Block block, int i, int j, int k, Icon icon) {
-        return getTile(renderBlocks, block, i, j, k, -1, icon);
-    }
-
-    public static Icon getTile(RenderBlocks renderBlocks, Block block, int i, int j, int k, int face, Icon icon) {
-        lastOverride = null;
-        if (checkFace(face) && checkBlock(renderBlocks, block)) {
-            ijkIterator.setup(renderBlocks.blockAccess, block, i, j, k, face, icon);
-            lastOverride = ijkIterator.go();
-            if (lastOverride != null) {
-                icon = ijkIterator.getIcon();
-            }
-        }
-        return lastOverride == null && skipDefaultRendering(block) ? blankIcon : icon;
-    }
-
-    public static Icon getTile(RenderBlocks renderBlocks, Block block, int face, int metadata) {
-        return getTile(renderBlocks, block, face, metadata, renderBlocks.getIconBySideAndMetadata(block, face, metadata));
-    }
-
-    public static Icon getTile(RenderBlocks renderBlocks, Block block, int face) {
-        return getTile(renderBlocks, block, face, 0, renderBlocks.getIconBySide(block, face));
-    }
-
-    public static Icon getTile(RenderBlocks renderBlocks, Block block, Direction direction, int metadata) {
-        return getTile(renderBlocks, block, direction.getID(), metadata, renderBlocks.getIconBySideAndMetadata(block, direction, metadata));
-    }
-
-    public static Icon getTile(RenderBlocks renderBlocks, Block block, Direction direction) {
-        return getTile(renderBlocks, block, direction.getID(), 0, renderBlocks.getIconBySide(block, direction));
-    }
-
-    private static Icon getTile(RenderBlocks renderBlocks, Block block, int face, int metadata, Icon icon) {
-        lastOverride = null;
-        if (checkFace(face) && checkRenderType(block)) {
-            metadataIterator.setup(block, face, metadata, icon);
-            lastOverride = metadataIterator.go();
-            if (lastOverride != null) {
-                icon = metadataIterator.getIcon();
-            }
-        }
-        return icon;
-    }
-
     public static void reset() {
     }
 

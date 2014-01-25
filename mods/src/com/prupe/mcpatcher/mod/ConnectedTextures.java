@@ -189,30 +189,20 @@ public class ConnectedTextures extends Mod {
     private class RenderBlocksMod extends com.prupe.mcpatcher.basemod.RenderBlocksMod {
         private final MethodRef[] faceMethods = new MethodRef[6];
         private final FieldRef overrideBlockTexture = new FieldRef(getDeobfClass(), "overrideBlockTexture", "LIcon;");
-        private final FieldRef instance = new FieldRef("Tessellator", "instance", "LTessellator;");
         private final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
-        private final MethodRef drawCrossedSquares = new MethodRef(getDeobfClass(), "drawCrossedSquares", "(LIcon;DDDF)V");
         private final MethodRef hasOverrideTexture = new MethodRef(getDeobfClass(), "hasOverrideTexture", "()Z");
         private final MethodRef renderBlockGenericPane = new MethodRef(getDeobfClass(), "renderBlockGenericPane", "(LBlockPane;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef renderBlockGlassPane17 = new MethodRef(getDeobfClass(), "renderBlockGlassPane17", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
-        private final MethodRef renderBlockBrewingStand = new MethodRef(getDeobfClass(), "renderBlockBrewingStand", "(LBlockBrewingStand;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
-        private final MethodRef renderBlockAsItem = new MethodRef(getDeobfClass(), "renderBlockAsItem", "(LBlock;IF)V");
-        private final MethodRef renderBlockAsItemVanilla = new MethodRef(getDeobfClass(), "renderBlockAsItemVanilla", "(LBlock;IF)V"); // added by BTW 4.68
-        private final MethodRef getIconBySideAndMetadata = new MethodRef(getDeobfClass(), "getIconBySideAndMetadata", "(LBlock;" + DirectionMod.getDescriptor() + "I)LIcon;");
-        private final MethodRef getIconBySide = new MethodRef(getDeobfClass(), "getIconBySide", "(LBlock;" + DirectionMod.getDescriptor() + ")LIcon;");
         private final InterfaceMethodRef getMinU = new InterfaceMethodRef("Icon", "getMinU", "()F");
-        private final InterfaceMethodRef getMinV = new InterfaceMethodRef("Icon", "getMinV", "()F");
         private final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
-        private final MethodRef getTile = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIIILIcon;)LIcon;");
-        private final MethodRef getTileNoFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;IIILIcon;)LIcon;");
-        private final MethodRef getTileNoFaceOrBlock = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;IIILIcon;)LIcon;");
-        private final MethodRef getTileBySideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;II)LIcon;");
-        private final MethodRef getTileBySide = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;I)LIcon;");
-        private final MethodRef getTileByDirectionAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;" + DirectionMod.getDescriptor() + "I)LIcon;");
-        private final MethodRef getTileByDirection = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getTile", "(LRenderBlocks;LBlock;" + DirectionMod.getDescriptor() + ")LIcon;");
-        private final MethodRef round = new MethodRef("java/lang/Math", "round", "(D)J");
+        private final MethodRef getBlockIconFromPosition = new MethodRef(getDeobfClass(), "getBlockIconFromPosition", "(LBlock;LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
+        private final MethodRef getBlockIconFromSideAndMetadata = new MethodRef(getDeobfClass(), "getBlockIconFromSideAndMetadata", "(LBlock;" + DirectionMod.getDescriptor() + "I)LIcon;");
+        private final MethodRef getBlockIconFromSide = new MethodRef(getDeobfClass(), "getBlockIconFromSide", "(LBlock;" + DirectionMod.getDescriptor() + ")LIcon;");
+        private final MethodRef newBlockIconFromPosition = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;LIBlockAccess;IIII)LIcon;");
+        private final MethodRef newBlockIconFromSideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;II)LIcon;");
+        private final MethodRef newBlockIconFromSide = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;I)LIcon;");
 
         RenderBlocksMod() {
             super(ConnectedTextures.this);
@@ -257,27 +247,9 @@ public class ConnectedTextures extends Mod {
             setupStandardBlocks();
             setupGlassPanes();
             setupTileOverrides();
-
-            if (true) {
-                return;
-            }
-
-            setupHeldBlocks();
-            if (haveBlockRegistry) {
-                setupCrossedSquares17();
-            }
-            setupNonStandardBlocks();
         }
 
-        private final MethodRef getBlockIconFromPosition = new MethodRef(getDeobfClass(), "getBlockIconFromPosition", "(LBlock;LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
-
         private void setupTileOverrides() {
-            final MethodRef getBlockIconFromSideAndMetadata = new MethodRef(getDeobfClass(), "getBlockIconFromSideAndMetadata", "(LBlock;" + DirectionMod.getDescriptor() + "I)LIcon;");
-            final MethodRef getBlockIconFromSide = new MethodRef(getDeobfClass(), "getBlockIconFromSide", "(LBlock;" + DirectionMod.getDescriptor() + ")LIcon;");
-            final MethodRef newBlockIconFromPosition = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;LIBlockAccess;IIII)LIcon;");
-            final MethodRef newBlockIconFromSideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;II)LIcon;");
-            final MethodRef newBlockIconFromSide = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;I)LIcon;");
-
             addMemberMapper(new MethodMapper(getBlockIconFromPosition));
             addMemberMapper(new MethodMapper(getBlockIconFromSideAndMetadata));
             addMemberMapper(new MethodMapper(getBlockIconFromSide));
@@ -454,100 +426,6 @@ public class ConnectedTextures extends Mod {
             }
         }
 
-        abstract private class RenderBlocksPatch extends BytecodePatch {
-            protected int tessellatorRegister;
-            protected int iconRegister;
-
-            {
-                addPreMatchSignature(new BytecodeSignature() {
-                    @Override
-                    public String getMatchExpression() {
-                        return buildExpression(
-                            reference(GETSTATIC, instance),
-                            capture(anyASTORE)
-                        );
-                    }
-
-                    @Override
-                    public boolean afterMatch() {
-                        tessellatorRegister = extractRegisterNum(getCaptureGroup(1));
-                        return true;
-                    }
-                });
-
-                addPreMatchSignature((BytecodeSignature) new BytecodeSignature() {
-                    @Override
-                    public String getMatchExpression() {
-                        return buildExpression(or(
-                            build(reference(INVOKESTATIC, getTile)),
-                            build(reference(INVOKESTATIC, getTileNoFace)),
-                            build(reference(INVOKESTATIC, getTileNoFaceOrBlock)),
-                            build(reference(INVOKESTATIC, getTileBySide)),
-                            build(reference(INVOKESTATIC, getTileBySideAndMetadata)),
-                            build(reference(INVOKESTATIC, getTileByDirection)),
-                            build(reference(INVOKESTATIC, getTileByDirectionAndMetadata))
-                        ));
-                    }
-                }.negate(true));
-
-                setInsertAfter(true);
-            }
-
-            @Override
-            public boolean filterMethod() {
-                return (getMethodInfo().getAccessFlags() & AccessFlag.STATIC) == 0 &&
-                    getMethodInfo().getDescriptor().matches("\\(L[a-z]+;.*");
-            }
-
-            @Override
-            public String getDescription() {
-                return "override texture (" + getTextureType() + ")";
-            }
-
-            @Override
-            public String getMatchExpression() {
-                return buildExpression(
-                    ALOAD_0,
-                    or(
-                        build(reference(INVOKEVIRTUAL, hasOverrideTexture), IFEQ, any(2)),
-                        build(reference(GETFIELD, overrideBlockTexture), IFNULL, any(2))
-                    ),
-
-                    ALOAD_0,
-                    reference(GETFIELD, overrideBlockTexture),
-                    capture(anyASTORE)
-                );
-            }
-
-            @Override
-            public byte[] getReplacementBytes() {
-                iconRegister = getIconRegister();
-                return buildCode(
-                    // icon = CTMUtils.getTile(this, block, ..., icon);
-                    ALOAD_0,
-                    getBlockCode(),
-                    getCTMUtilsArgs(),
-                    registerLoadStore(ALOAD, iconRegister),
-                    reference(INVOKESTATIC, getCTMUtilsMethod()),
-                    registerLoadStore(ASTORE, iconRegister)
-                );
-            }
-
-            protected byte[] getBlockCode() {
-                return new byte[]{ALOAD_1};
-            }
-
-            protected int getIconRegister() {
-                return extractRegisterNum(getCaptureGroup(1));
-            }
-
-            abstract protected String getTextureType();
-
-            abstract protected byte[] getCTMUtilsArgs();
-
-            abstract protected MethodRef getCTMUtilsMethod();
-        }
-
         private void mapRenderTypeMethod(final int type, MethodRef renderMethod) {
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -585,171 +463,6 @@ public class ConnectedTextures extends Mod {
 
         private void setupBlockFace(final int face, final String direction) {
             faceMethods[face] = new MethodRef(getDeobfClass(), "render" + direction + "Face", "(LBlock;DDDLIcon;)V");
-        }
-
-        private void setupNonStandardBlocks() {
-            mapRenderTypeMethod(25, renderBlockBrewingStand);
-
-            addPatch(new RenderBlocksPatch() {
-                private String matchDescriptor;
-
-                {
-                    setInsertBefore(true);
-                    skipMethod(renderBlockGenericPane);
-                    skipMethod(renderBlockGlassPane17);
-                }
-
-                @Override
-                public boolean filterMethod() {
-                    if (!super.filterMethod()) {
-                        return false;
-                    }
-                    if (matchDescriptor == null) {
-                        matchDescriptor = "\\(L[a-z]+;" + getClassMap().mapTypeString(PositionMod.getDescriptor()) + ".*[IVZ]";
-                    }
-                    return super.filterMethod() && getMethodInfo().getDescriptor().matches(matchDescriptor);
-                }
-
-                @Override
-                protected String getTextureType() {
-                    return "other blocks";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    final InterfaceMethodRef method;
-                    if (getMethodInfo().getDescriptor().equals(map(renderBlockBrewingStand).getType())) {
-                        method = getMinV;
-                    } else {
-                        method = getMinU;
-                    }
-                    return buildExpression(
-                        capture(anyALOAD),
-                        reference(INVOKEINTERFACE, method),
-                        F2D,
-                        anyDSTORE
-                    );
-                }
-
-                @Override
-                protected byte[] getCTMUtilsArgs() {
-                    return buildCode(
-                        PositionMod.unpackArguments(this, 2)
-                    );
-                }
-
-                @Override
-                protected MethodRef getCTMUtilsMethod() {
-                    return getTileNoFace;
-                }
-            });
-
-            addPatch(new RenderBlocksPatch() {
-                private final int[] coordRegisters = new int[3];
-
-                {
-                    skipMethod(drawCrossedSquares);
-                }
-
-                @Override
-                public boolean filterMethod() {
-                    if (!super.filterMethod()) {
-                        return false;
-                    }
-                    String descriptor = getMethodInfo().getDescriptor();
-                    List<String> types = new ArrayList<String>();
-                    List<Integer> registers = new ArrayList<Integer>();
-                    parseDescriptor(descriptor, false, types, registers);
-                    // renderBlockStemBig/Small have an extra parameter renderMaxY before the x,y,z coords
-                    boolean skipOne = descriptor.contains("IDDDD");
-                    for (int i = 0; i + 2 < types.size(); i++) {
-                        String threeTypes = types.get(i) + types.get(i + 1) + types.get(i + 2);
-                        if (threeTypes.equals("III")) {
-                            return false;
-                        } else if (threeTypes.equals("DDD")) {
-                            if (skipOne) {
-                                skipOne = false;
-                            } else {
-                                coordRegisters[0] = registers.get(i);
-                                coordRegisters[1] = registers.get(i + 1);
-                                coordRegisters[2] = registers.get(i + 2);
-                                return true;
-                            }
-                        }
-                    }
-                    return false;
-                }
-
-                @Override
-                protected String getTextureType() {
-                    return "other blocks (double)";
-                }
-
-                @Override
-                protected byte[] getCTMUtilsArgs() {
-                    Logger.log(Logger.LOG_CONST, "coord double registers: %d %d %d",
-                        coordRegisters[0], coordRegisters[1], coordRegisters[2]
-                    );
-                    return buildCode(
-                        registerLoadStore(DLOAD, coordRegisters[0]),
-                        reference(INVOKESTATIC, round),
-                        L2I,
-                        registerLoadStore(DLOAD, coordRegisters[1]),
-                        reference(INVOKESTATIC, round),
-                        L2I,
-                        registerLoadStore(DLOAD, coordRegisters[2]),
-                        reference(INVOKESTATIC, round),
-                        L2I
-                    );
-                }
-
-                @Override
-                protected MethodRef getCTMUtilsMethod() {
-                    return getTileNoFace;
-                }
-            });
-        }
-
-        private void setupCrossedSquares17() {
-            addMemberMapper(new MethodMapper(drawCrossedSquares));
-
-            addPatch(new RenderBlocksPatch() {
-                @Override
-                protected String getTextureType() {
-                    return "crossed squares";
-                }
-
-                @Override
-                protected byte[] getCTMUtilsArgs() {
-                    return buildCode(
-                        // x,z coords are randomly offset by -0.15 to 0.15
-                        DLOAD_2,
-                        reference(INVOKESTATIC, round),
-                        L2I,
-                        DLOAD, 4,
-                        reference(INVOKESTATIC, round),
-                        L2I,
-                        DLOAD, 6,
-                        reference(INVOKESTATIC, round),
-                        L2I
-                    );
-                }
-
-                @Override
-                protected MethodRef getCTMUtilsMethod() {
-                    return getTileNoFaceOrBlock;
-                }
-
-                @Override
-                protected int getIconRegister() {
-                    return 1;
-                }
-
-                @Override
-                protected byte[] getBlockCode() {
-                    return new byte[0];
-                }
-            }.targetMethod(drawCrossedSquares));
         }
 
         private void setupGlassPanes() {
@@ -1097,38 +810,6 @@ public class ConnectedTextures extends Mod {
                     }
                 });
             }
-        }
-
-        private void setupHeldBlocks() {
-            addMemberMapper(new MethodMapper(renderBlockAsItem));
-            addMemberMapper(new MethodMapper(getIconBySideAndMetadata));
-            addMemberMapper(new MethodMapper(getIconBySide));
-
-            setupHeldBlocks(getIconBySide, getTileByDirection, "held blocks");
-            setupHeldBlocks(getIconBySideAndMetadata, getTileByDirectionAndMetadata, "held blocks with metadata");
-        }
-
-        private void setupHeldBlocks(final MethodRef from, final MethodRef to, final String name) {
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override texture (" + name + ")";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        reference(INVOKEVIRTUAL, from)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, to)
-                    );
-                }
-            }.targetMethod(renderBlockAsItem, renderBlockAsItemVanilla));
         }
     }
 }
