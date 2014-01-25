@@ -68,7 +68,11 @@ public class BlockAPIMod extends Mod {
 
             final MethodRef shouldSideBeRendered = new MethodRef(getDeobfClass(), "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
 
-            addMemberMapper(new MethodMapper(getBlockIcon));
+            if (RenderBlocksMod.haveSubclasses()) {
+                addMemberMapper(new MethodMapper(null, getBlockIcon));
+            } else {
+                addMemberMapper(new MethodMapper(getBlockIcon));
+            }
             addMemberMapper(new MethodMapper(shouldSideBeRendered));
 
             if (malVersion >= 2) {
