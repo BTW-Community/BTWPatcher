@@ -39,6 +39,8 @@ public class CustomColors extends Mod {
     private static final MethodRef setupForFog = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "setupForFog", "(LEntity;)V");
     private static final MethodRef setupSpawnerEgg = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "setupSpawnerEgg", "(Ljava/lang/String;III)V");
     private static final MethodRef drawFancyClouds = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "drawFancyClouds", "(Z)Z");
+    private static final MethodRef setupBlockSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIII)Z");
+    private static final MethodRef setupBlockSmoothing2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)Z");
 
     private static final FieldRef setColor = new FieldRef(MCPatcherUtils.COLORIZER_CLASS, "setColor", "[F");
     private static final FieldRef blockColor = new FieldRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "blockColor", "I");
@@ -57,6 +59,12 @@ public class CustomColors extends Mod {
     private static final MethodRef getRenderColor = new MethodRef("Block", "getRenderColor", "(I)I");
     private final MethodRef colorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;" + PositionMod.getDescriptor() + ")I");
     private static final FieldRef enableAO = new FieldRef("RenderBlocks", "enableAO", "Z");
+    private static final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
+    private static final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
+    private static final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
+
+    private static final String[] vertexNames = new String[]{"TopLeft", "BottomLeft", "BottomRight", "TopRight"};
+    private static final String[] colorNames = new String[]{"Red", "Green", "Blue"};
 
     public CustomColors() {
         name = MCPatcherUtils.CUSTOM_COLORS;
@@ -2597,18 +2605,10 @@ public class CustomColors extends Mod {
     }
 
     private class RenderBlocksMod extends com.prupe.mcpatcher.basemod.RenderBlocksMod {
-        private final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
         private final MethodRef renderBlockFluids = new MethodRef(getDeobfClass(), "renderBlockFluids", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
-        private final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
-        private final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
-        private final MethodRef setupBlockSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIII)Z");
-        private final MethodRef setupBlockSmoothing2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)Z");
-        private final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef renderBlockFallingSand = new MethodRef(getDeobfClass(), "renderBlockFallingSand", "(LBlock;LWorld;" + PositionMod.getDescriptor() + "I)V");
         private final MethodRef renderBlockCauldron = new MethodRef(getDeobfClass(), "renderBlockCauldron", "(LBlockCauldron;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef renderBlockRedstoneWire = new MethodRef(getDeobfClass(), "renderBlockRedstoneWire", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
-        private final String[] vertexNames = new String[]{"TopLeft", "BottomLeft", "BottomRight", "TopRight"};
-        private final String[] colorNames = new String[]{"Red", "Green", "Blue"};
 
         RenderBlocksMod() {
             super(CustomColors.this);
@@ -2616,422 +2616,15 @@ public class CustomColors extends Mod {
             if (haveSubclasses()) {
                 // TODO
             } else {
-                setupFluids();
+                mapRenderType(4, renderBlockFluids);
+                setupFluids(this, renderBlockFluids);
+                mapRenderType(5, renderBlockRedstoneWire);
                 setupRedstoneWire(this, "override redstone wire color", renderBlockRedstoneWire);
-                setupCauldron();
+                mapRenderType(24, renderBlockCauldron);
+                setupCauldron(this, renderBlockCauldron);
             }
             setupBiomeSmoothing();
             setupFallingSand();
-        }
-
-        private void setupFluids() {
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // renderType == 4 ? this.renderBlockFluids(block, i, j, k) : ...
-                        registerLoadStore(ILOAD, 2 + PositionMod.getDescriptorLength()),
-                        push(4),
-                        IF_ICMPNE, any(2),
-                        ALOAD_0,
-                        ALOAD_1,
-                        PositionMod.passArguments(2),
-                        captureReference(INVOKEVIRTUAL),
-                        subset(new int[]{GOTO, IRETURN}, true)
-                    );
-                }
-            }
-                .setMethod(renderBlockByRenderType)
-                .addXref(1, renderBlockFluids)
-            );
-
-            addPatch(new TessellatorPatch() {
-                private int[] waterRegisters;
-
-                {
-                    addPreMatchSignature(new BytecodeSignature() {
-                        @Override
-                        public String getMatchExpression() {
-                            return buildExpression(
-                                // f = (float)(l >> 16 & 0xff) / 255F;
-                                capture(anyILOAD),
-                                push(16),
-                                ISHR,
-                                push(255),
-                                IAND,
-                                I2F,
-                                push(255.0f),
-                                FDIV,
-                                capture(anyFSTORE),
-
-                                // f1 = (float)(l >> 8 & 0xff) / 255F;
-                                backReference(1),
-                                push(8),
-                                ISHR,
-                                push(255),
-                                IAND,
-                                I2F,
-                                push(255.0f),
-                                FDIV,
-                                capture(anyFSTORE),
-
-                                // f2 = (float)(l & 0xff) / 255F;
-                                backReference(1),
-                                push(255),
-                                IAND,
-                                I2F,
-                                push(255.0f),
-                                FDIV,
-                                capture(anyFSTORE)
-                            );
-                        }
-
-                        @Override
-                        public boolean afterMatch() {
-                            waterRegisters = new int[]{
-                                extractRegisterNum(getCaptureGroup(2)),
-                                extractRegisterNum(getCaptureGroup(3)),
-                                extractRegisterNum(getCaptureGroup(4)),
-                            };
-                            Logger.log(Logger.LOG_CONST, "water color registers: %d %d %d",
-                                waterRegisters[0], waterRegisters[1], waterRegisters[2]
-                            );
-                            return true;
-                        }
-                    });
-                }
-
-                @Override
-                public String getDescription() {
-                    return "colorize bottom of water block";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // tessellator.setColorOpaque_F(k * l, k * l, k * l);
-                        // -or-
-                        // tessellator.setColorOpaque_F(k, k, k);
-                        registerLoadStore(ALOAD, tessellatorRegister),
-                        capture(build(
-                            anyFLOAD,
-                            optional(build(anyFLOAD, FMUL))
-                        )),
-                        backReference(1),
-                        backReference(1),
-                        reference(INVOKEVIRTUAL, setColorOpaque_F)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // tessellator.setColorOpaque_F(k * l * r, k * l * g, k * l * b);
-                        registerLoadStore(ALOAD, tessellatorRegister),
-                        getCaptureGroup(1),
-                        FLOAD, waterRegisters[0],
-                        FMUL,
-                        getCaptureGroup(1),
-                        FLOAD, waterRegisters[1],
-                        FMUL,
-                        getCaptureGroup(1),
-                        FLOAD, waterRegisters[2],
-                        FMUL,
-                        reference(INVOKEVIRTUAL, setColorOpaque_F)
-                    );
-                }
-            }.targetMethod(renderBlockFluids));
-
-            addPatch(new BytecodePatch() {
-                private int patchCount;
-                private int faceRegister;
-
-                {
-                    addPreMatchSignature(new BytecodeSignature() {
-                        @Override
-                        public String getMatchExpression() {
-                            return buildExpression(
-                                // || renderFaces[face]
-                                anyALOAD,
-                                capture(anyILOAD),
-                                BALOAD,
-                                IFEQ, any(2)
-                            );
-                        }
-
-                        @Override
-                        public boolean afterMatch() {
-                            faceRegister = extractRegisterNum(getCaptureGroup(1));
-                            return true;
-                        }
-                    });
-                }
-
-                @Override
-                public String getDescription() {
-                    return "smooth biome colors (water part 1)";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // tessellator.setColorOpaque_F(k * l * r, k * l * g, k * l * b);
-                        // -or-
-                        // tessellator.setColorOpaque_F(k * r, k * g, k * b);
-                        anyALOAD,
-                        capture(build(
-                            anyFLOAD,
-                            optional(build(anyFLOAD, FMUL))
-                        )),
-                        anyFLOAD,
-                        FMUL,
-
-                        backReference(1),
-                        anyFLOAD,
-                        FMUL,
-
-                        backReference(1),
-                        anyFLOAD,
-                        FMUL,
-
-                        reference(INVOKEVIRTUAL, setColorOpaque_F)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    byte[] faceCode;
-                    switch (patchCount++) {
-                        case 0:
-                            faceCode = new byte[]{ICONST_1}; // top face
-                            break;
-
-                        case 1:
-                            faceCode = new byte[]{ICONST_0}; // bottom face
-                            break;
-
-                        case 2:
-                            faceCode = buildCode(
-                                registerLoadStore(ILOAD, faceRegister),
-                                push(2),
-                                IADD
-                            ); // other faces
-                            break;
-
-                        default:
-                            return null;
-                    }
-                    return buildCode(
-                        // ColorizeBlock.isSmooth = ColorizeBlock.setupBlockSmoothing(this, block, this,blockAccess,
-                        //                                                            i, j, k, face + 6);
-                        ALOAD_0,
-                        ALOAD_1,
-                        ALOAD_0,
-                        reference(GETFIELD, blockAccess),
-
-                        PositionMod.unpackArguments(this, 2),
-                        faceCode,
-                        push(6),
-                        IADD,
-
-                        reference(INVOKESTATIC, setupBlockSmoothing1),
-                        reference(PUTSTATIC, isSmooth),
-
-                        // if (!ColorizeBlock.isSmooth) {
-                        reference(GETSTATIC, isSmooth),
-                        IFNE, branch("A"),
-
-                        // ...
-                        getMatch(),
-
-                        // }
-                        label("A")
-                    );
-                }
-            }.targetMethod(renderBlockFluids));
-
-            addPatch(new BytecodePatch() {
-                private int tessellatorRegister;
-                private int patchCount;
-                private final int[] vertexOrder = new int[]{0, 1, 2, 3, 3, 2, 1, 0};
-                private final int firstPatchOffset;
-
-                {
-                    firstPatchOffset = getMinecraftVersion().compareTo("13w48a") >= 0 ? 1 : 0;
-
-                    addPreMatchSignature(new BytecodeSignature() {
-                        @Override
-                        public String getMatchExpression() {
-                            return buildExpression(
-                                reference(GETSTATIC, tessellator),
-                                capture(anyASTORE)
-                            );
-                        }
-
-                        @Override
-                        public boolean afterMatch() {
-                            tessellatorRegister = extractRegisterNum(getCaptureGroup(1));
-                            return true;
-                        }
-                    });
-                }
-
-                @Override
-                public String getDescription() {
-                    return "smooth biome colors (water part 2)";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    String expr = build(
-                        registerLoadStore(ALOAD, tessellatorRegister),
-                        nonGreedy(any(0, 20)),
-                        reference(INVOKEVIRTUAL, addVertexWithUV)
-                    );
-                    return buildExpression(
-                        // tessellator.addVertexWithUV(...); x4 or x8
-                        capture(expr),
-                        capture(expr),
-                        capture(expr),
-                        capture(expr),
-                        optional(build(
-                            capture(expr),
-                            capture(expr),
-                            capture(expr),
-                            capture(expr)
-                        ))
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    byte[] code = new byte[0];
-                    for (int i = 0; i < 8; i++) {
-                        byte[] orig = getCaptureGroup(i + 1);
-                        if (orig == null) {
-                            break;
-                        }
-                        // *sigh*
-                        // 13w47e: draws top face in order 0 1 2 3 3 2 1 0
-                        // 13w48a: draws top face in order 0 1 2 3 0 3 2 1
-                        // side faces are drawn 0 1 2 3 3 2 1 0 regardless
-                        int vertex = vertexOrder[i];
-                        if (i >= 4 && patchCount == 0) {
-                            vertex = (vertex + firstPatchOffset) % 4;
-                        }
-                        code = buildCode(
-                            code,
-
-                            // tessellator.setColorOpaque_F(this.colorRedxxx, this.colorGreenxxx, this.colorBluexxx);
-                            registerLoadStore(ALOAD, tessellatorRegister),
-                            getVertexColor(vertex, 0),
-                            getVertexColor(vertex, 1),
-                            getVertexColor(vertex, 2),
-                            reference(INVOKEVIRTUAL, setColorOpaque_F),
-
-                            // tessellator.addVertexWithUV(...);
-                            orig
-                        );
-                    }
-                    patchCount++;
-                    return buildCode(
-                        // if (ColorizeBlock.isSmooth) {
-                        reference(GETSTATIC, isSmooth),
-                        IFEQ, branch("A"),
-
-                        // tessellator.setColorOpaque_F(this.colorRedxxx, this.colorGreenxxx, this.colorBluexxx);
-                        // tessellator.addVertexWithUV(...);
-                        // x4 or x8
-                        code,
-
-                        GOTO, branch("B"),
-
-                        // } else {
-                        label("A"),
-
-                        // ...
-                        getMatch(),
-
-                        // }
-                        label("B")
-                    );
-                }
-
-                private byte[] getVertexColor(int vertex, int channel) {
-                    return buildCode(
-                        ALOAD_0,
-                        reference(GETFIELD, new FieldRef(getDeobfClass(), "color" + colorNames[channel] + vertexNames[vertex], "F"))
-                    );
-                }
-            }
-                .targetMethod(renderBlockFluids)
-            );
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "smooth biome colors (water part 3)";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // this.renderFaceYNeg(block, (double) i, (double) j + var32, (double) k, ...);
-                        ALOAD_0,
-                        ALOAD_1,
-                        PositionMod.havePositionClass() ?
-                            build(
-                                anyDLOAD,
-                                anyDLOAD,
-                                anyDLOAD,
-                                DADD,
-                                anyDLOAD
-                            ) :
-                            build(
-                                ILOAD_2,
-                                I2D,
-                                ILOAD_3,
-                                I2D,
-                                anyDLOAD,
-                                DADD,
-                                ILOAD, 4,
-                                I2D
-                            ),
-                        nonGreedy(any(0, 20)),
-                        anyReference(INVOKEVIRTUAL),
-                        anyReference(INVOKEVIRTUAL),
-
-                        // flag = true;
-                        push(1),
-                        anyISTORE
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // if (ColorizeBlock.isSmooth) {
-                        reference(GETSTATIC, isSmooth),
-                        IFEQ, branch("A"),
-
-                        // this.enableAO = true;
-                        ALOAD_0,
-                        push(1),
-                        reference(PUTFIELD, enableAO),
-
-                        // }
-                        label("A"),
-
-                        // ...
-                        getMatch(),
-
-                        // this.enableAO = false;
-                        ALOAD_0,
-                        push(0),
-                        reference(PUTFIELD, enableAO)
-                    );
-                }
-            }.targetMethod(renderBlockFluids));
         }
 
         private void setupFallingSand() {
@@ -3053,7 +2646,7 @@ public class CustomColors extends Mod {
                 }
             }.setMethod(renderBlockFallingSand));
 
-            addPatch(new TessellatorPatch() {
+            addPatch(new TessellatorPatch(this) {
                 private int patchCount;
 
                 @Override
@@ -3091,50 +2684,6 @@ public class CustomColors extends Mod {
                     );
                 }
             }.targetMethod(renderBlockFallingSand));
-        }
-
-        private void setupCauldron() {
-            addMemberMapper(new MethodMapper(renderBlockCauldron));
-
-            addPatch(new TessellatorPatch() {
-                @Override
-                public String getDescription() {
-                    return "colorize cauldron water";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push("water_still"),
-                        anyReference(INVOKESTATIC),
-                        anyASTORE
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // Colorizer.computeWaterColor();
-                        reference(INVOKESTATIC, computeWaterColor2),
-
-                        // tessellator.setColorOpaque(Colorizer.setColor[0], Colorizer.setColor[1], Colorizer.setColor[2]);
-                        ALOAD, tessellatorRegister,
-                        reference(GETSTATIC, setColor),
-                        push(0),
-                        FALOAD,
-                        reference(GETSTATIC, setColor),
-                        push(1),
-                        FALOAD,
-                        reference(GETSTATIC, setColor),
-                        push(2),
-                        FALOAD,
-                        reference(INVOKEVIRTUAL, setColorOpaque_F)
-                    );
-                }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderBlockCauldron)
-            );
         }
 
         private void setupBiomeSmoothing() {
@@ -3333,12 +2882,226 @@ public class CustomColors extends Mod {
                 }
             });
         }
+    }
 
-        abstract private class TessellatorPatch extends BytecodePatch {
-            protected int tessellatorRegister;
+    private void setupFluids(final com.prupe.mcpatcher.ClassMod classMod, MethodRef renderBlockFluids) {
+        final FieldRef blockAccess = new FieldRef(classMod.getDeobfClass(), "blockAccess", "LIBlockAccess;");
+
+        classMod.addPatch(new TessellatorPatch(classMod) {
+            private int[] waterRegisters;
 
             {
-                addPreMatchSignature(new BytecodeSignature() {
+                addPreMatchSignature(new BytecodeSignature(classMod) {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // f = (float)(l >> 16 & 0xff) / 255F;
+                            capture(anyILOAD),
+                            push(16),
+                            ISHR,
+                            push(255),
+                            IAND,
+                            I2F,
+                            push(255.0f),
+                            FDIV,
+                            capture(anyFSTORE),
+
+                            // f1 = (float)(l >> 8 & 0xff) / 255F;
+                            backReference(1),
+                            push(8),
+                            ISHR,
+                            push(255),
+                            IAND,
+                            I2F,
+                            push(255.0f),
+                            FDIV,
+                            capture(anyFSTORE),
+
+                            // f2 = (float)(l & 0xff) / 255F;
+                            backReference(1),
+                            push(255),
+                            IAND,
+                            I2F,
+                            push(255.0f),
+                            FDIV,
+                            capture(anyFSTORE)
+                        );
+                    }
+
+                    @Override
+                    public boolean afterMatch() {
+                        waterRegisters = new int[]{
+                            extractRegisterNum(getCaptureGroup(2)),
+                            extractRegisterNum(getCaptureGroup(3)),
+                            extractRegisterNum(getCaptureGroup(4)),
+                        };
+                        Logger.log(Logger.LOG_CONST, "water color registers: %d %d %d",
+                            waterRegisters[0], waterRegisters[1], waterRegisters[2]
+                        );
+                        return true;
+                    }
+                });
+            }
+
+            @Override
+            public String getDescription() {
+                return "colorize bottom of water block";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // tessellator.setColorOpaque_F(k * l, k * l, k * l);
+                    // -or-
+                    // tessellator.setColorOpaque_F(k, k, k);
+                    registerLoadStore(ALOAD, tessellatorRegister),
+                    capture(build(
+                        anyFLOAD,
+                        optional(build(anyFLOAD, FMUL))
+                    )),
+                    backReference(1),
+                    backReference(1),
+                    reference(INVOKEVIRTUAL, setColorOpaque_F)
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                return buildCode(
+                    // tessellator.setColorOpaque_F(k * l * r, k * l * g, k * l * b);
+                    registerLoadStore(ALOAD, tessellatorRegister),
+                    getCaptureGroup(1),
+                    FLOAD, waterRegisters[0],
+                    FMUL,
+                    getCaptureGroup(1),
+                    FLOAD, waterRegisters[1],
+                    FMUL,
+                    getCaptureGroup(1),
+                    FLOAD, waterRegisters[2],
+                    FMUL,
+                    reference(INVOKEVIRTUAL, setColorOpaque_F)
+                );
+            }
+        }.targetMethod(renderBlockFluids));
+
+        classMod.addPatch(new BytecodePatch(classMod) {
+            private int patchCount;
+            private int faceRegister;
+
+            {
+                addPreMatchSignature(new BytecodeSignature(classMod) {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // || renderFaces[face]
+                            anyALOAD,
+                            capture(anyILOAD),
+                            BALOAD,
+                            IFEQ, any(2)
+                        );
+                    }
+
+                    @Override
+                    public boolean afterMatch() {
+                        faceRegister = extractRegisterNum(getCaptureGroup(1));
+                        return true;
+                    }
+                });
+            }
+
+            @Override
+            public String getDescription() {
+                return "smooth biome colors (water part 1)";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // tessellator.setColorOpaque_F(k * l * r, k * l * g, k * l * b);
+                    // -or-
+                    // tessellator.setColorOpaque_F(k * r, k * g, k * b);
+                    anyALOAD,
+                    capture(build(
+                        anyFLOAD,
+                        optional(build(anyFLOAD, FMUL))
+                    )),
+                    anyFLOAD,
+                    FMUL,
+
+                    backReference(1),
+                    anyFLOAD,
+                    FMUL,
+
+                    backReference(1),
+                    anyFLOAD,
+                    FMUL,
+
+                    reference(INVOKEVIRTUAL, setColorOpaque_F)
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                byte[] faceCode;
+                switch (patchCount++) {
+                    case 0:
+                        faceCode = new byte[]{ICONST_1}; // top face
+                        break;
+
+                    case 1:
+                        faceCode = new byte[]{ICONST_0}; // bottom face
+                        break;
+
+                    case 2:
+                        faceCode = buildCode(
+                            registerLoadStore(ILOAD, faceRegister),
+                            push(2),
+                            IADD
+                        ); // other faces
+                        break;
+
+                    default:
+                        return null;
+                }
+                return buildCode(
+                    // ColorizeBlock.isSmooth = ColorizeBlock.setupBlockSmoothing(this, block, this,blockAccess,
+                    //                                                            i, j, k, face + 6);
+                    ALOAD_0,
+                    ALOAD_1,
+                    ALOAD_0,
+                    reference(GETFIELD, blockAccess),
+
+                    PositionMod.unpackArguments(this, 2),
+                    faceCode,
+                    push(6),
+                    IADD,
+
+                    reference(INVOKESTATIC, setupBlockSmoothing1),
+                    reference(PUTSTATIC, isSmooth),
+
+                    // if (!ColorizeBlock.isSmooth) {
+                    reference(GETSTATIC, isSmooth),
+                    IFNE, branch("A"),
+
+                    // ...
+                    getMatch(),
+
+                    // }
+                    label("A")
+                );
+            }
+        }.targetMethod(renderBlockFluids));
+
+        classMod.addPatch(new BytecodePatch(classMod) {
+            private int tessellatorRegister;
+            private int patchCount;
+            private final int[] vertexOrder = new int[]{0, 1, 2, 3, 3, 2, 1, 0};
+            private final int firstPatchOffset;
+
+            {
+                firstPatchOffset = getMinecraftVersion().compareTo("13w48a") >= 0 ? 1 : 0;
+
+                addPreMatchSignature(new BytecodeSignature(classMod) {
                     @Override
                     public String getMatchExpression() {
                         return buildExpression(
@@ -3354,6 +3117,228 @@ public class CustomColors extends Mod {
                     }
                 });
             }
+
+            @Override
+            public String getDescription() {
+                return "smooth biome colors (water part 2)";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                String expr = build(
+                    registerLoadStore(ALOAD, tessellatorRegister),
+                    nonGreedy(any(0, 20)),
+                    reference(INVOKEVIRTUAL, addVertexWithUV)
+                );
+                return buildExpression(
+                    // tessellator.addVertexWithUV(...); x4 or x8
+                    capture(expr),
+                    capture(expr),
+                    capture(expr),
+                    capture(expr),
+                    optional(build(
+                        capture(expr),
+                        capture(expr),
+                        capture(expr),
+                        capture(expr)
+                    ))
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                byte[] code = new byte[0];
+                for (int i = 0; i < 8; i++) {
+                    byte[] orig = getCaptureGroup(i + 1);
+                    if (orig == null) {
+                        break;
+                    }
+                    // *sigh*
+                    // 13w47e: draws top face in order 0 1 2 3 3 2 1 0
+                    // 13w48a: draws top face in order 0 1 2 3 0 3 2 1
+                    // side faces are drawn 0 1 2 3 3 2 1 0 regardless
+                    int vertex = vertexOrder[i];
+                    if (i >= 4 && patchCount == 0) {
+                        vertex = (vertex + firstPatchOffset) % 4;
+                    }
+                    code = buildCode(
+                        code,
+
+                        // tessellator.setColorOpaque_F(this.colorRedxxx, this.colorGreenxxx, this.colorBluexxx);
+                        registerLoadStore(ALOAD, tessellatorRegister),
+                        getVertexColor(vertex, 0),
+                        getVertexColor(vertex, 1),
+                        getVertexColor(vertex, 2),
+                        reference(INVOKEVIRTUAL, setColorOpaque_F),
+
+                        // tessellator.addVertexWithUV(...);
+                        orig
+                    );
+                }
+                patchCount++;
+                return buildCode(
+                    // if (ColorizeBlock.isSmooth) {
+                    reference(GETSTATIC, isSmooth),
+                    IFEQ, branch("A"),
+
+                    // tessellator.setColorOpaque_F(this.colorRedxxx, this.colorGreenxxx, this.colorBluexxx);
+                    // tessellator.addVertexWithUV(...);
+                    // x4 or x8
+                    code,
+
+                    GOTO, branch("B"),
+
+                    // } else {
+                    label("A"),
+
+                    // ...
+                    getMatch(),
+
+                    // }
+                    label("B")
+                );
+            }
+
+            private byte[] getVertexColor(int vertex, int channel) {
+                return buildCode(
+                    ALOAD_0,
+                    reference(GETFIELD, new FieldRef(classMod.getDeobfClass(), "color" + colorNames[channel] + vertexNames[vertex], "F"))
+                );
+            }
+        }
+            .targetMethod(renderBlockFluids)
+        );
+
+        classMod.addPatch(new BytecodePatch(classMod) {
+            @Override
+            public String getDescription() {
+                return "smooth biome colors (water part 3)";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // this.renderFaceYNeg(block, (double) i, (double) j + var32, (double) k, ...);
+                    ALOAD_0,
+                    ALOAD_1,
+                    PositionMod.havePositionClass() ?
+                        build(
+                            anyDLOAD,
+                            anyDLOAD,
+                            anyDLOAD,
+                            DADD,
+                            anyDLOAD
+                        ) :
+                        build(
+                            ILOAD_2,
+                            I2D,
+                            ILOAD_3,
+                            I2D,
+                            anyDLOAD,
+                            DADD,
+                            ILOAD, 4,
+                            I2D
+                        ),
+                    nonGreedy(any(0, 20)),
+                    anyReference(INVOKEVIRTUAL),
+                    anyReference(INVOKEVIRTUAL),
+
+                    // flag = true;
+                    push(1),
+                    anyISTORE
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                return buildCode(
+                    // if (ColorizeBlock.isSmooth) {
+                    reference(GETSTATIC, isSmooth),
+                    IFEQ, branch("A"),
+
+                    // this.enableAO = true;
+                    ALOAD_0,
+                    push(1),
+                    reference(PUTFIELD, enableAO),
+
+                    // }
+                    label("A"),
+
+                    // ...
+                    getMatch(),
+
+                    // this.enableAO = false;
+                    ALOAD_0,
+                    push(0),
+                    reference(PUTFIELD, enableAO)
+                );
+            }
+        }.targetMethod(renderBlockFluids));
+    }
+
+    private void setupCauldron(com.prupe.mcpatcher.ClassMod classMod, MethodRef renderBlockCauldron) {
+        classMod.addPatch(new TessellatorPatch(classMod) {
+            @Override
+            public String getDescription() {
+                return "colorize cauldron water";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    push("water_still"),
+                    anyReference(INVOKESTATIC),
+                    anyASTORE
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                return buildCode(
+                    // Colorizer.computeWaterColor();
+                    reference(INVOKESTATIC, computeWaterColor2),
+
+                    // tessellator.setColorOpaque(Colorizer.setColor[0], Colorizer.setColor[1], Colorizer.setColor[2]);
+                    ALOAD, tessellatorRegister,
+                    reference(GETSTATIC, setColor),
+                    push(0),
+                    FALOAD,
+                    reference(GETSTATIC, setColor),
+                    push(1),
+                    FALOAD,
+                    reference(GETSTATIC, setColor),
+                    push(2),
+                    FALOAD,
+                    reference(INVOKEVIRTUAL, setColorOpaque_F)
+                );
+            }
+        }
+            .setInsertAfter(true)
+            .targetMethod(renderBlockCauldron)
+        );
+    }
+
+    abstract private class TessellatorPatch extends BytecodePatch {
+        protected int tessellatorRegister;
+
+        TessellatorPatch(com.prupe.mcpatcher.ClassMod classMod) {
+            super(classMod);
+
+            addPreMatchSignature(new BytecodeSignature(classMod) {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(GETSTATIC, tessellator),
+                        capture(anyASTORE)
+                    );
+                }
+
+                @Override
+                public boolean afterMatch() {
+                    tessellatorRegister = extractRegisterNum(getCaptureGroup(1));
+                    return true;
+                }
+            });
         }
     }
 

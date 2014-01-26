@@ -18,7 +18,9 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
     protected final MethodRef renderStandardBlockWithAmbientOcclusion = new MethodRef(getDeobfClass(), "renderStandardBlockWithAmbientOcclusion", "(LBlock;" + PositionMod.getDescriptor() + "FFF)Z");
     protected final FieldRef renderAllFaces = new FieldRef(getDeobfClass(), "renderAllFaces", "Z");
     protected final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
+    protected final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
     protected final MethodRef shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
+    protected final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
     protected final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
     protected final MethodRef renderBlock = new MethodRef(getDeobfClass(), "renderBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
     protected final MethodRef isAmbientOcclusionEnabled = new MethodRef("Minecraft", "isAmbientOcclusionEnabled", "()Z");
@@ -172,6 +174,43 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
         }
             .setMethod(hasOverrideBlockTexture)
             .addXref(1, overrideBlockTexture)
+        );
+        return this;
+    }
+
+    public RenderBlocksMod mapRenderType(final int type, MethodRef method) {
+        if (haveSubclasses()) {
+            throw new IllegalStateException("mapRenderType cannot be used in " + MIN_VERSION_SUBCLASS.toString() + "+");
+        }
+
+        addClassSignature(new BytecodeSignature() {
+            @Override
+            public String getMatchExpression() {
+                int register = 2 + PositionMod.getDescriptorLength();
+                return buildExpression(
+                    // renderType = block.getRenderType();
+                    ALOAD_1,
+                    captureReference(INVOKEVIRTUAL),
+                    registerLoadStore(ISTORE, register),
+
+                    // ...
+                    any(0, 1000),
+
+                    // renderType == type ? this.method(block, i, j, k) : ...
+                    registerLoadStore(ILOAD, register),
+                    push(type),
+                    IF_ICMPNE, any(2),
+                    ALOAD_0,
+                    ALOAD_1,
+                    PositionMod.passArguments(2),
+                    captureReference(INVOKEVIRTUAL),
+                    subset(new int[]{GOTO, IRETURN}, true)
+                );
+            }
+        }
+            .setMethod(renderBlockByRenderType)
+            .addXref(1, getRenderType)
+            .addXref(2, method)
         );
         return this;
     }
