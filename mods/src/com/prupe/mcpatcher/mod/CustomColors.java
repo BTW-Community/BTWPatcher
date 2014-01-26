@@ -122,7 +122,14 @@ public class CustomColors extends Mod {
         addClassMod(new BlockRedstoneWireMod());
         addClassMod(new RenderBlocksMod());
         if (RenderBlocksMod.haveSubclasses()) {
-            addClassMod(new RenderBlockManagerMod(this));
+            addClassMod(new RenderBlockManagerMod(this)
+                .mapRenderType(4, "RenderBlockFluid")
+                .mapRenderType(5, "RenderBlockRedstoneWire")
+                .mapRenderType(24, "RenderBlockCauldron")
+            );
+            addClassMod(new RenderBlockFluidMod());
+            addClassMod(new RenderBlockRedstoneWireMod());
+            addClassMod(new RenderBlockCauldronMod());
         }
         addClassMod(new EntityReddustFXMod());
 
@@ -2614,7 +2621,7 @@ public class CustomColors extends Mod {
             super(CustomColors.this);
 
             if (haveSubclasses()) {
-                // TODO
+                addPatch(new MakeMemberPublicPatch(enableAO));
             } else {
                 mapRenderType(4, renderBlockFluids);
                 setupFluids(this, renderBlockFluids);
@@ -2881,6 +2888,66 @@ public class CustomColors extends Mod {
                     );
                 }
             });
+        }
+    }
+
+    private class RenderBlockFluidMod extends ClassMod {
+        RenderBlockFluidMod() {
+            final MethodRef renderBlockFluid = new MethodRef(getDeobfClass(), "renderBlockFluid", "(LBlockFluid;" + PositionMod.getDescriptor() + ")Z");
+
+            addPrerequisiteClass("RenderBlockManager");
+            setParentClass("RenderBlocks");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(-999.0f)
+                    );
+                }
+            }.setMethod(renderBlockFluid));
+
+            setupFluids(this, renderBlockFluid);
+        }
+    }
+
+    private class RenderBlockRedstoneWireMod extends ClassMod {
+        RenderBlockRedstoneWireMod() {
+            final MethodRef renderBlockRedstoneWire = new MethodRef(getDeobfClass(), "renderBlockRedstoneWire", "(LBlockRedstoneWire;" + PositionMod.getDescriptor() + ")Z");
+
+            addPrerequisiteClass("RenderBlockManager");
+            setParentClass("RenderBlocks");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push("cross")
+                    );
+                }
+            }.setMethod(renderBlockRedstoneWire));
+
+            setupRedstoneWire(this, "override redstone wire color", renderBlockRedstoneWire);
+        }
+    }
+
+    private class RenderBlockCauldronMod extends ClassMod {
+        RenderBlockCauldronMod() {
+            final MethodRef renderBlockCauldron = new MethodRef(getDeobfClass(), "renderBlockCauldron", "(LBlockCauldron;" + PositionMod.getDescriptor() + ")Z");
+
+            addPrerequisiteClass("RenderBlockManager");
+            setParentClass("RenderBlocks");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push("inner")
+                    );
+                }
+            }.setMethod(renderBlockCauldron));
+
+            setupCauldron(this, renderBlockCauldron);
         }
     }
 
