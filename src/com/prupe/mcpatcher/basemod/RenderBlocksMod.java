@@ -196,14 +196,18 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
                     // ...
                     any(0, 1000),
 
-                    // renderType == type ? this.method(block, i, j, k) : ...
+                    // renderType == type ? this.method((optional cast) block, i, j, k) : ...
                     registerLoadStore(ILOAD, register),
                     push(type),
                     IF_ICMPNE, any(2),
                     ALOAD_0,
                     ALOAD_1,
+                    optional(anyReference(CHECKCAST)),
                     PositionMod.passArguments(2),
-                    captureReference(INVOKEVIRTUAL),
+                    capture(build(
+                        subset(new int[]{INVOKEVIRTUAL, INVOKESPECIAL}, true),
+                        any(2)
+                    )),
                     subset(new int[]{GOTO, IRETURN}, true)
                 );
             }
