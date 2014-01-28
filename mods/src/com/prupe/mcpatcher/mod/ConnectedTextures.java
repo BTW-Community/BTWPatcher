@@ -8,7 +8,9 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,7 +23,6 @@ public class ConnectedTextures extends Mod {
     private final boolean haveThickPanes;
 
     private static final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
-    private static final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
 
     public ConnectedTextures() {
         name = MCPatcherUtils.CONNECTED_TEXTURES;
@@ -287,6 +288,10 @@ public class ConnectedTextures extends Mod {
             private final MethodRef to;
             private final String desc;
 
+            {
+                skipMethod(renderBlockGenericPane, renderBlockGlassPane17);
+            }
+
             OverrideIconPatch(MethodRef from, MethodRef to, String desc) {
                 this.to = to;
                 this.desc = desc;
@@ -398,6 +403,7 @@ public class ConnectedTextures extends Mod {
             private final MethodRef from;
             private final String description;
             private Pattern matchPrefix;
+            private Set<String> excludedClasses;
 
             GetBlockIconPatch(MethodRef from, String description) {
                 this.from = from;
@@ -414,6 +420,14 @@ public class ConnectedTextures extends Mod {
 
             @Override
             public boolean filterMethod() {
+                if (excludedClasses == null) {
+                    excludedClasses = new HashSet<String>();
+                    excludedClasses.add(getClassMap().map("RenderBlockIronBars"));
+                    excludedClasses.add(getClassMap().map("RenderBlockGlassPane"));
+                }
+                if (excludedClasses.contains(getClassFile().getName())) {
+                    return false;
+                }
                 if (matchPrefix == null) {
                     matchPrefix = Pattern.compile("^\\(L([a-z]+);" + getClassMap().mapTypeString(Pattern.quote(PositionMod.getDescriptor())) + ".*");
                 }
@@ -735,7 +749,7 @@ public class ConnectedTextures extends Mod {
                     // if j-expression contains +1 or +1.0, it is always the top edge
                     top = true;
                 } else if (group[length - 1] == DSUB) {
-                    // if j-expression is a subtraction, it is always the bottem edge
+                    // if j-expression is a subtraction, it is always the bottom edge
                     top = false;
                 } else if (length >= 4 && group[length - 4] == LDC2_W) {
                     // otherwise determine based on the value of the double constant
@@ -772,6 +786,7 @@ public class ConnectedTextures extends Mod {
 
         RenderPanePatch(com.prupe.mcpatcher.ClassMod classMod, MethodRef... methods) {
             super(classMod);
+
             if (methods.length > 0) {
                 targetMethod(methods);
             }
