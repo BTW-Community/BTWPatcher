@@ -361,8 +361,6 @@ public class BlockAPIMod extends Mod {
         }
 
         private void setupColorMultipliers18() {
-            final MethodRef getSecondaryIcon = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getSecondaryIcon", "(LIcon;I)LIcon;");
-
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
