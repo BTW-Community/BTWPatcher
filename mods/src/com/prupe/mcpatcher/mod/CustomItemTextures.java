@@ -23,6 +23,7 @@ public class CustomItemTextures extends Mod {
     private static final MethodRef glDisable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDisable", "(I)V");
     private static final MethodRef glColorMask = new MethodRef(MCPatcherUtils.GL11_CLASS, "glColorMask", "(ZZZZ)V");
     private static final MethodRef glDepthMask = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthMask", "(Z)V");
+    private static final MethodRef glColor4f = new MethodRef(MCPatcherUtils.GL11_CLASS, "glColor4f", "(FFFF)V");
 
     private static final MethodRef getEntityItem = new MethodRef("EntityItem", "getEntityItem", "()LItemStack;");
     private static final FieldRef itemsList = new FieldRef("Item", "itemsList", "[LItem;");
@@ -30,8 +31,14 @@ public class CustomItemTextures extends Mod {
     private static final MethodRef hasEffectForge = new MethodRef("ItemStack", "hasEffect", "(I)Z");
     private static final MethodRef getIconFromDamageForRenderPass = new MethodRef("Item", "getIconFromDamageForRenderPass", "(II)LIcon;");
     private static final MethodRef getItem = new MethodRef("ItemStack", "getItem", "()LItem;");
+
     private static final MethodRef getCITIcon = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getIcon", "(LIcon;LItemStack;I)LIcon;");
     private static final MethodRef getArmorTexture = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getArmorTexture", "(LResourceLocation;LEntityLivingBase;LItemStack;)LResourceLocation;");
+    private static final MethodRef setupArmorEnchantments1 = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "setupArmorEnchantments", "(LEntityLivingBase;I)Z");
+    private static final MethodRef setupArmorEnchantments2 = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "setupArmorEnchantments", "(LItemStack;)Z");
+    private static final MethodRef preRenderArmorEnchantment = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "preRenderArmorEnchantment", "()Z");
+    private static final MethodRef postRenderArmorEnchantment = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "postRenderArmorEnchantment", "()V");
+    private static final MethodRef isArmorEnchantmentActive = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "isArmorEnchantmentActive", "()Z");
 
     private final boolean newEntityRendering;
 
@@ -60,10 +67,10 @@ public class CustomItemTextures extends Mod {
         addClassMod(new EntityItemMod());
         addClassMod(new ItemRendererMod());
         addClassMod(new RenderItemMod());
-        addClassMod(new RenderLivingEntityMod());
         if (newEntityRendering) {
             addClassMod(new RenderArmor18Mod());
         } else {
+            addClassMod(new RenderLivingEntityMod());
             addClassMod(new RenderBipedMod());
             addClassMod(new RenderPlayerMod());
         }
@@ -811,7 +818,6 @@ public class CustomItemTextures extends Mod {
             final MethodRef doRenderLiving = new MethodRef(getDeobfClass(), "doRenderLiving", "(LEntityLivingBase;DDDFF)V");
             final MethodRef doRenderLivingPass = new MethodRef(getDeobfClass(), "doRenderLivingPass", "(LEntityLivingBase;FFFFFFFFI)V");
             final MethodRef renderLivingPatchMethod = getMinecraftVersion().compareTo("14w04a") >= 0 ? doRenderLivingPass : doRenderLiving;
-            final MethodRef glDisable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDisable", "(I)V");
 
             if (getMinecraftVersion().compareTo("13w36a") < 0) {
                 addClassSignature(new ConstSignature("deadmau5"));
@@ -915,18 +921,18 @@ public class CustomItemTextures extends Mod {
                         // if (CITUtils.setupArmorEnchantments(entityLiving, pass)) {
                         ALOAD_1,
                         ILOAD, passRegister,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "setupArmorEnchantments", "(LEntityLivingBase;I)Z")),
+                        reference(INVOKESTATIC, setupArmorEnchantments1),
                         IFEQ, branch("A"),
 
                         // while (CITUtils.preRenderArmorEnchantment()) {
                         label("B"),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "preRenderArmorEnchantment", "()Z")),
+                        reference(INVOKESTATIC, preRenderArmorEnchantment),
                         IFEQ, branch("C"),
 
                         // this.renderPassModel.render(...);
                         // CITUtils.postRenderArmorEnchantment();
                         renderModelCode,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "postRenderArmorEnchantment", "()V")),
+                        reference(INVOKESTATIC, postRenderArmorEnchantment),
                         GOTO, branch("B"),
 
                         // }
@@ -1078,9 +1084,12 @@ public class CustomItemTextures extends Mod {
             final MethodRef renderArmor = new MethodRef(getDeobfClass(), "renderArmor", "(LEntityLivingBase;FFFFFFFI)V");
             final MethodRef getArmorTexture1 = new MethodRef(getDeobfClass(), "getArmorTexture1", "(LItemArmor;Z)LResourceLocation;");
             final MethodRef getArmorTexture2 = new MethodRef(getDeobfClass(), "getArmorTexture2", "(LItemArmor;ZLjava/lang/String;)LResourceLocation;");
+            final MethodRef renderEnchantment = new MethodRef(getDeobfClass(), "renderEnchantment", "(LEntityLivingBase;LModelBase;FFFFFFF)V");
+            final FieldRef glint = new FieldRef(getDeobfClass(), "glint", "LResourceLocation;");
 
             addClassSignature(new ConstSignature("overlay"));
             addClassSignature(new ConstSignature("textures/models/armor/%s_layer_%d%s.png"));
+            addGlintSignature(this, renderEnchantment);
 
             addMemberMapper(new MethodMapper(renderArmor));
             addMemberMapper(new MethodMapper(getArmorTexture1));
@@ -1138,6 +1147,110 @@ public class CustomItemTextures extends Mod {
                 .setInsertAfter(true)
                 .targetMethod(renderArmor)
             );
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "render item enchantment (armor) (part 1)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // if (!this.useColorTint && itemStack.hasEnchantment()) {
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        IFNE, any(2),
+                        capture(anyALOAD),
+                        anyReference(INVOKEVIRTUAL),
+                        IFEQ, any(2),
+
+                        // this.renderEnchantment(entity, model, ...);
+                        capture(build(
+                            ALOAD_0,
+                            ALOAD_1,
+                            anyALOAD,
+                            FLOAD_2,
+                            FLOAD_3,
+                            FLOAD, 4,
+                            FLOAD, 5,
+                            FLOAD, 6,
+                            FLOAD, 7,
+                            FLOAD, 8,
+                            reference(INVOKESPECIAL, renderEnchantment)
+                        ))
+
+                        // }
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    int itemStackRegister = extractRegisterNum(getCaptureGroup(1));
+                    return buildCode(
+                        // if (CITUtils.setupArmorEnchantment(itemStack)) {
+                        registerLoadStore(ALOAD, itemStackRegister),
+                        reference(INVOKESTATIC, setupArmorEnchantments2),
+                        IFEQ, branch("A"),
+
+                        // while (CITUtils.preRenderArmorEnchantment()) {
+                        label("B"),
+                        reference(INVOKESTATIC, preRenderArmorEnchantment),
+                        IFEQ, branch("C"),
+
+                        // this.renderEnchantment(entity, model, ...);
+                        getCaptureGroup(2),
+
+                        // CITUtils.postRenderEnchantment();
+                        reference(INVOKESTATIC, postRenderArmorEnchantment),
+
+                        // }
+                        GOTO, branch("B"),
+
+                        // } else {
+                        label("A"),
+
+                        // ...
+                        getMatch(),
+
+                        // }
+                        label("C")
+                    );
+                }
+            }.targetMethod(renderArmor));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "render item enchantment (armor) (part 2)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.bindTexture(glint);
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        reference(GETSTATIC, glint),
+                        anyReference(INVOKEVIRTUAL)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // if (!CITUtils.isArmorEnchantmentActive()) {
+                        reference(INVOKESTATIC, isArmorEnchantmentActive),
+                        IFNE, branch("A"),
+
+                        // ...
+                        getMatch(),
+
+                        // }
+                        label("A")
+                    );
+                }
+            }.targetMethod(renderEnchantment));
         }
     }
 

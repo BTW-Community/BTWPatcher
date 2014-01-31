@@ -273,20 +273,23 @@ public class CITUtils {
     }
 
     public static boolean setupArmorEnchantments(EntityLivingBase entity, int pass) {
-        if (!enableEnchantments) {
-            return false;
-        }
-        ItemStack itemStack = entity.getCurrentItemOrArmor(4 - pass);
-        if (itemStack == null) {
-            return false;
-        }
-        armorMatches = new EnchantmentList(enchantments, allItemEnchantments, itemStack);
+        return setupArmorEnchantments(entity.getCurrentItemOrArmor(4 - pass));
+    }
+
+    public static boolean setupArmorEnchantments(ItemStack itemStack) {
+        armorMatches = null;
         armorMatchIndex = 0;
-        return !armorMatches.isEmpty();
+        if (enableEnchantments && itemStack != null) {
+            EnchantmentList tmpList = new EnchantmentList(enchantments, allItemEnchantments, itemStack);
+            if (!tmpList.isEmpty()) {
+                armorMatches = tmpList;
+            }
+        }
+        return isArmorEnchantmentActive();
     }
 
     public static boolean preRenderArmorEnchantment() {
-        if (armorMatchIndex < armorMatches.size()) {
+        if (isArmorEnchantmentActive()) {
             Enchantment enchantment = armorMatches.getEnchantment(armorMatchIndex);
             if (enchantment.bindTexture(lastOrigIcon)) {
                 enchantment.beginArmor(armorMatches.getIntensity(armorMatchIndex));
@@ -299,6 +302,10 @@ public class CITUtils {
             armorMatchIndex = 0;
             return false;
         }
+    }
+
+    public static boolean isArmorEnchantmentActive() {
+        return armorMatches != null && armorMatchIndex < armorMatches.size();
     }
 
     public static void postRenderArmorEnchantment() {
