@@ -31,6 +31,9 @@ public class CustomItemTextures extends Mod {
     private static final MethodRef getIconFromDamageForRenderPass = new MethodRef("Item", "getIconFromDamageForRenderPass", "(II)LIcon;");
     private static final MethodRef getItem = new MethodRef("ItemStack", "getItem", "()LItem;");
     private static final MethodRef getCITIcon = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getIcon", "(LIcon;LItemStack;I)LIcon;");
+    private static final MethodRef getArmorTexture = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getArmorTexture", "(LResourceLocation;LEntityLivingBase;LItemStack;)LResourceLocation;");
+
+    private final boolean newEntityRendering;
 
     public CustomItemTextures() {
         name = MCPatcherUtils.CUSTOM_ITEM_TEXTURES;
@@ -44,6 +47,8 @@ public class CustomItemTextures extends Mod {
         addDependency(MCPatcherUtils.NBT_MOD);
         addDependency(MCPatcherUtils.ITEM_API_MOD);
 
+        newEntityRendering = getMinecraftVersion().compareTo("14w05a") >= 0;
+
         addClassMod(new ResourceLocationMod(this));
         addClassMod(new TessellatorMod(this));
         addClassMod(new NBTTagCompoundMod(this));
@@ -56,8 +61,12 @@ public class CustomItemTextures extends Mod {
         addClassMod(new ItemRendererMod());
         addClassMod(new RenderItemMod());
         addClassMod(new RenderLivingEntityMod());
-        addClassMod(new RenderBipedMod());
-        addClassMod(new RenderPlayerMod());
+        if (newEntityRendering) {
+            addClassMod(new RenderArmor18Mod());
+        } else {
+            addClassMod(new RenderBipedMod());
+            addClassMod(new RenderPlayerMod());
+        }
         addClassMod(new RenderSnowballMod());
         addClassMod(new EntityLivingBaseMod());
         addClassMod(new EntityLivingMod(this));
@@ -439,7 +448,7 @@ public class CustomItemTextures extends Mod {
     private class RenderItemMod extends ClassMod {
         RenderItemMod() {
             final FieldRef zLevel = new FieldRef(getDeobfClass(), "zLevel", "F");
-            final MethodRef renderDroppedItem = new MethodRef(getDeobfClass(), "renderDroppedItemVanilla", "(LEntityItem;LIcon;IFFFF)V");
+            final MethodRef renderDroppedItem = new MethodRef(getDeobfClass(), "renderDroppedItemVanilla", newEntityRendering ? "(LIcon;FFFLEntityItem;)V" : "(LEntityItem;LIcon;IFFFF)V");
             final MethodRef renderDroppedItemForge = new MethodRef(getDeobfClass(), "renderDroppedItem", "(LEntityItem;LIcon;IFFFFI)V");
             final MethodRef renderItemAndEffectIntoGUI = new MethodRef(getDeobfClass(), "renderItemAndEffectIntoGUI", "(LFontRenderer;LTextureManager;LItemStack;II)V");
             final MethodRef renderItemIntoGUI = new MethodRef(getDeobfClass(), "renderItemIntoGUIVanilla", "(LFontRenderer;LTextureManager;LItemStack;II)V");
@@ -991,7 +1000,6 @@ public class CustomItemTextures extends Mod {
 
         RenderArmorMod() {
             final MethodRef renderArmor = new MethodRef(getDeobfClass(), "renderArmor", "(L" + getEntityClass() + ";IF)V");
-            final MethodRef getArmorTexture = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getArmorTexture", "(LResourceLocation;LEntityLivingBase;LItemStack;)LResourceLocation;");
 
             final com.prupe.mcpatcher.BytecodeSignature signature = new BytecodeSignature() {
                 @Override
@@ -1063,6 +1071,74 @@ public class CustomItemTextures extends Mod {
         }
 
         abstract String getEntityClass();
+    }
+
+    private class RenderArmor18Mod extends ClassMod {
+        RenderArmor18Mod() {
+            final MethodRef renderArmor = new MethodRef(getDeobfClass(), "renderArmor", "(LEntityLivingBase;FFFFFFFI)V");
+            final MethodRef getArmorTexture1 = new MethodRef(getDeobfClass(), "getArmorTexture1", "(LItemArmor;Z)LResourceLocation;");
+            final MethodRef getArmorTexture2 = new MethodRef(getDeobfClass(), "getArmorTexture2", "(LItemArmor;ZLjava/lang/String;)LResourceLocation;");
+
+            addClassSignature(new ConstSignature("overlay"));
+            addClassSignature(new ConstSignature("textures/models/armor/%s_layer_%d%s.png"));
+
+            addMemberMapper(new MethodMapper(renderArmor));
+            addMemberMapper(new MethodMapper(getArmorTexture1));
+            addMemberMapper(new MethodMapper(getArmorTexture2));
+
+            addPatch(new BytecodePatch() {
+                private int itemStackRegister;
+
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                // itemStack = entity.getEquippedItem(slot);
+                                ALOAD_0,
+                                ALOAD_1,
+                                ILOAD, 9,
+                                anyReference(INVOKEVIRTUAL),
+                                capture(anyASTORE)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            itemStackRegister = extractRegisterNum(getCaptureGroup(1));
+                            return true;
+                        }
+                    });
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override armor texture";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(or(
+                        // this.getArmorTexture(...)
+                        build(reference(INVOKESPECIAL, getArmorTexture1)),
+                        build(reference(INVOKESPECIAL, getArmorTexture2))
+                    ));
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // CITUtils.getArmorTexture(..., entity, itemStack)
+                        ALOAD_1,
+                        registerLoadStore(ALOAD, itemStackRegister),
+                        reference(INVOKESTATIC, getArmorTexture)
+                    );
+                }
+            }
+                .setInsertAfter(true)
+                .targetMethod(renderArmor)
+            );
+        }
     }
 
     private class RenderSnowballMod extends ClassMod {
