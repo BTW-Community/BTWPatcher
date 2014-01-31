@@ -18,10 +18,13 @@ public class BetterGlass extends Mod {
     private static final MethodRef glCallList = new MethodRef(MCPatcherUtils.GL11_CLASS, "glCallList", "(I)V");
     private static final MethodRef enableLightmap = new MethodRef("EntityRenderer", "enableLightmap", "(D)V");
     private static final MethodRef disableLightmap = new MethodRef("EntityRenderer", "disableLightmap", "(D)V");
+    private static final MethodRef getAOMultiplier18 = new MethodRef("DirectionWithAO", "getAOMultiplier", "(LDirectionWithAO;)F");
 
     private static final MethodRef pass18To17 = new MethodRef(MCPatcherUtils.RENDER_PASS_MAP_CLASS, "map18To17", "(I)I");
 
     private final MethodRef sortAndRender = new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLivingBase;" + RenderPassEnumMod.getDescriptor() + "D)I");
+
+    private final boolean haveDirectionWithAO;
 
     public BetterGlass() {
         name = MCPatcherUtils.BETTER_GLASS;
@@ -31,6 +34,8 @@ public class BetterGlass extends Mod {
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.CONNECTED_TEXTURES);
+
+        haveDirectionWithAO = getMinecraftVersion().compareTo("14w05a") >= 0;
 
         int malVersion;
 
@@ -47,6 +52,9 @@ public class BetterGlass extends Mod {
             malVersion = 2;
         } else {
             malVersion = 1;
+        }
+        if (haveDirectionWithAO) {
+            addClassMod(new DirectionWithAOMod());
         }
         setMALVersion("renderpass", malVersion);
 
@@ -125,9 +133,9 @@ public class BetterGlass extends Mod {
                                         AALOAD,
                                         anyASTORE
                                     ) : build(
-                                        push(2),
-                                        IF_ICMPGE, any(2)
-                                    ),
+                                    push(2),
+                                    IF_ICMPGE, any(2)
+                                ),
                                 push(0)
                             );
                         }
@@ -801,8 +809,8 @@ public class BetterGlass extends Mod {
                                 ALOAD_2,
                                 reference(INVOKEVIRTUAL, RenderPassEnumMod.ordinal)
                             ) : buildCode(
-                                ILOAD_2
-                            ),
+                            ILOAD_2
+                        ),
                         reference(INVOKESTATIC, preRenderPass),
                         IFNE, branch("A"),
 
@@ -816,10 +824,10 @@ public class BetterGlass extends Mod {
                         // pass = RenderGlobal.pass18To17(pass);
                         RenderPassEnumMod.haveRenderPassEnum() ?
                             new byte[0] : buildCode(
-                                ILOAD_2,
-                                reference(INVOKESTATIC, pass18To17),
-                                ISTORE_2
-                            )
+                            ILOAD_2,
+                            reference(INVOKESTATIC, pass18To17),
+                            ISTORE_2
+                        )
                     );
                 }
             }.targetMethod(sortAndRender));
@@ -860,6 +868,12 @@ public class BetterGlass extends Mod {
             final MethodRef newShouldSideBeRendered = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "shouldSideBeRendered", "(LBlock;LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
 
             addPatch(new BytecodePatch() {
+                {
+                    if (!haveDirectionWithAO) {
+                        targetMethod(renderStandardBlockWithAmbientOcclusion);
+                    }
+                }
+
                 @Override
                 public String getDescription() {
                     return "override AO block brightness for extra render passes";
@@ -867,11 +881,17 @@ public class BetterGlass extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    return buildExpression(or(
-                        build(push(0.5f)),
-                        build(push(0.6f)),
-                        build(push(0.8f))
-                    ));
+                    if (haveDirectionWithAO) {
+                        return buildExpression(
+                            reference(INVOKESTATIC, getAOMultiplier18)
+                        );
+                    } else {
+                        return buildExpression(or(
+                            build(push(0.5f)),
+                            build(push(0.6f)),
+                            build(push(0.8f))
+                        ));
+                    }
                 }
 
                 @Override
@@ -882,7 +902,6 @@ public class BetterGlass extends Mod {
                 }
             }
                 .setInsertAfter(true)
-                .targetMethod(renderStandardBlockWithAmbientOcclusion)
             );
 
             addPatch(new BytecodePatch() {
@@ -992,6 +1011,25 @@ public class BetterGlass extends Mod {
                     );
                 }
             }.matchStaticInitializerOnly(true));
+        }
+    }
+
+    private class DirectionWithAOMod extends ClassMod {
+        DirectionWithAOMod() {
+            addClassSignature(new ConstSignature("DOWN"));
+            addClassSignature(new ConstSignature("UP"));
+            addClassSignature(new ConstSignature("NORTH"));
+            addClassSignature(new ConstSignature("SOUTH"));
+            addClassSignature(new ConstSignature("WEST"));
+            addClassSignature(new ConstSignature("EAST"));
+
+            addClassSignature(new ConstSignature(0.5f));
+            addClassSignature(new ConstSignature(0.6f));
+            addClassSignature(new ConstSignature(0.8f));
+
+            addMemberMapper(new MethodMapper(getAOMultiplier18)
+                .accessFlag(AccessFlag.STATIC, true)
+            );
         }
     }
 }

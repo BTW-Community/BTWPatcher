@@ -15,7 +15,7 @@ import static javassist.bytecode.Opcode.*;
 public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
     private static final MinecraftVersion MIN_VERSION_SUBCLASS = MinecraftVersion.parseVersion("14w04a");
 
-    protected final MethodRef renderStandardBlockWithAmbientOcclusion = new MethodRef(getDeobfClass(), "renderStandardBlockWithAmbientOcclusion", "(LBlock;" + PositionMod.getDescriptor() + "FFF)Z");
+    protected final MethodRef renderStandardBlockWithAmbientOcclusion = new MethodRef(getDeobfClass(), "renderStandardBlockWithAmbientOcclusion", "(LBlock;" + PositionMod.getDescriptor() + "FFF" + (Mod.getMinecraftVersion().compareTo("14w05a") >= 0 ? "Z" : "") + ")Z");
     protected final FieldRef renderAllFaces = new FieldRef(getDeobfClass(), "renderAllFaces", "Z");
     protected final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
     protected final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
@@ -54,7 +54,7 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
                 return buildExpression(
                     // if (this.renderAllFaces || block.shouldSideBeRendered(this.blockAccess, i, j - 1, k, 0))
                     // - or -
-                    // if (this.renderAllFaces || block.shouldSideBeRendered(this.blockAccess, position.down(), Direction.DOWN)
+                    // if (this.renderAllFaces || block.shouldSideBeRendered(this.blockAccess, position.down(), direction)
                     ALOAD_0,
                     captureReference(GETFIELD),
                     IFNE, any(2),
@@ -65,8 +65,18 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
                     PositionMod.havePositionClass() ?
                         build(
                             ALOAD_2,
-                            anyReference(INVOKEVIRTUAL),
-                            anyReference(GETSTATIC)
+                            Mod.getMinecraftVersion().compareTo("14w05a") >= 0 ?
+                                build(
+                                    // position.offset(direction), direction
+                                    anyALOAD,
+                                    anyReference(INVOKEVIRTUAL),
+                                    anyALOAD
+                                ) :
+                                build(
+                                    // position.down(), Direction.down
+                                    anyReference(INVOKEVIRTUAL),
+                                    anyReference(GETSTATIC)
+                                )
                         ) :
                         build(
                             ILOAD_2,

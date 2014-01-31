@@ -203,7 +203,6 @@ public class ConnectedTextures extends Mod {
     }
 
     private class RenderBlocksMod extends com.prupe.mcpatcher.basemod.RenderBlocksMod {
-        private final MethodRef[] faceMethods = new MethodRef[6];
         private final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef renderBlockGenericPane = new MethodRef(getDeobfClass(), "renderBlockGenericPane", "(LBlockPane;" + PositionMod.getDescriptor() + ")Z");
         private final MethodRef renderBlockGlassPane17 = new MethodRef(getDeobfClass(), "renderBlockGlassPane17", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
@@ -217,7 +216,6 @@ public class ConnectedTextures extends Mod {
         RenderBlocksMod() {
             super(ConnectedTextures.this);
 
-            mapRenderStandardBlock();
             mapHasOverrideTexture();
 
             if (!haveSubclasses()) {
@@ -238,7 +236,6 @@ public class ConnectedTextures extends Mod {
 
             addMemberMapper(new FieldMapper(blockAccess));
 
-            setupStandardBlocks();
             if (!haveSubclasses()) {
                 setupGlassPanes();
             }
@@ -348,21 +345,6 @@ public class ConnectedTextures extends Mod {
                 .setMethod(renderBlockByRenderType)
                 .addXref(1, renderMethod)
             );
-        }
-
-        private void setupStandardBlocks() {
-            setupBlockFace(0, "Bottom");
-            setupBlockFace(1, "Top");
-            setupBlockFace(2, "North");
-            setupBlockFace(3, "South");
-            setupBlockFace(4, "West");
-            setupBlockFace(5, "East");
-
-            addMemberMapper(new MethodMapper(faceMethods));
-        }
-
-        private void setupBlockFace(final int face, final String direction) {
-            faceMethods[face] = new MethodRef(getDeobfClass(), "render" + direction + "Face", "(LBlock;DDDLIcon;)V");
         }
 
         private void setupGlassPanes() {
