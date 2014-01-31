@@ -2635,23 +2635,7 @@ public class CustomColors extends Mod {
         }
 
         private void setupFallingSand() {
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    int baseRegister = 4 + PositionMod.getDescriptorLength();
-                    return buildExpression(
-                        begin(),
-                        push(0.5f),
-                        FSTORE, baseRegister,
-                        push(1.0f),
-                        FSTORE, baseRegister + 1,
-                        push(0.8f),
-                        FSTORE, baseRegister + 2,
-                        push(0.6f),
-                        FSTORE, baseRegister + 3
-                    );
-                }
-            }.setMethod(renderBlockFallingSand));
+            addMemberMapper(new MethodMapper(renderBlockFallingSand));
 
             addPatch(new TessellatorPatch(this) {
                 private int patchCount;
@@ -2698,8 +2682,24 @@ public class CustomColors extends Mod {
             final FieldRef[] brightnessFields = new FieldRef[4];
 
             addClassSignature(new BytecodeSignature() {
+                private final String vertexExpr;
+
                 {
                     addXref(1, enableAO);
+
+                    if (getMinecraftVersion().compareTo("14w05a") >= 0) {
+                        vertexExpr = buildExpression(
+                            // this.doubleArray[intArray[0-3]]
+                            ALOAD_0,
+                            anyReference(GETFIELD),
+                            anyALOAD,
+                            any(1, 2),
+                            IALOAD,
+                            DALOAD
+                        );
+                    } else {
+                        vertexExpr = anyDLOAD;
+                    }
 
                     int i = 0;
                     int j = 0;
@@ -2760,7 +2760,7 @@ public class CustomColors extends Mod {
 
                         // tessellator.addVertexWithUV(...);
                         anyALOAD,
-                        repeat(anyDLOAD, 5),
+                        repeat(vertexExpr, 5),
                         captureReference(INVOKEVIRTUAL)
                     );
                 }
