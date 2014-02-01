@@ -2910,9 +2910,9 @@ public class CustomColors extends Mod {
 
         private void setupBiomeSmoothing18() {
             final FieldRef helper = new FieldRef(getDeobfClass(), "renderBlockHelper", "LRenderBlockHelper;");
-            
+
             addMemberMapper(new FieldMapper(helper));
-            
+
             addPatch(new BytecodePatch() {
                 private int faceRegister;
 
@@ -2960,7 +2960,7 @@ public class CustomColors extends Mod {
 
                 private String getColorSubExpression(int index) {
                     // 0, 3, 6, 9, 1, 4, 7, 10, 2, 5, 8, 11
-                    FieldRef vertex = vertexColorFields[(3 * index + index / 4) %  vertexColorFields.length];
+                    FieldRef vertex = vertexColorFields[(3 * index + index / 4) % vertexColorFields.length];
                     return build(
                         ALOAD_0,
                         DUP,
@@ -3001,7 +3001,7 @@ public class CustomColors extends Mod {
 
                         // ...
                         getMatch(),
-                        
+
                         // }
                         label("A")
                     );
@@ -3479,18 +3479,21 @@ public class CustomColors extends Mod {
             @Override
             public String getMatchExpression() {
                 return buildExpression(
-                    // this.renderFaceYNeg(block, (double) i, (double) j + var32, (double) k, ...);
                     ALOAD_0,
-                    ALOAD_1,
                     PositionMod.havePositionClass() ?
                         build(
+                            // this.renderFace(x, y + var36, z, ..., Direction.DOWN);
                             anyDLOAD,
                             anyDLOAD,
                             anyDLOAD,
                             DADD,
-                            anyDLOAD
+                            anyDLOAD,
+                            nonGreedy(any(0, 20)),
+                            reference(GETSTATIC, DirectionMod.DOWN)
                         ) :
                         build(
+                            // this.renderFaceYNeg(block, (double) i, (double) j + var32, (double) k, ...);
+                            ALOAD_1,
                             ILOAD_2,
                             I2D,
                             ILOAD_3,
@@ -3498,10 +3501,9 @@ public class CustomColors extends Mod {
                             anyDLOAD,
                             DADD,
                             ILOAD, 4,
-                            I2D
+                            I2D,
+                            nonGreedy(any(0, 20))
                         ),
-                    nonGreedy(any(0, 20)),
-                    anyReference(INVOKEVIRTUAL),
                     anyReference(INVOKEVIRTUAL),
 
                     // flag = true;
