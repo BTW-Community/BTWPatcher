@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.mod;
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
 import com.prupe.mcpatcher.mal.BaseTexturePackMod;
+import com.prupe.mcpatcher.mal.BlockAPIMod;
 import javassist.bytecode.AccessFlag;
 
 import javax.swing.*;
@@ -65,6 +66,8 @@ public class CustomColors extends Mod {
 
     private static final String[] vertexNames = new String[]{"TopLeft", "BottomLeft", "BottomRight", "TopRight"};
     private static final String[] colorNames = new String[]{"Red", "Green", "Blue"};
+    private static final FieldRef[] vertexColorFields = new FieldRef[12];
+    private static final FieldRef[] brightnessFields = new FieldRef[4];
 
     public CustomColors() {
         name = MCPatcherUtils.CUSTOM_COLORS;
@@ -127,6 +130,9 @@ public class CustomColors extends Mod {
                 .mapRenderType(5, "RenderBlockRedstoneWire")
                 .mapRenderType(24, "RenderBlockCauldron")
             );
+            if (RenderBlockHelperMod.haveClass()) {
+                addClassMod(new RenderBlockHelperMod());
+            }
             addClassMod(new RenderBlockFluidMod());
             addClassMod(new RenderBlockRedstoneWireMod());
             addClassMod(new RenderBlockCauldronMod());
@@ -2678,16 +2684,13 @@ public class CustomColors extends Mod {
         }
 
         private void setupBiomeSmoothing() {
-            final FieldRef[] vertexColorFields = new FieldRef[12];
-            final FieldRef[] brightnessFields = new FieldRef[4];
-
             addClassSignature(new BytecodeSignature() {
                 private final String vertexExpr;
 
                 {
                     addXref(1, enableAO);
 
-                    if (getMinecraftVersion().compareTo("14w05a") >= 0) {
+                    if (RenderBlockHelperMod.haveClass()) {
                         vertexExpr = buildExpression(
                             // this.doubleArray[intArray[0-3]]
                             ALOAD_0,
@@ -2768,6 +2771,10 @@ public class CustomColors extends Mod {
 
             for (FieldRef field : vertexColorFields) {
                 addPatch(new MakeMemberPublicPatch(field));
+            }
+
+            if (RenderBlockHelperMod.haveClass()) {
+                return;
             }
 
             addPatch(new BytecodePatch() {
@@ -2888,6 +2895,88 @@ public class CustomColors extends Mod {
                     );
                 }
             });
+        }
+    }
+
+    private class RenderBlockHelperMod extends com.prupe.mcpatcher.basemod.RenderBlockHelperMod {
+        private final FieldRef[] mixedBrightness = new FieldRef[]{
+            new FieldRef(getDeobfClass(), "topLeft", "F"),
+            new FieldRef(getDeobfClass(), "bottomLeft", "F"),
+            new FieldRef(getDeobfClass(), "bottomRight", "F"),
+            new FieldRef(getDeobfClass(), "topRight", "F"),
+        };
+
+        RenderBlockHelperMod() {
+            super(CustomColors.this);
+
+            addMemberMapper(new FieldMapper(mixedBrightness));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "smooth biome colors (standard blocks)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        or(
+                            build(
+                                // if (block.useColorMultiplierThisDirection(direction) ...)
+                                ALOAD_1,
+                                ALOAD_3,
+                                anyReference(INVOKEVIRTUAL)
+                            ),
+                            build(
+                                // if (RenderBlocksUtils.useColorMultiplier(direction.ordinal()) ...)
+                                ALOAD_3,
+                                reference(INVOKEVIRTUAL, DirectionMod.ordinal),
+                                reference(INVOKESTATIC, BlockAPIMod.useColorMultiplier)
+                            )
+                        ),
+                        IFEQ, any(2)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // if (ColorizeBlock.setupBlockSmoothing(this.renderBlocks, block, this.renderBlocks.blockAccess,
+                        //                                       i, j, k, face,
+                        //                                       this.topLeft, this.bottomLeft, this.bottomRight, this.topRight)) {
+                        ALOAD_0,
+                        reference(GETFIELD, renderBlocks),
+                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, renderBlocks),
+                        reference(GETFIELD, RenderBlocksMod.blockAccess),
+
+                        PositionMod.unpackArguments(this, 2),
+                        DirectionMod.unpackArguments(this, 3),
+
+                        ALOAD_0,
+                        reference(GETFIELD, mixedBrightness[0]),
+                        ALOAD_0,
+                        reference(GETFIELD, mixedBrightness[1]),
+                        ALOAD_0,
+                        reference(GETFIELD, mixedBrightness[2]),
+                        ALOAD_0,
+                        reference(GETFIELD, mixedBrightness[3]),
+
+                        reference(INVOKESTATIC, setupBlockSmoothing2),
+                        IFEQ, branch("A"),
+
+                        // return;
+                        RETURN,
+
+                        // }
+                        label("A")
+                    );
+                }
+            }
+                .setInsertBefore(true)
+                .targetMethod(computeVertexColors)
+            );
         }
     }
 
