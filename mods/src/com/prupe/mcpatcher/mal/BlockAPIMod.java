@@ -1,6 +1,9 @@
 package com.prupe.mcpatcher.mal;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.FieldRef;
+import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.MethodRef;
+import com.prupe.mcpatcher.Mod;
 import com.prupe.mcpatcher.basemod.*;
 import javassist.bytecode.MethodInfo;
 
@@ -13,6 +16,8 @@ public class BlockAPIMod extends Mod {
     private final MethodRef getBlockIcon = new MethodRef("Block", "getBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
     private final MethodRef getSecondaryBlockIcon = RenderBlocksMod.haveSubclasses() ? new MethodRef("Block", "getSecondaryBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;") : null;
     private final MethodRef useColorMultiplierOnFace = new MethodRef("Block", "useColorMultiplierOnFace", "(" + DirectionMod.getDescriptor() + ")Z");
+
+    private static final MethodRef useColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(I)Z");
 
     public BlockAPIMod() {
         name = MCPatcherUtils.BLOCK_API_MOD;
@@ -39,6 +44,9 @@ public class BlockAPIMod extends Mod {
         addClassMod(new RenderBlocksMod());
         if (RenderBlocksMod.haveSubclasses()) {
             addClassMod(new RenderBlockManagerMod(this));
+        }
+        if (getMinecraftVersion().compareTo("14w05a") >= 0) {
+            addClassMod(new RenderBlockHelperMod());
         }
         if (malVersion >= 2) {
             addClassMod(new Shared.RegistryBaseMod(this));
@@ -187,7 +195,6 @@ public class BlockAPIMod extends Mod {
     private class RenderBlocksMod extends com.prupe.mcpatcher.basemod.RenderBlocksMod {
         private final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
         private final MethodRef setupColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "setupColorMultiplier", "(LBlock;LIBlockAccess;IIIZFFF)V");
-        private final MethodRef useColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(I)Z");
         private final MethodRef getColorMultiplierRed = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierRed", "(I)F");
         private final MethodRef getColorMultiplierGreen = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierGreen", "(I)F");
         private final MethodRef getColorMultiplierBlue = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierBlue", "(I)F");
@@ -234,10 +241,57 @@ public class BlockAPIMod extends Mod {
             );
 
             if (haveSubclasses()) {
-                setupColorMultipliers18();
+                setupColorMultipliers18(this);
             } else {
                 setupColorMultipliers17();
             }
+        }
+
+        private void setupColorMultipliers17() {
+            addPatch(new BytecodePatch() {
+                private MethodInfo lastMethod;
+                private int patchCount;
+
+                {
+                    addPreMatchSignature(grassTopSignature);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "use per-face color multiplier flags";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // useColor
+                        ILOAD, useColorRegister
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // RenderBlocksUtils.useColorMultiplier(face)
+                        push(getPatchCount()),
+                        reference(INVOKESTATIC, useColorMultiplier)
+                    );
+                }
+
+                private int getPatchCount() {
+                    if (lastMethod != getMethodInfo()) {
+                        lastMethod = getMethodInfo();
+                        patchCount = 0;
+                    }
+                    int oldPatchCount = patchCount;
+                    patchCount++;
+                    if (patchCount == 1) {
+                        patchCount++;
+                    }
+                    patchCount %= 6;
+                    return oldPatchCount;
+                }
+            });
 
             addPatch(new BytecodePatch() {
                 private int patchCount;
@@ -312,81 +366,62 @@ public class BlockAPIMod extends Mod {
                 }
             });
         }
+    }
 
-        private void setupColorMultipliers17() {
-            addPatch(new BytecodePatch() {
-                private MethodInfo lastMethod;
-                private int patchCount;
-
-                {
-                    addPreMatchSignature(grassTopSignature);
-                }
-
-                @Override
-                public String getDescription() {
-                    return "use per-face color multiplier flags";
-                }
-
+    private class RenderBlockHelperMod extends ClassMod {
+        RenderBlockHelperMod() {
+            addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // useColor
-                        ILOAD, useColorRegister
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // RenderBlocksUtils.useColorMultiplier(face)
-                        push(getPatchCount()),
-                        reference(INVOKESTATIC, useColorMultiplier)
-                    );
-                }
-
-                private int getPatchCount() {
-                    if (lastMethod != getMethodInfo()) {
-                        lastMethod = getMethodInfo();
-                        patchCount = 0;
-                    }
-                    int oldPatchCount = patchCount;
-                    patchCount++;
-                    if (patchCount == 1) {
-                        patchCount++;
-                    }
-                    patchCount %= 6;
-                    return oldPatchCount;
-                }
-            });
-        }
-
-        private void setupColorMultipliers18() {
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "use per-face color multiplier flags";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // block.useColorMultiplierOnFace(Direction.xxx)
-                        ALOAD_1,
-                        captureReference(GETSTATIC),
-                        reference(INVOKEVIRTUAL, useColorMultiplierOnFace)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // RenderBlocksUtils.useColorMultiplier(Direction.xxx.ordinal())
-                        getCaptureGroup(1),
-                        reference(INVOKEVIRTUAL, DirectionMod.ordinal),
-                        reference(INVOKESTATIC, useColorMultiplier)
+                        // return ((var1 + var2 + var3 + var4) >> 2) & 0xff00ff;
+                        ILOAD_1,
+                        ILOAD_2,
+                        IADD,
+                        ILOAD_3,
+                        IADD,
+                        ILOAD, 4,
+                        IADD,
+                        push(2),
+                        ISHR,
+                        push(0xff00ff),
+                        IAND,
+                        IRETURN,
+                        end()
                     );
                 }
             });
+
+            setupColorMultipliers18(this);
         }
+    }
+
+    private void setupColorMultipliers18(com.prupe.mcpatcher.ClassMod classMod) {
+        classMod.addPatch(new com.prupe.mcpatcher.BytecodePatch(classMod) {
+            @Override
+            public String getDescription() {
+                return "use per-face color multiplier flags";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // block.useColorMultiplierOnFace(Direction.xxx)
+                    ALOAD_1,
+                    capture(or(anyReference(GETSTATIC), anyALOAD)),
+                    reference(INVOKEVIRTUAL, useColorMultiplierOnFace)
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                return buildCode(
+                    // RenderBlocksUtils.useColorMultiplier(direction)
+                    getCaptureGroup(1),
+                    reference(INVOKEVIRTUAL, DirectionMod.ordinal),
+                    reference(INVOKESTATIC, useColorMultiplier)
+                );
+            }
+        });
     }
 }
