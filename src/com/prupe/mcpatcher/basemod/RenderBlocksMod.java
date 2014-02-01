@@ -15,14 +15,15 @@ import static javassist.bytecode.Opcode.*;
 public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
     private static final MinecraftVersion MIN_VERSION_SUBCLASS = MinecraftVersion.parseVersion("14w04a");
 
-    public static final MethodRef renderStandardBlockWithAmbientOcclusion = new MethodRef("RenderBlocks", "renderStandardBlockWithAmbientOcclusion", "(LBlock;" + PositionMod.getDescriptor() + "FFF" + (Mod.getMinecraftVersion().compareTo("14w05a") >= 0 ? "Z" : "") + ")Z");
+    public static MethodRef renderStandardBlockWithAmbientOcclusion;
+    public static MethodRef shouldSideBeRendered;
+    public static MethodRef renderBlockByRenderType;
+    public static MethodRef renderStandardBlock;
+    public static MethodRef renderBlock;
+
     public static final FieldRef renderAllFaces = new FieldRef("RenderBlocks", "renderAllFaces", "Z");
     public static final FieldRef blockAccess = new FieldRef("RenderBlocks", "blockAccess", "LIBlockAccess;");
     public static final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
-    public static final MethodRef shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
-    public static final MethodRef renderBlockByRenderType = new MethodRef("RenderBlocks", "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
-    public static final MethodRef renderStandardBlock = new MethodRef("RenderBlocks", "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
-    public static final MethodRef renderBlock = new MethodRef("RenderBlocks", "renderBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
     public static final MethodRef isAmbientOcclusionEnabled = new MethodRef("Minecraft", "isAmbientOcclusionEnabled", "()Z");
     public static final FieldRef lightValue = new FieldRef("Block", "lightValue", "[I");
     public static final MethodRef getLightValue = new MethodRef("Block", "getLightValue", "()I");
@@ -38,6 +39,12 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
 
     public RenderBlocksMod(Mod mod) {
         super(mod);
+
+        renderStandardBlockWithAmbientOcclusion = new MethodRef("RenderBlocks", "renderStandardBlockWithAmbientOcclusion", "(LBlock;" + PositionMod.getDescriptor() + "FFF" + (Mod.getMinecraftVersion().compareTo("14w05a") >= 0 ? "Z" : "") + ")Z");
+        shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
+        renderBlockByRenderType = new MethodRef("RenderBlocks", "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+        renderStandardBlock = new MethodRef("RenderBlocks", "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+        renderBlock = new MethodRef("RenderBlocks", "renderBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
 
         addClassSignature(new BytecodeSignature() {
             @Override
