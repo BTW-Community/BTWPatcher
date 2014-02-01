@@ -42,7 +42,7 @@ public class BlockAPIMod extends Mod {
         if (RenderBlocksMod.haveSubclasses()) {
             addClassMod(new RenderBlockManagerMod(this));
         }
-        if (getMinecraftVersion().compareTo("14w05a") >= 0) {
+        if (RenderBlockHelperMod.haveClass()) {
             addClassMod(new RenderBlockHelperMod());
         }
         if (malVersion >= 2) {
@@ -403,29 +403,9 @@ public class BlockAPIMod extends Mod {
         }
     }
 
-    private class RenderBlockHelperMod extends ClassMod {
+    private class RenderBlockHelperMod extends com.prupe.mcpatcher.basemod.RenderBlockHelperMod {
         RenderBlockHelperMod() {
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // return ((var1 + var2 + var3 + var4) >> 2) & 0xff00ff;
-                        ILOAD_1,
-                        ILOAD_2,
-                        IADD,
-                        ILOAD_3,
-                        IADD,
-                        ILOAD, 4,
-                        IADD,
-                        push(2),
-                        ISHR,
-                        push(0xff00ff),
-                        IAND,
-                        IRETURN,
-                        end()
-                    );
-                }
-            });
+            super(BlockAPIMod.this);
 
             setupColorMultipliers18(this);
         }
