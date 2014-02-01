@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher.basemod;
 
+import com.prupe.mcpatcher.FieldRef;
 import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.MinecraftVersion;
 import com.prupe.mcpatcher.Mod;
@@ -10,7 +11,9 @@ import static javassist.bytecode.Opcode.*;
 public class RenderBlockHelperMod extends com.prupe.mcpatcher.ClassMod {
     private static final MinecraftVersion MIN_VERSION = MinecraftVersion.parseVersion("14w05a");
 
-    protected final MethodRef mixAOBrightness = new MethodRef("RenderBlockHelper", "mixAOBrightness", "(IIII)I");
+    public static final MethodRef mixAOBrightness = new MethodRef("RenderBlockHelper", "mixAOBrightness", "(IIII)I");
+    public static final MethodRef computeVertexColors = new MethodRef("RenderBlockHelper", "computeVertexColors", "(LBlock;LPosition;LDirection;IFFFZ)V");
+    public static final FieldRef renderBlocks = new FieldRef("RenderBlockHelper", "renderBlocks", "LRenderBlocks;");
 
     public static boolean haveClass() {
         return Mod.getMinecraftVersion().compareTo(MIN_VERSION) >= 0;
@@ -40,9 +43,8 @@ public class RenderBlockHelperMod extends com.prupe.mcpatcher.ClassMod {
                 );
             }
         }.setMethod(mixAOBrightness));
-    }
 
-    public RenderBlockHelperMod mapVertexColorMethods() {
-        return this;
+        addMemberMapper(new FieldMapper(renderBlocks));
+        addMemberMapper(new MethodMapper(computeVertexColors));
     }
 }

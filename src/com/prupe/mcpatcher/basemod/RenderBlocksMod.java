@@ -15,19 +15,19 @@ import static javassist.bytecode.Opcode.*;
 public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
     private static final MinecraftVersion MIN_VERSION_SUBCLASS = MinecraftVersion.parseVersion("14w04a");
 
-    protected final MethodRef renderStandardBlockWithAmbientOcclusion = new MethodRef(getDeobfClass(), "renderStandardBlockWithAmbientOcclusion", "(LBlock;" + PositionMod.getDescriptor() + "FFF" + (Mod.getMinecraftVersion().compareTo("14w05a") >= 0 ? "Z" : "") + ")Z");
-    protected final FieldRef renderAllFaces = new FieldRef(getDeobfClass(), "renderAllFaces", "Z");
-    protected final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
-    protected final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
-    protected final MethodRef shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
-    protected final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
-    protected final MethodRef renderStandardBlock = new MethodRef(getDeobfClass(), "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
-    protected final MethodRef renderBlock = new MethodRef(getDeobfClass(), "renderBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
-    protected final MethodRef isAmbientOcclusionEnabled = new MethodRef("Minecraft", "isAmbientOcclusionEnabled", "()Z");
-    protected final FieldRef lightValue = new FieldRef("Block", "lightValue", "[I");
-    protected final MethodRef getLightValue = new MethodRef("Block", "getLightValue", "()I");
-    protected final MethodRef hasOverrideBlockTexture = new MethodRef(getDeobfClass(), "hasOverrideBlockTexture", "()Z");
-    protected final FieldRef overrideBlockTexture = new FieldRef(getDeobfClass(), "overrideBlockTexture", "LIcon;");
+    public static final MethodRef renderStandardBlockWithAmbientOcclusion = new MethodRef("RenderBlocks", "renderStandardBlockWithAmbientOcclusion", "(LBlock;" + PositionMod.getDescriptor() + "FFF" + (Mod.getMinecraftVersion().compareTo("14w05a") >= 0 ? "Z" : "") + ")Z");
+    public static final FieldRef renderAllFaces = new FieldRef("RenderBlocks", "renderAllFaces", "Z");
+    public static final FieldRef blockAccess = new FieldRef("RenderBlocks", "blockAccess", "LIBlockAccess;");
+    public static final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
+    public static final MethodRef shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
+    public static final MethodRef renderBlockByRenderType = new MethodRef("RenderBlocks", "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+    public static final MethodRef renderStandardBlock = new MethodRef("RenderBlocks", "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+    public static final MethodRef renderBlock = new MethodRef("RenderBlocks", "renderBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+    public static final MethodRef isAmbientOcclusionEnabled = new MethodRef("Minecraft", "isAmbientOcclusionEnabled", "()Z");
+    public static final FieldRef lightValue = new FieldRef("Block", "lightValue", "[I");
+    public static final MethodRef getLightValue = new MethodRef("Block", "getLightValue", "()I");
+    public static final MethodRef hasOverrideBlockTexture = new MethodRef("RenderBlocks", "hasOverrideBlockTexture", "()Z");
+    public static final FieldRef overrideBlockTexture = new FieldRef("RenderBlocks", "overrideBlockTexture", "LIcon;");
 
     protected final com.prupe.mcpatcher.BytecodeSignature grassTopSignature;
     protected int useColorRegister;
