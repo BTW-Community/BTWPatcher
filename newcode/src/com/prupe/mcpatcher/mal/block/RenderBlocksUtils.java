@@ -96,30 +96,45 @@ public class RenderBlocksUtils {
         return nonAOMultipliers[face % 6][2];
     }
 
-    public static boolean isBetterGrass(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
-        if (enableBetterGrass && face > 1) {
-            Block topBlock = BlockAPI.getBlockAt(blockAccess, i, j + 1, k);
-            if (topBlock != snowBlock && topBlock != craftedSnowBlock) {
-                j--;
-                switch (face) {
-                    case 2:
-                        return block == BlockAPI.getBlockAt(blockAccess, i, j, k - 1);
-
-                    case 3:
-                        return block == BlockAPI.getBlockAt(blockAccess, i, j, k + 1);
-
-                    case 4:
-                        return block == BlockAPI.getBlockAt(blockAccess, i - 1, j, k);
-
-                    case 5:
-                        return block == BlockAPI.getBlockAt(blockAccess, i + 1, j, k);
-
-                    default:
-                        break;
-                }
-            }
+    public static Icon getGrassTexture(Block block, IBlockAccess blockAccess, int i, int j, int k, int face, Icon topIcon) {
+        if (!enableBetterGrass || face < 2) {
+            return null;
         }
-        return false;
+        boolean isSnow = isSnowCovered(blockAccess, i, j, k);
+        j--;
+        switch (face) {
+            case 2:
+                k--;
+                break;
+
+            case 3:
+                k++;
+                break;
+
+            case 4:
+                i--;
+                break;
+
+            case 5:
+                i++;
+                break;
+
+            default:
+                return null;
+        }
+        if (block != BlockAPI.getBlockAt(blockAccess, i, j, k)) {
+            return null;
+        }
+        boolean neighborIsSnow = isSnowCovered(blockAccess, i, j, k);
+        if (isSnow != neighborIsSnow) {
+            return null;
+        }
+        return isSnow ? BlockAPI.getBlockIcon(snowBlock, blockAccess, i, j, k, face) : topIcon;
+    }
+
+    private static boolean isSnowCovered(IBlockAccess blockAccess, int i, int j, int k) {
+        Block topBlock = BlockAPI.getBlockAt(blockAccess, i, j + 1, k);
+        return topBlock == snowBlock || topBlock == craftedSnowBlock;
     }
 
     public static boolean isAmbientOcclusionEnabled() {

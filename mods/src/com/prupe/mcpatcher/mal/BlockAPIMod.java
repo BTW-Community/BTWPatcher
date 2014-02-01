@@ -1,9 +1,6 @@
 package com.prupe.mcpatcher.mal;
 
-import com.prupe.mcpatcher.FieldRef;
-import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.MethodRef;
-import com.prupe.mcpatcher.Mod;
+import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
 import javassist.bytecode.MethodInfo;
 
@@ -98,13 +95,37 @@ public class BlockAPIMod extends Mod {
     }
 
     abstract private class BetterGrassMod extends ClassMod {
-        protected final MethodRef isBetterGrass = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "isBetterGrass", "(LBlock;LIBlockAccess;IIII)Z");
+        protected final MethodRef getGrassTexture = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getGrassTexture", "(LBlock;LIBlockAccess;IIIILIcon;)LIcon;");
+        private final FieldRef topIcon = new FieldRef(getDeobfClass(), "topIcon", "LIcon;");
 
         BetterGrassMod() {
             setParentClass("Block");
 
             addClassSignature(new ConstSignature("_side"));
             addClassSignature(new ConstSignature("_top"));
+
+            addClassSignature(new BytecodeSignature() {
+                final ClassRef stringBuilderClass = new ClassRef("java/lang/StringBuilder");
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.field = iconRegister.registerIcon(this.getTextureName() + name);
+                        ALOAD_0,
+                        ALOAD_1,
+                        // new StringBuilder(this.getTextureName()).append(suffix).toString();
+                        // -or-
+                        // new StringBuilder().append(this.getTextureName()).append(suffix).toString();
+                        reference(NEW, stringBuilderClass),
+                        DUP,
+                        nonGreedy(any(0, 12)),
+                        push("_top"),
+                        nonGreedy(any(0, 8)),
+                        anyReference(INVOKEINTERFACE),
+                        captureReference(PUTFIELD)
+                    );
+                }
+            }.addXref(1, topIcon));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -121,24 +142,38 @@ public class BlockAPIMod extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
+                    int iconRegister = getMethodInfo().getCodeAttribute().getMaxLocals();
                     return buildCode(
-                        // if (BlockAPI.isBetterGrass(this, blockAccess, i, j, k, face)) {
-                        ALOAD_0,
-                        ALOAD_1,
-                        PositionMod.unpackArguments(this, 2),
-                        DirectionMod.unpackArguments(this, 2 + PositionMod.getDescriptorLength()),
-                        reference(INVOKESTATIC, isBetterGrass),
-                        IFEQ, branch("A"),
+                        // Icon newIcon = RenderBlocksUtils.getGrassTexture(...);
+                        getGrassTexture(this, iconRegister),
 
-                        // face = 1;
-                        DirectionMod.getFixedDirection(this, 1),
-                        registerLoadStore(DirectionMod.getStoreOpcode(), 2 + PositionMod.getDescriptorLength()),
+                        // if (newIcon != null) {
+                        registerLoadStore(ALOAD, iconRegister),
+                        IFNULL, branch("A"),
+
+                        // return newIcon;
+                        registerLoadStore(ALOAD, iconRegister),
+                        ARETURN,
 
                         // }
                         label("A")
                     );
                 }
             }.targetMethod(getBlockIcon));
+        }
+
+        protected byte[] getGrassTexture(BytecodePatch patch, int iconRegister) {
+            return patch.buildCode(
+                // Icon newIcon = RenderBlocksUtils.getGrassTexture(this, blockAccess, i, j, k, face, this.topIcon);
+                ALOAD_0,
+                ALOAD_1,
+                PositionMod.unpackArguments(this, 2),
+                DirectionMod.unpackArguments(this, 2 + PositionMod.getDescriptorLength()),
+                ALOAD_0,
+                reference(GETFIELD, topIcon),
+                reference(INVOKESTATIC, getGrassTexture),
+                registerLoadStore(ASTORE, iconRegister)
+            );
         }
     }
 
@@ -163,14 +198,14 @@ public class BlockAPIMod extends Mod {
 
                     @Override
                     public byte[] getReplacementBytes() {
+                        int iconRegister = getMethodInfo().getCodeAttribute().getMaxLocals();
                         return buildCode(
-                            // if (BlockAPI.isBetterGrass(this, blockAccess, i, j, k, face)) {
-                            ALOAD_0,
-                            ALOAD_1,
-                            PositionMod.unpackArguments(this, 2),
-                            DirectionMod.unpackArguments(this, 2 + PositionMod.getDescriptorLength()),
-                            reference(INVOKESTATIC, isBetterGrass),
-                            IFEQ, branch("A"),
+                            // Icon newIcon = RenderBlocksUtils.getGrassTexture(...);
+                            getGrassTexture(this, iconRegister),
+
+                            // if (newIcon != null) {
+                            ALOAD, iconRegister,
+                            IFNULL, branch("A"),
 
                             // return null;
                             ACONST_NULL,
