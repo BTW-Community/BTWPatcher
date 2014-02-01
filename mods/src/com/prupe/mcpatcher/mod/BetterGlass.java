@@ -21,6 +21,7 @@ public class BetterGlass extends Mod {
     private static final MethodRef getAOMultiplier18 = new MethodRef("DirectionWithAO", "getAOMultiplier", "(LDirectionWithAO;)F");
 
     private static final MethodRef pass18To17 = new MethodRef(MCPatcherUtils.RENDER_PASS_MAP_CLASS, "map18To17", "(I)I");
+    private static final MethodRef newGetAOBaseMultiplier = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "getAOBaseMultiplier", "(F)F");
 
     private final MethodRef sortAndRender = new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLivingBase;" + RenderPassEnumMod.getDescriptor() + "D)I");
 
@@ -55,6 +56,7 @@ public class BetterGlass extends Mod {
         }
         if (haveDirectionWithAO) {
             addClassMod(new DirectionWithAOMod());
+            addClassMod(new RenderBlockHelperMod());
         }
         setMALVersion("renderpass", malVersion);
 
@@ -864,45 +866,15 @@ public class BetterGlass extends Mod {
         RenderBlocksMod() {
             super(BetterGlass.this);
 
-            final MethodRef newGetAOBaseMultiplier = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "getAOBaseMultiplier", "(F)F");
             final MethodRef newShouldSideBeRendered = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "shouldSideBeRendered", "(LBlock;LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
 
-            addPatch(new BytecodePatch() {
+            addPatch(new AOMultiplierPatch(this) {
                 {
                     if (!haveDirectionWithAO) {
                         targetMethod(renderStandardBlockWithAmbientOcclusion);
                     }
                 }
-
-                @Override
-                public String getDescription() {
-                    return "override AO block brightness for extra render passes";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    if (haveDirectionWithAO) {
-                        return buildExpression(
-                            reference(INVOKESTATIC, getAOMultiplier18)
-                        );
-                    } else {
-                        return buildExpression(or(
-                            build(push(0.5f)),
-                            build(push(0.6f)),
-                            build(push(0.8f))
-                        ));
-                    }
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, newGetAOBaseMultiplier)
-                    );
-                }
-            }
-                .setInsertAfter(true)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -1031,5 +1003,48 @@ public class BetterGlass extends Mod {
                 .accessFlag(AccessFlag.STATIC, true)
             );
         }
+    }
+
+    private class RenderBlockHelperMod extends com.prupe.mcpatcher.basemod.RenderBlockHelperMod {
+        RenderBlockHelperMod() {
+            super(BetterGlass.this);
+
+            addPatch(new AOMultiplierPatch(this));
+        }
+    }
+
+    private class AOMultiplierPatch extends BytecodePatch {
+        AOMultiplierPatch(com.prupe.mcpatcher.ClassMod classMod) {
+            super(classMod);
+            setInsertAfter(true);
+        }
+
+        @Override
+        public String getDescription() {
+            return "override AO block brightness for extra render passes";
+        }
+
+        @Override
+        public String getMatchExpression() {
+            if (haveDirectionWithAO) {
+                return buildExpression(
+                    reference(INVOKESTATIC, getAOMultiplier18)
+                );
+            } else {
+                return buildExpression(or(
+                    build(push(0.5f)),
+                    build(push(0.6f)),
+                    build(push(0.8f))
+                ));
+            }
+        }
+
+        @Override
+        public byte[] getReplacementBytes() {
+            return buildCode(
+                reference(INVOKESTATIC, newGetAOBaseMultiplier)
+            );
+        }
+
     }
 }
