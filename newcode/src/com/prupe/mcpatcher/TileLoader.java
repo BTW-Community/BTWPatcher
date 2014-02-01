@@ -204,7 +204,11 @@ public class TileLoader {
             return null;
         }
         if (value.equals("blank")) {
-            return RenderPassAPI.instance.getBlankResource(pass);
+            try {
+                return RenderPassAPI.instance.getBlankResource(pass);
+            } catch (Throwable e) {
+                return BlendMethod.ALPHA.getBlankResource();
+            }
         }
         if (value.equals("null") || value.equals("none") || value.equals("default") || value.equals("")) {
             return null;
