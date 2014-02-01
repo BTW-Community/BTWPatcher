@@ -169,10 +169,10 @@ abstract public class BytecodeSignature extends ClassSignature {
      * @return this
      */
     public BytecodeSignature setMethod(MethodRef methodRef) {
-        if (deobfMethod != null && deobfMethod.getClassName() == null) {
-            deobfMethod = new MethodRef(classMod.getDeobfClass(), deobfMethod.getName(), deobfMethod.getType());
+        if (methodRef != null && !classMod.getDeobfClass().equals(methodRef.getClassName())) {
+            deobfMethod = new MethodRef(classMod.getDeobfClass(), methodRef.getName(), methodRef.getType());
         } else {
-            this.deobfMethod = methodRef;
+            deobfMethod = methodRef;
         }
         return this;
     }
