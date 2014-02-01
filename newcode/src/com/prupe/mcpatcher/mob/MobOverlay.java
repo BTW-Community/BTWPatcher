@@ -28,8 +28,6 @@ public class MobOverlay {
     private static boolean haveMooshroom;
     private static boolean haveSnowman;
 
-    public static ResourceLocation snowmanOverlayTexture;
-
     static void reset() {
         haveMooshroom = TexturePackAPI.hasResource(MOOSHROOM_OVERLAY);
         haveSnowman = TexturePackAPI.hasResource(SNOWMAN_OVERLAY);
@@ -79,17 +77,11 @@ public class MobOverlay {
         overlayActive = false;
     }
 
-    public static boolean setupSnowman(EntityLivingBase entity) {
-        if (haveSnowman) {
-            snowmanOverlayTexture = MobRandomizer.randomTexture(entity, SNOWMAN_OVERLAY);
-            return true;
-        } else {
-            snowmanOverlayTexture = null;
+    public static boolean renderSnowmanOverlay(EntityLivingBase entity) {
+        if (!haveSnowman) {
             return false;
         }
-    }
-
-    public static void renderSnowmanOverlay() {
+        TexturePackAPI.bindTexture(MobRandomizer.randomTexture(entity, SNOWMAN_OVERLAY));
         Tessellator tessellator = Tessellator.instance;
         tessellator.startDrawingQuads();
 
@@ -138,6 +130,7 @@ public class MobOverlay {
         tessellator.addVertexWithUV(SNOW_X1, SNOW_Y0, SNOW_Z1, c[0], c[3]);
 
         tessellator.draw();
+        return true;
     }
 
     private static void getTileCoordinates(int tileNum, double[] c) {

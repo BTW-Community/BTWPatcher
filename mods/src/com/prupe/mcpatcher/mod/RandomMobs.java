@@ -1,6 +1,9 @@
 package com.prupe.mcpatcher.mod;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.FieldRef;
+import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.MethodRef;
+import com.prupe.mcpatcher.Mod;
 import com.prupe.mcpatcher.basemod.*;
 import com.prupe.mcpatcher.mal.BaseTexturePackMod;
 import javassist.bytecode.AccessFlag;
@@ -14,16 +17,22 @@ public class RandomMobs extends Mod {
 
     private static final MethodRef glEnable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glEnable", "(I)V");
     private static final MethodRef glDisable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDisable", "(I)V");
+    private static final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
+    private static final MethodRef glPushMatrix = new MethodRef(MCPatcherUtils.GL11_CLASS, "glPushMatrix", "()V");
+
+    private final boolean haveOverlayRenderer;
 
     public RandomMobs() {
         name = MCPatcherUtils.RANDOM_MOBS;
         author = "Balthichou";
         description = "Randomize mob skins if texture pack supports it. Based on Balthichou's mod.";
         website = "http://www.minecraftforum.net/topic/244172-";
-        version = "1.7";
+        version = "1.8";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BIOME_API_MOD);
+
+        haveOverlayRenderer = getMinecraftVersion().compareTo("14w05a") >= 0;
 
         addClassMod(new ResourceLocationMod(this));
         addClassMod(new NBTTagCompoundMod(this));
@@ -201,7 +210,8 @@ public class RandomMobs extends Mod {
             final MethodRef randomTexture = new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(LEntity;LResourceLocation;)LResourceLocation;");
 
             addMemberMapper(new MethodMapper(loadTexture)
-                .accessFlag(AccessFlag.PROTECTED, true)
+                // 14w05a+: public
+                // older: protected
                 .accessFlag(AccessFlag.STATIC, false)
             );
 
@@ -242,7 +252,6 @@ public class RandomMobs extends Mod {
             setParentClass("Render");
 
             final MethodRef doRenderLiving = new MethodRef(getDeobfClass(), "doRenderLiving", "(LEntityLivingBase;DDDFF)V");
-            final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
 
             addClassSignature(new ConstSignature(180.0f));
 
@@ -252,13 +261,13 @@ public class RandomMobs extends Mod {
                     return buildExpression(
                         push(0.0f),
                         or(build(
-                                // pre-14w04a
-                                push(-24.0f),
-                                anyFLOAD,
-                                FMUL,
-                                push(0.0078125f),
-                                FSUB
-                            ),
+                            // pre-14w04a
+                            push(-24.0f),
+                            anyFLOAD,
+                            FMUL,
+                            push(0.0078125f),
+                            FSUB
+                        ),
                             build(
                                 // 14w04a+
                                 push(-1.5078125f)
@@ -331,14 +340,17 @@ public class RandomMobs extends Mod {
 
     private class RenderSnowmanMod extends ClassMod {
         RenderSnowmanMod() {
-            setParentClass("RenderLiving");
+            final MethodRef renderEquippedItems;
+            final MethodRef renderSnowmanOverlay = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "renderSnowmanOverlay", "(LEntityLivingBase;)Z");
 
-            final MethodRef renderEquippedItems = new MethodRef(getDeobfClass(), "renderEquippedItems1", "(LEntitySnowman;F)V");
-            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceLocation;)V");
-            final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
-            final FieldRef snowmanOverlayTexture = new FieldRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "snowmanOverlayTexture", "LResourceLocation;");
-            final MethodRef setupSnowman = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "setupSnowman", "(LEntityLivingBase;)Z");
-            final MethodRef renderSnowmanOverlay = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "renderSnowmanOverlay", "()V");
+            if (haveOverlayRenderer) {
+                setInterfaces("OverlayRenderer");
+                renderEquippedItems = new MethodRef(getDeobfClass(), "render", "(LEntitySnowman;FFFFFFF)V");
+            } else {
+                setParentClass("RenderLiving");
+                renderEquippedItems = new MethodRef(getDeobfClass(), "renderEquippedItems1", "(LEntitySnowman;F)V");
+                addClassSignature(new ConstSignature("textures/entity/snowman.png"));
+            }
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -366,13 +378,23 @@ public class RandomMobs extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // renderManager.itemRenderer.renderItem(par1EntitySnowman, itemstack, 0);
+                        // 14w05b+: this.renderManager.getItemRenderer().renderItem(entity, new ItemStack(BlockList.pumpkin, 1), 0);
+                        // older: renderManager.itemRenderer.renderItem(entity, itemstack, 0);
                         ALOAD_0,
                         anyReference(GETFIELD),
+                        haveOverlayRenderer ? anyReference(INVOKEVIRTUAL) : "",
                         anyReference(GETFIELD),
                         ALOAD_1,
-                        ALOAD_3,
-                        ICONST_0,
+                        haveOverlayRenderer ?
+                            build(
+                                anyReference(NEW),
+                                DUP,
+                                anyReference(GETSTATIC),
+                                push(1),
+                                anyReference(INVOKESPECIAL)
+                            ) :
+                            anyALOAD,
+                        push(0),
                         anyReference(INVOKEVIRTUAL)
                     );
                 }
@@ -380,28 +402,16 @@ public class RandomMobs extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (setupSnowman(entityLiving)) {
+                        // if (!MobOverlay.renderSnowmanOverlay(entity)) {
                         ALOAD_1,
-                        reference(INVOKESTATIC, setupSnowman),
-                        IFEQ, branch("A"),
-
-                        // loadTexture(MobOverlay.snowmanOverlayTexture);
-                        ALOAD_0,
-                        reference(GETSTATIC, snowmanOverlayTexture),
-                        reference(INVOKEVIRTUAL, loadTexture),
-
-                        // MobOverlay.renderSnowmanOverlay();
                         reference(INVOKESTATIC, renderSnowmanOverlay),
-
-                        // } else {
-                        GOTO, branch("B"),
-                        label("A"),
+                        IFNE, branch("A"),
 
                         // ...
                         getMatch(),
 
                         // }
-                        label("B")
+                        label("A")
                     );
                 }
             }.targetMethod(renderEquippedItems));
@@ -410,25 +420,33 @@ public class RandomMobs extends Mod {
 
     private class RenderMooshroomMod extends ClassMod {
         RenderMooshroomMod() {
-            setParentClass("RenderLiving");
-
+            final MethodRef renderEquippedItems;
             final FieldRef mushroomRed = new FieldRef("BlockList", "mushroomRed", "LBlockFlower;");
             final FieldRef blocksAtlas = new FieldRef("TextureAtlas", "blocks", "LResourceLocation;");
-            final MethodRef renderEquippedItems = new MethodRef(getDeobfClass(), "renderEquippedItems1", "(LEntityMooshroom;F)V");
-            final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceLocation;)V");
-            final MethodRef glPushMatrix = new MethodRef(MCPatcherUtils.GL11_CLASS, "glPushMatrix", "()V");
             final MethodRef renderBlockAsItem = new MethodRef("RenderBlockManager", "renderBlockAsItem", "(LBlock;IF)V");
+            final MethodRef setupMooshroom = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "setupMooshroom", "(LEntityLivingBase;LResourceLocation;)LResourceLocation;");
+            final MethodRef renderMooshroomOverlay = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "renderMooshroomOverlay", "()Z");
+            final MethodRef finishMooshroom = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "finishMooshroom", "()V");
 
-            addClassSignature(new ConstSignature("textures/entity/cow/mooshroom.png"));
+            if (haveOverlayRenderer) {
+                setInterfaces("OverlayRenderer");
+                renderEquippedItems = new MethodRef(getDeobfClass(), "render", "(LEntityMooshroom;FFFFFFF)V");
+            } else {
+                setParentClass("RenderLiving");
+                renderEquippedItems = new MethodRef(getDeobfClass(), "renderEquippedItems1", "(LEntityMooshroom;F)V");
+                addClassSignature(new ConstSignature("textures/entity/cow/mooshroom.png"));
+            }
 
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // loadTexture(TextureAtlas.blocks);
+                        // 14w05b+:  this.entity.loadTexture(TextureAtlas.blocks);
+                        // older: this.loadTexture(TextureAtlas.blocks);
                         ALOAD_0,
+                        haveOverlayRenderer ? anyReference(GETFIELD) : "",
                         captureReference(GETSTATIC),
-                        captureReference(INVOKEVIRTUAL),
+                        anyReference(INVOKEVIRTUAL),
 
                         // GL11.glEnable(GL11.GL_CULL_FACE);
                         push(2884),
@@ -452,9 +470,8 @@ public class RandomMobs extends Mod {
             }
                 .setMethod(renderEquippedItems)
                 .addXref(1, blocksAtlas)
-                .addXref(2, loadTexture)
-                .addXref(3, mushroomRed)
-                .addXref(4, renderBlockAsItem)
+                .addXref(2, mushroomRed)
+                .addXref(3, renderBlockAsItem)
             );
 
             addPatch(new BytecodePatch() {
@@ -475,7 +492,7 @@ public class RandomMobs extends Mod {
                     return buildCode(
                         ALOAD_1,
                         getMatch(),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "setupMooshroom", "(LEntityLivingBase;LResourceLocation;)LResourceLocation;"))
+                        reference(INVOKESTATIC, setupMooshroom)
                     );
                 }
             }.targetMethod(renderEquippedItems));
@@ -503,7 +520,7 @@ public class RandomMobs extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         // if (!MobOverlay.renderMooshroomOverlay()) {
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "renderMooshroomOverlay", "()Z")),
+                        reference(INVOKESTATIC, renderMooshroomOverlay),
                         IFNE, branch("A"),
 
                         // ...
@@ -531,7 +548,7 @@ public class RandomMobs extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "finishMooshroom", "()V"))
+                        reference(INVOKESTATIC, finishMooshroom)
                     );
                 }
             }
