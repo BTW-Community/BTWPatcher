@@ -465,6 +465,13 @@ public class ColorizeBlock {
             setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, topLeft, bottomLeft, bottomRight, topRight);
     }
 
+    public static boolean setupBlockSmoothingGrassSide(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
+                                                       int i, int j, int k, int face,
+                                                       float topLeft, float bottomLeft, float bottomRight, float topRight) {
+        return checkBiomeSmoothing(block) &&
+            setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, topLeft, bottomLeft, bottomRight, topRight);
+    }
+
     public static boolean setupBlockSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                               int i, int j, int k, int face) {
         return checkBiomeSmoothing(block) &&

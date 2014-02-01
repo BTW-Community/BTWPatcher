@@ -42,6 +42,7 @@ public class CustomColors extends Mod {
     private static final MethodRef drawFancyClouds = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "drawFancyClouds", "(Z)Z");
     private static final MethodRef setupBlockSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIII)Z");
     private static final MethodRef setupBlockSmoothing2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)Z");
+    private static final MethodRef setupBlockSmoothing3 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothingGrassSide", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)Z");
 
     private static final FieldRef setColor = new FieldRef(MCPatcherUtils.COLORIZER_CLASS, "setColor", "[F");
     private static final FieldRef blockColor = new FieldRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "blockColor", "I");
@@ -68,6 +69,12 @@ public class CustomColors extends Mod {
     private static final String[] colorNames = new String[]{"Red", "Green", "Blue"};
     private static final FieldRef[] vertexColorFields = new FieldRef[12];
     private static final FieldRef[] brightnessFields = new FieldRef[4];
+    private static final FieldRef[] mixedBrightness = new FieldRef[]{
+        new FieldRef("RenderBlockHelper", "topLeft", "F"),
+        new FieldRef("RenderBlockHelper", "bottomLeft", "F"),
+        new FieldRef("RenderBlockHelper", "bottomRight", "F"),
+        new FieldRef("RenderBlockHelper", "topRight", "F"),
+    };
 
     public CustomColors() {
         name = MCPatcherUtils.CUSTOM_COLORS;
@@ -2774,9 +2781,13 @@ public class CustomColors extends Mod {
             }
 
             if (RenderBlockHelperMod.haveClass()) {
-                return;
+                setupBiomeSmoothing18();
+            } else {
+                setupBiomeSmoothing17();
             }
+        }
 
+        private void setupBiomeSmoothing17() {
             addPatch(new BytecodePatch() {
                 {
                     addPreMatchSignature(grassTopSignature);
@@ -2896,16 +2907,110 @@ public class CustomColors extends Mod {
                 }
             });
         }
+
+        private void setupBiomeSmoothing18() {
+            final FieldRef helper = new FieldRef(getDeobfClass(), "renderBlockHelper", "LRenderBlockHelper;");
+            
+            addMemberMapper(new FieldMapper(helper));
+            
+            addPatch(new BytecodePatch() {
+                private int faceRegister;
+
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                IINC, any(2)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            faceRegister = getMatch()[1] & 0xff;
+                            return true;
+                        }
+                    });
+                }
+
+                @Override
+                public String getDescription() {
+                    return "smooth biome colors (grass side)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.topLeft *= red;
+                        // ...
+                        getColorSubExpression(0),
+                        getColorSubExpression(1),
+                        getColorSubExpression(2),
+                        getColorSubExpression(3),
+                        getColorSubExpression(4),
+                        getColorSubExpression(5),
+                        getColorSubExpression(6),
+                        getColorSubExpression(7),
+                        getColorSubExpression(8),
+                        getColorSubExpression(9),
+                        getColorSubExpression(10),
+                        getColorSubExpression(11)
+                    );
+                }
+
+                private String getColorSubExpression(int index) {
+                    // 0, 3, 6, 9, 1, 4, 7, 10, 2, 5, 8, 11
+                    FieldRef vertex = vertexColorFields[(3 * index + index / 4) %  vertexColorFields.length];
+                    return build(
+                        ALOAD_0,
+                        DUP,
+                        reference(GETFIELD, vertex),
+                        index % 4 == 0 ? capture(anyFLOAD) : backReference(index / 4 + 1),
+                        FMUL,
+                        reference(PUTFIELD, vertex)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // if (!ColorizeBlock.setupBlockSmoothingGrassSide(this, block, this.blockAccess,
+                        //                                                 i, j, k, face,
+                        //                                                 this.helper.topLeft, this.helper.bottomLeft,
+                        //                                                 this.helper.bottomRight, this.helper.topRight)) {
+                        ALOAD_0,
+                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, blockAccess),
+                        PositionMod.unpackArguments(this, 2),
+                        registerLoadStore(ILOAD, faceRegister),
+                        ALOAD_0,
+                        reference(GETFIELD, helper),
+                        reference(GETFIELD, mixedBrightness[0]),
+                        ALOAD_0,
+                        reference(GETFIELD, helper),
+                        reference(GETFIELD, mixedBrightness[1]),
+                        ALOAD_0,
+                        reference(GETFIELD, helper),
+                        reference(GETFIELD, mixedBrightness[2]),
+                        ALOAD_0,
+                        reference(GETFIELD, helper),
+                        reference(GETFIELD, mixedBrightness[3]),
+                        reference(INVOKESTATIC, setupBlockSmoothing3),
+                        IFNE, branch("A"),
+
+                        // ...
+                        getMatch(),
+                        
+                        // }
+                        label("A")
+                    );
+                }
+            }.targetMethod(renderStandardBlockWithAmbientOcclusion));
+        }
     }
 
     private class RenderBlockHelperMod extends com.prupe.mcpatcher.basemod.RenderBlockHelperMod {
-        private final FieldRef[] mixedBrightness = new FieldRef[]{
-            new FieldRef(getDeobfClass(), "topLeft", "F"),
-            new FieldRef(getDeobfClass(), "bottomLeft", "F"),
-            new FieldRef(getDeobfClass(), "bottomRight", "F"),
-            new FieldRef(getDeobfClass(), "topRight", "F"),
-        };
-
         RenderBlockHelperMod() {
             super(CustomColors.this);
 
