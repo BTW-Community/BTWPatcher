@@ -331,17 +331,13 @@ class ConstPoolUtils {
         } else if (Util.contains(INTERFACEMETHODREF_OPCODES, opcode)) {
             if (value instanceof InterfaceMethodRef) {
                 int numArgs = 0;
-                for (String s : parseDescriptor(((InterfaceMethodRef) value).getType())) {
+                for (String s : ((InterfaceMethodRef) value).getParsedDescriptor()) {
                     numArgs += (s.equals("D") || s.equals("J") ? 2 : 1);
                 }
                 return new byte[]{(byte) opcode, Util.b(index, 1), Util.b(index, 0), (byte) numArgs, 0};
             }
         }
         return new byte[]{(byte) opcode, Util.b(index, 1), Util.b(index, 0)};
-    }
-
-    static void checkTypeDescriptorSyntax(String descriptor) {
-        parseDescriptor(descriptor);
     }
 
     static ArrayList<String> parseDescriptor(String descriptor) {

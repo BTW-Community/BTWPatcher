@@ -117,7 +117,7 @@ abstract public class AddMethodPatch extends ClassPatch {
                 methodInfo.setCodeAttribute(codeAttribute);
                 int argLocals = (accessFlags & AccessFlag.STATIC) == 0 ? 0 : 1;
                 int newMaxLocals = numLocals;
-                for (String t : ConstPoolUtils.parseDescriptor(methodRef.getType())) {
+                for (String t : methodRef.getParsedDescriptor()) {
                     if (t.equals("D") || t.equals("L")) {
                         argLocals += 2;
                     } else {

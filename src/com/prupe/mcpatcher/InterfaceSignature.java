@@ -65,9 +65,10 @@ public class InterfaceSignature extends ClassSignature {
             for (int j = 0; j < methods.length; j++) {
                 JavaRef method = methods[j];
                 MethodInfo obfMethod = (MethodInfo) obfMethods.get(j);
+                MethodRef obfMethodRef = new MethodRef(classFile.getName(), obfMethod.getName(), obfMethod.getDescriptor());
                 switch (i) {
                     case 0:
-                        if (!isPotentialTypeMatch(getClassMap(), method.getType(), obfMethod.getDescriptor())) {
+                        if (!isPotentialTypeMatch(getClassMap(), method.getParsedDescriptor(), obfMethodRef.getParsedDescriptor())) {
                             return false;
                         }
                         break;
@@ -87,7 +88,11 @@ public class InterfaceSignature extends ClassSignature {
     }
 
     static boolean isPotentialTypeMatch(ClassMap classMap, ArrayList<String> deobfTypes, ArrayList<String> obfTypes) {
-        if (deobfTypes.size() != obfTypes.size()) {
+        if (deobfTypes == null && obfTypes == null) {
+            return true;
+        } else if (deobfTypes == null || obfTypes == null) {
+            return false;
+        } else if (deobfTypes.size() != obfTypes.size()) {
             return false;
         }
         for (int i = 0; i < deobfTypes.size(); i++) {

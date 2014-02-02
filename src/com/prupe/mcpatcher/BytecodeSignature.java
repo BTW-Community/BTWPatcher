@@ -60,7 +60,7 @@ abstract public class BytecodeSignature extends ClassSignature {
             }
         }
         if (deobfMethod != null && deobfMethod.getType() != null) {
-            deobfTypes = ConstPoolUtils.parseDescriptor(deobfMethod.getType());
+            deobfTypes = deobfMethod.getParsedDescriptor();
             obfTypes = ConstPoolUtils.parseDescriptor(methodInfo.getDescriptor());
             if (!InterfaceSignature.isPotentialTypeMatch(getClassMap(), deobfTypes, obfTypes)) {
                 return false;
@@ -122,7 +122,7 @@ abstract public class BytecodeSignature extends ClassSignature {
             ConstPoolUtils.matchOpcodeToRefType(code[0], xref);
             ConstPoolUtils.matchConstPoolTagToRefType(constPool.getTag(index), xref);
             JavaRef newRef = ConstPoolUtils.getRefForIndex(constPool, index);
-            if (!InterfaceSignature.isPotentialTypeMatch(getClassMap(), xref.getType(), newRef.getType())) {
+            if (!InterfaceSignature.isPotentialTypeMatch(getClassMap(), xref.getParsedDescriptor(), newRef.getParsedDescriptor())) {
                 if (deobfMethod != null) {
                     Logger.log(Logger.LOG_METHOD, "method %s %s matches %s %s, but",
                         methodInfo.getName(), methodInfo.getDescriptor(), deobfMethod.getName(), deobfMethod.getType()
