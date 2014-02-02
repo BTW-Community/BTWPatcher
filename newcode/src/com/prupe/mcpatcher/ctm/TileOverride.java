@@ -314,9 +314,10 @@ abstract class TileOverride implements ITileOverride {
     private void loadIcons(Properties properties) {
         tileNames.clear();
         String tileList = properties.getProperty("tiles", "").trim();
+        ResourceLocation blankResource = RenderPassAPI.instance.getBlankResource(renderPass);
         if (tileList.equals("")) {
             for (int i = 0; ; i++) {
-                ResourceLocation resource = TileLoader.parseTileAddress(propertiesFile, String.valueOf(i), renderPass);
+                ResourceLocation resource = TileLoader.parseTileAddress(propertiesFile, String.valueOf(i), blankResource);
                 if (!TexturePackAPI.hasResource(resource)) {
                     break;
                 }
@@ -335,7 +336,7 @@ abstract class TileOverride implements ITileOverride {
                         int from = Integer.parseInt(matcher.group(1));
                         int to = Integer.parseInt(matcher.group(2));
                         for (int i = from; i <= to; i++) {
-                            ResourceLocation resource = TileLoader.parseTileAddress(propertiesFile, String.valueOf(i), renderPass);
+                            ResourceLocation resource = TileLoader.parseTileAddress(propertiesFile, String.valueOf(i), blankResource);
                             if (TexturePackAPI.hasResource(resource)) {
                                 addIcon(resource);
                             } else {
@@ -347,7 +348,7 @@ abstract class TileOverride implements ITileOverride {
                         e.printStackTrace();
                     }
                 } else {
-                    ResourceLocation resource = TileLoader.parseTileAddress(propertiesFile, token, renderPass);
+                    ResourceLocation resource = TileLoader.parseTileAddress(propertiesFile, token, blankResource);
                     if (resource == null) {
                         tileNames.add(null);
                     } else if (TexturePackAPI.hasResource(resource)) {

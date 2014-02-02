@@ -1,8 +1,10 @@
 package com.prupe.mcpatcher;
 
-import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.*;
+import net.minecraft.src.Icon;
+import net.minecraft.src.ResourceLocation;
+import net.minecraft.src.TextureAtlas;
+import net.minecraft.src.TextureAtlasSprite;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -196,19 +198,15 @@ public class TileLoader {
     }
 
     public static ResourceLocation parseTileAddress(ResourceLocation propertiesAddress, String value) {
-        return parseTileAddress(propertiesAddress, value, -1);
+        return parseTileAddress(propertiesAddress, value, BlendMethod.ALPHA.getBlankResource());
     }
 
-    public static ResourceLocation parseTileAddress(ResourceLocation propertiesAddress, String value, int pass) {
+    public static ResourceLocation parseTileAddress(ResourceLocation propertiesAddress, String value, ResourceLocation blankResource) {
         if (value == null) {
             return null;
         }
         if (value.equals("blank")) {
-            try {
-                return RenderPassAPI.instance.getBlankResource(pass);
-            } catch (Throwable e) {
-                return BlendMethod.ALPHA.getBlankResource();
-            }
+            return blankResource;
         }
         if (value.equals("null") || value.equals("none") || value.equals("default") || value.equals("")) {
             return null;
