@@ -341,40 +341,53 @@ class ConstPoolUtils {
     }
 
     static void checkTypeDescriptorSyntax(String descriptor) {
-        for (int i = 0; i < descriptor.length(); i++) {
-            char c = descriptor.charAt(i);
-            if (DESCRIPTOR_CHARS.indexOf(c) >= 0) {
-            } else if (c == 'L') {
-                int j = descriptor.indexOf(';', i);
-                if (j < 0) {
-                    throw new IllegalArgumentException("invalid type descriptor \"" + descriptor + "\": missing semicolon @" + i);
-                }
-                i = j;
-            } else {
-                throw new IllegalArgumentException("invalid type descriptor \"" + descriptor + "\": bad type @" + i);
-            }
-        }
+        parseDescriptor(descriptor);
     }
 
     static ArrayList<String> parseDescriptor(String descriptor) {
-        checkTypeDescriptorSyntax(descriptor);
         ArrayList<String> types = new ArrayList<String>();
-        descriptor = descriptor.replaceAll("[()]", "");
         int len = descriptor.length();
         int j;
+        outer:
         for (int i = 0; i < len; i = j + 1) {
             for (j = i; j < len; j++) {
                 char c = descriptor.charAt(j);
-                if (DESCRIPTOR_TYPES.indexOf(c) >= 0) {
-                    break;
-                } else if (c == 'L') {
-                    while (descriptor.charAt(j) != ';') {
-                        j++;
-                    }
-                    break;
+                switch (c) {
+                    case '(':
+                    case ')':
+                        continue outer;
+
+                    case '[':
+                        break;
+
+                    case 'V':
+                    case 'B':
+                    case 'C':
+                    case 'Z':
+                    case 'S':
+                    case 'I':
+                    case 'J':
+                    case 'F':
+                    case 'D':
+                        if (i == j) {
+                            types.add(String.valueOf(c));
+                        } else {
+                            types.add(descriptor.substring(i, j + 1));
+                        }
+                        continue outer;
+
+                    case 'L':
+                        j = descriptor.indexOf(';', i);
+                        if (j < 0) {
+                            throw new IllegalArgumentException("invalid type descriptor \"" + descriptor + "\": missing semicolon @" + i);
+                        }
+                        types.add(descriptor.substring(i, j + 1));
+                        continue outer;
+
+                    default:
+                        throw new IllegalArgumentException("invalid type descriptor \"" + descriptor + "\": bad type @" + j);
                 }
             }
-            types.add(descriptor.substring(i, j + 1));
         }
         return types;
     }
