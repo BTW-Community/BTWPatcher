@@ -7,7 +7,11 @@ abstract public class RenderPassMap {
     static final RenderPassMap instance = MAL.newInstance(RenderPassMap.class, "renderpass");
 
     public static int map18To17(int pass) {
-        return instance.MCPatcherToVanilla(pass);
+        return pass > 1 ? instance.MCPatcherToVanilla(pass) : pass;
+    }
+
+    public static int map17To18(int pass) {
+        return pass <= 1 ? instance.vanillaToMCPatcher(pass) : pass;
     }
 
     abstract protected int vanillaToMCPatcher(int pass);

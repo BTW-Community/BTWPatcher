@@ -21,6 +21,7 @@ public class BetterGlass extends Mod {
     private static final MethodRef getAOMultiplier18 = new MethodRef("DirectionWithAO", "getAOMultiplier", "(LDirectionWithAO;)F");
 
     private static final MethodRef pass18To17 = new MethodRef(MCPatcherUtils.RENDER_PASS_MAP_CLASS, "map18To17", "(I)I");
+    private static final MethodRef pass17To18 = new MethodRef(MCPatcherUtils.RENDER_PASS_MAP_CLASS, "map17To18", "(I)I");
     private static final MethodRef newGetAOBaseMultiplier = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "getAOBaseMultiplier", "(F)F");
 
     private final MethodRef sortAndRender = new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLivingBase;" + RenderPassEnumMod.getDescriptor() + "D)I");
@@ -207,7 +208,7 @@ public class BetterGlass extends Mod {
                         ordinalExpr,
                         capture(build(loadOpcode, any())),
                         ordinalExpr,
-                        IF_ICMPLE, any(2),
+                        subset(new int[]{IF_ICMPLE, IF_ICMPEQ}, true), any(2),
 
                         // moreRenderPasses = true;
                         push(1),
@@ -811,8 +812,9 @@ public class BetterGlass extends Mod {
                                 ALOAD_2,
                                 reference(INVOKEVIRTUAL, RenderPassEnumMod.ordinal)
                             ) : buildCode(
-                            ILOAD_2
-                        ),
+                                ILOAD_2,
+                                reference(INVOKESTATIC, pass17To18)
+                            ),
                         reference(INVOKESTATIC, preRenderPass),
                         IFNE, branch("A"),
 
@@ -823,13 +825,14 @@ public class BetterGlass extends Mod {
                         // }
                         label("A"),
 
-                        // pass = RenderGlobal.pass18To17(pass);
+                        // pass = RenderPassMap.map18To17(pass);
                         RenderPassEnumMod.haveRenderPassEnum() ?
-                            new byte[0] : buildCode(
-                            ILOAD_2,
-                            reference(INVOKESTATIC, pass18To17),
-                            ISTORE_2
-                        )
+                            new byte[0] :
+                            buildCode(
+                                ILOAD_2,
+                                reference(INVOKESTATIC, pass18To17),
+                                ISTORE_2
+                            )
                     );
                 }
             }.targetMethod(sortAndRender));
