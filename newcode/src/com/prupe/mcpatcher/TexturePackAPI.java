@@ -1,18 +1,16 @@
 package com.prupe.mcpatcher;
 
+import com.prupe.mcpatcher.mal.resource.ResourceLocationWithSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 public class TexturePackAPI {
     private static final MCLogger logger = MCLogger.getLogger("Texture Pack");
@@ -36,7 +34,6 @@ public class TexturePackAPI {
                 }
             }
         }
-        Collections.reverse(list);
         return list;
     }
 
@@ -158,188 +155,32 @@ public class TexturePackAPI {
         if (colon >= 0) {
             return new ResourceLocation(path.substring(0, colon), path.substring(colon + 1));
         }
-        // Relative to namespace mcpatcher dir:
-        // ~/path -> assets/(namespace of base file)/mcpatcher/path
+        ResourceLocation resource;
         if (path.startsWith("~/")) {
-            return new ResourceLocation(baseResource.getNamespace(), MCPATCHER_SUBDIR + path.substring(2));
+            // Relative to namespace mcpatcher dir:
+            // ~/path -> assets/(namespace of base file)/mcpatcher/path
+            resource = new ResourceLocation(baseResource.getNamespace(), MCPATCHER_SUBDIR + path.substring(2));
+        } else if (path.startsWith("./")) {
+            // Relative to properties file:
+            // ./path -> (dir of base file)/path
+            resource = new ResourceLocation(baseResource.getNamespace(), baseResource.getPath().replaceFirst("[^/]+$", "") + path.substring(2));
+        } else if (!absolute && !path.contains("/")) {
+            // Relative to properties file:
+            // filename -> (dir of base file)/filename
+            resource = new ResourceLocation(baseResource.getNamespace(), baseResource.getPath().replaceFirst("[^/]+$", "") + path);
+        } else {
+            // Absolute path, w/o namespace:
+            // path/filename -> assets/(namespace of base file)/path/filename
+            resource = new ResourceLocation(baseResource.getNamespace(), path);
         }
-        // Relative to properties file:
-        // ./path -> (dir of base file)/path
-        if (path.startsWith("./")) {
-            return new ResourceLocation(baseResource.getNamespace(), baseResource.getPath().replaceFirst("[^/]+$", "") + path.substring(2));
+        if (baseResource instanceof ResourceLocationWithSource) {
+            resource = new ResourceLocationWithSource(((ResourceLocationWithSource) baseResource).getSource(), resource);
         }
-        // Relative to properties file:
-        // filename -> (dir of base file)/filename
-        if (!absolute && !path.contains("/")) {
-            return new ResourceLocation(baseResource.getNamespace(), baseResource.getPath().replaceFirst("[^/]+$", "") + path);
-        }
-        // Absolute path, w/o namespace:
-        // path/filename -> assets/(namespace of base file)/path/filename
-        return new ResourceLocation(baseResource.getNamespace(), path);
+        return resource;
     }
 
     public static ResourceLocation newMCPatcherResourceLocation(String path) {
         return new ResourceLocation(MCPATCHER_SUBDIR + path);
-    }
-
-    public static List<ResourceLocation> listResources(String directory, String suffix, boolean recursive, boolean directories, boolean sortByFilename) {
-        return listResources(null, directory, suffix, recursive, directories, sortByFilename);
-    }
-
-    public static List<ResourceLocation> listResources(String namespace, String directory, String suffix, boolean recursive, boolean directories, final boolean sortByFilename) {
-        if (suffix == null) {
-            suffix = "";
-        }
-        if (MCPatcherUtils.isNullOrEmpty(directory)) {
-            directory = "";
-        } else if (!directory.endsWith("/")) {
-            directory += '/';
-        }
-
-        List<ResourceLocation> resources = new ArrayList<ResourceLocation>();
-        Set<ResourceLocation> allFiles = new HashSet<ResourceLocation>();
-        Set<ResourceLocation> allDirectories = new HashSet<ResourceLocation>();
-        listAllResources(allFiles, allDirectories);
-
-        boolean allNamespaces = MCPatcherUtils.isNullOrEmpty(namespace);
-        for (ResourceLocation resource : directories ? allDirectories : allFiles) {
-            if (!allNamespaces && !namespace.equals(resource.getNamespace())) {
-                continue;
-            }
-            String path = resource.getPath();
-            if (!path.endsWith(suffix)) {
-                continue;
-            }
-            if (!path.startsWith(directory)) {
-                continue;
-            }
-            if (!recursive) {
-                String subpath = path.substring(directory.length());
-                if (subpath.contains("/")) {
-                    continue;
-                }
-            }
-            resources.add(resource);
-        }
-
-        final String suffixExpr = Pattern.quote(suffix) + "$";
-        Collections.sort(resources, new Comparator<ResourceLocation>() {
-            @Override
-            public int compare(ResourceLocation o1, ResourceLocation o2) {
-                String n1 = o1.getNamespace();
-                String n2 = o2.getNamespace();
-                int result = n1.compareTo(n2);
-                if (result != 0) {
-                    return result;
-                }
-                String f1 = o1.getPath();
-                String f2 = o2.getPath();
-                if (sortByFilename) {
-                    f1 = f1.replaceAll(".*/", "").replaceFirst(suffixExpr, "");
-                    f2 = f2.replaceAll(".*/", "").replaceFirst(suffixExpr, "");
-                }
-                return f1.compareTo(f2);
-            }
-        });
-        return resources;
-    }
-
-    private static void listAllResources(Set<ResourceLocation> files, Set<ResourceLocation> directories) {
-        for (ResourcePack resourcePack : getResourcePacks(null)) {
-            if (resourcePack instanceof FileResourcePack) {
-                ZipFile zipFile = ((FileResourcePack) resourcePack).zipFile;
-                listAllResources(zipFile, files, directories);
-            } else if (resourcePack instanceof DefaultResourcePack) {
-                Map<String, File> map = ((DefaultResourcePack) resourcePack).map;
-                listAllResources(map, files, directories);
-            } else if (resourcePack instanceof AbstractResourcePack) {
-                File base = ((AbstractResourcePack) resourcePack).file;
-                listAllResources(base, files, directories);
-            }
-        }
-    }
-
-    private static void listAllResources(ZipFile zipFile, Set<ResourceLocation> files, Set<ResourceLocation> directories) {
-        if (zipFile == null) {
-            return;
-        }
-        for (ZipEntry entry : Collections.list(zipFile.entries())) {
-            String path = entry.getName();
-            if (!path.startsWith("assets/")) {
-                continue;
-            }
-            path = path.substring(7);
-            int slash = path.indexOf('/');
-            if (slash < 0) {
-                continue;
-            }
-            String namespace = path.substring(0, slash);
-            path = path.substring(slash + 1);
-            ResourceLocation resource = new ResourceLocation(namespace, path);
-            if (entry.isDirectory()) {
-                directories.add(resource);
-            } else {
-                files.add(resource);
-            }
-        }
-    }
-
-    private static void listAllResources(File directory, Set<ResourceLocation> files, Set<ResourceLocation> directories) {
-        if (directory == null || !directory.isDirectory()) {
-            return;
-        }
-        directory = new File(directory, "assets");
-        if (!directory.isDirectory()) {
-            return;
-        }
-        File[] subdirs = directory.listFiles();
-        if (subdirs == null) {
-            return;
-        }
-        for (File subdir : subdirs) {
-            Set<String> allFiles = new HashSet<String>();
-            listAllFiles(subdir, "", allFiles);
-            for (String path : allFiles) {
-                File file = new File(subdir, path);
-                ResourceLocation resource = new ResourceLocation(subdir.getName(), path.replace(File.separatorChar, '/'));
-                if (file.isDirectory()) {
-                    directories.add(resource);
-                } else if (file.isFile()) {
-                    files.add(resource);
-                }
-            }
-        }
-    }
-
-    private static void listAllFiles(File base, String subdir, Set<String> files) {
-        File[] entries = new File(base, subdir).listFiles();
-        if (entries == null) {
-            return;
-        }
-        for (File file : entries) {
-            String newPath = subdir + file.getName();
-            if (files.add(newPath)) {
-                if (file.isDirectory()) {
-                    listAllFiles(base, subdir + file.getName() + '/', files);
-                }
-            }
-        }
-    }
-
-    private static void listAllResources(Map<String, File> map, Set<ResourceLocation> files, Set<ResourceLocation> directories) {
-        if (map == null) {
-            return;
-        }
-        for (Map.Entry<String, File> entry : map.entrySet()) {
-            String key = entry.getKey();
-            File file = entry.getValue();
-            ResourceLocation resource = new ResourceLocation(key);
-            if (file.isDirectory()) {
-                directories.add(resource);
-            } else if (file.isFile()) {
-                files.add(resource);
-            }
-        }
     }
 
     public static int getTextureIfLoaded(ResourceLocation resource) {
@@ -387,6 +228,13 @@ public class TexturePackAPI {
     }
 
     protected InputStream getInputStreamImpl(ResourceLocation resource) {
+        if (resource instanceof ResourceLocationWithSource) {
+            try {
+                return ((ResourceLocationWithSource) resource).getSource().getInputStream(resource);
+            } catch (IOException e) {
+                // nothing
+            }
+        }
         try {
             return Minecraft.getInstance().getResourceManager().getResource(resource).getInputStream();
         } catch (IOException e) {

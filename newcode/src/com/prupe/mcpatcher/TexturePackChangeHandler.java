@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher;
 
+import com.prupe.mcpatcher.mal.resource.ResourceList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
 
@@ -108,6 +109,7 @@ abstract public class TexturePackChangeHandler {
         startTime = System.currentTimeMillis();
         Runtime runtime = Runtime.getRuntime();
         startMem = runtime.totalMemory() - runtime.freeMemory();
+        ResourceList.clearInstance();
         List<ResourcePack> resourcePacks = TexturePackAPI.getResourcePacks(null);
         logger.fine("%s resource packs (%d selected):", initializing ? "initializing" : "changing", resourcePacks.size());
         for (ResourcePack pack : resourcePacks) {

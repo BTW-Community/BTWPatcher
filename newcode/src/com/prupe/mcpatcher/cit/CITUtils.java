@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.mal.item.ItemAPI;
+import com.prupe.mcpatcher.mal.resource.ResourceList;
 import net.minecraft.src.*;
 
 import java.awt.image.BufferedImage;
@@ -85,7 +86,7 @@ public class CITUtils {
                 EnchantmentList.setProperties(properties);
 
                 if (enableItems || enableEnchantments || enableArmor) {
-                    for (ResourceLocation resource : TexturePackAPI.listResources(TexturePackAPI.MCPATCHER_SUBDIR + "cit", ".properties", true, false, true)) {
+                    for (ResourceLocation resource : ResourceList.getInstance().listResources(TexturePackAPI.MCPATCHER_SUBDIR + "cit", ".properties", true)) {
                         registerOverride(OverrideBase.create(resource));
                     }
                     if (enableItems) {

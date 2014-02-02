@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.hd;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.mal.resource.ResourceList;
 import net.minecraft.src.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
@@ -55,7 +56,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
             @Override
             public void afterChange() {
                 if (enable) {
-                    for (ResourceLocation resource : TexturePackAPI.listResources(TexturePackAPI.MCPATCHER_SUBDIR + "anim", ".properties", true, false, false)) {
+                    for (ResourceLocation resource : ResourceList.getInstance().listResources(TexturePackAPI.MCPATCHER_SUBDIR + "anim", ".properties", false)) {
                         Properties properties = TexturePackAPI.getProperties(resource);
                         if (properties != null) {
                             pending.put(resource, properties);

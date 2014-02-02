@@ -8,6 +8,7 @@ import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.BlockAndMetadata;
 import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
+import com.prupe.mcpatcher.mal.resource.ResourceList;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.RenderBlocks;
@@ -217,7 +218,7 @@ public class ColorizeBlock {
             registerColorMap(resource, value);
         }
 
-        for (ResourceLocation resource : TexturePackAPI.listResources(ColorMap.BLOCK_COLORMAP_DIR, ".properties", true, false, false)) {
+        for (ResourceLocation resource : ResourceList.getInstance().listResources(ColorMap.BLOCK_COLORMAP_DIR, ".properties", false)) {
             Properties properties1 = TexturePackAPI.getProperties(resource);
             IColorMap colorMap = ColorMap.loadColorMap(true, resource, properties1);
             registerColorMap(colorMap, resource, MCPatcherUtils.getStringProperty(properties1, "blocks", getDefaultBlockName(resource)));

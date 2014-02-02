@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.ctm;
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
+import com.prupe.mcpatcher.mal.resource.ResourceList;
 import net.minecraft.src.*;
 
 import java.util.*;
@@ -49,7 +50,7 @@ public class CTMUtils {
                 tileLoader = new TileLoader("textures/blocks", logger);
 
                 if (enableStandard || enableNonStandard) {
-                    for (ResourceLocation resource : TexturePackAPI.listResources(TexturePackAPI.MCPATCHER_SUBDIR + "ctm", ".properties", true, false, true)) {
+                    for (ResourceLocation resource : ResourceList.getInstance().listResources(TexturePackAPI.MCPATCHER_SUBDIR + "ctm", ".properties", true)) {
                         registerOverride(TileOverride.create(resource, tileLoader));
                     }
                 }

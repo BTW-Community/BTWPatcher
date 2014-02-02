@@ -24,7 +24,7 @@ public class BaseTexturePackMod extends Mod {
         name = MCPatcherUtils.BASE_TEXTURE_PACK_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
-        version = "4.1";
+        version = "4.2";
 
         addClassMod(new MinecraftMod());
         addClassMod(new TextureManagerMod());
@@ -48,14 +48,18 @@ public class BaseTexturePackMod extends Mod {
         addClassMod(new ResourceLocationMod(this));
 
         addClassFile(MCPatcherUtils.TEXTURE_PACK_API_CLASS);
-        addClassFile(MCPatcherUtils.TEXTURE_PACK_API_CLASS + "$1");
         addClassFile(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS);
         addClassFile(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS + "$1");
+        addClassFile(MCPatcherUtils.RESOURCE_LIST_CLASS);
+        addClassFile(MCPatcherUtils.RESOURCE_LOCATION_WITH_SOURCE_CLASS);
+        addClassFile(MCPatcherUtils.RESOURCE_LOCATION_WITH_SOURCE_CLASS + "$Comparator1");
         addClassFile(MCPatcherUtils.WEIGHTED_INDEX_CLASS);
         addClassFile(MCPatcherUtils.WEIGHTED_INDEX_CLASS + "$1");
         addClassFile(MCPatcherUtils.WEIGHTED_INDEX_CLASS + "$2");
         addClassFile(MCPatcherUtils.BLEND_METHOD_CLASS);
         addClassFile(MCPatcherUtils.INPUT_HANDLER_CLASS);
+
+        getClassMap().addInheritance("ResourceLocation", MCPatcherUtils.RESOURCE_LOCATION_WITH_SOURCE_CLASS);
     }
 
     @Override
