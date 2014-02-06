@@ -18,62 +18,54 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
     );
     private static final int NOT_PRERELEASE = 9999;
 
-    private static final Pattern RD_PATTERN = Pattern.compile(
-        "rd-(\\d+)",
-        Pattern.CASE_INSENSITIVE
-    );
-    private static final Pattern CLASSIC_PATTERN = Pattern.compile(
-        "c(" + VERSION_PATTERN + "([a-z][_.0-9]*)?)",
-        Pattern.CASE_INSENSITIVE
-    );
-    private static final Pattern INDEV_PATTERN = null; // TODO
-    private static final Pattern INFDEV_PATTERN = Pattern.compile(
-        "inf-(\\d+)",
-        Pattern.CASE_INSENSITIVE
-    );
-    private static final Pattern ALPHA_PATTERN = Pattern.compile(
-        "a" + VERSION_PATTERN,
-        Pattern.CASE_INSENSITIVE
-    );
-    private static final Pattern BETA_PATTERN = Pattern.compile(
-        "b" + VERSION_PATTERN,
-        Pattern.CASE_INSENSITIVE
-    );
-    private static final Pattern RC_PATTERN = Pattern.compile(
-        "rc\\s?(\\d+)",
-        Pattern.CASE_INSENSITIVE
-    );
-    private static final Pattern FINAL_PATTERN = Pattern.compile(
-        VERSION_PATTERN,
-        Pattern.CASE_INSENSITIVE
-    );
-    private static final Pattern SNAPSHOT_PATTERN = Pattern.compile(
-        "(\\d+w\\d+[a-z])",
-        Pattern.CASE_INSENSITIVE
-    );
+    private static enum Era {
+        RD("rd-(\\d+)"),
+        CLASSIC("c(" + VERSION_PATTERN + "([a-z][_.0-9]*)?)"),
+        //INDEV("..."), TODO
+        INFDEV("inf-(\\d+)"),
+        ALPHA("a" + VERSION_PATTERN),
+        BETA("b" + VERSION_PATTERN),
+        RC("rc\\s?(\\d+)"),
+        FINAL(VERSION_PATTERN),
+        SNAPSHOT("(\\d+w\\d+[a-z])", FINAL);
 
-    private static final List<Pattern> ALL_PATTERNS = new ArrayList<Pattern>();
+        private final Pattern pattern;
+        private final Era parent;
+
+        Era(String pattern) {
+            this(pattern, null);
+        }
+
+        Era(String pattern, Era parent) {
+            this.pattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+            this.parent = parent;
+        }
+
+        boolean isSnapshot() {
+            return parent != null;
+        }
+
+        int effectiveOrder() {
+            return parent == null ? ordinal() : parent.effectiveOrder();
+        }
+
+        Matcher matcher(CharSequence input) {
+            return pattern.matcher(input);
+        }
+    }
 
     private final String versionString;
-    private final int[] parsedVersion;
+    private final int[] versionNumbers;
     private final boolean snapshot;
     private final int preRelease;
 
+    private static final Map<String, MinecraftVersion> knownVersions = new HashMap<String, MinecraftVersion>();
     private static final Map<MinecraftVersion, String> knownMD5s = new HashMap<MinecraftVersion, String>();
     private static final Map<String, MinecraftVersion> alternateMD5s = new HashMap<String, MinecraftVersion>();
     private static final List<MinecraftVersion> versionOrdering = new ArrayList<MinecraftVersion>();
+    private static MinecraftVersion highestKnownVersion;
 
     static {
-        ALL_PATTERNS.add(RD_PATTERN);
-        ALL_PATTERNS.add(CLASSIC_PATTERN);
-        ALL_PATTERNS.add(INDEV_PATTERN);
-        ALL_PATTERNS.add(INFDEV_PATTERN);
-        ALL_PATTERNS.add(ALPHA_PATTERN);
-        ALL_PATTERNS.add(BETA_PATTERN);
-        ALL_PATTERNS.add(RC_PATTERN);
-        ALL_PATTERNS.add(FINAL_PATTERN);
-        ALL_PATTERNS.add(SNAPSHOT_PATTERN);
-
         try {
             addKnownVersion("a1.2.6", "ddd5e39467f28d1ea1a03b4d9e790867");
 
@@ -321,49 +313,73 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
                 MinecraftVersion a = versionOrdering.get(i);
                 for (int j = 0; j < versionOrdering.size(); j++) {
                     MinecraftVersion b = versionOrdering.get(j);
-                    Integer result = a.comparePartial(b);
+                    Integer result1 = comparePartial(a, b);
+                    int result2 = a.compareTo(b);
                     if (i == j) {
-                        if (result == null || result != 0) {
-                            throw new RuntimeException("incorrect ordering in known version table: " + a.getVersionString() + " != " + b.getVersionString());
+                        if (result1 == null || result1 != 0 || result2 != 0) {
+                            throw new AssertionError("incorrect ordering in known version table: " + a.getVersionString() + " != " + b.getVersionString());
                         }
                     } else if (i > j) {
-                        if (result != null && result <= 0) {
-                            throw new RuntimeException("incorrect ordering in known version table: " + a.getVersionString() + " <= " + b.getVersionString());
+                        if (result1 != null && result1 <= 0 || result2 <= 0) {
+                            throw new AssertionError("incorrect ordering in known version table: " + a.getVersionString() + " <= " + b.getVersionString());
                         }
                     } else {
-                        if (result != null && result >= 0) {
-                            throw new RuntimeException("incorrect ordering in known version table: " + a.getVersionString() + " >= " + b.getVersionString());
+                        if (result1 != null && result1 >= 0 || result2 >= 0) {
+                            throw new AssertionError("incorrect ordering in known version table: " + a.getVersionString() + " >= " + b.getVersionString());
                         }
                     }
                 }
             }
+            highestKnownVersion = versionOrdering.get(versionOrdering.size() - 1);
         } catch (Throwable e) {
             Logger.log(e);
         }
     }
 
     private static void addKnownVersion(String versionString, String md5) {
-        try {
-            MinecraftVersion version = parseVersion(versionString);
-            if (version == null) {
-                throw new IllegalArgumentException("bad known version " + version);
-            }
-            if (md5 != null && !md5.matches("\\p{XDigit}{32}")) {
-                throw new IllegalArgumentException("bad md5 sum for known version " + version);
-            }
-            versionOrdering.remove(version);
-            versionOrdering.add(version);
-            knownMD5s.put(version, md5);
-            alternateMD5s.put(md5, version);
-        } catch (Throwable e) {
-            Logger.log(e);
+        if (md5 == null || !md5.matches("\\p{XDigit}{32}")) {
+            throw new IllegalArgumentException("bad md5 sum for known version " + versionString);
         }
+        MinecraftVersion version = parseVersion1(versionString);
+        if (version == null) {
+            throw new IllegalArgumentException("bad known version " + versionString);
+        }
+        knownVersions.put(version.getVersionString(), version);
+        versionOrdering.remove(version);
+        versionOrdering.add(version);
+        knownMD5s.put(version, md5);
+        alternateMD5s.put(md5, version);
+    }
+
+    private static Integer comparePartial(MinecraftVersion a, MinecraftVersion b) {
+        if (a.snapshot != b.snapshot) {
+            return null;
+        }
+        int[] u = a.versionNumbers;
+        int[] v = b.versionNumbers;
+        int i;
+        for (i = 0; i < u.length && i < v.length; i++) {
+            if (u[i] != v[i]) {
+                return u[i] - v[i];
+            }
+        }
+        if (i < u.length) {
+            return u[i];
+        }
+        if (i < v.length) {
+            return -v[i];
+        }
+        i = a.preRelease - b.preRelease;
+        if (i != 0) {
+            return i;
+        }
+        return a.getVersionString().compareTo(b.getVersionString());
     }
 
     private static int findClosestKnownVersion(MinecraftVersion version) {
         int i;
         for (i = 0; i < versionOrdering.size(); i++) {
-            Integer partialResult = version.comparePartial(versionOrdering.get(i));
+            Integer partialResult = comparePartial(version, versionOrdering.get(i));
             if (partialResult != null && partialResult <= 0) {
                 break;
             }
@@ -378,8 +394,20 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
      * @return MinecraftVersion object or null
      */
     public static MinecraftVersion parseVersion(String versionString) {
+        MinecraftVersion version = parseVersion1(versionString);
+        if (version != null && !versionOrdering.contains(version)) {
+            versionOrdering.add(findClosestKnownVersion(version), version);
+        }
+        return version;
+    }
+
+    private static MinecraftVersion parseVersion1(String versionString) {
         if (versionString == null) {
             return null;
+        }
+        MinecraftVersion version = knownVersions.get(versionString);
+        if (version != null) {
+            return version;
         }
         versionString = shortenVersionString(versionString);
         int preRelease = NOT_PRERELEASE;
@@ -394,15 +422,12 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             }
         }
         if (versionString.matches("2\\.0_(blue|purple|red)")) {
-            return new MinecraftVersion(ALL_PATTERNS.indexOf(FINAL_PATTERN), versionString, "1.5.1." + versionString, preRelease);
+            return new MinecraftVersion(Era.FINAL, versionString, "1.5.1." + versionString, preRelease);
         }
-        for (int i = 0; i < ALL_PATTERNS.size(); i++) {
-            if (ALL_PATTERNS.get(i) == null) {
-                continue;
-            }
-            Matcher matcher = ALL_PATTERNS.get(i).matcher(versionString);
+        for (Era era : Era.values()) {
+            Matcher matcher = era.matcher(versionString);
             if (matcher.matches()) {
-                return new MinecraftVersion(i, matcher, preRelease);
+                return new MinecraftVersion(era, matcher, preRelease);
             }
         }
         return null;
@@ -413,44 +438,35 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
         versionString = versionString.replaceFirst("^minecraft", "");
         versionString = versionString.replaceFirst("prerelease", "pre");
         versionString = versionString.replaceAll("\\s", "");
-        versionString = versionString.replaceFirst("^alpha[- ]", "a");
-        versionString = versionString.replaceFirst("^beta[- ]", "b");
+        versionString = versionString.replaceFirst("^alpha-", "a");
+        versionString = versionString.replaceFirst("^beta-", "b");
         return versionString;
     }
 
-    private static int[] splitVersionString(int era, String versionString) {
-        String[] token = versionString.split("[^0-9]+");
-        int[] parsed = new int[token.length + 1];
-        parsed[0] = era;
+    private static int[] splitVersionNumbers(Era era, String versionNumbers) {
+        String[] token = versionNumbers.split("[^0-9]+");
+        int[] numbers = new int[token.length + 1];
+        numbers[0] = era.effectiveOrder();
         for (int i = 0; i < token.length; i++) {
             if (!token[i].isEmpty()) {
                 try {
-                    parsed[i + 1] = Integer.parseInt(token[i]);
+                    numbers[i + 1] = Integer.parseInt(token[i]);
                 } catch (NumberFormatException e) {
                 }
             }
         }
-        return parsed;
+        return numbers;
     }
 
-    private MinecraftVersion(int era, Matcher matcher, int preRelease) {
-        versionString = matcher.group(0);
-        this.preRelease = preRelease;
-
-        parsedVersion = splitVersionString(era, matcher.group(1));
-        if (era == ALL_PATTERNS.indexOf(SNAPSHOT_PATTERN)) {
-            snapshot = true;
-            parsedVersion[0] = ALL_PATTERNS.indexOf(FINAL_PATTERN);
-        } else {
-            snapshot = false;
-        }
+    private MinecraftVersion(Era era, Matcher matcher, int preRelease) {
+        this(era, matcher.group(0), matcher.group(1), preRelease);
     }
 
-    private MinecraftVersion(int era, String versionString, String fakeVersionString, int preRelease) {
+    private MinecraftVersion(Era era, String versionString, String versionNumbers, int preRelease) {
         this.versionString = versionString;
         this.preRelease = preRelease;
-        parsedVersion = splitVersionString(era, fakeVersionString);
-        snapshot = false;
+        this.versionNumbers = splitVersionNumbers(era, versionNumbers);
+        snapshot = era.isSnapshot();
     }
 
     /**
@@ -474,33 +490,9 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
     /**
      * @see #getVersionString()
      */
+    @Override
     public String toString() {
         return getVersionString();
-    }
-
-    private Integer comparePartial(MinecraftVersion that) {
-        if (this.snapshot != that.snapshot) {
-            return null;
-        }
-        int[] a = this.parsedVersion;
-        int[] b = that.parsedVersion;
-        int i;
-        for (i = 0; i < a.length && i < b.length; i++) {
-            if (a[i] != b[i]) {
-                return a[i] - b[i];
-            }
-        }
-        if (i < a.length) {
-            return a[i];
-        }
-        if (i < b.length) {
-            return -b[i];
-        }
-        i = this.preRelease - that.preRelease;
-        if (i != 0) {
-            return i;
-        }
-        return this.getVersionString().compareTo(that.getVersionString());
     }
 
     /**
@@ -509,17 +501,18 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
      * @param that version to compare with
      * @return 0, &lt; 0, or &gt; 0
      */
+    @Override
     public int compareTo(MinecraftVersion that) {
-        Integer partialResult = comparePartial(that);
-        if (partialResult != null) {
-            return partialResult;
+        if (that == null) {
+            throw new NullPointerException();
         }
-        int i = findClosestKnownVersion(this);
-        int j = findClosestKnownVersion(that);
-        if (i != j) {
+        int i = versionOrdering.indexOf(this);
+        int j = versionOrdering.indexOf(that);
+        if (i >= 0 && j >= 0) {
             return i - j;
+        } else {
+            throw new AssertionError("Unreachable");
         }
-        return this.getVersionString().compareTo(that.getVersionString());
     }
 
     /**
@@ -534,12 +527,17 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
 
     @Override
     public boolean equals(Object that) {
-        return that instanceof MinecraftVersion && compareTo((MinecraftVersion) that) == 0;
+        if (this == that) {
+            return true;
+        } else if (!(that instanceof MinecraftVersion)) {
+            return false;
+        }
+        return getVersionString().equals(((MinecraftVersion) that).getVersionString());
     }
 
     @Override
     public int hashCode() {
-        return versionString.hashCode();
+        return getVersionString().hashCode();
     }
 
     static String getOriginalMD5(MinecraftVersion version) {
@@ -547,11 +545,7 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
     }
 
     boolean isNewerThanAnyKnownVersion() {
-        if (versionOrdering.isEmpty()) {
-            return true;
-        }
-        MinecraftVersion highestVersion = versionOrdering.get(versionOrdering.size() - 1);
-        return compareTo(highestVersion) > 0;
+        return compareTo(highestKnownVersion) > 0;
     }
 
     static boolean isKnownMD5(String md5) {
