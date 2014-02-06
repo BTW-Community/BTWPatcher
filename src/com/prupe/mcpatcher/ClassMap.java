@@ -6,12 +6,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.nio.charset.Charset;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.jar.JarOutputStream;
+import java.util.regex.Pattern;
 
 /**
  * Contains mapping from descriptive class, method, and field names to their obfuscated
@@ -802,81 +801,10 @@ public class ClassMap {
         for (Entry<String, ClassMapEntry> e : classMap.entrySet()) {
             String oldClass = e.getKey();
             String newClass = e.getValue().getObfName().replace('.', '/');
-            data = stringReplace1(data, oldClass, newClass);
-            data = stringReplace2(data, oldClass, newClass);
+            data = new ClassFileStringReplacer(data, oldClass, newClass).replace();
         }
 
         jar.write(data);
-    }
-
-    private byte[] stringReplace1(byte[] data, String oldString, String newString) throws IOException {
-        if (oldString.equals(newString)) {
-            return data;
-        }
-        byte[] oldData = Util.marshalString(oldString);
-        byte[] newData = Util.marshalString(newString);
-        BinaryMatcher bm = new BinaryMatcher(BinaryRegex.build(oldData));
-        int offset = 0;
-        while (bm.match(data, offset)) {
-            Logger.log(Logger.LOG_METHOD, "string replace %s -> %s @%d", oldString, newString, bm.getStart());
-            ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-            baos2.write(data, 0, bm.getStart());
-            baos2.write(newData);
-            baos2.write(data, bm.getEnd(), data.length - bm.getEnd());
-            offset = bm.getStart() + newData.length;
-            data = baos2.toByteArray();
-        }
-        return data;
-    }
-
-    private byte[] stringReplace2(byte[] data, String oldString, String newString) throws IOException {
-        if (oldString.equals(newString)) {
-            return data;
-        }
-        String fastExpr = BinaryRegex.build(
-            'L',
-            oldString.getBytes(),
-            ';'
-        );
-        BinaryMatcher bmFast = new BinaryMatcher(fastExpr);
-        BinaryMatcher bm = new BinaryMatcher(BinaryRegex.build(
-            0,
-            BinaryRegex.any(),
-            BinaryRegex.nonGreedy(BinaryRegex.repeat(DESCRIPTOR_CHARS, 0, 255 - oldString.length())),
-            fastExpr
-        ));
-        int offset = 0;
-        while (bmFast.match(data, offset) && bm.match(data, offset)) {
-            int start = bm.getStart();
-            int length = Util.demarshal(data, bm.getStart(), 2);
-            int end = start + length + 2;
-            if (end >= data.length || length + 2 < bm.getMatchLength()) {
-                offset++;
-                continue;
-            }
-            String oldStringFull;
-            try {
-                oldStringFull = new String(data, start + 2, length, "UTF-8");
-            } catch (Throwable e) {
-                Logger.log(e);
-                offset++;
-                continue;
-            }
-            String newStringFull = oldStringFull.replaceAll("\\b(L?)" + oldString + "\\b", "$1" + newString);
-            if (oldStringFull.equals(newStringFull) || newStringFull.matches(".*net/minecraft.*net/minecraft.*")) {
-                offset = end;
-            } else {
-                Logger.log(Logger.LOG_METHOD, "string replace %s -> %s @%d", oldStringFull, newStringFull, start);
-                byte[] newData = Util.marshalString(newStringFull);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                baos.write(data, 0, bm.getStart());
-                baos.write(newData);
-                baos.write(data, end, data.length - end);
-                offset = bm.getStart() + newData.length;
-                data = baos.toByteArray();
-            }
-        }
-        return data;
     }
 
     void merge(ClassMap from) {

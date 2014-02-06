@@ -44,16 +44,21 @@ public class Util {
     }
 
     static byte[] marshalString(String value) {
-        byte[] bytes = value.getBytes();
-        int len = bytes.length;
-        ByteArrayOutputStream bos = new ByteArrayOutputStream(len + 2);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(value.length() + 2);
         try {
-            bos.write(marshal16(len));
-            bos.write(bytes);
+            marshalString(bos, value);
         } catch (IOException e) {
             Logger.log(e);
         }
         return bos.toByteArray();
+    }
+
+    static OutputStream marshalString(OutputStream output, String value) throws IOException {
+        int len = value.length();
+        output.write((byte) (len >> 8));
+        output.write((byte) len);
+        output.write(value.getBytes());
+        return output;
     }
 
     static int demarshal(byte[] data, int offset, int length) {
