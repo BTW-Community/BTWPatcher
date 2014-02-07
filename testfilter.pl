@@ -5,7 +5,7 @@ use strict;
 s/\b[a-z]+\.class/xx.class/g;
 s/L[a-z]+;/Lxx;/g;
 s/ [a-z]+/ xx/g if /multiple matches: /;
-s/\b[a-z]+(\(\S*\))/xx$1/g;
+s/\b[a-z_]+(\(\S*\))/xx$1/g;
 
 s/(matches|->) [a-zA-Z_]{1,3}\b/$1 xx/g if /field|string replace/;
 s/(matches|->) [a-zA-Z_]{1,3} (\w*\(\S*\)\S+)/$1 xx $2/g if /method|class ref/;
