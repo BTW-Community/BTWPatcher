@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.MinecraftVersion;
 import com.prupe.mcpatcher.Mod;
 
 import static com.prupe.mcpatcher.BinaryRegex.end;
+import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class RenderBlockHelperMod extends com.prupe.mcpatcher.ClassMod {
@@ -21,6 +22,24 @@ public class RenderBlockHelperMod extends com.prupe.mcpatcher.ClassMod {
 
     public RenderBlockHelperMod(Mod mod) {
         super(mod);
+
+        addClassSignature(new BytecodeSignature() {
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // (var24 + var21 + var30 + var38) / 4.0f
+                    anyFLOAD,
+                    anyFLOAD,
+                    FADD,
+                    anyFLOAD,
+                    FADD,
+                    anyFLOAD,
+                    FADD,
+                    push(4.0f),
+                    FDIV
+                );
+            }
+        }.setMethod(computeVertexColors));
 
         addClassSignature(new BytecodeSignature() {
             @Override
@@ -45,6 +64,5 @@ public class RenderBlockHelperMod extends com.prupe.mcpatcher.ClassMod {
         }.setMethod(mixAOBrightness));
 
         addMemberMapper(new FieldMapper(renderBlocks));
-        addMemberMapper(new MethodMapper(computeVertexColors));
     }
 }

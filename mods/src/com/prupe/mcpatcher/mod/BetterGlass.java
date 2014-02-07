@@ -19,6 +19,7 @@ public class BetterGlass extends Mod {
     private static final MethodRef enableLightmap = new MethodRef("EntityRenderer", "enableLightmap", "(D)V");
     private static final MethodRef disableLightmap = new MethodRef("EntityRenderer", "disableLightmap", "(D)V");
     private static final MethodRef getAOMultiplier18 = new MethodRef("DirectionWithAO", "getAOMultiplier", "(LDirectionWithAO;)F");
+    private static final FieldRef aoMultiplier18 = new FieldRef("DirectionWithAO", "aoMultiplier", "F");
 
     private static final MethodRef pass18To17 = new MethodRef(MCPatcherUtils.RENDER_PASS_MAP_CLASS, "map18To17", "(I)I");
     private static final MethodRef pass17To18 = new MethodRef(MCPatcherUtils.RENDER_PASS_MAP_CLASS, "map17To18", "(I)I");
@@ -26,7 +27,7 @@ public class BetterGlass extends Mod {
 
     private final MethodRef sortAndRender = new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLivingBase;" + RenderPassEnumMod.getDescriptor() + "D)I");
 
-    private final boolean haveDirectionWithAO;
+    private final int directionWithAO;
 
     public BetterGlass() {
         name = MCPatcherUtils.BETTER_GLASS;
@@ -37,7 +38,13 @@ public class BetterGlass extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.CONNECTED_TEXTURES);
 
-        haveDirectionWithAO = getMinecraftVersion().compareTo("14w05a") >= 0;
+        if (getMinecraftVersion().compareTo("14w06a") >= 0) {
+            directionWithAO = 2;
+        } else if (getMinecraftVersion().compareTo("14w05a") >= 0) {
+            directionWithAO = 1;
+        } else {
+            directionWithAO = 0;
+        }
 
         int malVersion;
 
@@ -55,7 +62,7 @@ public class BetterGlass extends Mod {
         } else {
             malVersion = 1;
         }
-        if (haveDirectionWithAO) {
+        if (directionWithAO > 0) {
             addClassMod(new DirectionWithAOMod());
             addClassMod(new RenderBlockHelperMod());
         }
@@ -873,7 +880,7 @@ public class BetterGlass extends Mod {
 
             addPatch(new AOMultiplierPatch(this) {
                 {
-                    if (!haveDirectionWithAO) {
+                    if (directionWithAO == 0) {
                         targetMethod(renderStandardBlockWithAmbientOcclusion);
                     }
                 }
@@ -1002,9 +1009,15 @@ public class BetterGlass extends Mod {
             addClassSignature(new ConstSignature(0.6f));
             addClassSignature(new ConstSignature(0.8f));
 
-            addMemberMapper(new MethodMapper(getAOMultiplier18)
-                .accessFlag(AccessFlag.STATIC, true)
-            );
+            if (directionWithAO == 1) {
+                addMemberMapper(new MethodMapper(getAOMultiplier18)
+                    .accessFlag(AccessFlag.STATIC, true)
+                );
+            } else {
+                addMemberMapper(new FieldMapper(aoMultiplier18)
+                    .accessFlag(AccessFlag.STATIC, false)
+                );
+            }
         }
     }
 
@@ -1029,16 +1042,23 @@ public class BetterGlass extends Mod {
 
         @Override
         public String getMatchExpression() {
-            if (haveDirectionWithAO) {
-                return buildExpression(
-                    reference(INVOKESTATIC, getAOMultiplier18)
-                );
-            } else {
-                return buildExpression(or(
-                    build(push(0.5f)),
-                    build(push(0.6f)),
-                    build(push(0.8f))
-                ));
+            switch (directionWithAO) {
+                default:
+                    return buildExpression(or(
+                        build(push(0.5f)),
+                        build(push(0.6f)),
+                        build(push(0.8f))
+                    ));
+
+                case 1:
+                    return buildExpression(
+                        reference(INVOKESTATIC, getAOMultiplier18)
+                    );
+
+                case 2:
+                    return buildExpression(
+                        reference(GETFIELD, aoMultiplier18)
+                    );
             }
         }
 

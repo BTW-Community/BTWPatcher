@@ -4,9 +4,7 @@ import com.prupe.mcpatcher.*;
 import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
-import static com.prupe.mcpatcher.BytecodeMatcher.IFGE_or_IFLT;
-import static com.prupe.mcpatcher.BytecodeMatcher.anyReference;
-import static com.prupe.mcpatcher.BytecodeMatcher.captureReference;
+import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 /**
@@ -14,7 +12,7 @@ import static javassist.bytecode.Opcode.*;
 */
 public class RenderBlockManagerMod extends ClassMod {
     public static final FieldRef instance = new FieldRef("RenderBlockManager", "instance", "LRenderBlockManager;");
-    public final MethodRef renderBlockByRenderType = new MethodRef("RenderBlockManager", "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+    public final MethodRef renderBlockByRenderType = new MethodRef("RenderBlockManager", "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + (Mod.getMinecraftVersion().compareTo("14w06a") >= 0 ? "LIBlockAccess;" : "") + ")Z");
     public static final MethodRef registerRenderType = new MethodRef("RenderBlockManager", "registerRenderType", "(ILRenderBlocks;)V");
     public static final MethodRef renderBlockAsItem = new MethodRef("RenderBlockManager", "renderBlockAsItem", "(LBlock;IF)V");
 
@@ -40,14 +38,14 @@ public class RenderBlockManagerMod extends ClassMod {
 
                     repeat(build(
                         // this.registerRenderType(renderType, new RenderBlocksSubclass());
-                        // x40 or more
+                        // x36 or more
                         ALOAD_0,
                         any(1, 3), // ICONST_*, BIPUSH x, SIPUSH x x
                         anyReference(NEW),
                         DUP,
                         anyReference(INVOKESPECIAL),
                         backReference(2)
-                    ), 40)
+                    ), 36)
                 );
             }
         }
@@ -64,11 +62,14 @@ public class RenderBlockManagerMod extends ClassMod {
                     begin(),
                     ALOAD_1,
                     captureReference(INVOKEVIRTUAL),
-                    ISTORE_3,
+                    anyISTORE,
 
                     // return renderType >= 0 ? ...;
-                    ILOAD_3,
-                    IFGE_or_IFLT, any(2)
+                    anyILOAD,
+                    or(
+                        build(IFGE_or_IFLT, any(2)), // older
+                        build(push(-1), IF_ICMPEQ_or_IF_ICMPNE, any(2)) // 14w06a+
+                    )
                 );
             }
         }
@@ -80,13 +81,7 @@ public class RenderBlockManagerMod extends ClassMod {
             @Override
             public String getMatchExpression() {
                 return buildExpression(
-                    // this.renderers.get(renderType).renderBlockAsItem(block, metadata, brightness);
-                    ALOAD_0,
-                    anyReference(GETFIELD),
-                    ILOAD, 4,
-                    reference(INVOKEINTERFACE, listGet),
-                    captureReference(CHECKCAST),
-
+                    // renderer.renderBlockAsItem(block, metadata, brightness);
                     ALOAD_1,
                     ILOAD_2,
                     FLOAD_3,
@@ -95,8 +90,7 @@ public class RenderBlockManagerMod extends ClassMod {
             }
         }
             .setMethod(renderBlockAsItem)
-            .addXref(1, renderBlocksClass)
-            .addXref(2, renderBlockAsItem1)
+            .addXref(1, renderBlockAsItem1)
         );
 
         addMemberMapper(new FieldMapper(instance)
