@@ -254,7 +254,7 @@ public class ConnectedTextures extends Mod {
                         // blockAccess, i, j, k, face
                         ALOAD_2,
                         PositionMod.unpackArguments(this, 3),
-                        DirectionMod.unpackArguments(this, 3 + PositionMod.getDescriptorLength())
+                        DirectionMod.unpackArgumentsSafe(this, 3 + PositionMod.getDescriptorLength())
                     );
                 }
             });
@@ -264,7 +264,7 @@ public class ConnectedTextures extends Mod {
                 byte[] getCTMUtilsArgs() {
                     return buildCode(
                         // face, metadata
-                        DirectionMod.unpackArguments(this, 2),
+                        DirectionMod.unpackArgumentsSafe(this, 2),
                         ILOAD_3
                     );
                 }
@@ -275,7 +275,7 @@ public class ConnectedTextures extends Mod {
                 byte[] getCTMUtilsArgs() {
                     return buildCode(
                         // face
-                        DirectionMod.unpackArguments(this, 2)
+                        DirectionMod.unpackArgumentsSafe(this, 2)
                     );
                 }
             });

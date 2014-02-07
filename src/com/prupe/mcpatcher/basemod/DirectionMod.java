@@ -37,10 +37,28 @@ public class DirectionMod extends com.prupe.mcpatcher.ClassMod {
 
     public static Object unpackArguments(PatchComponent patchComponent, int register) {
         if (haveDirectionClass()) {
-            // direction.getID()
+            // direction.ordinal()
             return new Object[]{
                 registerLoadStore(ALOAD, register),
-                patchComponent.reference(INVOKEVIRTUAL, getID),
+                patchComponent.reference(INVOKEVIRTUAL, ordinal),
+            };
+        } else {
+            // direction
+            return registerLoadStore(ILOAD, register);
+        }
+    }
+
+    public static Object unpackArgumentsSafe(PatchComponent patchComponent, int register) {
+        if (haveDirectionClass()) {
+            byte[] load = registerLoadStore(ALOAD, register);
+            // direction == null ? -1 : direction.ordinal()
+            return new Object[]{
+                load,
+                IFNULL, 0, load.length + 9,
+                load,
+                patchComponent.reference(INVOKEVIRTUAL, ordinal),
+                GOTO, 0, 4,
+                patchComponent.push(-1)
             };
         } else {
             // direction
