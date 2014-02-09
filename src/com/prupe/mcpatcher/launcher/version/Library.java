@@ -37,7 +37,7 @@ public class Library {
             NATIVES_TYPE = "windows";
             OS_TYPE = "windows";
         } else if (os.contains("mac") || os.contains("osx")) {
-            NATIVES_TYPE = "macosx";
+            NATIVES_TYPE = "osx";
             OS_TYPE = "osx";
         } else if (os.contains("solaris") || os.contains("sunos")) {
             NATIVES_TYPE = "solaris";
