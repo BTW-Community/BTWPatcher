@@ -41,10 +41,12 @@ public class BlockAPIMod extends Mod {
         addClassMod(new RenderBlocksMod());
         if (RenderBlocksMod.haveSubclasses()) {
             addClassMod(new RenderBlockManagerMod(this));
-            RenderBlockCustomMod.setup(this);
         }
         if (RenderBlockHelperMod.haveClass()) {
             addClassMod(new RenderBlockHelperMod());
+        }
+        if (RenderBlockCustomMod.haveCustomModels()) {
+            addClassMod(new RenderBlockCustomMod(this));
         }
         if (malVersion >= 2) {
             addClassMod(new Shared.RegistryBaseMod(this));

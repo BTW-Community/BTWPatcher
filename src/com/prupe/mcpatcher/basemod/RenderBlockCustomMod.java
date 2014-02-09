@@ -8,17 +8,8 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class RenderBlockCustomMod extends ClassMod {
-    public static final MethodRef renderModelFace = new MethodRef("RenderBlockCustom", "renderModelFace", "(LBlock;LPosition;LIcon;LDirection;FFF)I");
-
-    public static RenderBlockCustomMod setup(Mod mod) {
-        if (haveCustomModels()) {
-            RenderBlockCustomMod renderBlockCustomMod = new RenderBlockCustomMod(mod);
-            mod.addClassMod(renderBlockCustomMod);
-            return renderBlockCustomMod;
-        } else {
-            return null;
-        }
-    }
+    public static final MethodRef renderFaceAO = new MethodRef("RenderBlockCustom", "renderFaceAO", "(LBlock;LPosition;LIcon;LDirection;FFF)I");
+    public static final MethodRef renderFaceNonAO = new MethodRef("RenderBlockCustom", "renderFaceNonAO", "(LBlock;LPosition;LIcon;LDirection;FFFI)V");
 
     public static boolean haveCustomModels() {
         return Mod.getMinecraftVersion().compareTo("14w06a") >= 0;
@@ -29,6 +20,11 @@ public class RenderBlockCustomMod extends ClassMod {
         setParentClass("RenderBlocks");
         addPrerequisiteClass("RenderBlocks");
 
+        addSeedSignature(renderFaceAO);
+        addSeedSignature(renderFaceNonAO);
+    }
+
+    private void addSeedSignature(MethodRef method) {
         addClassSignature(new BytecodeSignature() {
             @Override
             public String getMatchExpression() {
@@ -49,8 +45,6 @@ public class RenderBlockCustomMod extends ClassMod {
                     anyLSTORE
                 );
             }
-        }.setMethod(renderModelFace));
-
-        addMemberMapper(new MethodMapper(renderModelFace));
+        }.setMethod(method));
     }
 }
