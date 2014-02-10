@@ -14,6 +14,7 @@ public class DirectionMod extends com.prupe.mcpatcher.ClassMod {
     public static final FieldRef id = new FieldRef("Direction", "id", "I");
     public static final MethodRef getID = new MethodRef("Direction", "getID", "()I");
     public static final MethodRef ordinal = new MethodRef("Direction", "ordinal", "()I");
+    public static final MethodRef values = new MethodRef("Direction", "values", "()[LDirection;");
 
     public static final FieldRef DOWN = new FieldRef("Direction", "DOWN", "LDirection;");
     public static final FieldRef UP = new FieldRef("Direction", "UP", "LDirection;");
