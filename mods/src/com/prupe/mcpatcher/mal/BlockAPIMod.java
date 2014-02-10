@@ -14,7 +14,8 @@ public class BlockAPIMod extends Mod {
     private final MethodRef getSecondaryBlockIcon = RenderBlocksMod.haveSubclasses() ? new MethodRef("Block", "getSecondaryBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;") : null;
     private final MethodRef useColorMultiplierOnFace = new MethodRef("Block", "useColorMultiplierOnFace", "(" + DirectionMod.getDescriptor() + ")Z");
 
-    public static final MethodRef useColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(I)Z");
+    public static final MethodRef useColorMultiplier1 = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(I)Z");
+    public static final MethodRef useColorMultiplier2 = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(ZII)Z");
 
     public BlockAPIMod() {
         name = MCPatcherUtils.BLOCK_API_MOD;
@@ -280,7 +281,7 @@ public class BlockAPIMod extends Mod {
                     return buildCode(
                         // RenderBlocksUtils.useColorMultiplier(face)
                         push(getPatchCount()),
-                        reference(INVOKESTATIC, useColorMultiplier)
+                        reference(INVOKESTATIC, useColorMultiplier1)
                     );
                 }
 
@@ -405,7 +406,7 @@ public class BlockAPIMod extends Mod {
                     // RenderBlocksUtils.useColorMultiplier(direction)
                     getCaptureGroup(1),
                     reference(INVOKEVIRTUAL, DirectionMod.ordinal),
-                    reference(INVOKESTATIC, useColorMultiplier)
+                    reference(INVOKESTATIC, useColorMultiplier1)
                 );
             }
         });
@@ -493,7 +494,7 @@ public class BlockAPIMod extends Mod {
                     return buildExpression(
                         // faces[index].useTint()
                         anyALOAD,
-                        anyILOAD,
+                        capture(anyILOAD),
                         AALOAD,
                         reference(INVOKEVIRTUAL, useTint)
                     );
@@ -502,9 +503,10 @@ public class BlockAPIMod extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // RenderBlocksUtils.useColorMultiplier(..., direction.ordinal())
+                        // RenderBlocksUtils.useColorMultiplier(..., layer, direction.ordinal())
+                        getCaptureGroup(1),
                         DirectionMod.unpackArgumentsSafe(this, 4),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(ZI)Z"))
+                        reference(INVOKESTATIC, useColorMultiplier2)
                     );
                 }
             }

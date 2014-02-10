@@ -3040,7 +3040,7 @@ public class CustomColors extends Mod {
                                 // if (RenderBlocksUtils.useColorMultiplier(direction.ordinal()) ...)
                                 ALOAD_3,
                                 reference(INVOKEVIRTUAL, DirectionMod.ordinal),
-                                reference(INVOKESTATIC, BlockAPIMod.useColorMultiplier)
+                                reference(INVOKESTATIC, BlockAPIMod.useColorMultiplier1)
                             )
                         ),
                         IFEQ, any(2)

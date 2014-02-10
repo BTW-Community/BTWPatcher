@@ -84,8 +84,8 @@ public class RenderBlocksUtils {
         return useColorMultiplier[getFaceIndex(face)];
     }
 
-    public static boolean useColorMultiplier(boolean useTint, int face) {
-        return useTint || useColorMultiplier(face);
+    public static boolean useColorMultiplier(boolean useTint, int layer, int face) {
+        return useTint || (layer == 0 && useColorMultiplier(face));
     }
 
     public static float getColorMultiplierRed(int face) {
