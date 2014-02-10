@@ -42,11 +42,11 @@ public class BlockAPIMod extends Mod {
         if (RenderBlocksMod.haveSubclasses()) {
             addClassMod(new RenderBlockManagerMod(this));
         }
-        if (RenderBlockHelperMod.haveClass()) {
+        if (RenderBlockHelperMod.haveClass() && !RenderBlockCustomMod.haveCustomModels()) {
             addClassMod(new RenderBlockHelperMod());
         }
         if (RenderBlockCustomMod.haveCustomModels()) {
-            addClassMod(new RenderBlockCustomMod(this));
+            addClassMod(new RenderBlockCustomMod());
         }
         if (malVersion >= 2) {
             addClassMod(new Shared.RegistryBaseMod(this));
@@ -232,7 +232,6 @@ public class BlockAPIMod extends Mod {
 
     private class RenderBlocksMod extends com.prupe.mcpatcher.basemod.RenderBlocksMod {
         private final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
-        private final MethodRef setupColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "setupColorMultiplier", "(LBlock;LIBlockAccess;IIIZFFF)V");
         private final MethodRef getColorMultiplierRed = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierRed", "(I)F");
         private final MethodRef getColorMultiplierGreen = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierGreen", "(I)F");
         private final MethodRef getColorMultiplierBlue = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierBlue", "(I)F");
@@ -243,45 +242,14 @@ public class BlockAPIMod extends Mod {
             mapRenderStandardBlock();
             mapHasOverrideTexture();
 
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "set per-face color multipliers";
-                }
+            if (!RenderBlockCustomMod.haveCustomModels()) {
+                presetupColorMultipliers(this);
 
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        reference(INVOKESTATIC, isAmbientOcclusionEnabled)
-                    );
+                if (haveSubclasses()) {
+                    setupColorMultipliers18(this);
+                } else {
+                    setupColorMultipliers17();
                 }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    int baseRegister = 3 + PositionMod.getDescriptorLength();
-                    return buildCode(
-                        // RenderBlocksUtils.setupColorMultiplier(block, this.blockAccess, i, j, k, this.hasOverrideTexture(), r, g, b);
-                        ALOAD_1,
-                        ALOAD_0,
-                        reference(GETFIELD, blockAccess),
-                        PositionMod.unpackArguments(this, 2),
-                        ALOAD_0,
-                        reference(INVOKEVIRTUAL, hasOverrideBlockTexture),
-                        FLOAD, baseRegister,
-                        FLOAD, baseRegister + 1,
-                        FLOAD, baseRegister + 2,
-                        reference(INVOKESTATIC, setupColorMultiplier)
-                    );
-                }
-            }
-                .setInsertBefore(true)
-                .targetMethod(renderStandardBlock)
-            );
-
-            if (haveSubclasses()) {
-                setupColorMultipliers18(this);
-            } else {
-                setupColorMultipliers17();
             }
         }
 
@@ -441,5 +409,108 @@ public class BlockAPIMod extends Mod {
                 );
             }
         });
+    }
+
+    private void presetupColorMultipliers(com.prupe.mcpatcher.ClassMod classMod) {
+        classMod.addPatch(new com.prupe.mcpatcher.BytecodePatch(classMod) {
+            private final MethodRef setupColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "setupColorMultiplier", "(LBlock;LIBlockAccess;IIIZFFF)V");
+
+            @Override
+            public String getDescription() {
+                return "set per-face color multipliers";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    reference(INVOKESTATIC, RenderBlocksMod.isAmbientOcclusionEnabled)
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                int baseRegister = 3 + PositionMod.getDescriptorLength();
+                return buildCode(
+                    // RenderBlocksUtils.setupColorMultiplier(block, this.blockAccess, i, j, k, this.hasOverrideTexture(), r, g, b);
+                    ALOAD_1,
+                    ALOAD_0,
+                    reference(GETFIELD, RenderBlocksMod.blockAccess),
+                    PositionMod.unpackArguments(this, 2),
+                    ALOAD_0,
+                    reference(INVOKEVIRTUAL, RenderBlocksMod.hasOverrideBlockTexture),
+                    FLOAD, baseRegister,
+                    FLOAD, baseRegister + 1,
+                    FLOAD, baseRegister + 2,
+                    reference(INVOKESTATIC, setupColorMultiplier)
+                );
+            }
+        }
+            .setInsertBefore(true)
+            .targetMethod(RenderBlocksMod.renderStandardBlock)
+        );
+    }
+
+    private class RenderBlockCustomMod extends com.prupe.mcpatcher.basemod.RenderBlockCustomMod {
+        RenderBlockCustomMod() {
+            super(BlockAPIMod.this);
+
+            final MethodRef useTint = new MethodRef("BlockModelFace", "useTint", "()Z");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // if (faces[index].useTint()) {
+                        anyALOAD,
+                        anyILOAD,
+                        AALOAD,
+                        captureReference(INVOKEVIRTUAL),
+                        IFEQ, any(2),
+
+                        // tessellator.setVertexColor(this.colorxxx * r, ...);
+                        anyALOAD,
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        FLOAD, 5,
+                        FMUL
+                    );
+                }
+            }
+                .setMethod(renderFaceAO)
+                .addXref(1, useTint)
+            );
+
+            presetupColorMultipliers(this);
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override tint flag";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // faces[index].useTint()
+                        anyALOAD,
+                        anyILOAD,
+                        AALOAD,
+                        reference(INVOKEVIRTUAL, useTint)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // RenderBlocksUtils.useColorMultiplier(..., direction.ordinal())
+                        DirectionMod.unpackArgumentsSafe(this, 4),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(ZI)Z"))
+                    );
+                }
+            }
+                .setInsertAfter(true)
+                .targetMethod(renderFaceAO, renderFaceNonAO)
+            );
+        }
     }
 }

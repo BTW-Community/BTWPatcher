@@ -81,19 +81,27 @@ public class RenderBlocksUtils {
     }
 
     public static boolean useColorMultiplier(int face) {
-        return useColorMultiplier[face % 6];
+        return useColorMultiplier[getFaceIndex(face)];
+    }
+
+    public static boolean useColorMultiplier(boolean useTint, int face) {
+        return useTint || useColorMultiplier(face);
     }
 
     public static float getColorMultiplierRed(int face) {
-        return nonAOMultipliers[face % 6][0];
+        return nonAOMultipliers[getFaceIndex(face)][0];
     }
 
     public static float getColorMultiplierGreen(int face) {
-        return nonAOMultipliers[face % 6][1];
+        return nonAOMultipliers[getFaceIndex(face)][1];
     }
 
     public static float getColorMultiplierBlue(int face) {
-        return nonAOMultipliers[face % 6][2];
+        return nonAOMultipliers[getFaceIndex(face)][2];
+    }
+
+    private static int getFaceIndex(int face) {
+        return face < 0 ? 1 : face % 6;
     }
 
     public static Icon getGrassTexture(Block block, IBlockAccess blockAccess, int i, int j, int k, int face, Icon topIcon) {
