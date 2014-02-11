@@ -60,7 +60,7 @@ public class ClassMap {
                 cl.startsWith("com.prupe.mcpatcher.mod.") ||
                 cl.startsWith("com.prupe.mcpatcher.basemod.") ||
                 cl.startsWith("com.prupe.mcpatcher.BaseMod")) {
-                String source = frame.toString();
+                String source = frame.getClassName() + " " + frame.getFileName() + ":" + frame.getLineNumber();
                 if (source.startsWith("com.prupe.mcpatcher.")) {
                     source = "..." + source.substring(20);
                 }
