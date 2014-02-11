@@ -66,6 +66,10 @@ public class BetterGlass extends Mod {
             addClassMod(new DirectionWithAOMod());
             addClassMod(new RenderBlockHelperMod());
         }
+        if (RenderBlockCustomMod.haveCustomModels()) {
+            addClassMod(new RenderBlockCustomMod());
+            addClassMod(new RenderBlockCustomHelperMod());
+        }
         setMALVersion("renderpass", malVersion);
 
         addClassFile(MCPatcherUtils.RENDER_PASS_CLASS);
@@ -819,9 +823,9 @@ public class BetterGlass extends Mod {
                                 ALOAD_2,
                                 reference(INVOKEVIRTUAL, RenderPassEnumMod.ordinal)
                             ) : buildCode(
-                                ILOAD_2,
-                                reference(INVOKESTATIC, pass17To18)
-                            ),
+                            ILOAD_2,
+                            reference(INVOKESTATIC, pass17To18)
+                        ),
                         reference(INVOKESTATIC, preRenderPass),
                         IFNE, branch("A"),
 
@@ -1068,6 +1072,72 @@ public class BetterGlass extends Mod {
                 reference(INVOKESTATIC, newGetAOBaseMultiplier)
             );
         }
+    }
 
+    private class RenderBlockCustomMod extends com.prupe.mcpatcher.basemod.RenderBlockCustomMod {
+        RenderBlockCustomMod() {
+            super(BetterGlass.this);
+
+            final ClassRef helperClass = new ClassRef("RenderBlockCustomHelper");
+            final FieldRef helper = new FieldRef(getDeobfClass(), "helper", "LRenderBlockCustomHelper;");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.helper = new RenderBlockCustomHelper(this);
+                        ALOAD_0,
+                        captureReference(NEW),
+                        DUP,
+                        ALOAD_0,
+                        anyReference(INVOKESPECIAL),
+                        captureReference(PUTFIELD)
+                    );
+                }
+            }
+                .matchConstructorOnly(true)
+                .addXref(1, helperClass)
+                .addXref(2, helper)
+            );
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override AO block brightness for extra render passes";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // aoMultiplier = faces[index].getShade()
+                        capture(build(
+                            anyALOAD,
+                            anyILOAD,
+                            AALOAD,
+                            anyReference(INVOKEVIRTUAL)
+                        )),
+                        capture(anyFSTORE)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // aoMultiplier = RenderPass.getAOBaseMultiplier(...);
+                        getCaptureGroup(1),
+                        reference(INVOKESTATIC, newGetAOBaseMultiplier),
+                        getCaptureGroup(2)
+                    );
+                }
+            }.targetMethod(renderFaceNonAO));
+        }
+    }
+
+    private class RenderBlockCustomHelperMod extends ClassMod {
+        RenderBlockCustomHelperMod() {
+            addPrerequisiteClass("RenderBlockCustom");
+
+            addPatch(new AOMultiplierPatch(this));
+        }
     }
 }
