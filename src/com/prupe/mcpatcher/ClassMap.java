@@ -6,11 +6,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.charset.Charset;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.jar.JarOutputStream;
-import java.util.regex.Pattern;
 
 /**
  * Contains mapping from descriptive class, method, and field names to their obfuscated
@@ -372,7 +370,8 @@ public class ClassMap {
             if (e.getValue().hidden) {
                 continue;
             }
-            out.printf("%1$sclass %2$s%3$s\n", indent, e.getValue().toString(), extended ? e.getValue().getSource() : "");
+            out.printf("%1$sclass %2$s\n", indent, e.getValue().toString());
+            printExtended(out, indent, extended, e.getValue().sources);
             if (e.getValue().aliasFor != null) {
                 continue;
             }
@@ -386,9 +385,8 @@ public class ClassMap {
                 }
             });
             for (Entry<String, MemberEntry> e1 : sortedMembers) {
-                out.printf("%1$s%1$smethod %2$s -> %3$s %4$s%5$s\n",
-                    indent, e1.getKey(), e1.getValue().name, e1.getValue().type, extended ? e1.getValue().getSource() : ""
-                );
+                out.printf("%1$s%1$smethod %2$s -> %3$s %4$s\n", indent, e1.getKey(), e1.getValue().name, e1.getValue().type);
+                printExtended(out, indent, extended, e1.getValue().sources);
             }
 
             sortedMembers = new ArrayList<Entry<String, MemberEntry>>(e.getValue().getFieldMap().entrySet());
@@ -398,9 +396,16 @@ public class ClassMap {
                 }
             });
             for (Entry<String, MemberEntry> e1 : sortedMembers) {
-                out.printf("%1$s%1$sfield %2$s -> %3$s %4$s%5$s\n",
-                    indent, e1.getKey(), e1.getValue().name, e1.getValue().type, extended ? e1.getValue().getSource() : ""
-                );
+                out.printf("%1$s%1$sfield %2$s -> %3$s %4$s\n", indent, e1.getKey(), e1.getValue().name, e1.getValue().type);
+                printExtended(out, indent, extended, e1.getValue().sources);
+            }
+        }
+    }
+
+    void printExtended(PrintStream out, String indent, boolean extended, Collection<String> sources) {
+        if (extended) {
+            for (String s : sources) {
+                out.printf("%1$s%1$s%1$s[%2$s]\n", indent, s);
             }
         }
     }
@@ -868,7 +873,7 @@ public class ClassMap {
     static class MemberEntry {
         final String name;
         final String type;
-        final ArrayList<String> sources = new ArrayList<String>();
+        final Collection<String> sources = new ArrayList<String>();
 
         MemberEntry(String name, String type) {
             this.name = name;
@@ -920,7 +925,7 @@ public class ClassMap {
         private boolean hidden;
         private final ArrayList<ClassMapEntry> interfaces = new ArrayList<ClassMapEntry>();
         private ClassMapEntry aliasFor = null;
-        final ArrayList<String> sources = new ArrayList<String>();
+        final Collection<String> sources = new ArrayList<String>();
 
         private ClassMapEntry(String descName) {
             this.descName = descName.replace('.', '/');
@@ -1094,7 +1099,7 @@ public class ClassMap {
             }
         }
 
-        void addSource(List<String> sources) {
+        void addSource(Collection<String> sources) {
             for (String s : sources) {
                 addSource(s);
             }
