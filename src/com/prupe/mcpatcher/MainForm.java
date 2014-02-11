@@ -846,7 +846,7 @@ class MainForm extends UserInterface {
     private void showClassMaps() {
         classMap.setText("");
         JTextAreaPrintStream out = new JTextAreaPrintStream(classMap);
-        MCPatcher.showClassMaps(out);
+        MCPatcher.showClassMaps(out, shift);
         out.close();
     }
 

@@ -17,8 +17,6 @@ import java.util.regex.Pattern;
  * names in minecraft.jar.  Each Mod has its own ClassMap that is maintained by MCPatcher.
  */
 public class ClassMap {
-    private static final String DESCRIPTOR_CHARS = BinaryRegex.subset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_$/.[<>;".getBytes(), true);
-
     private final HashMap<String, ClassMapEntry> classMap = new HashMap<String, ClassMapEntry>();
 
     ClassMap() {
@@ -56,6 +54,20 @@ public class ClassMap {
         return descriptor.replaceFirst("^\\[*L(.*);$", "$1").replace('/', '.');
     }
 
+    private static String getDefaultSource() {
+        for (StackTraceElement frame : new Throwable().getStackTrace()) {
+            String cl = frame.getClassName();
+            if (!cl.startsWith("com.prupe.mcpatcher.") ||
+                cl.startsWith("com.prupe.mcpatcher.mal.") ||
+                cl.startsWith("com.prupe.mcpatcher.mod.") ||
+                cl.startsWith("com.prupe.mcpatcher.basemod.") ||
+                cl.startsWith("com.prupe.mcpatcher.BaseMod")) {
+                return frame.toString();
+            }
+        }
+        return null;
+    }
+
     private ClassMapEntry getEntry(String descName) {
         descName = descName.replace('.', '/');
         ClassMapEntry entry = classMap.get(descName);
@@ -76,6 +88,10 @@ public class ClassMap {
      * @param obfName  obfuscated class name
      */
     public void addClassMap(String descName, String obfName) {
+        addClassMap(descName, obfName, getDefaultSource());
+    }
+
+    void addClassMap(String descName, String obfName, String source) {
         ClassMapEntry entry = getEntry(descName);
         if (entry == null) {
             entry = new ClassMapEntry(descName, obfName);
@@ -91,10 +107,11 @@ public class ClassMap {
             entry.setObfName(obfName);
         } else if (!oldName.equals(obfName.replace('.', '/'))) {
             throw new RuntimeException(String.format(
-                "cannot add class map %1$s -> %2$s because there is already a class map for %1$s -> %3$s",
-                descName, obfName, oldName
+                "cannot add class map %1$s -> %2$s (%4$s) because there is already a class map for %1$s -> %3$s%5$s",
+                descName, obfName, oldName, source, entry.getSource()
             ));
         }
+        entry.addSource(source);
     }
 
     /**
@@ -110,24 +127,28 @@ public class ClassMap {
      * @throws RuntimeException if class mapping does not exist yet.
      */
     public void addMethodMap(String classDescName, String descName, String obfName, String obfType) {
+        addMethodMap(classDescName, descName, obfName, obfType, getDefaultSource());
+    }
+
+    void addMethodMap(String classDescName, String descName, String obfName, String obfType, String source) {
         ClassMapEntry entry = getEntry(classDescName);
         if (entry == null) {
             throw new RuntimeException(String.format(
-                "cannot add method map %s.%s -> %s because there is no class map for %s",
-                classDescName, descName, obfName, classDescName
+                "cannot add method map %s.%s -> %s (%s) because there is no class map for %s",
+                classDescName, descName, obfName, source, classDescName
             ));
         }
         String oldName = entry.getMethod(descName);
         if (oldName != null && !oldName.equals(obfName)) {
             throw new RuntimeException(String.format(
-                "cannot add method map %1$s.%2$s -> %3$s because it is already mapped to %4$s",
-                classDescName, descName, obfName, oldName
+                "cannot add method map %1$s.%2$s -> %3$s (%5$s) because it is already mapped to %4$s%6$s",
+                classDescName, descName, obfName, oldName, source, entry.getSource()
             ));
         }
         if (descName.equals("<init>") || descName.equals("<clinit>")) {
             return;
         }
-        entry.addMethod(descName, obfName, obfType);
+        entry.addMethod(descName, obfName, obfType, source);
     }
 
     /**
@@ -143,21 +164,25 @@ public class ClassMap {
      * @throws RuntimeException if class mapping does not exist yet.
      */
     public void addFieldMap(String classDescName, String descName, String obfName, String obfType) {
+        addFieldMap(classDescName, descName, obfName, obfType, getDefaultSource());
+    }
+
+    void addFieldMap(String classDescName, String descName, String obfName, String obfType, String source) {
         ClassMapEntry entry = getEntry(classDescName);
         if (entry == null) {
             throw new RuntimeException(String.format(
-                "cannot add field map %s.%s -> %s because there is no class map for %s",
-                classDescName, descName, obfName, classDescName
+                "cannot add field map %s.%s -> %s (%s) because there is no class map for %s",
+                classDescName, descName, obfName, source, classDescName
             ));
         }
         String oldName = entry.getField(descName);
         if (oldName != null && !oldName.equals(obfName)) {
             throw new RuntimeException(String.format(
-                "cannot add field map %1$s.%2$s -> %3$s because it is already mapped to %4$s",
-                classDescName, descName, obfName, oldName
+                "cannot add field map %1$s.%2$s -> %3$s (%5$s) because it is already mapped to %4$s%6$s",
+                classDescName, descName, obfName, oldName, source, entry.getSource()
             ));
         }
-        entry.addField(descName, obfName, obfType);
+        entry.addField(descName, obfName, obfType, source);
     }
 
     /**
@@ -168,16 +193,22 @@ public class ClassMap {
      * @param to   obfuscated reference
      */
     public void addMap(JavaRef from, JavaRef to) {
+        addMap(from, to, getDefaultSource());
+    }
+
+    void addMap(JavaRef from, JavaRef to, String source) {
         if (!from.getClass().equals(to.getClass())) {
-            throw new IllegalArgumentException(String.format("cannot map %s to %s", from.toString(), to.toString()));
+            throw new IllegalArgumentException(String.format(
+                "cannot map %s to %s (%s)", from.toString(), to.toString(), source
+            ));
         }
-        addClassMap(from.getClassName(), to.getClassName());
+        addClassMap(from.getClassName(), to.getClassName(), source);
         if (from instanceof MethodRef || from instanceof InterfaceMethodRef) {
-            addMethodMap(from.getClassName(), from.getName(), to.getName(), to.getType());
-            addTypeDescriptorMap(from.getType(), to.getType());
+            addMethodMap(from.getClassName(), from.getName(), to.getName(), to.getType(), source);
+            addTypeDescriptorMap(from.getType(), to.getType(), source);
         } else if (from instanceof FieldRef) {
-            addFieldMap(from.getClassName(), from.getName(), to.getName(), to.getType());
-            addTypeDescriptorMap(from.getType(), to.getType());
+            addFieldMap(from.getClassName(), from.getName(), to.getName(), to.getType(), source);
+            addTypeDescriptorMap(from.getType(), to.getType(), source);
         }
     }
 
@@ -190,6 +221,10 @@ public class ClassMap {
      * @throws IllegalArgumentException if descriptors do not match
      */
     public void addTypeDescriptorMap(String fromType, String toType) {
+        addTypeDescriptorMap(fromType, toType, getDefaultSource());
+    }
+
+    void addTypeDescriptorMap(String fromType, String toType, String source) {
         List<String> from = ConstPoolUtils.parseDescriptor(fromType);
         List<String> to = ConstPoolUtils.parseDescriptor(toType);
         int i;
@@ -203,7 +238,7 @@ public class ClassMap {
                 a = a.substring(j + 1, a.length() - 1).replace('.', '/');
                 b = b.substring(j + 1, b.length() - 1).replace('.', '/');
                 if (!a.equals(b)) {
-                    addClassMap(a, b);
+                    addClassMap(a, b, source);
                 }
             } else if (!a.equals(b)) {
                 break;
@@ -320,7 +355,7 @@ public class ClassMap {
         return entry == null ? new HashMap<String, MemberEntry>() : entry.getFieldMap();
     }
 
-    void print(final PrintStream out, final String indent) {
+    void print(final PrintStream out, final String indent, boolean extended) {
         ArrayList<Entry<String, ClassMapEntry>> sortedClasses = new ArrayList<Entry<String, ClassMapEntry>>(classMap.entrySet());
         Collections.sort(sortedClasses, new Comparator<Entry<String, ClassMapEntry>>() {
             public int compare(Entry<String, ClassMapEntry> o1, Entry<String, ClassMapEntry> o2) {
@@ -337,7 +372,7 @@ public class ClassMap {
             if (e.getValue().hidden) {
                 continue;
             }
-            out.printf("%1$sclass %2$s\n", indent, e.getValue().toString());
+            out.printf("%1$sclass %2$s%3$s\n", indent, e.getValue().toString(), extended ? e.getValue().getSource() : "");
             if (e.getValue().aliasFor != null) {
                 continue;
             }
@@ -351,7 +386,9 @@ public class ClassMap {
                 }
             });
             for (Entry<String, MemberEntry> e1 : sortedMembers) {
-                out.printf("%1$s%1$smethod %2$s -> %3$s %4$s\n", indent, e1.getKey(), e1.getValue().name, e1.getValue().type);
+                out.printf("%1$s%1$smethod %2$s -> %3$s %4$s%5$s\n",
+                    indent, e1.getKey(), e1.getValue().name, e1.getValue().type, extended ? e1.getValue().getSource() : ""
+                );
             }
 
             sortedMembers = new ArrayList<Entry<String, MemberEntry>>(e.getValue().getFieldMap().entrySet());
@@ -361,7 +398,9 @@ public class ClassMap {
                 }
             });
             for (Entry<String, MemberEntry> e1 : sortedMembers) {
-                out.printf("%1$s%1$sfield %2$s -> %3$s %4$s\n", indent, e1.getKey(), e1.getValue().name, e1.getValue().type);
+                out.printf("%1$s%1$sfield %2$s -> %3$s %4$s%5$s\n",
+                    indent, e1.getKey(), e1.getValue().name, e1.getValue().type, extended ? e1.getValue().getSource() : ""
+                );
             }
         }
     }
@@ -816,6 +855,7 @@ public class ClassMap {
         } else {
             newEntry = new ClassMapEntry(entry.descName, entry.obfName);
         }
+        newEntry.addSource(entry.sources);
         for (ClassMapEntry iface : entry.interfaces) {
             newEntry.addInterface(merge(iface));
         }
@@ -828,6 +868,7 @@ public class ClassMap {
     static class MemberEntry {
         final String name;
         final String type;
+        final ArrayList<String> sources = new ArrayList<String>();
 
         MemberEntry(String name, String type) {
             this.name = name;
@@ -844,6 +885,30 @@ public class ClassMap {
             MemberEntry that = (MemberEntry) o;
             return this.name.equals(that.name) && this.type.equals(that.type);
         }
+
+        String getSource() {
+            if (sources.isEmpty()) {
+                return "";
+            } else {
+                StringBuilder sb = new StringBuilder();
+                for (String s : sources) {
+                    if (sb.length() > 0) {
+                        sb.append(',');
+                    } else {
+                        sb.append(" [");
+                    }
+                    sb.append(s);
+                }
+                sb.append(']');
+                return sb.toString();
+            }
+        }
+
+        void addSource(String source) {
+            if (!MCPatcherUtils.isNullOrEmpty(source) && !sources.contains(source)) {
+                sources.add(source);
+            }
+        }
     }
 
     private static class ClassMapEntry {
@@ -855,6 +920,7 @@ public class ClassMap {
         private boolean hidden;
         private final ArrayList<ClassMapEntry> interfaces = new ArrayList<ClassMapEntry>();
         private ClassMapEntry aliasFor = null;
+        final ArrayList<String> sources = new ArrayList<String>();
 
         private ClassMapEntry(String descName) {
             this.descName = descName.replace('.', '/');
@@ -883,12 +949,16 @@ public class ClassMap {
             interfaces.add(iface);
         }
 
-        void addMethod(String descName, String obfName, String obfType) {
-            methodMap.put(descName, new MemberEntry(obfName, obfType));
+        void addMethod(String descName, String obfName, String obfType, String source) {
+            MemberEntry entry = new MemberEntry(obfName, obfType);
+            entry.addSource(source);
+            methodMap.put(descName, entry);
         }
 
-        void addField(String descName, String obfName, String obfType) {
-            fieldMap.put(descName, new MemberEntry(obfName, obfType));
+        void addField(String descName, String obfName, String obfType, String source) {
+            MemberEntry entry = new MemberEntry(obfName, obfType);
+            entry.addSource(source);
+            fieldMap.put(descName, entry);
         }
 
         ClassMapEntry getEntry() {
@@ -998,6 +1068,36 @@ public class ClassMap {
                 parent.addFieldMap(map);
             }
             map.putAll(fieldMap);
+        }
+
+        String getSource() {
+            if (sources.isEmpty()) {
+                return "";
+            } else {
+                StringBuilder sb = new StringBuilder();
+                for (String s : sources) {
+                    if (sb.length() > 0) {
+                        sb.append(',');
+                    } else {
+                        sb.append(" [");
+                    }
+                    sb.append(s);
+                }
+                sb.append(']');
+                return sb.toString();
+            }
+        }
+
+        void addSource(String source) {
+            if (!MCPatcherUtils.isNullOrEmpty(source) && !sources.contains(source)) {
+                sources.add(source);
+            }
+        }
+
+        void addSource(List<String> sources) {
+            for (String s : sources) {
+                addSource(s);
+            }
         }
     }
 }

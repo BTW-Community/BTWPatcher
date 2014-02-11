@@ -561,7 +561,7 @@ final public class MCPatcher {
         }
     }
 
-    static void showClassMaps(PrintStream out) {
+    static void showClassMaps(PrintStream out, boolean extended) {
         if (minecraft == null) {
             out.println("No minecraft jar selected.");
             out.println("Click Browse to choose the input file.");
@@ -570,7 +570,7 @@ final public class MCPatcher {
             for (Mod mod : modList.getAll()) {
                 if (!mod.getClassMap().getClassMap().isEmpty()) {
                     out.printf("%s\n", mod.getName());
-                    mod.getClassMap().print(out, "    ");
+                    mod.getClassMap().print(out, "    ", extended);
                     out.println();
                 }
             }

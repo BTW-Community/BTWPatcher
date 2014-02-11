@@ -138,21 +138,22 @@ abstract public class BytecodeSignature extends ClassSignature {
             tempMappings.add(newRef);
         }
         if (className != null && tempClassMap != null) {
+            String sourceName = getClass().getName();
             for (int i = 0; i + 1 < tempMappings.size(); i += 2) {
-                tempClassMap.addMap(tempMappings.get(i), tempMappings.get(i + 1));
+                tempClassMap.addMap(tempMappings.get(i), tempMappings.get(i + 1), sourceName + " addXref(" + (i + 1) + ")");
             }
             if (deobfMethod != null) {
                 String deobfName = classMod.getDeobfClass();
-                tempClassMap.addClassMap(deobfName, className);
+                tempClassMap.addClassMap(deobfName, className, sourceName);
                 if (!methodInfo.isConstructor() && !methodInfo.isStaticInitializer() && !methodInfo.getName().equals(deobfMethod.getName())) {
-                    tempClassMap.addMethodMap(deobfName, deobfMethod.getName(), methodInfo.getName(), methodInfo.getDescriptor());
+                    tempClassMap.addMethodMap(deobfName, deobfMethod.getName(), methodInfo.getName(), methodInfo.getDescriptor(), sourceName + " setMethod");
                 }
                 if (deobfTypes != null && obfTypes != null) {
                     for (int i = 0; i < deobfTypes.size(); i++) {
                         String desc = ClassMap.descriptorToClassName(deobfTypes.get(i));
                         String obf = ClassMap.descriptorToClassName(obfTypes.get(i));
                         if (!obf.equals(desc)) {
-                            tempClassMap.addClassMap(desc, obf);
+                            tempClassMap.addClassMap(desc, obf, sourceName + " setMethod param " + (i + 1));
                         }
                     }
                 }

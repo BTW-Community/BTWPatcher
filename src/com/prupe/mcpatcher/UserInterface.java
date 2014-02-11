@@ -74,7 +74,7 @@ abstract public class UserInterface {
                 MCPatcher.checkModApplicability();
                 System.out.println();
                 System.out.println("#### Class map:");
-                MCPatcher.showClassMaps(System.out);
+                MCPatcher.showClassMaps(System.out, false);
                 MCPatcher.patch();
                 System.out.println();
                 System.out.println("#### Patch summary:");

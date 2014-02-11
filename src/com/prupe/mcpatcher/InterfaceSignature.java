@@ -74,9 +74,10 @@ public class InterfaceSignature extends ClassSignature {
                         break;
 
                     case 1:
-                        tempClassMap.addClassMap(classMod.getDeobfClass(), classFile.getName());
-                        tempClassMap.addMethodMap(classMod.getDeobfClass(), method.getName(), obfMethod.getName(), obfMethod.getDescriptor());
-                        tempClassMap.addTypeDescriptorMap(method.getType(), obfMethod.getDescriptor());
+                        String sourceName = getClass().getName();
+                        tempClassMap.addClassMap(classMod.getDeobfClass(), classFile.getName(), sourceName);
+                        tempClassMap.addMethodMap(classMod.getDeobfClass(), method.getName(), obfMethod.getName(), obfMethod.getDescriptor(), sourceName);
+                        tempClassMap.addTypeDescriptorMap(method.getType(), obfMethod.getDescriptor(), sourceName);
                         break;
 
                     default:

@@ -76,7 +76,7 @@ abstract public class ClassMod implements PatchComponent {
             if (found == cs.negate) {
                 return false;
             }
-            newMap.addClassMap(deobfName, ClassMap.filenameToClassName(filename));
+            newMap.addClassMap(deobfName, ClassMap.filenameToClassName(filename), cs.getClass().getName());
             if (bestMatch == null || sigIndex > bestMatchCount) {
                 bestMatch = filename;
                 bestMatchCount = sigIndex;
@@ -88,13 +88,13 @@ abstract public class ClassMod implements PatchComponent {
         if (targetClasses.size() == 1 && !global) {
             mod.classMap.merge(newMap);
             if (parentClass != null) {
-                mod.classMap.addClassMap(parentClass, classFile.getSuperclass());
+                mod.classMap.addClassMap(parentClass, classFile.getSuperclass(), getClass().getName() + " setParentClass");
                 mod.classMap.addInheritance(parentClass, deobfName);
             }
             if (interfaces != null) {
                 String[] obfInterfaces = classFile.getInterfaces();
                 for (int i = 0; i < Math.min(interfaces.length, obfInterfaces.length); i++) {
-                    mod.classMap.addClassMap(interfaces[i], obfInterfaces[i]);
+                    mod.classMap.addClassMap(interfaces[i], obfInterfaces[i], getClass().getName() + " setInterfaces");
                     mod.classMap.addInterface(interfaces[i], deobfName);
                 }
             }
