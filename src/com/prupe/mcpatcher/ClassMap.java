@@ -109,7 +109,7 @@ public class ClassMap {
             entry.setObfName(obfName);
         } else if (!oldName.equals(obfName.replace('.', '/'))) {
             throw new RuntimeException(String.format(
-                "cannot add class map %1$s -> %2$s (%4$s) because there is already a class map for %1$s -> %3$s%5$s",
+                "cannot add class map %1$s -> %2$s [%4$s] because there is already a class map for %1$s -> %3$s%5$s",
                 descName, obfName, oldName, source, entry.getSource()
             ));
         }
@@ -136,15 +136,15 @@ public class ClassMap {
         ClassMapEntry entry = getEntry(classDescName);
         if (entry == null) {
             throw new RuntimeException(String.format(
-                "cannot add method map %s.%s -> %s (%s) because there is no class map for %s",
+                "cannot add method map %s.%s -> %s [%s] because there is no class map for %s",
                 classDescName, descName, obfName, source, classDescName
             ));
         }
         String oldName = entry.getMethod(descName);
         if (oldName != null && !oldName.equals(obfName)) {
             throw new RuntimeException(String.format(
-                "cannot add method map %1$s.%2$s -> %3$s (%5$s) because it is already mapped to %4$s%6$s",
-                classDescName, descName, obfName, oldName, source, entry.getSource()
+                "cannot add method map %1$s.%2$s -> %3$s [%5$s] because it is already mapped to %4$s%6$s",
+                classDescName, descName, obfName, oldName, source, entry.getMethodSource(descName)
             ));
         }
         if (descName.equals("<init>") || descName.equals("<clinit>")) {
@@ -173,15 +173,15 @@ public class ClassMap {
         ClassMapEntry entry = getEntry(classDescName);
         if (entry == null) {
             throw new RuntimeException(String.format(
-                "cannot add field map %s.%s -> %s (%s) because there is no class map for %s",
+                "cannot add field map %s.%s -> %s [%s] because there is no class map for %s",
                 classDescName, descName, obfName, source, classDescName
             ));
         }
         String oldName = entry.getField(descName);
         if (oldName != null && !oldName.equals(obfName)) {
             throw new RuntimeException(String.format(
-                "cannot add field map %1$s.%2$s -> %3$s (%5$s) because it is already mapped to %4$s%6$s",
-                classDescName, descName, obfName, oldName, source, entry.getSource()
+                "cannot add field map %1$s.%2$s -> %3$s [%5$s] because it is already mapped to %4$s%6$s",
+                classDescName, descName, obfName, oldName, source, entry.getFieldSource(descName)
             ));
         }
         entry.addField(descName, obfName, obfType, source);
@@ -877,7 +877,7 @@ public class ClassMap {
     static class MemberEntry {
         final String name;
         final String type;
-        final Collection<String> sources = new ArrayList<String>();
+        final Collection<String> sources = new LinkedHashSet<String>();
 
         MemberEntry(String name, String type) {
             this.name = name;
@@ -914,7 +914,7 @@ public class ClassMap {
         }
 
         void addSource(String source) {
-            if (!MCPatcherUtils.isNullOrEmpty(source) && !sources.contains(source)) {
+            if (!MCPatcherUtils.isNullOrEmpty(source)) {
                 sources.add(source);
             }
         }
@@ -929,7 +929,7 @@ public class ClassMap {
         private boolean hidden;
         private final ArrayList<ClassMapEntry> interfaces = new ArrayList<ClassMapEntry>();
         private ClassMapEntry aliasFor = null;
-        final Collection<String> sources = new ArrayList<String>();
+        final Collection<String> sources = new LinkedHashSet<String>();
 
         private ClassMapEntry(String descName) {
             this.descName = descName.replace('.', '/');
@@ -1002,6 +1002,25 @@ public class ClassMap {
             return null;
         }
 
+        String getMethodSource(String descName) {
+            MemberEntry member;
+            if (aliasFor != null) {
+                return aliasFor.getMethodSource(descName);
+            }
+            if ((member = methodMap.get(descName)) != null) {
+                return member.getSource();
+            }
+            if (parent != null && parent.getMethod(descName) != null) {
+                return parent.getMethodSource(descName);
+            }
+            for (ClassMapEntry entry : interfaces) {
+                if (entry.getMethod(descName) != null) {
+                    return entry.getMethodSource(descName);
+                }
+            }
+            return getSource();
+        }
+
         String getField(String descName) {
             MemberEntry member;
             String obfName;
@@ -1015,6 +1034,20 @@ public class ClassMap {
                 return obfName;
             }
             return null;
+        }
+
+        String getFieldSource(String descName) {
+            MemberEntry member;
+            if (aliasFor != null) {
+                return aliasFor.getFieldSource(descName);
+            }
+            if ((member = fieldMap.get(descName)) != null) {
+                return member.getSource();
+            }
+            if (parent != null && parent.getField(descName) != null) {
+                return parent.getFieldSource(descName);
+            }
+            return getSource();
         }
 
         @Override
@@ -1098,7 +1131,7 @@ public class ClassMap {
         }
 
         void addSource(String source) {
-            if (!MCPatcherUtils.isNullOrEmpty(source) && !sources.contains(source)) {
+            if (!MCPatcherUtils.isNullOrEmpty(source)) {
                 sources.add(source);
             }
         }
