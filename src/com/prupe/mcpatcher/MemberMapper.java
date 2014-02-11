@@ -150,7 +150,7 @@ public abstract class MemberMapper {
             JavaRef obfRef = getObfRef(obfClassName, o);
             String[] s = describeMatch(o);
             Logger.log(Logger.LOG_FIELD, "%s %s matches %s%s %s", getMapperType(), ref.getName(), prefix, s[0], s[1]);
-            classMap.addMap(ref, obfRef, mapSource + " " + getMapperType() + " mapper");
+            classMap.addMap(ref, obfRef, mapSource + " " + getMapperType().substring(0, 1).toUpperCase() + getMapperType().substring(1) + "Mapper");
         }
     }
 }

@@ -78,7 +78,7 @@ abstract public class ClassMod implements PatchComponent {
             if (found == cs.negate) {
                 return false;
             }
-            newMap.addClassMap(deobfName, ClassMap.filenameToClassName(filename), cs.mapSource);
+            newMap.addClassMap(deobfName, ClassMap.filenameToClassName(filename), cs.mapSource + " ClassSignature");
             if (bestMatch == null || sigIndex > bestMatchCount) {
                 bestMatch = filename;
                 bestMatchCount = sigIndex;
