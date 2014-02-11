@@ -28,10 +28,12 @@ public abstract class MemberMapper {
     private int clearAccessFlags;
     private int count;
     protected final ClassMod classMod;
+    final String mapSource;
 
     MemberMapper(ClassMod classMod, JavaRef... refs) {
         this.classMod = classMod;
         this.refs = refs.clone();
+        mapSource = ClassMap.getDefaultSource();
         for (JavaRef ref : refs) {
             if (ref != null && ref.getType() != null) {
                 return;
@@ -148,7 +150,7 @@ public abstract class MemberMapper {
             JavaRef obfRef = getObfRef(obfClassName, o);
             String[] s = describeMatch(o);
             Logger.log(Logger.LOG_FIELD, "%s %s matches %s%s %s", getMapperType(), ref.getName(), prefix, s[0], s[1]);
-            classMap.addMap(ref, obfRef, classMod.getClass().getName() + " " + getMapperType() + " mapper");
+            classMap.addMap(ref, obfRef, mapSource + " " + getMapperType() + " mapper");
         }
     }
 }

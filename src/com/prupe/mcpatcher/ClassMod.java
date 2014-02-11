@@ -50,9 +50,11 @@ abstract public class ClassMod implements PatchComponent {
     final private List<Label> labels = new ArrayList<Label>();
     private final Map<String, Integer> labelPositions = new HashMap<String, Integer>();
     boolean matchAddedFiles;
+    final String mapSource;
 
     public ClassMod(Mod mod) {
         this.mod = mod;
+        mapSource = ClassMap.getDefaultSource();
     }
 
     boolean matchClassFile(String filename, ClassFile classFile) {
@@ -76,7 +78,7 @@ abstract public class ClassMod implements PatchComponent {
             if (found == cs.negate) {
                 return false;
             }
-            newMap.addClassMap(deobfName, ClassMap.filenameToClassName(filename), cs.getClass().getName());
+            newMap.addClassMap(deobfName, ClassMap.filenameToClassName(filename), cs.mapSource);
             if (bestMatch == null || sigIndex > bestMatchCount) {
                 bestMatch = filename;
                 bestMatchCount = sigIndex;
@@ -88,13 +90,13 @@ abstract public class ClassMod implements PatchComponent {
         if (targetClasses.size() == 1 && !global) {
             mod.classMap.merge(newMap);
             if (parentClass != null) {
-                mod.classMap.addClassMap(parentClass, classFile.getSuperclass(), getClass().getName() + " setParentClass");
+                mod.classMap.addClassMap(parentClass, classFile.getSuperclass(), mapSource + " setParentClass");
                 mod.classMap.addInheritance(parentClass, deobfName);
             }
             if (interfaces != null) {
                 String[] obfInterfaces = classFile.getInterfaces();
                 for (int i = 0; i < Math.min(interfaces.length, obfInterfaces.length); i++) {
-                    mod.classMap.addClassMap(interfaces[i], obfInterfaces[i], getClass().getName() + " setInterfaces");
+                    mod.classMap.addClassMap(interfaces[i], obfInterfaces[i], mapSource + " setInterfaces");
                     mod.classMap.addInterface(interfaces[i], deobfName);
                 }
             }

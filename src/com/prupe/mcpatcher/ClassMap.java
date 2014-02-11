@@ -52,7 +52,7 @@ public class ClassMap {
         return descriptor.replaceFirst("^\\[*L(.*);$", "$1").replace('/', '.');
     }
 
-    private static String getDefaultSource() {
+    static String getDefaultSource() {
         for (StackTraceElement frame : new Throwable().getStackTrace()) {
             String cl = frame.getClassName();
             if (!cl.startsWith("com.prupe.mcpatcher.") ||
@@ -60,7 +60,11 @@ public class ClassMap {
                 cl.startsWith("com.prupe.mcpatcher.mod.") ||
                 cl.startsWith("com.prupe.mcpatcher.basemod.") ||
                 cl.startsWith("com.prupe.mcpatcher.BaseMod")) {
-                return frame.toString();
+                String source = frame.toString();
+                if (source.startsWith("com.prupe.mcpatcher.")) {
+                    source = "..." + source.substring(20);
+                }
+                return source;
             }
         }
         return null;

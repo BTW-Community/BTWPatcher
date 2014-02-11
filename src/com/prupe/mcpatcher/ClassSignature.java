@@ -10,9 +10,11 @@ import javassist.bytecode.MethodInfo;
 abstract public class ClassSignature implements PatchComponent {
     boolean negate = false;
     protected final ClassMod classMod;
+    final String mapSource;
 
     public ClassSignature(ClassMod classMod) {
         this.classMod = classMod;
+        mapSource = ClassMap.getDefaultSource();
     }
 
     /**
