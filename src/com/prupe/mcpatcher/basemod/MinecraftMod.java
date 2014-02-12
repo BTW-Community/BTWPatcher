@@ -11,14 +11,29 @@ import static javassist.bytecode.Opcode.*;
  * Matches Minecraft class and maps the getInstance method.
  */
 public class MinecraftMod extends com.prupe.mcpatcher.ClassMod {
-    protected final FieldRef instance = new FieldRef(getDeobfClass(), "instance", "LMinecraft;");
-    protected final MethodRef getInstance = new MethodRef(getDeobfClass(), "getInstance", "()LMinecraft;");
-    protected final boolean haveGetInstance;
+    public static final FieldRef instance = new FieldRef("Minecraft", "instance", "LMinecraft;");
+    public static final MethodRef getInstance = new MethodRef("Minecraft", "getInstance", "()LMinecraft;");
+    public static final MethodRef isAmbientOcclusionEnabled = new MethodRef("Minecraft", "isAmbientOcclusionEnabled", "()Z");
+    public static final FieldRef thePlayer = new FieldRef("Minecraft", "thePlayer", "LEntityClientPlayerMP;");
+    public static final MethodRef getWorld = new MethodRef("Minecraft", "getWorld", "()LWorld;");
+    public static final FieldRef world = new FieldRef("WorldServer", "world", "LWorld;");
+
+    public static FieldRef theWorld;
+    public static FieldRef worldServer;
+
+    public final boolean haveGetInstance;
 
     public MinecraftMod(Mod mod) {
         super(mod);
         haveGetInstance = Mod.getMinecraftVersion().compareTo("1.3") >= 0;
 
+        if (Mod.getMinecraftVersion().compareTo("12w18a") >= 0) {
+            theWorld = new FieldRef("Minecraft", "theWorld", "LWorldClient;");
+            worldServer = new FieldRef("Minecraft", "worldServer", "LWorldServer;");
+        } else {
+            theWorld = new FieldRef(getDeobfClass(), "theWorld", "LWorld;");
+            worldServer = null;
+        }
         if (Mod.getMinecraftVersion().compareTo("13w16a") >= 0) {
             addClassSignature(new ConstSignature("textures/gui/title/mojang.png"));
             addClassSignature(new ConstSignature("crash-reports"));
@@ -35,22 +50,17 @@ public class MinecraftMod extends com.prupe.mcpatcher.ClassMod {
     }
 
     public MinecraftMod mapWorldClient() {
-        addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "theWorld", "LWorldClient;")));
+        addMemberMapper(new FieldMapper(theWorld));
         return this;
     }
 
     public MinecraftMod mapPlayer() {
-        addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "thePlayer", "LEntityClientPlayerMP;")));
+        addMemberMapper(new FieldMapper(thePlayer));
         return this;
     }
 
     public MinecraftMod addWorldGetter() {
-        final MethodRef getWorld = new MethodRef(getDeobfClass(), "getWorld", "()LWorld;");
-
         if (Mod.getMinecraftVersion().compareTo("12w18a") >= 0) {
-            final FieldRef worldServer = new FieldRef(getDeobfClass(), "worldServer", "LWorldServer;");
-            final FieldRef world = new FieldRef("WorldServer", "world", "LWorld;");
-
             addMemberMapper(new FieldMapper(worldServer));
 
             addPatch(new AddMethodPatch(getWorld) {
@@ -65,8 +75,6 @@ public class MinecraftMod extends com.prupe.mcpatcher.ClassMod {
                 }
             });
         } else {
-            final FieldRef theWorld = new FieldRef(getDeobfClass(), "theWorld", "LWorld;");
-
             addMemberMapper(new FieldMapper(theWorld));
 
             addPatch(new AddMethodPatch(getWorld) {

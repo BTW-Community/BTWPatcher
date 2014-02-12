@@ -20,13 +20,14 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
     public static MethodRef renderBlockByRenderType;
     public static MethodRef renderStandardBlock;
     public static MethodRef renderBlock;
+    public static MethodRef renderBlockGenericPane;
+    public static MethodRef renderBlockGlassPane17;
+    public static MethodRef getBlockIconFromPosition;
+    public static MethodRef getBlockIconFromSideAndMetadata;
+    public static MethodRef getBlockIconFromSide;
 
     public static final FieldRef renderAllFaces = new FieldRef("RenderBlocks", "renderAllFaces", "Z");
     public static final FieldRef blockAccess = new FieldRef("RenderBlocks", "blockAccess", "LIBlockAccess;");
-    public static final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
-    public static final MethodRef isAmbientOcclusionEnabled = new MethodRef("Minecraft", "isAmbientOcclusionEnabled", "()Z");
-    public static final FieldRef lightValue = new FieldRef("Block", "lightValue", "[I");
-    public static final MethodRef getLightValue = new MethodRef("Block", "getLightValue", "()I");
     public static final MethodRef hasOverrideBlockTexture = new MethodRef("RenderBlocks", "hasOverrideBlockTexture", "()Z");
     public static final FieldRef overrideBlockTexture = new FieldRef("RenderBlocks", "overrideBlockTexture", "LIcon;");
 
@@ -45,6 +46,11 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
         renderBlockByRenderType = new MethodRef("RenderBlocks", "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
         renderStandardBlock = new MethodRef("RenderBlocks", "renderStandardBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
         renderBlock = new MethodRef("RenderBlocks", "renderBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+        renderBlockGenericPane = new MethodRef("RenderBlocks", "renderBlockGenericPane", "(LBlockPane;" + PositionMod.getDescriptor() + ")Z");
+        renderBlockGlassPane17 = new MethodRef("RenderBlocks", "renderBlockGlassPane17", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+        getBlockIconFromPosition = new MethodRef("RenderBlocks", "getBlockIconFromPosition", "(LBlock;LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
+        getBlockIconFromSideAndMetadata = new MethodRef("RenderBlocks", "getBlockIconFromSideAndMetadata", "(LBlock;" + DirectionMod.getDescriptor() + "I)LIcon;");
+        getBlockIconFromSide = new MethodRef("RenderBlocks", "getBlockIconFromSide", "(LBlock;" + DirectionMod.getDescriptor() + ")LIcon;");
 
         addClassSignature(new BytecodeSignature() {
             @Override
@@ -144,7 +150,7 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
             }
 
             private String getSubExpression1() {
-                addXref(2, lightValue);
+                addXref(2, BlockMod.lightValue);
                 return build(
                     // 1.6: Block.lightValue[block.blockId]
                     captureReference(GETSTATIC),
@@ -155,7 +161,7 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
             }
 
             private String getSubExpression2() {
-                addXref(2, getLightValue);
+                addXref(2, BlockMod.getLightValue);
                 return build(
                     // 1.7+: block.getLightValue()
                     ALOAD_1,
@@ -164,7 +170,7 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
             }
         }
             .setMethod(renderStandardBlock)
-            .addXref(1, isAmbientOcclusionEnabled)
+            .addXref(1, MinecraftMod.isAmbientOcclusionEnabled)
         );
 
         if (haveSubclasses()) {
@@ -230,7 +236,7 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
             }
         }
             .setMethod(renderBlockByRenderType)
-            .addXref(1, getRenderType)
+            .addXref(1, BlockMod.getRenderType)
             .addXref(2, method)
         );
         return this;

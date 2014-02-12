@@ -22,8 +22,6 @@ public class ConnectedTextures extends Mod {
     private final boolean haveBlockRegistry;
     private final boolean haveThickPanes;
 
-    private static final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
-
     public ConnectedTextures() {
         name = MCPatcherUtils.CONNECTED_TEXTURES;
         author = "MCPatcher";
@@ -146,11 +144,7 @@ public class ConnectedTextures extends Mod {
         BlockMod() {
             super(ConnectedTextures.this);
 
-            final FieldRef blockMaterial = new FieldRef(getDeobfClass(), "blockMaterial", "LMaterial;");
-            final MethodRef getBlockIcon = new MethodRef(getDeobfClass(), "getBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
             final InterfaceMethodRef getBlockMetadata = new InterfaceMethodRef("IBlockAccess", "getBlockMetadata", "(" + PositionMod.getDescriptor() + ")I");
-            final MethodRef getBlockIconFromSideAndMetadata = new MethodRef(getDeobfClass(), "getBlockIconFromSideAndMetadata", "(" + DirectionMod.getDescriptor() + "I)LIcon;");
-            final MethodRef getShortName = new MethodRef(getDeobfClass(), "getShortName", "()Ljava/lang/String;");
             final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(" + (haveBlockRegistry ? "" : "I") + "LMaterial;)V");
 
             addClassSignature(new BytecodeSignature() {
@@ -203,12 +197,6 @@ public class ConnectedTextures extends Mod {
     }
 
     private class RenderBlocksMod extends com.prupe.mcpatcher.basemod.RenderBlocksMod {
-        private final MethodRef renderBlockByRenderType = new MethodRef(getDeobfClass(), "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
-        private final MethodRef renderBlockGenericPane = new MethodRef(getDeobfClass(), "renderBlockGenericPane", "(LBlockPane;" + PositionMod.getDescriptor() + ")Z");
-        private final MethodRef renderBlockGlassPane17 = new MethodRef(getDeobfClass(), "renderBlockGlassPane17", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
-        private final MethodRef getBlockIconFromPosition = new MethodRef(getDeobfClass(), "getBlockIconFromPosition", "(LBlock;LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
-        private final MethodRef getBlockIconFromSideAndMetadata = new MethodRef(getDeobfClass(), "getBlockIconFromSideAndMetadata", "(LBlock;" + DirectionMod.getDescriptor() + "I)LIcon;");
-        private final MethodRef getBlockIconFromSide = new MethodRef(getDeobfClass(), "getBlockIconFromSide", "(LBlock;" + DirectionMod.getDescriptor() + ")LIcon;");
         private final MethodRef newBlockIconFromPosition = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;LIBlockAccess;IIII)LIcon;");
         private final MethodRef newBlockIconFromSideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;II)LIcon;");
         private final MethodRef newBlockIconFromSide = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;I)LIcon;");
@@ -230,7 +218,7 @@ public class ConnectedTextures extends Mod {
                     }
                 }
                     .setMethod(renderBlockByRenderType)
-                    .addXref(1, getRenderType)
+                    .addXref(1, com.prupe.mcpatcher.basemod.BlockMod.getRenderType)
                 );
             }
 
@@ -355,20 +343,14 @@ public class ConnectedTextures extends Mod {
 
             addGlassPanePatches(this, renderBlockGenericPane, renderBlockGlassPane17);
         }
-
     }
 
     private class RenderBlocksSubclassMod extends ClassMod {
-        private final MethodRef getBlockIconFromSideAndMetadata = new MethodRef("RenderBlocks", "getBlockIconFromSideAndMetadata", "(LBlock;" + DirectionMod.getDescriptor() + "I)LIcon;");
-        private final MethodRef getBlockIconFromSide = new MethodRef("RenderBlocks", "getBlockIconFromSide", "(LBlock;" + DirectionMod.getDescriptor() + ")LIcon;");
-        private final MethodRef getBlockIconFromPosition = new MethodRef("RenderBlocks", "getBlockIconFromPosition", "(LBlock;LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
-        private final FieldRef blockAccess = new FieldRef("RenderBlocks", "blockAccess", "LIBlockAccess;");
-
         RenderBlocksSubclassMod() {
             setMultipleMatchesAllowed(true);
             addClassSignature(new AncestorClassSignature("RenderBlocks"));
 
-            addPatch(new GetBlockIconPatch(getBlockIconFromSideAndMetadata, "side, metadata") {
+            addPatch(new GetBlockIconPatch(RenderBlocksMod.getBlockIconFromSideAndMetadata, "side, metadata") {
                 @Override
                 protected String getMoreArgs() {
                     return buildExpression(
@@ -378,7 +360,7 @@ public class ConnectedTextures extends Mod {
                 }
             });
 
-            addPatch(new GetBlockIconPatch(getBlockIconFromSide, "side"));
+            addPatch(new GetBlockIconPatch(RenderBlocksMod.getBlockIconFromSide, "side"));
         }
 
         private class GetBlockIconPatch extends BytecodePatch {
@@ -458,7 +440,7 @@ public class ConnectedTextures extends Mod {
                 return buildCode(
                     // (this.blockAccess == null ?
                     ALOAD_0,
-                    reference(GETFIELD, remap(blockAccess)),
+                    reference(GETFIELD, remap(RenderBlocksMod.blockAccess)),
                     IFNONNULL, branch("A"),
 
                     // ...
@@ -472,10 +454,10 @@ public class ConnectedTextures extends Mod {
                     ALOAD_0,
                     ALOAD_1,
                     ALOAD_0,
-                    reference(GETFIELD, remap(blockAccess)),
+                    reference(GETFIELD, remap(RenderBlocksMod.blockAccess)),
                     PositionMod.passArguments(2),
                     getCaptureGroup(1),
-                    reference(INVOKEVIRTUAL, getBlockIconFromPosition),
+                    reference(INVOKEVIRTUAL, RenderBlocksMod.getBlockIconFromPosition),
 
                     // )
                     label("B")
@@ -592,7 +574,7 @@ public class ConnectedTextures extends Mod {
                     nonGreedy(any(0, 15)),
                     DLOAD, subset(sideUVRegisters, false),
                     DLOAD, subset(sideUVRegisters, false),
-                    reference(INVOKEVIRTUAL, addVertexWithUV)
+                    reference(INVOKEVIRTUAL, TessellatorMod.addVertexWithUV)
                 ), 4, 8));
             }
 
@@ -665,7 +647,7 @@ public class ConnectedTextures extends Mod {
                     DLOAD, any(),
                     DLOAD, subset(sideUVRegisters, true),
                     DLOAD, subset(sideUVRegisters, true),
-                    reference(INVOKEVIRTUAL, addVertexWithUV)
+                    reference(INVOKEVIRTUAL, TessellatorMod.addVertexWithUV)
                 );
             }
 

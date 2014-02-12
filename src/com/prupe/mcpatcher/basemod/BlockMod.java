@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.basemod;
 
 import com.prupe.mcpatcher.FieldRef;
 import com.prupe.mcpatcher.MethodRef;
+import com.prupe.mcpatcher.MinecraftVersion;
 import com.prupe.mcpatcher.Mod;
 import javassist.bytecode.AccessFlag;
 
@@ -9,15 +10,36 @@ import javassist.bytecode.AccessFlag;
  * Matches Block class and maps blockID and blockList fields.
  */
 public class BlockMod extends com.prupe.mcpatcher.ClassMod {
-    protected final boolean haveBlockRegistry;
+    private static final MinecraftVersion MIN_VERSION_REGISTRY = MinecraftVersion.parseVersion("13w36a");
+
+    public static MethodRef getBlockIcon;
+    public static MethodRef getBlockIconFromSideAndMetadata;
+    public static MethodRef getSecondaryBlockIcon;
+    public static MethodRef useColorMultiplierOnFace;
+    public static MethodRef shouldSideBeRendered;
+    public static FieldRef blockRegistry;
+
+    public static final MethodRef getShortName = new MethodRef("Block", "getShortName", "()Ljava/lang/String;");
+    public static final FieldRef lightValue = new FieldRef("Block", "lightValue", "[I");
+    public static final MethodRef getLightValue = new MethodRef("Block", "getLightValue", "()I");
+    public static final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
+    public static final FieldRef blockMaterial = new FieldRef("Block", "blockMaterial", "LMaterial;");
+
+    public static boolean haveBlockRegistry() {
+        return Mod.getMinecraftVersion().compareTo(MIN_VERSION_REGISTRY) >= 0;
+    }
 
     public BlockMod(Mod mod) {
         super(mod);
-        haveBlockRegistry = Mod.getMinecraftVersion().compareTo("13w36a") >= 0;
 
-        final MethodRef getShortName = new MethodRef(getDeobfClass(), "getShortName", "()Ljava/lang/String;");
+        getBlockIcon = new MethodRef("Block", "getBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
+        getBlockIconFromSideAndMetadata = new MethodRef("Block", "getBlockIconFromSideAndMetadata", "(" + DirectionMod.getDescriptor() + "I)LIcon;");
+        getSecondaryBlockIcon = RenderBlocksMod.haveSubclasses() ? new MethodRef("Block", "getSecondaryBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;") : null;
+        useColorMultiplierOnFace = DirectionMod.haveDirectionClass() ? new MethodRef("Block", "useColorMultiplierOnFace", "(" + DirectionMod.getDescriptor() + ")Z") : null;
+        shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
+        blockRegistry = haveBlockRegistry() ? new FieldRef(getDeobfClass(), "blockRegistry", "LRegistry;") : null;
 
-        if (haveBlockRegistry) {
+        if (haveBlockRegistry()) {
             addClassSignature(new ConstSignature("stone"));
             addClassSignature(new ConstSignature("grass"));
             addClassSignature(new ConstSignature("dirt"));

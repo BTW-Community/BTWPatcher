@@ -12,14 +12,14 @@ import static javassist.bytecode.Opcode.*;
  * Matches Tessellator class and instance and maps several commonly used rendering methods.
  */
 public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
-    protected final MethodRef draw = new MethodRef(getDeobfClass(), "draw", "()I");
-    protected final MethodRef startDrawingQuads = new MethodRef(getDeobfClass(), "startDrawingQuads", "()V");
-    protected final MethodRef startDrawing = new MethodRef(getDeobfClass(), "startDrawing", "(I)V");
-    protected final MethodRef addVertexWithUV = new MethodRef(getDeobfClass(), "addVertexWithUV", "(DDDDD)V");
-    protected final MethodRef addVertex = new MethodRef(getDeobfClass(), "addVertex", "(DDD)V");
-    protected final MethodRef setTextureUV = new MethodRef(getDeobfClass(), "setTextureUV", "(DD)V");
-    protected final MethodRef setColorOpaque_F = new MethodRef(getDeobfClass(), "setColorOpaque_F", "(FFF)V");
-    protected final FieldRef instance = new FieldRef(getDeobfClass(), "instance", "LTessellator;");
+    public static final MethodRef draw = new MethodRef("Tessellator", "draw", "()I");
+    public static final MethodRef startDrawingQuads = new MethodRef("Tessellator", "startDrawingQuads", "()V");
+    public static final MethodRef startDrawing = new MethodRef("Tessellator", "startDrawing", "(I)V");
+    public static final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
+    public static final MethodRef addVertex = new MethodRef("Tessellator", "addVertex", "(DDD)V");
+    public static final MethodRef setTextureUV = new MethodRef("Tessellator", "setTextureUV", "(DD)V");
+    public static final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
+    public static final FieldRef instance = new FieldRef("Tessellator", "instance", "LTessellator;");
 
     public TessellatorMod(Mod mod) {
         super(mod);

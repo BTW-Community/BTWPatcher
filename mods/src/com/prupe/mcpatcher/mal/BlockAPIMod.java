@@ -10,9 +10,6 @@ import static javassist.bytecode.Opcode.*;
 
 public class BlockAPIMod extends Mod {
     private final int malVersion;
-    private final MethodRef getBlockIcon = new MethodRef("Block", "getBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
-    private final MethodRef getSecondaryBlockIcon = RenderBlocksMod.haveSubclasses() ? new MethodRef("Block", "getSecondaryBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;") : null;
-    private final MethodRef useColorMultiplierOnFace = new MethodRef("Block", "useColorMultiplierOnFace", "(" + DirectionMod.getDescriptor() + ")Z");
 
     public static final MethodRef useColorMultiplier1 = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(I)Z");
     public static final MethodRef useColorMultiplier2 = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(ZII)Z");
@@ -24,7 +21,7 @@ public class BlockAPIMod extends Mod {
 
         if (PositionMod.havePositionClass()) {
             malVersion = 3;
-        } else if (getMinecraftVersion().compareTo("13w36a") >= 0) {
+        } else if (BlockMod.haveBlockRegistry()) {
             malVersion = 2;
         } else {
             malVersion = 1;
@@ -77,8 +74,6 @@ public class BlockAPIMod extends Mod {
         BlockMod() {
             super(BlockAPIMod.this);
 
-            final MethodRef shouldSideBeRendered = new MethodRef(getDeobfClass(), "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
-
             if (getSecondaryBlockIcon == null) {
                 addMemberMapper(new MethodMapper(getBlockIcon));
             } else {
@@ -87,8 +82,6 @@ public class BlockAPIMod extends Mod {
             addMemberMapper(new MethodMapper(shouldSideBeRendered));
 
             if (malVersion >= 2) {
-                final FieldRef blockRegistry = new FieldRef(getDeobfClass(), "blockRegistry", "LRegistry;");
-
                 addMemberMapper(new FieldMapper(blockRegistry));
             }
 
@@ -163,7 +156,7 @@ public class BlockAPIMod extends Mod {
                         label("A")
                     );
                 }
-            }.targetMethod(getBlockIcon));
+            }.targetMethod(BlockMod.getBlockIcon));
         }
 
         protected byte[] getGrassTexture(BytecodePatch patch, int iconRegister) {
@@ -186,7 +179,7 @@ public class BlockAPIMod extends Mod {
             addClassSignature(new ConstSignature("_side_snowed"));
             addClassSignature(new ConstSignature("_side_overlay"));
 
-            if (getSecondaryBlockIcon != null) {
+            if (BlockMod.getSecondaryBlockIcon != null) {
                 addPatch(new BytecodePatch() {
                     @Override
                     public String getDescription() {
@@ -219,7 +212,7 @@ public class BlockAPIMod extends Mod {
                             label("A")
                         );
                     }
-                }.targetMethod(getSecondaryBlockIcon));
+                }.targetMethod(BlockMod.getSecondaryBlockIcon));
             }
         }
     }
@@ -232,7 +225,6 @@ public class BlockAPIMod extends Mod {
     }
 
     private class RenderBlocksMod extends com.prupe.mcpatcher.basemod.RenderBlocksMod {
-        private final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
         private final MethodRef getColorMultiplierRed = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierRed", "(I)F");
         private final MethodRef getColorMultiplierGreen = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierGreen", "(I)F");
         private final MethodRef getColorMultiplierBlue = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getColorMultiplierBlue", "(I)F");
@@ -351,7 +343,7 @@ public class BlockAPIMod extends Mod {
                         anyFLOAD,
                         anyFLOAD,
                         anyFLOAD,
-                        reference(INVOKEVIRTUAL, setColorOpaque_F)
+                        reference(INVOKEVIRTUAL, TessellatorMod.setColorOpaque_F)
                     );
                 }
 
@@ -366,7 +358,7 @@ public class BlockAPIMod extends Mod {
                         reference(INVOKESTATIC, getColorMultiplierGreen),
                         push(patchCount),
                         reference(INVOKESTATIC, getColorMultiplierBlue),
-                        reference(INVOKEVIRTUAL, setColorOpaque_F)
+                        reference(INVOKEVIRTUAL, TessellatorMod.setColorOpaque_F)
                     );
                     patchCount++;
                     return code;
@@ -396,7 +388,7 @@ public class BlockAPIMod extends Mod {
                     // block.useColorMultiplierOnFace(Direction.xxx)
                     ALOAD_1,
                     capture(or(anyReference(GETSTATIC), anyALOAD)),
-                    reference(INVOKEVIRTUAL, useColorMultiplierOnFace)
+                    reference(INVOKEVIRTUAL, BlockMod.useColorMultiplierOnFace)
                 );
             }
 
@@ -424,7 +416,7 @@ public class BlockAPIMod extends Mod {
             @Override
             public String getMatchExpression() {
                 return buildExpression(
-                    reference(INVOKESTATIC, RenderBlocksMod.isAmbientOcclusionEnabled)
+                    reference(INVOKESTATIC, MinecraftMod.isAmbientOcclusionEnabled)
                 );
             }
 
