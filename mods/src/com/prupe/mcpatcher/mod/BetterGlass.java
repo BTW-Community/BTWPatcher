@@ -1078,27 +1078,7 @@ public class BetterGlass extends Mod {
         RenderBlockCustomMod() {
             super(BetterGlass.this);
 
-            final ClassRef helperClass = new ClassRef("RenderBlockCustomHelper");
-            final FieldRef helper = new FieldRef(getDeobfClass(), "helper", "LRenderBlockCustomHelper;");
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // this.helper = new RenderBlockCustomHelper(this);
-                        ALOAD_0,
-                        captureReference(NEW),
-                        DUP,
-                        ALOAD_0,
-                        anyReference(INVOKESPECIAL),
-                        captureReference(PUTFIELD)
-                    );
-                }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, helperClass)
-                .addXref(2, helper)
-            );
+            mapHelper();
 
             addPatch(new BytecodePatch() {
                 @Override

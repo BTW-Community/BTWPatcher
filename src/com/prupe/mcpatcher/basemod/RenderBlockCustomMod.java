@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.basemod;
 
 import com.prupe.mcpatcher.ClassMod;
+import com.prupe.mcpatcher.FieldRef;
 import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
 
@@ -10,6 +11,7 @@ import static javassist.bytecode.Opcode.*;
 public class RenderBlockCustomMod extends ClassMod {
     public static final MethodRef renderFaceAO = new MethodRef("RenderBlockCustom", "renderFaceAO", "(LBlock;LPosition;LIcon;LDirection;FFF)I");
     public static final MethodRef renderFaceNonAO = new MethodRef("RenderBlockCustom", "renderFaceNonAO", "(LBlock;LPosition;LIcon;LDirection;FFFI)V");
+    public static final FieldRef helper = new FieldRef("RenderBlockCustom", "helper", "LRenderBlockCustomHelper;");
 
     public static boolean haveCustomModels() {
         return Mod.getMinecraftVersion().compareTo("14w06a") >= 0;
@@ -46,5 +48,29 @@ public class RenderBlockCustomMod extends ClassMod {
                 );
             }
         }.setMethod(method));
+    }
+
+    public RenderBlockCustomMod mapHelper() {
+        addClassSignature(new BytecodeSignature() {
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // this.helper = new RenderBlockCustomHelper(this);
+                    ALOAD_0,
+                    anyReference(NEW),
+                    DUP,
+                    ALOAD_0,
+                    anyReference(INVOKESPECIAL),
+                    captureReference(PUTFIELD)
+                );
+            }
+        }
+            .matchConstructorOnly(true)
+            .addXref(1, helper)
+        );
+
+        addMemberMapper(new FieldMapper(helper));
+
+        return this;
     }
 }
