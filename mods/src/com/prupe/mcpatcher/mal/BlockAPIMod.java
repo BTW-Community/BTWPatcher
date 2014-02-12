@@ -74,11 +74,7 @@ public class BlockAPIMod extends Mod {
         BlockMod() {
             super(BlockAPIMod.this);
 
-            if (getSecondaryBlockIcon == null) {
-                addMemberMapper(new MethodMapper(getBlockIcon));
-            } else {
-                addMemberMapper(new MethodMapper(getSecondaryBlockIcon, getBlockIcon));
-            }
+            mapBlockIconMethods();
             addMemberMapper(new MethodMapper(shouldSideBeRendered));
 
             if (malVersion >= 2) {

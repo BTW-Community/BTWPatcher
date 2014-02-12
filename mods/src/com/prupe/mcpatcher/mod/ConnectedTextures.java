@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.mod;
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
 import com.prupe.mcpatcher.mal.BaseTexturePackMod;
+import javassist.bytecode.AccessFlag;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -21,6 +22,8 @@ import static javassist.bytecode.Opcode.*;
 public class ConnectedTextures extends Mod {
     private final boolean haveBlockRegistry;
     private final boolean haveThickPanes;
+
+    private static final MethodRef getSecondaryIcon = new MethodRef("RenderBlocks", "getSecondaryIcon", "(LBlock;LIBlockAccess;LPosition;LDirection;LRenderBlocks;)LIcon;");
 
     public ConnectedTextures() {
         name = MCPatcherUtils.CONNECTED_TEXTURES;
@@ -147,6 +150,8 @@ public class ConnectedTextures extends Mod {
             final InterfaceMethodRef getBlockMetadata = new InterfaceMethodRef("IBlockAccess", "getBlockMetadata", "(" + PositionMod.getDescriptor() + ")I");
             final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(" + (haveBlockRegistry ? "" : "I") + "LMaterial;)V");
 
+            mapBlockIconMethods();
+
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
@@ -218,7 +223,7 @@ public class ConnectedTextures extends Mod {
                     }
                 }
                     .setMethod(renderBlockByRenderType)
-                    .addXref(1, com.prupe.mcpatcher.basemod.BlockMod.getRenderType)
+                    .addXref(1, BlockMod.getRenderType)
                 );
             }
 
@@ -228,6 +233,9 @@ public class ConnectedTextures extends Mod {
                 setupGlassPanes();
             }
             setupTileOverrides();
+            if (BlockMod.getSecondaryBlockIcon != null) {
+                setupSecondaryTexture();
+            }
         }
 
         private void setupTileOverrides() {
@@ -343,12 +351,55 @@ public class ConnectedTextures extends Mod {
 
             addGlassPanePatches(this, renderBlockGenericPane, renderBlockGlassPane17);
         }
+
+        private void setupSecondaryTexture() {
+            addPatch(new AddMethodPatch(getSecondaryIcon, AccessFlag.PROTECTED | AccessFlag.STATIC) {
+                @Override
+                public byte[] generateMethod() {
+                    int icon = 5;
+                    return buildCode(
+                        // icon = block.getSecondaryIcon(blockAccess, position, direction)
+                        ALOAD_0,
+                        ALOAD_1,
+                        ALOAD_2,
+                        ALOAD_3,
+                        reference(INVOKEVIRTUAL, BlockMod.getSecondaryBlockIcon),
+                        ASTORE, icon,
+
+                        // if (icon != null) {
+                        ALOAD, icon,
+                        IFNULL, branch("A"),
+
+                        // icon = CTMUtils.getBlockIcon(icon, renderBlocks, block, renderBlocks.blockAccess, i, j, k, face);
+                        ALOAD, icon,
+                        ALOAD, 4,
+                        ALOAD_1,
+                        ALOAD, 4,
+                        reference(GETFIELD, RenderBlocksMod.blockAccess),
+                        PositionMod.unpackArguments(this, 2),
+                        DirectionMod.unpackArgumentsSafe(this, 3),
+                        reference(INVOKESTATIC, newBlockIconFromPosition),
+
+                        // }
+                        label("A"),
+
+                        // return icon;
+                        ALOAD, icon,
+                        ARETURN
+                    );
+                }
+            });
+        }
     }
 
     private class RenderBlocksSubclassMod extends ClassMod {
         RenderBlocksSubclassMod() {
             setMultipleMatchesAllowed(true);
             addClassSignature(new AncestorClassSignature("RenderBlocks"));
+
+            if (BlockMod.getSecondaryBlockIcon != null) {
+                setupSecondaryTexture();
+            }
 
             addPatch(new GetBlockIconPatch(RenderBlocksMod.getBlockIconFromSideAndMetadata, "side, metadata") {
                 @Override
@@ -361,6 +412,37 @@ public class ConnectedTextures extends Mod {
             });
 
             addPatch(new GetBlockIconPatch(RenderBlocksMod.getBlockIconFromSide, "side"));
+        }
+
+        private void setupSecondaryTexture() {
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override secondary block texture";
+                }
+
+                @Override
+                public boolean filterMethod() {
+                    return (getMethodInfo().getAccessFlags() & AccessFlag.STATIC) == 0;
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // block.getSecondaryBlockIcon(...)
+                        reference(INVOKEVIRTUAL, BlockMod.getSecondaryBlockIcon)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // RenderBlocks.getSecondaryIcon(..., this)
+                        ALOAD_0,
+                        reference(INVOKESTATIC, getSecondaryIcon)
+                    );
+                }
+            });
         }
 
         private class GetBlockIconPatch extends BytecodePatch {

@@ -69,4 +69,14 @@ public class BlockMod extends com.prupe.mcpatcher.ClassMod {
             }
         }.setMethod(getShortName));
     }
+
+    public BlockMod mapBlockIconMethods() {
+        if (getSecondaryBlockIcon == null) {
+            addMemberMapper(new MethodMapper(getBlockIcon));
+        } else {
+            addMemberMapper(new MethodMapper(getSecondaryBlockIcon, getBlockIcon));
+        }
+        addMemberMapper(new MethodMapper(getBlockIconFromSideAndMetadata));
+        return this;
+    }
 }
