@@ -363,6 +363,21 @@ abstract public class ClassMod implements PatchComponent {
         return ConstPoolUtils.reference(getMethodInfo().getConstPool(), opcode, map(ref), addToConstPool);
     }
 
+    final public FieldRef remap(FieldRef ref) {
+        ref = (FieldRef) map(ref);
+        return new FieldRef(getClassFile().getName(), ref.getName(), ref.getType());
+    }
+
+    final public MethodRef remap(MethodRef ref) {
+        ref = (MethodRef) map(ref);
+        return new MethodRef(getClassFile().getName(), ref.getName(), ref.getType());
+    }
+
+    final public InterfaceMethodRef remap(InterfaceMethodRef ref) {
+        ref = (InterfaceMethodRef) map(ref);
+        return new InterfaceMethodRef(getClassFile().getName(), ref.getName(), ref.getType());
+    }
+
     final public Mod getMod() {
         return mod;
     }
