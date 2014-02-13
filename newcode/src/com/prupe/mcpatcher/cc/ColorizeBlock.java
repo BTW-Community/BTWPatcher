@@ -55,6 +55,19 @@ public class ColorizeBlock {
     public static int blockColor;
     public static boolean isSmooth;
 
+    public static float colorRedTopLeft;
+    public static float colorRedBottomLeft;
+    public static float colorRedBottomRight;
+    public static float colorRedTopRight;
+    public static float colorGreenTopLeft;
+    public static float colorGreenBottomLeft;
+    public static float colorGreenBottomRight;
+    public static float colorGreenTopRight;
+    public static float colorBlueTopLeft;
+    public static float colorBlueBottomLeft;
+    public static float colorBlueBottomRight;
+    public static float colorBlueTopRight;
+
     private static final int[][][] FACE_VERTICES = new int[][][]{
         // bottom face (y=0)
         {
@@ -160,6 +173,7 @@ public class ColorizeBlock {
         threadColorMaps = null;
         blockColorMaps.clear();
         waterColorMap = null;
+        resetVertexColors();
     }
 
     static void reloadFoliageColors(Properties properties) {
@@ -461,33 +475,31 @@ public class ColorizeBlock {
     public static boolean setupBlockSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                               int i, int j, int k, int face,
                                               float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        return checkBiomeSmoothing(block) &&
-            RenderBlocksUtils.useColorMultiplier(face) &&
+        return RenderBlocksUtils.useColorMultiplier(face) &&
             setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, topLeft, bottomLeft, bottomRight, topRight);
     }
 
     public static boolean setupBlockSmoothingGrassSide(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                                        int i, int j, int k, int face,
                                                        float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        return checkBiomeSmoothing(block) &&
+        return checkBiomeSmoothing(block, face) &&
             setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, topLeft, bottomLeft, bottomRight, topRight);
     }
 
     public static boolean setupBlockSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                               int i, int j, int k, int face) {
-        return checkBiomeSmoothing(block) &&
+        return checkBiomeSmoothing(block, face) &&
             setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    private static boolean checkBiomeSmoothing(Block block) {
-        return enableSmoothBiomes && RenderBlocksUtils.isAmbientOcclusionEnabled() && BlockAPI.getBlockLightValue(block) == 0;
+    private static boolean checkBiomeSmoothing(Block block, int face) {
+        return enableSmoothBiomes && face >= 0 && RenderBlocksUtils.isAmbientOcclusionEnabled() && BlockAPI.getBlockLightValue(block) == 0;
     }
 
     private static boolean setupBiomeSmoothing(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                                int i, int j, int k, int face,
                                                boolean useAO, float topLeft, float bottomLeft, float bottomRight, float topRight) {
-        IColorMap colorMap = findColorMap(block, blockAccess, i, j, k);
-        if (colorMap == null) {
+        if (!setupBlockSmoothing(block, blockAccess, i, j, k, face)) {
             return false;
         }
 
@@ -499,29 +511,74 @@ public class ColorizeBlock {
             topRight *= aoBase;
         }
 
+        renderBlocks.colorRedTopLeft = topLeft * colorRedTopLeft;
+        renderBlocks.colorGreenTopLeft = topLeft * colorGreenTopLeft;
+        renderBlocks.colorBlueTopLeft = topLeft * colorBlueTopLeft;
+
+        renderBlocks.colorRedBottomLeft = bottomLeft * colorRedBottomLeft;
+        renderBlocks.colorGreenBottomLeft = bottomLeft * colorGreenBottomLeft;
+        renderBlocks.colorBlueBottomLeft = bottomLeft * colorBlueBottomLeft;
+
+        renderBlocks.colorRedBottomRight = bottomRight * colorRedBottomRight;
+        renderBlocks.colorGreenBottomRight = bottomRight * colorGreenBottomRight;
+        renderBlocks.colorBlueBottomRight = bottomRight * colorBlueBottomRight;
+
+        renderBlocks.colorRedTopRight = topRight * colorRedTopRight;
+        renderBlocks.colorGreenTopRight = topRight * colorGreenTopRight;
+        renderBlocks.colorBlueTopRight = topRight * colorBlueTopRight;
+
+        return true;
+    }
+
+    public static void setupBlockSmoothing(Block block, IBlockAccess blockAccess, int i, int j, int k, int face,
+                                           float r, float g, float b) {
+        if (!setupBlockSmoothing(block, blockAccess, i, j, k, face)) {
+            setVertexColors(r, g, b);
+        }
+    }
+
+    private static boolean setupBlockSmoothing(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
+        if (!checkBiomeSmoothing(block, face)) {
+            return false;
+        }
+        IColorMap colorMap = findColorMap(block, blockAccess, i, j, k);
+        if (colorMap == null) {
+            return false;
+        }
+
         int[][] offsets = FACE_VERTICES[face];
         float[] color;
 
         color = getVertexColor(blockAccess, colorMap, i, j, k, offsets[0]);
-        renderBlocks.colorRedTopLeft = topLeft * color[0];
-        renderBlocks.colorGreenTopLeft = topLeft * color[1];
-        renderBlocks.colorBlueTopLeft = topLeft * color[2];
+        colorRedTopLeft = color[0];
+        colorGreenTopLeft = color[1];
+        colorBlueTopLeft = color[2];
 
         color = getVertexColor(blockAccess, colorMap, i, j, k, offsets[1]);
-        renderBlocks.colorRedBottomLeft = bottomLeft * color[0];
-        renderBlocks.colorGreenBottomLeft = bottomLeft * color[1];
-        renderBlocks.colorBlueBottomLeft = bottomLeft * color[2];
+        colorRedBottomLeft = color[0];
+        colorGreenBottomLeft = color[1];
+        colorBlueBottomLeft = color[2];
 
         color = getVertexColor(blockAccess, colorMap, i, j, k, offsets[2]);
-        renderBlocks.colorRedBottomRight = bottomRight * color[0];
-        renderBlocks.colorGreenBottomRight = bottomRight * color[1];
-        renderBlocks.colorBlueBottomRight = bottomRight * color[2];
+        colorRedBottomRight = color[0];
+        colorGreenBottomRight = color[1];
+        colorBlueBottomRight = color[2];
 
         color = getVertexColor(blockAccess, colorMap, i, j, k, offsets[3]);
-        renderBlocks.colorRedTopRight = topRight * color[0];
-        renderBlocks.colorGreenTopRight = topRight * color[1];
-        renderBlocks.colorBlueTopRight = topRight * color[2];
+        colorRedTopRight = color[0];
+        colorGreenTopRight = color[1];
+        colorBlueTopRight = color[2];
 
         return true;
+    }
+
+    private static void resetVertexColors() {
+        setVertexColors(1.0f, 1.0f, 1.0f);
+    }
+
+    private static void setVertexColors(float r, float g, float b) {
+        colorRedTopLeft = colorRedBottomLeft = colorRedBottomRight = colorRedTopRight = r;
+        colorGreenTopLeft = colorGreenBottomLeft = colorGreenBottomRight = colorGreenTopRight = g;
+        colorBlueTopLeft = colorBlueBottomLeft = colorBlueBottomRight = colorBlueTopRight = b;
     }
 }

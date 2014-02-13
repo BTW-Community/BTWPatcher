@@ -43,6 +43,7 @@ public class CustomColors extends Mod {
     private static final MethodRef setupBlockSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIII)Z");
     private static final MethodRef setupBlockSmoothing2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)Z");
     private static final MethodRef setupBlockSmoothing3 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothingGrassSide", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)Z");
+    private static final MethodRef setupBlockSmoothing4 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LBlock;LIBlockAccess;IIIIFFF)V");
 
     private static final FieldRef setColor = new FieldRef(MCPatcherUtils.COLORIZER_CLASS, "setColor", "[F");
     private static final FieldRef blockColor = new FieldRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "blockColor", "I");
@@ -67,14 +68,26 @@ public class CustomColors extends Mod {
 
     private static final String[] vertexNames = new String[]{"TopLeft", "BottomLeft", "BottomRight", "TopRight"};
     private static final String[] colorNames = new String[]{"Red", "Green", "Blue"};
+
     private static final FieldRef[] vertexColorFields = new FieldRef[12];
+    private static final FieldRef[] newVertexColorFields = new FieldRef[12];
     private static final FieldRef[] brightnessFields = new FieldRef[4];
-    private static final FieldRef[] mixedBrightness = new FieldRef[]{
-        new FieldRef("RenderBlockHelper", "topLeft", "F"),
-        new FieldRef("RenderBlockHelper", "bottomLeft", "F"),
-        new FieldRef("RenderBlockHelper", "bottomRight", "F"),
-        new FieldRef("RenderBlockHelper", "topRight", "F"),
-    };
+    private static final FieldRef[] mixedBrightness = new FieldRef[4];
+
+    static {
+        int i = 0;
+        int j = 0;
+        for (String v : vertexNames) {
+            for (String c : colorNames) {
+                vertexColorFields[i] = new FieldRef("RenderBlocks", "color" + c + v, "F");
+                newVertexColorFields[i] = new FieldRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "color" + c + v, "F");
+                i++;
+            }
+            brightnessFields[j] = new FieldRef("RenderBlocks", "brightness" + v, "I");
+            mixedBrightness[j] = new FieldRef("RenderBlockHelper", "mixedBrightness" + v, "F");
+            j++;
+        }
+    }
 
     public CustomColors() {
         name = MCPatcherUtils.CUSTOM_COLORS;
