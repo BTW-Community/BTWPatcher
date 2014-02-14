@@ -45,7 +45,7 @@ public class RenderBlockManagerMod extends ClassMod {
                         DUP,
                         anyReference(INVOKESPECIAL),
                         backReference(2)
-                    ), 36)
+                    ), 24)
                 );
             }
         }

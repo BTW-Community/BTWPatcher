@@ -9,7 +9,7 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class RenderBlockCustomMod extends ClassMod {
-    public static final MethodRef renderFaceAO = new MethodRef("RenderBlockCustom", "renderFaceAO", "(LBlock;LPosition;LIcon;LDirection;FFF)I");
+    public static MethodRef renderFaceAO;
     public static final MethodRef renderFaceNonAO = new MethodRef("RenderBlockCustom", "renderFaceNonAO", "(LBlock;LPosition;LIcon;LDirection;FFFI)V");
     public static final FieldRef helper = new FieldRef("RenderBlockCustom", "helper", "LRenderBlockCustomHelper;");
 
@@ -21,6 +21,8 @@ public class RenderBlockCustomMod extends ClassMod {
         super(mod);
         setParentClass("RenderBlocks");
         addPrerequisiteClass("RenderBlocks");
+
+        renderFaceAO = new MethodRef("RenderBlockCustom", "renderFaceAO", "(LBlock;LPosition;LIcon;LDirection;FFF" + (Mod.getMinecraftVersion().compareTo("14w07a") >= 0 ? "Z)V" : ")I"));
 
         addSeedSignature(renderFaceAO);
         addSeedSignature(renderFaceNonAO);

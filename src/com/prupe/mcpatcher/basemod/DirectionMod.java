@@ -106,6 +106,8 @@ public class DirectionMod extends com.prupe.mcpatcher.ClassMod {
         addClassSignature(new ConstSignature("WEST"));
         addClassSignature(new ConstSignature("EAST"));
 
+        addClassSignature(new ConstSignature(new MethodRef("java/util/Random", "nextInt", "(I)I")));
+
         addClassSignature(new BytecodeSignature() {
             @Override
             public String getMatchExpression() {
