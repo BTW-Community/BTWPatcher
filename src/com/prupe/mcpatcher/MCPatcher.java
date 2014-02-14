@@ -381,7 +381,9 @@ final public class MCPatcher {
                 ui.updateProgress(numTodo - todoList.size(), numTodo);
             }
             for (ClassMod classMod : todoList) {
-                classMod.addError("not all prerequisite classes matched");
+                if (!classMod.prerequisiteClasses.isEmpty()) {
+                    classMod.addError("prerequisite class " + classMod.prerequisiteClasses.get(0) + " not matched");
+                }
             }
         }
     }
@@ -397,7 +399,8 @@ final public class MCPatcher {
             }
             Mod mod = classMod.mod;
             HashMap<String, String> classMap = mod.classMap.getClassMap();
-            for (String reqClass : classMod.prerequisiteClasses) {
+            for (Iterator<String> iterator1 = classMod.prerequisiteClasses.iterator(); iterator1.hasNext(); ) {
+                String reqClass = iterator1.next();
                 done = false;
                 if (classMap.get(reqClass) == null) {
                     continue classMod;
@@ -407,6 +410,7 @@ final public class MCPatcher {
                         continue classMod;
                     }
                 }
+                iterator1.remove();
             }
             List<JarEntry> candidateEntries;
             String targetClass = classMap.get(classMod.getDeobfClass());
