@@ -12,7 +12,8 @@ public class BlockAPIMod extends Mod {
     private final int malVersion;
 
     public static final MethodRef useColorMultiplier1 = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(I)Z");
-    public static final MethodRef useColorMultiplier2 = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(ZII)Z");
+    public static final MethodRef useColorMultiplier2 = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(ZI)Z");
+    public static final FieldRef layerIndex = new FieldRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "layerIndex", "I");
 
     public BlockAPIMod() {
         name = MCPatcherUtils.BLOCK_API_MOD;
@@ -443,23 +444,33 @@ public class BlockAPIMod extends Mod {
         RenderBlockCustomMod() {
             super(BlockAPIMod.this);
 
+            final boolean usesIterator = getMinecraftVersion().compareTo("14w07a") >= 0;
             final MethodRef useTint = new MethodRef("BlockModelFace", "useTint", "()Z");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // if (faces[index].useTint()) {
+                        // older: if (faces[index].useTint()) {
+                        // 14w07a+: if (face.useTint()) {
                         anyALOAD,
-                        anyILOAD,
-                        AALOAD,
+                        usesIterator ? "" : build(
+                            anyILOAD,
+                            AALOAD
+                        ),
                         captureReference(INVOKEVIRTUAL),
                         IFEQ, any(2),
 
-                        // tessellator.setVertexColor(this.colorxxx * r, ...);
+                        // older: tessellator.setVertexColor(this.colorxxx * r, ...);
+                        // 14w07a+: tessellator.setVertexColor(RenderBlockCustomHelper.getxxx(this.helper)[0] * r, ...);
                         anyALOAD,
                         ALOAD_0,
                         anyReference(GETFIELD),
+                        usesIterator ? build(
+                            anyReference(INVOKESTATIC),
+                            push(0),
+                            FALOAD
+                        ) : "",
                         FLOAD, 5,
                         FMUL
                     );
@@ -474,16 +485,36 @@ public class BlockAPIMod extends Mod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
+                    return "initialize layer index";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // RenderBlocksUtils.layerIndex = 0;
+                        push(0),
+                        reference(PUTSTATIC, layerIndex)
+                    );
+                }
+            }.targetMethod(renderFaceAO, renderFaceNonAO));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
                     return "override tint flag";
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // faces[index].useTint()
-                        anyALOAD,
-                        capture(anyILOAD),
-                        AALOAD,
+                        // face.useTint()
                         reference(INVOKEVIRTUAL, useTint)
                     );
                 }
@@ -491,8 +522,7 @@ public class BlockAPIMod extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // RenderBlocksUtils.useColorMultiplier(..., layer, direction.ordinal())
-                        getCaptureGroup(1),
+                        // RenderBlocksUtils.useColorMultiplier(..., direction.ordinal())
                         DirectionMod.unpackArgumentsSafe(this, 4),
                         reference(INVOKESTATIC, useColorMultiplier2)
                     );

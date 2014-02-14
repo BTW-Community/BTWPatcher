@@ -20,6 +20,8 @@ public class RenderBlocksUtils {
 
     public static final float[] AO_BASE = new float[]{0.5f, 1.0f, 0.8f, 0.8f, 0.6f, 0.6f};
 
+    public static int layerIndex;
+
     public static void setupColorMultiplier(Block block, IBlockAccess blockAccess, int i, int j, int k,
                                             boolean haveOverrideTexture, float r, float g, float b) {
         if (haveOverrideTexture || !RenderPassAPI.instance.useColorMultiplierThisPass(block)) {
@@ -81,11 +83,12 @@ public class RenderBlocksUtils {
     }
 
     public static boolean useColorMultiplier(int face) {
+        layerIndex = 0;
         return useColorMultiplier[getFaceIndex(face)];
     }
 
-    public static boolean useColorMultiplier(boolean useTint, int layer, int face) {
-        return useTint || (layer == 0 && useColorMultiplier(face));
+    public static boolean useColorMultiplier(boolean useTint, int face) {
+        return useTint || (layerIndex++ == 0 && useColorMultiplier(face));
     }
 
     public static float getColorMultiplierRed(int face) {
