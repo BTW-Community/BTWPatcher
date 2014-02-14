@@ -139,7 +139,7 @@ abstract public class BytecodeSignature extends ClassSignature {
         }
         if (className != null && tempClassMap != null) {
             for (int i = 0; i + 1 < tempMappings.size(); i += 2) {
-                tempClassMap.addMap(tempMappings.get(i), tempMappings.get(i + 1), mapSource + " addXref(" + (i + 1) + ")");
+                tempClassMap.addMap(tempMappings.get(i), tempMappings.get(i + 1), mapSource + " addXref(" + (i / 2 + 1) + ")");
             }
             if (deobfMethod != null) {
                 String deobfName = classMod.getDeobfClass();
