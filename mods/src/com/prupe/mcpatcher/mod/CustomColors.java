@@ -3140,38 +3140,48 @@ public class CustomColors extends Mod {
                 }
             }.targetMethod(renderFaceAO));
 
-            for (int i = 0; i < vertexColorFields.length; i++) {
-                final int j = i;
-                addPatch(new BytecodePatch() {
-                    @Override
-                    public String getDescription() {
-                        return "use vertex color multipliers";
-                    }
+            addPatch(new BytecodePatch() {
+                private String[] refs;
 
-                    @Override
-                    public String getMatchExpression() {
-                        return buildExpression(
-                            // this.colorxxx * x
-                            capture(build(
+                @Override
+                public String getDescription() {
+                    return "use vertex color multipliers";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    if (refs == null) {
+                        refs = new String[vertexColorFields.length];
+                        for (int i = 0; i < vertexColorFields.length; i++) {
+                            refs[i] = capture(build(reference(GETFIELD, remap(vertexColorFields[i]))));
+                        }
+                    }
+                    return buildExpression(
+                        // this.colorxxx * x
+                        ALOAD_0,
+                        or(refs),
+                        anyFLOAD,
+                        FMUL
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    for (int i = 0; i < vertexColorFields.length; i++) {
+                        byte[] ref = getCaptureGroup(i + 1);
+                        if (ref != null) {
+                            return buildCode(
+                                // this.colorxxx * ColorizeBlock.colorxxx
                                 ALOAD_0,
-                                reference(GETFIELD, remap(vertexColorFields[j]))
-                            )),
-                            anyFLOAD,
-                            FMUL
-                        );
+                                ref,
+                                reference(GETSTATIC, newVertexColorFields[i]),
+                                FMUL
+                            );
+                        }
                     }
-
-                    @Override
-                    public byte[] getReplacementBytes() {
-                        return buildCode(
-                            // this.colorxxx * ColorizeBlock.colorxxx
-                            getCaptureGroup(1),
-                            reference(GETSTATIC, newVertexColorFields[j]),
-                            FMUL
-                        );
-                    }
-                }.targetMethod(renderFaceAO));
-            }
+                    return null;
+                }
+            }.targetMethod(renderFaceAO));
         }
     }
 
