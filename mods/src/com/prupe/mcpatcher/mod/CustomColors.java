@@ -153,6 +153,9 @@ public class CustomColors extends Mod {
             if (RenderBlockHelperMod.haveClass()) {
                 addClassMod(new RenderBlockHelperMod());
             }
+            if (RenderBlockCustomMod.haveCustomModels()) {
+                addClassMod(new RenderBlockCustomMod());
+            }
             addClassMod(new RenderBlockFluidMod());
             addClassMod(new RenderBlockRedstoneWireMod());
             addClassMod(new RenderBlockCauldronMod());
@@ -3099,6 +3102,76 @@ public class CustomColors extends Mod {
                 .setInsertBefore(true)
                 .targetMethod(computeVertexColors)
             );
+        }
+    }
+
+    private class RenderBlockCustomMod extends com.prupe.mcpatcher.basemod.RenderBlockCustomMod {
+        RenderBlockCustomMod() {
+            super(CustomColors.this);
+            mapHelper();
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "smooth biome colors (standard blocks)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // ColorizeBlock.setupBlockSmoothing(block, this.blockAccess, i, j, k, face, r, g, b);
+                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, RenderBlocksMod.blockAccess),
+                        PositionMod.unpackArguments(this, 2),
+                        DirectionMod.unpackArgumentsSafe(this, 4),
+                        FLOAD, 5,
+                        FLOAD, 6,
+                        FLOAD, 7,
+                        reference(INVOKESTATIC, setupBlockSmoothing4)
+                    );
+                }
+            }.targetMethod(renderFaceAO));
+
+            for (int i = 0; i < vertexColorFields.length; i++) {
+                final int j = i;
+                addPatch(new BytecodePatch() {
+                    @Override
+                    public String getDescription() {
+                        return "use vertex color multipliers";
+                    }
+
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // this.colorxxx * x
+                            capture(build(
+                                ALOAD_0,
+                                reference(GETFIELD, remap(vertexColorFields[j]))
+                            )),
+                            anyFLOAD,
+                            FMUL
+                        );
+                    }
+
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            // this.colorxxx * ColorizeBlock.colorxxx
+                            getCaptureGroup(1),
+                            reference(GETSTATIC, newVertexColorFields[j]),
+                            FMUL
+                        );
+                    }
+                }.targetMethod(renderFaceAO));
+            }
         }
     }
 
