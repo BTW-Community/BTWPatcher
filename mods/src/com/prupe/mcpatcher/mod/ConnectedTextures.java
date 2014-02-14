@@ -373,12 +373,13 @@ public class ConnectedTextures extends Mod {
                         // icon = CTMUtils.getBlockIcon(icon, renderBlocks, block, renderBlocks.blockAccess, i, j, k, face);
                         ALOAD, icon,
                         ALOAD, 4,
-                        ALOAD_1,
+                        ALOAD_0,
                         ALOAD, 4,
                         reference(GETFIELD, RenderBlocksMod.blockAccess),
                         PositionMod.unpackArguments(this, 2),
                         DirectionMod.unpackArgumentsSafe(this, 3),
                         reference(INVOKESTATIC, newBlockIconFromPosition),
+                        ASTORE, icon,
 
                         // }
                         label("A"),
