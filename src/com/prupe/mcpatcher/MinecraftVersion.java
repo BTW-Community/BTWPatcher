@@ -300,16 +300,23 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             addKnownVersion("14w02a", "c881828638a29c59c4f3863d2febde02");
             addKnownVersion("14w02b", "d72fb1d7152eb1a82856e84bb34d43be");
             addKnownVersion("14w02c", "206691e4e99fa0daefd106210fa8a14d");
+
+            // RenderPassEnum
             addKnownVersion("14w03a", "fc2b0ff52c0ff09bdc0aadc1da3f04df");
             addKnownVersion("14w03b", "440954c34c7972dfbc9bdf97684ef318");
 
             // RenderBlocks split
             addKnownVersion("14w04a", "4da20c10fa7c39243664608d97829824");
             addKnownVersion("14w04b", "772017e3a41e7e9767e1010f7870528a");
+
+            // new entity rendering
             addKnownVersion("14w05a", "19b78debf019f03a312015ac36e9eab1");
             addKnownVersion("14w05b", "dc4af817d4148c5961266f3bad564968");
+
+            // custom block models
             addKnownVersion("14w06a", "f7fffd098920dfa71a74cefdc8ab04a9");
             addKnownVersion("14w06b", "9c3aa18bce51dbe586496d70e8269da7");
+            addKnownVersion("14w07a", "da7e7c1e673c38d4ffb02b3c8451eae4");
 
             for (int i = 0; i < versionOrdering.size(); i++) {
                 MinecraftVersion a = versionOrdering.get(i);
