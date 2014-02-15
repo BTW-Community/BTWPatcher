@@ -55,15 +55,17 @@ class ProfileManager {
     }
 
     void refresh(UserInterface ui) throws PatcherException, IOException {
-        refresh(ui, false);
+        refresh(ui, false, false);
     }
 
-    void refresh(UserInterface ui, boolean forceRemote) throws PatcherException, IOException {
+    void refresh(UserInterface ui, boolean forceRemote, boolean compareMD5) throws PatcherException, IOException {
         ready = false;
 
         rebuildRemoteVersionList(ui, forceRemote);
         rebuildLocalVersionList(ui);
-        addUnmoddedCustomVersions(ui);
+        if (compareMD5) {
+            addUnmoddedCustomVersions(ui);
+        }
         rebuildProfileList(ui);
 
         String profile = profiles.getSelectedProfile();

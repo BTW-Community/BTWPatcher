@@ -573,7 +573,7 @@ class MainForm extends UserInterface {
             @Override
             void runImpl() throws Exception {
                 if (refreshProfileManager) {
-                    profileManager.refresh(MainForm.this, forceRemote);
+                    profileManager.refresh(MainForm.this, forceRemote, true);
                 }
                 runInEventThread(new Runnable() {
                     @Override
