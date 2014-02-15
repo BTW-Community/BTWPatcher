@@ -120,7 +120,11 @@ public class Util {
             dos = new DigestOutputStream(output, md);
             copyStream(input, dos);
             MCPatcherUtils.close(dos);
-            md5 = BinaryRegex.binToStr(md.digest()).replaceAll(" ", "");
+            StringBuilder sb = new StringBuilder(32);
+            for (byte b : md.digest()) {
+                sb.append(String.format("%02x", b & 0xff));
+            }
+            md5 = sb.toString();
         } catch (Exception e) {
             Logger.log(e);
         } finally {
