@@ -28,6 +28,12 @@ public class RenderPass {
     private static int maxRenderPass = 1;
     private static boolean ambientOcclusion;
 
+    private static int[] lastIntBuffer;
+    private static int lastIntBuffer3;
+    private static int lastIntBuffer10;
+    private static int lastIntBuffer17;
+    private static int lastIntBuffer24;
+
     public static boolean canRenderInThisPass;
 
     static {
@@ -63,6 +69,7 @@ public class RenderPass {
                 extraRenderPass.clear();
                 renderPassBits.clear();
                 customRenderPassBlocks.clear();
+                lastIntBuffer = null;
 
                 for (Block block : BlockAPI.getAllBlocks()) {
                     baseRenderPass.put(block, RenderPassMap.instance.getDefaultRenderPass(block));
@@ -203,6 +210,30 @@ public class RenderPass {
 
     public static float getAOBaseMultiplier(float multiplier) {
         return RenderPassAPI.instance.useLightmapThisPass() ? multiplier : 1.0f;
+    }
+
+    // 14w07a+
+    public static int[] setAOBaseMultiplier(int[] buffer) {
+        if (!RenderPassAPI.instance.useLightmapThisPass() && buffer.length > 24) {
+            lastIntBuffer = buffer;
+            lastIntBuffer3 = buffer[3];
+            lastIntBuffer10 = buffer[10];
+            lastIntBuffer17 = buffer[17];
+            lastIntBuffer24 = buffer[24];
+            buffer[3] = buffer[10] = buffer[17] = buffer[24] = -1;
+        } else {
+            lastIntBuffer = null;
+        }
+        return buffer;
+    }
+
+    public static void resetAOBaseMultiplier() {
+        if (lastIntBuffer != null) {
+            lastIntBuffer[3] = lastIntBuffer3;
+            lastIntBuffer[10] = lastIntBuffer10;
+            lastIntBuffer[17] = lastIntBuffer17;
+            lastIntBuffer[24] = lastIntBuffer24;
+        }
     }
 
     public static boolean preRenderPass(int pass) {

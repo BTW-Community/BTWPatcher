@@ -24,6 +24,8 @@ public class BetterGlass extends Mod {
     private static final MethodRef pass18To17 = new MethodRef(MCPatcherUtils.RENDER_PASS_MAP_CLASS, "map18To17", "(I)I");
     private static final MethodRef pass17To18 = new MethodRef(MCPatcherUtils.RENDER_PASS_MAP_CLASS, "map17To18", "(I)I");
     private static final MethodRef newGetAOBaseMultiplier = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "getAOBaseMultiplier", "(F)F");
+    private static final MethodRef setAOBaseMultiplier = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "setAOBaseMultiplier", "([I)[I");
+    private static final MethodRef resetAOBaseMultiplier = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "resetAOBaseMultiplier", "()V");
 
     private final MethodRef sortAndRender = new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLivingBase;" + RenderPassEnumMod.getDescriptor() + "D)I");
 
@@ -65,10 +67,10 @@ public class BetterGlass extends Mod {
         if (directionWithAO > 0) {
             addClassMod(new DirectionWithAOMod());
             addClassMod(new RenderBlockHelperMod());
+            addClassMod(new RenderBlocksSubclassMod());
         }
-        if (RenderBlockCustomMod.haveCustomModels()) {
+        if (getMinecraftVersion().compareTo("14w07a") >= 0) {
             addClassMod(new RenderBlockCustomMod());
-            addClassMod(new RenderBlockCustomHelperMod());
         }
         setMALVersion("renderpass", malVersion);
 
@@ -882,13 +884,11 @@ public class BetterGlass extends Mod {
 
             final MethodRef newShouldSideBeRendered = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "shouldSideBeRendered", "(LBlock;LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
 
-            addPatch(new AOMultiplierPatch(this) {
-                {
-                    if (directionWithAO == 0) {
-                        targetMethod(renderStandardBlockWithAmbientOcclusion);
-                    }
-                }
-            });
+            if (directionWithAO == 0) {
+                addPatch(new AOMultiplierPatch(this)
+                    .targetMethod(renderStandardBlockWithAmbientOcclusion)
+                );
+            }
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -1033,6 +1033,15 @@ public class BetterGlass extends Mod {
         }
     }
 
+    private class RenderBlocksSubclassMod extends ClassMod {
+        RenderBlocksSubclassMod() {
+            setMultipleMatchesAllowed(true);
+            addClassSignature(new AncestorClassSignature("RenderBlocks"));
+
+            addPatch(new AOMultiplierPatch(this));
+        }
+    }
+
     private class AOMultiplierPatch extends BytecodePatch {
         AOMultiplierPatch(com.prupe.mcpatcher.ClassMod classMod) {
             super(classMod);
@@ -1041,7 +1050,7 @@ public class BetterGlass extends Mod {
 
         @Override
         public String getDescription() {
-            return "override AO block brightness for extra render passes";
+            return "override block shading for overlay render pass";
         }
 
         @Override
@@ -1078,46 +1087,67 @@ public class BetterGlass extends Mod {
         RenderBlockCustomMod() {
             super(BetterGlass.this);
 
-            mapHelper();
+            final MethodRef getIntBuffer = new MethodRef("BlockModelFace", "getIntBuffer", "()[I");
+            final MethodRef addIntBuffer = new MethodRef("Tessellator", "addIntBuffer", "([I)V");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // if (face != null) {
+                        anyALOAD,
+                        or(build(
+                            IFNULL, any(2)
+                        ), build(
+                            IFNONNULL, any(2),
+                            GOTO, any(2)
+                        )),
+
+                        // tessellator.addIntBuffer(face.getIntBuffer());
+                        anyALOAD,
+                        anyALOAD,
+                        captureReference(INVOKEVIRTUAL),
+                        captureReference(INVOKEVIRTUAL)
+                    );
+                }
+            }
+                .setMethod(renderFaceAO)
+                .addXref(1, getIntBuffer)
+                .addXref(2, addIntBuffer)
+            );
 
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "override AO block brightness for extra render passes";
+                    return "override block shading for overlay render pass";
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // aoMultiplier = faces[index].getShade()
+                        // tessellator.addIntBuffer(face.getIntBuffer());
                         capture(build(
                             anyALOAD,
-                            anyILOAD,
-                            AALOAD,
-                            anyReference(INVOKEVIRTUAL)
+                            anyALOAD,
+                            reference(INVOKEVIRTUAL, getIntBuffer)
                         )),
-                        capture(anyFSTORE)
+                        reference(INVOKEVIRTUAL, addIntBuffer)
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // aoMultiplier = RenderPass.getAOBaseMultiplier(...);
+                        // tessellator.addIntBuffer(RenderPass.setAOBaseMultiplier(face.getIntBuffer()));
                         getCaptureGroup(1),
-                        reference(INVOKESTATIC, newGetAOBaseMultiplier),
-                        getCaptureGroup(2)
+                        reference(INVOKESTATIC, setAOBaseMultiplier),
+                        reference(INVOKEVIRTUAL, addIntBuffer),
+
+                        // RenderPass.resetAOBaseMultiplier();
+                        reference(INVOKESTATIC, resetAOBaseMultiplier)
                     );
                 }
-            }.targetMethod(renderFaceNonAO));
-        }
-    }
-
-    private class RenderBlockCustomHelperMod extends ClassMod {
-        RenderBlockCustomHelperMod() {
-            addPrerequisiteClass("RenderBlockCustom");
-
-            addPatch(new AOMultiplierPatch(this));
+            }.targetMethod(renderFaceAO));
         }
     }
 }
