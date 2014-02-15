@@ -70,7 +70,8 @@ public class CustomColors extends Mod {
     private static final String[] colorNames = new String[]{"Red", "Green", "Blue"};
 
     private static final FieldRef[] vertexColorFields = new FieldRef[12];
-    private static final FieldRef[] newVertexColorFields = new FieldRef[12];
+    private static final MethodRef[] vertexColorMethods = new MethodRef[3];
+    private static final FieldRef[] ccVertexColorFields = new FieldRef[12];
     private static final FieldRef[] brightnessFields = new FieldRef[4];
     private static final FieldRef[] mixedBrightness = new FieldRef[4];
 
@@ -80,12 +81,16 @@ public class CustomColors extends Mod {
         for (String v : vertexNames) {
             for (String c : colorNames) {
                 vertexColorFields[i] = new FieldRef("RenderBlocks", "color" + c + v, "F");
-                newVertexColorFields[i] = new FieldRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "color" + c + v, "F");
+                ccVertexColorFields[i] = new FieldRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "color" + c + v, "F");
                 i++;
             }
             brightnessFields[j] = new FieldRef("RenderBlocks", "brightness" + v, "I");
             mixedBrightness[j] = new FieldRef("RenderBlockHelper", "mixedBrightness" + v, "F");
             j++;
+        }
+        i = 0;
+        for (String c : colorNames) {
+            vertexColorMethods[i++] = new MethodRef("RenderBlockCustomHelper", "getVertex" + c, "(LRenderBlockCustomHelper;)[F");
         }
     }
 
@@ -155,6 +160,9 @@ public class CustomColors extends Mod {
             }
             if (RenderBlockCustomMod.haveCustomModels()) {
                 addClassMod(new RenderBlockCustomMod());
+                if (getMinecraftVersion().compareTo("14w07a") >= 0) {
+                    addClassMod(new RenderBlockCustomHelperMod());
+                }
             }
             addClassMod(new RenderBlockFluidMod());
             addClassMod(new RenderBlockRedstoneWireMod());
@@ -3141,7 +3149,7 @@ public class CustomColors extends Mod {
             }.targetMethod(renderFaceAO));
 
             addPatch(new BytecodePatch() {
-                private String[] refs;
+                private final boolean useHelper = getMinecraftVersion().compareTo("14w07a") >= 0;
 
                 @Override
                 public String getDescription() {
@@ -3150,16 +3158,14 @@ public class CustomColors extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    if (refs == null) {
-                        refs = new String[vertexColorFields.length];
-                        for (int i = 0; i < vertexColorFields.length; i++) {
-                            refs[i] = capture(build(reference(GETFIELD, remap(vertexColorFields[i]))));
-                        }
+                    String[] tmp = new String[vertexColorFields.length];
+                    for (int i = 0; i < vertexColorFields.length; i++) {
+                        String subExpr = getVertexSubExpression(i);
+                        tmp[i] = capture(subExpr);
                     }
+
                     return buildExpression(
-                        // this.colorxxx * x
-                        ALOAD_0,
-                        or(refs),
+                        or(tmp),
                         anyFLOAD,
                         FMUL
                     );
@@ -3168,20 +3174,49 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     for (int i = 0; i < vertexColorFields.length; i++) {
-                        byte[] ref = getCaptureGroup(i + 1);
-                        if (ref != null) {
+                        byte[] subExpr = getCaptureGroup(i + 1);
+                        if (subExpr != null) {
                             return buildCode(
-                                // this.colorxxx * ColorizeBlock.colorxxx
-                                ALOAD_0,
-                                ref,
-                                reference(GETSTATIC, newVertexColorFields[i]),
+                                // ... * ColorizeBlock.colorxxx
+                                subExpr,
+                                reference(GETSTATIC, ccVertexColorFields[i]),
                                 FMUL
                             );
                         }
                     }
                     return null;
                 }
+
+                private String getVertexSubExpression(int index) {
+                    if (useHelper) {
+                        return build(
+                            // RenderBlockCustomHelper.getVertexxxx(this.helper)[xxx]
+                            ALOAD_0,
+                            reference(GETFIELD, helper),
+                            reference(INVOKESTATIC, vertexColorMethods[index % 3]),
+                            push((index / 3 + 2) % 4), // why does +2 work???
+                            FALOAD
+                        );
+                    } else {
+                        return build(
+                            // this.colorxxx
+                            ALOAD_0,
+                            reference(GETFIELD, remap(vertexColorFields[index]))
+                        );
+                    }
+                }
             }.targetMethod(renderFaceAO));
+        }
+    }
+
+    private class RenderBlockCustomHelperMod extends ClassMod {
+        RenderBlockCustomHelperMod() {
+            addPrerequisiteClass("RenderBlockCustom");
+
+            addMemberMapper(new MethodMapper(vertexColorMethods)
+                .accessFlag(AccessFlag.SYNTHETIC, true)
+                .accessFlag(AccessFlag.STATIC, true)
+            );
         }
     }
 
