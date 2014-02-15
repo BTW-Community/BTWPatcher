@@ -577,11 +577,6 @@ public class BetterGlass extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // this.renderRainSnow(partialTick);
-                        ALOAD_0,
-                        FLOAD_1,
-                        reference(INVOKEVIRTUAL, renderRainSnow),
-
                         // renderGlobal.sortAndRender(camera, 5, (double) partialTick);
                         ALOAD, 5,
                         ALOAD, 4,
@@ -589,7 +584,12 @@ public class BetterGlass extends Mod {
                         FLOAD_1,
                         F2D,
                         reference(INVOKEVIRTUAL, sortAndRender),
-                        POP
+                        POP,
+
+                        // this.renderRainSnow(partialTick);
+                        ALOAD_0,
+                        FLOAD_1,
+                        reference(INVOKEVIRTUAL, renderRainSnow)
                     );
                 }
             }
