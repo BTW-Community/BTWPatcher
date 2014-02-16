@@ -17,6 +17,7 @@ public class RenderPassAPI {
     public static final int OVERLAY_RENDER_PASS = 5;
     public static final int MAX_BASE_RENDER_PASS = BACKFACE_RENDER_PASS;
     public static final int MAX_EXTRA_RENDER_PASS = NAMES.length - 1;
+    public static final int NUM_RENDER_PASSES = NAMES.length;
 
     public int parseRenderPass(String value) {
         int pass = value.matches("\\d+") ? Integer.parseInt(value) : -1;

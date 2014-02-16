@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.ctm;
 
 import com.prupe.mcpatcher.MAL;
+import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import net.minecraft.src.Block;
 
 abstract public class RenderPassMap {
@@ -19,6 +20,8 @@ abstract public class RenderPassMap {
     abstract protected int MCPatcherToVanilla(int pass);
 
     abstract protected int getDefaultRenderPass(Block block);
+
+    abstract protected int getCutoutRenderPass();
 
     // pre-14w03a
     private static class V1 extends RenderPassMap {
@@ -43,6 +46,11 @@ abstract public class RenderPassMap {
         protected int getDefaultRenderPass(Block block) {
             return vanillaToMCPatcher(block.getRenderBlockPass());
         }
+
+        @Override
+        protected int getCutoutRenderPass() {
+            return RenderPassAPI.SOLID_RENDER_PASS;
+        }
     }
 
     // 14w03a+
@@ -60,6 +68,11 @@ abstract public class RenderPassMap {
         @Override
         protected int getDefaultRenderPass(Block block) {
             return block.getRenderBlockPassEnum().ordinal();
+        }
+
+        @Override
+        protected int getCutoutRenderPass() {
+            return RenderPassAPI.CUTOUT_RENDER_PASS;
         }
     }
 }

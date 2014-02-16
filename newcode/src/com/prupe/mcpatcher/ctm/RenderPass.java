@@ -22,7 +22,7 @@ public class RenderPass {
     private static ResourceLocation blendBlankResource;
     private static boolean enableLightmap;
     private static boolean enableColormap;
-    private static boolean backfaceCulling;
+    private static final boolean[] backfaceCulling = new boolean[RenderPassAPI.NUM_RENDER_PASSES];
 
     private static int currentRenderPass = -1;
     private static int maxRenderPass = 1;
@@ -113,14 +113,16 @@ public class RenderPass {
                 blendMethod = BlendMethod.ALPHA;
                 enableLightmap = true;
                 enableColormap = false;
-                backfaceCulling = true;
+                Arrays.fill(backfaceCulling, true);
+                backfaceCulling[RenderPassAPI.BACKFACE_RENDER_PASS] = false;
             }
 
             @Override
             public void afterChange() {
                 Properties properties = TexturePackAPI.getProperties(RENDERPASS_PROPERTIES);
                 if (properties != null) {
-                    String method = properties.getProperty("blend.3", "alpha").trim().toLowerCase();
+                    properties = remapProperties(properties);
+                    String method = properties.getProperty("blend.overlay", "alpha").trim().toLowerCase();
                     blendMethod = BlendMethod.parse(method);
                     if (blendMethod == null) {
                         logger.error("%s: unknown blend method '%s'", RENDERPASS_PROPERTIES, method);
@@ -130,9 +132,12 @@ public class RenderPass {
                     if (blendBlankResource == null) {
                         blendBlankResource = BlendMethod.ALPHA.getBlankResource();
                     }
-                    enableLightmap = MCPatcherUtils.getBooleanProperty(properties, "enableLightmap.3", !blendMethod.isColorBased());
-                    enableColormap = MCPatcherUtils.getBooleanProperty(properties, "enableColormap.3", false);
-                    backfaceCulling = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.3", true);
+                    enableLightmap = MCPatcherUtils.getBooleanProperty(properties, "enableLightmap.overlay", !blendMethod.isColorBased());
+                    enableColormap = MCPatcherUtils.getBooleanProperty(properties, "enableColormap.overlay", false);
+                    backfaceCulling[RenderPassAPI.OVERLAY_RENDER_PASS] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.overlay", true);
+                    backfaceCulling[RenderPassAPI.CUTOUT_RENDER_PASS] = backfaceCulling[RenderPassMap.instance.getCutoutRenderPass()] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.cutout", true);
+                    backfaceCulling[RenderPassAPI.CUTOUT_MIPPED_RENDER_PASS] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.cutout_mipped", backfaceCulling[RenderPassAPI.CUTOUT_RENDER_PASS]);
+                    backfaceCulling[RenderPassAPI.TRANSLUCENT_RENDER_PASS] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.translucent", true);
                 }
                 for (Block block : BlockAPI.getAllBlocks()) {
                     int bits = 0;
@@ -146,6 +151,20 @@ public class RenderPass {
                     }
                     renderPassBits.put(block, bits);
                 }
+            }
+
+            private Properties remapProperties(Properties properties) {
+                Properties newProperties = new Properties();
+                for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+                    String key = (String) entry.getKey();
+                    key = key.replaceFirst("\\.3$", ".overlay");
+                    key = key.replaceFirst("\\.2$", ".backface");
+                    if (!key.equals(entry.getKey())) {
+                        logger.warning("%s: %s is deprecated in 1.8.  Use %s instead", RENDERPASS_PROPERTIES, entry.getKey(), key);
+                    }
+                    newProperties.put(key, entry.getValue());
+                }
+                return newProperties;
             }
         });
     }
@@ -242,15 +261,21 @@ public class RenderPass {
             return false;
         }
         switch (pass) {
+            case RenderPassAPI.SOLID_RENDER_PASS:
+            case RenderPassAPI.CUTOUT_MIPPED_RENDER_PASS:
+            case RenderPassAPI.CUTOUT_RENDER_PASS:
+            case RenderPassAPI.TRANSLUCENT_RENDER_PASS:
             case RenderPassAPI.BACKFACE_RENDER_PASS:
-                GL11.glDisable(GL11.GL_CULL_FACE);
+                if (!backfaceCulling[pass]) {
+                    GL11.glDisable(GL11.GL_CULL_FACE);
+                }
                 break;
 
             case RenderPassAPI.OVERLAY_RENDER_PASS:
                 GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
                 GL11.glPolygonOffset(-2.0f, -2.0f);
                 GL11.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
-                if (backfaceCulling) {
+                if (backfaceCulling[pass]) {
                     GL11.glEnable(GL11.GL_CULL_FACE);
                 } else {
                     GL11.glDisable(GL11.GL_CULL_FACE);
@@ -269,14 +294,20 @@ public class RenderPass {
 
     public static int postRenderPass(int value) {
         switch (currentRenderPass) {
+            case RenderPassAPI.SOLID_RENDER_PASS:
+            case RenderPassAPI.CUTOUT_MIPPED_RENDER_PASS:
+            case RenderPassAPI.CUTOUT_RENDER_PASS:
+            case RenderPassAPI.TRANSLUCENT_RENDER_PASS:
             case RenderPassAPI.BACKFACE_RENDER_PASS:
-                GL11.glEnable(GL11.GL_CULL_FACE);
+                if (!backfaceCulling[currentRenderPass]) {
+                    GL11.glEnable(GL11.GL_CULL_FACE);
+                }
                 break;
 
             case RenderPassAPI.OVERLAY_RENDER_PASS:
                 GL11.glPolygonOffset(0.0f, 0.0f);
                 GL11.glDisable(GL11.GL_POLYGON_OFFSET_FILL);
-                if (!backfaceCulling) {
+                if (!backfaceCulling[currentRenderPass]) {
                     GL11.glEnable(GL11.GL_CULL_FACE);
                 }
                 GL11.glDisable(GL11.GL_BLEND);
