@@ -1087,13 +1087,33 @@ public class CustomItemTextures extends Mod {
             final MethodRef getArmorTexture1 = new MethodRef(getDeobfClass(), "getArmorTexture1", "(LItemArmor;Z)LResourceLocation;");
             final MethodRef getArmorTexture2 = new MethodRef(getDeobfClass(), "getArmorTexture2", "(LItemArmor;ZLjava/lang/String;)LResourceLocation;");
             final MethodRef renderEnchantment = new MethodRef(getDeobfClass(), "renderEnchantment", "(LEntityLivingBase;LModelBase;FFFFFFF)V");
-            final FieldRef glint = new FieldRef(getDeobfClass(), "glint", "LResourceLocation;");
+            final MethodRef renderModel = new MethodRef("ModelBase", "render", "(LEntity;FFFFFF)V");
 
             addClassSignature(new ConstSignature("overlay"));
             addClassSignature(new ConstSignature("textures/models/armor/%s_layer_%d%s.png"));
             addGlintSignature(this, renderEnchantment);
 
-            addMemberMapper(new MethodMapper(renderArmor));
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // model.render(entity, ...);
+                        anyALOAD,
+                        ALOAD_1,
+                        FLOAD_2,
+                        FLOAD_3,
+                        FLOAD, 5,
+                        FLOAD, 6,
+                        FLOAD, 7,
+                        FLOAD, 8,
+                        captureReference(INVOKEVIRTUAL)
+                    );
+                }
+            }
+                .setMethod(renderArmor)
+                .addXref(1, renderModel)
+            );
+
             addMemberMapper(new MethodMapper(getArmorTexture1));
             addMemberMapper(new MethodMapper(getArmorTexture2));
 
@@ -1153,7 +1173,7 @@ public class CustomItemTextures extends Mod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "render item enchantment (armor) (part 1)";
+                    return "render item enchantment (armor)";
                 }
 
                 @Override
@@ -1168,19 +1188,17 @@ public class CustomItemTextures extends Mod {
                         IFEQ, any(2),
 
                         // this.renderEnchantment(entity, model, ...);
-                        capture(build(
-                            ALOAD_0,
-                            ALOAD_1,
-                            anyALOAD,
-                            FLOAD_2,
-                            FLOAD_3,
-                            FLOAD, 4,
-                            FLOAD, 5,
-                            FLOAD, 6,
-                            FLOAD, 7,
-                            FLOAD, 8,
-                            reference(INVOKESPECIAL, renderEnchantment)
-                        ))
+                        ALOAD_0,
+                        ALOAD_1,
+                        capture(anyALOAD),
+                        FLOAD_2,
+                        FLOAD_3,
+                        FLOAD, 4,
+                        FLOAD, 5,
+                        FLOAD, 6,
+                        FLOAD, 7,
+                        FLOAD, 8,
+                        reference(INVOKESPECIAL, renderEnchantment)
 
                         // }
                     );
@@ -1200,8 +1218,16 @@ public class CustomItemTextures extends Mod {
                         reference(INVOKESTATIC, preRenderArmorEnchantment),
                         IFEQ, branch("C"),
 
-                        // this.renderEnchantment(entity, model, ...);
+                        // model.render(entity, ...);
                         getCaptureGroup(2),
+                        ALOAD_1,
+                        FLOAD_2,
+                        FLOAD_3,
+                        FLOAD, 5,
+                        FLOAD, 6,
+                        FLOAD, 7,
+                        FLOAD, 8,
+                        reference(INVOKEVIRTUAL, renderModel),
 
                         // CITUtils.postRenderEnchantment();
                         reference(INVOKESTATIC, postRenderArmorEnchantment),
@@ -1220,39 +1246,6 @@ public class CustomItemTextures extends Mod {
                     );
                 }
             }.targetMethod(renderArmor));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "render item enchantment (armor) (part 2)";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // this.bindTexture(glint);
-                        ALOAD_0,
-                        anyReference(GETFIELD),
-                        reference(GETSTATIC, glint),
-                        anyReference(INVOKEVIRTUAL)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // if (!CITUtils.isArmorEnchantmentActive()) {
-                        reference(INVOKESTATIC, isArmorEnchantmentActive),
-                        IFNE, branch("A"),
-
-                        // ...
-                        getMatch(),
-
-                        // }
-                        label("A")
-                    );
-                }
-            }.targetMethod(renderEnchantment));
         }
     }
 

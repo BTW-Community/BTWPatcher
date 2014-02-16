@@ -286,7 +286,7 @@ public class CITUtils {
                 armorMatches = tmpList;
             }
         }
-        return isArmorEnchantmentActive();
+        return isArmorEnchantmentActive() || !useGlint;
     }
 
     public static boolean preRenderArmorEnchantment() {
