@@ -20,6 +20,8 @@ public class BetterGlass extends Mod {
     private static final MethodRef disableLightmap = new MethodRef("EntityRenderer", "disableLightmap", "(D)V");
     private static final MethodRef getAOMultiplier18 = new MethodRef("DirectionWithAO", "getAOMultiplier", "(LDirectionWithAO;)F");
     private static final FieldRef aoMultiplier18 = new FieldRef("DirectionWithAO", "aoMultiplier", "F");
+    private static final MethodRef getShadedIntBuffer = new MethodRef("BlockModelFace", "getShadedIntBuffer", "()[I");
+    private static final MethodRef getUnshadedIntBuffer = new MethodRef("BlockModelFace", "getUnshadedIntBuffer", "()[I");
 
     private static final MethodRef pass18To17 = new MethodRef(MCPatcherUtils.RENDER_PASS_MAP_CLASS, "map18To17", "(I)I");
     private static final MethodRef pass17To18 = new MethodRef(MCPatcherUtils.RENDER_PASS_MAP_CLASS, "map17To18", "(I)I");
@@ -71,6 +73,7 @@ public class BetterGlass extends Mod {
         }
         if (getMinecraftVersion().compareTo("14w07a") >= 0) {
             addClassMod(new RenderBlockCustomMod());
+            addClassMod(new BlockModelFaceMod());
         }
         setMALVersion("renderpass", malVersion);
 
@@ -1087,35 +1090,6 @@ public class BetterGlass extends Mod {
         RenderBlockCustomMod() {
             super(BetterGlass.this);
 
-            final MethodRef getIntBuffer = new MethodRef("BlockModelFace", "getIntBuffer", "()[I");
-            final MethodRef addIntBuffer = new MethodRef("Tessellator", "addIntBuffer", "([I)V");
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // if (face != null) {
-                        anyALOAD,
-                        or(build(
-                            IFNULL, any(2)
-                        ), build(
-                            IFNONNULL, any(2),
-                            GOTO, any(2)
-                        )),
-
-                        // tessellator.addIntBuffer(face.getIntBuffer());
-                        anyALOAD,
-                        anyALOAD,
-                        captureReference(INVOKEVIRTUAL),
-                        captureReference(INVOKEVIRTUAL)
-                    );
-                }
-            }
-                .setMethod(renderFaceAO)
-                .addXref(1, getIntBuffer)
-                .addXref(2, addIntBuffer)
-            );
-
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
@@ -1125,29 +1099,50 @@ public class BetterGlass extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // tessellator.addIntBuffer(face.getIntBuffer());
-                        capture(build(
-                            anyALOAD,
-                            anyALOAD,
-                            reference(INVOKEVIRTUAL, getIntBuffer)
-                        )),
-                        reference(INVOKEVIRTUAL, addIntBuffer)
+                        // face.getShadedIntBuffer()
+                        capture(anyALOAD),
+                        reference(INVOKEVIRTUAL, getShadedIntBuffer)
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // tessellator.addIntBuffer(RenderPass.setAOBaseMultiplier(face.getIntBuffer()));
+                        // RenderPass.useBlockShading() ? face.getShadedIntBuffer : faceUnshadedIntBuffer()
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "useBlockShading", "()Z")),
+                        IFEQ, branch("A"),
+                        getMatch(),
+                        GOTO, branch("B"),
+                        label("A"),
                         getCaptureGroup(1),
-                        reference(INVOKESTATIC, setAOBaseMultiplier),
-                        reference(INVOKEVIRTUAL, addIntBuffer),
-
-                        // RenderPass.resetAOBaseMultiplier();
-                        reference(INVOKESTATIC, resetAOBaseMultiplier)
+                        reference(INVOKEVIRTUAL, getUnshadedIntBuffer),
+                        label("B")
                     );
                 }
-            }.targetMethod(renderFaceAO));
+            });
+        }
+    }
+
+    private class BlockModelFaceMod extends ClassMod {
+        BlockModelFaceMod() {
+            final MethodRef floatToRawIntBits = new MethodRef("java/lang/Float", "floatToRawIntBits", "(F)I");
+            final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(LBlockModel;LDirection;Lcom/google/gson/JsonArray;Ljavax/vecmath/Vector3f;Ljavax/vecmath/Vector3f;F)V");
+
+            addClassSignature(new ConstSignature(0.017453292f)); // 180.0 / pi
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKESTATIC, floatToRawIntBits)
+                    );
+                }
+            }.setMethod(constructor));
+
+            addMemberMapper(new MethodMapper(getShadedIntBuffer, getUnshadedIntBuffer)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, false)
+            );
         }
     }
 }
