@@ -157,8 +157,7 @@ abstract class TileOverride implements ITileOverride {
     private final int connectType;
     private final boolean innerSeams;
     private final BitSet biomes;
-    private final int minHeight;
-    private final int maxHeight;
+    private final BitSet height;
 
     private final List<ResourceLocation> tileNames = new ArrayList<ResourceLocation>();
     protected Icon[] icons;
@@ -294,8 +293,7 @@ abstract class TileOverride implements ITileOverride {
             BiomeAPI.parseBiomeList(biomeList, biomes);
         }
 
-        minHeight = MCPatcherUtils.getIntProperty(properties, "minHeight", -1);
-        maxHeight = MCPatcherUtils.getIntProperty(properties, "maxHeight", Integer.MAX_VALUE);
+        height = BiomeAPI.getHeightListProperty(properties, "");
 
         if (renderPass > RenderPassAPI.MAX_EXTRA_RENDER_PASS) {
             error("renderPass must be 0-" + RenderPassAPI.MAX_EXTRA_RENDER_PASS);
@@ -781,7 +779,7 @@ abstract class TileOverride implements ITileOverride {
         if (exclude(block, face, metadata)) {
             return null;
         }
-        if (j < minHeight || j > maxHeight) {
+        if (height != null && !height.get(j)) {
             return null;
         }
         if (biomes != null && !biomes.get(BiomeAPI.getBiomeIDAt(blockAccess, i, j, k))) {
@@ -802,7 +800,7 @@ abstract class TileOverride implements ITileOverride {
             );
             return null;
         }
-        if (minHeight >= 0 || maxHeight < Integer.MAX_VALUE || biomes != null) {
+        if (height != null || biomes != null) {
             return null;
         }
         Integer metadataEntry = matchBlocks.get(block);

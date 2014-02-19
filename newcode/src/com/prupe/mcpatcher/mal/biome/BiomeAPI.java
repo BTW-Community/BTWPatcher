@@ -10,10 +10,13 @@ import net.minecraft.src.Position;
 
 import java.lang.reflect.Method;
 import java.util.BitSet;
+import java.util.Properties;
 
 abstract public class BiomeAPI {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
     private static final BiomeAPI instance = MAL.newInstance(BiomeAPI.class, "biome");
+
+    public static final int WORLD_MAX_HEIGHT = 255;
     public static final boolean isColorHeightDependent = instance.isColorHeightDependent();
 
     private static boolean biomesLogged;
@@ -42,6 +45,24 @@ abstract public class BiomeAPI {
             if (biome != null) {
                 bits.set(biome.biomeID);
             }
+        }
+    }
+
+    public static BitSet getHeightListProperty(Properties properties, String suffix) {
+        int minHeight = Math.max(MCPatcherUtils.getIntProperty(properties, "minHeight" + suffix, 0), 0);
+        int maxHeight = Math.min(MCPatcherUtils.getIntProperty(properties, "maxHeight" + suffix, WORLD_MAX_HEIGHT), WORLD_MAX_HEIGHT);
+        String heightStr = MCPatcherUtils.getStringProperty(properties, "heights" + suffix, "");
+        if (minHeight == 0 && maxHeight == WORLD_MAX_HEIGHT && heightStr.length() == 0) {
+            return null;
+        } else {
+            BitSet heightBits = new BitSet(WORLD_MAX_HEIGHT + 1);
+            if (heightStr.length() == 0) {
+                heightStr = String.valueOf(minHeight) + "-" + String.valueOf(maxHeight);
+            }
+            for (int i : MCPatcherUtils.parseIntegerList(heightStr, 0, WORLD_MAX_HEIGHT)) {
+                heightBits.set(i);
+            }
+            return heightBits;
         }
     }
 

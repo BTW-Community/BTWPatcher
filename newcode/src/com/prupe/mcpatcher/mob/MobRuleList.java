@@ -75,6 +75,9 @@ class MobRuleList {
             }
             return allSkins.get(index);
         } else {
+            if (j < 0) {
+                j = 0;
+            }
             for (MobRuleEntry entry : entries) {
                 if (entry.match(i, j, k, biome)) {
                     int index = entry.weightedIndex.choose(key);
@@ -102,8 +105,7 @@ class MobRuleList {
         final int[] skins;
         final WeightedIndex weightedIndex;
         private final BitSet biomes;
-        private final int minHeight;
-        private final int maxHeight;
+        private final BitSet height;
 
         static MobRuleEntry load(Properties properties, int index, int limit) {
             String skinList = properties.getProperty("skins." + index, "").trim().toLowerCase();
@@ -137,22 +139,16 @@ class MobRuleList {
                 BiomeAPI.parseBiomeList(biomeList, biomes);
             }
 
-            int minHeight = MCPatcherUtils.getIntProperty(properties, "minHeight." + index, -1);
-            int maxHeight = MCPatcherUtils.getIntProperty(properties, "maxHeight." + index, Integer.MAX_VALUE);
-            if (minHeight < 0 || minHeight > maxHeight) {
-                minHeight = -1;
-                maxHeight = Integer.MAX_VALUE;
-            }
+            BitSet height = BiomeAPI.getHeightListProperty(properties, "." + index);
 
-            return new MobRuleEntry(skins, chooser, biomes, minHeight, maxHeight);
+            return new MobRuleEntry(skins, chooser, biomes, height);
         }
 
-        MobRuleEntry(int[] skins, WeightedIndex weightedIndex, BitSet biomes, int minHeight, int maxHeight) {
+        MobRuleEntry(int[] skins, WeightedIndex weightedIndex, BitSet biomes, BitSet height) {
             this.skins = skins;
             this.weightedIndex = weightedIndex;
             this.biomes = biomes;
-            this.minHeight = minHeight;
-            this.maxHeight = maxHeight;
+            this.height = height;
         }
 
         boolean match(int i, int j, int k, Integer biome) {
@@ -161,10 +157,8 @@ class MobRuleList {
                     return false;
                 }
             }
-            if (minHeight >= 0) {
-                if (j < minHeight || j > maxHeight) {
-                    return false;
-                }
+            if (height != null && !height.get(j)) {
+                return false;
             }
             return true;
         }
@@ -182,8 +176,11 @@ class MobRuleList {
                     sb.append(' ').append(i);
                 }
             }
-            if (minHeight >= 0) {
-                sb.append(", height: ").append(minHeight).append('-').append(maxHeight);
+            if (height != null) {
+                sb.append(", height:");
+                for (int i = height.nextSetBit(0); i >= 0; i = height.nextSetBit(i + 1)) {
+                    sb.append(' ').append(i);
+                }
             }
             sb.append(", weights: ").append(weightedIndex.toString());
             return sb.toString();
