@@ -592,6 +592,7 @@ public class ExtendedHD extends Mod {
 
             addClassSignature(new ConstSignature(0.8));
             addClassSignature(new ConstSignature(0.5));
+            addClassSignature(new ConstSignature(new MethodRef("java/lang/Math", "random", "()D")));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
