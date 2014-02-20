@@ -68,7 +68,6 @@ public class BaseTilesheetMod extends Mod {
             final MethodRef sbInit1 = new MethodRef("java/lang/StringBuilder", "<init>", "(Ljava/lang/String;)V");
             final MethodRef sbAppend = new MethodRef("java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;");
             final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
-            final MethodRef readImage = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
 
             addClassSignature(new ResourceLocationSignature(this, blocksAtlas, "textures/atlas/blocks.png"));
             addClassSignature(new ResourceLocationSignature(this, itemsAtlas, "textures/atlas/items.png"));
@@ -267,34 +266,7 @@ public class BaseTilesheetMod extends Mod {
                 }
             }.targetMethod(registerIcon));
 
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override tile image";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // ImageIO.read(texturePack.getResourceAsStream(path))
-                        anyALOAD,
-                        capture(anyALOAD),
-                        anyReference(INVOKEINTERFACE),
-                        reference(INVOKESTATIC, readImage)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // TileLoader.getOverrideImage(path)
-                        getCaptureGroup(1),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverrideImage", "(Ljava/lang/String;)Ljava/awt/image/BufferedImage;"))
-                    );
-                }
-            });
-
-            if (getMinecraftVersion().compareTo("13w41a") >= 0) {
+            if (getMinecraftVersion().compareTo("13w41a") >= 0 && getMinecraftVersion().compareTo("14w02a") < 0) {
                 addPatch(new BytecodePatch() {
                     @Override
                     public String getDescription() {

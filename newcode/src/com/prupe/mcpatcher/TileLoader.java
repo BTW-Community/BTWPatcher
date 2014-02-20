@@ -64,7 +64,6 @@ public class TileLoader {
                     if (!loader.tilesToRegister.isEmpty()) {
                         loader.subLogger.warning("could not load all %s tiles (%d remaining)", loader.mapName, loader.tilesToRegister.size());
                         loader.tilesToRegister.clear();
-                        continue;
                     }
                 }
                 changeHandlerCalled = false;
@@ -122,21 +121,6 @@ public class TileLoader {
 
     public static boolean isSpecialTexture(TextureAtlas map, String texture, String special) {
         return special.equals(texture) || special.equals(specialTextures.get(texture));
-    }
-
-    public static BufferedImage getOverrideImage(ResourceLocation resource) throws IOException {
-        BufferedImage image;
-        for (TileLoader loader : loaders) {
-            image = loader.tileImages.get(resource);
-            if (image != null) {
-                return image;
-            }
-        }
-        image = TexturePackAPI.getImage(resource);
-        if (image == null) {
-            throw new FileNotFoundException(resource + " not found");
-        }
-        return image;
     }
 
     public static BufferedImage generateDebugTexture(String text, int width, int height, boolean alternate) {
