@@ -122,12 +122,10 @@ public class BaseTilesheetMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // this.mapTextures.entrySet().iterator()
+                        // this.list.clear();
                         ALOAD_0,
-                        reference(GETFIELD, texturesByName),
-                        reference(INVOKEINTERFACE, mapEntrySet),
-                        reference(INVOKEINTERFACE, setIterator),
-                        anyASTORE
+                        anyReference(GETFIELD),
+                        reference(INVOKEINTERFACE, new InterfaceMethodRef("java/util/List", "clear", "()V"))
                     );
                 }
 
@@ -148,7 +146,7 @@ public class BaseTilesheetMod extends Mod {
                     );
                 }
             }
-                .setInsertBefore(true)
+                .setInsertAfter(true)
                 .targetMethod(refreshTextures2)
             );
 
