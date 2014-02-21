@@ -25,6 +25,8 @@ public class CTMUtils {
     private static final TileOverrideIterator.IJK ijkIterator = new TileOverrideIterator.IJK(blockOverrides, tileOverrides);
     private static final TileOverrideIterator.Metadata metadataIterator = new TileOverrideIterator.Metadata(blockOverrides, tileOverrides);
 
+    private static boolean haveCullFace;
+    private static int currentCullFace;
     private static final BlockOrientation blockOrientation = new BlockOrientation();
 
     static {
@@ -85,27 +87,29 @@ public class CTMUtils {
         });
     }
 
-    public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess, int i, int j, int k, int cullFace, int uvFace) {
-        lastOverride = null;
-        if (checkFace(uvFace)) {
-            blockOrientation.setup(block, blockAccess, i, j, k, cullFace, uvFace);
-            lastOverride = ijkIterator.go(blockOrientation, icon);
-            if (lastOverride != null) {
-                icon = ijkIterator.getIcon();
-            }
-        }
-        return lastOverride == null && skipDefaultRendering(block) ? blankIcon : icon;
+    public static void setCullFace(int cullFace) {
+        haveCullFace = true;
+        currentCullFace = cullFace;
+    }
+
+    private static void clearCullFace() {
+        haveCullFace = false;
     }
 
     public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess, int i, int j, int k, int uvFace) {
         lastOverride = null;
         if (checkFace(uvFace)) {
-            blockOrientation.setup(block, blockAccess, i, j, k, uvFace);
+            if (haveCullFace) {
+                blockOrientation.setup(block, blockAccess, i, j, k, currentCullFace, uvFace);
+            } else {
+                blockOrientation.setup(block, blockAccess, i, j, k, uvFace);
+            }
             lastOverride = ijkIterator.go(blockOrientation, icon);
             if (lastOverride != null) {
                 icon = ijkIterator.getIcon();
             }
         }
+        clearCullFace();
         return lastOverride == null && skipDefaultRendering(block) ? blankIcon : icon;
     }
 

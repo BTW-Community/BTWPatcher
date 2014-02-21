@@ -55,6 +55,9 @@ public class ConnectedTextures extends Mod {
             );
             addClassMod(new RenderBlockPaneMod("RenderBlockIronBars"));
             addClassMod(new RenderBlockPaneMod("RenderBlockGlassPane"));
+            if (RenderBlockCustomMod.haveCustomModels()) {
+                addClassMod(new RenderBlockCustomMod());
+            }
         }
         addClassMod(new RenderBlocksSubclassMod());
 
@@ -914,6 +917,63 @@ public class ConnectedTextures extends Mod {
         @Override
         public String getDeobfClass() {
             return className;
+        }
+    }
+
+    private class RenderBlockCustomMod extends com.prupe.mcpatcher.basemod.RenderBlockCustomMod {
+        RenderBlockCustomMod() {
+            super(ConnectedTextures.this);
+
+            final MethodRef setCullFaceLocal = new MethodRef(getDeobfClass(), "setCullFace", "(LDirection;LDirection;)LDirection;");
+            final MethodRef setCullFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "setCullFace", "(I)V");
+
+            addPatch(new AddMethodPatch(setCullFaceLocal, AccessFlag.PRIVATE | AccessFlag.STATIC) {
+                @Override
+                public byte[] generateMethod() {
+                    return buildCode(
+                        // CTMUtils.setCullFace(cullDirection.ordinal());
+                        DirectionMod.unpackArgumentsSafe(this, 1),
+                        reference(INVOKESTATIC, setCullFace),
+
+                        // return uvDirection;
+                        ALOAD_0,
+                        ARETURN
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override tile (custom models)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(or(
+                        // this.getBlockIconFromPosition(..., uvDirection)
+                        // -or-
+                        // RenderBlocks.getSecondaryIcon(..., uvDirection, this)
+                        // -or-
+                        // block.getSecondaryBlockIcon(..., uvDirection)
+                        build(reference(INVOKEVIRTUAL, remap(RenderBlocksMod.getBlockIconFromPosition))),
+                        build(reference(INVOKESTATIC, getSecondaryIcon), ALOAD_0),
+                        build(reference(INVOKEVIRTUAL, BlockMod.getSecondaryBlockIcon))
+                    ));
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // ...(..., RenderBlockCustom.setCullFace(uvDirection, cullDirection))
+                        ALOAD, 4,
+                        reference(INVOKESTATIC, setCullFaceLocal)
+                    );
+                }
+            }
+                .setInsertBefore(true)
+                .targetMethod(renderFaceAO, renderFaceNonAO)
+            );
         }
     }
 }
