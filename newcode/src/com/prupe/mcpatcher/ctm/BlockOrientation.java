@@ -6,7 +6,7 @@ import net.minecraft.src.IBlockAccess;
 
 import static com.prupe.mcpatcher.ctm.TileOverride.*;
 
-class BlockOrientation {
+final class BlockOrientation {
     private static final int[][] ROTATE_UV_MAP = new int[][]{
         {WEST_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, 2, -2, 2, -2, 0, 0},
         {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, 2},
@@ -20,7 +20,6 @@ class BlockOrientation {
     int j;
     int k;
     int metadata;
-    int maskedMetadata;
 
     int cullFace;
     int uvFace;
@@ -36,7 +35,7 @@ class BlockOrientation {
         block = null;
         blockAccess = null;
         i = j = k = 0;
-        metadata = maskedMetadata = 0;
+        metadata = 0;
         cullFace = uvFace = 0;
         rotateUV = 0;
         rotateTop = false;
@@ -52,7 +51,7 @@ class BlockOrientation {
         this.k = k;
         this.cullFace = cullFace;
         this.uvFace = uvFace;
-        metadata = maskedMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
+        metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         useOffset = setCoordOffsetsForRenderType();
         rotateUV = 0;
         rotateTop = false;
@@ -65,7 +64,7 @@ class BlockOrientation {
         this.j = j;
         this.k = k;
         uvFace = face;
-        metadata = maskedMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
+        metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         useOffset = setCoordOffsetsForRenderType();
         rotateUV = 0;
         rotateTop = false;
@@ -77,7 +76,7 @@ class BlockOrientation {
         this.blockAccess = null;
         i = j = k = 0;
         cullFace = uvFace = face;
-        this.metadata = maskedMetadata = metadata;
+        this.metadata = metadata;
         useOffset = false;
         di = dj = dk = 0;
         rotateUV = 0;
@@ -124,17 +123,14 @@ class BlockOrientation {
             case 31: // renderBlockLog (also applies to hay)
                 switch (metadata & 0xc) {
                     case 0:
-                        maskedMetadata &= ~0xc;
                         break;
 
                     case 4:
-                        maskedMetadata &= ~0xc;
                         rotateTop = true;
                         rotateUV = ROTATE_UV_MAP[0][uvFace + 6];
                         return ROTATE_UV_MAP[0][uvFace];
 
                     case 8:
-                        maskedMetadata &= ~0xc;
                         rotateUV = ROTATE_UV_MAP[1][uvFace + 6];
                         return ROTATE_UV_MAP[1][uvFace];
 
@@ -146,13 +142,11 @@ class BlockOrientation {
             case 39: // renderBlockQuartz
                 switch (metadata) {
                     case 3:
-                        maskedMetadata = 2;
                         rotateTop = true;
                         rotateUV = ROTATE_UV_MAP[2][uvFace + 6];
                         return ROTATE_UV_MAP[2][uvFace];
 
                     case 4:
-                        maskedMetadata = 2;
                         rotateUV = ROTATE_UV_MAP[3][uvFace + 6];
                         return ROTATE_UV_MAP[3][uvFace];
 
@@ -220,5 +214,9 @@ class BlockOrientation {
                 break;
         }
         return changed;
+    }
+
+    int rotateUV(int neighbor) {
+        return (neighbor + rotateUV) & 7;
     }
 }

@@ -3,7 +3,6 @@ package com.prupe.mcpatcher.ctm;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
-import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import net.minecraft.src.*;
 
 import java.util.Arrays;

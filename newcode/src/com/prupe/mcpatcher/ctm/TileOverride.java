@@ -501,8 +501,14 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    final boolean shouldConnect(IBlockAccess blockAccess, Block block, Icon icon, int i, int j, int k, int face, int[] offset) {
-        int metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
+    final boolean shouldConnect(BlockOrientation blockOrientation, Icon icon, int[] offset) {
+        IBlockAccess blockAccess = blockOrientation.blockAccess;
+        Block block = blockOrientation.block;
+        int i = blockOrientation.i;
+        int j = blockOrientation.j;
+        int k = blockOrientation.k;
+        int uvFace = blockOrientation.uvFace;
+        int metadata = blockOrientation.metadata;
         i += offset[0];
         j += offset[1];
         k += offset[2];
@@ -513,23 +519,17 @@ abstract class TileOverride implements ITileOverride {
                 return false;
             }
         } else {
-            if (exclude(neighbor, face, neighborMeta)) {
+            if (exclude(neighbor, uvFace, neighborMeta)) {
                 return false;
             }
         }
-        int orientation = getOrientationFromMetadata(block, metadata);
-        int neighborOrientation = getOrientationFromMetadata(neighbor, neighborMeta);
-        if ((orientation & ~META_MASK) != (neighborOrientation & ~META_MASK)) {
+        if (metadata != neighborMeta) {
             return false;
         }
-        if (matchMetadata != META_MASK) {
-            if ((orientation & META_MASK) != (neighborOrientation & META_MASK)) {
-                return false;
-            }
-        }
-        if (face >= 0 && innerSeams) {
-            int[] normal = NORMALS[face];
-            if (!BlockAPI.shouldSideBeRendered(neighbor, blockAccess, i + normal[0], j + normal[1], k + normal[2], face)) {
+        int cullFace = blockOrientation.cullFace;
+        if (cullFace >= 0 && innerSeams) {
+            int[] normal = NORMALS[cullFace];
+            if (!BlockAPI.shouldSideBeRendered(neighbor, blockAccess, i + normal[0], j + normal[1], k + normal[2], cullFace)) {
                 return false;
             }
         }
@@ -538,7 +538,7 @@ abstract class TileOverride implements ITileOverride {
                 return neighbor == block;
 
             case CONNECT_BY_TILE:
-                return BlockAPI.getBlockIcon(neighbor, blockAccess, i, j, k, face) == icon;
+                return BlockAPI.getBlockIcon(neighbor, blockAccess, i, j, k, uvFace) == icon;
 
             case CONNECT_BY_MATERIAL:
                 return block.blockMaterial == neighbor.blockMaterial;
@@ -548,221 +548,31 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    final int reorient(int face) {
-        if (face < 0 || face > 5 || reorient == null) {
-            return face;
-        } else {
-            return reorient[face];
-        }
-    }
-
-    final int rotateUV(int neighbor) {
-        return (neighbor + rotateUV) & 7;
-    }
-
     final boolean exclude(Block block, int face, int metadata) {
         if (block == null) {
             return true;
-        } else if ((faces & (1 << reorient(face))) == 0) {
+        } else if ((faces & (1 << face)) == 0) {
             return true;
-        }
-        if (matchMetadata != META_MASK && metadata >= 0 && metadata <= BlockAndMetadata.MAX_METADATA) {
-            int altMetadata = getOrientationFromMetadata(block, metadata) & META_MASK;
-            if ((matchMetadata & ((1 << metadata) | (1 << altMetadata))) == 0) {
-                return true;
-            }
+        } else if (matchMetadata != META_MASK && (matchMetadata & (1 << metadata)) == 0) {
+            return true;
         }
         return false;
     }
 
-    private static int getOrientationFromMetadata(Block block, int metadata) {
-        int newMeta = metadata;
-        int orientation = ORIENTATION_U_D;
-
-        switch (block.getRenderType()) {
-            case 31: // renderBlockLog (also applies to hay)
-                switch (metadata & 0xc) {
-                    case 0:
-                        newMeta = metadata & ~0xc;
-                        break;
-
-                    case 4:
-                        newMeta = metadata & ~0xc;
-                        orientation = ORIENTATION_E_W;
-                        break;
-
-                    case 8:
-                        newMeta = metadata & ~0xc;
-                        orientation = ORIENTATION_N_S;
-                        break;
-
-                    default:
-                        break;
-                }
-                break;
-
-            case 39: // renderBlockQuartz
-                switch (metadata) {
-                    case 3:
-                        newMeta = 2;
-                        orientation = ORIENTATION_E_W_2;
-                        break;
-
-                    case 4:
-                        newMeta = 2;
-                        orientation = ORIENTATION_N_S_2;
-                        break;
-
-                    default:
-                        break;
-                }
-                break;
-
-            default:
-                break;
-        }
-
-        return orientation | newMeta;
-    }
-
-    private void setupOrientation(int orientation, int face) {
-        switch (orientation & ~META_MASK) {
-            case ORIENTATION_E_W:
-                reorient = ROTATE_UV_MAP[0];
-                rotateUV = ROTATE_UV_MAP[0][face + 6];
-                rotateTop = true;
-                break;
-
-            case ORIENTATION_N_S:
-                reorient = ROTATE_UV_MAP[1];
-                rotateUV = ROTATE_UV_MAP[1][face + 6];
-                rotateTop = false;
-                break;
-
-            case ORIENTATION_E_W_2:
-                reorient = ROTATE_UV_MAP[2];
-                rotateUV = ROTATE_UV_MAP[2][face + 6];
-                rotateTop = true;
-                break;
-
-            case ORIENTATION_N_S_2:
-                reorient = ROTATE_UV_MAP[3];
-                rotateUV = ROTATE_UV_MAP[3][face + 6];
-                rotateTop = false;
-                break;
-
-            default:
-                reorient = null;
-                rotateUV = 0;
-                rotateTop = false;
-                break;
-        }
-    }
-
-    private static int remapFaceByRenderType(Block block, int metadata, int face) {
-        switch (block.getRenderType()) {
-            case 20: // renderBlockVine
-                switch (metadata) {
-                    case 1:
-                        return NORTH_FACE;
-
-                    case 2:
-                        return EAST_FACE;
-
-                    case 4:
-                        return SOUTH_FACE;
-
-                    case 8:
-                        return WEST_FACE;
-
-                    default:
-                        break;
-                }
-                break;
-
-            case 8: // renderBlockLadder
-                switch (metadata) {
-                    case 2:
-                    case 3:
-                    case 4:
-                    case 5:
-                        return metadata;
-
-                    default:
-                        break;
-                }
-                break;
-
-            default:
-                break;
-        }
-        return face;
-    }
-
-    protected boolean setCoordOffsetsForRenderType(IBlockAccess blockAccess, Block block, int i, int j, int k) {
-        int metadata;
-        di = dj = dk = 0;
-        boolean changed = false;
-        switch (block.getRenderType()) {
-            case 1: // renderCrossedSquares
-                while (j > 0 && block == BlockAPI.getBlockAt(blockAccess, i, j - 1, k)) {
-                    j--;
-                    dj--;
-                    changed = true;
-                }
-                break;
-
-            case 7: // renderBlockDoor
-            case 40: // renderBlockDoublePlant
-                metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
-                if ((metadata & 0x8) != 0 && block == BlockAPI.getBlockAt(blockAccess, i, j - 1, k)) {
-                    dj--;
-                    changed = true;
-                }
-                break;
-
-            case 14: // renderBlockBed
-                metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
-                switch (metadata) {
-                    case 0:
-                    case 4:
-                        dk = 1; // head is one block south
-                        break;
-
-                    case 1:
-                    case 5:
-                        di = -1; // head is one block west
-                        break;
-
-                    case 2:
-                    case 6:
-                        dk = -1; // head is one block north
-                        break;
-
-                    case 3:
-                    case 7:
-                        di = 1; // head is one block east
-                        break;
-
-                    default:
-                        return false; // head itself, no offset
-                }
-                changed = block == BlockAPI.getBlockAt(blockAccess, i + di, j, k + dk);
-                break;
-
-            default:
-                break;
-        }
-        return changed;
-    }
-
     @Override
-    public final Icon getTile(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int cullFace, int uvFace) {
+    public final Icon getTileWorld(BlockOrientation blockOrientation, Icon origIcon) {
         if (icons == null) {
             error("no images loaded, disabling");
             return null;
         }
-        if (cullFace < 0 && requiresFace()) {
+        IBlockAccess blockAccess = blockOrientation.blockAccess;
+        Block block = blockOrientation.block;
+        int i = blockOrientation.i;
+        int j = blockOrientation.j;
+        int k = blockOrientation.k;
+        int face = blockOrientation.uvFace;
+        int metadata = blockOrientation.metadata;
+        if (blockOrientation.cullFace < 0 && requiresFace()) {
             warn("method=%s is not supported for non-standard block %s:%d @ %d %d %d",
                 getMethod(), BlockAPI.getBlockName(block), BlockAPI.getMetadataAt(blockAccess, i, j, k), i, j, k
             );
@@ -773,10 +583,7 @@ abstract class TileOverride implements ITileOverride {
         }
         Integer metadataEntry = matchBlocks.get(block);
         matchMetadata = metadataEntry == null ? META_MASK : metadataEntry;
-        int metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
-        setupOrientation(getOrientationFromMetadata(block, metadata), cullFace);
-        cullFace = remapFaceByRenderType(block, metadata, cullFace);
-        if (exclude(block, cullFace, metadata)) {
+        if (exclude(block, face, metadata)) {
             return null;
         }
         if (height != null && !height.get(j)) {
@@ -785,15 +592,18 @@ abstract class TileOverride implements ITileOverride {
         if (biomes != null && !biomes.get(BiomeAPI.getBiomeIDAt(blockAccess, i, j, k))) {
             return null;
         }
-        return getTileImpl(blockAccess, block, origIcon, i, j, k, cullFace);
+        return getTileWorld_Impl(blockOrientation, origIcon);
     }
 
     @Override
-    public final Icon getTile(Block block, Icon origIcon, int face, int metadata) {
+    public final Icon getTileHeld(BlockOrientation blockOrientation, Icon origIcon) {
         if (icons == null) {
             error("no images loaded, disabling");
             return null;
         }
+        Block block = blockOrientation.block;
+        int face = blockOrientation.uvFace;
+        int metadata = blockOrientation.metadata;
         if (face < 0 && requiresFace()) {
             warn("method=%s is not supported for non-standard block %s:%d",
                 getMethod(), BlockAPI.getBlockName(block), metadata
@@ -805,17 +615,16 @@ abstract class TileOverride implements ITileOverride {
         }
         Integer metadataEntry = matchBlocks.get(block);
         matchMetadata = metadataEntry == null ? META_MASK : metadataEntry;
-        setupOrientation(getOrientationFromMetadata(block, metadata), face);
         if (exclude(block, face, metadata)) {
             return null;
         } else {
-            return getTileImpl(block, origIcon, face, metadata);
+            return getTileHeld_Impl(blockOrientation, origIcon);
         }
     }
 
     abstract String getMethod();
 
-    abstract Icon getTileImpl(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int face);
+    abstract Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon);
 
-    abstract Icon getTileImpl(Block block, Icon origIcon, int face, int metadata);
+    abstract Icon getTileHeld_Impl(BlockOrientation blockOrientation, Icon origIcon);
 }

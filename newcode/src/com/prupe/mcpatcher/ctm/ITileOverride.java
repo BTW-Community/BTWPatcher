@@ -1,7 +1,6 @@
 package com.prupe.mcpatcher.ctm;
 
 import net.minecraft.src.Block;
-import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.Icon;
 
 import java.util.Set;
@@ -19,7 +18,7 @@ interface ITileOverride extends Comparable<ITileOverride> {
 
     int getWeight();
 
-    Icon getTile(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int cullFace, int uvFace);
+    Icon getTileWorld(BlockOrientation blockOrientation, Icon origIcon);
 
-    Icon getTile(Block block, Icon origIcon, int face, int metadata);
+    Icon getTileHeld(BlockOrientation blockOrientation, Icon origIcon);
 }

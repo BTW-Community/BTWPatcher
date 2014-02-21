@@ -3,7 +3,6 @@ package com.prupe.mcpatcher.ctm;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.Block;
-import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.Icon;
 
 import java.util.*;
@@ -14,8 +13,6 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
     private final Map<Block, List<ITileOverride>> allBlockOverrides;
     private final Map<String, List<ITileOverride>> allTileOverrides;
 
-    protected Block block;
-    protected int uvFace;
     protected Icon currentIcon;
 
     private List<ITileOverride> blockOverrides;
@@ -33,22 +30,7 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
         this.allTileOverrides = allTileOverrides;
     }
 
-    protected void setup(Block block, int face, Icon icon) {
-        this.block = block;
-        this.uvFace = face;
-        currentIcon = icon;
-        blockOverrides = allBlockOverrides.get(block);
-        tileOverrides = allTileOverrides.get(icon.getIconName());
-        blockPos = 0;
-        iconPos = 0;
-        foundNext = false;
-        nextOverride = null;
-        lastMatchedOverride = null;
-        skipOverrides.clear();
-    }
-
     void clear() {
-        this.block = null;
         currentIcon = null;
         blockOverrides = null;
         tileOverrides = null;
@@ -111,12 +93,22 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
         }
     }
 
-    ITileOverride go() {
+    ITileOverride go(BlockOrientation blockOrientation, Icon origIcon) {
+        currentIcon = origIcon;
+        blockOverrides = allBlockOverrides.get(blockOrientation.block);
+        tileOverrides = allTileOverrides.get(origIcon.getIconName());
+        blockPos = 0;
+        iconPos = 0;
+        foundNext = false;
+        nextOverride = null;
+        lastMatchedOverride = null;
+        skipOverrides.clear();
+
         pass:
         for (int pass = 0; pass < MAX_RECURSION; pass++) {
             while (hasNext()) {
                 ITileOverride override = next();
-                Icon newIcon = getTile(override, block, currentIcon);
+                Icon newIcon = getTile(override, blockOrientation, currentIcon);
                 if (newIcon != null) {
                     lastMatchedOverride = override;
                     skipOverrides.add(override);
@@ -134,49 +126,27 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
         return currentIcon;
     }
 
-    abstract Icon getTile(ITileOverride override, Block block, Icon currentIcon);
+    abstract Icon getTile(ITileOverride override, BlockOrientation blockOrientation, Icon currentIcon);
 
     static final class IJK extends TileOverrideIterator {
-        private IBlockAccess blockAccess;
-        private int i;
-        private int j;
-        private int k;
-        private int cullFace;
-
         IJK(Map<Block, List<ITileOverride>> blockOverrides, Map<String, List<ITileOverride>> tileOverrides) {
             super(blockOverrides, tileOverrides);
         }
 
-        void setup(IBlockAccess blockAccess, Block block, int i, int j, int k, int cullFace, int uvFace, Icon icon) {
-            super.setup(block, uvFace, icon);
-            this.blockAccess = blockAccess;
-            this.i = i;
-            this.j = j;
-            this.k = k;
-            this.cullFace = cullFace;
-        }
-
         @Override
-        Icon getTile(ITileOverride override, Block block, Icon currentIcon) {
-            return override.getTile(blockAccess, block, currentIcon, i, j, k, cullFace, uvFace);
+        Icon getTile(ITileOverride override, BlockOrientation blockOrientation, Icon currentIcon) {
+            return override.getTileWorld(blockOrientation, currentIcon);
         }
     }
 
     static final class Metadata extends TileOverrideIterator {
-        private int metadata;
-
         Metadata(Map<Block, List<ITileOverride>> blockOverrides, Map<String, List<ITileOverride>> tileOverrides) {
             super(blockOverrides, tileOverrides);
         }
 
-        void setup(Block block, int face, int metadata, Icon icon) {
-            super.setup(block, face, icon);
-            this.metadata = metadata;
-        }
-
         @Override
-        Icon getTile(ITileOverride override, Block block, Icon currentIcon) {
-            return override.getTile(block, currentIcon, uvFace, metadata);
+        Icon getTile(ITileOverride override, BlockOrientation blockOrientation, Icon currentIcon) {
+            return override.getTileHeld(blockOrientation, currentIcon);
         }
     }
 }
