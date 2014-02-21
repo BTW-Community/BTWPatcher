@@ -19,7 +19,7 @@ interface ITileOverride extends Comparable<ITileOverride> {
 
     int getWeight();
 
-    Icon getTile(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int face);
+    Icon getTile(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int cullFace, int uvFace);
 
     Icon getTile(Block block, Icon origIcon, int face, int metadata);
 }

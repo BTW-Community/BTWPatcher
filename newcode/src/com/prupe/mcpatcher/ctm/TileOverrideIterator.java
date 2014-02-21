@@ -15,7 +15,7 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
     private final Map<String, List<ITileOverride>> allTileOverrides;
 
     protected Block block;
-    protected int face;
+    protected int uvFace;
     protected Icon currentIcon;
 
     private List<ITileOverride> blockOverrides;
@@ -35,7 +35,7 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
 
     protected void setup(Block block, int face, Icon icon) {
         this.block = block;
-        this.face = face;
+        this.uvFace = face;
         currentIcon = icon;
         blockOverrides = allBlockOverrides.get(block);
         tileOverrides = allTileOverrides.get(icon.getIconName());
@@ -141,22 +141,24 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
         private int i;
         private int j;
         private int k;
+        private int cullFace;
 
         IJK(Map<Block, List<ITileOverride>> blockOverrides, Map<String, List<ITileOverride>> tileOverrides) {
             super(blockOverrides, tileOverrides);
         }
 
-        void setup(IBlockAccess blockAccess, Block block, int i, int j, int k, int face, Icon icon) {
-            super.setup(block, face, icon);
+        void setup(IBlockAccess blockAccess, Block block, int i, int j, int k, int cullFace, int uvFace, Icon icon) {
+            super.setup(block, uvFace, icon);
             this.blockAccess = blockAccess;
             this.i = i;
             this.j = j;
             this.k = k;
+            this.cullFace = cullFace;
         }
 
         @Override
         Icon getTile(ITileOverride override, Block block, Icon currentIcon) {
-            return override.getTile(blockAccess, block, currentIcon, i, j, k, face);
+            return override.getTile(blockAccess, block, currentIcon, i, j, k, cullFace, uvFace);
         }
     }
 
@@ -174,7 +176,7 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
 
         @Override
         Icon getTile(ITileOverride override, Block block, Icon currentIcon) {
-            return override.getTile(block, currentIcon, face, metadata);
+            return override.getTile(block, currentIcon, uvFace, metadata);
         }
     }
 }

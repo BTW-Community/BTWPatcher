@@ -25,6 +25,8 @@ public class CTMUtils {
     private static final TileOverrideIterator.IJK ijkIterator = new TileOverrideIterator.IJK(blockOverrides, tileOverrides);
     private static final TileOverrideIterator.Metadata metadataIterator = new TileOverrideIterator.Metadata(blockOverrides, tileOverrides);
 
+    private static final BlockOrientation blockOrientation = new BlockOrientation();
+
     static {
         try {
             Class.forName(MCPatcherUtils.RENDER_PASS_CLASS).getMethod("finish").invoke(null);
@@ -40,6 +42,7 @@ public class CTMUtils {
             public void beforeChange() {
                 RenderPassAPI.instance.clear();
                 GlassPaneRenderer.clear();
+                blockOrientation.clear();
                 ijkIterator.clear();
                 metadataIterator.clear();
                 allOverrides.clear();
@@ -82,17 +85,22 @@ public class CTMUtils {
         });
     }
 
-    public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
+    public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess, int i, int j, int k, int cullFace, int uvFace) {
         lastOverride = null;
-        face = remapFace(block, face);
-        if (checkFace(face)) {
-            ijkIterator.setup(blockAccess, block, i, j, k, face, icon);
+        if (checkFace(cullFace)) {
+            ijkIterator.setup(blockAccess, block, i, j, k, cullFace, uvFace, icon);
             lastOverride = ijkIterator.go();
             if (lastOverride != null) {
                 icon = ijkIterator.getIcon();
             }
         }
         return lastOverride == null && skipDefaultRendering(block) ? blankIcon : icon;
+    }
+
+    public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess, int i, int j, int k, int cullFace) {
+        blockOrientation.setup(block, blockAccess, i, j, k, cullFace);
+        int uvFace = remapFace(block, cullFace);
+        return getBlockIcon(icon, renderBlocks, block, blockAccess, i, j, k, cullFace, uvFace);
     }
 
     public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, int face, int metadata) {

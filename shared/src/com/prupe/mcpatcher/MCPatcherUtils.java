@@ -108,6 +108,7 @@ public class MCPatcherUtils {
     public static final String TILE_OVERRIDE_CLASS = "com.prupe.mcpatcher.ctm.TileOverride";
     public static final String TILE_OVERRIDE_IMPL_CLASS = "com.prupe.mcpatcher.ctm.TileOverrideImpl";
     public static final String TILE_OVERRIDE_ITERATOR_CLASS = "com.prupe.mcpatcher.ctm.TileOverrideIterator";
+    public static final String BLOCK_ORIENTATION_CLASS = "com.prupe.mcpatcher.ctm.BlockOrientation";
     public static final String GLASS_PANE_RENDERER_CLASS = "com.prupe.mcpatcher.ctm.GlassPaneRenderer";
     public static final String RENDER_PASS_CLASS = "com.prupe.mcpatcher.ctm.RenderPass";
     public static final String RENDER_PASS_MAP_CLASS = "com.prupe.mcpatcher.ctm.RenderPassMap";

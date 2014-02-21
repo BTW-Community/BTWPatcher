@@ -75,6 +75,7 @@ public class ConnectedTextures extends Mod {
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_ITERATOR_CLASS);
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_ITERATOR_CLASS + "$IJK");
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_ITERATOR_CLASS + "$Metadata");
+        addClassFile(MCPatcherUtils.BLOCK_ORIENTATION_CLASS);
         addClassFile(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS);
 
         BaseTexturePackMod.earlyInitialize(2, MCPatcherUtils.CTM_UTILS_CLASS, "reset");

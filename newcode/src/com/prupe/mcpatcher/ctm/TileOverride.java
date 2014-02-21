@@ -757,12 +757,12 @@ abstract class TileOverride implements ITileOverride {
     }
 
     @Override
-    public final Icon getTile(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int face) {
+    public final Icon getTile(IBlockAccess blockAccess, Block block, Icon origIcon, int i, int j, int k, int cullFace, int uvFace) {
         if (icons == null) {
             error("no images loaded, disabling");
             return null;
         }
-        if (face < 0 && requiresFace()) {
+        if (cullFace < 0 && requiresFace()) {
             warn("method=%s is not supported for non-standard block %s:%d @ %d %d %d",
                 getMethod(), BlockAPI.getBlockName(block), BlockAPI.getMetadataAt(blockAccess, i, j, k), i, j, k
             );
@@ -774,9 +774,9 @@ abstract class TileOverride implements ITileOverride {
         Integer metadataEntry = matchBlocks.get(block);
         matchMetadata = metadataEntry == null ? META_MASK : metadataEntry;
         int metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
-        setupOrientation(getOrientationFromMetadata(block, metadata), face);
-        face = remapFaceByRenderType(block, metadata, face);
-        if (exclude(block, face, metadata)) {
+        setupOrientation(getOrientationFromMetadata(block, metadata), cullFace);
+        cullFace = remapFaceByRenderType(block, metadata, cullFace);
+        if (exclude(block, cullFace, metadata)) {
             return null;
         }
         if (height != null && !height.get(j)) {
@@ -785,7 +785,7 @@ abstract class TileOverride implements ITileOverride {
         if (biomes != null && !biomes.get(BiomeAPI.getBiomeIDAt(blockAccess, i, j, k))) {
             return null;
         }
-        return getTileImpl(blockAccess, block, origIcon, i, j, k, face);
+        return getTileImpl(blockAccess, block, origIcon, i, j, k, cullFace);
     }
 
     @Override

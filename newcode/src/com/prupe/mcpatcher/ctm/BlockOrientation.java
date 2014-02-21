@@ -1,0 +1,224 @@
+package com.prupe.mcpatcher.ctm;
+
+import com.prupe.mcpatcher.mal.block.BlockAPI;
+import net.minecraft.src.Block;
+import net.minecraft.src.IBlockAccess;
+
+import static com.prupe.mcpatcher.ctm.TileOverride.*;
+
+class BlockOrientation {
+    private static final int[][] ROTATE_UV_MAP = new int[][]{
+        {WEST_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, 2, -2, 2, -2, 0, 0},
+        {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, 2},
+        {WEST_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, 2, -2, -2, -2, 0, 0},
+        {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, -2},
+    };
+
+    Block block;
+    IBlockAccess blockAccess;
+    int i;
+    int j;
+    int k;
+    int metadata;
+    int maskedMetadata;
+
+    int cullFace;
+    int uvFace;
+    int rotateUV;
+    boolean rotateTop;
+
+    boolean useOffset;
+    int di;
+    int dj;
+    int dk;
+
+    void clear() {
+        block = null;
+        blockAccess = null;
+        i = j = k = 0;
+        metadata = maskedMetadata = 0;
+        cullFace = uvFace = 0;
+        rotateUV = 0;
+        rotateTop = false;
+        useOffset = false;
+        di = dj = dk = 0;
+    }
+
+    void setup(Block block, IBlockAccess blockAccess, int i, int j, int k, int cullFace, int uvFace) {
+        this.block = block;
+        this.blockAccess = blockAccess;
+        this.i = i;
+        this.j = j;
+        this.k = k;
+        this.cullFace = cullFace;
+        this.uvFace = uvFace;
+        metadata = maskedMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
+        useOffset = setCoordOffsetsForRenderType();
+        rotateUV = 0;
+        rotateTop = false;
+    }
+
+    void setup(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
+        this.block = block;
+        this.blockAccess = blockAccess;
+        this.i = i;
+        this.j = j;
+        this.k = k;
+        uvFace = face;
+        metadata = maskedMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
+        useOffset = setCoordOffsetsForRenderType();
+        rotateUV = 0;
+        rotateTop = false;
+        cullFace = uvFaceToCullFace();
+    }
+
+    void setup(Block block, int metadata, int face) {
+        this.block = block;
+        this.blockAccess = null;
+        i = j = k = 0;
+        cullFace = uvFace = face;
+        this.metadata = maskedMetadata = metadata;
+        useOffset = false;
+        di = dj = dk = 0;
+        rotateUV = 0;
+        rotateTop = false;
+    }
+
+    private int uvFaceToCullFace() {
+        switch (block.getRenderType()) {
+            case 1: // renderCrossedSquares
+                return -1;
+
+            case 8: // renderBlockLadder
+                switch (metadata) {
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 5:
+                        return metadata;
+
+                    default:
+                        break;
+                }
+                break;
+
+            case 20: // renderBlockVine
+                switch (metadata) {
+                    case 1:
+                        return NORTH_FACE;
+
+                    case 2:
+                        return EAST_FACE;
+
+                    case 4:
+                        return SOUTH_FACE;
+
+                    case 8:
+                        return WEST_FACE;
+
+                    default:
+                        break;
+                }
+                break;
+
+            case 31: // renderBlockLog (also applies to hay)
+                switch (metadata & 0xc) {
+                    case 0:
+                        maskedMetadata &= ~0xc;
+                        break;
+
+                    case 4:
+                        maskedMetadata &= ~0xc;
+                        rotateTop = true;
+                        rotateUV = ROTATE_UV_MAP[0][uvFace + 6];
+                        return ROTATE_UV_MAP[0][uvFace];
+
+                    case 8:
+                        maskedMetadata &= ~0xc;
+                        rotateUV = ROTATE_UV_MAP[1][uvFace + 6];
+                        return ROTATE_UV_MAP[1][uvFace];
+
+                    default:
+                        break;
+                }
+                break;
+
+            case 39: // renderBlockQuartz
+                switch (metadata) {
+                    case 3:
+                        maskedMetadata = 2;
+                        rotateTop = true;
+                        rotateUV = ROTATE_UV_MAP[2][uvFace + 6];
+                        return ROTATE_UV_MAP[2][uvFace];
+
+                    case 4:
+                        maskedMetadata = 2;
+                        rotateUV = ROTATE_UV_MAP[3][uvFace + 6];
+                        return ROTATE_UV_MAP[3][uvFace];
+
+                    default:
+                        break;
+                }
+                break;
+
+            default:
+                break;
+        }
+        return uvFace;
+    }
+
+    private boolean setCoordOffsetsForRenderType() {
+        di = dj = dk = 0;
+        boolean changed = false;
+        switch (block.getRenderType()) {
+            case 1: // renderCrossedSquares
+                while (j > 0 && block == BlockAPI.getBlockAt(blockAccess, i, j - 1, k)) {
+                    j--;
+                    dj--;
+                    changed = true;
+                }
+                break;
+
+            case 7: // renderBlockDoor
+            case 40: // renderBlockDoublePlant
+                if ((metadata & 0x8) != 0 && block == BlockAPI.getBlockAt(blockAccess, i, j - 1, k)) {
+                    dj--;
+                    changed = true;
+                }
+                break;
+
+            case 14: // renderBlockBed
+                metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
+                switch (metadata) {
+                    case 0:
+                    case 4:
+                        dk = 1; // head is one block south
+                        break;
+
+                    case 1:
+                    case 5:
+                        di = -1; // head is one block west
+                        break;
+
+                    case 2:
+                    case 6:
+                        dk = -1; // head is one block north
+                        break;
+
+                    case 3:
+                    case 7:
+                        di = 1; // head is one block east
+                        break;
+
+                    default:
+                        return false; // head itself, no offset
+                }
+                changed = block == BlockAPI.getBlockAt(blockAccess, i + di, j, k + dk);
+                break;
+
+            default:
+                break;
+        }
+        return changed;
+    }
+}
