@@ -26,7 +26,6 @@ final class BlockOrientation {
     int rotateUV;
     boolean rotateTop;
 
-    boolean useOffset;
     int di;
     int dj;
     int dk;
@@ -39,7 +38,6 @@ final class BlockOrientation {
         cullFace = uvFace = 0;
         rotateUV = 0;
         rotateTop = false;
-        useOffset = false;
         di = dj = dk = 0;
     }
 
@@ -52,7 +50,6 @@ final class BlockOrientation {
         this.cullFace = cullFace;
         this.uvFace = uvFace;
         metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
-        useOffset = setCoordOffsetsForRenderType();
         rotateUV = 0;
         rotateTop = false;
     }
@@ -65,7 +62,6 @@ final class BlockOrientation {
         this.k = k;
         cullFace = face;
         metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
-        useOffset = setCoordOffsetsForRenderType();
         rotateUV = 0;
         rotateTop = false;
         uvFace = cullFaceToUVFace(cullFace);
@@ -77,7 +73,6 @@ final class BlockOrientation {
         i = j = k = 0;
         cullFace = uvFace = face;
         this.metadata = metadata;
-        useOffset = false;
         di = dj = dk = 0;
         rotateUV = 0;
         rotateTop = false;
@@ -158,7 +153,7 @@ final class BlockOrientation {
         return face;
     }
 
-    private boolean setCoordOffsetsForRenderType() {
+    boolean setCoordOffsetsForRenderType() {
         di = dj = dk = 0;
         boolean changed = false;
         switch (block.getRenderType()) {

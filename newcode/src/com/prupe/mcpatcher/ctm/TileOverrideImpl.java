@@ -375,7 +375,7 @@ class TileOverrideImpl {
             int i = blockOrientation.i;
             int j = blockOrientation.j;
             int k = blockOrientation.k;
-            if (linked && blockOrientation.useOffset) {
+            if (linked && blockOrientation.setCoordOffsetsForRenderType()) {
                 i += blockOrientation.di;
                 j += blockOrientation.dj;
                 k += blockOrientation.dk;
