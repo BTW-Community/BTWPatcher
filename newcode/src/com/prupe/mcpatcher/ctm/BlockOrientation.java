@@ -63,12 +63,12 @@ final class BlockOrientation {
         this.i = i;
         this.j = j;
         this.k = k;
-        uvFace = face;
+        cullFace = face;
         metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         useOffset = setCoordOffsetsForRenderType();
         rotateUV = 0;
         rotateTop = false;
-        cullFace = uvFaceToCullFace();
+        uvFace = cullFaceToUVFace(cullFace);
     }
 
     void setup(Block block, int metadata, int face) {
@@ -83,7 +83,7 @@ final class BlockOrientation {
         rotateTop = false;
     }
 
-    private int uvFaceToCullFace() {
+    private int cullFaceToUVFace(int face) {
         switch (block.getRenderType()) {
             case 1: // renderCrossedSquares
                 return -1;
@@ -122,17 +122,14 @@ final class BlockOrientation {
 
             case 31: // renderBlockLog (also applies to hay)
                 switch (metadata & 0xc) {
-                    case 0:
-                        break;
-
-                    case 4:
+                    case 4: // west-east
                         rotateTop = true;
-                        rotateUV = ROTATE_UV_MAP[0][uvFace + 6];
-                        return ROTATE_UV_MAP[0][uvFace];
+                        rotateUV = ROTATE_UV_MAP[0][face + 6];
+                        return ROTATE_UV_MAP[0][face];
 
-                    case 8:
-                        rotateUV = ROTATE_UV_MAP[1][uvFace + 6];
-                        return ROTATE_UV_MAP[1][uvFace];
+                    case 8: // north-south
+                        rotateUV = ROTATE_UV_MAP[1][face + 6];
+                        return ROTATE_UV_MAP[1][face];
 
                     default:
                         break;
@@ -141,14 +138,14 @@ final class BlockOrientation {
 
             case 39: // renderBlockQuartz
                 switch (metadata) {
-                    case 3:
+                    case 3: // north-south
                         rotateTop = true;
-                        rotateUV = ROTATE_UV_MAP[2][uvFace + 6];
-                        return ROTATE_UV_MAP[2][uvFace];
+                        rotateUV = ROTATE_UV_MAP[2][face + 6];
+                        return ROTATE_UV_MAP[2][face];
 
-                    case 4:
-                        rotateUV = ROTATE_UV_MAP[3][uvFace + 6];
-                        return ROTATE_UV_MAP[3][uvFace];
+                    case 4: // west-east
+                        rotateUV = ROTATE_UV_MAP[3][face + 6];
+                        return ROTATE_UV_MAP[3][face];
 
                     default:
                         break;
@@ -158,7 +155,7 @@ final class BlockOrientation {
             default:
                 break;
         }
-        return uvFace;
+        return face;
     }
 
     private boolean setCoordOffsetsForRenderType() {

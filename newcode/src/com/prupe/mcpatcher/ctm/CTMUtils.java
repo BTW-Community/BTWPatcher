@@ -96,13 +96,13 @@ public class CTMUtils {
         haveCullFace = false;
     }
 
-    public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess, int i, int j, int k, int uvFace) {
+    public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
         lastOverride = null;
-        if (checkFace(uvFace)) {
+        if (checkFace(face)) {
             if (haveCullFace) {
-                blockOrientation.setup(block, blockAccess, i, j, k, currentCullFace, uvFace);
+                blockOrientation.setup(block, blockAccess, i, j, k, currentCullFace, face);
             } else {
-                blockOrientation.setup(block, blockAccess, i, j, k, uvFace);
+                blockOrientation.setup(block, blockAccess, i, j, k, face);
             }
             lastOverride = ijkIterator.go(blockOrientation, icon);
             if (lastOverride != null) {
@@ -113,10 +113,10 @@ public class CTMUtils {
         return lastOverride == null && skipDefaultRendering(block) ? blankIcon : icon;
     }
 
-    public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, int uvFace, int metadata) {
+    public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, int face, int metadata) {
         lastOverride = null;
-        if (checkFace(uvFace) && checkRenderType(block)) {
-            blockOrientation.setup(block, metadata, uvFace);
+        if (checkFace(face) && checkRenderType(block)) {
+            blockOrientation.setup(block, metadata, face);
             lastOverride = metadataIterator.go(blockOrientation, icon);
             if (lastOverride != null) {
                 icon = metadataIterator.getIcon();
@@ -125,8 +125,8 @@ public class CTMUtils {
         return icon;
     }
 
-    public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, int uvFace) {
-        return getBlockIcon(icon, renderBlocks, block, uvFace, 0);
+    public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, int face) {
+        return getBlockIcon(icon, renderBlocks, block, face, 0);
     }
 
     public static void reset() {
