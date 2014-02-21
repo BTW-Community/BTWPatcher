@@ -152,13 +152,6 @@ abstract class TileOverride implements ITileOverride {
     private boolean disabled;
     private int warnCount;
     private int matchMetadata;
-    private int[] reorient;
-    private int rotateUV;
-    protected boolean rotateTop;
-
-    protected int di;
-    protected int dj;
-    protected int dk;
 
     static TileOverride create(ResourceLocation propertiesFile, TileLoader tileLoader) {
         if (propertiesFile == null) {

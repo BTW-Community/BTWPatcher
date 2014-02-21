@@ -438,7 +438,7 @@ class TileOverrideImpl {
             switch (face) {
                 case TOP_FACE:
                 case BOTTOM_FACE:
-                    if (rotateTop) {
+                    if (blockOrientation.rotateTop) {
                         x = blockOrientation.k;
                         y = blockOrientation.i;
                     } else {
