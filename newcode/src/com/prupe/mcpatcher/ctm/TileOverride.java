@@ -37,18 +37,6 @@ abstract class TileOverride implements ITileOverride {
     static final int REL_UL = 7;
 
     private static final int META_MASK = 0xffff;
-    private static final int ORIENTATION_U_D = 0;
-    private static final int ORIENTATION_E_W = 1 << 16;
-    private static final int ORIENTATION_N_S = 2 << 16;
-    private static final int ORIENTATION_E_W_2 = 3 << 16;
-    private static final int ORIENTATION_N_S_2 = 4 << 16;
-
-    private static final int[][] ROTATE_UV_MAP = new int[][]{
-        {WEST_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, 2, -2, 2, -2, 0, 0},
-        {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, 2},
-        {WEST_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, 2, -2, -2, -2, 0, 0},
-        {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, -2},
-    };
 
     private static final int[] GO_DOWN = new int[]{0, -1, 0};
     private static final int[] GO_UP = new int[]{0, 1, 0};
@@ -523,7 +511,7 @@ abstract class TileOverride implements ITileOverride {
                 return false;
             }
         }
-        if (metadata != neighborMeta) {
+        if (block == neighbor && metadata != neighborMeta) {
             return false;
         }
         int cullFace = blockOrientation.cullFace;
