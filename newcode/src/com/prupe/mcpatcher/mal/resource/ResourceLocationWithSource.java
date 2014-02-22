@@ -46,25 +46,30 @@ public class ResourceLocationWithSource extends ResourceLocation {
 
         @Override
         public int compare(ResourceLocationWithSource o1, ResourceLocationWithSource o2) {
+            int result;
             if (bySource) {
-                int result = o1.getOrder() - o2.getOrder();
+                result = o1.getOrder() - o2.getOrder();
                 if (result != 0) {
                     return result;
                 }
             }
             String n1 = o1.getNamespace();
             String n2 = o2.getNamespace();
-            int result = n1.compareTo(n2);
+            result = n1.compareTo(n2);
             if (result != 0) {
                 return result;
             }
-            String f1 = o1.getPath();
-            String f2 = o2.getPath();
+            String p1 = o1.getPath();
+            String p2 = o2.getPath();
             if (suffixExpr != null) {
-                f1 = f1.replaceAll(".*/", "").replaceFirst(suffixExpr, "");
-                f2 = f2.replaceAll(".*/", "").replaceFirst(suffixExpr, "");
+                String f1 = p1.replaceAll(".*/", "").replaceFirst(suffixExpr, "");
+                String f2 = p2.replaceAll(".*/", "").replaceFirst(suffixExpr, "");
+                result = f1.compareTo(f2);
+                if (result != 0) {
+                    return result;
+                }
             }
-            return f1.compareTo(f2);
+            return p1.compareTo(p2);
         }
     }
 }
