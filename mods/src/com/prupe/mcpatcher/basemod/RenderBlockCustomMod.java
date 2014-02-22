@@ -11,6 +11,7 @@ import static javassist.bytecode.Opcode.*;
 public class RenderBlockCustomMod extends ClassMod {
     public static MethodRef renderFaceAO;
     public static final MethodRef renderFaceNonAO = new MethodRef("RenderBlockCustom", "renderFaceNonAO", "(LBlock;LPosition;LIcon;LDirection;FFFI)V");
+    public static final MethodRef renderBlockHeld = new MethodRef("RenderBlockCustom", "renderBlockHeld", "(LBlock;IF)V");
     public static final FieldRef helper = new FieldRef("RenderBlockCustom", "helper", "LRenderBlockCustomHelper;");
 
     public static boolean haveCustomModels() {
@@ -26,6 +27,8 @@ public class RenderBlockCustomMod extends ClassMod {
 
         addSeedSignature(renderFaceAO);
         addSeedSignature(renderFaceNonAO);
+
+        addMemberMapper(new MethodMapper(renderBlockHeld));
     }
 
     private void addSeedSignature(MethodRef method) {
