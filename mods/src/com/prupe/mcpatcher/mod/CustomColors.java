@@ -478,9 +478,12 @@ public class CustomColors extends Mod {
                     String desc = getMethodInfo().getDescriptor();
                     final MethodRef newMethod;
                     final byte[] args;
-                    if (desc.contains("III)")) {
+                    if (desc.contains(getClassMap().mapTypeString(PositionMod.getDescriptor()) + ")")) {
                         newMethod = colorizeBlock3;
-                        args = new byte[]{ALOAD_1, ILOAD_2, ILOAD_3, ILOAD, 4};
+                        args = buildCode(
+                            ALOAD_1,
+                            PositionMod.unpackArguments(this, 2)
+                        );
                     } else if (desc.contains("I)")) {
                         newMethod = colorizeBlock2;
                         args = new byte[]{ILOAD_1};
