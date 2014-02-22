@@ -444,8 +444,8 @@ public class BlockAPIMod extends Mod {
         RenderBlockCustomMod() {
             super(BlockAPIMod.this);
 
-            final boolean usesIterator = getMinecraftVersion().compareTo("14w07a") >= 0;
             final MethodRef useTint = new MethodRef("BlockModelFace", "useTint", "()Z");
+            final InterfaceMethodRef listIterator = new InterfaceMethodRef("java/util/List", "iterator", "()Ljava/util/Iterator;");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -454,10 +454,6 @@ public class BlockAPIMod extends Mod {
                         // older: if (faces[index].useTint()) {
                         // 14w07a+: if (face.useTint()) {
                         anyALOAD,
-                        usesIterator ? "" : build(
-                            anyILOAD,
-                            AALOAD
-                        ),
                         captureReference(INVOKEVIRTUAL),
                         IFEQ, any(2),
 
@@ -466,11 +462,9 @@ public class BlockAPIMod extends Mod {
                         anyALOAD,
                         ALOAD_0,
                         anyReference(GETFIELD),
-                        usesIterator ? build(
-                            anyReference(INVOKESTATIC),
-                            push(0),
-                            FALOAD
-                        ) : "",
+                        anyReference(INVOKESTATIC),
+                        push(0),
+                        FALOAD,
                         FLOAD, 5,
                         FMUL
                     );
@@ -491,7 +485,10 @@ public class BlockAPIMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        begin()
+                        // iterator = faces.iterator();
+                        anyALOAD,
+                        reference(INVOKEINTERFACE, listIterator),
+                        anyASTORE
                     );
                 }
 
@@ -503,9 +500,51 @@ public class BlockAPIMod extends Mod {
                         reference(PUTSTATIC, layerIndex)
                     );
                 }
-            }.targetMethod(renderFaceAO, renderFaceNonAO));
+            }
+                .setInsertAfter(true)
+                .targetMethod(renderFaceAO, renderFaceNonAO, renderBlockHeld)
+            );
 
             addPatch(new BytecodePatch() {
+                private boolean isMetadataMethod;
+                private int direction;
+
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            if ((isMetadataMethod = getMethodInfo().getDescriptor().endsWith("IF)V"))) {
+                                return buildExpression(
+                                    // direction = face.getUVDirection()
+                                    anyALOAD,
+                                    anyReference(INVOKEVIRTUAL),
+                                    ASTORE, capture(any()),
+
+                                    // icon = this.getBlockTexture(block, direction, metadata);
+                                    ALOAD_0,
+                                    ALOAD_1,
+                                    ALOAD, backReference(1),
+                                    ILOAD_2,
+                                    anyReference(INVOKEVIRTUAL),
+                                    anyASTORE
+                                );
+                            } else {
+                                return "";
+                            }
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            if (isMetadataMethod) {
+                                direction = getCaptureGroup(1)[0] & 0xff;
+                            } else {
+                                direction = 4;
+                            }
+                            return true;
+                        }
+                    });
+                }
+
                 @Override
                 public String getDescription() {
                     return "override tint flag";
@@ -523,13 +562,13 @@ public class BlockAPIMod extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         // RenderBlocksUtils.useColorMultiplier(..., direction.ordinal())
-                        DirectionMod.unpackArgumentsSafe(this, 4),
+                        DirectionMod.unpackArgumentsSafe(this, direction),
                         reference(INVOKESTATIC, useColorMultiplier2)
                     );
                 }
             }
                 .setInsertAfter(true)
-                .targetMethod(renderFaceAO, renderFaceNonAO)
+                .targetMethod(renderFaceAO, renderFaceNonAO, renderBlockHeld)
             );
         }
     }

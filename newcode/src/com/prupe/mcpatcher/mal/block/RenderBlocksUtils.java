@@ -69,6 +69,22 @@ public class RenderBlocksUtils {
         }
     }
 
+    public static void setupColorMultiplier(Block block, int metadata, boolean useColor) {
+        if (block == grassBlock || !useColor) {
+            useColorMultiplier[0] = false;
+            useColorMultiplier[2] = false;
+            useColorMultiplier[3] = false;
+            useColorMultiplier[4] = false;
+            useColorMultiplier[5] = false;
+        } else {
+            useColorMultiplier[0] = true;
+            useColorMultiplier[2] = true;
+            useColorMultiplier[3] = true;
+            useColorMultiplier[4] = true;
+            useColorMultiplier[5] = true;
+        }
+    }
+
     private static void setupColorMultiplier(int face, float r, float g, float b) {
         float[] mult = nonAOMultipliers[face];
         float ao = AO_BASE[face];
