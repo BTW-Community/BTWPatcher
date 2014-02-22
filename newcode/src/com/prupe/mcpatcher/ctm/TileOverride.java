@@ -488,21 +488,14 @@ abstract class TileOverride implements ITileOverride {
         int i = blockOrientation.i;
         int j = blockOrientation.j;
         int k = blockOrientation.k;
-        int uvFace = blockOrientation.uvFace;
         int metadata = blockOrientation.metadata;
         i += offset[0];
         j += offset[1];
         k += offset[2];
         int neighborMeta = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         Block neighbor = BlockAPI.getBlockAt(blockAccess, i, j, k);
-        if (connectType == CONNECT_BY_MATERIAL) {
-            if (neighbor == null) {
-                return false;
-            }
-        } else {
-            if (exclude(neighbor, uvFace, neighborMeta)) {
-                return false;
-            }
+        if (neighbor == null) {
+            return false;
         }
         if (block == neighbor && metadata != neighborMeta) {
             return false;
@@ -519,7 +512,7 @@ abstract class TileOverride implements ITileOverride {
                 return neighbor == block;
 
             case CONNECT_BY_TILE:
-                return BlockAPI.getBlockIcon(neighbor, blockAccess, i, j, k, uvFace) == icon;
+                return BlockAPI.getBlockIcon(neighbor, blockAccess, i, j, k, blockOrientation.iconFace) == icon;
 
             case CONNECT_BY_MATERIAL:
                 return block.blockMaterial == neighbor.blockMaterial;
@@ -529,12 +522,12 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    final boolean exclude(Block block, int face, int metadata) {
+    final boolean exclude(Block block, int face, int metadataMask) {
         if (block == null) {
             return true;
         } else if ((faces & (1 << face)) == 0) {
             return true;
-        } else if (matchMetadata != META_MASK && (matchMetadata & (1 << metadata)) == 0) {
+        } else if (matchMetadata != META_MASK && (matchMetadata & metadataMask) == 0) {
             return true;
         }
         return false;
@@ -551,8 +544,6 @@ abstract class TileOverride implements ITileOverride {
         int i = blockOrientation.i;
         int j = blockOrientation.j;
         int k = blockOrientation.k;
-        int face = blockOrientation.uvFace;
-        int metadata = blockOrientation.metadata;
         if (blockOrientation.cullFace < 0 && requiresFace()) {
             warn("method=%s is not supported for non-standard block %s:%d @ %d %d %d",
                 getMethod(), BlockAPI.getBlockName(block), BlockAPI.getMetadataAt(blockAccess, i, j, k), i, j, k
@@ -564,7 +555,7 @@ abstract class TileOverride implements ITileOverride {
         }
         Integer metadataEntry = matchBlocks.get(block);
         matchMetadata = metadataEntry == null ? META_MASK : metadataEntry;
-        if (exclude(block, face, metadata)) {
+        if (exclude(block, blockOrientation.uvFace, blockOrientation.metadataBits)) {
             return null;
         }
         if (height != null && !height.get(j)) {
@@ -584,10 +575,9 @@ abstract class TileOverride implements ITileOverride {
         }
         Block block = blockOrientation.block;
         int face = blockOrientation.uvFace;
-        int metadata = blockOrientation.metadata;
         if (face < 0 && requiresFace()) {
             warn("method=%s is not supported for non-standard block %s:%d",
-                getMethod(), BlockAPI.getBlockName(block), metadata
+                getMethod(), BlockAPI.getBlockName(block), blockOrientation.metadata
             );
             return null;
         }
@@ -596,7 +586,7 @@ abstract class TileOverride implements ITileOverride {
         }
         Integer metadataEntry = matchBlocks.get(block);
         matchMetadata = metadataEntry == null ? META_MASK : metadataEntry;
-        if (exclude(block, face, metadata)) {
+        if (exclude(block, face, blockOrientation.metadataBits)) {
             return null;
         } else {
             return getTileHeld_Impl(blockOrientation, origIcon);

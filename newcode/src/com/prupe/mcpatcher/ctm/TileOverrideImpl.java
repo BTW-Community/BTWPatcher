@@ -101,10 +101,8 @@ class TileOverrideImpl {
 
         @Override
         Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
-            int face = blockOrientation.cullFace;
+            int face = blockOrientation.getFaceForHV();
             if (face < 0) {
-                face = NORTH_FACE;
-            } else if (face <= TOP_FACE) {
                 return null;
             }
             int[][] offsets = NEIGHBOR_OFFSET[face];
@@ -213,10 +211,8 @@ class TileOverrideImpl {
 
         @Override
         Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
-            int face = blockOrientation.cullFace;
+            int face = blockOrientation.getFaceForHV();
             if (face < 0) {
-                face = NORTH_FACE;
-            } else if (face <= TOP_FACE) {
                 return null;
             }
             int[][] offsets = NEIGHBOR_OFFSET[face];

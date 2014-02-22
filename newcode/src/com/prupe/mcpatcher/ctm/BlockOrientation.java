@@ -20,9 +20,12 @@ final class BlockOrientation {
     int j;
     int k;
     int metadata;
+    int altMetadata;
+    int metadataBits;
 
     int cullFace;
     int uvFace;
+    int iconFace;
     int rotateUV;
     boolean rotateTop;
 
@@ -48,8 +51,12 @@ final class BlockOrientation {
         this.j = j;
         this.k = k;
         this.cullFace = cullFace;
-        this.uvFace = uvFace;
-        metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
+        iconFace = uvFace;
+        if (cullFace < 0) {
+            this.uvFace = cullFace;
+        }
+        metadata = altMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
+        metadataBits = 1 << metadata;
         rotateUV = 0;
         rotateTop = false;
     }
@@ -60,11 +67,12 @@ final class BlockOrientation {
         this.i = i;
         this.j = j;
         this.k = k;
-        cullFace = face;
-        metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
+        cullFace = iconFace = face;
+        metadata = altMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         rotateUV = 0;
         rotateTop = false;
         uvFace = cullFaceToUVFace(cullFace);
+        metadataBits = (1 << metadata) | (1 << altMetadata);
     }
 
     void setup(Block block, int metadata, int face) {
@@ -73,6 +81,7 @@ final class BlockOrientation {
         i = j = k = 0;
         cullFace = uvFace = face;
         this.metadata = metadata;
+        metadataBits = 1 << metadata;
         di = dj = dk = 0;
         rotateUV = 0;
         rotateTop = false;
@@ -118,11 +127,13 @@ final class BlockOrientation {
             case 31: // renderBlockLog (also applies to hay)
                 switch (metadata & 0xc) {
                     case 4: // west-east
+                        altMetadata &= ~0xc;
                         rotateTop = true;
                         rotateUV = ROTATE_UV_MAP[0][face + 6];
                         return ROTATE_UV_MAP[0][face];
 
                     case 8: // north-south
+                        altMetadata &= ~0xc;
                         rotateUV = ROTATE_UV_MAP[1][face + 6];
                         return ROTATE_UV_MAP[1][face];
 
@@ -134,11 +145,13 @@ final class BlockOrientation {
             case 39: // renderBlockQuartz
                 switch (metadata) {
                     case 3: // north-south
+                        altMetadata = 2;
                         rotateTop = true;
                         rotateUV = ROTATE_UV_MAP[2][face + 6];
                         return ROTATE_UV_MAP[2][face];
 
                     case 4: // west-east
+                        altMetadata = 2;
                         rotateUV = ROTATE_UV_MAP[3][face + 6];
                         return ROTATE_UV_MAP[3][face];
 
@@ -210,5 +223,17 @@ final class BlockOrientation {
 
     int rotateUV(int neighbor) {
         return (neighbor + rotateUV) & 7;
+    }
+
+    int getFaceForHV() {
+        int face = uvFace;
+        if (face < 0) {
+            face = NORTH_FACE;
+        } else if (face <= TOP_FACE) {
+            face = -1;
+        } else {
+            face = cullFace;
+        }
+        return face;
     }
 }
