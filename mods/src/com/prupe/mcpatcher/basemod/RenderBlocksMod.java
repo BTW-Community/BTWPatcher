@@ -22,6 +22,7 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
     public static MethodRef renderBlock;
     public static MethodRef renderBlockGenericPane;
     public static MethodRef renderBlockGlassPane17;
+    public static MethodRef renderBlockDoublePlant;
     public static MethodRef getBlockIconFromPosition;
     public static MethodRef getBlockIconFromSideAndMetadata;
     public static MethodRef getBlockIconFromSide;
@@ -48,6 +49,7 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
         renderBlock = new MethodRef("RenderBlocks", "renderBlock", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
         renderBlockGenericPane = new MethodRef("RenderBlocks", "renderBlockGenericPane", "(LBlockPane;" + PositionMod.getDescriptor() + ")Z");
         renderBlockGlassPane17 = new MethodRef("RenderBlocks", "renderBlockGlassPane17", "(LBlock;" + PositionMod.getDescriptor() + ")Z");
+        renderBlockDoublePlant = new MethodRef("RenderBlocks", "renderBlockDoublePlant", "(LBlockDoublePlant;" + PositionMod.getDescriptor() + ")Z");
         getBlockIconFromPosition = new MethodRef("RenderBlocks", "getBlockIconFromPosition", "(LBlock;LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;");
         getBlockIconFromSideAndMetadata = new MethodRef("RenderBlocks", "getBlockIconFromSideAndMetadata", "(LBlock;" + DirectionMod.getDescriptor() + "I)LIcon;");
         getBlockIconFromSide = new MethodRef("RenderBlocks", "getBlockIconFromSide", "(LBlock;" + DirectionMod.getDescriptor() + ")LIcon;");

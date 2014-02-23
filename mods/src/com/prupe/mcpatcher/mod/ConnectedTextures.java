@@ -23,6 +23,10 @@ public class ConnectedTextures extends Mod {
     private final boolean haveBlockRegistry;
     private final boolean haveThickPanes;
 
+    public static final MethodRef newBlockIconFromPosition = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;LIBlockAccess;IIII)LIcon;");
+    public static final MethodRef newBlockIconFromSideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;II)LIcon;");
+    public static final MethodRef newBlockIconFromSide = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;I)LIcon;");
+
     private static final MethodRef getSecondaryIcon = new MethodRef("RenderBlocks", "getSecondaryIcon", "(LBlock;LIBlockAccess;LPosition;LDirection;LRenderBlocks;)LIcon;");
 
     public ConnectedTextures() {
@@ -48,10 +52,12 @@ public class ConnectedTextures extends Mod {
         PositionMod.setup(this);
         addClassMod(new BlockMod());
         addClassMod(new RenderBlocksMod());
+        addClassMod(new RenderBlocksSubclassMod());
         if (RenderBlocksMod.haveSubclasses()) {
             addClassMod(new RenderBlockManagerMod(this)
                 .mapRenderType(18, "RenderBlockIronBars")
                 .mapRenderType(35, "RenderBlockAnvil")
+                .mapRenderType(40, "RenderBlockDoublePlant")
                 .mapRenderType(41, "RenderBlockGlassPane")
             );
             addClassMod(new RenderBlockPaneMod("RenderBlockIronBars"));
@@ -59,8 +65,8 @@ public class ConnectedTextures extends Mod {
             if (RenderBlockCustomMod.haveCustomModels()) {
                 addClassMod(new RenderBlockCustomMod());
             }
+            addClassMod(new RenderBlockDoublePlantMod());
         }
-        addClassMod(new RenderBlocksSubclassMod());
 
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS);
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$1");
@@ -207,10 +213,6 @@ public class ConnectedTextures extends Mod {
     }
 
     private class RenderBlocksMod extends com.prupe.mcpatcher.basemod.RenderBlocksMod {
-        private final MethodRef newBlockIconFromPosition = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;LIBlockAccess;IIII)LIcon;");
-        private final MethodRef newBlockIconFromSideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;II)LIcon;");
-        private final MethodRef newBlockIconFromSide = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;I)LIcon;");
-
         RenderBlocksMod() {
             super(ConnectedTextures.this);
 
@@ -236,6 +238,10 @@ public class ConnectedTextures extends Mod {
 
             if (!haveSubclasses()) {
                 setupGlassPanes();
+                if (getMinecraftVersion().compareTo("1.7") >= 0) {
+                    mapRenderType(40, renderBlockDoublePlant);
+                    addDoublePlantPatches(this, renderBlockDoublePlant);
+                }
             }
             setupTileOverrides();
             if (BlockMod.getSecondaryBlockIcon != null) {
@@ -977,5 +983,81 @@ public class ConnectedTextures extends Mod {
                 .targetMethod(renderFaceAO, renderFaceNonAO)
             );
         }
+    }
+
+    private class RenderBlockDoublePlantMod extends ClassMod {
+        RenderBlockDoublePlantMod() {
+            setParentClass("RenderBlocks");
+            addPrerequisiteClass("RenderBlocks");
+
+            final MethodRef renderDoublePlant = new MethodRef(getDeobfClass(), "renderDoublePlant", "(LBlockDoublePlant;LPosition;)Z");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(3129871)
+                    );
+                }
+            }.setMethod(renderDoublePlant));
+
+            addDoublePlantPatches(this, renderDoublePlant);
+        }
+    }
+
+    private void addDoublePlantPatches(com.prupe.mcpatcher.ClassMod classMod, MethodRef method) {
+        classMod.addPatch(new BytecodePatch(classMod) {
+            @Override
+            public String getDescription() {
+                return "use block coordinates where possible (double plants)";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // icon = blockDoublePlant.getIcon(isTop, plantType);
+                    capture(build(
+                        ALOAD_1,
+                        anyILOAD,
+                        anyILOAD,
+                        anyReference(INVOKEVIRTUAL),
+                        ASTORE, capture(any())
+                    )),
+
+                    // this.drawCrossedSquares(icon, x, y, z, 1.0f);
+                    capture(build(
+                        ALOAD_0,
+                        ALOAD, backReference(2),
+                        anyDLOAD,
+                        anyDLOAD,
+                        anyDLOAD,
+                        push(1.0f),
+                        anyReference(INVOKEVIRTUAL)
+                    ))
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                return buildCode(
+                    // ...
+                    getCaptureGroup(1),
+
+                    // icon = CTMUtils.getBlockIcon(icon, this, blockDoublePlant, this.blockAccess, i, j, k, -1)
+                    ALOAD, getCaptureGroup(2),
+                    ALOAD_0,
+                    ALOAD_1,
+                    ALOAD_0,
+                    reference(GETFIELD, RenderBlocksMod.blockAccess),
+                    PositionMod.unpackArguments(this, 2),
+                    push(-1),
+                    reference(INVOKESTATIC, newBlockIconFromPosition),
+                    ASTORE, getCaptureGroup(2),
+
+                    // ...
+                    getCaptureGroup(3)
+                );
+            }
+        }.targetMethod(method));
     }
 }
