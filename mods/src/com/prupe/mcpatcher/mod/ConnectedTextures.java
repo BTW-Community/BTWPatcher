@@ -51,6 +51,7 @@ public class ConnectedTextures extends Mod {
         if (RenderBlocksMod.haveSubclasses()) {
             addClassMod(new RenderBlockManagerMod(this)
                 .mapRenderType(18, "RenderBlockIronBars")
+                .mapRenderType(35, "RenderBlockAnvil")
                 .mapRenderType(41, "RenderBlockGlassPane")
             );
             addClassMod(new RenderBlockPaneMod("RenderBlockIronBars"));
@@ -475,6 +476,7 @@ public class ConnectedTextures extends Mod {
                     excludedClasses = new HashSet<String>();
                     excludedClasses.add(getClassMap().map("RenderBlockIronBars"));
                     excludedClasses.add(getClassMap().map("RenderBlockGlassPane"));
+                    excludedClasses.add(getClassMap().map("RenderBlockAnvil"));
                 }
                 if (excludedClasses.contains(getClassFile().getName())) {
                     return false;
