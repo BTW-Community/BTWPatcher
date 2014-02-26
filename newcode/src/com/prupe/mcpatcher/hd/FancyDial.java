@@ -3,10 +3,7 @@ package com.prupe.mcpatcher.hd;
 import com.prupe.mcpatcher.*;
 import net.minecraft.src.*;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.EXTFramebufferObject;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GLContext;
+import org.lwjgl.opengl.*;
 import org.lwjgl.util.glu.GLU;
 
 import javax.imageio.ImageIO;
@@ -361,7 +358,25 @@ public class FancyDial {
                 itemsFBO.read(scratchBuffer);
                 intBuffer.position(0);
                 for (int j = 0; j < argb.length; j++) {
-                    argb[j] = Integer.rotateRight(intBuffer.get(j), 8);
+                    switch (MipmapHelper.TEX_FORMAT) {
+                        case GL12.GL_BGRA:
+                            int bgra = intBuffer.get(j);
+                            argb[j] = (bgra << 24) |
+                                ((bgra & 0xff00) << 8) |
+                                ((bgra & 0xff0000) >> 8) |
+                                (bgra >>> 24);
+                            break;
+
+                        default:
+                            if (i == 0 && j == 0) {
+                                logger.warning("unhandled texture format %d, color channels may be incorrect", MipmapHelper.TEX_FORMAT);
+                            }
+                            // fall through
+
+                        case GL11.GL_RGBA:
+                            argb[j] = Integer.rotateRight(intBuffer.get(j), 8);
+                            break;
+                    }
                 }
                 image.setRGB(0, i * height, width, height, argb, 0, width);
             }
