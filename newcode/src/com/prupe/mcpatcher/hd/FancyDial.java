@@ -111,12 +111,9 @@ public class FancyDial {
             return false;
         }
         int oldFB = GL11.glGetInteger(EXTFramebufferObject.GL_FRAMEBUFFER_BINDING_EXT);
-        if (oldFB != 0) {
-            if (warnCount < 10) {
-                logger.finer("deferring %s update while non-default framebuffer %d is active", icon.getIconName(), oldFB);
-                warnCount++;
-            }
-            return false;
+        if (oldFB != 0 && warnCount < 10) {
+            logger.finer("rendering %s while non-default framebuffer %d is active", icon.getIconName(), oldFB);
+            warnCount++;
         }
         int oldTexture = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
         try {
