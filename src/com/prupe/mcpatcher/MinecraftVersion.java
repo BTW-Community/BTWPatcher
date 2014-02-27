@@ -295,6 +295,8 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             addKnownVersion("13w49a", "10579faf3a9cef8767b8c4d55f91d24f");
             addKnownVersion("1.7.3", "6bffc630d8d3a0e834d2a91e5d9f5418");
             addKnownVersion("1.7.4", "f9ffe7e56b26d459560c48e228cc6ad4");
+            addKnownVersion("1.7.5", "02cf75768f19afe30ab2da65dbc79cf6");
+            addKnownVersion("1.7.9999", null);
 
             // Position, Direction classes
             addKnownVersion("14w02a", "c881828638a29c59c4f3863d2febde02");
@@ -347,7 +349,7 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
     }
 
     private static void addKnownVersion(String versionString, String md5) {
-        if (md5 == null || !md5.matches("\\p{XDigit}{32}")) {
+        if (md5 != null && !md5.matches("\\p{XDigit}{32}")) {
             throw new IllegalArgumentException("bad md5 sum for known version " + versionString);
         }
         MinecraftVersion version = parseVersion1(versionString);
@@ -357,8 +359,10 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
         knownVersions.put(version.getVersionString(), version);
         versionOrdering.remove(version);
         versionOrdering.add(version);
-        knownMD5s.put(version, md5);
-        alternateMD5s.put(md5, version);
+        if (md5 != null) {
+            knownMD5s.put(version, md5);
+            alternateMD5s.put(md5, version);
+        }
     }
 
     private static Integer comparePartial(MinecraftVersion a, MinecraftVersion b) {
