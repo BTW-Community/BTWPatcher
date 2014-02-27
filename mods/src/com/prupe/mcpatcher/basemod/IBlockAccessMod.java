@@ -44,7 +44,7 @@ public class IBlockAccessMod extends com.prupe.mcpatcher.ClassMod {
         if (!methodsRemoved) {
             tmp.add(new InterfaceMethodRef(getDeobfClass(), "doesBlockHaveSolidTopSurface", "(III)Z"));
         }
-        if (!PositionMod.havePositionClass()) {
+        if (Mod.getMinecraftVersion().compareTo("1.7.5") < 0) {
             tmp.add(new InterfaceMethodRef(getDeobfClass(), "getWorldVec3Pool", "()LVec3Pool;"));
         }
         tmp.add(new InterfaceMethodRef(getDeobfClass(), "isBlockProvidingPowerTo", "(" + d + DirectionMod.getDescriptor() + ")I"));
