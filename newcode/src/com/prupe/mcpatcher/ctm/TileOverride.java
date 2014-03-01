@@ -141,6 +141,7 @@ abstract class TileOverride implements ITileOverride {
     private final int weight;
     private final Map<Block, Integer> matchBlocks;
     private final Set<String> matchTiles;
+    private final int defaultMetaMask;
     private final int faces;
     private final int connectType;
     private final boolean innerSeams;
@@ -233,6 +234,11 @@ abstract class TileOverride implements ITileOverride {
         if (matchBlocks.isEmpty() && matchTiles.isEmpty()) {
             matchTiles.add(baseFilename);
         }
+        int bits = 0;
+        for (int i : MCPatcherUtils.parseIntegerList(MCPatcherUtils.getStringProperty(properties, "metadata", "0-15"), 0, 15)) {
+            bits |= 1 << i;
+        }
+        defaultMetaMask = bits;
 
         int flags = 0;
         for (String val : properties.getProperty("faces", "all").trim().toLowerCase().split("\\s+")) {
@@ -591,7 +597,7 @@ abstract class TileOverride implements ITileOverride {
             return null;
         }
         Integer metadataEntry = matchBlocks.get(block);
-        matchMetadata = metadataEntry == null ? META_MASK : metadataEntry;
+        matchMetadata = metadataEntry == null ? defaultMetaMask : metadataEntry;
         if (exclude(block, face, blockOrientation.metadataBits)) {
             return null;
         } else {
