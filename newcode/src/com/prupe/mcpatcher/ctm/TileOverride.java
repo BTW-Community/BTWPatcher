@@ -586,6 +586,9 @@ abstract class TileOverride implements ITileOverride {
             return null;
         }
         Block block = blockOrientation.block;
+        if (block == null || RenderPassAPI.instance.skipThisRenderPass(block, renderPass)) {
+            return null;
+        }
         int face = blockOrientation.uvFace;
         if (face < 0 && requiresFace()) {
             warn("method=%s is not supported for non-standard block %s:%d",

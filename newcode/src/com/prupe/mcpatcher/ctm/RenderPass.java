@@ -39,6 +39,9 @@ public class RenderPass {
 
             @Override
             public boolean skipThisRenderPass(Block block, int pass) {
+                if (currentRenderPass < 0) {
+                    return pass > MAX_BASE_RENDER_PASS;
+                }
                 if (pass < 0) {
                     pass = RenderPassMap.instance.getDefaultRenderPass(block);
                 }
