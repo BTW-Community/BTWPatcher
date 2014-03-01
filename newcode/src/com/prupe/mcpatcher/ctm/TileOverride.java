@@ -206,7 +206,13 @@ abstract class TileOverride implements ITileOverride {
         baseFilename = propertiesFile.getPath().replaceFirst(".*/", "").replaceFirst("\\.properties$", "");
         this.tileLoader = tileLoader;
 
-        renderPass = RenderPassAPI.instance.parseRenderPass(MCPatcherUtils.getStringProperty(properties, "renderPass", ""));
+        String renderPassStr = MCPatcherUtils.getStringProperty(properties, "renderPass", "");
+        renderPass = RenderPassAPI.instance.parseRenderPass(renderPassStr);
+        if (renderPassStr.matches("\\d+") && renderPass >= 0 && renderPass <= RenderPassAPI.MAX_EXTRA_RENDER_PASS) {
+            warn("renderPass=%s is deprecated, use renderPass=%s instead",
+                renderPassStr, RenderPassAPI.instance.getRenderPassName(renderPass)
+            );
+        }
 
         loadIcons(properties);
         if (tileNames.isEmpty()) {
