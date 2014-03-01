@@ -503,7 +503,7 @@ abstract class TileOverride implements ITileOverride {
         if (neighbor == null) {
             return false;
         }
-        if (block == neighbor && metadata != neighborMeta) {
+        if (block == neighbor && matchMetadata != META_MASK && metadata != neighborMeta) {
             return false;
         }
         int cullFace = blockOrientation.cullFace;
