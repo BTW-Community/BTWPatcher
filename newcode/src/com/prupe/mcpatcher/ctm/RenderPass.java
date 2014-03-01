@@ -172,13 +172,13 @@ public class RenderPass {
     }
 
     public static void start(int pass) {
-        finish();
         currentRenderPass = RenderPassMap.instance.vanillaToMCPatcher(pass);
         CTMUtils.setBlankResource();
     }
 
     public static void finish() {
         currentRenderPass = -1;
+        CTMUtils.setBlankResource();
     }
 
     public static boolean skipAllRenderPasses(boolean[] skipRenderPass) {

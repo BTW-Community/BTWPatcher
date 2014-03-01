@@ -91,6 +91,7 @@ public class BetterGlass extends Mod {
             final String renderBlockPassName = RenderPassEnumMod.haveRenderPassEnum() ? "Enum" : "";
             final MethodRef getRenderBlockPass = new MethodRef("Block", "getRenderBlockPass" + renderBlockPassName, "()" + RenderPassEnumMod.getDescriptor());
             final MethodRef startPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "start", "(I)V");
+            final MethodRef finishPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "finish", "()V");
             final MethodRef canRenderInThisPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "canRenderInThisPass", "(Z)Z");
             final MethodRef checkRenderPasses = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "checkRenderPasses", "(LBlock;Z)Z");
 
@@ -276,6 +277,30 @@ public class BetterGlass extends Mod {
                     );
                 }
             }.targetMethod(updateRenderer));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "finish render pass";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        RETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(INVOKESTATIC, finishPass)
+                    );
+                }
+            }
+                .setInsertBefore(true)
+                .targetMethod(updateRenderer)
+            );
 
             if (!RenderPassEnumMod.haveRenderPassEnum()) {
                 setupPre18();
