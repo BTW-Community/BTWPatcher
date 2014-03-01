@@ -53,6 +53,7 @@ public class CTMUtils {
                 lastOverride = null;
                 blankIcon = null;
                 tileLoader = new TileLoader("textures/blocks", logger);
+                RenderPassAPI.instance.refreshBlendingOptions();
 
                 if (enableStandard || enableNonStandard) {
                     for (ResourceLocation resource : ResourceList.getInstance().listResources(TexturePackAPI.MCPATCHER_SUBDIR + "ctm", ".properties", true)) {

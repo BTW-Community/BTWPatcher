@@ -64,9 +64,57 @@ public class RenderPass {
                 renderPassBits.clear();
                 customRenderPassBlocks.clear();
 
+                blendMethod = BlendMethod.ALPHA;
+                blendBlankResource = blendMethod.getBlankResource();
+                if (blendBlankResource == null) {
+                    blendBlankResource = BlendMethod.ALPHA.getBlankResource();
+                }
+                enableLightmap = true;
+                enableColormap = false;
+                Arrays.fill(backfaceCulling, true);
+                backfaceCulling[RenderPassAPI.BACKFACE_RENDER_PASS] = false;
+
                 for (Block block : BlockAPI.getAllBlocks()) {
                     baseRenderPass.put(block, RenderPassMap.instance.getDefaultRenderPass(block));
                 }
+            }
+
+            @Override
+            public void refreshBlendingOptions() {
+                Properties properties = TexturePackAPI.getProperties(RENDERPASS_PROPERTIES);
+                if (properties != null) {
+                    properties = remapProperties(properties);
+                    String method = properties.getProperty("blend.overlay", "alpha").trim().toLowerCase();
+                    blendMethod = BlendMethod.parse(method);
+                    if (blendMethod == null) {
+                        logger.error("%s: unknown blend method '%s'", RENDERPASS_PROPERTIES, method);
+                        blendMethod = BlendMethod.ALPHA;
+                    }
+                    blendBlankResource = blendMethod.getBlankResource();
+                    if (blendBlankResource == null) {
+                        blendBlankResource = BlendMethod.ALPHA.getBlankResource();
+                    }
+                    enableLightmap = MCPatcherUtils.getBooleanProperty(properties, "enableLightmap.overlay", !blendMethod.isColorBased());
+                    enableColormap = MCPatcherUtils.getBooleanProperty(properties, "enableColormap.overlay", false);
+                    backfaceCulling[RenderPassAPI.OVERLAY_RENDER_PASS] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.overlay", true);
+                    backfaceCulling[RenderPassAPI.CUTOUT_RENDER_PASS] = backfaceCulling[RenderPassMap.instance.getCutoutRenderPass()] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.cutout", true);
+                    backfaceCulling[RenderPassAPI.CUTOUT_MIPPED_RENDER_PASS] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.cutout_mipped", backfaceCulling[RenderPassAPI.CUTOUT_RENDER_PASS]);
+                    backfaceCulling[RenderPassAPI.TRANSLUCENT_RENDER_PASS] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.translucent", true);
+                }
+            }
+
+            private Properties remapProperties(Properties properties) {
+                Properties newProperties = new Properties();
+                for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+                    String key = (String) entry.getKey();
+                    key = key.replaceFirst("\\.3$", ".overlay");
+                    key = key.replaceFirst("\\.2$", ".backface");
+                    if (!key.equals(entry.getKey())) {
+                        logger.warning("%s: %s is deprecated in 1.8.  Use %s instead", RENDERPASS_PROPERTIES, entry.getKey(), key);
+                    }
+                    newProperties.put(key, entry.getValue());
+                }
+                return newProperties;
             }
 
             @Override
@@ -103,35 +151,10 @@ public class RenderPass {
         TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.BETTER_GLASS, 4) {
             @Override
             public void beforeChange() {
-                blendMethod = BlendMethod.ALPHA;
-                enableLightmap = true;
-                enableColormap = false;
-                Arrays.fill(backfaceCulling, true);
-                backfaceCulling[RenderPassAPI.BACKFACE_RENDER_PASS] = false;
             }
 
             @Override
             public void afterChange() {
-                Properties properties = TexturePackAPI.getProperties(RENDERPASS_PROPERTIES);
-                if (properties != null) {
-                    properties = remapProperties(properties);
-                    String method = properties.getProperty("blend.overlay", "alpha").trim().toLowerCase();
-                    blendMethod = BlendMethod.parse(method);
-                    if (blendMethod == null) {
-                        logger.error("%s: unknown blend method '%s'", RENDERPASS_PROPERTIES, method);
-                        blendMethod = BlendMethod.ALPHA;
-                    }
-                    blendBlankResource = blendMethod.getBlankResource();
-                    if (blendBlankResource == null) {
-                        blendBlankResource = BlendMethod.ALPHA.getBlankResource();
-                    }
-                    enableLightmap = MCPatcherUtils.getBooleanProperty(properties, "enableLightmap.overlay", !blendMethod.isColorBased());
-                    enableColormap = MCPatcherUtils.getBooleanProperty(properties, "enableColormap.overlay", false);
-                    backfaceCulling[RenderPassAPI.OVERLAY_RENDER_PASS] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.overlay", true);
-                    backfaceCulling[RenderPassAPI.CUTOUT_RENDER_PASS] = backfaceCulling[RenderPassMap.instance.getCutoutRenderPass()] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.cutout", true);
-                    backfaceCulling[RenderPassAPI.CUTOUT_MIPPED_RENDER_PASS] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.cutout_mipped", backfaceCulling[RenderPassAPI.CUTOUT_RENDER_PASS]);
-                    backfaceCulling[RenderPassAPI.TRANSLUCENT_RENDER_PASS] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.translucent", true);
-                }
                 for (Block block : BlockAPI.getAllBlocks()) {
                     int bits = 0;
                     Integer i = baseRenderPass.get(block);
@@ -144,20 +167,6 @@ public class RenderPass {
                     }
                     renderPassBits.put(block, bits);
                 }
-            }
-
-            private Properties remapProperties(Properties properties) {
-                Properties newProperties = new Properties();
-                for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-                    String key = (String) entry.getKey();
-                    key = key.replaceFirst("\\.3$", ".overlay");
-                    key = key.replaceFirst("\\.2$", ".backface");
-                    if (!key.equals(entry.getKey())) {
-                        logger.warning("%s: %s is deprecated in 1.8.  Use %s instead", RENDERPASS_PROPERTIES, entry.getKey(), key);
-                    }
-                    newProperties.put(key, entry.getValue());
-                }
-                return newProperties;
             }
         });
     }

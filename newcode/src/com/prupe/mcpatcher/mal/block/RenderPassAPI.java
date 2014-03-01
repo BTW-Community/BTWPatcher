@@ -67,6 +67,9 @@ public class RenderPassAPI {
     public void clear() {
     }
 
+    public void refreshBlendingOptions() {
+    }
+
     public void setRenderPassForBlock(Block block, int pass) {
     }
 
