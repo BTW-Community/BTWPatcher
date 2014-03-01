@@ -622,7 +622,6 @@ public class ConnectedTextures extends Mod {
     private void addGlassPanePatches(final com.prupe.mcpatcher.ClassMod classMod, final MethodRef... methods) {
         final MethodRef newRenderPaneThin = new MethodRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "renderThin", "(LRenderBlocks;LBlock;LIcon;IIIZZZZ)V");
         final MethodRef newRenderPaneThick = new MethodRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "renderThick", "(LRenderBlocks;LBlock;LIcon;IIIZZZZ)V");
-        final MethodRef newRenderPane = haveThickPanes ? newRenderPaneThick : newRenderPaneThin;
         final FieldRef skipPaneRendering = new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "skipPaneRendering", "Z");
         final FieldRef skipTopEdgeRendering = new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "skipTopEdgeRendering", "Z");
         final FieldRef skipBottomEdgeRendering = new FieldRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "skipBottomEdgeRendering", "Z");
@@ -723,6 +722,8 @@ public class ConnectedTextures extends Mod {
 
             @Override
             public byte[] getReplacementBytes() {
+                int index = extractConstPoolIndex(getMatch());
+                double width = getMethodInfo().getConstPool().getDoubleInfo(index);
                 return buildCode(
                     // GlassPaneRenderer.render(renderBlocks, blockPane, i, j, k, connectNorth, ...);
                     ALOAD_0,
@@ -733,7 +734,7 @@ public class ConnectedTextures extends Mod {
                     ILOAD, connectNorthRegister + 1,
                     ILOAD, connectNorthRegister + 2,
                     ILOAD, connectNorthRegister + 3,
-                    reference(INVOKESTATIC, newRenderPane)
+                    reference(INVOKESTATIC, width == 0.001 ? newRenderPaneThick : newRenderPaneThin)
                 );
             }
         });
