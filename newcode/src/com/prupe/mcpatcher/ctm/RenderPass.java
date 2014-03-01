@@ -26,9 +26,9 @@ public class RenderPass {
 
     private static int currentRenderPass = -1;
     private static int maxRenderPass = 1;
+    private static boolean canRenderInThisPass;
+    private static boolean hasCustomRenderPasses;
     private static boolean ambientOcclusion;
-
-    public static boolean canRenderInThisPass;
 
     static {
         RenderPassAPI.instance = new RenderPassAPI() {
@@ -179,16 +179,12 @@ public class RenderPass {
     public static boolean checkRenderPasses(Block block, boolean moreRenderPasses) {
         int bits = renderPassBits.get(block) >>> currentRenderPass;
         canRenderInThisPass = (bits & 1) != 0;
+        hasCustomRenderPasses = customRenderPassBlocks.contains(block);
         return moreRenderPasses || (bits >>> 1) != 0;
     }
 
-    public static boolean canRenderInPass(Block block, int pass, boolean renderThis) {
-        if (customRenderPassBlocks.contains(block)) {
-            checkRenderPasses(block, true);
-            return canRenderInThisPass;
-        } else {
-            return renderThis;
-        }
+    public static boolean canRenderInThisPass(boolean canRender) {
+        return hasCustomRenderPasses ? canRenderInThisPass : canRender;
     }
 
     // pre-14w02a

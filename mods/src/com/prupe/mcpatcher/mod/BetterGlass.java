@@ -26,8 +26,6 @@ public class BetterGlass extends Mod {
     private static final MethodRef pass18To17 = new MethodRef(MCPatcherUtils.RENDER_PASS_MAP_CLASS, "map18To17", "(I)I");
     private static final MethodRef pass17To18 = new MethodRef(MCPatcherUtils.RENDER_PASS_MAP_CLASS, "map17To18", "(I)I");
     private static final MethodRef newGetAOBaseMultiplier = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "getAOBaseMultiplier", "(F)F");
-    private static final MethodRef setAOBaseMultiplier = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "setAOBaseMultiplier", "([I)[I");
-    private static final MethodRef resetAOBaseMultiplier = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "resetAOBaseMultiplier", "()V");
 
     private final MethodRef sortAndRender = new MethodRef("RenderGlobal", "sortAndRender", "(LEntityLivingBase;" + RenderPassEnumMod.getDescriptor() + "D)I");
 
@@ -93,8 +91,8 @@ public class BetterGlass extends Mod {
             final String renderBlockPassName = RenderPassEnumMod.haveRenderPassEnum() ? "Enum" : "";
             final MethodRef getRenderBlockPass = new MethodRef("Block", "getRenderBlockPass" + renderBlockPassName, "()" + RenderPassEnumMod.getDescriptor());
             final MethodRef startPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "start", "(I)V");
-            final MethodRef canRenderInPass1 = new MethodRef("forge/ForgeHooksClient", "canRenderInPass", "(LBlock;I)Z");
-            final MethodRef canRenderInPass2 = new MethodRef("Block", "canRenderInPass", "(I)Z");
+            final MethodRef canRenderInThisPass = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "canRenderInThisPass", "(Z)Z");
+            final MethodRef checkRenderPasses = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "checkRenderPasses", "(LBlock;Z)Z");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -151,10 +149,11 @@ public class BetterGlass extends Mod {
                                         ILOAD, backReference(1),
                                         AALOAD,
                                         anyASTORE
-                                    ) : build(
-                                    push(2),
-                                    IF_ICMPGE, any(2)
-                                ),
+                                    ) :
+                                    build(
+                                        push(2),
+                                        IF_ICMPGE, any(2)
+                                    ),
                                 push(0)
                             );
                         }
@@ -162,6 +161,7 @@ public class BetterGlass extends Mod {
                         @Override
                         public boolean afterMatch() {
                             loopRegister = getCaptureGroup(1)[0] & 0xff;
+                            Logger.log(Logger.LOG_CONST, "loop register %d", loopRegister);
                             return true;
                         }
                     });
@@ -189,7 +189,6 @@ public class BetterGlass extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    Logger.log(Logger.LOG_CONST, "loop register %d", loopRegister);
                     return buildCode(
                         registerLoadStore(ILOAD, loopRegister),
                         reference(INVOKESTATIC, startPass)
@@ -215,65 +214,65 @@ public class BetterGlass extends Mod {
 
                     return buildExpression(
                         // blockRenderPass = block.getBlockRenderPass();
-                        capture(anyALOAD),
-                        reference(INVOKEVIRTUAL, getRenderBlockPass),
-                        storeOpcode, any(),
+                        capture(build(
+                            capture(anyALOAD),
+                            reference(INVOKEVIRTUAL, getRenderBlockPass),
+                            storeOpcode, any()
+                        )),
 
                         // if (blockRenderPass > thisRenderPass) {
-                        capture(build(loadOpcode, any())),
+                        loadOpcode, any(),
                         ordinalExpr,
-                        capture(build(loadOpcode, any())),
+                        loadOpcode, any(),
                         ordinalExpr,
                         subset(new int[]{IF_ICMPLE, IF_ICMPEQ}, true), any(2),
 
                         // moreRenderPasses = true;
                         push(1),
                         capture(anyISTORE),
-                        GOTO, any(2),
+                        optional(build(GOTO, any(2))),
 
-                        // } else if (blockRenderPass == thisRenderPass)
-                        backReference(2),
-                        backReference(3),
-                        cmpOpcode
+                        // } else if (...)
+                        // -or-
+                        // }
+                        // if (...)
+                        capture(nonGreedy(any(0, 12))),
+                        capture(or(
+                            subset(new int[]{cmpOpcode, IFEQ}, true),
+                            build(
+                                // the recompiled code has an IFNE followed immediately by a GOTO for some
+                                // strange reason
+                                IFNE, 0, 6,
+                                GOTO
+                            )
+                        )),
+                        capture(any(2))
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
+                    int op = getCaptureGroup(5)[0] & 0xff;
                     return buildCode(
-                        // moreRenderPasses = RenderPass.checkRenderPasses(block, moreRenderPasses))
+                        // blockRenderPass = block.getBlockRenderPass();
                         getCaptureGroup(1),
-                        flipLoadStore(getCaptureGroup(4)),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "checkRenderPasses", "(LBlock;Z)Z")),
+
+                        // moreRenderPasses = RenderPass.checkRenderPasses(block, moreRenderPasses))
+                        getCaptureGroup(2),
+                        flipLoadStore(getCaptureGroup(3)),
+                        reference(INVOKESTATIC, checkRenderPasses),
+                        getCaptureGroup(3),
+
+                        // if (RenderPass.canRenderInThisPass(...))
                         getCaptureGroup(4),
-
-                        // if (RenderPass.canRenderInThisPass)
-                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.RENDER_PASS_CLASS, "canRenderInThisPass", "Z")),
-                        IFEQ
-                    );
-                }
-            }.targetMethod(updateRenderer));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "set up extra render pass (forge)";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(or(
-                        build(reference(INVOKESTATIC, canRenderInPass1)),
-                        build(reference(INVOKEVIRTUAL, canRenderInPass2))
-                    ));
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        DUP2,
-                        getMatch(),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "canRenderInPass", "(LBlock;IZ)Z"))
+                        op == IFEQ || op == IFNE ? new byte[0] : buildCode(
+                            getCaptureGroup(5), 0, 7,
+                            ICONST_1,
+                            GOTO, 0, 4,
+                            ICONST_0
+                        ),
+                        reference(INVOKESTATIC, canRenderInThisPass),
+                        IFEQ, getCaptureGroup(6)
                     );
                 }
             }.targetMethod(updateRenderer));
