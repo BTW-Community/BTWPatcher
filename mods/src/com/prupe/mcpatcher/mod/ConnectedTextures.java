@@ -565,7 +565,7 @@ public class ConnectedTextures extends Mod {
         }
     }
 
-    private void addGlassPanePatches(final com.prupe.mcpatcher.ClassMod classMod, MethodRef... methods) {
+    private void addGlassPanePatches(final com.prupe.mcpatcher.ClassMod classMod, final MethodRef... methods) {
         final MethodRef newRenderPaneThin = new MethodRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "renderThin", "(LRenderBlocks;LBlock;LIcon;IIIZZZZ)V");
         final MethodRef newRenderPaneThick = new MethodRef(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS, "renderThick", "(LRenderBlocks;LBlock;LIcon;IIIZZZZ)V");
         final MethodRef newRenderPane = haveThickPanes ? newRenderPaneThick : newRenderPaneThin;
@@ -576,8 +576,14 @@ public class ConnectedTextures extends Mod {
 
         classMod.addPatch(new BytecodePatch(classMod) {
             private int iconRegister;
+            private int connectNorthRegister;
 
             {
+                setInsertBefore(true);
+                if (methods.length > 0) {
+                    targetMethod(methods);
+                }
+
                 addPreMatchSignature(new BytecodeSignature(classMod) {
                     @Override
                     public String getMatchExpression() {
@@ -590,6 +596,43 @@ public class ConnectedTextures extends Mod {
                     @Override
                     public boolean afterMatch() {
                         iconRegister = getCaptureGroup(1)[0] & 0xff;
+                        Logger.log(Logger.LOG_BYTECODE, "icon register %d", iconRegister);
+                        return true;
+                    }
+                });
+
+                addPreMatchSignature(new BytecodeSignature(classMod) {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            getSubExpression(false, DSUB),
+                            getSubExpression(false, DADD),
+                            getSubExpression(false, DSUB),
+                            getSubExpression(true, DADD)
+                        );
+                    }
+
+                    private String getSubExpression(boolean capture, int opcode) {
+                        return build(
+                            // d = d1 + 0.5 +/- 0.0625;
+                            or(
+                                anyDLOAD,
+                                build(anyILOAD, I2D)
+                            ),
+                            push(0.5),
+                            DADD,
+                            push(0.0625),
+                            opcode,
+                            capture ? capture(anyDSTORE) : anyDSTORE
+                        );
+                    }
+
+                    @Override
+                    public boolean afterMatch() {
+                        connectNorthRegister = extractRegisterNum(getCaptureGroup(1)) + 2;
+                        Logger.log(Logger.LOG_BYTECODE, "glass pane side connect registers %d %d %d %d",
+                            connectNorthRegister, connectNorthRegister + 1, connectNorthRegister + 2, connectNorthRegister + 3
+                        );
                         return true;
                     }
                 });
@@ -603,10 +646,7 @@ public class ConnectedTextures extends Mod {
             @Override
             public String getMatchExpression() {
                 return buildExpression(
-                    // connectEast = ...
-                    capture(anyISTORE),
-
-                    capture(or(
+                    or(
                         build(
                             // 1.6 panes and 1.7+ thin panes
                             push(0.01),
@@ -623,33 +663,23 @@ public class ConnectedTextures extends Mod {
                             push(0.001),
                             anyDSTORE
                         )
-                    ))
+                    )
                 );
             }
 
             @Override
             public byte[] getReplacementBytes() {
-                int reg = extractRegisterNum(getCaptureGroup(1));
-                Logger.log(Logger.LOG_BYTECODE, "glass pane side connect flags (%d %d %d %d)",
-                    reg - 3, reg - 2, reg - 1, reg
-                );
                 return buildCode(
-                    // ...
-                    getCaptureGroup(1),
-
                     // GlassPaneRenderer.render(renderBlocks, blockPane, i, j, k, connectNorth, ...);
                     ALOAD_0,
                     ALOAD_1,
                     ALOAD, iconRegister,
                     PositionMod.unpackArguments(this, 2),
-                    ILOAD, reg - 3,
-                    ILOAD, reg - 2,
-                    ILOAD, reg - 1,
-                    ILOAD, reg,
-                    reference(INVOKESTATIC, newRenderPane),
-
-                    // ...
-                    getCaptureGroup(2)
+                    ILOAD, connectNorthRegister,
+                    ILOAD, connectNorthRegister + 1,
+                    ILOAD, connectNorthRegister + 2,
+                    ILOAD, connectNorthRegister + 3,
+                    reference(INVOKESTATIC, newRenderPane)
                 );
             }
         });
