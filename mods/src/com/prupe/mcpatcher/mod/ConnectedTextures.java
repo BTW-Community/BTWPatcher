@@ -27,6 +27,7 @@ public class ConnectedTextures extends Mod {
     public static final MethodRef newBlockIconFromSideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;II)LIcon;");
     public static final MethodRef newBlockIconFromSide = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;I)LIcon;");
 
+    private static final MethodRef getGrassSideTexture = new MethodRef("BlockGrass", "getSideTexture", "()LIcon;");
     private static final MethodRef getSecondaryIcon = new MethodRef("RenderBlocks", "getSecondaryIcon", "(LBlock;LIBlockAccess;LPosition;LDirection;LRenderBlocks;)LIcon;");
 
     public ConnectedTextures() {
@@ -66,6 +67,8 @@ public class ConnectedTextures extends Mod {
                 addClassMod(new RenderBlockCustomMod());
             }
             addClassMod(new RenderBlockDoublePlantMod());
+        } else {
+            addClassMod(new BlockGrassMod());
         }
 
         addClassFile(MCPatcherUtils.CTM_UTILS_CLASS);
@@ -212,6 +215,20 @@ public class ConnectedTextures extends Mod {
         }
     }
 
+    private class BlockGrassMod extends ClassMod {
+        BlockGrassMod() {
+            addClassSignature(new ConstSignature("_side"));
+            addClassSignature(new ConstSignature("_top"));
+            addClassSignature(new ConstSignature("_side_snowed"));
+            addClassSignature(new ConstSignature("_side_overlay"));
+
+            addMemberMapper(new MethodMapper(getGrassSideTexture)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, true)
+            );
+        }
+    }
+
     private class RenderBlocksMod extends com.prupe.mcpatcher.basemod.RenderBlocksMod {
         RenderBlocksMod() {
             super(ConnectedTextures.this);
@@ -244,8 +261,10 @@ public class ConnectedTextures extends Mod {
                 }
             }
             setupTileOverrides();
-            if (BlockMod.getSecondaryBlockIcon != null) {
-                setupSecondaryTexture();
+            if (BlockMod.getSecondaryBlockIcon == null) {
+                setupSecondaryTexture17();
+            } else {
+                setupSecondaryTexture18();
             }
         }
 
@@ -305,7 +324,7 @@ public class ConnectedTextures extends Mod {
 
             @Override
             public String getDescription() {
-                return "override tile (by " + desc + ")";
+                return "override texture (by " + desc + ")";
             }
 
             @Override
@@ -363,7 +382,42 @@ public class ConnectedTextures extends Mod {
             addGlassPanePatches(this, renderBlockGenericPane, renderBlockGlassPane17);
         }
 
-        private void setupSecondaryTexture() {
+        private void setupSecondaryTexture17() {
+            addPatch(new BytecodePatch() {
+                private int patchCount;
+
+                @Override
+                public String getDescription() {
+                    return "override texture (grass side texture)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // BlockGrass.getSideTexture()
+                        reference(INVOKESTATIC, getGrassSideTexture)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // CTMUtils.getBlockIcon(..., this, block, this.blockAccess, i, j, k, face)
+                        ALOAD_0,
+                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, blockAccess),
+                        PositionMod.unpackArguments(this, 2),
+                        push((patchCount++ % 4) + 2),
+                        reference(INVOKESTATIC, newBlockIconFromPosition)
+                    );
+                }
+            }
+                .setInsertAfter(true)
+            );
+        }
+
+        private void setupSecondaryTexture18() {
             addPatch(new AddMethodPatch(getSecondaryIcon, AccessFlag.PROTECTED | AccessFlag.STATIC) {
                 @Override
                 public byte[] generateMethod() {
@@ -983,7 +1037,7 @@ public class ConnectedTextures extends Mod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "override tile (custom models)";
+                    return "override texture (custom models)";
                 }
 
                 @Override
