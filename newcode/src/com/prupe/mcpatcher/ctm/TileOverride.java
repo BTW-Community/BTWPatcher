@@ -289,9 +289,9 @@ abstract class TileOverride implements ITileOverride {
         height = BiomeAPI.getHeightListProperty(properties, "");
 
         if (renderPass > RenderPassAPI.MAX_EXTRA_RENDER_PASS) {
-            error("renderPass must be 0-" + RenderPassAPI.MAX_EXTRA_RENDER_PASS);
+            error("invalid renderPass %s", renderPassStr);
         } else if (renderPass >= 0 && !matchTiles.isEmpty()) {
-            error("renderPass=%d must be block-based not tile-based", renderPass);
+            error("renderPass=%s must be block-based not tile-based", RenderPassAPI.instance.getRenderPassName(renderPass));
         }
 
         weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
