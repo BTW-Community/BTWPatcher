@@ -174,6 +174,7 @@ public class ColorizeBlock {
         blockColorMaps.clear();
         waterColorMap = null;
         resetVertexColors();
+        redstoneColor = null;
     }
 
     static void reloadFoliageColors(Properties properties) {
