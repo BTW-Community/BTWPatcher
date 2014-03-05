@@ -25,8 +25,8 @@ public class CTMUtils {
     private static final TileOverrideIterator.IJK ijkIterator = new TileOverrideIterator.IJK(blockOverrides, tileOverrides);
     private static final TileOverrideIterator.Metadata metadataIterator = new TileOverrideIterator.Metadata(blockOverrides, tileOverrides);
 
-    private static boolean haveCullFace;
-    private static int currentCullFace;
+    private static boolean haveBlockFace;
+    private static int currentBlockFace;
     private static final BlockOrientation blockOrientation = new BlockOrientation();
 
     static {
@@ -88,20 +88,20 @@ public class CTMUtils {
         });
     }
 
-    public static void setCullFace(int cullFace) {
-        haveCullFace = true;
-        currentCullFace = cullFace;
+    public static void setBlockFace(int blockFace) {
+        haveBlockFace = true;
+        currentBlockFace = blockFace;
     }
 
-    private static void clearCullFace() {
-        haveCullFace = false;
+    private static void clearBlockFace() {
+        haveBlockFace = false;
     }
 
     public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
         lastOverride = null;
         if (checkFace(face)) {
-            if (haveCullFace) {
-                blockOrientation.setup(block, blockAccess, i, j, k, currentCullFace, face);
+            if (haveBlockFace) {
+                blockOrientation.setup(block, blockAccess, i, j, k, currentBlockFace, face);
             } else {
                 blockOrientation.setup(block, blockAccess, i, j, k, face);
             }
@@ -110,7 +110,7 @@ public class CTMUtils {
                 icon = ijkIterator.getIcon();
             }
         }
-        clearCullFace();
+        clearBlockFace();
         return lastOverride == null && skipDefaultRendering(block) ? blankIcon : icon;
     }
 

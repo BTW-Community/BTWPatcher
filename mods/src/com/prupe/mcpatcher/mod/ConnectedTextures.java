@@ -1017,18 +1017,18 @@ public class ConnectedTextures extends Mod {
         RenderBlockCustomMod() {
             super(ConnectedTextures.this);
 
-            final MethodRef setCullFaceLocal = new MethodRef(getDeobfClass(), "setCullFace", "(LDirection;LDirection;)LDirection;");
-            final MethodRef setCullFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "setCullFace", "(I)V");
+            final MethodRef setBlockFaceLocal = new MethodRef(getDeobfClass(), "setBlockFace", "(LDirection;LDirection;)LDirection;");
+            final MethodRef setBlockFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "setBlockFace", "(I)V");
 
-            addPatch(new AddMethodPatch(setCullFaceLocal, AccessFlag.PRIVATE | AccessFlag.STATIC) {
+            addPatch(new AddMethodPatch(setBlockFaceLocal, AccessFlag.PRIVATE | AccessFlag.STATIC) {
                 @Override
                 public byte[] generateMethod() {
                     return buildCode(
-                        // CTMUtils.setCullFace(cullDirection.ordinal());
+                        // CTMUtils.setBlockFace(blockDirection.ordinal());
                         DirectionMod.unpackArgumentsSafe(this, 1),
-                        reference(INVOKESTATIC, setCullFace),
+                        reference(INVOKESTATIC, setBlockFace),
 
-                        // return uvDirection;
+                        // return textureDirection;
                         ALOAD_0,
                         ARETURN
                     );
@@ -1044,11 +1044,11 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(or(
-                        // this.getBlockIconFromPosition(..., uvDirection)
+                        // this.getBlockIconFromPosition(..., textureDirection)
                         // -or-
-                        // RenderBlocks.getSecondaryIcon(..., uvDirection, this)
+                        // RenderBlocks.getSecondaryIcon(..., textureDirection, this)
                         // -or-
-                        // block.getSecondaryBlockIcon(..., uvDirection)
+                        // block.getSecondaryBlockIcon(..., textureDirection)
                         build(reference(INVOKEVIRTUAL, remap(RenderBlocksMod.getBlockIconFromPosition))),
                         build(reference(INVOKESTATIC, getSecondaryIcon), ALOAD_0),
                         build(reference(INVOKEVIRTUAL, BlockMod.getSecondaryBlockIcon))
@@ -1058,9 +1058,9 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // ...(..., RenderBlockCustom.setCullFace(uvDirection, cullDirection))
+                        // ...(..., RenderBlockCustom.setBlockFace(textureDirection, blockDirection))
                         ALOAD, 4,
-                        reference(INVOKESTATIC, setCullFaceLocal)
+                        reference(INVOKESTATIC, setBlockFaceLocal)
                     );
                 }
             }

@@ -512,10 +512,10 @@ abstract class TileOverride implements ITileOverride {
         if (block == neighbor && matchMetadata != META_MASK && metadata != neighborMeta) {
             return false;
         }
-        int cullFace = blockOrientation.cullFace;
-        if (cullFace >= 0 && innerSeams) {
-            int[] normal = NORMALS[cullFace];
-            if (!BlockAPI.shouldSideBeRendered(neighbor, blockAccess, i + normal[0], j + normal[1], k + normal[2], cullFace)) {
+        int blockFace = blockOrientation.blockFace;
+        if (blockFace >= 0 && innerSeams) {
+            int[] normal = NORMALS[blockFace];
+            if (!BlockAPI.shouldSideBeRendered(neighbor, blockAccess, i + normal[0], j + normal[1], k + normal[2], blockFace)) {
                 return false;
             }
         }
@@ -556,7 +556,7 @@ abstract class TileOverride implements ITileOverride {
         int i = blockOrientation.i;
         int j = blockOrientation.j;
         int k = blockOrientation.k;
-        if (blockOrientation.cullFace < 0 && requiresFace()) {
+        if (blockOrientation.blockFace < 0 && requiresFace()) {
             warn("method=%s is not supported for non-standard block %s:%d @ %d %d %d",
                 getMethod(), BlockAPI.getBlockName(block), BlockAPI.getMetadataAt(blockAccess, i, j, k), i, j, k
             );
@@ -567,7 +567,7 @@ abstract class TileOverride implements ITileOverride {
         }
         Integer metadataEntry = matchBlocks.get(block);
         matchMetadata = metadataEntry == null ? META_MASK : metadataEntry;
-        if (exclude(block, blockOrientation.uvFace, blockOrientation.metadataBits)) {
+        if (exclude(block, blockOrientation.textureFace, blockOrientation.metadataBits)) {
             return null;
         }
         if (height != null && !height.get(j)) {
@@ -589,7 +589,7 @@ abstract class TileOverride implements ITileOverride {
         if (block == null || RenderPassAPI.instance.skipThisRenderPass(block, renderPass)) {
             return null;
         }
-        int face = blockOrientation.uvFace;
+        int face = blockOrientation.textureFace;
         if (face < 0 && requiresFace()) {
             warn("method=%s is not supported for non-standard block %s:%d",
                 getMethod(), BlockAPI.getBlockName(block), blockOrientation.metadata

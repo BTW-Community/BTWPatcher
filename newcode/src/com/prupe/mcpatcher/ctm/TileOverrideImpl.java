@@ -58,7 +58,7 @@ class TileOverrideImpl {
 
         @Override
         Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
-            int[][] offsets = NEIGHBOR_OFFSET[blockOrientation.cullFace];
+            int[][] offsets = NEIGHBOR_OFFSET[blockOrientation.blockFace];
             int neighborBits = 0;
             for (int bit = 0; bit < 8; bit++) {
                 if (shouldConnect(blockOrientation, origIcon, offsets[bit])) {
@@ -158,7 +158,7 @@ class TileOverrideImpl {
             if (icon != icons[3]) {
                 return icon;
             }
-            int[][] offsets = NEIGHBOR_OFFSET[blockOrientation.cullFace];
+            int[][] offsets = NEIGHBOR_OFFSET[blockOrientation.blockFace];
             int neighborBits = 0;
             if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_DL)])) {
                 neighborBits |= 1;
@@ -268,7 +268,7 @@ class TileOverrideImpl {
             if (icon != icons[3]) {
                 return icon;
             }
-            int[][] offsets = NEIGHBOR_OFFSET[blockOrientation.cullFace];
+            int[][] offsets = NEIGHBOR_OFFSET[blockOrientation.blockFace];
             int neighborBits = 0;
             if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_L)])) {
                 neighborBits |= 1;
@@ -313,7 +313,7 @@ class TileOverrideImpl {
 
         @Override
         Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
-            int face = blockOrientation.cullFace;
+            int face = blockOrientation.blockFace;
             if (face < 0) {
                 face = NORTH_FACE;
             } else if (face <= TOP_FACE) {
@@ -364,7 +364,7 @@ class TileOverrideImpl {
 
         @Override
         Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
-            int face = blockOrientation.cullFace;
+            int face = blockOrientation.blockFace;
             if (face < 0) {
                 face = 0;
             }
@@ -424,7 +424,7 @@ class TileOverrideImpl {
 
         @Override
         Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
-            int face = blockOrientation.cullFace;
+            int face = blockOrientation.blockFace;
             if (face < 0) {
                 face = 0;
             }

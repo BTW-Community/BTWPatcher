@@ -23,8 +23,8 @@ final class BlockOrientation {
     int altMetadata;
     int metadataBits;
 
-    int cullFace;
-    int uvFace;
+    int blockFace;
+    int textureFace;
     int iconFace;
     int rotateUV;
     boolean rotateTop;
@@ -38,22 +38,22 @@ final class BlockOrientation {
         blockAccess = null;
         i = j = k = 0;
         metadata = 0;
-        cullFace = uvFace = 0;
+        blockFace = textureFace = 0;
         rotateUV = 0;
         rotateTop = false;
         di = dj = dk = 0;
     }
 
-    void setup(Block block, IBlockAccess blockAccess, int i, int j, int k, int cullFace, int uvFace) {
+    void setup(Block block, IBlockAccess blockAccess, int i, int j, int k, int blockFace, int textureFace) {
         this.block = block;
         this.blockAccess = blockAccess;
         this.i = i;
         this.j = j;
         this.k = k;
-        this.cullFace = cullFace;
-        iconFace = uvFace;
-        if (cullFace < 0) {
-            this.uvFace = cullFace;
+        this.blockFace = blockFace;
+        iconFace = textureFace;
+        if (blockFace < 0) {
+            this.textureFace = blockFace;
         }
         metadata = altMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         metadataBits = 1 << metadata;
@@ -67,11 +67,11 @@ final class BlockOrientation {
         this.i = i;
         this.j = j;
         this.k = k;
-        cullFace = iconFace = face;
+        blockFace = iconFace = face;
         metadata = altMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         rotateUV = 0;
         rotateTop = false;
-        uvFace = cullFaceToUVFace(cullFace);
+        textureFace = blockFaceToTextureFace(blockFace);
         metadataBits = (1 << metadata) | (1 << altMetadata);
     }
 
@@ -79,7 +79,7 @@ final class BlockOrientation {
         this.block = block;
         this.blockAccess = null;
         i = j = k = 0;
-        cullFace = uvFace = face;
+        blockFace = textureFace = face;
         this.metadata = metadata;
         metadataBits = 1 << metadata;
         di = dj = dk = 0;
@@ -87,7 +87,7 @@ final class BlockOrientation {
         rotateTop = false;
     }
 
-    private int cullFaceToUVFace(int face) {
+    private int blockFaceToTextureFace(int face) {
         switch (block.getRenderType()) {
             case 1: // renderCrossedSquares
                 return -1;
@@ -226,13 +226,13 @@ final class BlockOrientation {
     }
 
     int getFaceForHV() {
-        int face = uvFace;
+        int face = textureFace;
         if (face < 0) {
             face = NORTH_FACE;
         } else if (face <= TOP_FACE) {
             face = -1;
         } else {
-            face = cullFace;
+            face = blockFace;
         }
         return face;
     }
