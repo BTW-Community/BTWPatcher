@@ -1150,9 +1150,11 @@ public class BetterGlass extends Mod {
     private class BlockModelFaceMod extends ClassMod {
         BlockModelFaceMod() {
             final MethodRef floatToRawIntBits = new MethodRef("java/lang/Float", "floatToRawIntBits", "(F)I");
-            final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(LBlockModel;LDirection;Lcom/google/gson/JsonArray;Ljavax/vecmath/Vector3f;Ljavax/vecmath/Vector3f;F)V");
+            final FieldRef vectorX = new FieldRef("javax/vecmath/Vector3f", "x", "F");
 
             addClassSignature(new ConstSignature(0.017453292f)); // 180.0 / pi
+            addClassSignature(new ConstSignature(floatToRawIntBits));
+            addClassSignature(new ConstSignature(vectorX));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -1161,7 +1163,7 @@ public class BetterGlass extends Mod {
                         reference(INVOKESTATIC, floatToRawIntBits)
                     );
                 }
-            }.setMethod(constructor));
+            }.matchConstructorOnly(true));
 
             addMemberMapper(new MethodMapper(getShadedIntBuffer, getUnshadedIntBuffer)
                 .accessFlag(AccessFlag.PUBLIC, true)
