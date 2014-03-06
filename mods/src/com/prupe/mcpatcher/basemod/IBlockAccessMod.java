@@ -10,45 +10,93 @@ import java.util.List;
  * Matches IBlockAccess interface and maps all of its methods.
  */
 public class IBlockAccessMod extends com.prupe.mcpatcher.ClassMod {
-    protected final boolean haveBlockRegistry;
-    protected final boolean methodsRemoved;
+    public static InterfaceMethodRef getBlock;
+    public static InterfaceMethodRef getBlockId;
+    public static InterfaceMethodRef getBlockTileEntity;
+    public static InterfaceMethodRef getLightBrightnessForSkyBlocks;
+    public static InterfaceMethodRef getBrightness;
+    public static InterfaceMethodRef getLightBrightness;
+    public static InterfaceMethodRef getBlockMetadata;
+    public static InterfaceMethodRef getBlockMaterial;
+    public static InterfaceMethodRef isBlockOpaqueCube;
+    public static InterfaceMethodRef isBlockNormalCube;
+    public static InterfaceMethodRef isAirBlock;
+    public static InterfaceMethodRef getBiomeGenAt;
+    public static InterfaceMethodRef getHeight;
+    public static InterfaceMethodRef extendedLevelsInChunkCache;
+    public static InterfaceMethodRef doesBlockHaveSolidTopSurface;
+    public static InterfaceMethodRef getWorldVec3Pool;
+    public static InterfaceMethodRef isBlockProvidingPowerTo;
 
     public IBlockAccessMod(Mod mod) {
         super(mod);
-        haveBlockRegistry = Mod.getMinecraftVersion().compareTo("13w36a") >= 0;
-        methodsRemoved = Mod.getMinecraftVersion().compareTo("13w38b") >= 0;
-        final String d = PositionMod.getDescriptor();
 
-        List<InterfaceMethodRef> tmp = new ArrayList<InterfaceMethodRef>();
-        if (haveBlockRegistry) {
-            tmp.add(new InterfaceMethodRef(getDeobfClass(), "getBlock", "(" + d + ")LBlock;"));
+        final boolean haveBlockRegistry = Mod.getMinecraftVersion().compareTo("13w36a") >= 0;
+        final int methodsRemoved;
+        if (Mod.getMinecraftVersion().compareTo("13w38b") < 0) {
+            methodsRemoved = 0;
+        } else if (Mod.getMinecraftVersion().compareTo("14w10a") < 0) {
+            methodsRemoved = 1;
         } else {
-            tmp.add(new InterfaceMethodRef(getDeobfClass(), "getBlockId", "(" + d + ")I"));
+            methodsRemoved = 2;
         }
-        tmp.add(new InterfaceMethodRef(getDeobfClass(), "getBlockTileEntity", "(" + d + ")LTileEntity;"));
-        tmp.add(new InterfaceMethodRef(getDeobfClass(), "getLightBrightnessForSkyBlocks", "(" + d + "I)I"));
-        if (!methodsRemoved) {
-            tmp.add(new InterfaceMethodRef(getDeobfClass(), "getBrightness", "(IIII)F"));
-            tmp.add(new InterfaceMethodRef(getDeobfClass(), "getLightBrightness", "(III)F"));
-        }
-        tmp.add(new InterfaceMethodRef(getDeobfClass(), "getBlockMetadata", "(" + d + ")I"));
-        if (!methodsRemoved) {
-            tmp.add(new InterfaceMethodRef(getDeobfClass(), "getBlockMaterial", "(III)LMaterial;"));
-            tmp.add(new InterfaceMethodRef(getDeobfClass(), "isBlockOpaqueCube", "(III)Z"));
-            tmp.add(new InterfaceMethodRef(getDeobfClass(), "isBlockNormalCube", "(III)Z"));
-        }
-        tmp.add(new InterfaceMethodRef(getDeobfClass(), "isAirBlock", "(" + d + ")Z"));
-        tmp.add(new InterfaceMethodRef(getDeobfClass(), "getBiomeGenAt", "(" + PositionMod.getDescriptorIKOnly() + ")LBiomeGenBase;"));
-        tmp.add(new InterfaceMethodRef(getDeobfClass(), "getHeight", "()I"));
-        tmp.add(new InterfaceMethodRef(getDeobfClass(), "extendedLevelsInChunkCache", "()Z"));
-        if (!methodsRemoved) {
-            tmp.add(new InterfaceMethodRef(getDeobfClass(), "doesBlockHaveSolidTopSurface", "(III)Z"));
-        }
-        if (Mod.getMinecraftVersion().compareTo("1.7.5") < 0) {
-            tmp.add(new InterfaceMethodRef(getDeobfClass(), "getWorldVec3Pool", "()LVec3Pool;"));
-        }
-        tmp.add(new InterfaceMethodRef(getDeobfClass(), "isBlockProvidingPowerTo", "(" + d + DirectionMod.getDescriptor() + ")I"));
+        final String p = PositionMod.getDescriptor();
+        final String d = DirectionMod.getDescriptor();
 
-        addClassSignature(new InterfaceSignature(tmp.toArray(new InterfaceMethodRef[tmp.size()])).setInterfaceOnly(true));
+        if (haveBlockRegistry) {
+            getBlock = new InterfaceMethodRef("IBlockAccess", "getBlock", "(" + p + ")LBlock;");
+            getBlockId = null;
+        } else {
+            getBlock = null;
+            getBlockId = new InterfaceMethodRef("IBlockAccess", "getBlockId", "(" + p + ")I");
+        }
+        getBlockTileEntity = new InterfaceMethodRef("IBlockAccess", "getBlockTileEntity", "(" + p + ")LTileEntity;");
+        getLightBrightnessForSkyBlocks = new InterfaceMethodRef("IBlockAccess", "getLightBrightnessForSkyBlocks", "(" + p + "I)I");
+        if (methodsRemoved > 0) {
+            getBrightness = getLightBrightness = getBlockMaterial = isBlockOpaqueCube = isBlockNormalCube = doesBlockHaveSolidTopSurface = null;
+        } else {
+            getBrightness = new InterfaceMethodRef("IBlockAccess", "getBrightness", "(IIII)F");
+            getLightBrightness = new InterfaceMethodRef("IBlockAccess", "getLightBrightness", "(III)F");
+            getBlockMaterial = new InterfaceMethodRef("IBlockAccess", "getBlockMaterial", "(III)LMaterial;");
+            isBlockOpaqueCube = new InterfaceMethodRef("IBlockAccess", "isBlockOpaqueCube", "(III)Z");
+            isBlockNormalCube = new InterfaceMethodRef("IBlockAccess", "isBlockNormalCube", "(III)Z");
+            doesBlockHaveSolidTopSurface = new InterfaceMethodRef("IBlockAccess", "doesBlockHaveSolidTopSurface", "(III)Z");
+        }
+        getBlockMetadata = new InterfaceMethodRef("IBlockAccess", "getBlockMetadata", "(" + p + ")I");
+        if (methodsRemoved > 1) {
+            isAirBlock = getHeight = null;
+        } else {
+            isAirBlock = new InterfaceMethodRef("IBlockAccess", "isAirBlock", "(" + p + ")Z");
+            getHeight = new InterfaceMethodRef("IBlockAccess", "getHeight", "()I");
+        }
+        getBiomeGenAt = new InterfaceMethodRef("IBlockAccess", "getBiomeGenAt", "(" + PositionMod.getDescriptorIKOnly() + ")LBiomeGenBase;");
+        extendedLevelsInChunkCache = new InterfaceMethodRef("IBlockAccess", "extendedLevelsInChunkCache", "()Z");
+        if (Mod.getMinecraftVersion().compareTo("1.7.5") < 0) {
+            getWorldVec3Pool = new InterfaceMethodRef("IBlockAccess", "getWorldVec3Pool", "()LVec3Pool;");
+        } else {
+            getWorldVec3Pool = null;
+        }
+        isBlockProvidingPowerTo = new InterfaceMethodRef("IBlockAccess", "isBlockProvidingPowerTo", "(" + p + d + ")I");
+
+        List<InterfaceMethodRef> methods = new ArrayList<InterfaceMethodRef>();
+        methods.add(getBlock);
+        methods.add(getBlockId);
+        methods.add(getBlockTileEntity);
+        methods.add(getLightBrightnessForSkyBlocks);
+        methods.add(getBrightness);
+        methods.add(getLightBrightness);
+        methods.add(getBlockMetadata);
+        methods.add(getBlockMaterial);
+        methods.add(isBlockOpaqueCube);
+        methods.add(isBlockNormalCube);
+        methods.add(isAirBlock);
+        methods.add(getBiomeGenAt);
+        methods.add(getHeight);
+        methods.add(extendedLevelsInChunkCache);
+        methods.add(doesBlockHaveSolidTopSurface);
+        methods.add(getWorldVec3Pool);
+        methods.add(isBlockProvidingPowerTo);
+
+        addClassSignature(new InterfaceSignature(methods.toArray(new InterfaceMethodRef[methods.size()])).setInterfaceOnly(true));
     }
 }
