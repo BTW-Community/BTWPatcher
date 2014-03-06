@@ -21,6 +21,7 @@ abstract public class BytecodePatch extends ClassPatch {
     private final List<BytecodeSignature> preMatchSignatures = new ArrayList<BytecodeSignature>();
     private boolean insertBefore;
     private boolean insertAfter;
+    private int methodMatchCount;
     int labelOffset;
 
     public BytecodePatch(ClassMod classMod) {
@@ -223,6 +224,7 @@ abstract public class BytecodePatch extends ClassPatch {
         int oldMaxLocals = ca.getMaxLocals();
         int offset = 0;
         ArrayList<String> txtBefore = null;
+        methodMatchCount = 0;
 
         while (matcher.match(mi, offset)) {
             byte repl[];
@@ -230,6 +232,7 @@ abstract public class BytecodePatch extends ClassPatch {
             classMod.resetLabels();
             labelOffset = 0;
             repl = getReplacementBytes();
+            methodMatchCount++;
             classMod.addToConstPool = false;
             if (repl == null) {
                 while (offset < matcher.getEnd() && ci.hasNext()) {
@@ -486,5 +489,15 @@ abstract public class BytecodePatch extends ClassPatch {
 
     final protected ClassMod.Label branch(String key) {
         return new ClassMod.Label(key, false);
+    }
+
+    /**
+     * Returns index of this match within a getReplacementBytes method.  Starts at 0 for the first match in
+     * a method and resets for each new method.  Incremented even if getReplacementBytes returns null.
+     *
+     * @return 0-based index
+     */
+    final protected int getMethodMatchCount() {
+        return methodMatchCount;
     }
 }
