@@ -2707,7 +2707,7 @@ public class CustomColors extends Mod {
                         ALOAD_1,
                         ALOAD_2,
                         PositionMod.unpackArguments(this, 3),
-                        push(patchCount++),
+                        push(patchCount++ % 6),
                         reference(INVOKESTATIC, setupBlockSmoothing1),
                         IFNE, branch("A"),
 
@@ -3403,6 +3403,7 @@ public class CustomColors extends Mod {
                     @Override
                     public boolean afterMatch() {
                         faceRegister = extractRegisterNum(getCaptureGroup(1));
+                        patchCount = 0;
                         return true;
                     }
                 });
@@ -3512,6 +3513,7 @@ public class CustomColors extends Mod {
                     @Override
                     public boolean afterMatch() {
                         tessellatorRegister = extractRegisterNum(getCaptureGroup(1));
+                        patchCount = 0;
                         return true;
                     }
                 });
