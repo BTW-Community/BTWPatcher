@@ -150,11 +150,14 @@ public class CustomColors extends Mod {
         addClassMod(new BlockRedstoneWireMod());
         addClassMod(new RenderBlocksMod());
         if (RenderBlocksMod.haveSubclasses()) {
-            addClassMod(new RenderBlockManagerMod(this)
+            boolean haveRenderBlockCauldron = getMinecraftVersion().compareTo("14w10a") < 0;
+            RenderBlockManagerMod renderBlockManagerMod = new RenderBlockManagerMod(this)
                 .mapRenderType(4, "RenderBlockFluid")
-                .mapRenderType(5, "RenderBlockRedstoneWire")
-                .mapRenderType(24, "RenderBlockCauldron")
-            );
+                .mapRenderType(5, "RenderBlockRedstoneWire");
+            if (haveRenderBlockCauldron) {
+                renderBlockManagerMod.mapRenderType(24, "RenderBlockCauldron");
+            }
+            addClassMod(renderBlockManagerMod);
             if (RenderBlockHelperMod.haveClass()) {
                 addClassMod(new RenderBlockHelperMod());
             }
@@ -166,7 +169,9 @@ public class CustomColors extends Mod {
             }
             addClassMod(new RenderBlockFluidMod());
             addClassMod(new RenderBlockRedstoneWireMod());
-            addClassMod(new RenderBlockCauldronMod());
+            if (haveRenderBlockCauldron) {
+                addClassMod(new RenderBlockCauldronMod());
+            }
         }
         addClassMod(new EntityReddustFXMod());
 
@@ -4151,6 +4156,7 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature("black"));
             addClassSignature(new ConstSignature("purple"));
             addClassSignature(new ConstSignature("cyan"));
+            addClassSignature(new ConstSignature(0x1e1b1b));
 
             addMemberMapper(new FieldMapper(dyeColorNames)
                 .accessFlag(AccessFlag.PUBLIC, true)
