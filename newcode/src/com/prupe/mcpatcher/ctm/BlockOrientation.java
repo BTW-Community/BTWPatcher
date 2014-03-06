@@ -25,7 +25,7 @@ final class BlockOrientation {
 
     int blockFace;
     int textureFace;
-    int iconFace;
+    int textureFaceOrig;
     int rotateUV;
     boolean rotateTop;
 
@@ -51,7 +51,7 @@ final class BlockOrientation {
         this.j = j;
         this.k = k;
         this.blockFace = blockFace;
-        iconFace = textureFace;
+        this.textureFace = textureFaceOrig = textureFace;
         if (blockFace < 0) {
             this.textureFace = blockFace;
         }
@@ -67,7 +67,7 @@ final class BlockOrientation {
         this.i = i;
         this.j = j;
         this.k = k;
-        blockFace = iconFace = face;
+        blockFace = textureFaceOrig = face;
         metadata = altMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         rotateUV = 0;
         rotateTop = false;
@@ -79,7 +79,7 @@ final class BlockOrientation {
         this.block = block;
         this.blockAccess = null;
         i = j = k = 0;
-        blockFace = textureFace = face;
+        blockFace = textureFace = textureFaceOrig = face;
         this.metadata = metadata;
         metadataBits = 1 << metadata;
         di = dj = dk = 0;
