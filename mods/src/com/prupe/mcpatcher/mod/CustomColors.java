@@ -2682,8 +2682,6 @@ public class CustomColors extends Mod {
             addMemberMapper(new MethodMapper(renderBlockFallingSand));
 
             addPatch(new TessellatorPatch(this) {
-                private int patchCount;
-
                 @Override
                 public String getDescription() {
                     return "colorize falling sand and gravel";
@@ -2707,7 +2705,7 @@ public class CustomColors extends Mod {
                         ALOAD_1,
                         ALOAD_2,
                         PositionMod.unpackArguments(this, 3),
-                        push(patchCount++ % 6),
+                        push(getMethodMatchCount() % 6),
                         reference(INVOKESTATIC, setupBlockSmoothing1),
                         IFNE, branch("A"),
 
@@ -3384,7 +3382,6 @@ public class CustomColors extends Mod {
         }.targetMethod(renderBlockFluids));
 
         classMod.addPatch(new BytecodePatch(classMod) {
-            private int patchCount;
             private int faceRegister;
 
             {
@@ -3403,7 +3400,6 @@ public class CustomColors extends Mod {
                     @Override
                     public boolean afterMatch() {
                         faceRegister = extractRegisterNum(getCaptureGroup(1));
-                        patchCount = 0;
                         return true;
                     }
                 });
@@ -3443,7 +3439,7 @@ public class CustomColors extends Mod {
             @Override
             public byte[] getReplacementBytes() {
                 byte[] faceCode;
-                switch (patchCount++) {
+                switch (getMethodMatchCount()) {
                     case 0:
                         faceCode = new byte[]{ICONST_1}; // top face
                         break;
@@ -3494,7 +3490,6 @@ public class CustomColors extends Mod {
 
         classMod.addPatch(new BytecodePatch(classMod) {
             private int tessellatorRegister;
-            private int patchCount;
             private final int[] vertexOrder = new int[]{0, 1, 2, 3, 3, 2, 1, 0};
             private final int firstPatchOffset;
 
@@ -3513,7 +3508,6 @@ public class CustomColors extends Mod {
                     @Override
                     public boolean afterMatch() {
                         tessellatorRegister = extractRegisterNum(getCaptureGroup(1));
-                        patchCount = 0;
                         return true;
                     }
                 });
@@ -3559,7 +3553,7 @@ public class CustomColors extends Mod {
                     // 13w48a: draws top face in order 0 1 2 3 0 3 2 1
                     // side faces are drawn 0 1 2 3 3 2 1 0 regardless
                     int vertex = vertexOrder[i];
-                    if (i >= 4 && patchCount == 0) {
+                    if (i >= 4 && getMethodMatchCount() == 0) {
                         vertex = (vertex + firstPatchOffset) % 4;
                     }
                     code = buildCode(
@@ -3576,7 +3570,6 @@ public class CustomColors extends Mod {
                         orig
                     );
                 }
-                patchCount++;
                 return buildCode(
                     // if (ColorizeBlock.isSmooth) {
                     reference(GETSTATIC, isSmooth),

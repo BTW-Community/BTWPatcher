@@ -245,9 +245,6 @@ public class BlockAPIMod extends Mod {
 
         private void setupColorMultipliers17() {
             addPatch(new BytecodePatch() {
-                private MethodInfo lastMethod;
-                private int patchCount;
-
                 {
                     addPreMatchSignature(grassTopSignature);
                 }
@@ -269,29 +266,13 @@ public class BlockAPIMod extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         // RenderBlocksUtils.useColorMultiplier(face)
-                        push(getPatchCount()),
+                        push(getMethodMatchCount() % 6),
                         reference(INVOKESTATIC, useColorMultiplier1)
                     );
-                }
-
-                private int getPatchCount() {
-                    if (lastMethod != getMethodInfo()) {
-                        lastMethod = getMethodInfo();
-                        patchCount = 0;
-                    }
-                    int oldPatchCount = patchCount;
-                    patchCount++;
-                    if (patchCount == 1) {
-                        patchCount++;
-                    }
-                    patchCount %= 6;
-                    return oldPatchCount;
                 }
             });
 
             addPatch(new BytecodePatch() {
-                private int patchCount;
-
                 {
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
@@ -346,19 +327,17 @@ public class BlockAPIMod extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    byte[] code = buildCode(
+                    return buildCode(
                         // tessellator.setColorOpaque_F(RenderBlocksUtils.getColorMultiplierRed(face), ...);
                         getCaptureGroup(1),
-                        push(patchCount),
+                        push(getMethodMatchCount()),
                         reference(INVOKESTATIC, getColorMultiplierRed),
-                        push(patchCount),
+                        push(getMethodMatchCount()),
                         reference(INVOKESTATIC, getColorMultiplierGreen),
-                        push(patchCount),
+                        push(getMethodMatchCount()),
                         reference(INVOKESTATIC, getColorMultiplierBlue),
                         reference(INVOKEVIRTUAL, TessellatorMod.setColorOpaque_F)
                     );
-                    patchCount++;
-                    return code;
                 }
             });
         }

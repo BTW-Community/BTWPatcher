@@ -384,8 +384,6 @@ public class ConnectedTextures extends Mod {
 
         private void setupSecondaryTexture17() {
             addPatch(new BytecodePatch() {
-                private int patchCount;
-
                 @Override
                 public String getDescription() {
                     return "override texture (grass side texture)";
@@ -408,7 +406,7 @@ public class ConnectedTextures extends Mod {
                         ALOAD_0,
                         reference(GETFIELD, blockAccess),
                         PositionMod.unpackArguments(this, 2),
-                        push((patchCount++ % 4) + 2),
+                        push((getMethodMatchCount() % 4) + 2),
                         reference(INVOKESTATIC, newBlockIconFromPosition)
                     );
                 }
