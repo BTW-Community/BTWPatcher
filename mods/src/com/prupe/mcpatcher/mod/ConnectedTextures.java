@@ -161,7 +161,6 @@ public class ConnectedTextures extends Mod {
         BlockMod() {
             super(ConnectedTextures.this);
 
-            final InterfaceMethodRef getBlockMetadata = new InterfaceMethodRef("IBlockAccess", "getBlockMetadata", "(" + PositionMod.getDescriptor() + ")I");
             final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(" + (haveBlockRegistry ? "" : "I") + "LMaterial;)V");
 
             mapBlockIconMethods();
@@ -183,7 +182,7 @@ public class ConnectedTextures extends Mod {
                 }
             }
                 .setMethod(getBlockIcon)
-                .addXref(1, getBlockMetadata)
+                .addXref(1, IBlockAccessMod.getBlockMetadata)
                 .addXref(2, getBlockIconFromSideAndMetadata)
             );
 
