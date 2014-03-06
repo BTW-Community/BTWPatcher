@@ -10,7 +10,7 @@ import static javassist.bytecode.Opcode.*;
 
 public class RenderBlockCustomMod extends ClassMod {
     public static MethodRef renderFaceAO;
-    public static final MethodRef renderFaceNonAO = new MethodRef("RenderBlockCustom", "renderFaceNonAO", "(LBlock;LPosition;LIcon;LDirection;FFFI)V");
+    public static MethodRef renderFaceNonAO;
     public static final MethodRef renderBlockHeld = new MethodRef("RenderBlockCustom", "renderBlockHeld", "(LBlock;IF)V");
     public static final FieldRef helper = new FieldRef("RenderBlockCustom", "helper", "LRenderBlockCustomHelper;");
 
@@ -18,12 +18,19 @@ public class RenderBlockCustomMod extends ClassMod {
         return Mod.getMinecraftVersion().compareTo("14w06a") >= 0;
     }
 
+    public static int getDirectionParam() {
+        return Mod.getMinecraftVersion().compareTo("14w10a") >= 0 ? 3 : 4;
+    }
+
     public RenderBlockCustomMod(Mod mod) {
         super(mod);
         setParentClass("RenderBlocks");
         addPrerequisiteClass("RenderBlocks");
 
-        renderFaceAO = new MethodRef("RenderBlockCustom", "renderFaceAO", "(LBlock;LPosition;LIcon;LDirection;FFF" + (Mod.getMinecraftVersion().compareTo("14w07a") >= 0 ? "Z)V" : ")I"));
+        String returnType = Mod.getMinecraftVersion().compareTo("14w07a") >= 0 ? "Z)V" : ")I";
+        String iconParam = Mod.getMinecraftVersion().compareTo("14w10a") >= 0 ? "" : "LIcon;";
+        renderFaceAO = new MethodRef("RenderBlockCustom", "renderFaceAO", "(LBlock;LPosition;" + iconParam + "LDirection;FFF" + returnType);
+        renderFaceNonAO = new MethodRef("RenderBlockCustom", "renderFaceNonAO", "(LBlock;LPosition;" + iconParam + "LDirection;FFFI)V");
 
         addSeedSignature(renderFaceAO);
         addSeedSignature(renderFaceNonAO);
@@ -73,8 +80,6 @@ public class RenderBlockCustomMod extends ClassMod {
             .matchConstructorOnly(true)
             .addXref(1, helper)
         );
-
-        addMemberMapper(new FieldMapper(helper));
 
         return this;
     }

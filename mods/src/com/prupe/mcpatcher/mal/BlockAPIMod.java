@@ -444,7 +444,7 @@ public class BlockAPIMod extends Mod {
                         anyReference(INVOKESTATIC),
                         push(0),
                         FALOAD,
-                        FLOAD, 5,
+                        registerLoadStore(FLOAD, getDirectionParam() + 1),
                         FMUL
                     );
                 }
@@ -517,7 +517,7 @@ public class BlockAPIMod extends Mod {
                             if (isMetadataMethod) {
                                 direction = getCaptureGroup(1)[0] & 0xff;
                             } else {
-                                direction = 4;
+                                direction = getDirectionParam();
                             }
                             return true;
                         }

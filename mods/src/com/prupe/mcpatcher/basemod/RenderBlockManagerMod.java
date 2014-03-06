@@ -11,7 +11,6 @@ import static javassist.bytecode.Opcode.*;
 * Matches RenderBlockManager class (14w04a+).
 */
 public class RenderBlockManagerMod extends ClassMod {
-    public static final FieldRef instance = new FieldRef("RenderBlockManager", "instance", "LRenderBlockManager;");
     public final MethodRef renderBlockByRenderType = new MethodRef("RenderBlockManager", "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + (Mod.getMinecraftVersion().compareTo("14w06a") >= 0 ? "LIBlockAccess;" : "") + ")Z");
     public static final MethodRef registerRenderType = new MethodRef("RenderBlockManager", "registerRenderType", "(ILRenderBlocks;)V");
     public static final MethodRef renderBlockAsItem = new MethodRef("RenderBlockManager", "renderBlockAsItem", "(LBlock;IF)V");
@@ -22,7 +21,6 @@ public class RenderBlockManagerMod extends ClassMod {
         final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
         final ClassRef renderBlocksClass = new ClassRef("RenderBlocks");
         final MethodRef renderBlockAsItem1 = new MethodRef("RenderBlocks", "renderBlockAsItem", "(LBlock;IF)V");
-        final InterfaceMethodRef listGet = new InterfaceMethodRef("java/util/List", "get", "(I)Ljava/lang/Object;");
 
         addClassSignature(new BytecodeSignature() {
             @Override
@@ -38,14 +36,14 @@ public class RenderBlockManagerMod extends ClassMod {
 
                     repeat(build(
                         // this.registerRenderType(renderType, new RenderBlocksSubclass());
-                        // x36 or more
+                        // x10 or more
                         ALOAD_0,
                         any(1, 3), // ICONST_*, BIPUSH x, SIPUSH x x
                         anyReference(NEW),
                         DUP,
                         anyReference(INVOKESPECIAL),
                         backReference(2)
-                    ), 24)
+                    ), 10)
                 );
             }
         }
@@ -91,11 +89,6 @@ public class RenderBlockManagerMod extends ClassMod {
         }
             .setMethod(renderBlockAsItem)
             .addXref(1, renderBlockAsItem1)
-        );
-
-        addMemberMapper(new FieldMapper(instance)
-            .accessFlag(AccessFlag.PUBLIC, true)
-            .accessFlag(AccessFlag.STATIC, true)
         );
     }
 
