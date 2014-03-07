@@ -43,7 +43,11 @@ public class CTMUtils {
             @Override
             public void beforeChange() {
                 RenderPassAPI.instance.clear();
-                GlassPaneRenderer.clear();
+                try {
+                    GlassPaneRenderer.clear();
+                } catch (Throwable e) {
+                    // nothing
+                }
                 blockOrientation.clear();
                 ijkIterator.clear();
                 metadataIterator.clear();

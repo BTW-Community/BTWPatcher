@@ -45,6 +45,7 @@ public class ConnectedTextures extends Mod {
 
         haveBlockRegistry = getMinecraftVersion().compareTo("13w36a") >= 0;
         haveThickPanes = getMinecraftVersion().compareTo("13w41a") >= 0;
+        boolean haveGlassPaneRenderer = getMinecraftVersion().compareTo("14w10a") < 0;
 
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new TessellatorMod(this));
@@ -56,7 +57,7 @@ public class ConnectedTextures extends Mod {
         addClassMod(new RenderBlocksSubclassMod());
         if (RenderBlocksMod.haveSubclasses()) {
             RenderBlockManagerMod renderBlockManagerMod = new RenderBlockManagerMod(this);
-            if (getMinecraftVersion().compareTo("14w10a") < 0) {
+            if (haveGlassPaneRenderer) {
                 renderBlockManagerMod
                     .mapRenderType(18, "RenderBlockIronBars")
                     .mapRenderType(35, "RenderBlockAnvil")
@@ -92,7 +93,9 @@ public class ConnectedTextures extends Mod {
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_ITERATOR_CLASS + "$IJK");
         addClassFile(MCPatcherUtils.TILE_OVERRIDE_ITERATOR_CLASS + "$Metadata");
         addClassFile(MCPatcherUtils.BLOCK_ORIENTATION_CLASS);
-        addClassFile(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS);
+        if (haveGlassPaneRenderer) {
+            addClassFile(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS);
+        }
 
         BaseTexturePackMod.earlyInitialize(2, MCPatcherUtils.CTM_UTILS_CLASS, "reset");
     }
