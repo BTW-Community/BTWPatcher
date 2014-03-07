@@ -11,7 +11,6 @@ import static javassist.bytecode.Opcode.*;
 * Matches RenderBlockManager class (14w04a+).
 */
 public class RenderBlockManagerMod extends ClassMod {
-    public final MethodRef renderBlockByRenderType = new MethodRef("RenderBlockManager", "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + (Mod.getMinecraftVersion().compareTo("14w06a") >= 0 ? "LIBlockAccess;" : "") + ")Z");
     public static final MethodRef registerRenderType = new MethodRef("RenderBlockManager", "registerRenderType", "(ILRenderBlocks;)V");
     public static final MethodRef renderBlockAsItem = new MethodRef("RenderBlockManager", "renderBlockAsItem", "(LBlock;IF)V");
 
@@ -19,7 +18,22 @@ public class RenderBlockManagerMod extends ClassMod {
         super(mod);
 
         final ClassRef renderBlocksClass = new ClassRef("RenderBlocks");
+        final MethodRef renderBlockByRenderType = new MethodRef("RenderBlockManager", "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + (Mod.getMinecraftVersion().compareTo("14w06a") >= 0 ? "LIBlockAccess;" : "") + ")Z");
         final MethodRef renderBlockAsItem1 = new MethodRef("RenderBlocks", "renderBlockAsItem", "(LBlock;IF)V");
+
+        if (RenderBlockCustomMod.haveCustomModels()) {
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // if (renderPass == 43)
+                        anyILOAD,
+                        push(43),
+                        IF_ICMPEQ_or_IF_ICMPNE
+                    );
+                }
+            });
+        }
 
         addClassSignature(new BytecodeSignature() {
             @Override
