@@ -55,16 +55,17 @@ public class ConnectedTextures extends Mod {
         addClassMod(new RenderBlocksMod());
         addClassMod(new RenderBlocksSubclassMod());
         if (RenderBlocksMod.haveSubclasses()) {
+            RenderBlockManagerMod renderBlockManagerMod = new RenderBlockManagerMod(this);
             if (getMinecraftVersion().compareTo("14w10a") < 0) {
-                addClassMod(new RenderBlockManagerMod(this)
+                renderBlockManagerMod
                     .mapRenderType(18, "RenderBlockIronBars")
                     .mapRenderType(35, "RenderBlockAnvil")
                     .mapRenderType(40, "RenderBlockDoublePlant")
-                    .mapRenderType(41, "RenderBlockGlassPane")
-                );
+                    .mapRenderType(41, "RenderBlockGlassPane");
                 addClassMod(new RenderBlockPaneMod("RenderBlockIronBars"));
                 addClassMod(new RenderBlockPaneMod("RenderBlockGlassPane"));
             }
+            addClassMod(renderBlockManagerMod);
             if (RenderBlockCustomMod.haveCustomModels()) {
                 addClassMod(new RenderBlockCustomMod());
             }

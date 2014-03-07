@@ -18,7 +18,6 @@ public class RenderBlockManagerMod extends ClassMod {
     public RenderBlockManagerMod(Mod mod) {
         super(mod);
 
-        final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
         final ClassRef renderBlocksClass = new ClassRef("RenderBlocks");
         final MethodRef renderBlockAsItem1 = new MethodRef("RenderBlocks", "renderBlockAsItem", "(LBlock;IF)V");
 
@@ -72,7 +71,7 @@ public class RenderBlockManagerMod extends ClassMod {
             }
         }
             .setMethod(renderBlockByRenderType)
-            .addXref(1, getRenderType)
+            .addXref(1, BlockMod.getRenderType)
         );
 
         addClassSignature(new BytecodeSignature() {
