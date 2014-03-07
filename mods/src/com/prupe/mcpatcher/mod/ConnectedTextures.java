@@ -65,6 +65,8 @@ public class ConnectedTextures extends Mod {
                     .mapRenderType(41, "RenderBlockGlassPane");
                 addClassMod(new RenderBlockPaneMod("RenderBlockIronBars"));
                 addClassMod(new RenderBlockPaneMod("RenderBlockGlassPane"));
+            } else {
+                addClassMod(new BlockModelFaceMod(this).mapDirectionMethods());
             }
             addClassMod(renderBlockManagerMod);
             if (RenderBlockCustomMod.haveCustomModels()) {

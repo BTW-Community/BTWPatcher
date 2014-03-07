@@ -14,12 +14,20 @@ import static javassist.bytecode.Opcode.INVOKESTATIC;
 public class BlockModelFaceMod extends ClassMod {
     public static final MethodRef getShadedIntBuffer = new MethodRef("BlockModelFace", "getShadedIntBuffer", "()[I");
     public static final MethodRef getUnshadedIntBuffer = new MethodRef("BlockModelFace", "getUnshadedIntBuffer", "()[I");
+    public static final MethodRef getTextureFacing = new MethodRef("BlockModelFace", "getTextureFacing", "()LDirection;");
+    public static MethodRef getBlockFacing;
 
     public BlockModelFaceMod(Mod mod) {
         super(mod);
 
         final MethodRef floatToRawIntBits = new MethodRef("java/lang/Float", "floatToRawIntBits", "(F)I");
         final FieldRef vectorX = new FieldRef("javax/vecmath/Vector3f", "x", "F");
+
+        if (Mod.getMinecraftVersion().compareTo("14w10a") < 0) {
+            getBlockFacing = null;
+        } else {
+            getBlockFacing = new MethodRef("BlockModelFace", "getBlockFacing", "()LDirection;");
+        }
 
         addClassSignature(new ConstSignature(0.017453292f)); // 180.0 / pi
         addClassSignature(new ConstSignature(floatToRawIntBits));
@@ -37,6 +45,14 @@ public class BlockModelFaceMod extends ClassMod {
 
     public BlockModelFaceMod mapIntBufferMethods() {
         addMemberMapper(new MethodMapper(getShadedIntBuffer, getUnshadedIntBuffer)
+            .accessFlag(AccessFlag.PUBLIC, true)
+            .accessFlag(AccessFlag.STATIC, false)
+        );
+        return this;
+    }
+
+    public BlockModelFaceMod mapDirectionMethods() {
+        addMemberMapper(new MethodMapper(getTextureFacing, getBlockFacing)
             .accessFlag(AccessFlag.PUBLIC, true)
             .accessFlag(AccessFlag.STATIC, false)
         );
