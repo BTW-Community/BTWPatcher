@@ -4,6 +4,9 @@ import com.prupe.mcpatcher.mal.block.BlockAPI;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 import static com.prupe.mcpatcher.ctm.TileOverride.*;
 
 final class BlockOrientation {
@@ -14,6 +17,8 @@ final class BlockOrientation {
         {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, -2},
     };
 
+    private static final Map<Block, Integer> fakeRenderTypes = new IdentityHashMap<Block, Integer>();
+
     Block block;
     IBlockAccess blockAccess;
     int i;
@@ -22,6 +27,7 @@ final class BlockOrientation {
     int metadata;
     int altMetadata;
     int metadataBits;
+    int renderType;
 
     int blockFace;
     int textureFace;
@@ -33,10 +39,32 @@ final class BlockOrientation {
     int dj;
     int dk;
 
+    static void reset() {
+        fakeRenderTypes.clear();
+        registerFakeRenderType("wooden_door", 7);
+        registerFakeRenderType("iron_door", 7);
+        registerFakeRenderType("ladder", 8);
+        registerFakeRenderType("bed", 14);
+        registerFakeRenderType("vine", 20);
+        registerFakeRenderType("log", 31);
+        registerFakeRenderType("log2", 31);
+        registerFakeRenderType("hay_block", 31);
+        registerFakeRenderType("quartz_block", 39);
+        registerFakeRenderType("double_plant", 40);
+    }
+
+    private static void registerFakeRenderType(String name, int renderType) {
+        Block block = BlockAPI.parseBlockName("minecraft:" + name);
+        if (block != null && block.getRenderType() == 43) {
+            fakeRenderTypes.put(block, renderType);
+        }
+    }
+
     void clear() {
         block = null;
         blockAccess = null;
         i = j = k = 0;
+        renderType = -1;
         metadata = 0;
         blockFace = textureFace = 0;
         rotateUV = 0;
@@ -50,15 +78,17 @@ final class BlockOrientation {
         this.i = i;
         this.j = j;
         this.k = k;
+        renderType = getRenderTypeForBlock(block);
         this.blockFace = blockFace;
         this.textureFace = textureFaceOrig = textureFace;
         if (blockFace < 0) {
             this.textureFace = blockFace;
         }
         metadata = altMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
-        metadataBits = 1 << metadata;
         rotateUV = 0;
         rotateTop = false;
+        blockFaceToTextureFace(blockFace);
+        metadataBits = (1 << metadata) | (1 << altMetadata);
     }
 
     void setup(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
@@ -67,6 +97,7 @@ final class BlockOrientation {
         this.i = i;
         this.j = j;
         this.k = k;
+        renderType = block.getRenderType();
         blockFace = textureFaceOrig = face;
         metadata = altMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         rotateUV = 0;
@@ -79,6 +110,7 @@ final class BlockOrientation {
         this.block = block;
         this.blockAccess = null;
         i = j = k = 0;
+        renderType = block.getRenderType();
         blockFace = textureFace = textureFaceOrig = face;
         this.metadata = metadata;
         metadataBits = 1 << metadata;
@@ -87,8 +119,13 @@ final class BlockOrientation {
         rotateTop = false;
     }
 
+    private static int getRenderTypeForBlock(Block block) {
+        Integer renderType = fakeRenderTypes.get(block);
+        return renderType == null ? block.getRenderType() : renderType;
+    }
+
     private int blockFaceToTextureFace(int face) {
-        switch (block.getRenderType()) {
+        switch (renderType) {
             case 1: // renderCrossedSquares
                 return -1;
 
@@ -169,7 +206,7 @@ final class BlockOrientation {
     boolean setCoordOffsetsForRenderType() {
         di = dj = dk = 0;
         boolean changed = false;
-        switch (block.getRenderType()) {
+        switch (renderType) {
             case 1: // renderCrossedSquares
                 while (j > 0 && block == BlockAPI.getBlockAt(blockAccess, i, j - 1, k)) {
                     j--;

@@ -57,6 +57,7 @@ public class CTMUtils {
                 lastOverride = null;
                 blankIcon = null;
                 tileLoader = new TileLoader("textures/blocks", logger);
+                BlockOrientation.reset();
                 RenderPassAPI.instance.refreshBlendingOptions();
 
                 if (enableStandard || enableNonStandard) {
@@ -200,6 +201,11 @@ public class CTMUtils {
                 currentBlockFace = blockFace.ordinal();
             } else {
                 currentBlockFace = -1;
+            }
+            if (position.getI() == -51 && position.getJ() == 73 && position.getK() == 405) {
+                logger.info("%s:%d @ %s p=%s t=%s b=%s -> %d",
+                    BlockAPI.getBlockName(block), blockAccess.getBlockMetadata(position), position, paramFace, textureFace, blockFace, currentBlockFace
+                );
             }
         }
     }
