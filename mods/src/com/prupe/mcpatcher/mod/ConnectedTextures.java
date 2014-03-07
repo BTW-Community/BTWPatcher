@@ -1058,7 +1058,7 @@ public class ConnectedTextures extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         // ...(..., RenderBlockCustom.setBlockFace(textureDirection, blockDirection))
-                        ALOAD, 4,
+                        registerLoadStore(ALOAD, getDirectionParam()),
                         reference(INVOKESTATIC, setBlockFaceLocal)
                     );
                 }

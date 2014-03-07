@@ -3139,16 +3139,17 @@ public class CustomColors extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
+                    int directionParam = getDirectionParam();
                     return buildCode(
                         // ColorizeBlock.setupBlockSmoothing(block, this.blockAccess, i, j, k, face, r, g, b);
                         ALOAD_1,
                         ALOAD_0,
                         reference(GETFIELD, RenderBlocksMod.blockAccess),
                         PositionMod.unpackArguments(this, 2),
-                        DirectionMod.unpackArgumentsSafe(this, 4),
-                        FLOAD, 5,
-                        FLOAD, 6,
-                        FLOAD, 7,
+                        DirectionMod.unpackArgumentsSafe(this, directionParam),
+                        registerLoadStore(FLOAD, directionParam + 1),
+                        registerLoadStore(FLOAD, directionParam + 2),
+                        registerLoadStore(FLOAD, directionParam + 3),
                         reference(INVOKESTATIC, setupBlockSmoothing4)
                     );
                 }
