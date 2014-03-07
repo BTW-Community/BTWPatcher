@@ -37,8 +37,10 @@ public class IBlockAccessMod extends com.prupe.mcpatcher.ClassMod {
             methodsRemoved = 0;
         } else if (Mod.getMinecraftVersion().compareTo("14w10a") < 0) {
             methodsRemoved = 1;
-        } else {
+        } else if (Mod.getMinecraftVersion().compareTo("14w10c") < 0) {
             methodsRemoved = 2;
+        } else {
+            methodsRemoved = 3;
         }
         final String p = PositionMod.getDescriptor();
         final String d = DirectionMod.getDescriptor();
@@ -64,10 +66,14 @@ public class IBlockAccessMod extends com.prupe.mcpatcher.ClassMod {
         }
         getBlockMetadata = new InterfaceMethodRef("IBlockAccess", "getBlockMetadata", "(" + p + ")I");
         if (methodsRemoved > 1) {
-            isAirBlock = getHeight = null;
+            getHeight = null;
+        } else {
+            getHeight = new InterfaceMethodRef("IBlockAccess", "getHeight", "()I");
+        }
+        if (methodsRemoved == 2) {
+            isAirBlock = null;
         } else {
             isAirBlock = new InterfaceMethodRef("IBlockAccess", "isAirBlock", "(" + p + ")Z");
-            getHeight = new InterfaceMethodRef("IBlockAccess", "getHeight", "()I");
         }
         getBiomeGenAt = new InterfaceMethodRef("IBlockAccess", "getBiomeGenAt", "(" + PositionMod.getDescriptorIKOnly() + ")LBiomeGenBase;");
         extendedLevelsInChunkCache = new InterfaceMethodRef("IBlockAccess", "extendedLevelsInChunkCache", "()Z");
