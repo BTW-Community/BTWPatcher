@@ -458,9 +458,9 @@ public class RandomMobs extends Mod {
                         // ...
                         any(0, 100),
 
-                        // older: renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
-                        // 14w04a+: RenderBlockManager.instance.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
-                        any(3, 4),
+                        // 14w04a-14w08a: RenderBlockManager.instance.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
+                        // other: renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
+                        or(anyALOAD, anyReference(GETSTATIC)),
                         captureReference(GETSTATIC),
                         push(0),
                         push(1.0f),
@@ -506,9 +506,9 @@ public class RandomMobs extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // older: renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
-                        // 14w04a+: RenderBlockManager.instance.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
-                        any(3, 4),
+                        // 14w04a-14w08a: RenderBlockManager.instance.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
+                        // other: renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
+                        or(anyALOAD, anyReference(GETSTATIC)),
                         reference(GETSTATIC, mushroomRed),
                         push(0),
                         push(1.0f),
@@ -585,7 +585,7 @@ public class RandomMobs extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         // dx = (double)(float) (ax1 - ax0);
-                        // dy = (double)(float) (ay1 - ay0);
+                        // dy = (double)(float) (ay1 - ay0) + by;
                         // dz = (double)(float) (az1 - az0);
                         lookBehind(build(
                             DLOAD, any(),
@@ -598,6 +598,7 @@ public class RandomMobs extends Mod {
                             DLOAD, any(),
                             DSUB,
                             optional(build(D2F, F2D)),
+                            optional(build(anyDLOAD, DADD)), // 14w10a+
                             DSTORE, capture(any()),
 
                             DLOAD, any(),
