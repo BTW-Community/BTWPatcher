@@ -26,6 +26,7 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
     public static MethodRef getBlockIconFromPosition;
     public static MethodRef getBlockIconFromSideAndMetadata;
     public static MethodRef getBlockIconFromSide;
+    public static final MethodRef renderBlockAsItem = new MethodRef("RenderBlocks", "renderBlockAsItem", "(LBlock;IF)V");
 
     public static final FieldRef renderAllFaces = new FieldRef("RenderBlocks", "renderAllFaces", "Z");
     public static final FieldRef blockAccess = new FieldRef("RenderBlocks", "blockAccess", "LIBlockAccess;");

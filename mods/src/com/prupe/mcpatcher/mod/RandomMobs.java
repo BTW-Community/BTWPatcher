@@ -423,7 +423,7 @@ public class RandomMobs extends Mod {
             final MethodRef renderEquippedItems;
             final FieldRef mushroomRed = new FieldRef("BlockList", "mushroomRed", "LBlockFlower;");
             final FieldRef blocksAtlas = new FieldRef("TextureAtlas", "blocks", "LResourceLocation;");
-            final MethodRef renderBlockAsItem = new MethodRef("RenderBlockManager", "renderBlockAsItem", "(LBlock;IF)V");
+            final MethodRef renderBlockAsItem = RenderBlocksMod.haveSubclasses() ? RenderBlockManagerMod.renderBlockAsItem : RenderBlocksMod.renderBlockAsItem;
             final MethodRef setupMooshroom = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "setupMooshroom", "(LEntityLivingBase;LResourceLocation;)LResourceLocation;");
             final MethodRef renderMooshroomOverlay = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "renderMooshroomOverlay", "()Z");
             final MethodRef finishMooshroom = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "finishMooshroom", "()V");

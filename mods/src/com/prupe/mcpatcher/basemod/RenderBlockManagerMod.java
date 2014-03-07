@@ -19,7 +19,6 @@ public class RenderBlockManagerMod extends ClassMod {
 
         final ClassRef renderBlocksClass = new ClassRef("RenderBlocks");
         final MethodRef renderBlockByRenderType = new MethodRef("RenderBlockManager", "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + (Mod.getMinecraftVersion().compareTo("14w06a") >= 0 ? "LIBlockAccess;" : "") + ")Z");
-        final MethodRef renderBlockAsItem1 = new MethodRef("RenderBlocks", "renderBlockAsItem", "(LBlock;IF)V");
 
         if (RenderBlockCustomMod.haveCustomModels()) {
             addClassSignature(new BytecodeSignature() {
@@ -101,7 +100,7 @@ public class RenderBlockManagerMod extends ClassMod {
             }
         }
             .setMethod(renderBlockAsItem)
-            .addXref(1, renderBlockAsItem1)
+            .addXref(1, RenderBlocksMod.renderBlockAsItem)
         );
     }
 
