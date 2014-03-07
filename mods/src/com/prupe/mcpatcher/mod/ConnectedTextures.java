@@ -22,6 +22,7 @@ import static javassist.bytecode.Opcode.*;
 public class ConnectedTextures extends Mod {
     private final boolean haveBlockRegistry;
     private final boolean haveThickPanes;
+    private final boolean haveGlassPaneRenderer;
 
     public static final MethodRef newBlockIconFromPosition = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;LIBlockAccess;IIII)LIcon;");
     public static final MethodRef newBlockIconFromSideAndMetadata = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "getBlockIcon", "(LIcon;LRenderBlocks;LBlock;II)LIcon;");
@@ -45,7 +46,7 @@ public class ConnectedTextures extends Mod {
 
         haveBlockRegistry = getMinecraftVersion().compareTo("13w36a") >= 0;
         haveThickPanes = getMinecraftVersion().compareTo("13w41a") >= 0;
-        boolean haveGlassPaneRenderer = getMinecraftVersion().compareTo("14w10a") < 0;
+        haveGlassPaneRenderer = getMinecraftVersion().compareTo("14w10a") < 0;
 
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new TessellatorMod(this));
@@ -97,6 +98,8 @@ public class ConnectedTextures extends Mod {
         addClassFile(MCPatcherUtils.BLOCK_ORIENTATION_CLASS);
         if (haveGlassPaneRenderer) {
             addClassFile(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS);
+        } else {
+            addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$Ext18");
         }
 
         BaseTexturePackMod.earlyInitialize(2, MCPatcherUtils.CTM_UTILS_CLASS, "reset");
@@ -1022,56 +1025,11 @@ public class ConnectedTextures extends Mod {
         RenderBlockCustomMod() {
             super(ConnectedTextures.this);
 
-            final MethodRef setBlockFaceLocal = new MethodRef(getDeobfClass(), "setBlockFace", "(LDirection;LDirection;LDirection;)LDirection;");
-            final MethodRef setBlockFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "setBlockFace", "(I)V");
-
-            addPatch(new AddMethodPatch(setBlockFaceLocal, AccessFlag.PRIVATE | AccessFlag.STATIC) {
-                @Override
-                public byte[] generateMethod() {
-                    return buildCode(
-                        // CTMUtils.setBlockFace(paramDirection == null ? blockDirection.ordinal() : paramDirection.ordinal());
-                        ALOAD_1,
-                        IFNULL, branch("A"),
-
-                        DirectionMod.unpackArguments(this, 1),
-                        GOTO, branch("B"),
-
-                        label("A"),
-                        DirectionMod.unpackArgumentsSafe(this, 2),
-
-                        label("B"),
-                        reference(INVOKESTATIC, setBlockFace),
-
-                        // return textureDirection;
-                        ALOAD_0,
-                        ARETURN
-                    );
-                }
-            });
+            final InterfaceMethodRef listIterator = new InterfaceMethodRef("java/util/Iterator", "next", "()Ljava/lang/Object;");
+            final ClassRef blockModelFaceClass = new ClassRef("BlockModelFace");
+            final MethodRef setBlockFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS + "$Ext18", "setBlockFace", "(LDirection;LDirection;)V");
 
             addPatch(new BytecodePatch() {
-                private int faceRegister;
-
-                {
-                    if (BlockModelFaceMod.getBlockFacing != null) {
-                        addPreMatchSignature(new BytecodeSignature() {
-                            @Override
-                            public String getMatchExpression() {
-                                return buildExpression(
-                                    capture(anyALOAD),
-                                    reference(INVOKEVIRTUAL, BlockModelFaceMod.getBlockFacing)
-                                );
-                            }
-
-                            @Override
-                            public boolean afterMatch() {
-                                faceRegister = extractRegisterNum(getCaptureGroup(1));
-                                return true;
-                            }
-                        });
-                    }
-                }
-
                 @Override
                 public String getDescription() {
                     return "override texture (custom models)";
@@ -1079,34 +1037,32 @@ public class ConnectedTextures extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    return buildExpression(or(
-                        // this.getBlockIconFromPosition(..., textureDirection)
-                        // -or-
-                        // RenderBlocks.getSecondaryIcon(..., textureDirection, this)
-                        // -or-
-                        // block.getSecondaryBlockIcon(..., textureDirection)
-                        build(reference(INVOKEVIRTUAL, remap(RenderBlocksMod.getBlockIconFromPosition))),
-                        build(reference(INVOKESTATIC, getSecondaryIcon), ALOAD_0),
-                        build(reference(INVOKEVIRTUAL, BlockMod.getSecondaryBlockIcon))
-                    ));
+                    return buildExpression(
+                        // face = (BlockModelFace) iterator.next();
+                        anyALOAD,
+                        reference(INVOKEINTERFACE, listIterator),
+                        reference(CHECKCAST, blockModelFaceClass),
+                        capture(anyASTORE)
+                    );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
+                    int blockFace = extractRegisterNum(getCaptureGroup(1));
                     return buildCode(
-                        // ...(..., RenderBlockCustom.setBlockFace(textureDirection, paramDirection, face.getBlockFacing()))
+                        // CTMUtils.Ext18.setBlockFace(paramFace, face.getBlockFacing());
                         registerLoadStore(ALOAD, getDirectionParam()),
                         BlockModelFaceMod.getBlockFacing == null ?
-                            push(null) :
+                            ACONST_NULL :
                             buildCode(
-                                registerLoadStore(ALOAD, faceRegister),
+                                registerLoadStore(ALOAD, blockFace),
                                 reference(INVOKEVIRTUAL, BlockModelFaceMod.getBlockFacing)
                             ),
-                        reference(INVOKESTATIC, setBlockFaceLocal)
+                        reference(INVOKESTATIC, setBlockFace)
                     );
                 }
             }
-                .setInsertBefore(true)
+                .setInsertAfter(true)
                 .targetMethod(renderFaceAO, renderFaceNonAO)
             );
         }

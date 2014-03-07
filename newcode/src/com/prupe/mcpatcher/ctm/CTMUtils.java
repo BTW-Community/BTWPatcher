@@ -92,11 +92,6 @@ public class CTMUtils {
         });
     }
 
-    public static void setBlockFace(int blockFace) {
-        haveBlockFace = true;
-        currentBlockFace = blockFace;
-    }
-
     private static void clearBlockFace() {
         haveBlockFace = false;
     }
@@ -194,5 +189,18 @@ public class CTMUtils {
 
     static void setBlankResource() {
         blankIcon = tileLoader.getIcon(RenderPassAPI.instance.getBlankResource());
+    }
+
+    public static class Ext18 {
+        public static void setBlockFace(Direction paramFace, Direction blockFace) {
+            haveBlockFace = true;
+            if (paramFace != null) {
+                currentBlockFace = paramFace.ordinal();
+            } else if (blockFace != null) {
+                currentBlockFace = blockFace.ordinal();
+            } else {
+                currentBlockFace = -1;
+            }
+        }
     }
 }
