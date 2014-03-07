@@ -1022,15 +1022,24 @@ public class ConnectedTextures extends Mod {
         RenderBlockCustomMod() {
             super(ConnectedTextures.this);
 
-            final MethodRef setBlockFaceLocal = new MethodRef(getDeobfClass(), "setBlockFace", "(LDirection;LDirection;)LDirection;");
+            final MethodRef setBlockFaceLocal = new MethodRef(getDeobfClass(), "setBlockFace", "(LDirection;LDirection;LDirection;)LDirection;");
             final MethodRef setBlockFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS, "setBlockFace", "(I)V");
 
             addPatch(new AddMethodPatch(setBlockFaceLocal, AccessFlag.PRIVATE | AccessFlag.STATIC) {
                 @Override
                 public byte[] generateMethod() {
                     return buildCode(
-                        // CTMUtils.setBlockFace(blockDirection.ordinal());
-                        DirectionMod.unpackArgumentsSafe(this, 1),
+                        // CTMUtils.setBlockFace(paramDirection == null ? blockDirection.ordinal() : paramDirection.ordinal());
+                        ALOAD_1,
+                        IFNULL, branch("A"),
+
+                        DirectionMod.unpackArguments(this, 1),
+                        GOTO, branch("B"),
+
+                        label("A"),
+                        DirectionMod.unpackArgumentsSafe(this, 2),
+
+                        label("B"),
                         reference(INVOKESTATIC, setBlockFace),
 
                         // return textureDirection;
@@ -1041,6 +1050,28 @@ public class ConnectedTextures extends Mod {
             });
 
             addPatch(new BytecodePatch() {
+                private int faceRegister;
+
+                {
+                    if (BlockModelFaceMod.getBlockFacing != null) {
+                        addPreMatchSignature(new BytecodeSignature() {
+                            @Override
+                            public String getMatchExpression() {
+                                return buildExpression(
+                                    capture(anyALOAD),
+                                    reference(INVOKEVIRTUAL, BlockModelFaceMod.getBlockFacing)
+                                );
+                            }
+
+                            @Override
+                            public boolean afterMatch() {
+                                faceRegister = extractRegisterNum(getCaptureGroup(1));
+                                return true;
+                            }
+                        });
+                    }
+                }
+
                 @Override
                 public String getDescription() {
                     return "override texture (custom models)";
@@ -1063,8 +1094,14 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // ...(..., RenderBlockCustom.setBlockFace(textureDirection, blockDirection))
+                        // ...(..., RenderBlockCustom.setBlockFace(textureDirection, paramDirection, face.getBlockFacing()))
                         registerLoadStore(ALOAD, getDirectionParam()),
+                        BlockModelFaceMod.getBlockFacing == null ?
+                            push(null) :
+                            buildCode(
+                                registerLoadStore(ALOAD, faceRegister),
+                                reference(INVOKEVIRTUAL, BlockModelFaceMod.getBlockFacing)
+                            ),
                         reference(INVOKESTATIC, setBlockFaceLocal)
                     );
                 }
