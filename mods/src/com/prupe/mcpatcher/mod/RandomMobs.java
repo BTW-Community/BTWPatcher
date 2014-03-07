@@ -458,9 +458,14 @@ public class RandomMobs extends Mod {
                         // ...
                         any(0, 100),
 
+                        // pre-14w04a: this.renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
                         // 14w04a-14w08a: RenderBlockManager.instance.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
                         // other: renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
-                        or(anyALOAD, anyReference(GETSTATIC)),
+                        or(
+                            build(ALOAD_0, anyReference(GETFIELD)),
+                            anyALOAD,
+                            anyReference(GETSTATIC)
+                        ),
                         captureReference(GETSTATIC),
                         push(0),
                         push(1.0f),
@@ -506,9 +511,14 @@ public class RandomMobs extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // pre-14w04a: this.renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
                         // 14w04a-14w08a: RenderBlockManager.instance.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
                         // other: renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
-                        or(anyALOAD, anyReference(GETSTATIC)),
+                        or(
+                            build(ALOAD_0, anyReference(GETFIELD)),
+                            anyALOAD,
+                            anyReference(GETSTATIC)
+                        ),
                         reference(GETSTATIC, mushroomRed),
                         push(0),
                         push(1.0f),
