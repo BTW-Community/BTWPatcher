@@ -15,6 +15,8 @@ public class BlockModelFaceMod extends ClassMod {
     public static final MethodRef getShadedIntBuffer = new MethodRef("BlockModelFace", "getShadedIntBuffer", "()[I");
     public static final MethodRef getUnshadedIntBuffer = new MethodRef("BlockModelFace", "getUnshadedIntBuffer", "()[I");
     public static final MethodRef getTextureFacing = new MethodRef("BlockModelFace", "getTextureFacing", "()LDirection;");
+    public static final MethodRef getMinXYZ = new MethodRef("BlockModelFace", "getMinXYZ", "()Ljavax/vecmath/Vector3f;");
+    public static final MethodRef getMaxXYZ = new MethodRef("BlockModelFace", "getMaxXYZ", "()Ljavax/vecmath/Vector3f;");
     public static MethodRef getBlockFacing;
 
     public BlockModelFaceMod(Mod mod) {
@@ -53,6 +55,14 @@ public class BlockModelFaceMod extends ClassMod {
 
     public BlockModelFaceMod mapDirectionMethods() {
         addMemberMapper(new MethodMapper(getTextureFacing, getBlockFacing)
+            .accessFlag(AccessFlag.PUBLIC, true)
+            .accessFlag(AccessFlag.STATIC, false)
+        );
+        return this;
+    }
+
+    public BlockModelFaceMod mapXYZMethods() {
+        addMemberMapper(new MethodMapper(getMinXYZ, getMaxXYZ)
             .accessFlag(AccessFlag.PUBLIC, true)
             .accessFlag(AccessFlag.STATIC, false)
         );

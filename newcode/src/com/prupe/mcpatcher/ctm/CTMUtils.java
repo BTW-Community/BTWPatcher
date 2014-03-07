@@ -202,7 +202,7 @@ public class CTMUtils {
             } else {
                 currentBlockFace = -1;
             }
-            if (position.getI() == -51 && position.getJ() == 73 && position.getK() == 405) {
+            if (position.getI() == -30 && position.getJ() == 72 && position.getK() == 420) {
                 logger.info("%s:%d @ %s p=%s t=%s b=%s -> %d",
                     BlockAPI.getBlockName(block), blockAccess.getBlockMetadata(position), position, paramFace, textureFace, blockFace, currentBlockFace
                 );
