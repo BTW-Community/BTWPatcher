@@ -226,14 +226,6 @@ final class BlockOrientation {
     }
 
     int getFaceForHV() {
-        int face = textureFace;
-        if (face < 0) {
-            face = NORTH_FACE;
-        } else if (face <= TOP_FACE) {
-            face = -1;
-        } else {
-            face = blockFace;
-        }
-        return face;
+        return blockFace;
     }
 }
