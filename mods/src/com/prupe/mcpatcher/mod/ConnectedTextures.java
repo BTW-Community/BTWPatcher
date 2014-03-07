@@ -1027,7 +1027,7 @@ public class ConnectedTextures extends Mod {
 
             final InterfaceMethodRef listIterator = new InterfaceMethodRef("java/util/Iterator", "next", "()Ljava/lang/Object;");
             final ClassRef blockModelFaceClass = new ClassRef("BlockModelFace");
-            final MethodRef setBlockFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS + "$Ext18", "setBlockFace", "(LDirection;LDirection;)V");
+            final MethodRef setBlockFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS + "$Ext18", "setBlockFace", "(LIBlockAccess;LBlock;LPosition;LDirection;LDirection;LDirection;)V");
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -1050,8 +1050,14 @@ public class ConnectedTextures extends Mod {
                 public byte[] getReplacementBytes() {
                     int blockFace = extractRegisterNum(getCaptureGroup(1));
                     return buildCode(
-                        // CTMUtils.Ext18.setBlockFace(paramFace, face.getBlockFacing());
+                        // CTMUtils.Ext18.setBlockFace(this.blockAccess, block, position, direction, face.getTextureFacing(), face.getBlockFacing());
+                        ALOAD_0,
+                        reference(GETFIELD, RenderBlocksMod.blockAccess),
+                        ALOAD_1,
+                        ALOAD_2,
                         registerLoadStore(ALOAD, getDirectionParam()),
+                        registerLoadStore(ALOAD, blockFace),
+                        reference(INVOKEVIRTUAL, BlockModelFaceMod.getTextureFacing),
                         BlockModelFaceMod.getBlockFacing == null ?
                             ACONST_NULL :
                             buildCode(

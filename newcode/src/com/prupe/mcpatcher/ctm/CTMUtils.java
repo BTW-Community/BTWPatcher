@@ -192,7 +192,7 @@ public class CTMUtils {
     }
 
     public static class Ext18 {
-        public static void setBlockFace(Direction paramFace, Direction blockFace) {
+        public static void setBlockFace(IBlockAccess blockAccess, Block block, Position position, Direction paramFace, Direction textureFace, Direction blockFace) {
             haveBlockFace = true;
             if (paramFace != null) {
                 currentBlockFace = paramFace.ordinal();
