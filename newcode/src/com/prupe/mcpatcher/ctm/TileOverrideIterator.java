@@ -108,7 +108,7 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
         for (int pass = 0; pass < MAX_RECURSION; pass++) {
             while (hasNext()) {
                 ITileOverride override = next();
-                Icon newIcon = getTile(override, blockOrientation, currentIcon);
+                Icon newIcon = getTile(override, blockOrientation, origIcon);
                 if (newIcon != null) {
                     lastMatchedOverride = override;
                     skipOverrides.add(override);
@@ -126,7 +126,7 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
         return currentIcon;
     }
 
-    abstract Icon getTile(ITileOverride override, BlockOrientation blockOrientation, Icon currentIcon);
+    abstract Icon getTile(ITileOverride override, BlockOrientation blockOrientation, Icon origIcon);
 
     static final class IJK extends TileOverrideIterator {
         IJK(Map<Block, List<ITileOverride>> blockOverrides, Map<String, List<ITileOverride>> tileOverrides) {
@@ -134,8 +134,8 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
         }
 
         @Override
-        Icon getTile(ITileOverride override, BlockOrientation blockOrientation, Icon currentIcon) {
-            return override.getTileWorld(blockOrientation, currentIcon);
+        Icon getTile(ITileOverride override, BlockOrientation blockOrientation, Icon origIcon) {
+            return override.getTileWorld(blockOrientation, origIcon);
         }
     }
 
@@ -145,8 +145,8 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
         }
 
         @Override
-        Icon getTile(ITileOverride override, BlockOrientation blockOrientation, Icon currentIcon) {
-            return override.getTileHeld(blockOrientation, currentIcon);
+        Icon getTile(ITileOverride override, BlockOrientation blockOrientation, Icon origIcon) {
+            return override.getTileHeld(blockOrientation, origIcon);
         }
     }
 }
