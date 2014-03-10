@@ -211,47 +211,23 @@ public class CTMUtils {
 
         static int getRotation(BlockModelFace modelFace) {
             int[] b = modelFace.getShadedIntBuffer();
-            switch (makeInt(getVertex(b, 4), getVertex(b, 11), getVertex(b, 18), getVertex(b, 25))) {
-                default:
-                case 0x1e: // 0, 1, 3, 2 - no rotation
-                    return 0;
-
-                case (byte) 0x87: // 2, 0, 1, 3 - rotate 90
-                    return 1;
-
-                case (byte) 0xe1: // 3, 2, 0, 1 - rotate 180
-                    return 2;
-
-                case 0x78: // 1, 3, 2, 0 - rotate 270
-                    return 3;
-
-                case 0x2d: // 0, 2, 3, 1 - flip diagonally
-                    return 65536;
-
-                case 0x4b: // 1, 0, 2, 3 - flip, rotate 90
-                    return 65536 | 1;
-
-                case (byte) 0xd2: // 3, 1, 0, 2 - flip, rotate 180
-                    return 65536 | 2;
-
-                case (byte) 0xb4: // 2, 3, 1, 0 - flip, rotate 270
-                    return 65536 | 3;
+            float u0 = Float.intBitsToFloat(b[4]);
+            float v0 = Float.intBitsToFloat(b[5]);
+            float u2 = Float.intBitsToFloat(b[18]);
+            float v2 = Float.intBitsToFloat(b[19]);
+            if (u0 <= u2) {
+                if (v0 <= v2) {
+                    return 0; // no rotation
+                } else {
+                    return 2; // rotate 90 ccw
+                }
+            } else {
+                if (v0 <= v2) {
+                    return 6; // rotate 90 cw
+                } else {
+                    return 4; // rotate 180
+                }
             }
-        }
-
-        private static byte makeInt(int a, int b, int c, int d) {
-            return (byte) (a << 6 | b << 4 | c << 2 | d);
-        }
-
-        private static int getVertex(int[] b, int i) {
-            int index = 0;
-            if (Float.intBitsToFloat(b[i]) > 0.5f) {
-                index |= 2;
-            }
-            if (Float.intBitsToFloat(b[i + 1]) > 0.5f) {
-                index |= 1;
-            }
-            return index;
         }
     }
 }
