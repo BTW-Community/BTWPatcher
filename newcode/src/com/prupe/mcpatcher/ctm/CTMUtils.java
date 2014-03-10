@@ -100,10 +100,11 @@ public class CTMUtils {
     public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
         lastOverride = null;
         if (checkFace(face)) {
+            blockOrientation.setBlock(block, blockAccess, i, j, k);
             if (haveBlockFace) {
-                blockOrientation.setup(block, blockAccess, i, j, k, currentBlockFace, face);
+                blockOrientation.setFace(currentBlockFace, face);
             } else {
-                blockOrientation.setup(block, blockAccess, i, j, k, face);
+                blockOrientation.setFace(face);
             }
             lastOverride = ijkIterator.go(blockOrientation, icon);
             if (lastOverride != null) {

@@ -72,34 +72,30 @@ final class BlockOrientation {
         di = dj = dk = 0;
     }
 
-    void setup(Block block, IBlockAccess blockAccess, int i, int j, int k, int blockFace, int textureFace) {
-        this.block = block;
-        this.blockAccess = blockAccess;
-        this.i = i;
-        this.j = j;
-        this.k = k;
-        renderType = getRenderTypeForBlock(block);
-        this.blockFace = blockFace;
-        this.textureFace = textureFaceOrig = textureFace;
-        if (blockFace < 0) {
-            this.textureFace = blockFace;
-        }
-        metadata = altMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
-        rotateUV = 0;
-        rotateTop = false;
-        blockFaceToTextureFace(blockFace);
-        metadataBits = (1 << metadata) | (1 << altMetadata);
-    }
-
-    void setup(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
+    void setBlock(Block block, IBlockAccess blockAccess, int i, int j, int k) {
         this.block = block;
         this.blockAccess = blockAccess;
         this.i = i;
         this.j = j;
         this.k = k;
         renderType = block.getRenderType();
-        blockFace = textureFaceOrig = face;
         metadata = altMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
+    }
+
+    void setFace(int blockFace, int textureFace) {
+        this.blockFace = blockFace;
+        this.textureFace = textureFaceOrig = textureFace;
+        if (blockFace < 0) {
+            this.textureFace = blockFace;
+        }
+        metadataBits = (1 << metadata) | (1 << altMetadata);
+        rotateUV = 0;
+        rotateTop = false;
+        blockFaceToTextureFace(blockFace);
+    }
+
+    void setFace(int face) {
+        blockFace = textureFaceOrig = face;
         rotateUV = 0;
         rotateTop = false;
         textureFace = blockFaceToTextureFace(blockFace);
