@@ -25,9 +25,9 @@ final class BlockOrientation {
     int j;
     int k;
     int metadata;
-    int altMetadata;
+    private int altMetadata;
     int metadataBits;
-    int renderType;
+    private int renderType;
 
     int blockFace;
     int textureFace;
@@ -80,15 +80,22 @@ final class BlockOrientation {
         metadata = altMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
     }
 
+    void setFakeRenderType() {
+        Integer fakeRenderType = fakeRenderTypes.get(block);
+        if (fakeRenderType != null) {
+            renderType = fakeRenderType;
+        }
+    }
+
     void setFace(int blockFace, int textureFace, int rotation) {
         this.blockFace = blockFace;
         this.textureFace = textureFaceOrig = textureFace;
         if (blockFace < 0) {
             this.textureFace = blockFace;
         }
-        metadataBits = (1 << metadata) | (1 << altMetadata);
-        rotateUV = rotation;
         blockFaceToTextureFace(blockFace);
+        rotateUV = rotation;
+        metadataBits = (1 << metadata) | (1 << altMetadata);
     }
 
     void setFace(int face) {
@@ -108,11 +115,6 @@ final class BlockOrientation {
         metadataBits = 1 << metadata;
         di = dj = dk = 0;
         rotateUV = 0;
-    }
-
-    private static int getRenderTypeForBlock(Block block) {
-        Integer renderType = fakeRenderTypes.get(block);
-        return renderType == null ? block.getRenderType() : renderType;
     }
 
     private int blockFaceToTextureFace(int face) {

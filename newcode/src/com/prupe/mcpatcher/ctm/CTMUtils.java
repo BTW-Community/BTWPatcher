@@ -193,6 +193,7 @@ public class CTMUtils {
     public static class Ext18 {
         public static void setBlock(IBlockAccess blockAccess, Block block, Position position) {
             blockOrientation.setBlock(block, blockAccess, position.getI(), position.getJ(), position.getK());
+            blockOrientation.setFakeRenderType();
         }
 
         public static void setFace(Direction paramFace, Direction textureFace, Direction blockFace, BlockModelFace modelFace) {
