@@ -82,15 +82,15 @@ final class BlockOrientation {
         metadata = altMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
     }
 
-    void setFace(int blockFace, int textureFace) {
+    void setFace(int blockFace, int textureFace, int rotation) {
         this.blockFace = blockFace;
         this.textureFace = textureFaceOrig = textureFace;
         if (blockFace < 0) {
             this.textureFace = blockFace;
         }
         metadataBits = (1 << metadata) | (1 << altMetadata);
-        rotateUV = 0;
-        rotateTop = false;
+        rotateUV = rotation;
+        rotateTop = (rotation % 4 == 2);
         blockFaceToTextureFace(blockFace);
     }
 

@@ -26,7 +26,6 @@ public class CTMUtils {
     private static final TileOverrideIterator.Metadata metadataIterator = new TileOverrideIterator.Metadata(blockOverrides, tileOverrides);
 
     private static boolean haveBlockFace;
-    private static int currentBlockFace;
     private static final BlockOrientation blockOrientation = new BlockOrientation();
 
     static {
@@ -101,9 +100,7 @@ public class CTMUtils {
         lastOverride = null;
         if (checkFace(face)) {
             blockOrientation.setBlock(block, blockAccess, i, j, k);
-            if (haveBlockFace) {
-                blockOrientation.setFace(currentBlockFace, face);
-            } else {
+            if (!haveBlockFace) {
                 blockOrientation.setFace(face);
             }
             lastOverride = ijkIterator.go(blockOrientation, icon);
@@ -196,21 +193,24 @@ public class CTMUtils {
     public static class Ext18 {
         public static void setBlockFace(IBlockAccess blockAccess, Block block, Position position, Direction paramFace, Direction textureFace, Direction blockFace, BlockModelFace modelFace) {
             haveBlockFace = true;
+            int blockFaceNum;
             if (paramFace != null) {
-                currentBlockFace = paramFace.ordinal();
+                blockFaceNum = paramFace.ordinal();
             } else if (blockFace != null) {
-                currentBlockFace = blockFace.ordinal();
+                blockFaceNum = blockFace.ordinal();
             } else {
-                currentBlockFace = -1;
+                blockFaceNum = -1;
             }
+            int rotation = getRotation(modelFace);
             if (position.getI() == -30 && position.getJ() == 72 && position.getK() == 420) {
                 logger.info("%s:%d @ %s p=%s t=%s b=%s -> %d rotation %d",
-                    BlockAPI.getBlockName(block), blockAccess.getBlockMetadata(position), position, paramFace, textureFace, blockFace, currentBlockFace, getRotation(modelFace)
+                    BlockAPI.getBlockName(block), blockAccess.getBlockMetadata(position), position, paramFace, textureFace, blockFace, blockFaceNum, rotation
                 );
             }
+            blockOrientation.setFace(blockFaceNum, textureFace == null ? -1 : textureFace.ordinal(), rotation);
         }
 
-        static int getRotation(BlockModelFace modelFace) {
+        private static int getRotation(BlockModelFace modelFace) {
             int[] b = modelFace.getShadedIntBuffer();
             float u0 = Float.intBitsToFloat(b[4]);
             float v0 = Float.intBitsToFloat(b[5]);
