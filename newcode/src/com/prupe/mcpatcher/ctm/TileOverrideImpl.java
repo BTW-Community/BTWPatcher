@@ -58,10 +58,9 @@ class TileOverrideImpl {
 
         @Override
         Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
-            int[][] offsets = NEIGHBOR_OFFSET[blockOrientation.blockFace];
             int neighborBits = 0;
             for (int bit = 0; bit < 8; bit++) {
-                if (shouldConnect(blockOrientation, origIcon, offsets[bit])) {
+                if (shouldConnect(blockOrientation, origIcon, bit)) {
                     neighborBits |= (1 << bit);
                 }
             }
@@ -105,12 +104,11 @@ class TileOverrideImpl {
             if (face < 0) {
                 return null;
             }
-            int[][] offsets = NEIGHBOR_OFFSET[face];
             int neighborBits = 0;
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_L)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_L)) {
                 neighborBits |= 1;
             }
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_R)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_R)) {
                 neighborBits |= 2;
             }
             return icons[neighborMap[neighborBits]];
@@ -158,24 +156,23 @@ class TileOverrideImpl {
             if (icon != icons[3]) {
                 return icon;
             }
-            int[][] offsets = NEIGHBOR_OFFSET[blockOrientation.blockFace];
             int neighborBits = 0;
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_DL)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_DL)) {
                 neighborBits |= 1;
             }
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_D)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_D)) {
                 neighborBits |= 2;
             }
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_DR)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_DR)) {
                 neighborBits |= 4;
             }
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_UR)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_UR)) {
                 neighborBits |= 8;
             }
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_U)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_U)) {
                 neighborBits |= 16;
             }
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_UL)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_UL)) {
                 neighborBits |= 32;
             }
             return icons[neighborMap[neighborBits]];
@@ -215,12 +212,11 @@ class TileOverrideImpl {
             if (face < 0) {
                 return null;
             }
-            int[][] offsets = NEIGHBOR_OFFSET[face];
             int neighborBits = 0;
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_D)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_D)) {
                 neighborBits |= 1;
             }
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_U)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_U)) {
                 neighborBits |= 2;
             }
             return icons[neighborMap[neighborBits]];
@@ -268,24 +264,23 @@ class TileOverrideImpl {
             if (icon != icons[3]) {
                 return icon;
             }
-            int[][] offsets = NEIGHBOR_OFFSET[blockOrientation.blockFace];
             int neighborBits = 0;
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_L)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_L)) {
                 neighborBits |= 1;
             }
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_DL)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_DL)) {
                 neighborBits |= 2;
             }
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_DR)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_DR)) {
                 neighborBits |= 4;
             }
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_R)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_R)) {
                 neighborBits |= 8;
             }
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_UR)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_UR)) {
                 neighborBits |= 16;
             }
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_UL)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_UL)) {
                 neighborBits |= 32;
             }
             return icons[neighborMap[neighborBits]];
@@ -319,8 +314,7 @@ class TileOverrideImpl {
             } else if (face <= TOP_FACE) {
                 return null;
             }
-            int[][] offsets = NEIGHBOR_OFFSET[face];
-            if (shouldConnect(blockOrientation, origIcon, offsets[blockOrientation.rotateUV(REL_U)])) {
+            if (shouldConnect(blockOrientation, origIcon, REL_U)) {
                 return icons[0];
             }
             return null;
