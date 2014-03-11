@@ -20,6 +20,8 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class ConnectedTextures extends Mod {
+    private static final String CTM_UTILS18_CLASS = MCPatcherUtils.CTM_UTILS_CLASS + "$Ext18";
+
     private final boolean haveBlockRegistry;
     private final boolean haveThickPanes;
     private final boolean haveGlassPaneRenderer;
@@ -102,7 +104,7 @@ public class ConnectedTextures extends Mod {
         if (haveGlassPaneRenderer) {
             addClassFile(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS);
         } else {
-            addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$Ext18");
+            addClassFile(CTM_UTILS18_CLASS);
         }
 
         BaseTexturePackMod.earlyInitialize(2, MCPatcherUtils.CTM_UTILS_CLASS, "reset");
@@ -1030,7 +1032,8 @@ public class ConnectedTextures extends Mod {
 
             final InterfaceMethodRef listIterator = new InterfaceMethodRef("java/util/Iterator", "next", "()Ljava/lang/Object;");
             final ClassRef blockModelFaceClass = new ClassRef("BlockModelFace");
-            final MethodRef setBlockFace = new MethodRef(MCPatcherUtils.CTM_UTILS_CLASS + "$Ext18", "setBlockFace", "(LIBlockAccess;LBlock;LPosition;LDirection;LDirection;LDirection;LBlockModelFace;)V");
+            final MethodRef setBlock = new MethodRef(CTM_UTILS18_CLASS, "setBlock", "(LIBlockAccess;LBlock;LPosition;)V");
+            final MethodRef setFace = new MethodRef(CTM_UTILS18_CLASS, "setFace", "(LDirection;LDirection;LDirection;LBlockModelFace;)V");
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -1053,11 +1056,14 @@ public class ConnectedTextures extends Mod {
                 public byte[] getReplacementBytes() {
                     int blockFace = extractRegisterNum(getCaptureGroup(1));
                     return buildCode(
-                        // CTMUtils.Ext18.setBlockFace(this.blockAccess, block, position, direction, face.getTextureFacing(), face.getBlockFacing(), face);
+                        // CTMUtils.Ext18.setBlock(this.blockAccess, block, position);
                         ALOAD_0,
                         reference(GETFIELD, RenderBlocksMod.blockAccess),
                         ALOAD_1,
                         ALOAD_2,
+                        reference(INVOKESTATIC, setBlock),
+
+                        // CTMUtils.Ext18.setBlockFace(direction, face.getTextureFacing(), face.getBlockFacing(), face);
                         registerLoadStore(ALOAD, getDirectionParam()),
                         registerLoadStore(ALOAD, blockFace),
                         reference(INVOKEVIRTUAL, BlockModelFaceMod.getTextureFacing),
@@ -1068,7 +1074,7 @@ public class ConnectedTextures extends Mod {
                                 reference(INVOKEVIRTUAL, BlockModelFaceMod.getBlockFacing)
                             ),
                         registerLoadStore(ALOAD, blockFace),
-                        reference(INVOKESTATIC, setBlockFace)
+                        reference(INVOKESTATIC, setFace)
                     );
                 }
             }

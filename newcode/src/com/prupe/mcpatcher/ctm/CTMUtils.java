@@ -99,8 +99,8 @@ public class CTMUtils {
     public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
         lastOverride = null;
         if (checkFace(face)) {
-            blockOrientation.setBlock(block, blockAccess, i, j, k);
             if (!haveBlockFace) {
+                blockOrientation.setBlock(block, blockAccess, i, j, k);
                 blockOrientation.setFace(face);
             }
             lastOverride = ijkIterator.go(blockOrientation, icon);
@@ -191,7 +191,11 @@ public class CTMUtils {
     }
 
     public static class Ext18 {
-        public static void setBlockFace(IBlockAccess blockAccess, Block block, Position position, Direction paramFace, Direction textureFace, Direction blockFace, BlockModelFace modelFace) {
+        public static void setBlock(IBlockAccess blockAccess, Block block, Position position) {
+            blockOrientation.setBlock(block, blockAccess, position.getI(), position.getJ(), position.getK());
+        }
+
+        public static void setFace(Direction paramFace, Direction textureFace, Direction blockFace, BlockModelFace modelFace) {
             haveBlockFace = true;
             int blockFaceNum;
             if (paramFace != null) {
@@ -202,9 +206,11 @@ public class CTMUtils {
                 blockFaceNum = -1;
             }
             int rotation = getRotation(modelFace);
-            if (position.getI() == -30 && position.getJ() == 72 && position.getK() == 420) {
-                logger.info("%s:%d @ %s p=%s t=%s b=%s -> %d rotation %d",
-                    BlockAPI.getBlockName(block), blockAccess.getBlockMetadata(position), position, paramFace, textureFace, blockFace, blockFaceNum, rotation
+            if (blockOrientation.i == -30 && blockOrientation.j == 72 && blockOrientation.k == 420) {
+                logger.info("%s:%d @ %d,%d,%d p=%s t=%s b=%s -> %d rotation %d",
+                    BlockAPI.getBlockName(blockOrientation.block), blockOrientation.metadata,
+                    blockOrientation.i, blockOrientation.j, blockOrientation.k,
+                    paramFace, textureFace, blockFace, blockFaceNum, rotation
                 );
             }
             blockOrientation.setFace(blockFaceNum, textureFace == null ? -1 : textureFace.ordinal(), rotation);
