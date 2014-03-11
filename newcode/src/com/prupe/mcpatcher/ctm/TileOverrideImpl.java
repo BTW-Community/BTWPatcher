@@ -423,42 +423,15 @@ class TileOverrideImpl {
                 face = 0;
             }
             face &= symmetry;
-            int x;
-            int y;
-            switch (face) {
-                case TOP_FACE:
-                case BOTTOM_FACE:
-                    if (blockOrientation.rotateTop) {
-                        x = blockOrientation.k;
-                        y = blockOrientation.i;
-                    } else {
-                        x = blockOrientation.i;
-                        y = blockOrientation.k;
-                    }
-                    break;
-
-                case NORTH_FACE:
-                    x = -blockOrientation.i - 1;
-                    y = -blockOrientation.j;
-                    break;
-
-                case SOUTH_FACE:
-                    x = blockOrientation.i;
-                    y = -blockOrientation.j;
-                    break;
-
-                case WEST_FACE:
-                    x = blockOrientation.k;
-                    y = -blockOrientation.j;
-                    break;
-
-                case EAST_FACE:
-                    x = -blockOrientation.k - 1;
-                    y = -blockOrientation.j;
-                    break;
-
-                default:
-                    return null;
+            int i = blockOrientation.i;
+            int j = blockOrientation.j;
+            int k = blockOrientation.k;
+            int[] xOffset = NEIGHBOR_OFFSET[face][blockOrientation.rotateUV(REL_R)];
+            int[] yOffset = NEIGHBOR_OFFSET[face][blockOrientation.rotateUV(REL_D)];
+            int x = i * xOffset[0] + j * xOffset[1] + k * xOffset[2];
+            int y = i * yOffset[0] + j * yOffset[1] + k * yOffset[2];
+            if (face == NORTH_FACE || face == EAST_FACE) {
+                x--;
             }
             x %= width;
             if (x < 0) {

@@ -33,7 +33,6 @@ final class BlockOrientation {
     int textureFace;
     int textureFaceOrig;
     int rotateUV;
-    boolean rotateTop;
 
     int di;
     int dj;
@@ -68,7 +67,6 @@ final class BlockOrientation {
         metadata = 0;
         blockFace = textureFace = 0;
         rotateUV = 0;
-        rotateTop = false;
         di = dj = dk = 0;
     }
 
@@ -90,14 +88,12 @@ final class BlockOrientation {
         }
         metadataBits = (1 << metadata) | (1 << altMetadata);
         rotateUV = rotation;
-        rotateTop = (rotation % 4 == 2);
         blockFaceToTextureFace(blockFace);
     }
 
     void setFace(int face) {
         blockFace = textureFaceOrig = face;
         rotateUV = 0;
-        rotateTop = false;
         textureFace = blockFaceToTextureFace(blockFace);
         metadataBits = (1 << metadata) | (1 << altMetadata);
     }
@@ -112,7 +108,6 @@ final class BlockOrientation {
         metadataBits = 1 << metadata;
         di = dj = dk = 0;
         rotateUV = 0;
-        rotateTop = false;
     }
 
     private static int getRenderTypeForBlock(Block block) {
@@ -161,7 +156,6 @@ final class BlockOrientation {
                 switch (metadata & 0xc) {
                     case 4: // west-east
                         altMetadata &= ~0xc;
-                        rotateTop = true;
                         rotateUV = ROTATE_UV_MAP[0][face + 6];
                         return ROTATE_UV_MAP[0][face];
 
@@ -179,7 +173,6 @@ final class BlockOrientation {
                 switch (metadata) {
                     case 3: // north-south
                         altMetadata = 2;
-                        rotateTop = true;
                         rotateUV = ROTATE_UV_MAP[2][face + 6];
                         return ROTATE_UV_MAP[2][face];
 
