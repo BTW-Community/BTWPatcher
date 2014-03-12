@@ -26,6 +26,15 @@ final class BlockOrientation {
     static final int[] GO_WEST = new int[]{-1, 0, 0};
     static final int[] GO_EAST = new int[]{1, 0, 0};
 
+    static final int[][] NORMALS = new int[][]{
+        GO_DOWN,
+        GO_UP,
+        GO_NORTH,
+        GO_SOUTH,
+        GO_WEST,
+        GO_EAST,
+    };
+
     static final int REL_L = 0;
     static final int REL_DL = 1;
     static final int REL_D = 2;
@@ -42,8 +51,6 @@ final class BlockOrientation {
         {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, -2},
     };
 
-    private static final Map<Block, Integer> fakeRenderTypes = new IdentityHashMap<Block, Integer>();
-
     // NEIGHBOR_OFFSETS[a][b][c] = offset from starting block
     // a: face 0-5
     // b: neighbor 0-7
@@ -52,73 +59,24 @@ final class BlockOrientation {
     //    1   2   3
     // c: coordinate (x,y,z) 0-2
     private static final int[][][] NEIGHBOR_OFFSET = new int[][][]{
-        // BOTTOM_FACE
-        {
-            GO_WEST,
-            add(GO_WEST, GO_SOUTH),
-            GO_SOUTH,
-            add(GO_EAST, GO_SOUTH),
-            GO_EAST,
-            add(GO_EAST, GO_NORTH),
-            GO_NORTH,
-            add(GO_WEST, GO_NORTH),
-        },
-        // TOP_FACE
-        {
-            GO_WEST,
-            add(GO_WEST, GO_SOUTH),
-            GO_SOUTH,
-            add(GO_EAST, GO_SOUTH),
-            GO_EAST,
-            add(GO_EAST, GO_NORTH),
-            GO_NORTH,
-            add(GO_WEST, GO_NORTH),
-        },
-        // NORTH_FACE
-        {
-            GO_EAST,
-            add(GO_EAST, GO_DOWN),
-            GO_DOWN,
-            add(GO_WEST, GO_DOWN),
-            GO_WEST,
-            add(GO_WEST, GO_UP),
-            GO_UP,
-            add(GO_EAST, GO_UP),
-        },
-        // SOUTH_FACE
-        {
-            GO_WEST,
-            add(GO_WEST, GO_DOWN),
-            GO_DOWN,
-            add(GO_EAST, GO_DOWN),
-            GO_EAST,
-            add(GO_EAST, GO_UP),
-            GO_UP,
-            add(GO_WEST, GO_UP),
-        },
-        // WEST_FACE
-        {
-            GO_NORTH,
-            add(GO_NORTH, GO_DOWN),
-            GO_DOWN,
-            add(GO_SOUTH, GO_DOWN),
-            GO_SOUTH,
-            add(GO_SOUTH, GO_UP),
-            GO_UP,
-            add(GO_NORTH, GO_UP),
-        },
-        // EAST_FACE
-        {
-            GO_SOUTH,
-            add(GO_SOUTH, GO_DOWN),
-            GO_DOWN,
-            add(GO_NORTH, GO_DOWN),
-            GO_NORTH,
-            add(GO_NORTH, GO_UP),
-            GO_UP,
-            add(GO_SOUTH, GO_UP),
-        },
+        makeNeighborOffset(WEST_FACE, SOUTH_FACE, EAST_FACE, NORTH_FACE), // BOTTOM_FACE
+        makeNeighborOffset(WEST_FACE, SOUTH_FACE, EAST_FACE, NORTH_FACE), // TOP_FACE
+        makeNeighborOffset(EAST_FACE, BOTTOM_FACE, WEST_FACE, TOP_FACE), // NORTH_FACE
+        makeNeighborOffset(WEST_FACE, BOTTOM_FACE, EAST_FACE, TOP_FACE), // SOUTH_FACE
+        makeNeighborOffset(NORTH_FACE, BOTTOM_FACE, SOUTH_FACE, TOP_FACE), // WEST_FACE
+        makeNeighborOffset(SOUTH_FACE, BOTTOM_FACE, NORTH_FACE, TOP_FACE), // EAST_FACE
     };
+
+    private static final int[][][] NEIGHBOR_OFFSET_43 = new int[][][]{
+        makeNeighborOffset(WEST_FACE, NORTH_FACE, EAST_FACE, SOUTH_FACE), // BOTTOM_FACE - flipped n-s in 1.8 custom models
+        makeNeighborOffset(WEST_FACE, SOUTH_FACE, EAST_FACE, NORTH_FACE), // TOP_FACE
+        makeNeighborOffset(EAST_FACE, BOTTOM_FACE, WEST_FACE, TOP_FACE), // NORTH_FACE
+        makeNeighborOffset(WEST_FACE, BOTTOM_FACE, EAST_FACE, TOP_FACE), // SOUTH_FACE
+        makeNeighborOffset(NORTH_FACE, BOTTOM_FACE, SOUTH_FACE, TOP_FACE), // WEST_FACE
+        makeNeighborOffset(SOUTH_FACE, BOTTOM_FACE, NORTH_FACE, TOP_FACE), // EAST_FACE
+    };
+
+    private static final Map<Block, Integer> fakeRenderTypes = new IdentityHashMap<Block, Integer>();
 
     Block block;
     IBlockAccess blockAccess;
@@ -133,7 +91,8 @@ final class BlockOrientation {
     int blockFace;
     int textureFace;
     int textureFaceOrig;
-    int rotateUV;
+    private int[][][] neighborOffsets;
+    private int rotateUV;
 
     int di;
     int dj;
@@ -171,6 +130,23 @@ final class BlockOrientation {
         return c;
     }
 
+    private static int[][] makeNeighborOffset(int left, int down, int right, int up) {
+        int[] l = NORMALS[left];
+        int[] d = NORMALS[down];
+        int[] r = NORMALS[right];
+        int[] u = NORMALS[up];
+        return new int[][]{
+            l,
+            add(l, d),
+            d,
+            add(d, r),
+            r,
+            add(r, u),
+            u,
+            add(u, l),
+        };
+    }
+
     void clear() {
         block = null;
         blockAccess = null;
@@ -178,6 +154,7 @@ final class BlockOrientation {
         renderType = -1;
         metadata = 0;
         blockFace = textureFace = 0;
+        neighborOffsets = null;
         rotateUV = 0;
         di = dj = dk = 0;
     }
@@ -190,6 +167,7 @@ final class BlockOrientation {
         this.k = k;
         renderType = block.getRenderType();
         metadata = altMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
+        neighborOffsets = NEIGHBOR_OFFSET;
     }
 
     void setFakeRenderType() {
@@ -197,6 +175,7 @@ final class BlockOrientation {
         if (fakeRenderType != null) {
             renderType = fakeRenderType;
         }
+        neighborOffsets = NEIGHBOR_OFFSET_43;
     }
 
     void setFace(int blockFace, int textureFace, int rotation) {
@@ -226,6 +205,7 @@ final class BlockOrientation {
         this.metadata = metadata;
         metadataBits = 1 << metadata;
         di = dj = dk = 0;
+        neighborOffsets = NEIGHBOR_OFFSET_43;
         rotateUV = 0;
     }
 
@@ -370,7 +350,7 @@ final class BlockOrientation {
     }
 
     int[] getOffset(int blockFace, int relativeDirection) {
-        return NEIGHBOR_OFFSET[blockFace][rotateUV(relativeDirection)];
+        return neighborOffsets[blockFace][rotateUV(relativeDirection)];
     }
 
     int getFaceForHV() {
@@ -381,6 +361,5 @@ final class BlockOrientation {
         if (i == -63 && j == 72 && k == 392) {
             logger.info(format, params);
         }
-
     }
 }

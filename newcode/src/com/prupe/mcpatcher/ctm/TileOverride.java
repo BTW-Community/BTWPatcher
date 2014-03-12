@@ -24,15 +24,6 @@ abstract class TileOverride implements ITileOverride {
 
     private static final int META_MASK = 0xffff;
 
-    private static final int[][] NORMALS = new int[][]{
-        GO_DOWN,
-        GO_UP,
-        GO_NORTH,
-        GO_SOUTH,
-        GO_WEST,
-        GO_EAST,
-    };
-
     private static final int CONNECT_BY_BLOCK = 0;
     private static final int CONNECT_BY_TILE = 1;
     private static final int CONNECT_BY_MATERIAL = 2;
