@@ -1030,10 +1030,13 @@ public class ConnectedTextures extends Mod {
         RenderBlockCustomMod() {
             super(ConnectedTextures.this);
 
-            final InterfaceMethodRef listIterator = new InterfaceMethodRef("java/util/Iterator", "next", "()Ljava/lang/Object;");
+            final MethodRef renderBlock = new MethodRef(getDeobfClass(), "renderBlock", "(LBlock;LPosition;)Z");
+            final InterfaceMethodRef iteratorNext = new InterfaceMethodRef("java/util/Iterator", "next", "()Ljava/lang/Object;");
             final ClassRef blockModelFaceClass = new ClassRef("BlockModelFace");
             final MethodRef setBlock = new MethodRef(CTM_UTILS18_CLASS, "setBlock", "(LIBlockAccess;LBlock;LPosition;)V");
             final MethodRef setFace = new MethodRef(CTM_UTILS18_CLASS, "setFace", "(LDirection;LDirection;LDirection;LBlockModelFace;)V");
+
+            addMemberMapper(new MethodMapper(renderBlock));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -1044,9 +1047,35 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // CTMUtils.Ext18.setBlock(this.blockAccess, block, position);
+                        ALOAD_0,
+                        reference(GETFIELD, RenderBlocksMod.blockAccess),
+                        ALOAD_1,
+                        ALOAD_2,
+                        reference(INVOKESTATIC, setBlock)
+                    );
+                }
+            }.targetMethod(renderBlock));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override texture (custom model faces)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
                         // face = (BlockModelFace) iterator.next();
                         anyALOAD,
-                        reference(INVOKEINTERFACE, listIterator),
+                        reference(INVOKEINTERFACE, iteratorNext),
                         reference(CHECKCAST, blockModelFaceClass),
                         capture(anyASTORE)
                     );
@@ -1056,13 +1085,6 @@ public class ConnectedTextures extends Mod {
                 public byte[] getReplacementBytes() {
                     int blockFace = extractRegisterNum(getCaptureGroup(1));
                     return buildCode(
-                        // CTMUtils.Ext18.setBlock(this.blockAccess, block, position);
-                        ALOAD_0,
-                        reference(GETFIELD, RenderBlocksMod.blockAccess),
-                        ALOAD_1,
-                        ALOAD_2,
-                        reference(INVOKESTATIC, setBlock),
-
                         // CTMUtils.Ext18.setBlockFace(direction, face.getTextureFacing(), face.getBlockFacing(), face);
                         registerLoadStore(ALOAD, getDirectionParam()),
                         registerLoadStore(ALOAD, blockFace),
