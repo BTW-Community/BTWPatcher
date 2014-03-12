@@ -316,7 +316,7 @@ class TileOverrideImpl {
             } else if (face <= TOP_FACE) {
                 return null;
             }
-            if (shouldConnect(blockOrientation, origIcon, REL_U)) {
+            if (shouldConnect(blockOrientation, origIcon, face, REL_U)) {
                 return icons[0];
             }
             return null;

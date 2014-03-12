@@ -387,7 +387,14 @@ abstract class TileOverride implements ITileOverride {
     }
 
     final boolean shouldConnect(BlockOrientation blockOrientation, Icon icon, int relativeDirection) {
-        int[] offset = blockOrientation.getOffset(relativeDirection);
+        return shouldConnect(blockOrientation, icon, blockOrientation.getOffset(relativeDirection));
+    }
+
+    final boolean shouldConnect(BlockOrientation blockOrientation, Icon icon, int blockFace, int relativeDirection) {
+        return shouldConnect(blockOrientation, icon, blockOrientation.getOffset(blockFace, relativeDirection));
+    }
+
+    private boolean shouldConnect(BlockOrientation blockOrientation, Icon icon, int[] offset) {
         IBlockAccess blockAccess = blockOrientation.blockAccess;
         Block block = blockOrientation.block;
         int i = blockOrientation.i;
