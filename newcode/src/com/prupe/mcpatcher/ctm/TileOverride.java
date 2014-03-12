@@ -61,7 +61,7 @@ abstract class TileOverride implements ITileOverride {
     //    0   *   4
     //    1   2   3
     // c: coordinate (x,y,z) 0-2
-    protected static final int[][][] NEIGHBOR_OFFSET = new int[][][]{
+    static final int[][][] NEIGHBOR_OFFSET = new int[][][]{
         // BOTTOM_FACE
         {
             GO_WEST,
@@ -495,7 +495,7 @@ abstract class TileOverride implements ITileOverride {
     }
 
     final boolean shouldConnect(BlockOrientation blockOrientation, Icon icon, int relativeDirection) {
-        int[] offset = NEIGHBOR_OFFSET[blockOrientation.blockFace][blockOrientation.rotateUV(relativeDirection)];
+        int[] offset = blockOrientation.getOffset(relativeDirection);
         IBlockAccess blockAccess = blockOrientation.blockAccess;
         Block block = blockOrientation.block;
         int i = blockOrientation.i;

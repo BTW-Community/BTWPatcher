@@ -207,22 +207,27 @@ public class CTMUtils {
                 blockFaceNum = -1;
             }
             int rotation = getRotation(modelFace);
-            if (blockOrientation.i == -30 && blockOrientation.j == 72 && blockOrientation.k == 420) {
-                logger.info("%s:%d @ %d,%d,%d p=%s t=%s b=%s -> %d rotation %d",
-                    BlockAPI.getBlockName(blockOrientation.block), blockOrientation.metadata,
-                    blockOrientation.i, blockOrientation.j, blockOrientation.k,
-                    paramFace, textureFace, blockFace, blockFaceNum, rotation
-                );
-            }
+            blockOrientation.logIt("%s:%d @ %d,%d,%d p=%s t=%s b=%s -> %d rotation %d",
+                BlockAPI.getBlockName(blockOrientation.block), blockOrientation.metadata,
+                blockOrientation.i, blockOrientation.j, blockOrientation.k,
+                paramFace, textureFace, blockFace, blockFaceNum, rotation
+            );
             blockOrientation.setFace(blockFaceNum, textureFace == null ? -1 : textureFace.ordinal(), rotation);
+            int[] down = blockOrientation.getOffset(TileOverride.REL_D);
+            blockOrientation.logIt("  rel down=%d %d %d", down[0], down[1], down[2]);
         }
 
         private static int getRotation(BlockModelFace modelFace) {
             int[] b = modelFace.getShadedIntBuffer();
             float u0 = Float.intBitsToFloat(b[4]);
             float v0 = Float.intBitsToFloat(b[5]);
+            float u1 = Float.intBitsToFloat(b[11]);
+            float v1 = Float.intBitsToFloat(b[12]);
             float u2 = Float.intBitsToFloat(b[18]);
             float v2 = Float.intBitsToFloat(b[19]);
+            float u3 = Float.intBitsToFloat(b[25]);
+            float v3 = Float.intBitsToFloat(b[26]);
+            blockOrientation.logIt("  u0,v0=%f %f, u1,v1=%f %f, u2,v2=%f %f, u3,v3=%f %f", u0, v0, u1, v1, u2, v2, u3, v3);
             if (u0 <= u2) {
                 if (v0 <= v2) {
                     return 0; // no rotation

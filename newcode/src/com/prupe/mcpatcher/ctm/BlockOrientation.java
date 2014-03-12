@@ -1,5 +1,7 @@
 package com.prupe.mcpatcher.ctm;
 
+import com.prupe.mcpatcher.MCLogger;
+import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
@@ -10,6 +12,8 @@ import java.util.Map;
 import static com.prupe.mcpatcher.ctm.TileOverride.*;
 
 final class BlockOrientation {
+    private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CONNECTED_TEXTURES, "CTM");
+
     private static final int[][] ROTATE_UV_MAP = new int[][]{
         {WEST_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, 2, -2, 2, -2, 0, 0},
         {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, 2},
@@ -253,7 +257,22 @@ final class BlockOrientation {
         return (neighbor + rotateUV) & 7;
     }
 
+    int[] getOffset(int relativeDirection) {
+        return getOffset(blockFace, relativeDirection);
+    }
+
+    int[] getOffset(int blockFace, int relativeDirection) {
+        return TileOverride.NEIGHBOR_OFFSET[blockFace][rotateUV(relativeDirection)];
+    }
+
     int getFaceForHV() {
         return blockFace;
+    }
+
+    void logIt(String format, Object... params) {
+        if (i == -63 && j == 72 && k == 392) {
+            logger.info(format, params);
+        }
+
     }
 }
