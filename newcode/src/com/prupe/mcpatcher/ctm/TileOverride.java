@@ -17,33 +17,12 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.prupe.mcpatcher.ctm.BlockOrientation.*;
+
 abstract class TileOverride implements ITileOverride {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CONNECTED_TEXTURES, "CTM");
 
-    static final int BOTTOM_FACE = 0; // 0, -1, 0
-    static final int TOP_FACE = 1; // 0, 1, 0
-    static final int NORTH_FACE = 2; // 0, 0, -1
-    static final int SOUTH_FACE = 3; // 0, 0, 1
-    static final int WEST_FACE = 4; // -1, 0, 0
-    static final int EAST_FACE = 5; // 1, 0, 0
-
-    static final int REL_L = 0;
-    static final int REL_DL = 1;
-    static final int REL_D = 2;
-    static final int REL_DR = 3;
-    static final int REL_R = 4;
-    static final int REL_UR = 5;
-    static final int REL_U = 6;
-    static final int REL_UL = 7;
-
     private static final int META_MASK = 0xffff;
-
-    private static final int[] GO_DOWN = new int[]{0, -1, 0};
-    private static final int[] GO_UP = new int[]{0, 1, 0};
-    private static final int[] GO_NORTH = new int[]{0, 0, -1};
-    private static final int[] GO_SOUTH = new int[]{0, 0, 1};
-    private static final int[] GO_WEST = new int[]{-1, 0, 0};
-    private static final int[] GO_EAST = new int[]{1, 0, 0};
 
     private static final int[][] NORMALS = new int[][]{
         GO_DOWN,
@@ -52,82 +31,6 @@ abstract class TileOverride implements ITileOverride {
         GO_SOUTH,
         GO_WEST,
         GO_EAST,
-    };
-
-    // NEIGHBOR_OFFSETS[a][b][c] = offset from starting block
-    // a: face 0-5
-    // b: neighbor 0-7
-    //    7   6   5
-    //    0   *   4
-    //    1   2   3
-    // c: coordinate (x,y,z) 0-2
-    static final int[][][] NEIGHBOR_OFFSET = new int[][][]{
-        // BOTTOM_FACE
-        {
-            GO_WEST,
-            add(GO_WEST, GO_SOUTH),
-            GO_SOUTH,
-            add(GO_EAST, GO_SOUTH),
-            GO_EAST,
-            add(GO_EAST, GO_NORTH),
-            GO_NORTH,
-            add(GO_WEST, GO_NORTH),
-        },
-        // TOP_FACE
-        {
-            GO_WEST,
-            add(GO_WEST, GO_SOUTH),
-            GO_SOUTH,
-            add(GO_EAST, GO_SOUTH),
-            GO_EAST,
-            add(GO_EAST, GO_NORTH),
-            GO_NORTH,
-            add(GO_WEST, GO_NORTH),
-        },
-        // NORTH_FACE
-        {
-            GO_EAST,
-            add(GO_EAST, GO_DOWN),
-            GO_DOWN,
-            add(GO_WEST, GO_DOWN),
-            GO_WEST,
-            add(GO_WEST, GO_UP),
-            GO_UP,
-            add(GO_EAST, GO_UP),
-        },
-        // SOUTH_FACE
-        {
-            GO_WEST,
-            add(GO_WEST, GO_DOWN),
-            GO_DOWN,
-            add(GO_EAST, GO_DOWN),
-            GO_EAST,
-            add(GO_EAST, GO_UP),
-            GO_UP,
-            add(GO_WEST, GO_UP),
-        },
-        // WEST_FACE
-        {
-            GO_NORTH,
-            add(GO_NORTH, GO_DOWN),
-            GO_DOWN,
-            add(GO_SOUTH, GO_DOWN),
-            GO_SOUTH,
-            add(GO_SOUTH, GO_UP),
-            GO_UP,
-            add(GO_NORTH, GO_UP),
-        },
-        // EAST_FACE
-        {
-            GO_SOUTH,
-            add(GO_SOUTH, GO_DOWN),
-            GO_DOWN,
-            add(GO_NORTH, GO_DOWN),
-            GO_NORTH,
-            add(GO_NORTH, GO_UP),
-            GO_UP,
-            add(GO_SOUTH, GO_UP),
-        },
     };
 
     private static final int CONNECT_BY_BLOCK = 0;
@@ -404,17 +307,6 @@ abstract class TileOverride implements ITileOverride {
             }
         }
         return list;
-    }
-
-    private static int[] add(int[] a, int[] b) {
-        if (a.length != b.length) {
-            throw new RuntimeException("arrays to add are not same length");
-        }
-        int[] c = new int[a.length];
-        for (int i = 0; i < c.length; i++) {
-            c[i] = a[i] + b[i];
-        }
-        return c;
     }
 
     protected int getNumberOfTiles() {

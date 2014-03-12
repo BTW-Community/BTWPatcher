@@ -8,6 +8,8 @@ import net.minecraft.src.ResourceLocation;
 
 import java.util.Properties;
 
+import static com.prupe.mcpatcher.ctm.BlockOrientation.*;
+
 class TileOverrideImpl {
     final static class CTM extends TileOverride {
         // Index into this array is formed from these bit values:

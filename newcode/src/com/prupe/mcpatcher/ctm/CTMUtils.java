@@ -213,7 +213,7 @@ public class CTMUtils {
                 paramFace, textureFace, blockFace, blockFaceNum, rotation
             );
             blockOrientation.setFace(blockFaceNum, textureFace == null ? -1 : textureFace.ordinal(), rotation);
-            int[] down = blockOrientation.getOffset(TileOverride.REL_D);
+            int[] down = blockOrientation.getOffset(BlockOrientation.REL_D);
             blockOrientation.logIt("  rel down=%d %d %d", down[0], down[1], down[2]);
         }
 
