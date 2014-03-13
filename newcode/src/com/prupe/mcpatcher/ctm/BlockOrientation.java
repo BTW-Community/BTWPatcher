@@ -94,6 +94,8 @@ final class BlockOrientation {
     private int[][][] neighborOffsets;
     private int rotateUV;
 
+    boolean offsetsComputed;
+    boolean haveOffsets;
     int di;
     int dj;
     int dk;
@@ -156,6 +158,8 @@ final class BlockOrientation {
         blockFace = textureFace = 0;
         neighborOffsets = null;
         rotateUV = 0;
+        offsetsComputed = false;
+        haveOffsets = false;
         di = dj = dk = 0;
     }
 
@@ -168,6 +172,7 @@ final class BlockOrientation {
         renderType = block.getRenderType();
         metadata = altMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         neighborOffsets = NEIGHBOR_OFFSET;
+        offsetsComputed = false;
     }
 
     void setFakeRenderType() {
@@ -287,14 +292,18 @@ final class BlockOrientation {
     }
 
     boolean setCoordOffsetsForRenderType() {
+        if (offsetsComputed) {
+            return haveOffsets;
+        }
+        offsetsComputed = true;
+        haveOffsets = false;
         di = dj = dk = 0;
-        boolean changed = false;
         switch (renderType) {
             case 1: // renderCrossedSquares
                 while (j > 0 && block == BlockAPI.getBlockAt(blockAccess, i, j - 1, k)) {
                     j--;
                     dj--;
-                    changed = true;
+                    haveOffsets = true;
                 }
                 break;
 
@@ -302,7 +311,7 @@ final class BlockOrientation {
             case 40: // renderBlockDoublePlant
                 if ((metadata & 0x8) != 0 && block == BlockAPI.getBlockAt(blockAccess, i, j - 1, k)) {
                     dj--;
-                    changed = true;
+                    haveOffsets = true;
                 }
                 break;
 
@@ -332,13 +341,13 @@ final class BlockOrientation {
                     default:
                         return false; // head itself, no offset
                 }
-                changed = block == BlockAPI.getBlockAt(blockAccess, i + di, j, k + dk);
+                haveOffsets = block == BlockAPI.getBlockAt(blockAccess, i + di, j, k + dk);
                 break;
 
             default:
                 break;
         }
-        return changed;
+        return haveOffsets;
     }
 
     private int rotateUV(int neighbor) {
