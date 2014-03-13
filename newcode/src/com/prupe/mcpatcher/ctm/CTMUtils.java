@@ -206,41 +206,127 @@ public class CTMUtils {
             } else {
                 blockFaceNum = -1;
             }
-            int rotation = getRotation(modelFace);
+            int rotation = getRotation(modelFace, blockFaceNum);
+            blockOrientation.setFace(blockFaceNum, textureFace == null ? -1 : textureFace.ordinal(), rotation);
             blockOrientation.logIt("%s:%d @ %d,%d,%d p=%s t=%s b=%s -> %d rotation %d",
                 BlockAPI.getBlockName(blockOrientation.block), blockOrientation.metadata,
                 blockOrientation.i, blockOrientation.j, blockOrientation.k,
                 paramFace, textureFace, blockFace, blockFaceNum, rotation
             );
-            blockOrientation.setFace(blockFaceNum, textureFace == null ? -1 : textureFace.ordinal(), rotation);
-            int[] down = blockOrientation.getOffset(BlockOrientation.REL_D);
-            blockOrientation.logIt("  rel down=%d %d %d", down[0], down[1], down[2]);
+            logRotation(modelFace, blockFaceNum);
+            int[] offset = blockOrientation.getOffset(BlockOrientation.REL_U);
+            blockOrientation.logIt("  rel up=%d %d %d", offset[0], offset[1], offset[2]);
+            offset = blockOrientation.getOffset(BlockOrientation.REL_D);
+            blockOrientation.logIt("  rel down=%d %d %d", offset[0], offset[1], offset[2]);
+            offset = blockOrientation.getOffset(BlockOrientation.REL_L);
+            blockOrientation.logIt("  rel left=%d %d %d", offset[0], offset[1], offset[2]);
+            offset = blockOrientation.getOffset(BlockOrientation.REL_R);
+            blockOrientation.logIt("  rel right=%d %d %d", offset[0], offset[1], offset[2]);
         }
 
-        private static int getRotation(BlockModelFace modelFace) {
+        private static int getRotation(BlockModelFace modelFace, int face) {
+            return getRotation2(modelFace, face) - getRotation1(modelFace);
+        }
+
+        private static int getRotation1(BlockModelFace modelFace) {
             int[] b = modelFace.getShadedIntBuffer();
-            float u0 = Float.intBitsToFloat(b[4]);
-            float v0 = Float.intBitsToFloat(b[5]);
-            float u1 = Float.intBitsToFloat(b[11]);
-            float v1 = Float.intBitsToFloat(b[12]);
-            float u2 = Float.intBitsToFloat(b[18]);
-            float v2 = Float.intBitsToFloat(b[19]);
-            float u3 = Float.intBitsToFloat(b[25]);
-            float v3 = Float.intBitsToFloat(b[26]);
-            blockOrientation.logIt("  u0,v0=%f %f, u1,v1=%f %f, u2,v2=%f %f, u3,v3=%f %f", u0, v0, u1, v1, u2, v2, u3, v3);
-            if (u0 <= u2) {
-                if (v0 <= v2) {
+            float du = Float.intBitsToFloat(b[4]) - Float.intBitsToFloat(b[18]); // u0 - u2
+            float dv = Float.intBitsToFloat(b[5]) - Float.intBitsToFloat(b[19]); // v0 - v2
+            return getRotation(du, dv);
+        }
+
+        private static int getRotation2(BlockModelFace modelFace, int face) {
+            int[] b = modelFace.getShadedIntBuffer();
+            float dx = Float.intBitsToFloat(b[0]) - Float.intBitsToFloat(b[14]); // x0 - x2
+            float dy = Float.intBitsToFloat(b[1]) - Float.intBitsToFloat(b[15]); // y0 - y2
+            float dz = Float.intBitsToFloat(b[2]) - Float.intBitsToFloat(b[16]); // z0 - z2
+            float du;
+            float dv;
+            switch (face) {
+                case BlockOrientation.BOTTOM_FACE:
+                    du = dx;
+                    dv = -dz;
+                    break;
+
+                case BlockOrientation.TOP_FACE:
+                    du = dx;
+                    dv = dz;
+                    break;
+
+                case BlockOrientation.NORTH_FACE:
+                    du = -dx;
+                    dv = -dy;
+                    break;
+
+                case BlockOrientation.SOUTH_FACE:
+                    du = dx;
+                    dv = -dy;
+                    break;
+
+                case BlockOrientation.WEST_FACE:
+                    du = dz;
+                    dv = -dy;
+                    break;
+
+                case BlockOrientation.EAST_FACE:
+                    du = -dz;
+                    dv = -dy;
+                    break;
+
+                default:
+                    return 0;
+            }
+            return getRotation(du, dv);
+        }
+
+        private static int getRotation(float s, float t) {
+            if (s <= 0) {
+                if (t <= 0) {
                     return 0; // no rotation
                 } else {
                     return 2; // rotate 90 ccw
                 }
             } else {
-                if (v0 <= v2) {
+                if (t <= 0) {
                     return 6; // rotate 90 cw
                 } else {
                     return 4; // rotate 180
                 }
             }
+        }
+
+        private static void logRotation(BlockModelFace modelFace, int face) {
+            int[] b = modelFace.getShadedIntBuffer();
+            int x0 = (int) Float.intBitsToFloat(b[0]);
+            int y0 = (int) Float.intBitsToFloat(b[1]);
+            int z0 = (int) Float.intBitsToFloat(b[2]);
+            int u0 = (int) Float.intBitsToFloat(b[4]);
+            int v0 = (int) Float.intBitsToFloat(b[5]);
+
+            int x1 = (int) Float.intBitsToFloat(b[7]);
+            int y1 = (int) Float.intBitsToFloat(b[8]);
+            int z1 = (int) Float.intBitsToFloat(b[9]);
+            int u1 = (int) Float.intBitsToFloat(b[11]);
+            int v1 = (int) Float.intBitsToFloat(b[12]);
+
+            int x2 = (int) Float.intBitsToFloat(b[14]);
+            int y2 = (int) Float.intBitsToFloat(b[15]);
+            int z2 = (int) Float.intBitsToFloat(b[16]);
+            int u2 = (int) Float.intBitsToFloat(b[18]);
+            int v2 = (int) Float.intBitsToFloat(b[19]);
+
+            int x3 = (int) Float.intBitsToFloat(b[21]);
+            int y3 = (int) Float.intBitsToFloat(b[22]);
+            int z3 = (int) Float.intBitsToFloat(b[23]);
+            int u3 = (int) Float.intBitsToFloat(b[25]);
+            int v3 = (int) Float.intBitsToFloat(b[26]);
+
+            blockOrientation.logIt("x0,y0,z0=%d %d %d, x1,y1,z1=%d %d %d, x2,y2,z2=%d %d %d, x3,y3,z3=%d %d %d, rotation %d",
+                x0, y0, z0, x1, y1, z1, x2, y2, z2, x3, y3, z3, getRotation2(modelFace, face)
+            );
+            blockOrientation.logIt("u0,v0=%d %d, u1,v1=%d %d, u2,v2=%d %d, u3,v3=%d %d, rotation %d",
+                u0, v0, u1, v1, u2, v2, u3, v3, getRotation1(modelFace)
+            );
         }
     }
 }

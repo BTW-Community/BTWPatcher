@@ -367,7 +367,8 @@ final class BlockOrientation {
     }
 
     void logIt(String format, Object... params) {
-        if (i == -63 && j == 72 && k == 392) {
+        //if (i == -31 && j == 72 && (k == 412 || k == 413)) {
+        if (j == 72 && (metadata == 7 || metadata == 11) && blockFace == 1 && BlockAPI.getBlockName(block).equals("minecraft:log")) {
             logger.info(format, params);
         }
     }
