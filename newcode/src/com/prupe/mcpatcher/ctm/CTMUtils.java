@@ -297,27 +297,27 @@ public class CTMUtils {
 
         private static void logRotation(BlockModelFace modelFace, int face) {
             int[] b = modelFace.getShadedIntBuffer();
-            int x0 = (int) Float.intBitsToFloat(b[0]);
-            int y0 = (int) Float.intBitsToFloat(b[1]);
-            int z0 = (int) Float.intBitsToFloat(b[2]);
+            int x0 = (int) (Float.intBitsToFloat(b[0]) * 16.0f);
+            int y0 = (int) (Float.intBitsToFloat(b[1]) * 16.0f);
+            int z0 = (int) (Float.intBitsToFloat(b[2]) * 16.0f);
             int u0 = (int) Float.intBitsToFloat(b[4]);
             int v0 = (int) Float.intBitsToFloat(b[5]);
 
-            int x1 = (int) Float.intBitsToFloat(b[7]);
-            int y1 = (int) Float.intBitsToFloat(b[8]);
-            int z1 = (int) Float.intBitsToFloat(b[9]);
+            int x1 = (int) (Float.intBitsToFloat(b[7]) * 16.0f);
+            int y1 = (int) (Float.intBitsToFloat(b[8]) * 16.0f);
+            int z1 = (int) (Float.intBitsToFloat(b[9]) * 16.0f);
             int u1 = (int) Float.intBitsToFloat(b[11]);
             int v1 = (int) Float.intBitsToFloat(b[12]);
 
-            int x2 = (int) Float.intBitsToFloat(b[14]);
-            int y2 = (int) Float.intBitsToFloat(b[15]);
-            int z2 = (int) Float.intBitsToFloat(b[16]);
+            int x2 = (int) (Float.intBitsToFloat(b[14]) * 16.0f);
+            int y2 = (int) (Float.intBitsToFloat(b[15]) * 16.0f);
+            int z2 = (int) (Float.intBitsToFloat(b[16]) * 16.0f);
             int u2 = (int) Float.intBitsToFloat(b[18]);
             int v2 = (int) Float.intBitsToFloat(b[19]);
 
-            int x3 = (int) Float.intBitsToFloat(b[21]);
-            int y3 = (int) Float.intBitsToFloat(b[22]);
-            int z3 = (int) Float.intBitsToFloat(b[23]);
+            int x3 = (int) (Float.intBitsToFloat(b[21]) * 16.0f);
+            int y3 = (int) (Float.intBitsToFloat(b[22]) * 16.0f);
+            int z3 = (int) (Float.intBitsToFloat(b[23]) * 16.0f);
             int u3 = (int) Float.intBitsToFloat(b[25]);
             int v3 = (int) Float.intBitsToFloat(b[26]);
 
