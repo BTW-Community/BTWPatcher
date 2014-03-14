@@ -68,6 +68,7 @@ public class BetterGlass extends Mod {
             addClassMod(new RenderBlocksSubclassMod());
         }
         if (getMinecraftVersion().compareTo("14w07a") >= 0) {
+            addClassMod(new TessellatorMod(this));
             addClassMod(new RenderBlockCustomMod());
             addClassMod(new BlockModelFaceMod(this).mapIntBufferMethods());
         }
@@ -1112,9 +1113,30 @@ public class BetterGlass extends Mod {
         RenderBlockCustomMod() {
             super(BetterGlass.this);
 
-            final MethodRef useBlockShading = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "useBlockShading", "()Z");
+            final MethodRef unshadeBuffer = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "unshadeBuffer", "([I)V");
+            final MethodRef reshadeBuffer = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "reshadeBuffer", "([I)V");
 
             addPatch(new BytecodePatch() {
+                private int tessellator;
+
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                reference(GETSTATIC, TessellatorMod.instance),
+                                capture(anyASTORE)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            tessellator = extractRegisterNum(getCaptureGroup(1));
+                            return true;
+                        }
+                    });
+                }
+
                 @Override
                 public String getDescription() {
                     return "override block shading for overlay render pass";
@@ -1123,27 +1145,32 @@ public class BetterGlass extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // face.getShadedIntBuffer()
-                        capture(anyALOAD),
-                        reference(INVOKEVIRTUAL, BlockModelFaceMod.getShadedIntBuffer)
+                        // tessellator.setIntBuffer(face.getShadedIntBuffer());
+                        registerLoadStore(ALOAD, tessellator),
+                        capture(build(
+                            anyALOAD,
+                            reference(INVOKEVIRTUAL, BlockModelFaceMod.getShadedIntBuffer)
+                        )),
+                        anyReference(INVOKEVIRTUAL)
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // RenderPass.useBlockShading() ? face.getShadedIntBuffer : faceUnshadedIntBuffer()
-                        reference(INVOKESTATIC, useBlockShading),
-                        IFEQ, branch("A"),
-                        getMatch(),
-                        GOTO, branch("B"),
-                        label("A"),
+                        // RenderPass.unshadeBuffer(face.getShadedIntBuffer());
                         getCaptureGroup(1),
-                        reference(INVOKEVIRTUAL, BlockModelFaceMod.getUnshadedIntBuffer),
-                        label("B")
+                        reference(INVOKESTATIC, unshadeBuffer),
+
+                        // ...
+                        getMatch(),
+
+                        // RenderPass.reshadeBuffer(face.getShadedIntBuffer());
+                        getCaptureGroup(1),
+                        reference(INVOKESTATIC, reshadeBuffer)
                     );
                 }
-            });
+            }.targetMethod(renderFaceAO, renderFaceNonAO));
         }
     }
 }

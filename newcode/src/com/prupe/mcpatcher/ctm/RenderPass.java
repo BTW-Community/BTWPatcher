@@ -30,6 +30,16 @@ public class RenderPass {
     private static boolean hasCustomRenderPasses;
     private static boolean ambientOcclusion;
 
+    private static final int COLOR_POS_0 = 3;
+    private static final int COLOR_POS_1 = COLOR_POS_0 + 7;
+    private static final int COLOR_POS_2 = COLOR_POS_1 + 7;
+    private static final int COLOR_POS_3 = COLOR_POS_2 + 7;
+
+    private static int saveColor0;
+    private static int saveColor1;
+    private static int saveColor2;
+    private static int saveColor3;
+
     static {
         RenderPassAPI.instance = new RenderPassAPI() {
             @Override
@@ -234,6 +244,26 @@ public class RenderPass {
 
     public static boolean useBlockShading() {
         return RenderPassAPI.instance.useLightmapThisPass();
+    }
+
+    // *sigh* Mojang removed the "unshaded" model face buffer in 14w11a, making this hack necessary again
+    public static void unshadeBuffer(int[] b) {
+        if (!useBlockShading()) {
+            saveColor0 = b[COLOR_POS_0];
+            saveColor1 = b[COLOR_POS_1];
+            saveColor2 = b[COLOR_POS_2];
+            saveColor3 = b[COLOR_POS_3];
+            b[COLOR_POS_0] = b[COLOR_POS_1] = b[COLOR_POS_2] = b[COLOR_POS_3] = -1;
+        }
+    }
+
+    public static void reshadeBuffer(int[] b) {
+        if (!useBlockShading()) {
+            b[COLOR_POS_0] = saveColor0;
+            b[COLOR_POS_1] = saveColor1;
+            b[COLOR_POS_2] = saveColor2;
+            b[COLOR_POS_3] = saveColor3;
+        }
     }
 
     public static boolean preRenderPass(int pass) {
