@@ -27,13 +27,22 @@ public class RenderBlockCustomMod extends ClassMod {
         setParentClass("RenderBlocks");
         addPrerequisiteClass("RenderBlocks");
 
-        String returnType = Mod.getMinecraftVersion().compareTo("14w07a") >= 0 ? "Z)V" : ")I";
-        String iconParam = Mod.getMinecraftVersion().compareTo("14w10a") >= 0 ? "" : "LIcon;";
-        renderFaceAO = new MethodRef("RenderBlockCustom", "renderFaceAO", "(LBlock;LPosition;" + iconParam + "LDirection;FFF" + returnType);
-        renderFaceNonAO = new MethodRef("RenderBlockCustom", "renderFaceNonAO", "(LBlock;LPosition;" + iconParam + "LDirection;FFFI)V");
+        String returnTypeAO;
+        if (Mod.getMinecraftVersion().compareTo("14w07a") < 0) {
+            returnTypeAO = ")I";
+        } else if (Mod.getMinecraftVersion().compareTo("14w11a") < 0) {
+            returnTypeAO = "Z)V";
+        } else {
+            returnTypeAO = ")V";
+        }
+        String returnTypeNonAO = Mod.getMinecraftVersion().compareTo("14w11a") < 0 ? "I)V" : "IZ)V";
+        String iconParam = Mod.getMinecraftVersion().compareTo("14w10a") < 0 ? "LIcon;" : "";
+        renderFaceAO = new MethodRef("RenderBlockCustom", "renderFaceAO", "(LBlock;LPosition;" + iconParam + "LDirection;FFF" + returnTypeAO);
+        renderFaceNonAO = new MethodRef("RenderBlockCustom", "renderFaceNonAO", "(LBlock;LPosition;" + iconParam + "LDirection;FFF" + returnTypeNonAO);
 
-        addSeedSignature(renderFaceAO);
+        addClassSignature(new ConstSignature(0xf000f));
         addSeedSignature(renderFaceNonAO);
+        addSeedSignature(renderFaceAO);
 
         addMemberMapper(new MethodMapper(renderBlockHeld));
     }
