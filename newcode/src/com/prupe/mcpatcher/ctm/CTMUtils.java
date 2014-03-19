@@ -208,34 +208,36 @@ public class CTMUtils {
             }
             int rotation = getRotation(modelFace, blockFaceNum);
             blockOrientation.setFace(blockFaceNum, textureFace == null ? -1 : textureFace.ordinal(), rotation);
-            blockOrientation.logIt("%s:%d @ %d,%d,%d p=%s t=%s b=%s -> %d rotation %d",
-                BlockAPI.getBlockName(blockOrientation.block), blockOrientation.metadata,
-                blockOrientation.i, blockOrientation.j, blockOrientation.k,
-                paramFace, textureFace, blockFace, blockFaceNum, rotation
-            );
-            logRotation(modelFace, blockFaceNum);
-            int[] offset = blockOrientation.getOffset(BlockOrientation.REL_U);
-            blockOrientation.logIt("  rel up=%d %d %d", offset[0], offset[1], offset[2]);
-            offset = blockOrientation.getOffset(BlockOrientation.REL_D);
-            blockOrientation.logIt("  rel down=%d %d %d", offset[0], offset[1], offset[2]);
-            offset = blockOrientation.getOffset(BlockOrientation.REL_L);
-            blockOrientation.logIt("  rel left=%d %d %d", offset[0], offset[1], offset[2]);
-            offset = blockOrientation.getOffset(BlockOrientation.REL_R);
-            blockOrientation.logIt("  rel right=%d %d %d", offset[0], offset[1], offset[2]);
+            if (blockOrientation.logIt()) {
+                logger.info("%s:%d @ %d,%d,%d p=%s t=%s b=%s -> %d rotation %d",
+                    BlockAPI.getBlockName(blockOrientation.block), blockOrientation.metadata,
+                    blockOrientation.i, blockOrientation.j, blockOrientation.k,
+                    paramFace, textureFace, blockFace, blockFaceNum, rotation
+                );
+                logRotation(modelFace, blockFaceNum);
+                int[] offset = blockOrientation.getOffset(BlockOrientation.REL_U);
+                logger.info("  rel up=%d %d %d", offset[0], offset[1], offset[2]);
+                offset = blockOrientation.getOffset(BlockOrientation.REL_D);
+                logger.info("  rel down=%d %d %d", offset[0], offset[1], offset[2]);
+                offset = blockOrientation.getOffset(BlockOrientation.REL_L);
+                logger.info("  rel left=%d %d %d", offset[0], offset[1], offset[2]);
+                offset = blockOrientation.getOffset(BlockOrientation.REL_R);
+                logger.info("  rel right=%d %d %d", offset[0], offset[1], offset[2]);
+            }
         }
 
         private static int getRotation(BlockModelFace modelFace, int face) {
-            return getRotation2(modelFace, face) - getRotation1(modelFace);
+            return getXYZRotation(modelFace, face) - getUVRotation(modelFace);
         }
 
-        private static int getRotation1(BlockModelFace modelFace) {
+        private static int getUVRotation(BlockModelFace modelFace) {
             int[] b = modelFace.getShadedIntBuffer();
             float du = Float.intBitsToFloat(b[4]) - Float.intBitsToFloat(b[18]); // u0 - u2
             float dv = Float.intBitsToFloat(b[5]) - Float.intBitsToFloat(b[19]); // v0 - v2
             return getRotation(du, dv);
         }
 
-        private static int getRotation2(BlockModelFace modelFace, int face) {
+        private static int getXYZRotation(BlockModelFace modelFace, int face) {
             int[] b = modelFace.getShadedIntBuffer();
             float dx = Float.intBitsToFloat(b[0]) - Float.intBitsToFloat(b[14]); // x0 - x2
             float dy = Float.intBitsToFloat(b[1]) - Float.intBitsToFloat(b[15]); // y0 - y2
@@ -321,11 +323,11 @@ public class CTMUtils {
             int u3 = (int) Float.intBitsToFloat(b[25]);
             int v3 = (int) Float.intBitsToFloat(b[26]);
 
-            blockOrientation.logIt("x0,y0,z0=%d %d %d, x1,y1,z1=%d %d %d, x2,y2,z2=%d %d %d, x3,y3,z3=%d %d %d, rotation %d",
-                x0, y0, z0, x1, y1, z1, x2, y2, z2, x3, y3, z3, getRotation2(modelFace, face)
+            logger.info("x0,y0,z0=%d %d %d, x1,y1,z1=%d %d %d, x2,y2,z2=%d %d %d, x3,y3,z3=%d %d %d, rotation %d",
+                x0, y0, z0, x1, y1, z1, x2, y2, z2, x3, y3, z3, getXYZRotation(modelFace, face)
             );
-            blockOrientation.logIt("u0,v0=%d %d, u1,v1=%d %d, u2,v2=%d %d, u3,v3=%d %d, rotation %d",
-                u0, v0, u1, v1, u2, v2, u3, v3, getRotation1(modelFace)
+            logger.info("u0,v0=%d %d, u1,v1=%d %d, u2,v2=%d %d, u3,v3=%d %d, rotation %d",
+                u0, v0, u1, v1, u2, v2, u3, v3, getUVRotation(modelFace)
             );
         }
     }

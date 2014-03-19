@@ -1,7 +1,5 @@
 package com.prupe.mcpatcher.ctm;
 
-import com.prupe.mcpatcher.MCLogger;
-import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
@@ -10,8 +8,6 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 final class BlockOrientation {
-    private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CONNECTED_TEXTURES, "CTM");
-
     static final int BOTTOM_FACE = 0; // 0, -1, 0
     static final int TOP_FACE = 1; // 0, 1, 0
     static final int NORTH_FACE = 2; // 0, 0, -1
@@ -365,10 +361,9 @@ final class BlockOrientation {
         return blockFace;
     }
 
-    void logIt(String format, Object... params) {
-        //if (i == -31 && j == 72 && (k == 412 || k == 413)) {
-        if (j == 72 && (metadata == 7 || metadata == 11) && blockFace == 1 && BlockAPI.getBlockName(block).equals("minecraft:log")) {
-            logger.info(format, params);
-        }
+    boolean logIt() {
+        //return i == -31 && j == 72 && (k == 412 || k == 413);
+        //return j == 72 && (metadata == 7 || metadata == 11) && blockFace == 1 && BlockAPI.getBlockName(block).equals("minecraft:log");
+        return false;
     }
 }
