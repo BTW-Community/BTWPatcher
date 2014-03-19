@@ -300,8 +300,7 @@ final class BlockOrientation {
         di = dj = dk = 0;
         switch (renderType) {
             case 1: // renderCrossedSquares
-                while (j > 0 && block == BlockAPI.getBlockAt(blockAccess, i, j - 1, k)) {
-                    j--;
+                while (j + dj > 0 && block == BlockAPI.getBlockAt(blockAccess, i, j + dj - 1, k)) {
                     dj--;
                     haveOffsets = true;
                 }
