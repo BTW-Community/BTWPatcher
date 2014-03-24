@@ -98,7 +98,7 @@ public class CTMUtils {
 
     public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
         lastOverride = null;
-        if (checkFace(face)) {
+        if (blockAccess != null && checkFace(face)) {
             if (!haveBlockFace) {
                 blockOrientation.setBlock(block, blockAccess, i, j, k);
                 blockOrientation.setFace(face);
