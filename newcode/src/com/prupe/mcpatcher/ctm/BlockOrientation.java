@@ -191,7 +191,8 @@ final class BlockOrientation {
     }
 
     void setFace(int face) {
-        blockFace = textureFaceOrig = face;
+        blockFace = getBlockFaceByRenderType(face);
+        textureFaceOrig = face;
         rotateUV = 0;
         textureFace = blockFaceToTextureFace(blockFace);
         metadataBits = (1 << metadata) | (1 << altMetadata);
@@ -210,10 +211,10 @@ final class BlockOrientation {
         rotateUV = 0;
     }
 
-    private int blockFaceToTextureFace(int face) {
+    private int getBlockFaceByRenderType(int face) {
         switch (renderType) {
             case 1: // renderCrossedSquares
-                return -1;
+                return NORTH_FACE;
 
             case 8: // renderBlockLadder
                 switch (metadata) {
@@ -247,6 +248,14 @@ final class BlockOrientation {
                 }
                 break;
 
+            default:
+                break;
+        }
+        return face;
+    }
+
+    private int blockFaceToTextureFace(int face) {
+        switch (renderType) {
             case 31: // renderBlockLog (also applies to hay)
                 switch (metadata & 0xc) {
                     case 4: // west-east
