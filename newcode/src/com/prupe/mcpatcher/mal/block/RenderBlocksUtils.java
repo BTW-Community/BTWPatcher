@@ -33,18 +33,17 @@ public class RenderBlocksUtils {
         } else if (block == grassBlock) {
             useColorMultiplier[0] = false;
             if (enableBetterGrass) {
-                Block topBlock = BlockAPI.getBlockAt(blockAccess, i, j + 1, k);
-                if (topBlock == snowBlock || topBlock == craftedSnowBlock) {
+                if (isSnowCovered(blockAccess, i, j, k)) {
                     useColorMultiplier[2] = false;
                     useColorMultiplier[3] = false;
                     useColorMultiplier[4] = false;
                     useColorMultiplier[5] = false;
                 } else {
                     j--;
-                    useColorMultiplier[2] = block == BlockAPI.getBlockAt(blockAccess, i, j, k - 1);
-                    useColorMultiplier[3] = block == BlockAPI.getBlockAt(blockAccess, i, j, k + 1);
-                    useColorMultiplier[4] = block == BlockAPI.getBlockAt(blockAccess, i - 1, j, k);
-                    useColorMultiplier[5] = block == BlockAPI.getBlockAt(blockAccess, i + 1, j, k);
+                    useColorMultiplier[2] = block == BlockAPI.getBlockAt(blockAccess, i, j, k - 1) && !isSnowCovered(blockAccess, i, j, k - 1);
+                    useColorMultiplier[3] = block == BlockAPI.getBlockAt(blockAccess, i, j, k + 1) && !isSnowCovered(blockAccess, i, j, k + 1);
+                    useColorMultiplier[4] = block == BlockAPI.getBlockAt(blockAccess, i - 1, j, k) && !isSnowCovered(blockAccess, i - 1, j, k);
+                    useColorMultiplier[5] = block == BlockAPI.getBlockAt(blockAccess, i + 1, j, k) && !isSnowCovered(blockAccess, i + 1, j, k);
                 }
             } else {
                 useColorMultiplier[2] = false;
