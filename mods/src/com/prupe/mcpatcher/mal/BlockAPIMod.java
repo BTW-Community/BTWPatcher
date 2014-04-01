@@ -264,9 +264,14 @@ public class BlockAPIMod extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
+                    int face = getMethodMatchCount() % 6;
+                    if (face > 0 && face < 5) {
+                        // no patch required for top face
+                        face++;
+                    }
                     return buildCode(
                         // RenderBlocksUtils.useColorMultiplier(face)
-                        push(getMethodMatchCount() % 6),
+                        push(face),
                         reference(INVOKESTATIC, useColorMultiplier1)
                     );
                 }
