@@ -1,5 +1,5 @@
-MCPatcher version is 4.3.2_01
-OS: Linux 3.13.6-200.fc20.x86_64 amd64
+MCPatcher version is 4.3.2_02
+OS: Linux 3.13.7-200.fc20.x86_64 amd64
 JVM: Sun Microsystems Inc. 1.6.0_45 (64 bit)
 Classpath: out/artifacts/mcpatcher/mcpatcher.jar
 Minecraft version is 1.7.5 (md5 02cf75768f19afe30ab2da65dbc79cf6)
@@ -3268,31 +3268,31 @@ Patching...
      ILOAD 0x0d                ICONST_0
                                INVOKESTATIC 0x04 0x81
     use per-face color multiplier flags a(Laif;IIIFFF)Z@3118
-     ILOAD 0x0d                ICONST_1
-                               INVOKESTATIC 0x04 0x81
-    use per-face color multiplier flags a(Laif;IIIFFF)Z@4438
      ILOAD 0x0d                ICONST_2
                                INVOKESTATIC 0x04 0x81
-    use per-face color multiplier flags a(Laif;IIIFFF)Z@5770
+    use per-face color multiplier flags a(Laif;IIIFFF)Z@4438
      ILOAD 0x0d                ICONST_3
                                INVOKESTATIC 0x04 0x81
-    use per-face color multiplier flags a(Laif;IIIFFF)Z@7090
+    use per-face color multiplier flags a(Laif;IIIFFF)Z@5770
      ILOAD 0x0d                ICONST_4
+                               INVOKESTATIC 0x04 0x81
+    use per-face color multiplier flags a(Laif;IIIFFF)Z@7090
+     ILOAD 0x0d                ICONST_5
                                INVOKESTATIC 0x04 0x81
     use per-face color multiplier flags b(Laif;IIIFFF)Z@918
      ILOAD 0x0d                ICONST_0
                                INVOKESTATIC 0x04 0x81
     use per-face color multiplier flags b(Laif;IIIFFF)Z@3614
-     ILOAD 0x0d                ICONST_1
-                               INVOKESTATIC 0x04 0x81
-    use per-face color multiplier flags b(Laif;IIIFFF)Z@5430
      ILOAD 0x0d                ICONST_2
                                INVOKESTATIC 0x04 0x81
-    use per-face color multiplier flags b(Laif;IIIFFF)Z@7246
+    use per-face color multiplier flags b(Laif;IIIFFF)Z@5430
      ILOAD 0x0d                ICONST_3
                                INVOKESTATIC 0x04 0x81
-    use per-face color multiplier flags b(Laif;IIIFFF)Z@9062
+    use per-face color multiplier flags b(Laif;IIIFFF)Z@7246
      ILOAD 0x0d                ICONST_4
+                               INVOKESTATIC 0x04 0x81
+    use per-face color multiplier flags b(Laif;IIIFFF)Z@9062
+     ILOAD 0x0d                ICONST_5
                                INVOKESTATIC 0x04 0x81
     use per-face color multiplier flags (non-AO) d(Laif;IIIFFF)Z@227
      ALOAD 0x08                ALOAD 0x08
@@ -4585,7 +4585,7 @@ Patching...
      ILOAD 0x14                ILOAD 0x14
      INVOKESPECIAL 0x01 0xdc   INVOKESPECIAL 0x01 0xdc
      PUTFIELD 0x01 0x45        PUTFIELD 0x01 0x45
-     ICONST_1                  ALOAD_0
+     ICONST_2                  ALOAD_0
      INVOKESTATIC 0x04 0x81    ALOAD_1
      IFEQ 0x00 0x4e            ALOAD_0
      ALOAD_0                   GETFIELD 0x01 0x33
@@ -4599,7 +4599,7 @@ Patching...
      PUTFIELD 0x01 0x49        FLOAD 0x0c
      DUP_X1                    INVOKESTATIC 0x04 0xa2
      PUTFIELD 0x01 0x48        IFNE 0x01 0x18
-     DUP_X1                    ICONST_1
+     DUP_X1                    ICONST_2
      PUTFIELD 0x01 0x47        INVOKESTATIC 0x04 0x81
      PUTFIELD 0x01 0x46        IFEQ 0x00 0x4e
      ALOAD_0                   ALOAD_0
@@ -4800,7 +4800,7 @@ Patching...
      ILOAD 0x14                ILOAD 0x14
      INVOKESPECIAL 0x01 0xdc   INVOKESPECIAL 0x01 0xdc
      PUTFIELD 0x01 0x43        PUTFIELD 0x01 0x43
-     ICONST_2                  ALOAD_0
+     ICONST_3                  ALOAD_0
      INVOKESTATIC 0x04 0x81    ALOAD_1
      IFEQ 0x00 0x4e            ALOAD_0
      ALOAD_0                   GETFIELD 0x01 0x33
@@ -4814,7 +4814,7 @@ Patching...
      PUTFIELD 0x01 0x49        FLOAD 0x0c
      DUP_X1                    INVOKESTATIC 0x04 0xa2
      PUTFIELD 0x01 0x48        IFNE 0x01 0x18
-     DUP_X1                    ICONST_2
+     DUP_X1                    ICONST_3
      PUTFIELD 0x01 0x47        INVOKESTATIC 0x04 0x81
      PUTFIELD 0x01 0x46        IFEQ 0x00 0x4e
      ALOAD_0                   ALOAD_0
@@ -5015,7 +5015,7 @@ Patching...
      ILOAD 0x14                ILOAD 0x14
      INVOKESPECIAL 0x01 0xdc   INVOKESPECIAL 0x01 0xdc
      PUTFIELD 0x01 0x44        PUTFIELD 0x01 0x44
-     ICONST_3                  ALOAD_0
+     ICONST_4                  ALOAD_0
      INVOKESTATIC 0x04 0x81    ALOAD_1
      IFEQ 0x00 0x4e            ALOAD_0
      ALOAD_0                   GETFIELD 0x01 0x33
@@ -5029,7 +5029,7 @@ Patching...
      PUTFIELD 0x01 0x49        FLOAD 0x0c
      DUP_X1                    INVOKESTATIC 0x04 0xa2
      PUTFIELD 0x01 0x48        IFNE 0x01 0x18
-     DUP_X1                    ICONST_3
+     DUP_X1                    ICONST_4
      PUTFIELD 0x01 0x47        INVOKESTATIC 0x04 0x81
      PUTFIELD 0x01 0x46        IFEQ 0x00 0x4e
      ALOAD_0                   ALOAD_0
@@ -5230,7 +5230,7 @@ Patching...
      ILOAD 0x14                ILOAD 0x14
      INVOKESPECIAL 0x01 0xdc   INVOKESPECIAL 0x01 0xdc
      PUTFIELD 0x01 0x43        PUTFIELD 0x01 0x43
-     ICONST_4                  ALOAD_0
+     ICONST_5                  ALOAD_0
      INVOKESTATIC 0x04 0x81    ALOAD_1
      IFEQ 0x00 0x4e            ALOAD_0
      ALOAD_0                   GETFIELD 0x01 0x33
@@ -5244,7 +5244,7 @@ Patching...
      PUTFIELD 0x01 0x49        FLOAD 0x0c
      DUP_X1                    INVOKESTATIC 0x04 0xa2
      PUTFIELD 0x01 0x48        IFNE 0x01 0x18
-     DUP_X1                    ICONST_4
+     DUP_X1                    ICONST_5
      PUTFIELD 0x01 0x47        INVOKESTATIC 0x04 0x81
      PUTFIELD 0x01 0x46        IFEQ 0x00 0x4e
      ALOAD_0                   ALOAD_0
@@ -5949,7 +5949,7 @@ Patching...
      DMUL                      DMUL
      INVOKESPECIAL 0x01 0xdd   INVOKESPECIAL 0x01 0xdd
      PUTFIELD 0x01 0x45        PUTFIELD 0x01 0x45
-     ICONST_1                  ALOAD_0
+     ICONST_2                  ALOAD_0
      INVOKESTATIC 0x04 0x81    ALOAD_1
      IFEQ 0x00 0x4e            ALOAD_0
      ALOAD_0                   GETFIELD 0x01 0x33
@@ -5963,7 +5963,7 @@ Patching...
      PUTFIELD 0x01 0x49        FLOAD 0x0c
      DUP_X1                    INVOKESTATIC 0x04 0xa2
      PUTFIELD 0x01 0x48        IFNE 0x01 0x18
-     DUP_X1                    ICONST_1
+     DUP_X1                    ICONST_2
      PUTFIELD 0x01 0x47        INVOKESTATIC 0x04 0x81
      PUTFIELD 0x01 0x46        IFEQ 0x00 0x4e
      ALOAD_0                   ALOAD_0
@@ -6284,7 +6284,7 @@ Patching...
      DMUL                      DMUL
      INVOKESPECIAL 0x01 0xdd   INVOKESPECIAL 0x01 0xdd
      PUTFIELD 0x01 0x45        PUTFIELD 0x01 0x45
-     ICONST_2                  ALOAD_0
+     ICONST_3                  ALOAD_0
      INVOKESTATIC 0x04 0x81    ALOAD_1
      IFEQ 0x00 0x4e            ALOAD_0
      ALOAD_0                   GETFIELD 0x01 0x33
@@ -6298,7 +6298,7 @@ Patching...
      PUTFIELD 0x01 0x49        FLOAD 0x0c
      DUP_X1                    INVOKESTATIC 0x04 0xa2
      PUTFIELD 0x01 0x48        IFNE 0x01 0x18
-     DUP_X1                    ICONST_2
+     DUP_X1                    ICONST_3
      PUTFIELD 0x01 0x47        INVOKESTATIC 0x04 0x81
      PUTFIELD 0x01 0x46        IFEQ 0x00 0x4e
      ALOAD_0                   ALOAD_0
@@ -6619,7 +6619,7 @@ Patching...
      DMUL                      DMUL
      INVOKESPECIAL 0x01 0xdd   INVOKESPECIAL 0x01 0xdd
      PUTFIELD 0x01 0x45        PUTFIELD 0x01 0x45
-     ICONST_3                  ALOAD_0
+     ICONST_4                  ALOAD_0
      INVOKESTATIC 0x04 0x81    ALOAD_1
      IFEQ 0x00 0x4e            ALOAD_0
      ALOAD_0                   GETFIELD 0x01 0x33
@@ -6633,7 +6633,7 @@ Patching...
      PUTFIELD 0x01 0x49        FLOAD 0x0c
      DUP_X1                    INVOKESTATIC 0x04 0xa2
      PUTFIELD 0x01 0x48        IFNE 0x01 0x18
-     DUP_X1                    ICONST_3
+     DUP_X1                    ICONST_4
      PUTFIELD 0x01 0x47        INVOKESTATIC 0x04 0x81
      PUTFIELD 0x01 0x46        IFEQ 0x00 0x4e
      ALOAD_0                   ALOAD_0
@@ -6954,7 +6954,7 @@ Patching...
      DMUL                      DMUL
      INVOKESPECIAL 0x01 0xdd   INVOKESPECIAL 0x01 0xdd
      PUTFIELD 0x01 0x45        PUTFIELD 0x01 0x45
-     ICONST_4                  ALOAD_0
+     ICONST_5                  ALOAD_0
      INVOKESTATIC 0x04 0x81    ALOAD_1
      IFEQ 0x00 0x4e            ALOAD_0
      ALOAD_0                   GETFIELD 0x01 0x33
@@ -6968,7 +6968,7 @@ Patching...
      PUTFIELD 0x01 0x49        FLOAD 0x0c
      DUP_X1                    INVOKESTATIC 0x04 0xa2
      PUTFIELD 0x01 0x48        IFNE 0x01 0x18
-     DUP_X1                    ICONST_4
+     DUP_X1                    ICONST_5
      PUTFIELD 0x01 0x47        INVOKESTATIC 0x04 0x81
      PUTFIELD 0x01 0x46        IFEQ 0x00 0x4e
      ALOAD_0                   ALOAD_0
@@ -16180,42 +16180,46 @@ Patching...
      GETSTATIC 0x00 0x05       GETSTATIC 0x00 0xa6
     field ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.grassBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.grassBlock Laif; <clinit>()V@16
      PUTSTATIC 0x00 0x05       PUTSTATIC 0x00 0xa6
-    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; setupColorMultiplier(Laif;Lagi;IIIZFFF)V@74
-     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x00 0xa9
-    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; setupColorMultiplier(Laif;Lagi;IIIZFFF)V@137
-     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x00 0xa9
-    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; setupColorMultiplier(Laif;Lagi;IIIZFFF)V@161
-     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x00 0xa9
-    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; setupColorMultiplier(Laif;Lagi;IIIZFFF)V@185
-     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x00 0xa9
-    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; setupColorMultiplier(Laif;Lagi;IIIZFFF)V@209
-     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x00 0xa9
-    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; getGrassTexture(Laif;Lagi;IIIILqc;)Lqc;@92
-     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x00 0xa9
-    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; isSnowCovered(Lagi;III)Z@6
-     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x00 0xa9
-    field ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.snowBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.snowBlock Laif; setupColorMultiplier(Laif;Lagi;IIIZFFF)V@81
-     GETSTATIC 0x00 0x08       GETSTATIC 0x00 0xab
-    field ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.snowBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.snowBlock Laif; getGrassTexture(Laif;Lagi;IIIILqc;)Lqc;@124
-     GETSTATIC 0x00 0x08       GETSTATIC 0x00 0xab
-    field ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.snowBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.snowBlock Laif; isSnowCovered(Lagi;III)Z@13
-     GETSTATIC 0x00 0x08       GETSTATIC 0x00 0xab
-    field ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.snowBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.snowBlock Laif; <clinit>()V@24
-     PUTSTATIC 0x00 0x08       PUTSTATIC 0x00 0xab
-    field ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.craftedSnowBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.craftedSnowBlock Laif; setupColorMultiplier(Laif;Lagi;IIIZFFF)V@89
-     GETSTATIC 0x00 0x09       GETSTATIC 0x00 0xad
-    field ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.craftedSnowBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.craftedSnowBlock Laif; isSnowCovered(Lagi;III)Z@21
-     GETSTATIC 0x00 0x09       GETSTATIC 0x00 0xad
-    field ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.craftedSnowBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.craftedSnowBlock Laif; <clinit>()V@32
-     PUTSTATIC 0x00 0x09       PUTSTATIC 0x00 0xad
-    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockLightValue (Lnet/minecraft/src/Block;)I -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockLightValue (Laif;)I setupColorMultiplier(Laif;Lagi;IIIZFFF)V@288
-     INVOKESTATIC 0x00 0x0b    INVOKESTATIC 0x00 0xb0
+    method ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.isSnowCovered (Lnet/minecraft/src/IBlockAccess;III)Z -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.isSnowCovered (Lagi;III)Z setupColorMultiplier(Laif;Lagi;IIIZFFF)V@72
+     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x00 0xa8
+    method ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.isSnowCovered (Lnet/minecraft/src/IBlockAccess;III)Z -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.isSnowCovered (Lagi;III)Z setupColorMultiplier(Laif;Lagi;IIIZFFF)V@133
+     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x00 0xa8
+    method ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.isSnowCovered (Lnet/minecraft/src/IBlockAccess;III)Z -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.isSnowCovered (Lagi;III)Z setupColorMultiplier(Laif;Lagi;IIIZFFF)V@170
+     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x00 0xa8
+    method ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.isSnowCovered (Lnet/minecraft/src/IBlockAccess;III)Z -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.isSnowCovered (Lagi;III)Z setupColorMultiplier(Laif;Lagi;IIIZFFF)V@207
+     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x00 0xa8
+    method ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.isSnowCovered (Lnet/minecraft/src/IBlockAccess;III)Z -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.isSnowCovered (Lagi;III)Z setupColorMultiplier(Laif;Lagi;IIIZFFF)V@244
+     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x00 0xa8
     method ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.isSnowCovered (Lnet/minecraft/src/IBlockAccess;III)Z -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.isSnowCovered (Lagi;III)Z getGrassTexture(Laif;Lagi;IIIILqc;)Lqc;@19
-     INVOKESTATIC 0x00 0x12    INVOKESTATIC 0x00 0xb2
+     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x00 0xa8
     method ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.isSnowCovered (Lnet/minecraft/src/IBlockAccess;III)Z -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.isSnowCovered (Lagi;III)Z getGrassTexture(Laif;Lagi;IIIILqc;)Lqc;@105
-     INVOKESTATIC 0x00 0x12    INVOKESTATIC 0x00 0xb2
+     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x00 0xa8
+    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; setupColorMultiplier(Laif;Lagi;IIIZFFF)V@120
+     INVOKESTATIC 0x00 0x08    INVOKESTATIC 0x00 0xab
+    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; setupColorMultiplier(Laif;Lagi;IIIZFFF)V@157
+     INVOKESTATIC 0x00 0x08    INVOKESTATIC 0x00 0xab
+    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; setupColorMultiplier(Laif;Lagi;IIIZFFF)V@194
+     INVOKESTATIC 0x00 0x08    INVOKESTATIC 0x00 0xab
+    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; setupColorMultiplier(Laif;Lagi;IIIZFFF)V@231
+     INVOKESTATIC 0x00 0x08    INVOKESTATIC 0x00 0xab
+    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; getGrassTexture(Laif;Lagi;IIIILqc;)Lqc;@92
+     INVOKESTATIC 0x00 0x08    INVOKESTATIC 0x00 0xab
+    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; isSnowCovered(Lagi;III)Z@6
+     INVOKESTATIC 0x00 0x08    INVOKESTATIC 0x00 0xab
+    method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockLightValue (Lnet/minecraft/src/Block;)I -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockLightValue (Laif;)I setupColorMultiplier(Laif;Lagi;IIIZFFF)V@323
+     INVOKESTATIC 0x00 0x0a    INVOKESTATIC 0x00 0xae
+    field ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.snowBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.snowBlock Laif; getGrassTexture(Laif;Lagi;IIIILqc;)Lqc;@124
+     GETSTATIC 0x00 0x11       GETSTATIC 0x00 0xb0
+    field ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.snowBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.snowBlock Laif; isSnowCovered(Lagi;III)Z@13
+     GETSTATIC 0x00 0x11       GETSTATIC 0x00 0xb0
+    field ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.snowBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.snowBlock Laif; <clinit>()V@24
+     PUTSTATIC 0x00 0x11       PUTSTATIC 0x00 0xb0
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockIcon (Lnet/minecraft/src/Block;Lnet/minecraft/src/IBlockAccess;IIII)Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockIcon (Laif;Lagi;IIII)Lqc; getGrassTexture(Laif;Lagi;IIIILqc;)Lqc;@134
-     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x00 0xb5
+     INVOKESTATIC 0x00 0x12    INVOKESTATIC 0x00 0xb3
+    field ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.craftedSnowBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.craftedSnowBlock Laif; isSnowCovered(Lagi;III)Z@21
+     GETSTATIC 0x00 0x13       GETSTATIC 0x00 0xb5
+    field ref com/prupe/mcpatcher/mal/block/RenderBlocksUtils.craftedSnowBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/RenderBlocksUtils.craftedSnowBlock Laif; <clinit>()V@32
+     PUTSTATIC 0x00 0x13       PUTSTATIC 0x00 0xb5
     method ref net/minecraft/client/Minecraft.isAmbientOcclusionEnabled ()Z -> azl.y ()Z isAmbientOcclusionEnabled()Z@0
      INVOKESTATIC 0x00 0x14    INVOKESTATIC 0x00 0xba
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.getFixedBlock (Ljava/lang/String;)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getFixedBlock (Ljava/lang/String;)Laif; <clinit>()V@13
@@ -16224,12 +16228,12 @@ Patching...
      INVOKESTATIC 0x00 0x19    INVOKESTATIC 0x00 0xbd
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.getFixedBlock (Ljava/lang/String;)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getFixedBlock (Ljava/lang/String;)Laif; <clinit>()V@29
      INVOKESTATIC 0x00 0x19    INVOKESTATIC 0x00 0xbd
-   string replace Lnet/minecraft/src/Block; -> Laif; @273
-   string replace net/minecraft/src/Block -> aif @418
-   string replace Lnet/minecraft/src/IBlockAccess; -> Lagi; @303
-   string replace net/minecraft/src/IBlockAccess -> agi @407
-   string replace Lnet/minecraft/src/Icon; -> Lqc; @1257
-   string replace net/minecraft/src/Icon -> qc @1312
+   string replace Lnet/minecraft/src/Block; -> Laif; @270
+   string replace net/minecraft/src/Block -> aif @407
+   string replace Lnet/minecraft/src/IBlockAccess; -> Lagi; @292
+   string replace net/minecraft/src/IBlockAccess -> agi @396
+   string replace Lnet/minecraft/src/Icon; -> Lqc; @1235
+   string replace net/minecraft/src/Icon -> qc @1290
   adding com/prupe/mcpatcher/mal/item/ItemAPI.class for __ItemAPI
    method signature (Ljava/lang/String;)Lnet/minecraft/src/Item; -> (Ljava/lang/String;)Laby;
    method signature (Ljava/lang/String;)Lnet/minecraft/src/Item; -> (Ljava/lang/String;)Laby;
@@ -17524,19 +17528,19 @@ Patching...
    method signature (Lnet/minecraft/src/Block;)Z -> (Laif;)Z
    method signature (Lnet/minecraft/src/Icon;)Lnet/minecraft/src/Icon; -> (Lqc;)Lqc;
    field signature Lnet/minecraft/src/Icon; -> Lqc;
-    field ref com/prupe/mcpatcher/ctm/CTMUtils.blankIcon Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/CTMUtils.blankIcon Lqc; getBlockIcon(Lqc;Lbml;Laif;Lagi;IIII)Lqc;@82
+    field ref com/prupe/mcpatcher/ctm/CTMUtils.blankIcon Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/CTMUtils.blankIcon Lqc; getBlockIcon(Lqc;Lbml;Laif;Lagi;IIII)Lqc;@86
      GETSTATIC 0x00 0x07       GETSTATIC 0x01 0x5b
     field ref com/prupe/mcpatcher/ctm/CTMUtils.blankIcon Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/CTMUtils.blankIcon Lqc; setBlankResource()V@12
      PUTSTATIC 0x00 0x07       PUTSTATIC 0x01 0x5b
     field ref com/prupe/mcpatcher/ctm/CTMUtils.blankIcon Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/CTMUtils.blankIcon Lqc; access$702(Lqc;)Lqc;@2
      PUTSTATIC 0x00 0x07       PUTSTATIC 0x01 0x5b
-    method ref com/prupe/mcpatcher/ctm/BlockOrientation.setBlock (Lnet/minecraft/src/Block;Lnet/minecraft/src/IBlockAccess;III)V -> com/prupe/mcpatcher/ctm/BlockOrientation.setBlock (Laif;Lagi;III)V getBlockIcon(Lqc;Lbml;Laif;Lagi;IIII)Lqc;@29
+    method ref com/prupe/mcpatcher/ctm/BlockOrientation.setBlock (Lnet/minecraft/src/Block;Lnet/minecraft/src/IBlockAccess;III)V -> com/prupe/mcpatcher/ctm/BlockOrientation.setBlock (Laif;Lagi;III)V getBlockIcon(Lqc;Lbml;Laif;Lagi;IIII)Lqc;@33
      INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x01 0x5e
-    method ref com/prupe/mcpatcher/ctm/TileOverrideIterator$IJK.go (Lcom/prupe/mcpatcher/ctm/BlockOrientation;Lnet/minecraft/src/Icon;)Lcom/prupe/mcpatcher/ctm/ITileOverride; -> com/prupe/mcpatcher/ctm/TileOverrideIterator$IJK.go (Lcom/prupe/mcpatcher/ctm/BlockOrientation;Lqc;)Lcom/prupe/mcpatcher/ctm/ITileOverride; getBlockIcon(Lqc;Lbml;Laif;Lagi;IIII)Lqc;@47
+    method ref com/prupe/mcpatcher/ctm/TileOverrideIterator$IJK.go (Lcom/prupe/mcpatcher/ctm/BlockOrientation;Lnet/minecraft/src/Icon;)Lcom/prupe/mcpatcher/ctm/ITileOverride; -> com/prupe/mcpatcher/ctm/TileOverrideIterator$IJK.go (Lcom/prupe/mcpatcher/ctm/BlockOrientation;Lqc;)Lcom/prupe/mcpatcher/ctm/ITileOverride; getBlockIcon(Lqc;Lbml;Laif;Lagi;IIII)Lqc;@51
      INVOKEVIRTUAL 0x00 0x13   INVOKEVIRTUAL 0x01 0x61
-    method ref com/prupe/mcpatcher/ctm/TileOverrideIterator$IJK.getIcon ()Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/TileOverrideIterator$IJK.getIcon ()Lqc; getBlockIcon(Lqc;Lbml;Laif;Lagi;IIII)Lqc;@62
+    method ref com/prupe/mcpatcher/ctm/TileOverrideIterator$IJK.getIcon ()Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/TileOverrideIterator$IJK.getIcon ()Lqc; getBlockIcon(Lqc;Lbml;Laif;Lagi;IIII)Lqc;@66
      INVOKEVIRTUAL 0x00 0x14   INVOKEVIRTUAL 0x01 0x64
-    method ref com/prupe/mcpatcher/ctm/CTMUtils.skipDefaultRendering (Lnet/minecraft/src/Block;)Z -> com/prupe/mcpatcher/ctm/CTMUtils.skipDefaultRendering (Laif;)Z getBlockIcon(Lqc;Lbml;Laif;Lagi;IIII)Lqc;@76
+    method ref com/prupe/mcpatcher/ctm/CTMUtils.skipDefaultRendering (Lnet/minecraft/src/Block;)Z -> com/prupe/mcpatcher/ctm/CTMUtils.skipDefaultRendering (Laif;)Z getBlockIcon(Lqc;Lbml;Laif;Lagi;IIII)Lqc;@80
      INVOKESTATIC 0x00 0x16    INVOKESTATIC 0x01 0x66
     method ref com/prupe/mcpatcher/ctm/CTMUtils.checkRenderType (Lnet/minecraft/src/Block;)Z -> com/prupe/mcpatcher/ctm/CTMUtils.checkRenderType (Laif;)Z getBlockIcon(Lqc;Lbml;Laif;II)Lqc;@12
      INVOKESTATIC 0x00 0x17    INVOKESTATIC 0x01 0x68
@@ -17946,54 +17950,54 @@ Patching...
    field signature Lnet/minecraft/src/Block; -> Laif;
    field signature Lnet/minecraft/src/IBlockAccess; -> Lagi;
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.parseBlockName (Ljava/lang/String;)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.parseBlockName (Ljava/lang/String;)Laif; registerFakeRenderType(Ljava/lang/String;I)V@19
-     INVOKESTATIC 0x00 0x14    INVOKESTATIC 0x01 0x26
+     INVOKESTATIC 0x00 0x14    INVOKESTATIC 0x01 0x29
     method ref net/minecraft/src/Block.getRenderType ()I -> aif.b ()I registerFakeRenderType(Ljava/lang/String;I)V@28
-     INVOKEVIRTUAL 0x00 0x15   INVOKEVIRTUAL 0x01 0x2a
+     INVOKEVIRTUAL 0x00 0x15   INVOKEVIRTUAL 0x01 0x2d
     method ref net/minecraft/src/Block.getRenderType ()I -> aif.b ()I setBlock(Laif;Lagi;III)V@29
-     INVOKEVIRTUAL 0x00 0x15   INVOKEVIRTUAL 0x01 0x2a
+     INVOKEVIRTUAL 0x00 0x15   INVOKEVIRTUAL 0x01 0x2d
     method ref net/minecraft/src/Block.getRenderType ()I -> aif.b ()I setup(Laif;II)V@27
-     INVOKEVIRTUAL 0x00 0x15   INVOKEVIRTUAL 0x01 0x2a
+     INVOKEVIRTUAL 0x00 0x15   INVOKEVIRTUAL 0x01 0x2d
     field ref com/prupe/mcpatcher/ctm/BlockOrientation.block Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/BlockOrientation.block Laif; clear()V@2
-     PUTFIELD 0x00 0x1e        PUTFIELD 0x01 0x2c
+     PUTFIELD 0x00 0x1e        PUTFIELD 0x01 0x2f
     field ref com/prupe/mcpatcher/ctm/BlockOrientation.block Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/BlockOrientation.block Laif; setBlock(Laif;Lagi;III)V@2
-     PUTFIELD 0x00 0x1e        PUTFIELD 0x01 0x2c
+     PUTFIELD 0x00 0x1e        PUTFIELD 0x01 0x2f
     field ref com/prupe/mcpatcher/ctm/BlockOrientation.block Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/BlockOrientation.block Laif; setFakeRenderType()V@4
-     GETFIELD 0x00 0x1e        GETFIELD 0x01 0x2c
+     GETFIELD 0x00 0x1e        GETFIELD 0x01 0x2f
     field ref com/prupe/mcpatcher/ctm/BlockOrientation.block Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/BlockOrientation.block Laif; setup(Laif;II)V@2
-     PUTFIELD 0x00 0x1e        PUTFIELD 0x01 0x2c
+     PUTFIELD 0x00 0x1e        PUTFIELD 0x01 0x2f
     field ref com/prupe/mcpatcher/ctm/BlockOrientation.block Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/BlockOrientation.block Laif; setCoordOffsetsForRenderType()Z@97
-     GETFIELD 0x00 0x1e        GETFIELD 0x01 0x2c
+     GETFIELD 0x00 0x1e        GETFIELD 0x01 0x2f
     field ref com/prupe/mcpatcher/ctm/BlockOrientation.block Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/BlockOrientation.block Laif; setCoordOffsetsForRenderType()Z@158
-     GETFIELD 0x00 0x1e        GETFIELD 0x01 0x2c
+     GETFIELD 0x00 0x1e        GETFIELD 0x01 0x2f
     field ref com/prupe/mcpatcher/ctm/BlockOrientation.block Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/BlockOrientation.block Laif; setCoordOffsetsForRenderType()Z@312
-     GETFIELD 0x00 0x1e        GETFIELD 0x01 0x2c
+     GETFIELD 0x00 0x1e        GETFIELD 0x01 0x2f
     field ref com/prupe/mcpatcher/ctm/BlockOrientation.blockAccess Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/BlockOrientation.blockAccess Lagi; clear()V@7
-     PUTFIELD 0x00 0x1f        PUTFIELD 0x01 0x2e
+     PUTFIELD 0x00 0x1f        PUTFIELD 0x01 0x31
     field ref com/prupe/mcpatcher/ctm/BlockOrientation.blockAccess Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/BlockOrientation.blockAccess Lagi; setBlock(Laif;Lagi;III)V@7
-     PUTFIELD 0x00 0x1f        PUTFIELD 0x01 0x2e
+     PUTFIELD 0x00 0x1f        PUTFIELD 0x01 0x31
     field ref com/prupe/mcpatcher/ctm/BlockOrientation.blockAccess Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/BlockOrientation.blockAccess Lagi; setup(Laif;II)V@7
-     PUTFIELD 0x00 0x1f        PUTFIELD 0x01 0x2e
+     PUTFIELD 0x00 0x1f        PUTFIELD 0x01 0x31
     field ref com/prupe/mcpatcher/ctm/BlockOrientation.blockAccess Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/BlockOrientation.blockAccess Lagi; setCoordOffsetsForRenderType()Z@101
-     GETFIELD 0x00 0x1f        GETFIELD 0x01 0x2e
+     GETFIELD 0x00 0x1f        GETFIELD 0x01 0x31
     field ref com/prupe/mcpatcher/ctm/BlockOrientation.blockAccess Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/BlockOrientation.blockAccess Lagi; setCoordOffsetsForRenderType()Z@162
-     GETFIELD 0x00 0x1f        GETFIELD 0x01 0x2e
+     GETFIELD 0x00 0x1f        GETFIELD 0x01 0x31
     field ref com/prupe/mcpatcher/ctm/BlockOrientation.blockAccess Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/BlockOrientation.blockAccess Lagi; setCoordOffsetsForRenderType()Z@205
-     GETFIELD 0x00 0x1f        GETFIELD 0x01 0x2e
+     GETFIELD 0x00 0x1f        GETFIELD 0x01 0x31
     field ref com/prupe/mcpatcher/ctm/BlockOrientation.blockAccess Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/BlockOrientation.blockAccess Lagi; setCoordOffsetsForRenderType()Z@316
-     GETFIELD 0x00 0x1f        GETFIELD 0x01 0x2e
+     GETFIELD 0x00 0x1f        GETFIELD 0x01 0x31
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.getMetadataAt (Lnet/minecraft/src/IBlockAccess;III)I -> com/prupe/mcpatcher/mal/block/BlockAPI.getMetadataAt (Lagi;III)I setBlock(Laif;Lagi;III)V@43
-     INVOKESTATIC 0x00 0x2f    INVOKESTATIC 0x01 0x31
+     INVOKESTATIC 0x00 0x2f    INVOKESTATIC 0x01 0x34
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.getMetadataAt (Lnet/minecraft/src/IBlockAccess;III)I -> com/prupe/mcpatcher/mal/block/BlockAPI.getMetadataAt (Lagi;III)I setCoordOffsetsForRenderType()Z@220
-     INVOKESTATIC 0x00 0x2f    INVOKESTATIC 0x01 0x31
+     INVOKESTATIC 0x00 0x2f    INVOKESTATIC 0x01 0x34
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; setCoordOffsetsForRenderType()Z@123
-     INVOKESTATIC 0x00 0x3a    INVOKESTATIC 0x01 0x34
+     INVOKESTATIC 0x00 0x3b    INVOKESTATIC 0x01 0x37
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; setCoordOffsetsForRenderType()Z@179
-     INVOKESTATIC 0x00 0x3a    INVOKESTATIC 0x01 0x34
+     INVOKESTATIC 0x00 0x3b    INVOKESTATIC 0x01 0x37
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lagi;III)Laif; setCoordOffsetsForRenderType()Z@341
-     INVOKESTATIC 0x00 0x3a    INVOKESTATIC 0x01 0x34
+     INVOKESTATIC 0x00 0x3b    INVOKESTATIC 0x01 0x37
    string replace Lnet/minecraft/src/Block; -> Laif; @539
    string replace net/minecraft/src/Block -> aif @569
-   string replace Ljava/util/Map<Lnet/minecraft/src/Block;Ljava/lang/Integer;>; -> Ljava/util/Map<Laif;Ljava/lang/Integer;>; @2706
+   string replace Ljava/util/Map<Lnet/minecraft/src/Block;Ljava/lang/Integer;>; -> Ljava/util/Map<Laif;Ljava/lang/Integer;>; @2743
    string replace Lnet/minecraft/src/IBlockAccess; -> Lagi; @1613
   adding com/prupe/mcpatcher/ctm/GlassPaneRenderer.class for Connected Textures
    method signature (Lnet/minecraft/src/RenderBlocks;Lnet/minecraft/src/Block;Lnet/minecraft/src/Icon;IIIZZZZ)V -> (Lbml;Laif;Lqc;IIIZZZZ)V
