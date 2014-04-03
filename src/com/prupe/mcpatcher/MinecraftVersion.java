@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 final public class MinecraftVersion implements Comparable<MinecraftVersion> {
     private static final String VERSION_PATTERN = "(\\d[_.0-9]*[a-z]?)";
     private static final Pattern PRERELEASE_PATTERN = Pattern.compile(
-        "(?:pre|rc)(\\d+)$",
+        "-?(?:pre|rc)(\\d+)$",
         Pattern.CASE_INSENSITIVE
     );
     private static final int NOT_PRERELEASE = 9999;
@@ -296,6 +296,7 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             addKnownVersion("1.7.3", "6bffc630d8d3a0e834d2a91e5d9f5418");
             addKnownVersion("1.7.4", "f9ffe7e56b26d459560c48e228cc6ad4");
             addKnownVersion("1.7.5", "02cf75768f19afe30ab2da65dbc79cf6");
+            addKnownVersion("1.7.6-pre1", "c40684ebff725143bf00317d7aa67370");
             addKnownVersion("1.7.9999", null);
 
             // Position, Direction classes
