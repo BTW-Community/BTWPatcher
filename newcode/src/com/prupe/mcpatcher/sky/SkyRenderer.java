@@ -13,6 +13,7 @@ public class SkyRenderer {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.BETTER_SKIES);
 
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "skybox", true);
+    private static final boolean unloadTextures = Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "unloadTextures", true);
     public static final double horizonHeight = Config.getInt(MCPatcherUtils.BETTER_SKIES, "horizon", 16);
 
     private static double worldTime;
@@ -140,17 +141,19 @@ public class SkyRenderer {
         }
 
         void renderAll(Tessellator tessellator) {
-            Set<ResourceLocation> texturesNeeded = new HashSet<ResourceLocation>();
-            for (Layer layer : skies) {
-                if (layer.prepare()) {
-                    texturesNeeded.add(layer.texture);
+            if (unloadTextures) {
+                Set<ResourceLocation> texturesNeeded = new HashSet<ResourceLocation>();
+                for (Layer layer : skies) {
+                    if (layer.prepare()) {
+                        texturesNeeded.add(layer.texture);
+                    }
                 }
-            }
-            Set<ResourceLocation> texturesToUnload = new HashSet<ResourceLocation>();
-            texturesToUnload.addAll(textures);
-            texturesToUnload.removeAll(texturesNeeded);
-            for (ResourceLocation resource : texturesToUnload) {
-                TexturePackAPI.unloadTexture(resource);
+                Set<ResourceLocation> texturesToUnload = new HashSet<ResourceLocation>();
+                texturesToUnload.addAll(textures);
+                texturesToUnload.removeAll(texturesNeeded);
+                for (ResourceLocation resource : texturesToUnload) {
+                    TexturePackAPI.unloadTexture(resource);
+                }
             }
             for (Layer layer : skies) {
                 if (layer.brightness > 0.0f) {

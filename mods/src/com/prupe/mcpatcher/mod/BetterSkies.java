@@ -45,6 +45,7 @@ public class BetterSkies extends Mod {
     private static class ConfigPanel extends ModConfigPanel {
         private JPanel panel;
         private JCheckBox skyCheckBox;
+        private JCheckBox unloadTexturesCheckBox;
         private JCheckBox fireworksCheckBox;
         private JSpinner horizonSpinner;
 
@@ -52,6 +53,13 @@ public class BetterSkies extends Mod {
             skyCheckBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     Config.set(MCPatcherUtils.BETTER_SKIES, "skybox", skyCheckBox.isSelected());
+                }
+            });
+
+            unloadTexturesCheckBox.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Config.set(MCPatcherUtils.BETTER_SKIES, "unloadTextures", unloadTexturesCheckBox.isSelected());
                 }
             });
 
@@ -84,6 +92,7 @@ public class BetterSkies extends Mod {
         @Override
         public void load() {
             skyCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "skybox", true));
+            unloadTexturesCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "unloadTextures", true));
             fireworksCheckBox.setSelected(Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "brightenFireworks", true));
             horizonSpinner.setValue(Config.getInt(MCPatcherUtils.BETTER_SKIES, "horizon", 16));
         }
