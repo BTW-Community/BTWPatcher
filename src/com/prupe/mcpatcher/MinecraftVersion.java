@@ -297,6 +297,7 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             addKnownVersion("1.7.4", "f9ffe7e56b26d459560c48e228cc6ad4");
             addKnownVersion("1.7.5", "02cf75768f19afe30ab2da65dbc79cf6");
             addKnownVersion("1.7.6-pre1", "c40684ebff725143bf00317d7aa67370");
+            addKnownVersion("1.7.6-pre2", "435999291d74cbf5fcf063c237711e9b");
             addKnownVersion("1.7.9999", null);
 
             // Position, Direction classes
