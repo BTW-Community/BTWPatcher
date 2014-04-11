@@ -35,6 +35,7 @@ class ModList {
     private static class BuiltInMod {
         final String name;
         final Class<? extends Mod> modClass;
+        final ClassLoader loader;
         boolean internal;
         boolean experimental;
 
@@ -45,12 +46,13 @@ class ModList {
         }
 
         BuiltInMod(String name, String className, ClassLoader loader) throws ClassNotFoundException {
-            this(name, loader.loadClass(className).asSubclass(Mod.class));
+            this(name, loader.loadClass(className).asSubclass(Mod.class), loader);
         }
 
-        BuiltInMod(String name, Class<? extends Mod> modClass) {
+        BuiltInMod(String name, Class<? extends Mod> modClass, ClassLoader loader) {
             this.name = name;
             this.modClass = modClass;
+            this.loader = loader;
         }
 
         BuiltInMod setInternal(boolean internal) {
@@ -66,7 +68,7 @@ class ModList {
 
     ModList(MinecraftVersion version) throws PatcherException, IOException, ClassNotFoundException {
         this.version = version;
-        register(new BuiltInMod(MCPatcherUtils.BASE_MOD, BaseMod.class).setInternal(true));
+        register(new BuiltInMod(MCPatcherUtils.BASE_MOD, BaseMod.class, ClassLoader.getSystemClassLoader()).setInternal(true));
         boolean found = false;
         if (version.compareTo("13w18a") < 0) {
             if (legacyVersionList == null) {
@@ -242,7 +244,12 @@ class ModList {
         if (cl != null && !cl.isInterface() && Mod.class.isAssignableFrom(cl)) {
             int flags = cl.getModifiers();
             if (!Modifier.isAbstract(flags) && Modifier.isPublic(flags)) {
-                return newModInstance(cl.asSubclass(Mod.class));
+                try {
+                    Mod.currentClassLoader = loader;
+                    return newModInstance(cl.asSubclass(Mod.class));
+                } finally {
+                    Mod.currentClassLoader = null;
+                }
             }
         }
         return null;
@@ -764,12 +771,17 @@ class ModList {
     }
 
     private Mod newModInstance(BuiltInMod builtInMod) {
-        Mod mod = newModInstance(builtInMod.modClass);
-        if (mod != null) {
-            mod.internal = builtInMod.internal;
-            mod.experimental = builtInMod.experimental;
+        try {
+            Mod.currentClassLoader = builtInMod.loader;
+            Mod mod = newModInstance(builtInMod.modClass);
+            if (mod != null) {
+                mod.internal = builtInMod.internal;
+                mod.experimental = builtInMod.experimental;
+            }
+            return mod;
+        } finally {
+            Mod.currentClassLoader = null;
         }
-        return mod;
     }
 
     JsonObject getOverrideVersionJson() {

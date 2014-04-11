@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.JarEntry;
@@ -104,5 +105,9 @@ class JarClassLoader extends ClassLoader {
 
     private byte[] getEntry(String filename) {
         return cache.get(filename);
+    }
+
+    Collection<String> getResources() {
+        return cache.keySet();
     }
 }

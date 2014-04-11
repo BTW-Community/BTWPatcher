@@ -7,10 +7,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.URLClassLoader;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 /**
  * Base class for all mods.
@@ -57,6 +58,9 @@ public abstract class Mod {
     File customJar;
     final List<Dependency> dependencies = new ArrayList<Dependency>();
     final Map<String, String> filesAdded = new HashMap<String, String>();
+    private final ClassLoader thisClassLoader = currentClassLoader;
+
+    static ClassLoader currentClassLoader;
 
     /**
      * Initialize mod.
@@ -223,6 +227,125 @@ public abstract class Mod {
      */
     public void addClassFile(String className) {
         addFile(ClassMap.classNameToFilename(className));
+    }
+
+    /**
+     * Removes a file previously added by addFile.
+     *
+     * @param filename name of file
+     * @see #addFile(String)
+     */
+    public void removeAddedFile(String filename) {
+        filesToAdd.remove(filename);
+    }
+
+    /**
+     * Removes a class file previously added by addClassFile.
+     *
+     * @param className name of class (fully qualified using . notation)
+     * @see #addClassFile(String)
+     */
+    public void removeAddedClassFile(String className) {
+        removeAddedFile(ClassMap.classNameToFilename(className));
+    }
+
+    private static Pattern globToRegex(String pattern) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < pattern.length(); i++) {
+            char c = pattern.charAt(i);
+            if (c == '*') {
+                if (i + 1 < pattern.length() && pattern.charAt(i + 1) == '*') {
+                    i++;
+                    sb.append(".*");
+                } else {
+                    sb.append("[^/]*");
+                }
+            } else if (c == '?') {
+                sb.append('.');
+            } else {
+                sb.append(Pattern.quote(String.valueOf(c)));
+            }
+        }
+        return Pattern.compile(sb.toString());
+    }
+
+    private Collection<String> getClassLoaderResources() {
+        if (thisClassLoader instanceof JarClassLoader) {
+            return ((JarClassLoader) thisClassLoader).getResources();
+        } else if (thisClassLoader instanceof URLClassLoader) {
+            List<String> resources = new ArrayList<String>();
+            for (URL url : ((URLClassLoader) thisClassLoader).getURLs()) {
+                if ("file".equals(url.getProtocol())) {
+                    File file = new File(url.getFile());
+                    if (file.isFile()) {
+                        JarFile jar = null;
+                        try {
+                            jar = new JarFile(file);
+                            for (JarEntry e : Collections.list(jar.entries())) {
+                                if (!e.isDirectory() && !resources.contains(e.getName())) {
+                                    resources.add(e.getName());
+                                }
+                            }
+                        } catch (IOException e) {
+                            Logger.log(e);
+                        } finally {
+                            MCPatcherUtils.close(jar);
+                        }
+                    }
+                }
+            }
+            return resources;
+        } else if (thisClassLoader == null) {
+            return new ArrayList<String>();
+        } else {
+            throw new IllegalArgumentException("unexpected ClassLoader type: " + thisClassLoader.getClass());
+        }
+    }
+
+    /**
+     * Add a set of files identified by a wildcard.
+     *
+     * @param pattern file pattern to add (? = single character, * = 0 or more chars, ** = 0 or more chars including /)
+     */
+    public void addFiles(String pattern) {
+        Pattern regex = globToRegex(pattern);
+        for (String s : getClassLoaderResources()) {
+            if (regex.matcher(s).matches()) {
+                addFile(s);
+            }
+        }
+    }
+
+    /**
+     * Remove a set of previously added files identified by a wildcard.
+     *
+     * @param pattern file pattern to remove (? = single character, * = 0 or more chars, ** = 0 or more chars including /)
+     */
+    public void removeAddedFiles(String pattern) {
+        Pattern regex = globToRegex(pattern);
+        for (String s : getClassLoaderResources()) {
+            if (regex.matcher(s).matches()) {
+                removeAddedFile(s);
+            }
+        }
+    }
+
+    /**
+     * Add a set of class files identified by a wildcard using * and ?.
+     *
+     * @param pattern file pattern to add (fully qualified using . notation)
+     */
+    public void addClassFiles(String pattern) {
+        addFiles(ClassMap.classNameToFilename(pattern));
+    }
+
+    /**
+     * Remove a set of previously added class files identified by a wildcard using * and ?.
+     *
+     * @param pattern file pattern to remove (fully qualified using . notation)
+     */
+    public void removeAddedClassFiles(String pattern) {
+        removeAddedFiles(ClassMap.classNameToFilename(pattern));
     }
 
     /**
