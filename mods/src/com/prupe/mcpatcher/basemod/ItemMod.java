@@ -8,15 +8,16 @@ import javassist.bytecode.AccessFlag;
  * Matches Item class.
  */
 public class ItemMod extends com.prupe.mcpatcher.ClassMod {
-    protected final boolean haveItemRegistry;
-
     protected final MethodRef getItemName = new MethodRef(getDeobfClass(), "getItemName", "()Ljava/lang/String;");
+
+    public static boolean haveItemRegistry() {
+        return BlockMod.haveBlockRegistry();
+    }
 
     public ItemMod(Mod mod) {
         super(mod);
-        haveItemRegistry = Mod.getMinecraftVersion().compareTo("13w36a") >= 0;
 
-        if (haveItemRegistry) {
+        if (haveItemRegistry()) {
             addClassSignature(new ConstSignature("iron_shovel"));
             addClassSignature(new ConstSignature("iron_pickaxe"));
             addClassSignature(new ConstSignature("iron_axe"));

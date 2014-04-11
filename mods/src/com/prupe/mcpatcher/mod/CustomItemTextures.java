@@ -160,7 +160,7 @@ public class CustomItemTextures extends Mod {
             final MethodRef getIconForge = new MethodRef(getDeobfClass(), "getIcon", "(LItemStack;I)LIcon;");
 
             addMemberMapper(new MethodMapper(getIconIndex));
-            if (!haveItemRegistry) {
+            if (!haveItemRegistry()) {
                 addMemberMapper(new FieldMapper(itemsList));
             }
 

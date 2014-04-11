@@ -22,7 +22,6 @@ import static javassist.bytecode.Opcode.*;
 public class ConnectedTextures extends Mod {
     private static final String CTM_UTILS18_CLASS = MCPatcherUtils.CTM_UTILS_CLASS + "$Ext18";
 
-    private final boolean haveBlockRegistry;
     private final boolean haveThickPanes;
     private final boolean haveGlassPaneRenderer;
 
@@ -46,7 +45,6 @@ public class ConnectedTextures extends Mod {
 
         configPanel = new ConfigPanel();
 
-        haveBlockRegistry = getMinecraftVersion().compareTo("13w36a") >= 0;
         haveThickPanes = getMinecraftVersion().compareTo("13w41a") >= 0;
         haveGlassPaneRenderer = getMinecraftVersion().compareTo("14w10a") < 0;
 
@@ -160,7 +158,7 @@ public class ConnectedTextures extends Mod {
         BlockMod() {
             super(ConnectedTextures.this);
 
-            final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(" + (haveBlockRegistry ? "" : "I") + "LMaterial;)V");
+            final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(" + (BlockMod.haveBlockRegistry() ? "" : "I") + "LMaterial;)V");
 
             mapBlockIconMethods();
 
@@ -190,7 +188,7 @@ public class ConnectedTextures extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         ALOAD_0,
-                        haveBlockRegistry ? ALOAD_1 : ALOAD_2,
+                        BlockMod.haveBlockRegistry() ? ALOAD_1 : ALOAD_2,
                         captureReference(PUTFIELD)
                     );
                 }

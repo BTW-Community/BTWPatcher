@@ -11,16 +11,16 @@ public class ItemAPIMod extends Mod {
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
 
-        if (getMinecraftVersion().compareTo("13w36a") < 0) {
-            malVersion = 1;
-        } else {
+        if (ItemMod.haveItemRegistry()) {
             malVersion = 2;
+        } else {
+            malVersion = 1;
         }
         version = String.valueOf(malVersion) + ".0";
         setMALVersion("item", malVersion);
 
         addClassMod(new ItemMod());
-        if (malVersion >= 2) {
+        if (ItemMod.haveItemRegistry()) {
             addClassMod(new Shared.RegistryBaseMod(this));
             addClassMod(new Shared.RegistryMod(this));
         }
@@ -37,7 +37,7 @@ public class ItemAPIMod extends Mod {
         ItemMod() {
             super(ItemAPIMod.this);
 
-            if (haveItemRegistry) {
+            if (haveItemRegistry()) {
                 final FieldRef itemRegistry = new FieldRef(getDeobfClass(), "itemRegistry", "LRegistry;");
 
                 addMemberMapper(new FieldMapper(itemRegistry)

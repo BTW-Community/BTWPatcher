@@ -31,7 +31,6 @@ public class IBlockAccessMod extends com.prupe.mcpatcher.ClassMod {
     public IBlockAccessMod(Mod mod) {
         super(mod);
 
-        final boolean haveBlockRegistry = Mod.getMinecraftVersion().compareTo("13w36a") >= 0;
         final int methodsRemoved;
         if (Mod.getMinecraftVersion().compareTo("13w38b") < 0) {
             methodsRemoved = 0;
@@ -45,7 +44,7 @@ public class IBlockAccessMod extends com.prupe.mcpatcher.ClassMod {
         final String p = PositionMod.getDescriptor();
         final String d = DirectionMod.getDescriptor();
 
-        if (haveBlockRegistry) {
+        if (BlockMod.haveBlockRegistry()) {
             getBlock = new InterfaceMethodRef("IBlockAccess", "getBlock", "(" + p + ")LBlock;");
             getBlockId = null;
         } else {
