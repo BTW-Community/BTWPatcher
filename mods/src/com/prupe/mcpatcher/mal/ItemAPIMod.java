@@ -25,8 +25,7 @@ public class ItemAPIMod extends Mod {
             addClassMod(new Shared.RegistryMod(this));
         }
 
-        addClassFile(MCPatcherUtils.ITEM_API_CLASS);
-        addClassFile(MCPatcherUtils.ITEM_API_CLASS + "$V" + malVersion);
+        addClassFiles("com.prupe.mcpatcher.mal.item.*");
     }
 
     @Override

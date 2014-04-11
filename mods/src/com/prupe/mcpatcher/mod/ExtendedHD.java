@@ -63,9 +63,7 @@ public class ExtendedHD extends Mod {
         if (haveMipmapping) {
             removeAddedClassFile(MCPatcherUtils.AA_HELPER_CLASS);
             removeAddedClassFile(MCPatcherUtils.BORDERED_TEXTURE_CLASS);
-        }
-
-        if (!haveMipmapping) {
+        } else {
             getClassMap().addInheritance("TextureAtlasSprite", MCPatcherUtils.BORDERED_TEXTURE_CLASS);
         }
     }

@@ -55,15 +55,7 @@ public class BlockAPIMod extends Mod {
             PositionMod.setup(this);
         }
 
-        addClassFile(MCPatcherUtils.BLOCK_API_CLASS);
-        addClassFile(MCPatcherUtils.BLOCK_API_CLASS + "$1");
-        addClassFile(MCPatcherUtils.BLOCK_API_CLASS + "$V" + malVersion);
-        if (malVersion == 3) {
-            addClassFile(MCPatcherUtils.BLOCK_API_CLASS + "$V2");
-        }
-        addClassFile(MCPatcherUtils.BLOCK_AND_METADATA_CLASS);
-        addClassFile(MCPatcherUtils.RENDER_PASS_API_MAL_CLASS);
-        addClassFile(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS);
+        addClassFiles("com.prupe.mcpatcher.mal.block.*");
     }
 
     @Override

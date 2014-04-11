@@ -35,8 +35,7 @@ public class BiomeAPIMod extends Mod {
             PositionMod.setup(this);
         }
 
-        addClassFile(MCPatcherUtils.BIOME_API_CLASS);
-        addClassFile(MCPatcherUtils.BIOME_API_CLASS + "$V" + malVersion);
+        addClassFiles("com.prupe.mcpatcher.mal.biome.*");
     }
 
     @Override
