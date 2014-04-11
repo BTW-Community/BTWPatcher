@@ -1,6 +1,8 @@
 package com.prupe.mcpatcher.hd;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
 import net.minecraft.src.FontRenderer;
 import net.minecraft.src.ResourceLocation;
 

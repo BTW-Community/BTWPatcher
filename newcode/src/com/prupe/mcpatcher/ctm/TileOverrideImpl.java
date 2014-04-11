@@ -2,7 +2,7 @@ package com.prupe.mcpatcher.ctm;
 
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.TileLoader;
-import com.prupe.mcpatcher.WeightedIndex;
+import com.prupe.mcpatcher.mal.util.WeightedIndex;
 import net.minecraft.src.Icon;
 import net.minecraft.src.ResourceLocation;
 

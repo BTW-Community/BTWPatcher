@@ -1,6 +1,9 @@
 package com.prupe.mcpatcher.hd;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.mal.resource.BlendMethod;
+import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.util.InputHandler;
 import net.minecraft.src.*;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.*;

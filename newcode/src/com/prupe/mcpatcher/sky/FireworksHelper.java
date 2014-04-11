@@ -1,6 +1,8 @@
 package com.prupe.mcpatcher.sky;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.mal.resource.BlendMethod;
+import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.EntityFX;
 import net.minecraft.src.EntityFireworkOverlayFX;
 import net.minecraft.src.EntityFireworkSparkFX;

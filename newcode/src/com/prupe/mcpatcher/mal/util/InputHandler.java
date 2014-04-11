@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher;
+package com.prupe.mcpatcher.mal.util;
 
 import org.lwjgl.input.Keyboard;
 

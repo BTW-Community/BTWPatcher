@@ -1,6 +1,7 @@
-package com.prupe.mcpatcher;
+package com.prupe.mcpatcher.mal.resource;
 
-import com.prupe.mcpatcher.mal.resource.ResourceLocationWithSource;
+import com.prupe.mcpatcher.MCLogger;
+import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;

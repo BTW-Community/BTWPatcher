@@ -56,15 +56,16 @@ public class MCPatcherUtils {
     public static final String CONFIG_CLASS = "com.prupe.mcpatcher.Config";
     public static final String JSON_UTILS_CLASS = "com.prupe.mcpatcher.JsonUtils";
     public static final String PROFILER_API_CLASS = "com.prupe.mcpatcher.ProfilerAPI";
-    public static final String INPUT_HANDLER_CLASS = "com.prupe.mcpatcher.InputHandler";
     public static final String MAL_CLASS = "com.prupe.mcpatcher.MAL";
 
-    public static final String TEXTURE_PACK_API_CLASS = "com.prupe.mcpatcher.TexturePackAPI";
-    public static final String TEXTURE_PACK_CHANGE_HANDLER_CLASS = "com.prupe.mcpatcher.TexturePackChangeHandler";
-    public static final String WEIGHTED_INDEX_CLASS = "com.prupe.mcpatcher.WeightedIndex";
-    public static final String BLEND_METHOD_CLASS = "com.prupe.mcpatcher.BlendMethod";
-    public static final String RESOURCE_LIST_CLASS = "com.prupe.mcpatcher.mal.resource.ResourceList";
-    public static final String RESOURCE_LOCATION_WITH_SOURCE_CLASS = "com.prupe.mcpatcher.mal.resource.ResourceLocationWithSource";
+    public static final String INPUT_HANDLER_CLASS = "com.prupe.mcpatcher.mal.util.InputHandler";
+    public static final String WEIGHTED_INDEX_CLASS = "com.prupe.mcpatcher.mal.util.WeightedIndex";
+
+    public static final String TEXTURE_PACK_API_CLASS = "com.prupe.mcpatcher.mal.resource.TexturePackAPI";
+    public static final String TEXTURE_PACK_CHANGE_HANDLER_CLASS = "com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler";
+    public static final String BLEND_METHOD_CLASS = "com.prupe.mcpatcher.mal.resource.BlendMethod";
+    public static final String RESOURCE_LIST_CLASS = "com.prupe.mcpatcher.mal.resource.mal.resource.ResourceList";
+    public static final String RESOURCE_LOCATION_WITH_SOURCE_CLASS = "com.prupe.mcpatcher.mal.resource.mal.resource.ResourceLocationWithSource";
 
     public static final String TILE_LOADER_CLASS = "com.prupe.mcpatcher.TileLoader";
     public static final String TESSELLATOR_UTILS_CLASS = "com.prupe.mcpatcher.TessellatorUtils";

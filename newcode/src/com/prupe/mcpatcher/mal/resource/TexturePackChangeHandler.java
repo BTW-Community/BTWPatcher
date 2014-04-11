@@ -1,6 +1,6 @@
-package com.prupe.mcpatcher;
+package com.prupe.mcpatcher.mal.resource;
 
-import com.prupe.mcpatcher.mal.resource.ResourceList;
+import com.prupe.mcpatcher.MCLogger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
 

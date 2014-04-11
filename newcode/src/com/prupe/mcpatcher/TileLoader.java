@@ -1,5 +1,8 @@
 package com.prupe.mcpatcher;
 
+import com.prupe.mcpatcher.mal.resource.BlendMethod;
+import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.Icon;
 import net.minecraft.src.ResourceLocation;
@@ -8,8 +11,6 @@ import net.minecraft.src.TextureAtlasSprite;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.*;
 import java.util.List;
 

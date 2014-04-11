@@ -1,5 +1,6 @@
-package com.prupe.mcpatcher;
+package com.prupe.mcpatcher.mal.resource;
 
+import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;

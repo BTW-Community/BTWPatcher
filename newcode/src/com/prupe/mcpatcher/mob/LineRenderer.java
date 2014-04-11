@@ -1,6 +1,8 @@
 package com.prupe.mcpatcher.mob;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.util.InputHandler;
 import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.Tessellator;
 import org.lwjgl.input.Keyboard;

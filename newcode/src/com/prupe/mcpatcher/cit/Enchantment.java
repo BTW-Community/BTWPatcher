@@ -1,8 +1,8 @@
 package com.prupe.mcpatcher.cit;
 
-import com.prupe.mcpatcher.BlendMethod;
+import com.prupe.mcpatcher.mal.resource.BlendMethod;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.Icon;
 import net.minecraft.src.ItemRenderer;
 import net.minecraft.src.ResourceLocation;

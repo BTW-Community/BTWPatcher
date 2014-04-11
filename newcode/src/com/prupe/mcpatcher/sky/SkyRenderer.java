@@ -1,6 +1,9 @@
 package com.prupe.mcpatcher.sky;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.mal.resource.BlendMethod;
+import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.Tessellator;

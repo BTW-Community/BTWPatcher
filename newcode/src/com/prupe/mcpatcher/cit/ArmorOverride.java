@@ -1,6 +1,6 @@
 package com.prupe.mcpatcher.cit;
 
-import com.prupe.mcpatcher.TexturePackAPI;
+import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.ResourceLocation;
 
 import java.util.HashMap;

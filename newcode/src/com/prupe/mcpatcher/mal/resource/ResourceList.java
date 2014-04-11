@@ -2,7 +2,6 @@ package com.prupe.mcpatcher.mal.resource;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.TexturePackAPI;
 import net.minecraft.src.*;
 
 import java.io.File;

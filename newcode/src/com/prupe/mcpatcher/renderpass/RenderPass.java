@@ -4,6 +4,9 @@ import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.ctm.CTMUtils;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
+import com.prupe.mcpatcher.mal.resource.BlendMethod;
+import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 

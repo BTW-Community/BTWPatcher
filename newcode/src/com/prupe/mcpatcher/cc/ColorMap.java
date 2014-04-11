@@ -3,6 +3,8 @@ package com.prupe.mcpatcher.cc;
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.resource.ResourceList;
+import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.util.WeightedIndex;
 import net.minecraft.src.BiomeGenBase;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.ResourceLocation;

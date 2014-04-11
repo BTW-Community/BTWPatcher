@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher;
+package com.prupe.mcpatcher.mal.util;
 
 abstract public class WeightedIndex {
     private static final long K1 = 0xb492b66fbe98f273L;
