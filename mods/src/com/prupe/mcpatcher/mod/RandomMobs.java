@@ -52,13 +52,7 @@ public class RandomMobs extends Mod {
         addClassMod(new RenderFishMod());
         addClassMod(new RenderLeashMod());
 
-        addClassFile(MCPatcherUtils.RANDOM_MOBS_CLASS);
-        addClassFile(MCPatcherUtils.RANDOM_MOBS_CLASS + "$1");
-        addClassFile(EXTRA_INFO_CLASS);
-        addClassFile(MCPatcherUtils.MOB_RULE_LIST_CLASS);
-        addClassFile(MCPatcherUtils.MOB_RULE_LIST_CLASS + "$MobRuleEntry");
-        addClassFile(MCPatcherUtils.MOB_OVERLAY_CLASS);
-        addClassFile(MCPatcherUtils.LINE_RENDERER_CLASS);
+        addClassFiles("com.prupe.mcpatcher.mob.*");
 
         BaseTexturePackMod.earlyInitialize(3, MCPatcherUtils.RANDOM_MOBS_CLASS, "init");
     }

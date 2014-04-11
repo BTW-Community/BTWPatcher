@@ -82,20 +82,7 @@ public class CustomItemTextures extends Mod {
         addClassMod(new PotionMod());
         addClassMod(new PotionHelperMod());
 
-        addClassFile(MCPatcherUtils.CIT_UTILS_CLASS);
-        addClassFile(MCPatcherUtils.CIT_UTILS_CLASS + "$1");
-        addClassFile(MCPatcherUtils.OVERRIDE_BASE_CLASS);
-        addClassFile(MCPatcherUtils.ITEM_OVERRIDE_CLASS);
-        addClassFile(MCPatcherUtils.ENCHANTMENT_CLASS);
-        addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS);
-        addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS + "$1");
-        addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS + "$Layer");
-        addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS + "$LayerMethod");
-        addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS + "$Average");
-        addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS + "$Layered");
-        addClassFile(MCPatcherUtils.ENCHANTMENT_LIST_CLASS + "$Cycle");
-        addClassFile(MCPatcherUtils.ARMOR_OVERRIDE_CLASS);
-        addClassFile(MCPatcherUtils.POTION_REPLACER_CLASS);
+        addClassFiles("com.prupe.mcpatcher.cit.*");
 
         BaseTexturePackMod.earlyInitialize(2, MCPatcherUtils.CIT_UTILS_CLASS, "init");
     }

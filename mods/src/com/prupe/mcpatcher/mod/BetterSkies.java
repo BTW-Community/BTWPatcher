@@ -35,11 +35,7 @@ public class BetterSkies extends Mod {
         addClassMod(new EntityFireworkSparkFXMod());
         addClassMod(new EntityFireworkOverlayFXMod());
 
-        addClassFile(MCPatcherUtils.SKY_RENDERER_CLASS);
-        addClassFile(MCPatcherUtils.SKY_RENDERER_CLASS + "$1");
-        addClassFile(MCPatcherUtils.SKY_RENDERER_CLASS + "$WorldEntry");
-        addClassFile(MCPatcherUtils.SKY_RENDERER_CLASS + "$Layer");
-        addClassFile(MCPatcherUtils.FIREWORKS_HELPER_CLASS);
+        addClassFiles("com.prupe.mcpatcher.sky.*");
     }
 
     private static class ConfigPanel extends ModConfigPanel {

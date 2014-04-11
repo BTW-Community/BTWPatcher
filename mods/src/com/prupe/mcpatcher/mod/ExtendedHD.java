@@ -57,18 +57,13 @@ public class ExtendedHD extends Mod {
         addClassMod(new TextureCompassMod());
         addClassMod(new TextureClockMod());
         addClassMod(new SimpleResourceMod());
-        HDFont.setupMod(this, getMinecraftVersion());
+        HDFont.setupMod(this, getMinecraftVersion(), false);
 
-        addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS);
-        addClassFile(MCPatcherUtils.CUSTOM_ANIMATION_CLASS + "$1");
-        addClassFile(MCPatcherUtils.MIPMAP_HELPER_CLASS);
-        if (!haveMipmapping) {
-            addClassFile(MCPatcherUtils.AA_HELPER_CLASS);
-            addClassFile(MCPatcherUtils.BORDERED_TEXTURE_CLASS);
+        addClassFiles("com.prupe.mcpatcher.hd.*");
+        if (haveMipmapping) {
+            removeAddedClassFile(MCPatcherUtils.AA_HELPER_CLASS);
+            removeAddedClassFile(MCPatcherUtils.BORDERED_TEXTURE_CLASS);
         }
-        addClassFile(MCPatcherUtils.FANCY_DIAL_CLASS);
-        addClassFile(MCPatcherUtils.FANCY_DIAL_CLASS + "$Layer");
-        addClassFile(MCPatcherUtils.FANCY_DIAL_CLASS + "$FBO");
 
         if (!haveMipmapping) {
             getClassMap().addInheritance("TextureAtlasSprite", MCPatcherUtils.BORDERED_TEXTURE_CLASS);

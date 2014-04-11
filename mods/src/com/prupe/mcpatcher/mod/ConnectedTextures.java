@@ -83,28 +83,13 @@ public class ConnectedTextures extends Mod {
             addClassMod(new BlockGrassMod());
         }
 
-        addClassFile(MCPatcherUtils.CTM_UTILS_CLASS);
-        addClassFile(MCPatcherUtils.CTM_UTILS_CLASS + "$1");
-        addClassFile(MCPatcherUtils.TILE_OVERRIDE_INTERFACE);
-        addClassFile(MCPatcherUtils.TILE_OVERRIDE_CLASS);
-        addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS);
-        addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$CTM");
-        addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$Random1");
-        addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$Fixed");
-        addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$Horizontal");
-        addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$HorizontalVertical");
-        addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$Vertical");
-        addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$VerticalHorizontal");
-        addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$Top");
-        addClassFile(MCPatcherUtils.TILE_OVERRIDE_IMPL_CLASS + "$Repeat");
-        addClassFile(MCPatcherUtils.TILE_OVERRIDE_ITERATOR_CLASS);
-        addClassFile(MCPatcherUtils.TILE_OVERRIDE_ITERATOR_CLASS + "$IJK");
-        addClassFile(MCPatcherUtils.TILE_OVERRIDE_ITERATOR_CLASS + "$Metadata");
-        addClassFile(MCPatcherUtils.BLOCK_ORIENTATION_CLASS);
+        addClassFiles("com.prupe.mcpatcher.ctm.*");
+        removeAddedClassFiles(MCPatcherUtils.RENDER_PASS_CLASS + "*");
+        removeAddedClassFiles(MCPatcherUtils.RENDER_PASS_MAP_CLASS + "*");
         if (haveGlassPaneRenderer) {
-            addClassFile(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS);
+            removeAddedClassFile(CTM_UTILS18_CLASS);
         } else {
-            addClassFile(CTM_UTILS18_CLASS);
+            removeAddedClassFile(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS);
         }
 
         BaseTexturePackMod.earlyInitialize(2, MCPatcherUtils.CTM_UTILS_CLASS, "reset");

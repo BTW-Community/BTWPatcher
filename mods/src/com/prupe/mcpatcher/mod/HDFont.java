@@ -20,17 +20,19 @@ public class HDFont extends Mod {
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
-        setupMod(this, getMinecraftVersion());
+        setupMod(this, getMinecraftVersion(), true);
     }
 
-    static void setupMod(Mod mod, MinecraftVersion minecraftVersion) {
+    static void setupMod(Mod mod, MinecraftVersion minecraftVersion, boolean addFiles) {
         haveReadFontData = minecraftVersion.compareTo("1.6.2") < 0;
         haveFontWidthHack = minecraftVersion.compareTo("1.6.2") >= 0;
 
         mod.addClassMod(new FontRendererMod(mod));
 
-        mod.addClassFile(MCPatcherUtils.FONT_UTILS_CLASS);
-        mod.addClassFile(MCPatcherUtils.FONT_UTILS_CLASS + "$1");
+        if (addFiles) {
+            mod.addClassFile(MCPatcherUtils.FONT_UTILS_CLASS);
+            mod.addClassFile(MCPatcherUtils.FONT_UTILS_CLASS + "$1");
+        }
 
         BaseTexturePackMod.earlyInitialize(3, MCPatcherUtils.FONT_UTILS_CLASS, "init");
     }

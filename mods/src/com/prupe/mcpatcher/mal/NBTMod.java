@@ -34,10 +34,7 @@ public class NBTMod extends Mod {
         addClassMod(new NBTTagCompoundMod()); // id=10
         addClassMod(new NBTSubclassMod(11, "IntArray", "[I"));
 
-        addClassFile(MCPatcherUtils.NBT_RULE_CLASS);
-        addClassFile(MCPatcherUtils.NBT_RULE_CLASS + "$Exact");
-        addClassFile(MCPatcherUtils.NBT_RULE_CLASS + "$Regex");
-        addClassFile(MCPatcherUtils.NBT_RULE_CLASS + "$Glob");
+        addClassFiles("com.prupe.mcpatcher.mal.nbt.*");
     }
 
     @Override
