@@ -65,7 +65,7 @@ public class MCPatcherUtils {
     public static final String TEXTURE_PACK_CHANGE_HANDLER_CLASS = "com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler";
     public static final String BLEND_METHOD_CLASS = "com.prupe.mcpatcher.mal.resource.BlendMethod";
     public static final String RESOURCE_LIST_CLASS = "com.prupe.mcpatcher.mal.resource.mal.resource.ResourceList";
-    public static final String RESOURCE_LOCATION_WITH_SOURCE_CLASS = "com.prupe.mcpatcher.mal.resource.mal.resource.ResourceLocationWithSource";
+    public static final String RESOURCE_LOCATION_WITH_SOURCE_CLASS = "com.prupe.mcpatcher.mal.resource.ResourceLocationWithSource";
 
     public static final String TILE_LOADER_CLASS = "com.prupe.mcpatcher.mal.tile.TileLoader";
     public static final String TESSELLATOR_UTILS_CLASS = "com.prupe.mcpatcher.TessellatorUtils";
