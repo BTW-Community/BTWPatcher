@@ -159,6 +159,9 @@ public class SkyRenderer {
                 }
             }
             for (Layer layer : skies) {
+                if (!unloadTextures) {
+                    layer.prepare();
+                }
                 if (layer.brightness > 0.0f) {
                     layer.render(tessellator);
                     Layer.clearBlendingMethod();
