@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher.ctm;
+package com.prupe.mcpatcher.renderpass;
 
 import com.prupe.mcpatcher.MAL;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;

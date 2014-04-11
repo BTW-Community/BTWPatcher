@@ -74,11 +74,8 @@ public class BetterGlass extends Mod {
         }
         setMALVersion("renderpass", malVersion);
 
-        addClassFile(MCPatcherUtils.RENDER_PASS_CLASS);
-        addClassFile(MCPatcherUtils.RENDER_PASS_CLASS + "$1");
-        addClassFile(MCPatcherUtils.RENDER_PASS_CLASS + "$2");
-        addClassFile(MCPatcherUtils.RENDER_PASS_MAP_CLASS);
-        addClassFile(MCPatcherUtils.RENDER_PASS_MAP_CLASS + "$V" + malVersion);
+        addClassFiles("com.prupe.mcpatcher.renderpass.*");
+        removeAddedClassFile(MCPatcherUtils.RENDER_PASS_MAP_CLASS + "$V" + (3 - malVersion));
     }
 
     private class WorldRendererMod extends com.prupe.mcpatcher.basemod.WorldRendererMod {

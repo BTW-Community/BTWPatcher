@@ -110,10 +110,11 @@ public class MCPatcherUtils {
     public static final String TILE_OVERRIDE_ITERATOR_CLASS = "com.prupe.mcpatcher.ctm.TileOverrideIterator";
     public static final String BLOCK_ORIENTATION_CLASS = "com.prupe.mcpatcher.ctm.BlockOrientation";
     public static final String GLASS_PANE_RENDERER_CLASS = "com.prupe.mcpatcher.ctm.GlassPaneRenderer";
-    public static final String RENDER_PASS_CLASS = "com.prupe.mcpatcher.ctm.RenderPass";
-    public static final String RENDER_PASS_MAP_CLASS = "com.prupe.mcpatcher.ctm.RenderPassMap";
     public static final String RENDER_PASS_API_CLASS = "com.prupe.mcpatcher.ctm.RenderPassAPI";
     public static final String SUPER_TESSELLATOR_CLASS = "com.prupe.mcpatcher.ctm.SuperTessellator";
+
+    public static final String RENDER_PASS_CLASS = "com.prupe.mcpatcher.renderpass.RenderPass";
+    public static final String RENDER_PASS_MAP_CLASS = "com.prupe.mcpatcher.renderpass.RenderPassMap";
 
     public static final String SKY_RENDERER_CLASS = "com.prupe.mcpatcher.sky.SkyRenderer";
     public static final String FIREWORKS_HELPER_CLASS = "com.prupe.mcpatcher.sky.FireworksHelper";

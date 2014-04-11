@@ -186,7 +186,7 @@ public class CTMUtils {
         }
     }
 
-    static void setBlankResource() {
+    public static void setBlankResource() {
         blankIcon = tileLoader.getIcon(RenderPassAPI.instance.getBlankResource());
     }
 

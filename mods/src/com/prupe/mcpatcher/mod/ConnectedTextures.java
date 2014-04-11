@@ -84,8 +84,6 @@ public class ConnectedTextures extends Mod {
         }
 
         addClassFiles("com.prupe.mcpatcher.ctm.*");
-        removeAddedClassFiles(MCPatcherUtils.RENDER_PASS_CLASS + "*");
-        removeAddedClassFiles(MCPatcherUtils.RENDER_PASS_MAP_CLASS + "*");
         if (haveGlassPaneRenderer) {
             removeAddedClassFile(CTM_UTILS18_CLASS);
         } else {

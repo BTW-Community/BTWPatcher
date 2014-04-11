@@ -1,6 +1,7 @@
-package com.prupe.mcpatcher.ctm;
+package com.prupe.mcpatcher.renderpass;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.ctm.CTMUtils;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import net.minecraft.src.*;
