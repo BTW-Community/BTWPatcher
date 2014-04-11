@@ -27,8 +27,7 @@ public class BaseTilesheetMod extends Mod {
         addClassMod(new TextureManagerMod());
         addClassMod(new TextureAtlasSpriteMod());
 
-        addClassFile(MCPatcherUtils.TILE_LOADER_CLASS);
-        addClassFile(MCPatcherUtils.TILE_LOADER_CLASS + "$1");
+        addClassFiles("com.prupe.mcpatcher.mal.tile.*");
 
         BaseTexturePackMod.earlyInitialize(1, MCPatcherUtils.TILE_LOADER_CLASS, "init");
     }

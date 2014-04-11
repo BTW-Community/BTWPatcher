@@ -67,7 +67,7 @@ public class MCPatcherUtils {
     public static final String RESOURCE_LIST_CLASS = "com.prupe.mcpatcher.mal.resource.mal.resource.ResourceList";
     public static final String RESOURCE_LOCATION_WITH_SOURCE_CLASS = "com.prupe.mcpatcher.mal.resource.mal.resource.ResourceLocationWithSource";
 
-    public static final String TILE_LOADER_CLASS = "com.prupe.mcpatcher.TileLoader";
+    public static final String TILE_LOADER_CLASS = "com.prupe.mcpatcher.mal.tile.TileLoader";
     public static final String TESSELLATOR_UTILS_CLASS = "com.prupe.mcpatcher.TessellatorUtils";
 
     public static final String AA_HELPER_CLASS = "com.prupe.mcpatcher.hd.AAHelper";

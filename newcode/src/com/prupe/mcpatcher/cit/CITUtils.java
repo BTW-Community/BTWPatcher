@@ -5,6 +5,7 @@ import com.prupe.mcpatcher.mal.item.ItemAPI;
 import com.prupe.mcpatcher.mal.resource.ResourceList;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
+import com.prupe.mcpatcher.mal.tile.TileLoader;
 import net.minecraft.src.*;
 
 import java.awt.image.BufferedImage;

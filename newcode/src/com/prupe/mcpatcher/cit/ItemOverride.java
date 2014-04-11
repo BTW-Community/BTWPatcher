@@ -1,6 +1,6 @@
 package com.prupe.mcpatcher.cit;
 
-import com.prupe.mcpatcher.TileLoader;
+import com.prupe.mcpatcher.mal.tile.TileLoader;
 import net.minecraft.src.Icon;
 import net.minecraft.src.ResourceLocation;
 
