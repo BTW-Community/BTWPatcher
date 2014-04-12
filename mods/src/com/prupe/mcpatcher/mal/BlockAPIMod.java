@@ -2,7 +2,6 @@ package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
-import javassist.bytecode.MethodInfo;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -36,7 +35,7 @@ public class BlockAPIMod extends Mod {
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new IconMod(this));
         addClassMod(new TessellatorMod(this));
-        addClassMod(new ResourceLocationMod(this));
+        ResourceLocationMod.setup(this);
         addClassMod(new RenderBlocksMod());
         if (RenderBlocksMod.haveSubclasses()) {
             addClassMod(new RenderBlockManagerMod(this));

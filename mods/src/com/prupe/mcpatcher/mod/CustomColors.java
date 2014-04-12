@@ -109,10 +109,8 @@ public class CustomColors extends Mod {
         addClassMod(new MinecraftMod(this).mapWorldClient());
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new TessellatorMod(this));
-        addClassMod(new ResourceLocationMod(this));
-        if (PositionMod.havePositionClass()) {
-            PositionMod.setup(this);
-        }
+        ResourceLocationMod.setup(this);
+        PositionMod.setup(this);
 
         addClassMod(new BlockMod());
         addClassMod(new BlockSubclassMod());

@@ -34,7 +34,7 @@ public class RandomMobs extends Mod {
 
         haveOverlayRenderer = getMinecraftVersion().compareTo("14w05a") >= 0;
 
-        addClassMod(new ResourceLocationMod(this));
+        ResourceLocationMod.setup(this);
         addClassMod(new NBTTagCompoundMod(this));
         addClassMod(new TessellatorMod(this));
         addClassMod(new IBlockAccessMod(this));

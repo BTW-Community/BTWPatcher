@@ -25,7 +25,7 @@ public class BetterSkies extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
         addClassMod(new MinecraftMod(this).mapWorldClient());
-        addClassMod(new ResourceLocationMod(this));
+        ResourceLocationMod.setup(this);
         addClassMod(new WorldMod());
         addClassMod(new WorldProviderMod(this));
         addClassMod(new WorldClientMod(this));

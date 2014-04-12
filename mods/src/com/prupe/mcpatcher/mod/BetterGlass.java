@@ -49,7 +49,7 @@ public class BetterGlass extends Mod {
         int malVersion;
 
         addClassMod(new MinecraftMod(this));
-        addClassMod(new ResourceLocationMod(this));
+        ResourceLocationMod.setup(this);
         addClassMod(new BlockMod(this));
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new WorldRendererMod());

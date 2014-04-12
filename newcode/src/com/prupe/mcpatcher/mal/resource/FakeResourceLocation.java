@@ -8,7 +8,11 @@ final public class FakeResourceLocation {
     private final int hashCode;
 
     public static FakeResourceLocation wrap(String path) {
-        return new FakeResourceLocation(path);
+        return path == null ? null : new FakeResourceLocation(path);
+    }
+
+    public static String unwrap(FakeResourceLocation resourceLocation) {
+        return resourceLocation == null ? null : resourceLocation.getPath();
     }
 
     public FakeResourceLocation(String namespace, String path) {

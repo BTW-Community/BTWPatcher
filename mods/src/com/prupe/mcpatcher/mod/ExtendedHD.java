@@ -38,7 +38,7 @@ public class ExtendedHD extends Mod {
             return;
         }
 
-        addClassMod(new ResourceLocationMod(this));
+        ResourceLocationMod.setup(this);
         addClassMod(new ResourceMod(this));
         addClassMod(new IconMod(this));
         addClassMod(new TextureObjectMod(this));
