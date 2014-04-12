@@ -13,4 +13,9 @@ public class ResourcePackRepository {
     public List<ResourcePackRepositoryEntry> getSelectedTexturePacks() {
         return null;
     }
+
+    // 1.5
+    public ResourcePack getSelectedTexturePack() {
+        return null;
+    }
 }

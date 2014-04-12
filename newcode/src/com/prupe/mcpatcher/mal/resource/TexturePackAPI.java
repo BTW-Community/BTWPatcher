@@ -278,18 +278,39 @@ abstract public class TexturePackAPI {
         return false;
     }
 
-    abstract protected InputStream getInputStream_Impl(ResourceLocation resource);
+    abstract protected InputStream getInputStream_Impl(ResourceLocation resource) throws IOException;
+
+    abstract protected InputStream getInputStream_Impl(ResourcePack resourcePack, ResourceLocation resource) throws IOException;
 
     abstract protected String getFullPath_Impl(ResourceLocation resource);
 
-    abstract protected String getNamespace_Impl(String path);
+    abstract protected String parseNamespace_Impl(String path);
 
     abstract protected String select_Impl(String v1Path, String v2Path);
 
+    abstract protected boolean isDefaultResourcePack_Impl();
+
     final private static class V1 extends TexturePackAPI {
+        private ResourcePack getTexturePack() {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft == null) {
+                return null;
+            }
+            ResourcePackRepository texturePackList = minecraft.texturePackList;
+            if (texturePackList == null) {
+                return null;
+            }
+            return texturePackList.getSelectedTexturePack();
+        }
+
         @Override
-        protected InputStream getInputStream_Impl(ResourceLocation resource) {
-            return null;
+        protected InputStream getInputStream_Impl(ResourceLocation resource) throws IOException {
+            return getInputStream_Impl(getTexturePack(), resource);
+        }
+
+        @Override
+        protected InputStream getInputStream_Impl(ResourcePack resourcePack, ResourceLocation resource) throws IOException {
+            return resourcePack == null ? null : resourcePack.getInputStream(resource.getPath());
         }
 
         @Override
@@ -298,7 +319,7 @@ abstract public class TexturePackAPI {
         }
 
         @Override
-        protected String getNamespace_Impl(String path) {
+        protected String parseNamespace_Impl(String path) {
             return path.length() > 0 ? DEFAULT_NAMESPACE : null;
         }
 
@@ -306,34 +327,36 @@ abstract public class TexturePackAPI {
         protected String select_Impl(String v1Path, String v2Path) {
             return v1Path;
         }
+
+        @Override
+        protected boolean isDefaultResourcePack_Impl() {
+            ResourcePack texturePack = getTexturePack();
+            return texturePack == null || texturePack instanceof DefaultResourcePack;
+        }
     }
 
     final private static class V2 extends TexturePackAPI {
+        private static final String ASSETS = "assets/";
+
         @Override
-        protected InputStream getInputStream_Impl(ResourceLocation resource) {
-            if (resource instanceof ResourceLocationWithSource) {
-                try {
-                    return ((ResourceLocationWithSource) resource).getSource().getInputStream(resource);
-                } catch (IOException e) {
-                    // nothing
-                }
-            }
-            try {
-                return Minecraft.getInstance().getResourceManager().getResource(resource).getInputStream();
-            } catch (IOException e) {
-                return null;
-            }
+        protected InputStream getInputStream_Impl(ResourceLocation resource) throws IOException {
+            return Minecraft.getInstance().getResourceManager().getResource(resource).getInputStream();
+        }
+
+        @Override
+        protected InputStream getInputStream_Impl(ResourcePack resourcePack, ResourceLocation resource) throws IOException {
+            return resourcePack.getInputStream(resource);
         }
 
         @Override
         protected String getFullPath_Impl(ResourceLocation resource) {
-            return "assets/" + resource.getNamespace() + "/" + resource.getPath();
+            return ASSETS + resource.getNamespace() + "/" + resource.getPath();
         }
 
         @Override
-        protected String getNamespace_Impl(String path) {
-            if (path.startsWith("assets/")) {
-                path = path.substring(7);
+        protected String parseNamespace_Impl(String path) {
+            if (path.startsWith(ASSETS)) {
+                path = path.substring(ASSETS.length());
                 int slash = path.indexOf('/');
                 if (slash > 0) {
                     return path.substring(0, slash - 1);
@@ -345,6 +368,11 @@ abstract public class TexturePackAPI {
         @Override
         protected String select_Impl(String v1Path, String v2Path) {
             return v2Path;
+        }
+
+        @Override
+        protected boolean isDefaultResourcePack_Impl() {
+            return getResourcePacks(DEFAULT_NAMESPACE).size() <= 1;
         }
     }
 }

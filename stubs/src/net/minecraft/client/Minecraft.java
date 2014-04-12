@@ -6,6 +6,7 @@ import java.io.File;
 
 public class Minecraft {
     public ResourcePackRepository texturePackList;
+    public RenderEngine renderEngine; // 1.5
     public GameSettings gameSettings;
     public EntityLivingBase renderViewEntity;
     public EntityRenderer entityRenderer;

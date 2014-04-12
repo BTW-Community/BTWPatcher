@@ -34,4 +34,9 @@ public class DefaultResourcePack implements ResourcePack {
     public String getName() {
         return null;
     }
+
+    @Override
+    public InputStream getInputStream(String resource) throws IOException {
+        return null;
+    }
 }

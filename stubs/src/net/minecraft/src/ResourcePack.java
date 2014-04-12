@@ -17,4 +17,6 @@ public interface ResourcePack {
     BufferedImage getPackIcon() throws IOException;
 
     String getName(); // added in 13w26a
+
+    InputStream getInputStream(String resource) throws IOException; // 1.5
 }
