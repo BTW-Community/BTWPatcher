@@ -83,34 +83,53 @@ public class BlockAPIMod extends Mod {
         protected final MethodRef getGrassTexture = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getGrassTexture", "(LBlock;LIBlockAccess;IIIILIcon;)LIcon;");
         private final FieldRef topIcon = new FieldRef(getDeobfClass(), "topIcon", "LIcon;");
 
-        BetterGrassMod() {
+        BetterGrassMod(final String prefix) {
             setParentClass("Block");
 
-            addClassSignature(new ConstSignature("_side"));
-            addClassSignature(new ConstSignature("_top"));
+            if (ResourceLocationMod.haveClass()) {
+                addClassSignature(new ConstSignature("_side"));
+                addClassSignature(new ConstSignature("_top"));
 
-            addClassSignature(new BytecodeSignature() {
-                final ClassRef stringBuilderClass = new ClassRef("java/lang/StringBuilder");
+                addClassSignature(new BytecodeSignature() {
+                    final ClassRef stringBuilderClass = new ClassRef("java/lang/StringBuilder");
 
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // this.field = iconRegister.registerIcon(this.getTextureName() + name);
-                        ALOAD_0,
-                        ALOAD_1,
-                        // new StringBuilder(this.getTextureName()).append(suffix).toString();
-                        // -or-
-                        // new StringBuilder().append(this.getTextureName()).append(suffix).toString();
-                        reference(NEW, stringBuilderClass),
-                        DUP,
-                        nonGreedy(any(0, 12)),
-                        push("_top"),
-                        nonGreedy(any(0, 8)),
-                        anyReference(INVOKEINTERFACE),
-                        captureReference(PUTFIELD)
-                    );
-                }
-            }.addXref(1, topIcon));
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // this.field = iconRegister.registerIcon(this.getTextureName() + name);
+                            ALOAD_0,
+                            ALOAD_1,
+                            // new StringBuilder(this.getTextureName()).append(suffix).toString();
+                            // -or-
+                            // new StringBuilder().append(this.getTextureName()).append(suffix).toString();
+                            reference(NEW, stringBuilderClass),
+                            DUP,
+                            nonGreedy(any(0, 12)),
+                            push("_top"),
+                            nonGreedy(any(0, 8)),
+                            anyReference(INVOKEINTERFACE),
+                            captureReference(PUTFIELD)
+                        );
+                    }
+                }.addXref(1, topIcon));
+            } else {
+                addClassSignature(new ConstSignature(prefix + "_side"));
+                addClassSignature(new ConstSignature(prefix + "_top"));
+
+                addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // this.field = iconRegister.registerIcon("...");
+                            ALOAD_0,
+                            ALOAD_1,
+                            push(prefix + "_top"),
+                            anyReference(INVOKEINTERFACE),
+                            captureReference(PUTFIELD)
+                        );
+                    }
+                }.addXref(1, topIcon));
+            }
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -164,8 +183,15 @@ public class BlockAPIMod extends Mod {
 
     private class BlockGrassMod extends BetterGrassMod {
         BlockGrassMod() {
-            addClassSignature(new ConstSignature("_side_snowed"));
-            addClassSignature(new ConstSignature("_side_overlay"));
+            super("grass");
+
+            if (ResourceLocationMod.haveClass()) {
+                addClassSignature(new ConstSignature("_side_snowed"));
+                addClassSignature(new ConstSignature("_side_overlay"));
+            } else {
+                addClassSignature(new ConstSignature("snow_side"));
+                addClassSignature(new ConstSignature("grass_side_overlay"));
+            }
 
             if (BlockMod.getSecondaryBlockIcon != null) {
                 addPatch(new BytecodePatch() {
@@ -207,7 +233,9 @@ public class BlockAPIMod extends Mod {
 
     private class BlockMyceliumMod extends BetterGrassMod {
         BlockMyceliumMod() {
-            addClassSignature(new ConstSignature("grass_side_snowed"));
+            super("mycel");
+
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("snow_side", "grass_side_snowed")));
             addClassSignature(new ConstSignature("townaura"));
         }
     }

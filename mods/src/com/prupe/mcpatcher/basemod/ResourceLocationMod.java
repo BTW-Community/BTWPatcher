@@ -41,19 +41,15 @@ public class ResourceLocationMod extends com.prupe.mcpatcher.ClassMod {
     }
 
     public static byte[] pack(PatchComponent patchComponent) {
-        if (haveClass()) {
-            return EMPTY;
-        } else {
-            return patchComponent.reference(INVOKESTATIC, wrap);
-        }
+        return haveClass() ? EMPTY : patchComponent.reference(INVOKESTATIC, wrap);
     }
 
     public static byte[] unpack(PatchComponent patchComponent) {
-        if (haveClass()) {
-            return EMPTY;
-        } else {
-            return patchComponent.reference(INVOKESTATIC, unwrap);
-        }
+        return haveClass() ? EMPTY : patchComponent.reference(INVOKESTATIC, unwrap);
+    }
+
+    public static String select(String v1Path, String v2Path) {
+        return haveClass() ? v2Path : v1Path;
     }
 
     private ResourceLocationMod(Mod mod) {
