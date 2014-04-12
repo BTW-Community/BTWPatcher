@@ -1,9 +1,6 @@
 package com.prupe.mcpatcher.basemod;
 
-import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.MethodRef;
-import com.prupe.mcpatcher.Mod;
-import com.prupe.mcpatcher.PatchComponent;
+import com.prupe.mcpatcher.*;
 import javassist.bytecode.AccessFlag;
 
 import static javassist.bytecode.Opcode.INVOKESTATIC;
@@ -13,6 +10,8 @@ import static javassist.bytecode.Opcode.INVOKEVIRTUAL;
  * Matches ResourceLocation class.
  */
 public class ResourceLocationMod extends com.prupe.mcpatcher.ClassMod {
+    private static final MinecraftVersion MIN_VERSION = MinecraftVersion.parseVersion("13w24a");
+
     public static final MethodRef getNamespace = new MethodRef("ResourceLocation", "getNamespace", "()Ljava/lang/String;");
     public static final MethodRef getPath = new MethodRef("ResourceLocation", "getPath", "()Ljava/lang/String;");
 
@@ -33,7 +32,7 @@ public class ResourceLocationMod extends com.prupe.mcpatcher.ClassMod {
     }
 
     public static boolean haveClass() {
-        return Mod.getMinecraftVersion().compareTo("13w24a") >= 0;
+        return Mod.getMinecraftVersion().compareTo(MIN_VERSION) >= 0;
     }
 
     public static String getDescriptor() {
