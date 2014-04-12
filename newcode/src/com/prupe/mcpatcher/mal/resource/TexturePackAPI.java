@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher.mal.resource;
 
+import com.prupe.mcpatcher.MAL;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.client.Minecraft;
@@ -13,13 +14,13 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class TexturePackAPI {
+abstract public class TexturePackAPI {
     private static final MCLogger logger = MCLogger.getLogger("Texture Pack");
 
     public static final String DEFAULT_NAMESPACE = "minecraft";
     public static final String MCPATCHER_SUBDIR = "mcpatcher/";
 
-    public static TexturePackAPI instance = new TexturePackAPI();
+    public static TexturePackAPI instance = MAL.newInstance(TexturePackAPI.class, "texturepack");
 
     public static List<ResourcePack> getResourcePacks(String namespace) {
         List<ResourcePack> list = new ArrayList<ResourcePack>();
@@ -275,5 +276,75 @@ public class TexturePackAPI {
             }
         }
         return false;
+    }
+
+    abstract protected InputStream getInputStream_Impl(ResourceLocation resource);
+
+    abstract protected String getFullPath_Impl(ResourceLocation resource);
+
+    abstract protected String getNamespace_Impl(String path);
+
+    abstract protected String select_Impl(String v1Path, String v2Path);
+
+    final private static class V1 extends TexturePackAPI {
+        @Override
+        protected InputStream getInputStream_Impl(ResourceLocation resource) {
+            return null;
+        }
+
+        @Override
+        protected String getFullPath_Impl(ResourceLocation resource) {
+            return resource.getPath();
+        }
+
+        @Override
+        protected String getNamespace_Impl(String path) {
+            return path.length() > 0 ? DEFAULT_NAMESPACE : null;
+        }
+
+        @Override
+        protected String select_Impl(String v1Path, String v2Path) {
+            return v1Path;
+        }
+    }
+
+    final private static class V2 extends TexturePackAPI {
+        @Override
+        protected InputStream getInputStream_Impl(ResourceLocation resource) {
+            if (resource instanceof ResourceLocationWithSource) {
+                try {
+                    return ((ResourceLocationWithSource) resource).getSource().getInputStream(resource);
+                } catch (IOException e) {
+                    // nothing
+                }
+            }
+            try {
+                return Minecraft.getInstance().getResourceManager().getResource(resource).getInputStream();
+            } catch (IOException e) {
+                return null;
+            }
+        }
+
+        @Override
+        protected String getFullPath_Impl(ResourceLocation resource) {
+            return "assets/" + resource.getNamespace() + "/" + resource.getPath();
+        }
+
+        @Override
+        protected String getNamespace_Impl(String path) {
+            if (path.startsWith("assets/")) {
+                path = path.substring(7);
+                int slash = path.indexOf('/');
+                if (slash > 0) {
+                    return path.substring(0, slash - 1);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected String select_Impl(String v1Path, String v2Path) {
+            return v2Path;
+        }
     }
 }
