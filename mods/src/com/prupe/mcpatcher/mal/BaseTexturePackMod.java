@@ -50,6 +50,9 @@ public class BaseTexturePackMod extends Mod {
         addClassFiles("com.prupe.mcpatcher.mal.resource.*");
         addClassFiles("com.prupe.mcpatcher.mal.util.*");
 
+        if (getMinecraftVersion().compareTo("13w24a") < 0) {
+            getClassMap().addClassMap("ResourceLocation", MCPatcherUtils.FAKE_RESOURCE_LOCATION_CLASS);
+        }
         getClassMap().addInheritance("ResourceLocation", MCPatcherUtils.RESOURCE_LOCATION_WITH_SOURCE_CLASS);
     }
 
