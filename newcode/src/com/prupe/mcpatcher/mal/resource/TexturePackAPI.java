@@ -9,6 +9,7 @@ import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -149,6 +150,10 @@ abstract public class TexturePackAPI {
         return new ResourceLocation(resource.getNamespace(), resource.getPath().replaceFirst(Pattern.quote(oldExt) + "$", newExt));
     }
 
+    public static ResourceLocation parsePath(String path) {
+        return MCPatcherUtils.isNullOrEmpty(path) ? null : instance.parsePath_Impl(path.replace(File.separatorChar, '/'));
+    }
+
     public static ResourceLocation parseResourceLocation(ResourceLocation baseResource, String path) {
         return MCPatcherUtils.isNullOrEmpty(path) ? null : instance.parseResourceLocation_Impl(baseResource, path);
     }
@@ -203,7 +208,7 @@ abstract public class TexturePackAPI {
 
     abstract protected String getFullPath_Impl(ResourceLocation resource);
 
-    abstract protected String parseNamespace_Impl(String path);
+    abstract protected ResourceLocation parsePath_Impl(String path);
 
     abstract protected ResourceLocation parseResourceLocation_Impl(ResourceLocation baseResource, String path);
 
@@ -273,8 +278,8 @@ abstract public class TexturePackAPI {
         }
 
         @Override
-        protected String parseNamespace_Impl(String path) {
-            return path.length() > 0 ? DEFAULT_NAMESPACE : null;
+        protected ResourceLocation parsePath_Impl(String path) {
+            return new ResourceLocation(path);
         }
 
         @Override
@@ -389,12 +394,12 @@ abstract public class TexturePackAPI {
         }
 
         @Override
-        protected String parseNamespace_Impl(String path) {
+        protected ResourceLocation parsePath_Impl(String path) {
             if (path.startsWith(ASSETS)) {
                 path = path.substring(ASSETS.length());
                 int slash = path.indexOf('/');
-                if (slash > 0) {
-                    return path.substring(0, slash - 1);
+                if (slash > 0 && slash + 1 < path.length()) {
+                    return new ResourceLocation(path.substring(0, slash), path.substring(slash + 1));
                 }
             }
             return null;
