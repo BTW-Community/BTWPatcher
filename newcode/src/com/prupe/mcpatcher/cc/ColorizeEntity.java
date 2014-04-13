@@ -12,9 +12,9 @@ import java.util.Properties;
 import java.util.Random;
 
 public class ColorizeEntity {
-    private static final ResourceLocation LAVA_DROP_COLORS = TexturePackAPI.newMCPatcherResourceLocation("colormap/lavadrop.png");
-    private static final ResourceLocation MYCELIUM_COLORS = TexturePackAPI.newMCPatcherResourceLocation("colormap/myceliumparticle.png");
-    private static final ResourceLocation XPORB_COLORS = TexturePackAPI.newMCPatcherResourceLocation("colormap/xporb.png");
+    private static final ResourceLocation LAVA_DROP_COLORS = TexturePackAPI.newMCPatcherResourceLocation("/misc/lavadropcolor.png", "colormap/lavadrop.png");
+    private static final ResourceLocation MYCELIUM_COLORS = TexturePackAPI.newMCPatcherResourceLocation("/misc/myceliumparticlecolor.png", "colormap/myceliumparticle.png");
+    private static final ResourceLocation XPORB_COLORS = TexturePackAPI.newMCPatcherResourceLocation("/misc/xporbcolor.png", "colormap/xporb.png");
 
     static float[] waterBaseColor; // particle.water
     private static float[] lavaDropColors; // misc/lavadropcolor.png

@@ -109,8 +109,9 @@ public class SkyRenderer {
 
         private void loadSkies() {
             for (int i = -1; ; i++) {
-                String path = "sky/world" + worldType + "/sky" + (i < 0 ? "" : String.valueOf(i)) + ".properties";
-                ResourceLocation resource = TexturePackAPI.newMCPatcherResourceLocation(path);
+                String v1Path = "/environment/sky" + worldType + "/sky" + (i < 0 ? "" : String.valueOf(i));
+                String v2Path = "sky/world" + worldType + "/sky" + (i < 0 ? "" : String.valueOf(i)) + ".properties";
+                ResourceLocation resource = TexturePackAPI.newMCPatcherResourceLocation(v1Path, v2Path);
                 Layer layer = Layer.create(resource);
                 if (layer == null) {
                     if (i > 0) {
@@ -125,8 +126,10 @@ public class SkyRenderer {
         }
 
         private void loadCelestialObject(String objName) {
-            ResourceLocation textureName = new ResourceLocation("textures/environment/" + objName + ".png");
-            ResourceLocation resource = TexturePackAPI.newMCPatcherResourceLocation("sky/world0/" + objName + ".properties");
+            ResourceLocation textureName = new ResourceLocation(TexturePackAPI.select("", "textures") + "/environment/" + objName + ".png");
+            String v1Path = "/environment/sky" + worldType + "/" + objName;
+            String v2Path = "sky/world0/" + objName + ".properties";
+            ResourceLocation resource = TexturePackAPI.newMCPatcherResourceLocation(v1Path, v2Path);
             Properties properties = TexturePackAPI.getProperties(resource);
             if (properties != null) {
                 properties.setProperty("fade", "false");

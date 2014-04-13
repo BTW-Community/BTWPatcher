@@ -158,8 +158,12 @@ abstract public class TexturePackAPI {
         return MCPatcherUtils.isNullOrEmpty(path) ? null : instance.parseResourceLocation_Impl(baseResource, path);
     }
 
-    public static ResourceLocation newMCPatcherResourceLocation(String path) {
-        return new ResourceLocation(MCPATCHER_SUBDIR + path);
+    public static String select(String v1Path, String v2Path) {
+        return instance.select_Impl(v1Path, v2Path);
+    }
+
+    public static ResourceLocation newMCPatcherResourceLocation(String v1Path, String v2Path) {
+        return new ResourceLocation(select(v1Path, MCPATCHER_SUBDIR + v2Path));
     }
 
     public static int getTextureIfLoaded(ResourceLocation resource) {

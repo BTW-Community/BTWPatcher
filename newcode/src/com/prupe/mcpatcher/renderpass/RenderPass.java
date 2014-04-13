@@ -15,7 +15,7 @@ import java.util.*;
 public class RenderPass {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.BETTER_GLASS);
 
-    private static final ResourceLocation RENDERPASS_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("renderpass.properties");
+    private static final ResourceLocation RENDERPASS_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("/renderpass.properties", "renderpass.properties");
 
     private static final Map<Block, Integer> baseRenderPass = new IdentityHashMap<Block, Integer>();
     private static final Map<Block, Integer> extraRenderPass = new IdentityHashMap<Block, Integer>();
