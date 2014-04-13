@@ -43,6 +43,12 @@ abstract public class TexturePackAPI {
 
     public static InputStream getInputStream(ResourceLocation resource) {
         try {
+            if (resource instanceof ResourceLocationWithSource) {
+                try {
+                    return instance.getInputStream_Impl(((ResourceLocationWithSource) resource).getSource(), resource);
+                } catch (IOException e) {
+                }
+            }
             return resource == null ? null : instance.getInputStream_Impl(resource);
         } catch (IOException e) {
             return null;
