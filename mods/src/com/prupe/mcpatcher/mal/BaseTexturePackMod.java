@@ -15,6 +15,8 @@ import static javassist.bytecode.Opcode.*;
 public class BaseTexturePackMod extends Mod {
     private static final List<EarlyInitEntry> earlyInitMethods = new ArrayList<EarlyInitEntry>();
 
+    private final int malVersion;
+
     protected final MethodRef earlyInitialize = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "earlyInitialize", "(Ljava/lang/String;Ljava/lang/String;)V");
     protected final MethodRef checkForTexturePackChange = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "checkForTexturePackChange", "()V");
     protected final MethodRef beforeChange1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "beforeChange1", "(Z)V");
@@ -25,6 +27,9 @@ public class BaseTexturePackMod extends Mod {
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
         version = "4.2";
+
+        malVersion = ResourceLocationMod.haveClass() ? 2 : 1;
+        setMALVersion("texturepack", malVersion);
 
         addClassMod(new MinecraftMod());
         addClassMod(new TextureManagerMod());
