@@ -3,7 +3,6 @@ package com.prupe.mcpatcher.mal.resource;
 import com.prupe.mcpatcher.MCPatcherUtils;
 
 final public class FakeResourceLocation {
-    static final String FIXED_NAMESPACE = TexturePackAPI.DEFAULT_NAMESPACE;
     private static final String GRID = "##";
     private static final String BLUR = "%blur%";
     private static final String CLAMP = "%clamp%";
@@ -33,17 +32,20 @@ final public class FakeResourceLocation {
         if ((clamp = path.startsWith(CLAMP))) {
             path = path.substring(CLAMP.length());
         }
-        this.path = path.startsWith("/") ? path : "/" + path;
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+        this.path = path;
         toString = (grid ? GRID : "") + (blur ? BLUR : "") + (clamp ? CLAMP : "") + path;
         hashCode = toString.hashCode();
     }
 
     public FakeResourceLocation(String path) {
-        this(FIXED_NAMESPACE, path);
+        this(TexturePackAPI.DEFAULT_NAMESPACE, path);
     }
 
     public String getNamespace() {
-        return FIXED_NAMESPACE;
+        return TexturePackAPI.DEFAULT_NAMESPACE;
     }
 
     public String getPath() {
@@ -75,7 +77,7 @@ final public class FakeResourceLocation {
             return false;
         }
         FakeResourceLocation that = (FakeResourceLocation) o;
-        return this.getPath().equals(that.getPath());
+        return this.toString().equals(that.toString());
     }
 
     @Override
