@@ -27,11 +27,11 @@ final public class MCPatcher {
     /**
      * MCPatcher release number
      */
-    public static final int RELEASE_VERSION = 2;
+    public static final int RELEASE_VERSION = 3;
     /**
      * MCPatcher patch level
      */
-    public static final int PATCH_VERSION = 2;
+    public static final int PATCH_VERSION = 0;
     /**
      * MCPatcher beta version if > 0
      */
@@ -49,7 +49,7 @@ final public class MCPatcher {
     static final String DISPLAY_VERSION_STRING = OVERRIDE_VERSION_STRING == null ?
         VERSION_STRING : OVERRIDE_VERSION_STRING;
 
-    public static final String API_VERSION = "20130818";
+    public static final String API_VERSION = "20140413";
 
     static ProfileManager profileManager;
     static MinecraftJar minecraft = null;
