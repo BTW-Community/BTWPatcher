@@ -32,24 +32,29 @@ public class BaseTexturePackMod extends Mod {
         setMALVersion("texturepack", malVersion);
 
         addClassMod(new MinecraftMod());
-        addClassMod(new TextureManagerMod());
-        addClassMod(new TextureUtilMod(this));
-        addClassMod(new AbstractTextureMod());
-        addClassMod(new ThreadDownloadImageDataMod());
-        addClassMod(new SimpleTextureMod(this));
+        if (malVersion == 1) {
+            addClassMod(new RenderEngineMod());
+            addClassMod(new ResourcePackRepositoryMod());
+        } else {
+            addClassMod(new TextureManagerMod());
+            addClassMod(new TextureUtilMod(this));
+            addClassMod(new AbstractTextureMod());
+            addClassMod(new ThreadDownloadImageDataMod());
+            addClassMod(new SimpleTextureMod(this));
+            addClassMod(new TextureAtlasMod(this));
+            addClassMod(new DynamicTextureMod(this));
+            addClassMod(new ResourceManagerMod());
+            addClassMod(new ReloadableResourceManagerMod());
+            addClassMod(new SimpleReloadableResourceManagerMod());
+            addClassMod(new FallbackResourceManagerMod());
+            addClassMod(new ResourceMod(this));
+        }
         addClassMod(new IconMod(this));
-        addClassMod(new TextureAtlasMod(this));
-        addClassMod(new DynamicTextureMod(this));
         addClassMod(new ResourcePackMod());
         addClassMod(new DefaultResourcePackMod());
         addClassMod(new AbstractResourcePackMod());
         addClassMod(new FileResourcePackMod());
         addClassMod(new FolderResourcePackMod());
-        addClassMod(new ResourceManagerMod());
-        addClassMod(new ReloadableResourceManagerMod());
-        addClassMod(new SimpleReloadableResourceManagerMod());
-        addClassMod(new FallbackResourceManagerMod());
-        addClassMod(new ResourceMod(this));
         ResourceLocationMod.setup(this);
 
         addClassFiles("com.prupe.mcpatcher.mal.resource.*");
@@ -94,6 +99,9 @@ public class BaseTexturePackMod extends Mod {
             final ClassRef textureResourceManagerClass = new ClassRef("SimpleReloadableResourceManager");
             final MethodRef getTextureManager = new MethodRef(getDeobfClass(), "getTextureManager", "()LTextureManager;");
             final MethodRef getResourceManager = new MethodRef(getDeobfClass(), "getResourceManager", "()LResourceManager;");
+            final FieldRef texturePackList = new FieldRef(getDeobfClass(), "texturePackList", "LResourcePackRepository;");
+            final FieldRef renderEngine = new FieldRef(getDeobfClass(), "renderEngine", "LRenderEngine;");
+            final MethodRef refreshTextureMaps = new MethodRef("RenderEngine", "refreshTextureMaps", "()V");
             final MethodRef startGame = new MethodRef(getDeobfClass(), "startGame", "()V");
             final MethodRef runGameLoop = new MethodRef(getDeobfClass(), "runGameLoop", "()V");
             final MethodRef setTitle = new MethodRef("org/lwjgl/opengl/Display", "setTitle", "(Ljava/lang/String;)V");
@@ -121,8 +129,13 @@ public class BaseTexturePackMod extends Mod {
                 }
             }.setMethod(runGameLoop));
 
-            addMemberMapper(new MethodMapper(getResourceManager));
-            addMemberMapper(new MethodMapper(getTextureManager));
+            if (malVersion == 1) {
+                addMemberMapper(new FieldMapper(texturePackList));
+                addMemberMapper(new FieldMapper(renderEngine));
+            } else {
+                addMemberMapper(new MethodMapper(getResourceManager));
+                addMemberMapper(new MethodMapper(getTextureManager));
+            }
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -132,6 +145,18 @@ public class BaseTexturePackMod extends Mod {
 
                 @Override
                 public String getMatchExpression() {
+                    return malVersion == 1 ? getMatchExpression1() : getMatchExpression2();
+                }
+
+                private String getMatchExpression1() {
+                    return buildExpression(
+                        ALOAD_0,
+                        reference(GETFIELD, renderEngine),
+                        reference(INVOKEVIRTUAL, refreshTextureMaps)
+                    );
+                }
+
+                private String getMatchExpression2() {
                     return buildExpression(
                         reference(NEW, textureResourceManagerClass),
                         any(0, 700),
@@ -302,26 +327,58 @@ public class BaseTexturePackMod extends Mod {
 
     private class ResourcePackMod extends ClassMod {
         ResourcePackMod() {
-            String nsType = getMinecraftVersion().compareTo("13w25c") >= 0 ? "Set" : "List";
-            boolean newMCMeta = getMinecraftVersion().compareTo("13w26a") >= 0;
-            addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "getInputStream", "(LResourceLocation;)Ljava/io/InputStream;"),
-                new InterfaceMethodRef(getDeobfClass(), "hasResource", "(LResourceLocation;)Z"),
-                new InterfaceMethodRef(getDeobfClass(), "getNamespaces", "()Ljava/util/" + nsType + ";"),
-                newMCMeta ?
-                    new InterfaceMethodRef(getDeobfClass(), "getMCMeta", "(LMetadataSectionSerializer;Ljava/lang/String;)LMCMeta;") :
-                    new InterfaceMethodRef(getDeobfClass(), "getPackInfo", "(LMetadataSectionSerializer;)LPackMetadataSection;"),
-                new InterfaceMethodRef(getDeobfClass(), "getPackIcon", "()Ljava/awt/image/BufferedImage;"),
-                newMCMeta ?
-                    new InterfaceMethodRef(getDeobfClass(), "getName", "()Ljava/lang/String;") : null
-            ).setInterfaceOnly(true));
+            String d = ResourceLocationMod.getDescriptor();
+            List<InterfaceMethodRef> tmp = new ArrayList<InterfaceMethodRef>();
+            if (malVersion == 1) {
+                tmp.add(new InterfaceMethodRef(getDeobfClass(), "deleteTexturePack", "(LRenderEngine;)V"));
+                tmp.add(new InterfaceMethodRef(getDeobfClass(), "bindThumbnailTexture", "(LRenderEngine;)V"));
+                tmp.add(new InterfaceMethodRef(getDeobfClass(), "getInputStream2", "(" + d + "Z)Ljava/io/InputStream;"));
+                tmp.add(new InterfaceMethodRef(getDeobfClass(), "getInputStream", "(" + d + ")Ljava/io/InputStream;"));
+                tmp.add(new InterfaceMethodRef(getDeobfClass(), "getTexturePackID", "()Ljava/lang/String;"));
+                tmp.add(new InterfaceMethodRef(getDeobfClass(), "getTexturePackFileName", "()Ljava/lang/String;"));
+                tmp.add(new InterfaceMethodRef(getDeobfClass(), "getFirstDescriptionLine", "()Ljava/lang/String;"));
+                tmp.add(new InterfaceMethodRef(getDeobfClass(), "getSecondDescriptionLine", "()Ljava/lang/String;"));
+                tmp.add(new InterfaceMethodRef(getDeobfClass(), "hasResource", "(Ljava/lang/String;Z)Z"));
+                if (getMinecraftVersion().compareTo("1.5") < 0) {
+                    tmp.add(new InterfaceMethodRef(getDeobfClass(), "getTexturePackResolution", "()I"));
+                }
+                tmp.add(new InterfaceMethodRef(getDeobfClass(), "isCompatible", "()Z"));
+            } else {
+                String nsType = getMinecraftVersion().compareTo("13w25c") >= 0 ? "Set" : "List";
+                boolean newMCMeta = getMinecraftVersion().compareTo("13w26a") >= 0;
+                tmp.add(new InterfaceMethodRef(getDeobfClass(), "getInputStream", "(" + d + ")Ljava/io/InputStream;"));
+                tmp.add(new InterfaceMethodRef(getDeobfClass(), "hasResource", "(" + d + ")Z"));
+                tmp.add(new InterfaceMethodRef(getDeobfClass(), "getNamespaces", "()Ljava/util/" + nsType + ";"));
+                if (newMCMeta) {
+                    tmp.add(new InterfaceMethodRef(getDeobfClass(), "getMCMeta", "(LMetadataSectionSerializer;Ljava/lang/String;)LMCMeta;"));
+                } else {
+                    tmp.add(new InterfaceMethodRef(getDeobfClass(), "getPackInfo", "(LMetadataSectionSerializer;)LPackMetadataSection;"));
+                }
+                tmp.add(new InterfaceMethodRef(getDeobfClass(), "getPackIcon", "()Ljava/awt/image/BufferedImage;"));
+                if (newMCMeta) {
+                    tmp.add(new InterfaceMethodRef(getDeobfClass(), "getName", "()Ljava/lang/String;"));
+                }
+            }
+            addClassSignature(new InterfaceSignature(tmp.toArray(new InterfaceMethodRef[tmp.size()])).setInterfaceOnly(true));
         }
     }
 
     private class DefaultResourcePackMod extends ClassMod {
         DefaultResourcePackMod() {
-            setInterfaces("ResourcePack");
+            if (malVersion == 1) {
+                setup15();
+            } else {
+                setup16();
+            }
+        }
 
+        private void setup15() {
+            setParentClass("AbstractResourcePack");
+
+            addClassSignature(new ConstSignature("The default look of Minecraft"));
+        }
+
+        private void setup16() {
             final FieldRef map = new FieldRef(getDeobfClass(), "map", "Ljava/util/Map;");
 
             addClassSignature(new ConstSignature("minecraft"));
@@ -339,8 +396,12 @@ public class BaseTexturePackMod extends Mod {
 
             final FieldRef file = new FieldRef(getDeobfClass(), "file", "Ljava/io/File;");
 
-            addClassSignature(new ConstSignature("assets"));
-            addClassSignature(new ConstSignature("pack.mcmeta"));
+            if (malVersion == 1) {
+                addClassSignature(new ConstSignature("/pack.txt"));
+            } else {
+                addClassSignature(new ConstSignature("assets"));
+                addClassSignature(new ConstSignature("pack.mcmeta"));
+            }
 
             addMemberMapper(new FieldMapper(file));
 
@@ -354,8 +415,13 @@ public class BaseTexturePackMod extends Mod {
 
             final FieldRef zipFile = new FieldRef(getDeobfClass(), "zipFile", "Ljava/util/zip/ZipFile;");
 
-            addClassSignature(new ConstSignature("assets/"));
-            addClassSignature(new ConstSignature(new ClassRef("java/util/zip/ZipFile")));
+            if (malVersion == 1) {
+                addClassSignature(new ConstSignature("textures/"));
+            } else {
+                addClassSignature(new ConstSignature("assets/"));
+            }
+            addClassSignature(new ConstSignature(new MethodRef("java/util/zip/ZipFile", "getEntry", "(Ljava/lang/String;)Ljava/util/zip/ZipEntry;")));
+            addClassSignature(new ConstSignature(new MethodRef("java/util/zip/ZipFile", "close", "()V")));
 
             addMemberMapper(new FieldMapper(zipFile));
 
@@ -367,8 +433,26 @@ public class BaseTexturePackMod extends Mod {
         FolderResourcePackMod() {
             setParentClass("AbstractResourcePack");
 
-            addClassSignature(new ConstSignature("assets/"));
-            addClassSignature(new ConstSignature(new ClassRef("java/io/FileInputStream")));
+            if (malVersion == 1) {
+                final MethodRef substring = new MethodRef("java/lang/String", "substring", "(I)Ljava/lang/String;");
+
+                addClassSignature(new ConstSignature(new ClassRef("java.io.FileInputStream")));
+
+                addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            ALOAD_1,
+                            push(1),
+                            reference(INVOKEVIRTUAL, substring)
+                        );
+                    }
+                });
+
+            } else {
+                addClassSignature(new ConstSignature("assets/"));
+                addClassSignature(new ConstSignature(new ClassRef("java/io/FileInputStream")));
+            }
         }
     }
 
@@ -501,6 +585,473 @@ public class BaseTexturePackMod extends Mod {
             addMemberMapper(new FieldMapper(resourcePacks));
 
             addPatch(new MakeMemberPublicPatch(resourcePacks));
+        }
+    }
+
+    private class RenderEngineMod extends ClassMod {
+        final FieldRef textureMapBlocks = new FieldRef(getDeobfClass(), "textureMapBlocks", "LTextureMap;");
+        final FieldRef textureMapItems = new FieldRef(getDeobfClass(), "textureMapItems", "LTextureMap;");
+        final MethodRef updateDynamicTextures = new MethodRef(getDeobfClass(), "updateDynamicTextures", "()V");
+        final MethodRef refreshTextureMaps = new MethodRef(getDeobfClass(), "refreshTextureMaps", "()V");
+        final MethodRef glTexSubImage2DByte = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V");
+        final MethodRef glTexSubImage2DInt = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
+        final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "()V");
+        final MethodRef allocateAndSetupTexture = new MethodRef(getDeobfClass(), "allocateAndSetupTexture", "(Ljava/awt/image/BufferedImage;)I");
+        final FieldRef imageData = new FieldRef(getDeobfClass(), "imageData", "Ljava/nio/IntBuffer;");
+        final FieldRef missingTextureImage = new FieldRef(getDeobfClass(), "missingTextureImage", "Ljava/awt/image/BufferedImage;");
+        final MethodRef deleteTexture = new MethodRef(getDeobfClass(), "deleteTexture", "(I)V");
+        final MethodRef setupTexture = new MethodRef(getDeobfClass(), "setupTexture", "(Ljava/awt/image/BufferedImage;I)V");
+        final MethodRef setupTextureExt = new MethodRef(getDeobfClass(), "setupTextureExt", "(Ljava/awt/image/BufferedImage;IZZ)V");
+        final MethodRef getImageContents = new MethodRef(getDeobfClass(), "getImageContents", "(Ljava/awt/image/BufferedImage;[I)[I");
+        final MethodRef readTextureImage = new MethodRef(getDeobfClass(), "readTextureImage", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
+        final MethodRef bindTextureByName = new MethodRef(getDeobfClass(), "bindTextureByName", "(Ljava/lang/String;)V");
+        final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(I)V");
+        final MethodRef resetBoundTexture = new MethodRef(getDeobfClass(), "resetBoundTexture", "()V");
+        final MethodRef clear = new MethodRef("java/nio/IntBuffer", "clear", "()Ljava/nio/Buffer;");
+        final MethodRef put = new MethodRef("java/nio/IntBuffer", "put", "([I)Ljava/nio/IntBuffer;");
+        final MethodRef position = new MethodRef("java/nio/IntBuffer", "position", "(I)Ljava/nio/Buffer;");
+        final MethodRef limit = new MethodRef("java/nio/Buffer", "limit", "(I)Ljava/nio/Buffer;");
+        final MethodRef getIntBuffer = new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getIntBuffer", "(Ljava/nio/IntBuffer;[I)Ljava/nio/IntBuffer;");
+        final MethodRef getSelectedTexturePack = new MethodRef("TexturePackList", "getSelectedTexturePack", "()LITexturePack;");
+        final InterfaceMethodRef getResourceAsStream = new InterfaceMethodRef("ITexturePack", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
+
+        private String updateAnimationsMapped;
+
+        public RenderEngineMod() {
+            addClassSignature(new ConstSignature("%clamp%"));
+            addClassSignature(new ConstSignature("%blur%"));
+            addClassSignature(new OrSignature(
+                new ConstSignature(glTexSubImage2DByte),
+                new ConstSignature(glTexSubImage2DInt)
+            ));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push("%blur%")
+                    );
+                }
+            }.setMethod(refreshTextures));
+
+            // updateAnimations and refreshTextureMaps are identical up to obfuscation:
+            // public void xxx() {
+            //   this.terrain.yyy();
+            //   this.items.yyy();
+            // }
+            // They're even called from similar methods, runTick() and startGame() in Minecraft.java.
+            // Normal descriptor and bytecode matching is insufficient here, so we rely on the fact
+            // that updateAnimations is defined first.
+            addClassSignature(new VoidSignature(updateDynamicTextures, "updateAnimations") {
+                @Override
+                public boolean afterMatch() {
+                    updateAnimationsMapped = getMethodInfo().getName();
+                    return true;
+                }
+            });
+
+            addClassSignature(new VoidSignature(refreshTextureMaps, "refreshTextures") {
+                @Override
+                public boolean filterMethod() {
+                    return updateAnimationsMapped != null && getMethodInfo().getName().compareTo(updateAnimationsMapped) > 0;
+                }
+            });
+
+            addMemberMapper(new FieldMapper(imageData));
+            addMemberMapper(new MethodMapper(allocateAndSetupTexture));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(or(
+                        build(reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(Ljava/nio/IntBuffer;)V"))),
+                        build(reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(I)V")))
+                    ));
+                }
+            }.setMethod(deleteTexture));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V"))
+                    );
+                }
+            }.setMethod(bindTexture));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin(),
+                        ALOAD_0,
+                        push(-1)
+                    );
+                }
+            }.setMethod(resetBoundTexture));
+
+            addMemberMapper(new FieldMapper(missingTextureImage));
+            addMemberMapper(new MethodMapper(setupTexture));
+            addMemberMapper(new MethodMapper(setupTextureExt));
+            addMemberMapper(new MethodMapper(getImageContents));
+            addMemberMapper(new MethodMapper(readTextureImage));
+            addMemberMapper(new MethodMapper(bindTextureByName));
+
+            addPatch(new MakeMemberPublicPatch(bindTexture));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "imageData.clear(), .put(), .limit() -> imageData = TexturePackAPI.getIntBuffer()";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // imageData.clear();
+                        ALOAD_0,
+                        reference(GETFIELD, imageData),
+                        reference(INVOKEVIRTUAL, clear),
+                        POP,
+
+                        // imageData.put($1);
+                        ALOAD_0,
+                        reference(GETFIELD, imageData),
+                        capture(any(1, 5)),
+                        reference(INVOKEVIRTUAL, put),
+                        POP,
+
+                        // imageData.position(0).limit($1.length);
+                        ALOAD_0,
+                        reference(GETFIELD, imageData),
+                        ICONST_0,
+                        reference(INVOKEVIRTUAL, position),
+                        backReference(1),
+                        ARRAYLENGTH,
+                        reference(INVOKEVIRTUAL, limit),
+                        POP
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // imageData = TexturePackAPI.getByteBuffer(imageData, $1);
+                        ALOAD_0,
+                        ALOAD_0,
+                        reference(GETFIELD, imageData),
+                        getCaptureGroup(1),
+                        reference(INVOKESTATIC, getIntBuffer),
+                        reference(PUTFIELD, imageData)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "readTextureImage(getResourceAsStream(...)) -> getImage(...)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKEINTERFACE, getResourceAsStream),
+                        reference(INVOKESPECIAL, readTextureImage)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)Ljava/awt/image/BufferedImage;"))
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "getResourceAsStream(...), readTextureImage -> getImage(...)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // InputStream inputStream = this.texturePackList.getSelectedTexturePack().getResourceAsStream(var1);
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        reference(INVOKEVIRTUAL, getSelectedTexturePack),
+                        ALOAD_1,
+                        reference(INVOKEINTERFACE, getResourceAsStream),
+                        ASTORE, capture(any()),
+
+                        // if (inputStream == null) {
+                        ALOAD, backReference(1),
+                        IFNONNULL, any(2),
+
+                        // this.setupTexture(this.missingTextureImage, texture, blur, clamp);
+                        ALOAD_0,
+                        ALOAD_0,
+                        reference(GETFIELD, missingTextureImage),
+                        capture(build(
+                            anyILOAD,
+                            anyILOAD,
+                            anyILOAD,
+                            reference(INVOKEVIRTUAL, setupTextureExt)
+                        )),
+
+                        // } else {
+                        GOTO, any(2),
+
+                        // this.setupTexture(this.readTextureImage(inputStream, texture, blur, clamp);
+                        // -or-
+                        // image = this.readTextureImage(inputStream, texture, blur, clamp);
+                        // ...
+                        // this.setupTexture(image, texture, blur, clamp);
+                        optional(build(ALOAD_0)),
+                        ALOAD_0,
+                        ALOAD, backReference(1),
+                        reference(INVOKESPECIAL, readTextureImage),
+                        capture(any(0, 20)),
+                        backReference(2)
+
+                        // }
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    int reg = getMethodInfo().getCodeAttribute().getMaxLocals();
+                    return buildCode(
+                        // BufferedImage image = TexturePackAPI.getImage(var1);
+                        ALOAD_1,
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(Ljava/lang/String;)Ljava/awt/image/BufferedImage;")),
+                        ASTORE, reg,
+
+                        // if (image == null) {
+                        ALOAD, reg,
+                        IFNONNULL, branch("A"),
+
+                        ALOAD_0,
+                        reference(GETFIELD, missingTextureImage),
+                        ASTORE, reg,
+
+                        // }
+                        label("A"),
+
+                        // ...
+                        // this.setupTextureExt(image, ...);
+                        getCaptureGroup(3).length > 0 ? buildCode(ALOAD, reg, getCaptureGroup(3)) : new byte[0],
+                        ALOAD_0,
+                        ALOAD, reg,
+                        getCaptureGroup(2)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "null check in setupTexture";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_1,
+                        IFNONNULL, branch("A"),
+                        RETURN,
+                        label("A")
+                    );
+                }
+            }.targetMethod(setupTextureExt));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "null check in getImageContents";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_1,
+                        IFNONNULL, branch("A"),
+                        ALOAD_2,
+                        ARETURN,
+                        label("A")
+                    );
+                }
+            }.targetMethod(getImageContents));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "null check in readTextureImage";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_1,
+                        IFNONNULL, branch("A"),
+                        ACONST_NULL,
+                        ARETURN,
+                        label("A")
+                    );
+                }
+            }.targetMethod(readTextureImage));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "before texture refresh";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        push(0),
+                        reference(INVOKESTATIC, beforeChange1)
+                    );
+                }
+            }.targetMethod(refreshTextures));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "after texture refresh";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        RETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        push(0),
+                        reference(INVOKESTATIC, afterChange1)
+                    );
+                }
+            }
+                .setInsertBefore(true)
+                .targetMethod(refreshTextures)
+            );
+        }
+
+        private class VoidSignature extends BytecodeSignature {
+            VoidSignature(MethodRef method, String textureMethod) {
+                setMethod(method);
+                addXref(1, textureMapBlocks);
+                addXref(2, new MethodRef("TextureMap", textureMethod, "()V"));
+                addXref(3, textureMapItems);
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    begin(),
+                    ALOAD_0,
+                    captureReference(GETFIELD),
+                    captureReference(INVOKEVIRTUAL),
+                    ALOAD_0,
+                    captureReference(GETFIELD),
+                    backReference(2),
+                    RETURN,
+                    end()
+                );
+            }
+        }
+    }
+
+    private class ResourcePackRepositoryMod extends ClassMod {
+        ResourcePackRepositoryMod() {
+            final FieldRef selectedTexturePack = new FieldRef(getDeobfClass(), "selectedTexturePack", "LResourcePack;");
+            final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
+            final MethodRef getSelectedTexturePack = new MethodRef(getDeobfClass(), "getSelectedTexturePack", "()LResourcePack;");
+            final MethodRef setTexturePack = new MethodRef(getDeobfClass(), "setTexturePack", "(LResourcePack;)Z");
+            final MethodRef updateAvailableTexturePacks = new MethodRef(getDeobfClass(), "updateAvailableTexturePacks", "()V");
+            final MethodRef onDownloadFinished = new MethodRef(getDeobfClass(), "onDownloadFinished", "()V");
+            final MethodRef scheduleTexturePackRefresh = new MethodRef("Minecraft", "scheduleTexturePackRefresh", "()V");
+
+            addClassSignature(new ConstSignature(".zip"));
+            addClassSignature(new ConstSignature("texturepacks"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.availableTexturePacks.removeAll();
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        ALOAD_1,
+                        reference(INVOKEINTERFACE, new InterfaceMethodRef("java/util/List", "removeAll", "(Ljava/util/Collection;)Z")),
+                        POP
+                    );
+                }
+            }.setMethod(updateAvailableTexturePacks));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.mc.scheduleTexturePackRefresh();
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        captureReference(INVOKEVIRTUAL)
+                    );
+                }
+            }
+                .setMethod(onDownloadFinished)
+                .addXref(1, mc)
+                .addXref(2, scheduleTexturePackRefresh)
+            );
+
+            addMemberMapper(new MethodMapper(setTexturePack));
+
+            addMemberMapper(new FieldMapper(selectedTexturePack)
+                .accessFlag(AccessFlag.PRIVATE, true)
+                .accessFlag(AccessFlag.STATIC, false)
+                .accessFlag(AccessFlag.FINAL, false)
+            );
+
+            addMemberMapper(new MethodMapper(getSelectedTexturePack)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, false)
+            );
         }
     }
 }
