@@ -605,7 +605,9 @@ public class BaseTexturePackMod extends Mod {
             final MethodRef put = new MethodRef("java/nio/IntBuffer", "put", "([I)Ljava/nio/IntBuffer;");
             final MethodRef position = new MethodRef("java/nio/IntBuffer", "position", "(I)Ljava/nio/Buffer;");
             final MethodRef limit = new MethodRef("java/nio/Buffer", "limit", "(I)Ljava/nio/Buffer;");
-            final MethodRef getIntBuffer = new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getIntBuffer", "(Ljava/nio/IntBuffer;[I)Ljava/nio/IntBuffer;");
+            final MethodRef getIntBuffer = new MethodRef(MCPatcherUtils.FAKE_RESOURCE_LOCATION_CLASS, "getIntBuffer", "(Ljava/nio/IntBuffer;[I)Ljava/nio/IntBuffer;");
+            final MethodRef getImage1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(Ljava/lang/String;)Ljava/awt/image/BufferedImage;");
+            final MethodRef getImage3 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)Ljava/awt/image/BufferedImage;");
             final MethodRef getSelectedTexturePack = new MethodRef("ResourcePackRepository", "getSelectedTexturePack", "()LResourcePack;");
             final InterfaceMethodRef getInputStream = new InterfaceMethodRef("ResourcePack", "getInputStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
             final MethodRef glDeleteTextures1 = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(Ljava/nio/IntBuffer;)V");
@@ -660,20 +662,20 @@ public class BaseTexturePackMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // imageData.clear();
+                        // this.imageData.clear();
                         ALOAD_0,
                         reference(GETFIELD, imageData),
                         reference(INVOKEVIRTUAL, clear),
                         POP,
 
-                        // imageData.put($1);
+                        // this.imageData.put($1);
                         ALOAD_0,
                         reference(GETFIELD, imageData),
                         capture(any(1, 5)),
                         reference(INVOKEVIRTUAL, put),
                         POP,
 
-                        // imageData.position(0).limit($1.length);
+                        // this.imageData.position(0).limit($1.length);
                         ALOAD_0,
                         reference(GETFIELD, imageData),
                         ICONST_0,
@@ -688,7 +690,7 @@ public class BaseTexturePackMod extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // imageData = TexturePackAPI.getByteBuffer(imageData, $1);
+                        // this.imageData = TexturePackAPI.getIntBuffer(this.imageData, $1);
                         ALOAD_0,
                         ALOAD_0,
                         reference(GETFIELD, imageData),
@@ -716,7 +718,7 @@ public class BaseTexturePackMod extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)Ljava/awt/image/BufferedImage;"))
+                        reference(INVOKESTATIC, getImage3)
                     );
                 }
             });
@@ -778,7 +780,7 @@ public class BaseTexturePackMod extends Mod {
                     return buildCode(
                         // BufferedImage image = TexturePackAPI.getImage(var1);
                         ALOAD_1,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(Ljava/lang/String;)Ljava/awt/image/BufferedImage;")),
+                        reference(INVOKESTATIC, getImage1),
                         ASTORE, reg,
 
                         // if (image == null) {

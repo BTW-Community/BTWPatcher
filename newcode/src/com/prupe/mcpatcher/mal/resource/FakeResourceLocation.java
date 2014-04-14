@@ -1,8 +1,14 @@
 package com.prupe.mcpatcher.mal.resource;
 
+import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+
 final public class FakeResourceLocation {
+    private static final MCLogger logger = MCLogger.getLogger("Texture Pack");
+
     private static final String GRID = "##";
     private static final String BLUR = "%blur%";
     private static final String CLAMP = "%clamp%";
@@ -20,6 +26,19 @@ final public class FakeResourceLocation {
 
     public static String unwrap(FakeResourceLocation resourceLocation) {
         return resourceLocation == null ? null : resourceLocation.getPath();
+    }
+
+    public static IntBuffer getIntBuffer(IntBuffer buffer, int[] data) {
+        buffer.clear();
+        final int have = buffer.capacity();
+        final int needed = data.length;
+        if (needed > have) {
+            logger.finest("resizing gl buffer from 0x%x to 0x%x", have, needed);
+            buffer = ByteBuffer.allocateDirect(4 * needed).order(buffer.order()).asIntBuffer();
+        }
+        buffer.put(data);
+        buffer.position(0).limit(needed);
+        return buffer;
     }
 
     public FakeResourceLocation(String namespace, String path) {
@@ -70,13 +89,12 @@ final public class FakeResourceLocation {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object that) {
+        if (this == that) {
             return true;
-        } else if (!(o instanceof FakeResourceLocation)) {
+        } else if (!(that instanceof FakeResourceLocation)) {
             return false;
         }
-        FakeResourceLocation that = (FakeResourceLocation) o;
         return this.toString().equals(that.toString());
     }
 
