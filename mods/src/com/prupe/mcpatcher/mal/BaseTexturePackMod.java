@@ -588,84 +588,36 @@ public class BaseTexturePackMod extends Mod {
         }
     }
 
-    private class RenderEngineMod extends ClassMod {
-        final FieldRef textureMapBlocks = new FieldRef(getDeobfClass(), "textureMapBlocks", "LTextureMap;");
-        final FieldRef textureMapItems = new FieldRef(getDeobfClass(), "textureMapItems", "LTextureMap;");
-        final MethodRef updateDynamicTextures = new MethodRef(getDeobfClass(), "updateDynamicTextures", "()V");
-        final MethodRef refreshTextureMaps = new MethodRef(getDeobfClass(), "refreshTextureMaps", "()V");
-        final MethodRef glTexSubImage2DByte = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V");
-        final MethodRef glTexSubImage2DInt = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/IntBuffer;)V");
-        final MethodRef refreshTextures = new MethodRef(getDeobfClass(), "refreshTextures", "()V");
-        final MethodRef allocateAndSetupTexture = new MethodRef(getDeobfClass(), "allocateAndSetupTexture", "(Ljava/awt/image/BufferedImage;)I");
-        final FieldRef imageData = new FieldRef(getDeobfClass(), "imageData", "Ljava/nio/IntBuffer;");
-        final FieldRef missingTextureImage = new FieldRef(getDeobfClass(), "missingTextureImage", "Ljava/awt/image/BufferedImage;");
-        final MethodRef deleteTexture = new MethodRef(getDeobfClass(), "deleteTexture", "(I)V");
-        final MethodRef setupTexture = new MethodRef(getDeobfClass(), "setupTexture", "(Ljava/awt/image/BufferedImage;I)V");
-        final MethodRef setupTextureExt = new MethodRef(getDeobfClass(), "setupTextureExt", "(Ljava/awt/image/BufferedImage;IZZ)V");
-        final MethodRef getImageContents = new MethodRef(getDeobfClass(), "getImageContents", "(Ljava/awt/image/BufferedImage;[I)[I");
-        final MethodRef readTextureImage = new MethodRef(getDeobfClass(), "readTextureImage", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
-        final MethodRef bindTextureByName = new MethodRef(getDeobfClass(), "bindTextureByName", "(Ljava/lang/String;)V");
-        final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(I)V");
-        final MethodRef resetBoundTexture = new MethodRef(getDeobfClass(), "resetBoundTexture", "()V");
-        final MethodRef clear = new MethodRef("java/nio/IntBuffer", "clear", "()Ljava/nio/Buffer;");
-        final MethodRef put = new MethodRef("java/nio/IntBuffer", "put", "([I)Ljava/nio/IntBuffer;");
-        final MethodRef position = new MethodRef("java/nio/IntBuffer", "position", "(I)Ljava/nio/Buffer;");
-        final MethodRef limit = new MethodRef("java/nio/Buffer", "limit", "(I)Ljava/nio/Buffer;");
-        final MethodRef getIntBuffer = new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getIntBuffer", "(Ljava/nio/IntBuffer;[I)Ljava/nio/IntBuffer;");
-        final MethodRef getSelectedTexturePack = new MethodRef("TexturePackList", "getSelectedTexturePack", "()LITexturePack;");
-        final InterfaceMethodRef getResourceAsStream = new InterfaceMethodRef("ITexturePack", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
-
-        private String updateAnimationsMapped;
-
+    private class RenderEngineMod extends com.prupe.mcpatcher.basemod.RenderEngineMod {
         public RenderEngineMod() {
-            addClassSignature(new ConstSignature("%clamp%"));
-            addClassSignature(new ConstSignature("%blur%"));
-            addClassSignature(new OrSignature(
-                new ConstSignature(glTexSubImage2DByte),
-                new ConstSignature(glTexSubImage2DInt)
-            ));
+            super(BaseTexturePackMod.this);
 
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push("%blur%")
-                    );
-                }
-            }.setMethod(refreshTextures));
-
-            // updateAnimations and refreshTextureMaps are identical up to obfuscation:
-            // public void xxx() {
-            //   this.terrain.yyy();
-            //   this.items.yyy();
-            // }
-            // They're even called from similar methods, runTick() and startGame() in Minecraft.java.
-            // Normal descriptor and bytecode matching is insufficient here, so we rely on the fact
-            // that updateAnimations is defined first.
-            addClassSignature(new VoidSignature(updateDynamicTextures, "updateAnimations") {
-                @Override
-                public boolean afterMatch() {
-                    updateAnimationsMapped = getMethodInfo().getName();
-                    return true;
-                }
-            });
-
-            addClassSignature(new VoidSignature(refreshTextureMaps, "refreshTextures") {
-                @Override
-                public boolean filterMethod() {
-                    return updateAnimationsMapped != null && getMethodInfo().getName().compareTo(updateAnimationsMapped) > 0;
-                }
-            });
-
-            addMemberMapper(new FieldMapper(imageData));
-            addMemberMapper(new MethodMapper(allocateAndSetupTexture));
+            final FieldRef missingTextureImage = new FieldRef(getDeobfClass(), "missingTextureImage", "Ljava/awt/image/BufferedImage;");
+            final MethodRef deleteTexture = new MethodRef(getDeobfClass(), "deleteTexture", "(I)V");
+            final MethodRef setupTexture = new MethodRef(getDeobfClass(), "setupTexture", "(Ljava/awt/image/BufferedImage;I)V");
+            final MethodRef setupTextureExt = new MethodRef(getDeobfClass(), "setupTextureExt", "(Ljava/awt/image/BufferedImage;IZZ)V");
+            final MethodRef getImageContents = new MethodRef(getDeobfClass(), "getImageContents", "(Ljava/awt/image/BufferedImage;[I)[I");
+            final MethodRef readTextureImage = new MethodRef(getDeobfClass(), "readTextureImage", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
+            final MethodRef bindTextureByName = new MethodRef(getDeobfClass(), "bindTextureByName", "(Ljava/lang/String;)V");
+            final MethodRef bindTexture = new MethodRef(getDeobfClass(), "bindTexture", "(I)V");
+            final MethodRef resetBoundTexture = new MethodRef(getDeobfClass(), "resetBoundTexture", "()V");
+            final MethodRef clear = new MethodRef("java/nio/IntBuffer", "clear", "()Ljava/nio/Buffer;");
+            final MethodRef put = new MethodRef("java/nio/IntBuffer", "put", "([I)Ljava/nio/IntBuffer;");
+            final MethodRef position = new MethodRef("java/nio/IntBuffer", "position", "(I)Ljava/nio/Buffer;");
+            final MethodRef limit = new MethodRef("java/nio/Buffer", "limit", "(I)Ljava/nio/Buffer;");
+            final MethodRef getIntBuffer = new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getIntBuffer", "(Ljava/nio/IntBuffer;[I)Ljava/nio/IntBuffer;");
+            final MethodRef getSelectedTexturePack = new MethodRef("TexturePackList", "getSelectedTexturePack", "()LITexturePack;");
+            final InterfaceMethodRef getResourceAsStream = new InterfaceMethodRef("ITexturePack", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
+            final MethodRef glDeleteTextures1 = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(Ljava/nio/IntBuffer;)V");
+            final MethodRef glDeleteTextures2 = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(I)V");
+            final MethodRef glBindTexture = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(or(
-                        build(reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(Ljava/nio/IntBuffer;)V"))),
-                        build(reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(I)V")))
+                        build(reference(INVOKESTATIC, glDeleteTextures1)),
+                        build(reference(INVOKESTATIC, glDeleteTextures2))
                     ));
                 }
             }.setMethod(deleteTexture));
@@ -674,7 +626,7 @@ public class BaseTexturePackMod extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V"))
+                        reference(INVOKESTATIC, glBindTexture)
                     );
                 }
             }.setMethod(bindTexture));
@@ -971,30 +923,6 @@ public class BaseTexturePackMod extends Mod {
                 .targetMethod(refreshTextures)
             );
         }
-
-        private class VoidSignature extends BytecodeSignature {
-            VoidSignature(MethodRef method, String textureMethod) {
-                setMethod(method);
-                addXref(1, textureMapBlocks);
-                addXref(2, new MethodRef("TextureMap", textureMethod, "()V"));
-                addXref(3, textureMapItems);
-            }
-
-            @Override
-            public String getMatchExpression() {
-                return buildExpression(
-                    begin(),
-                    ALOAD_0,
-                    captureReference(GETFIELD),
-                    captureReference(INVOKEVIRTUAL),
-                    ALOAD_0,
-                    captureReference(GETFIELD),
-                    backReference(2),
-                    RETURN,
-                    end()
-                );
-            }
-        }
     }
 
     private class ResourcePackRepositoryMod extends ClassMod {
@@ -1049,8 +977,8 @@ public class BaseTexturePackMod extends Mod {
             );
 
             addMemberMapper(new MethodMapper(getSelectedTexturePack)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, false)
             );
         }
     }
