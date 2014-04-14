@@ -697,79 +697,9 @@ public class BaseTexturePackMod extends Mod {
                 }
             });
 
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "null check in setupTexture";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        begin()
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        ALOAD_1,
-                        IFNONNULL, branch("A"),
-                        RETURN,
-                        label("A")
-                    );
-                }
-            }.targetMethod(setupTextureExt));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "null check in getImageContents";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        begin()
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        ALOAD_1,
-                        IFNONNULL, branch("A"),
-                        ALOAD_2,
-                        ARETURN,
-                        label("A")
-                    );
-                }
-            }.targetMethod(getImageContents));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "null check in readTextureImage";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        begin()
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        ALOAD_1,
-                        IFNONNULL, branch("A"),
-                        ACONST_NULL,
-                        ARETURN,
-                        label("A")
-                    );
-                }
-            }.targetMethod(readTextureImage));
+            addNullCheckPatch(setupTextureExt, 1, new int[]{RETURN});
+            addNullCheckPatch(getImageContents, 1, new int[]{ALOAD_2, ARETURN});
+            addNullCheckPatch(readTextureImage, 1, new int[]{ACONST_NULL, ARETURN});
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -817,6 +747,32 @@ public class BaseTexturePackMod extends Mod {
                 .setInsertBefore(true)
                 .targetMethod(refreshTextures)
             );
+        }
+
+        private void addNullCheckPatch(final MethodRef method, final int register, final int[] returnValue) {
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "null check in " + method.getName();
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        registerLoadStore(ALOAD, register),
+                        IFNONNULL, branch("A"),
+                        returnValue,
+                        label("A")
+                    );
+                }
+            }.targetMethod(method));
         }
     }
 
