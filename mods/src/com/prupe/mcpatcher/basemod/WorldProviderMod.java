@@ -28,7 +28,7 @@ public class WorldProviderMod extends com.prupe.mcpatcher.ClassMod {
     public WorldProviderMod(Mod mod) {
         super(mod);
 
-        addClassSignature(new ConstSignature(0.75f));
+        addClassSignature(new ConstSignature(24000.0f));
         addClassSignature(new ConstSignature(0.5f));
         addClassSignature(new ConstSignature(0.25f));
         addClassSignature(new ConstSignature(15.0f));
