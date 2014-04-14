@@ -606,10 +606,6 @@ public class BaseTexturePackMod extends Mod {
             final MethodRef position = new MethodRef("java/nio/IntBuffer", "position", "(I)Ljava/nio/Buffer;");
             final MethodRef limit = new MethodRef("java/nio/Buffer", "limit", "(I)Ljava/nio/Buffer;");
             final MethodRef getIntBuffer = new MethodRef(MCPatcherUtils.FAKE_RESOURCE_LOCATION_CLASS, "getIntBuffer", "(Ljava/nio/IntBuffer;[I)Ljava/nio/IntBuffer;");
-            final MethodRef getImage1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(Ljava/lang/String;)Ljava/awt/image/BufferedImage;");
-            final MethodRef getImage3 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)Ljava/awt/image/BufferedImage;");
-            final MethodRef getSelectedTexturePack = new MethodRef("ResourcePackRepository", "getSelectedTexturePack", "()LResourcePack;");
-            final InterfaceMethodRef getInputStream = new InterfaceMethodRef("ResourcePack", "getInputStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
             final MethodRef glDeleteTextures1 = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(Ljava/nio/IntBuffer;)V");
             final MethodRef glDeleteTextures2 = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(I)V");
             final MethodRef glBindTexture = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V");
@@ -697,109 +693,6 @@ public class BaseTexturePackMod extends Mod {
                         getCaptureGroup(1),
                         reference(INVOKESTATIC, getIntBuffer),
                         reference(PUTFIELD, imageData)
-                    );
-                }
-            });
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "readTextureImage(getInputStream(...)) -> getImage(...)";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        reference(INVOKEINTERFACE, getInputStream),
-                        reference(INVOKESPECIAL, readTextureImage)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, getImage3)
-                    );
-                }
-            });
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "getInputStream(...), readTextureImage -> getImage(...)";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // InputStream inputStream = this.texturePackList.getSelectedTexturePack().getResourceAsStream(var1);
-                        ALOAD_0,
-                        anyReference(GETFIELD),
-                        reference(INVOKEVIRTUAL, getSelectedTexturePack),
-                        ALOAD_1,
-                        reference(INVOKEINTERFACE, getInputStream),
-                        ASTORE, capture(any()),
-
-                        // if (inputStream == null) {
-                        ALOAD, backReference(1),
-                        IFNONNULL, any(2),
-
-                        // this.setupTexture(this.missingTextureImage, texture, blur, clamp);
-                        ALOAD_0,
-                        ALOAD_0,
-                        reference(GETFIELD, missingTextureImage),
-                        capture(build(
-                            anyILOAD,
-                            anyILOAD,
-                            anyILOAD,
-                            reference(INVOKEVIRTUAL, setupTextureExt)
-                        )),
-
-                        // } else {
-                        GOTO, any(2),
-
-                        // this.setupTexture(this.readTextureImage(inputStream, texture, blur, clamp);
-                        // -or-
-                        // image = this.readTextureImage(inputStream, texture, blur, clamp);
-                        // ...
-                        // this.setupTexture(image, texture, blur, clamp);
-                        optional(build(ALOAD_0)),
-                        ALOAD_0,
-                        ALOAD, backReference(1),
-                        reference(INVOKESPECIAL, readTextureImage),
-                        capture(any(0, 20)),
-                        backReference(2)
-
-                        // }
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    int reg = getMethodInfo().getCodeAttribute().getMaxLocals();
-                    return buildCode(
-                        // BufferedImage image = TexturePackAPI.getImage(var1);
-                        ALOAD_1,
-                        reference(INVOKESTATIC, getImage1),
-                        ASTORE, reg,
-
-                        // if (image == null) {
-                        ALOAD, reg,
-                        IFNONNULL, branch("A"),
-
-                        ALOAD_0,
-                        reference(GETFIELD, missingTextureImage),
-                        ASTORE, reg,
-
-                        // }
-                        label("A"),
-
-                        // ...
-                        // this.setupTextureExt(image, ...);
-                        getCaptureGroup(3).length > 0 ? buildCode(ALOAD, reg, getCaptureGroup(3)) : new byte[0],
-                        ALOAD_0,
-                        ALOAD, reg,
-                        getCaptureGroup(2)
                     );
                 }
             });
