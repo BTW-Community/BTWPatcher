@@ -39,11 +39,11 @@ public class ResourceLocationMod extends com.prupe.mcpatcher.ClassMod {
         return haveClass() ? "LResourceLocation;" : "Ljava/lang/String;";
     }
 
-    public static byte[] pack(PatchComponent patchComponent) {
+    public static byte[] wrap(PatchComponent patchComponent) {
         return haveClass() ? EMPTY : patchComponent.reference(INVOKESTATIC, wrap);
     }
 
-    public static byte[] unpack(PatchComponent patchComponent) {
+    public static byte[] unwrap(PatchComponent patchComponent) {
         return haveClass() ? EMPTY : patchComponent.reference(INVOKESTATIC, unwrap);
     }
 
