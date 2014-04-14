@@ -12,8 +12,8 @@ import static javassist.bytecode.Opcode.*;
  * Maps RenderEngine class (1.5 only).
  */
 public class RenderEngineMod extends ClassMod {
-    public static final FieldRef textureMapBlocks = new FieldRef("RenderEngine", "textureMapBlocks", "LTextureMap;");
-    public static final FieldRef textureMapItems = new FieldRef("RenderEngine", "textureMapItems", "LTextureMap;");
+    public static final FieldRef textureMapBlocks = new FieldRef("RenderEngine", "textureMapBlocks", "LTextureAtlas;");
+    public static final FieldRef textureMapItems = new FieldRef("RenderEngine", "textureMapItems", "LTextureAtlas;");
     public static final MethodRef updateDynamicTextures = new MethodRef("RenderEngine", "updateDynamicTextures", "()V");
     public static final MethodRef refreshTextureMaps = new MethodRef("RenderEngine", "refreshTextureMaps", "()V");
     public static final MethodRef refreshTextures = new MethodRef("RenderEngine", "refreshTextures", "()V");

@@ -606,8 +606,8 @@ public class BaseTexturePackMod extends Mod {
             final MethodRef position = new MethodRef("java/nio/IntBuffer", "position", "(I)Ljava/nio/Buffer;");
             final MethodRef limit = new MethodRef("java/nio/Buffer", "limit", "(I)Ljava/nio/Buffer;");
             final MethodRef getIntBuffer = new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getIntBuffer", "(Ljava/nio/IntBuffer;[I)Ljava/nio/IntBuffer;");
-            final MethodRef getSelectedTexturePack = new MethodRef("TexturePackList", "getSelectedTexturePack", "()LITexturePack;");
-            final InterfaceMethodRef getResourceAsStream = new InterfaceMethodRef("ITexturePack", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
+            final MethodRef getSelectedTexturePack = new MethodRef("ResourcePackRepository", "getSelectedTexturePack", "()LResourcePack;");
+            final InterfaceMethodRef getInputStream = new InterfaceMethodRef("ResourcePack", "getInputStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
             final MethodRef glDeleteTextures1 = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(Ljava/nio/IntBuffer;)V");
             final MethodRef glDeleteTextures2 = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDeleteTextures", "(I)V");
             final MethodRef glBindTexture = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V");
@@ -702,13 +702,13 @@ public class BaseTexturePackMod extends Mod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "readTextureImage(getResourceAsStream(...)) -> getImage(...)";
+                    return "readTextureImage(getInputStream(...)) -> getImage(...)";
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(INVOKEINTERFACE, getResourceAsStream),
+                        reference(INVOKEINTERFACE, getInputStream),
                         reference(INVOKESPECIAL, readTextureImage)
                     );
                 }
@@ -724,7 +724,7 @@ public class BaseTexturePackMod extends Mod {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "getResourceAsStream(...), readTextureImage -> getImage(...)";
+                    return "getInputStream(...), readTextureImage -> getImage(...)";
                 }
 
                 @Override
@@ -735,7 +735,7 @@ public class BaseTexturePackMod extends Mod {
                         anyReference(GETFIELD),
                         reference(INVOKEVIRTUAL, getSelectedTexturePack),
                         ALOAD_1,
-                        reference(INVOKEINTERFACE, getResourceAsStream),
+                        reference(INVOKEINTERFACE, getInputStream),
                         ASTORE, capture(any()),
 
                         // if (inputStream == null) {
