@@ -164,8 +164,8 @@ abstract public class TexturePackAPI {
         return MCPatcherUtils.isNullOrEmpty(path) ? null : instance.parseResourceLocation_Impl(baseResource, path);
     }
 
-    public static String select(String v1Path, String v2Path) {
-        return instance.select_Impl(v1Path, v2Path);
+    public static <T> T select(T v1, T v2) {
+        return instance.select_Impl(v1, v2);
     }
 
     public static ResourceLocation newMCPatcherResourceLocation(String v1Path, String v2Path) {
@@ -222,7 +222,7 @@ abstract public class TexturePackAPI {
 
     abstract protected ResourceLocation parseResourceLocation_Impl(ResourceLocation baseResource, String path);
 
-    abstract protected String select_Impl(String v1Path, String v2Path);
+    abstract protected <T> T select_Impl(T v1, T v2);
 
     abstract protected boolean isDefaultResourcePack_Impl();
 
@@ -304,8 +304,8 @@ abstract public class TexturePackAPI {
         }
 
         @Override
-        protected String select_Impl(String v1Path, String v2Path) {
-            return v1Path;
+        protected <T> T select_Impl(T v1, T v2) {
+            return v1;
         }
 
         @Override
@@ -463,8 +463,8 @@ abstract public class TexturePackAPI {
         }
 
         @Override
-        protected String select_Impl(String v1Path, String v2Path) {
-            return v2Path;
+        protected <T> T select_Impl(T v1, T v2) {
+            return v2;
         }
 
         @Override
