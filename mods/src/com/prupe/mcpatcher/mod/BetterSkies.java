@@ -121,6 +121,7 @@ public class BetterSkies extends Mod {
             final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
             final MethodRef glCallList = new MethodRef(MCPatcherUtils.GL11_CLASS, "glCallList", "(I)V");
             final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
+            final MethodRef glColor4f = new MethodRef(MCPatcherUtils.GL11_CLASS, "glColor4f", "(FFFF)V");
             final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final FieldRef worldProvider = new FieldRef("World", "worldProvider", "LWorldProvider;");
@@ -130,6 +131,8 @@ public class BetterSkies extends Mod {
             final FieldRef glStarList = new FieldRef(getDeobfClass(), "glStarList", "I");
             final FieldRef active = new FieldRef(MCPatcherUtils.SKY_RENDERER_CLASS, "active", "Z");
             final FieldRef horizonHeight = new FieldRef(MCPatcherUtils.SKY_RENDERER_CLASS, "horizonHeight", "D");
+            final MethodRef setupSky = new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setup", "(LWorld;FF)V");
+            final MethodRef renderAllSky = new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "renderAll", "()V");
 
             addClassSignature(new ConstSignature("smoke"));
             addClassSignature(new ConstSignature(ResourceLocationMod.select(
@@ -317,7 +320,7 @@ public class BetterSkies extends Mod {
                         reference(GETFIELD, worldObj),
                         FLOAD_1,
                         reference(INVOKEVIRTUAL, getCelestialAngle),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setup", "(LWorld;FF)V"))
+                        reference(INVOKESTATIC, setupSky)
                     );
                 }
             }.targetMethod(renderSky));
@@ -348,7 +351,7 @@ public class BetterSkies extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "renderAll", "()V"))
+                        reference(INVOKESTATIC, renderAllSky)
                     );
                 }
             }
@@ -369,7 +372,7 @@ public class BetterSkies extends Mod {
                         FLOAD, backReference(1),
                         FLOAD, backReference(1),
                         FLOAD, backReference(1),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glColor4f", "(FFFF)V")),
+                        reference(INVOKESTATIC, glColor4f),
 
                         ALOAD_0,
                         reference(GETFIELD, glStarList),
@@ -429,6 +432,7 @@ public class BetterSkies extends Mod {
         }
 
         private void addCelestialObjectPatch(final String objName, final String textureName) {
+            final MethodRef setupCelestialObject = new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setupCelestialObject", "(LResourceLocation;)LResourceLocation;");
             final FieldRef textureField;
             if (ResourceLocationMod.haveClass()) {
                 textureField = new FieldRef(getDeobfClass(), objName, "LResourceLocation;");
@@ -461,7 +465,7 @@ public class BetterSkies extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         ResourceLocationMod.wrap(this),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setupCelestialObject", "(LResourceLocation;)LResourceLocation;")),
+                        reference(INVOKESTATIC, setupCelestialObject),
                         ResourceLocationMod.unwrap(this)
                     );
                 }
@@ -485,7 +489,11 @@ public class BetterSkies extends Mod {
             final MethodRef addEffect = new MethodRef(getDeobfClass(), "addEffect", "(LEntityFX;)V");
             final MethodRef getFXLayer = new MethodRef("EntityFX", "getFXLayer", "()I");
             final MethodRef glBlendFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBlendFunc", "(II)V");
-            final MethodRef glAlphaFunc = new MethodRef("org/lwjgl/opengl/GL11", "glAlphaFunc", "(IF)V");
+            final MethodRef glAlphaFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glAlphaFunc", "(IF)V");
+            final InterfaceMethodRef listIsEmpty = new InterfaceMethodRef("java/util/List", "isEmpty", "()Z");
+            final MethodRef newGetFXLayer = new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "getFXLayer", "(LEntityFX;)I");
+            final MethodRef setParticleBlendMethod = new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "setParticleBlendMethod", "(I)V");
+            final MethodRef skipThisLayer = new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "skipThisLayer", "(ZI)Z");
 
             if (ResourceLocationMod.haveClass()) {
                 addClassSignature(new ConstSignature("textures/particle/particles.png"));
@@ -580,7 +588,7 @@ public class BetterSkies extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "getFXLayer", "(LEntityFX;)I"))
+                        reference(INVOKESTATIC, newGetFXLayer)
                     );
                 }
             }.targetMethod(addEffect));
@@ -598,7 +606,7 @@ public class BetterSkies extends Mod {
                         reference(GETFIELD, fxLayers),
                         ILOAD, capture(any()),
                         AALOAD,
-                        reference(INVOKEINTERFACE, new InterfaceMethodRef("java/util/List", "isEmpty", "()Z"))
+                        reference(INVOKEINTERFACE, listIsEmpty)
                     );
                 }
 
@@ -607,7 +615,7 @@ public class BetterSkies extends Mod {
                     layerRegister = getCaptureGroup(1)[0] & 0xff;
                     return buildCode(
                         ILOAD, layerRegister,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "skipThisLayer", "(ZI)Z"))
+                        reference(INVOKESTATIC, skipThisLayer)
                     );
                 }
             }
@@ -638,7 +646,7 @@ public class BetterSkies extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         ILOAD, layerRegister,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "setParticleBlendMethod", "(I)V"))
+                        reference(INVOKESTATIC, setParticleBlendMethod)
                     );
                 }
             }.targetMethod(renderParticles));
