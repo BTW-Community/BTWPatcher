@@ -132,7 +132,10 @@ public class BetterSkies extends Mod {
             final FieldRef horizonHeight = new FieldRef(MCPatcherUtils.SKY_RENDERER_CLASS, "horizonHeight", "D");
 
             addClassSignature(new ConstSignature("smoke"));
-            addClassSignature(new ConstSignature("textures/environment/clouds.png"));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select(
+                "/environment/clouds.png",
+                "textures/environment/clouds.png"
+            )));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -425,10 +428,15 @@ public class BetterSkies extends Mod {
             addCelestialObjectPatch("moon", "moon_phases.png");
         }
 
-        private void addCelestialObjectPatch(final String objName, String textureName) {
-            final FieldRef textureField = new FieldRef(getDeobfClass(), objName, "LResourceLocation;");
+        private void addCelestialObjectPatch(final String objName, final String textureName) {
+            final FieldRef textureField;
+            if (ResourceLocationMod.haveClass()) {
+                textureField = new FieldRef(getDeobfClass(), objName, "LResourceLocation;");
 
-            addClassSignature(new ResourceLocationSignature(this, textureField, "textures/environment/" + textureName));
+                addClassSignature(new ResourceLocationSignature(this, textureField, "textures/environment/" + textureName));
+            } else {
+                textureField = null;
+            }
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -438,15 +446,23 @@ public class BetterSkies extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    return buildExpression(
-                        reference(GETSTATIC, textureField)
-                    );
+                    if (textureField == null) {
+                        return buildExpression(
+                            push("/environment/" + textureName)
+                        );
+                    } else {
+                        return buildExpression(
+                            reference(GETSTATIC, textureField)
+                        );
+                    }
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setupCelestialObject", "(LResourceLocation;)LResourceLocation;"))
+                        ResourceLocationMod.wrap(this),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setupCelestialObject", "(LResourceLocation;)LResourceLocation;")),
+                        ResourceLocationMod.unwrap(this)
                     );
                 }
             }
@@ -471,7 +487,12 @@ public class BetterSkies extends Mod {
             final MethodRef glBlendFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBlendFunc", "(II)V");
             final MethodRef glAlphaFunc = new MethodRef("org/lwjgl/opengl/GL11", "glAlphaFunc", "(IF)V");
 
-            addClassSignature(new ConstSignature("textures/particle/particles.png"));
+            if (ResourceLocationMod.haveClass()) {
+                addClassSignature(new ConstSignature("textures/particle/particles.png"));
+            } else {
+                addClassSignature(new ConstSignature("/particles.png"));
+                addClassSignature(new ConstSignature("/gui/items.png"));
+            }
 
             addClassSignature(new BytecodeSignature() {
                 @Override
