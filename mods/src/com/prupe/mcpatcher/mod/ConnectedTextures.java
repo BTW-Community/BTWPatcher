@@ -213,10 +213,17 @@ public class ConnectedTextures extends Mod {
 
     private class BlockGrassMod extends ClassMod {
         BlockGrassMod() {
-            addClassSignature(new ConstSignature("_side"));
-            addClassSignature(new ConstSignature("_top"));
-            addClassSignature(new ConstSignature("_side_snowed"));
-            addClassSignature(new ConstSignature("_side_overlay"));
+            if (ResourceLocationMod.haveClass()) {
+                addClassSignature(new ConstSignature("_side"));
+                addClassSignature(new ConstSignature("_top"));
+                addClassSignature(new ConstSignature("_side_snowed"));
+                addClassSignature(new ConstSignature("_side_overlay"));
+            } else {
+                addClassSignature(new ConstSignature("grass_side"));
+                addClassSignature(new ConstSignature("grass_top"));
+                addClassSignature(new ConstSignature("snow_side"));
+                addClassSignature(new ConstSignature("grass_side_overlay"));
+            }
 
             addMemberMapper(new MethodMapper(getGrassSideTexture)
                 .accessFlag(AccessFlag.PUBLIC, true)
