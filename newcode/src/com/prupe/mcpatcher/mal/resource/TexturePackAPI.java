@@ -25,6 +25,10 @@ abstract public class TexturePackAPI {
 
     public static final String MCPATCHER_SUBDIR = TexturePackAPI.select("/", "mcpatcher/");
 
+    public static boolean isInitialized() {
+        return instance != null && instance.isInitialized_Impl();
+    }
+
     public static List<ResourcePack> getResourcePacks(String namespace) {
         List<ResourcePack> list = new ArrayList<ResourcePack>();
         instance.getResourcePacks_Impl(namespace, list);
@@ -209,6 +213,8 @@ abstract public class TexturePackAPI {
         }
     }
 
+    abstract protected boolean isInitialized_Impl();
+
     abstract protected void getResourcePacks_Impl(String namespace, List<ResourcePack> resourcePacks);
 
     abstract protected void getNamespaces_Impl(Set<String> namespaces);
@@ -259,6 +265,11 @@ abstract public class TexturePackAPI {
                 return null;
             }
             return texturePackList.getSelectedTexturePack();
+        }
+
+        @Override
+        protected boolean isInitialized_Impl() {
+            return Minecraft.getInstance().texturePackList != null;
         }
 
         @Override
@@ -363,6 +374,11 @@ abstract public class TexturePackAPI {
 
         private ResourceManager getResourceManager() {
             return Minecraft.getInstance().getResourceManager();
+        }
+
+        @Override
+        protected boolean isInitialized_Impl() {
+            return getResourceManager() != null;
         }
 
         @Override

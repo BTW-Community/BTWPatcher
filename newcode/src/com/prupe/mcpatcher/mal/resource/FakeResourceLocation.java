@@ -6,7 +6,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
-final public class FakeResourceLocation {
+public class FakeResourceLocation {
     private static final MCLogger logger = MCLogger.getLogger("Texture Pack");
 
     private static final String GRID = "##";

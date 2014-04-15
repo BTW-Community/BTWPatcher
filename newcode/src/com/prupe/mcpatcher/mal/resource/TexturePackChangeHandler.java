@@ -52,7 +52,7 @@ abstract public class TexturePackChangeHandler {
 
     public static void register(TexturePackChangeHandler handler) {
         if (handler != null) {
-            if (Minecraft.getInstance().getResourceManager() != null) {
+            if (TexturePackAPI.isInitialized()) {
                 try {
                     logger.info("initializing %s...", handler.name);
                     handler.initialize();
