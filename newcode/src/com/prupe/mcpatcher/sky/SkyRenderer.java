@@ -109,7 +109,7 @@ public class SkyRenderer {
 
         private void loadSkies() {
             for (int i = -1; ; i++) {
-                String v1Path = "/environment/sky" + worldType + "/sky" + (i < 0 ? "" : String.valueOf(i));
+                String v1Path = "/environment/sky" + worldType + "/sky" + (i < 0 ? "" : String.valueOf(i)) + ".properties";
                 String v2Path = "sky/world" + worldType + "/sky" + (i < 0 ? "" : String.valueOf(i)) + ".properties";
                 ResourceLocation resource = TexturePackAPI.newMCPatcherResourceLocation(v1Path, v2Path);
                 Layer layer = Layer.create(resource);
@@ -127,8 +127,8 @@ public class SkyRenderer {
 
         private void loadCelestialObject(String objName) {
             ResourceLocation textureName = new ResourceLocation(TexturePackAPI.select("", "textures") + "/environment/" + objName + ".png");
-            String v1Path = "/environment/sky" + worldType + "/" + objName;
-            String v2Path = "sky/world0/" + objName + ".properties";
+            String v1Path = "/environment/sky" + worldType + "/" + objName + ".properties";
+            String v2Path = "sky/world" + worldType + "/" + objName + ".properties";
             ResourceLocation resource = TexturePackAPI.newMCPatcherResourceLocation(v1Path, v2Path);
             Properties properties = TexturePackAPI.getProperties(resource);
             if (properties != null) {
