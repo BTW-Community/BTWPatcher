@@ -54,8 +54,6 @@ public class BaseTilesheetMod extends Mod {
             final FieldRef itemsAtlas = new FieldRef(getDeobfClass(), "itemssAtlas", "LResourceLocation;");
             final MethodRef registerTiles = new MethodRef(getDeobfClass(), "registerTiles", "()V");
             final InterfaceMethodRef mapClear = new InterfaceMethodRef("java/util/Map", "clear", "()V");
-            final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
-            final InterfaceMethodRef setIterator = new InterfaceMethodRef("java/util/Set", "iterator", "()Ljava/util/Iterator;");
             final ClassRef sbClass = new ClassRef("java/lang/StringBuilder");
             final ClassRef objClass = new ClassRef("java/lang/Object");
             final MethodRef stringValueOf = new MethodRef("java/lang/String", "valueOf", "(Ljava/lang/Object;)Ljava/lang/String;");

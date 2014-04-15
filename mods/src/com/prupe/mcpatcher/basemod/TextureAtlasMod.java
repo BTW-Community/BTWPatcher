@@ -5,53 +5,85 @@ import com.prupe.mcpatcher.InterfaceMethodRef;
 import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
 
-import static com.prupe.mcpatcher.BytecodeMatcher.anyASTORE;
-import static com.prupe.mcpatcher.BytecodeMatcher.captureReference;
+import static com.prupe.mcpatcher.BinaryRegex.*;
+import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 /**
  * Maps TextureAtlas class.
  */
 public class TextureAtlasMod extends com.prupe.mcpatcher.ClassMod {
-    protected final FieldRef basePath = new FieldRef(getDeobfClass(), "basePath", "Ljava/lang/String;");
-    protected final FieldRef texturesByName = new FieldRef(getDeobfClass(), "texturesByName", "Ljava/util/Map;");
-    protected final MethodRef refreshTextures1 = new MethodRef(getDeobfClass(), "refreshTextures1", "(LResourceManager;)V");
-    protected final MethodRef refreshTextures2 = new MethodRef(getDeobfClass(), "refreshTextures2", "(LResourceManager;)V");
-    protected final MethodRef registerIcon = new MethodRef(getDeobfClass(), "registerIcon", "(Ljava/lang/String;)LIcon;");
+    public static final FieldRef basePath = new FieldRef("TextureAtlas", "basePath", "Ljava/lang/String;");
+    public static final FieldRef texturesByName = new FieldRef("TextureAtlas", "texturesByName", "Ljava/util/Map;");
+    public static MethodRef refreshTextures1;
+    public static MethodRef refreshTextures2;
+    public static final MethodRef registerIcon = new MethodRef("TextureAtlas", "registerIcon", "(Ljava/lang/String;)LIcon;");
 
     public TextureAtlasMod(Mod mod) {
         super(mod);
-        setParentClass("AbstractTexture");
-        setInterfaces("TickableTextureObject", "IconRegister");
+
+        if (ResourceLocationMod.haveClass()) {
+            setParentClass("AbstractTexture");
+            setInterfaces("TickableTextureObject", "IconRegister");
+            refreshTextures1 = new MethodRef("TextureAtlas", "refreshTextures1", "(LResourceManager;)V");
+            refreshTextures2 = new MethodRef("TextureAtlas", "refreshTextures2", "(LResourceManager;)V");
+            addMemberMapper(new MethodMapper(refreshTextures1, refreshTextures2));
+        } else {
+            setInterfaces("IconRegister");
+            refreshTextures1 = new MethodRef("TextureAtlas", "refreshTextures", "()V");
+            refreshTextures2 = null;
+            addMemberMapper(new MethodMapper(refreshTextures1));
+        }
 
         final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
         final InterfaceMethodRef setIterator = new InterfaceMethodRef("java/util/Set", "iterator", "()Ljava/util/Iterator;");
+        final InterfaceMethodRef mapClear = new InterfaceMethodRef("java/util/Map", "clear", "()V");
 
         addClassSignature(new ConstSignature("missingno"));
         addClassSignature(new ConstSignature(".png"));
 
-        addClassSignature(new BytecodeSignature() {
-            @Override
-            public String getMatchExpression() {
-                return buildExpression(
-                    ALOAD_0,
-                    captureReference(GETFIELD),
-                    reference(INVOKEINTERFACE, mapEntrySet),
-                    reference(INVOKEINTERFACE, setIterator),
-                    anyASTORE
-                );
+        if (ResourceLocationMod.haveClass()) {
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // iterator = this.texturesByName.entrySet().iterator();
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        reference(INVOKEINTERFACE, mapEntrySet),
+                        reference(INVOKEINTERFACE, setIterator),
+                        anyASTORE
+                    );
+                }
             }
+                .setMethod(refreshTextures2)
+                .addXref(1, texturesByName)
+            );
+        } else {
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.texturesByName.clear();
+                        begin(),
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        reference(INVOKEINTERFACE, mapClear)
+                    );
+                }
+            }
+                .setMethod(refreshTextures1)
+                .addXref(1, texturesByName)
+            );
         }
-            .setMethod(refreshTextures2)
-            .addXref(1, texturesByName)
-        );
 
         addClassSignature(new BytecodeSignature() {
             @Override
             public String getMatchExpression() {
                 return buildExpression(
+                    // this.basePath = basePath;
                     ALOAD_0,
-                    ALOAD_2,
+                    ResourceLocationMod.haveClass() ? ALOAD_2 : ALOAD_3,
                     captureReference(PUTFIELD)
                 );
             }
@@ -61,6 +93,5 @@ public class TextureAtlasMod extends com.prupe.mcpatcher.ClassMod {
         );
 
         addMemberMapper(new MethodMapper(registerIcon));
-        addMemberMapper(new MethodMapper(refreshTextures1, refreshTextures2));
     }
 }
