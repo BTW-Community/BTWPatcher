@@ -2239,7 +2239,7 @@ public class CustomColors extends Mod {
                         // 14w02a+: if (world.worldProvider.getWorldType() == 1) {
                         ALOAD_2,
                         backReference(2),
-                        captureReference(com.prupe.mcpatcher.basemod.WorldProviderMod.getWorldTypeOpcode()),
+                        captureReference(WorldProviderMod.getWorldTypeOpcode()),
                         ICONST_1,
                         IF_ICMPNE, any(2),
 
@@ -2256,6 +2256,37 @@ public class CustomColors extends Mod {
                         // ...
                         any(0, 300),
 
+                        ResourceLocationMod.haveClass() ? getSubExpression16() : getSubExpression15(),
+                        RETURN
+                    );
+                }
+
+                private String getSubExpression15() {
+                    addXref(9, new FieldRef("Minecraft", "renderEngine", "LRenderEngine;"));
+                    addXref(10, lightmapColors);
+                    addXref(11, new FieldRef(getDeobfClass(), "lightmapTexture", "I"));
+                    addXref(12, new MethodRef("RenderEngine", "createTextureFromBytes", "([IIII)V"));
+                    return buildExpression(
+                        // mc.renderEngine.createTextureFromBytes(lightmapColors, 16, 16, lightmapTexture);
+                        ALOAD_0,
+                        backReference(6),
+                        captureReference(GETFIELD),
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        push(16),
+                        push(16),
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        captureReference(INVOKEVIRTUAL)
+                    );
+                }
+
+                private String getSubExpression16() {
+                    addXref(9, lightmapColors);
+                    addXref(10, lightmapTexture);
+                    addXref(11, reloadTexture);
+                    addXref(12, needLightmapUpdate);
+                    return buildExpression(
                         // this.lightmapColors[i] = ...;
                         ALOAD_0,
                         captureReference(GETFIELD),
@@ -2272,8 +2303,7 @@ public class CustomColors extends Mod {
                         captureReference(INVOKEVIRTUAL),
                         ALOAD_0,
                         push(0),
-                        captureReference(PUTFIELD),
-                        RETURN
+                        captureReference(PUTFIELD)
                     );
                 }
             }
@@ -2282,14 +2312,10 @@ public class CustomColors extends Mod {
                 .addXref(2, new FieldRef("World", "worldProvider", "LWorldProvider;"))
                 .addXref(3, new FieldRef(getDeobfClass(), "torchFlickerX", "F"))
                 .addXref(4, WorldMod.getLightningFlashRef())
-                .addXref(5, com.prupe.mcpatcher.basemod.WorldProviderMod.getWorldTypeRef())
+                .addXref(5, WorldProviderMod.getWorldTypeRef())
                 .addXref(6, mc)
                 .addXref(7, new FieldRef("Minecraft", "gameSettings", "LGameSettings;"))
                 .addXref(8, new FieldRef("GameSettings", "gammaSetting", "F"))
-                .addXref(9, lightmapColors)
-                .addXref(10, lightmapTexture)
-                .addXref(11, reloadTexture)
-                .addXref(12, needLightmapUpdate)
             );
 
             addClassSignature(new BytecodeSignature() {
