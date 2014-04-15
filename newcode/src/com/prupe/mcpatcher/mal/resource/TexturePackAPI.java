@@ -20,9 +20,10 @@ abstract public class TexturePackAPI {
     private static final MCLogger logger = MCLogger.getLogger("Texture Pack");
 
     public static final String DEFAULT_NAMESPACE = "minecraft";
-    public static final String MCPATCHER_SUBDIR = "mcpatcher/";
 
     public static TexturePackAPI instance = MAL.newInstance(TexturePackAPI.class, "texturepack");
+
+    public static final String MCPATCHER_SUBDIR = TexturePackAPI.select("/", "mcpatcher/");
 
     public static List<ResourcePack> getResourcePacks(String namespace) {
         List<ResourcePack> list = new ArrayList<ResourcePack>();
