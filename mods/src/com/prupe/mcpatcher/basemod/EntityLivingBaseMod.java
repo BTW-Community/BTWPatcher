@@ -10,8 +10,12 @@ public class EntityLivingBaseMod extends com.prupe.mcpatcher.ClassMod {
         super(mod);
         setParentClass("Entity");
 
-        addClassSignature(new ConstSignature("HealF"));
         addClassSignature(new ConstSignature("Health"));
-        addClassSignature(new ConstSignature("ActiveEffects"));
+        if (ResourceLocationMod.haveClass()) {
+            addClassSignature(new ConstSignature("HealF"));
+            addClassSignature(new ConstSignature("ActiveEffects"));
+        } else {
+            addClassSignature(new ConstSignature("/mob/char.png"));
+        }
     }
 }

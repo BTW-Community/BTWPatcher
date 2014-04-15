@@ -20,6 +20,8 @@ public class RandomMobs extends Mod {
     private static final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
     private static final MethodRef glPushMatrix = new MethodRef(MCPatcherUtils.GL11_CLASS, "glPushMatrix", "()V");
 
+    private static final MethodRef randomTexture = new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(LEntity;LResourceLocation;)LResourceLocation;");
+
     private final boolean haveOverlayRenderer;
 
     public RandomMobs() {
@@ -42,15 +44,19 @@ public class RandomMobs extends Mod {
         addClassMod(new EntityLivingBaseMod());
         addClassMod(new RenderMod());
         addClassMod(new RenderLivingEntityMod());
-        addClassMod(new RenderLivingMod());
-        addClassMod(new RenderMiscMod("Spider", "textures/entity/spider_eyes.png"));
-        addClassMod(new RenderMiscMod("Enderman", "textures/entity/enderman/enderman_eyes.png"));
-        addClassMod(new RenderMiscMod("Sheep", "textures/entity/sheep/sheep_fur.png"));
-        addClassMod(new RenderMiscMod("Wolf", "textures/entity/wolf/wolf_collar.png"));
+        if (ResourceLocationMod.haveClass()) {
+            addClassMod(new RenderLivingMod());
+        }
+        addClassMod(new RenderMiscMod("Spider", "/mob/spider_eyes.png", "textures/entity/spider_eyes.png"));
+        addClassMod(new RenderMiscMod("Enderman", "/mob/enderman_eyes.png", "textures/entity/enderman/enderman_eyes.png"));
+        addClassMod(new RenderMiscMod("Sheep", "/mob/sheep_fur.png", "textures/entity/sheep/sheep_fur.png"));
+        addClassMod(new RenderMiscMod("Wolf", "/mob/wolf_collar.png", "textures/entity/wolf/wolf_collar.png"));
         addClassMod(new RenderSnowmanMod());
         addClassMod(new RenderMooshroomMod());
         addClassMod(new RenderFishMod());
-        addClassMod(new RenderLeashMod());
+        if (ResourceLocationMod.haveClass()) {
+            addClassMod(new RenderLeashMod());
+        }
 
         addClassFiles("com.prupe.mcpatcher.mob.*");
 
@@ -196,12 +202,19 @@ public class RandomMobs extends Mod {
 
     private class RenderMod extends ClassMod {
         RenderMod() {
-            addClassSignature(new ConstSignature("textures/misc/shadow.png"));
+            if (ResourceLocationMod.haveClass()) {
+                addClassSignature(new ConstSignature("textures/misc/shadow.png"));
+                setup16();
+            } else {
+                addClassSignature(new ConstSignature("/terrain.png"));
+                addClassSignature(new ConstSignature("%clamp%/misc/shadow.png"));
+            }
             addClassSignature(new ConstSignature(0.45f));
+        }
 
+        private void setup16() {
             final MethodRef loadTexture = new MethodRef(getDeobfClass(), "loadTexture", "(LResourceLocation;)V");
             final MethodRef getEntityTexture = new MethodRef(getDeobfClass(), "getEntityTexture", "(LEntity;)LResourceLocation;");
-            final MethodRef randomTexture = new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(LEntity;LResourceLocation;)LResourceLocation;");
 
             addMemberMapper(new MethodMapper(loadTexture)
                 // 14w05a+: public
@@ -272,6 +285,40 @@ public class RandomMobs extends Mod {
                     );
                 }
             }.setMethod(doRenderLiving));
+
+            if (!ResourceLocationMod.haveClass()) {
+                setup15();
+            }
+        }
+
+        private void setup15() {
+            final MethodRef getEntityTexture = new MethodRef("EntityLivingBase", "getEntityTexture", "()Ljava/lang/String;");
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "replace mob texture";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        capture(anyALOAD),
+                        reference(INVOKEVIRTUAL, getEntityTexture)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        getCaptureGroup(1),
+                        getMatch(),
+                        ResourceLocationMod.wrap(this),
+                        reference(INVOKESTATIC, randomTexture),
+                        ResourceLocationMod.unwrap(this)
+                    );
+                }
+            });
         }
     }
 
@@ -289,23 +336,33 @@ public class RandomMobs extends Mod {
     private class RenderMiscMod extends ClassMod {
         private final String mob;
 
-        RenderMiscMod(String mob, final String texture) {
+        RenderMiscMod(String mob, final String texture15, final String texture16) {
             this.mob = mob;
 
-            final FieldRef miscSkin = new FieldRef(getDeobfClass(), mob.toLowerCase() + "MiscSkin", "LResourceLocation;");
-            final MethodRef randomTexture = new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(LEntityLivingBase;LResourceLocation;)LResourceLocation;");
+            final FieldRef miscSkin;
+            if (ResourceLocationMod.haveClass()) {
+                miscSkin = new FieldRef(getDeobfClass(), mob.toLowerCase() + "MiscSkin", "LResourceLocation;");
 
-            addClassSignature(new ResourceLocationSignature(this, miscSkin, texture));
+                addClassSignature(new ResourceLocationSignature(this, miscSkin, texture16));
+            } else {
+                miscSkin = null;
+
+                addClassSignature(new ConstSignature(texture15));
+            }
 
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
-                    return "randomize " + texture;
+                    return "randomize " + texture16;
                 }
 
                 @Override
                 public String getMatchExpression() {
-                    if ((getMethodInfo().getAccessFlags() & AccessFlag.STATIC) == 0 &&
+                    if (miscSkin == null) {
+                        return buildExpression(
+                            push(texture15)
+                        );
+                    } else if ((getMethodInfo().getAccessFlags() & AccessFlag.STATIC) == 0 &&
                         getMethodInfo().getDescriptor().startsWith("(L")) {
                         return buildExpression(
                             reference(GETSTATIC, miscSkin)
@@ -320,7 +377,9 @@ public class RandomMobs extends Mod {
                     return buildCode(
                         ALOAD_1,
                         getMatch(),
-                        reference(INVOKESTATIC, randomTexture)
+                        ResourceLocationMod.wrap(this),
+                        reference(INVOKESTATIC, randomTexture),
+                        ResourceLocationMod.unwrap(this)
                     );
                 }
             });
@@ -343,7 +402,9 @@ public class RandomMobs extends Mod {
             } else {
                 setParentClass("RenderLiving");
                 renderEquippedItems = new MethodRef(getDeobfClass(), "renderEquippedItems1", "(LEntitySnowman;F)V");
-                addClassSignature(new ConstSignature("textures/entity/snowman.png"));
+                if (ResourceLocationMod.haveClass()) {
+                    addClassSignature(new ConstSignature("textures/entity/snowman.png"));
+                }
             }
 
             addClassSignature(new BytecodeSignature() {
@@ -428,18 +489,36 @@ public class RandomMobs extends Mod {
             } else {
                 setParentClass("RenderLiving");
                 renderEquippedItems = new MethodRef(getDeobfClass(), "renderEquippedItems1", "(LEntityMooshroom;F)V");
-                addClassSignature(new ConstSignature("textures/entity/cow/mooshroom.png"));
+                if (ResourceLocationMod.haveClass()) {
+                    addClassSignature(new ConstSignature("textures/entity/cow/mooshroom.png"));
+                }
             }
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderEquippedItems);
+                    int xref = 1;
+                    if (ResourceLocationMod.haveClass()) {
+                        addXref(xref++, blocksAtlas);
+                    }
+                    addXref(xref++, mushroomRed);
+                    addXref(xref, renderBlockAsItem);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
                         // 14w05b+:  this.entity.loadTexture(TextureAtlas.blocks);
                         // older: this.loadTexture(TextureAtlas.blocks);
+                        // 1.5: this.loadTexture("/terrain.png");
                         ALOAD_0,
-                        haveOverlayRenderer ? anyReference(GETFIELD) : "",
-                        captureReference(GETSTATIC),
+                        ResourceLocationMod.haveClass() ?
+                            build(
+                                haveOverlayRenderer ? anyReference(GETFIELD) : "",
+                                captureReference(GETSTATIC)
+                            ) : build(
+                                push("/terrain.png")
+                            ),
                         anyReference(INVOKEVIRTUAL),
 
                         // GL11.glEnable(GL11.GL_CULL_FACE);
@@ -466,12 +545,7 @@ public class RandomMobs extends Mod {
                         captureReference(INVOKEVIRTUAL)
                     );
                 }
-            }
-                .setMethod(renderEquippedItems)
-                .addXref(1, blocksAtlas)
-                .addXref(2, mushroomRed)
-                .addXref(3, renderBlockAsItem)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -482,7 +556,8 @@ public class RandomMobs extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(GETSTATIC, blocksAtlas)
+                        ResourceLocationMod.haveClass() ?
+                            reference(GETSTATIC, blocksAtlas) : push("/terrain.png")
                     );
                 }
 
@@ -491,7 +566,9 @@ public class RandomMobs extends Mod {
                     return buildCode(
                         ALOAD_1,
                         getMatch(),
-                        reference(INVOKESTATIC, setupMooshroom)
+                        ResourceLocationMod.wrap(this),
+                        reference(INVOKESTATIC, setupMooshroom),
+                        ResourceLocationMod.unwrap(this)
                     );
                 }
             }.targetMethod(renderEquippedItems));
@@ -658,7 +735,7 @@ public class RandomMobs extends Mod {
 
             setParentClass("Render");
 
-            addClassSignature(new ConstSignature("textures/particle/particles.png"));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("/particles.png", "textures/particle/particles.png")));
             addClassSignature(new ConstSignature(3.1415927f));
             addClassSignature(new ConstSignature(180.0f));
         }
