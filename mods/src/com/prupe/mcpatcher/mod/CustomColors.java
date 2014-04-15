@@ -503,7 +503,8 @@ public class CustomColors extends Mod {
         private void addTexSignature(String s) {
             addClassSignature(new OrSignature(
                 new ConstSignature(s),
-                new ConstSignature("_" + s)
+                new ConstSignature("_" + s),
+                new ConstSignature("cauldron_" + s)
             ));
         }
     }
@@ -689,8 +690,13 @@ public class CustomColors extends Mod {
             final boolean haveItemID = getMinecraftVersion().compareTo("13w36a") < 0;
             final FieldRef itemID = haveItemID ? new FieldRef("ItemStack", "itemID", "I") : null;
 
-            addClassSignature(new ConstSignature("textures/misc/enchanted_item_glint.png"));
-            addClassSignature(new ConstSignature("textures/map/map_background.png"));
+            if (ResourceLocationMod.haveClass()) {
+                addClassSignature(new ConstSignature("textures/misc/enchanted_item_glint.png"));
+                addClassSignature(new ConstSignature("textures/map/map_background.png"));
+            } else {
+                addClassSignature(new ConstSignature("%blur%/misc/glint.png"));
+                addClassSignature(new ConstSignature("/misc/mapbg.png"));
+            }
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -3790,7 +3796,7 @@ public class CustomColors extends Mod {
 
     private class RenderGlobalMod extends ClassMod {
         RenderGlobalMod() {
-            final FieldRef clouds = new FieldRef(getDeobfClass(), "clouds", "LResourceLocation;");
+            final FieldRef clouds;
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final FieldRef gameSettings = new FieldRef("Minecraft", "gameSettings", "LGameSettings;");
             final FieldRef fancyGraphics = new FieldRef("GameSettings", "fancyGraphics", "Z");
@@ -3798,9 +3804,25 @@ public class CustomColors extends Mod {
             final MethodRef renderSky = new MethodRef(getDeobfClass(), "renderSky", "(F)V");
             final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
 
-            addClassSignature(new ResourceLocationSignature(this, clouds, "textures/environment/clouds.png"));
+            if (ResourceLocationMod.haveClass()) {
+                clouds = new FieldRef(getDeobfClass(), "clouds", "LResourceLocation;");
+                addClassSignature(new ResourceLocationSignature(this, clouds, "textures/environment/clouds.png"));
+            } else {
+                addClassSignature(new ConstSignature("/environment/clouds.png"));
+                clouds = null;
+            }
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderClouds);
+                    addXref(1, mc);
+                    addXref(2, gameSettings);
+                    addXref(3, fancyGraphics);
+                    if (clouds != null) {
+                        addXref(4, clouds);
+                    }
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -3827,16 +3849,11 @@ public class CustomColors extends Mod {
                         any(1, 50),
 
                         // ...(RenderGlobal.clouds);
-                        captureReference(GETSTATIC)
+                        // ...("/environment/clouds.png");
+                        clouds == null ? push("/environment/clouds.png") : captureReference(GETSTATIC)
                     );
                 }
-            }
-                .setMethod(renderClouds)
-                .addXref(1, mc)
-                .addXref(2, gameSettings)
-                .addXref(3, fancyGraphics)
-                .addXref(4, clouds)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -4192,7 +4209,7 @@ public class CustomColors extends Mod {
 
             setParentClass("RenderLivingEntity");
 
-            addClassSignature(new ConstSignature("textures/entity/wolf/wolf_collar.png"));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("/mob/wolf_collar.png", "textures/entity/wolf/wolf_collar.png")));
             addClassSignature(new ConstSignature(glColor3f));
 
             addPatch(new BytecodePatch() {
@@ -4373,11 +4390,17 @@ public class CustomColors extends Mod {
 
     private class TileEntitySignRendererMod extends ClassMod {
         TileEntitySignRendererMod() {
-            final FieldRef sign = new FieldRef(getDeobfClass(), "sign", "LResourceLocation;");
+            final FieldRef sign;
             final MethodRef glDepthMask = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthMask", "(Z)V");
 
             addClassSignature(new ConstSignature(glDepthMask));
-            addClassSignature(new ResourceLocationSignature(this, sign, "textures/entity/sign.png"));
+            if (ResourceLocationMod.haveClass()) {
+                sign = new FieldRef(getDeobfClass(), "sign", "LResourceLocation;");
+                addClassSignature(new ResourceLocationSignature(this, sign, "textures/entity/sign.png"));
+            } else {
+                sign = null;
+                addClassSignature(new ConstSignature("/item/sign.png"));
+            }
 
             addPatch(new BytecodePatch() {
                 {
@@ -4385,7 +4408,7 @@ public class CustomColors extends Mod {
                         @Override
                         public String getMatchExpression() {
                             return buildExpression(
-                                reference(GETSTATIC, sign)
+                                sign == null ? push("/item/sign.png") : reference(GETSTATIC, sign)
                             );
                         }
                     });
@@ -4421,7 +4444,7 @@ public class CustomColors extends Mod {
 
     private class RenderXPOrbMod extends ClassMod {
         RenderXPOrbMod() {
-            addClassSignature(new ConstSignature("textures/entity/experience_orb.png"));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("/item/xporb.png", "textures/entity/experience_orb.png")));
 
             addPatch(new BytecodePatch() {
                 @Override

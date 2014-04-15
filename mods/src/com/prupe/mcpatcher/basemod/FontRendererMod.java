@@ -36,7 +36,7 @@ public class FontRendererMod extends com.prupe.mcpatcher.ClassMod {
         addClassSignature(new OrSignature(
             new ConstSignature("0123456789abcdef"),
             new ConstSignature("0123456789abcdefk"),
-            new ConstSignature("font/glyph_sizes.bin")
+            new ConstSignature(ResourceLocationMod.select("/font/glyph_sizes.bin", "font/glyph_sizes.bin"))
         ));
     }
 }
