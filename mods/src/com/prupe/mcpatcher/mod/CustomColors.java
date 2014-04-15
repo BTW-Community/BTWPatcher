@@ -2174,8 +2174,10 @@ public class CustomColors extends Mod {
             final FieldRef fogColorGreen = new FieldRef(getDeobfClass(), "fogColorGreen", "F");
             final FieldRef fogColorBlue = new FieldRef(getDeobfClass(), "fogColorBlue", "F");
             final FieldRef lightmapColors = new FieldRef(getDeobfClass(), "lightmapColors", "[I");
-            final FieldRef lightmapTexture = new FieldRef(getDeobfClass(), "lightmapTexture", "LDynamicTexture;");
+            final FieldRef lightmapTexture = new FieldRef(getDeobfClass(), "lightmapTexture", ResourceLocationMod.select("I", "LDynamicTexture;"));
             final FieldRef needLightmapUpdate = new FieldRef(getDeobfClass(), "needLightmapUpdate", "Z");
+            final FieldRef renderEngine = new FieldRef("Minecraft", "renderEngine", "LRenderEngine;");
+            final MethodRef createTextureFromBytes = new MethodRef("RenderEngine", "createTextureFromBytes", "([IIII)V");
             final FieldRef thePlayer = new FieldRef("Minecraft", "thePlayer", "LEntityClientPlayerMP;");
             final FieldRef nightVision = new FieldRef("Potion", "nightVision", "LPotion;");
             final MethodRef isPotionActive = new MethodRef("EntityClientPlayerMP", "isPotionActive", "(LPotion;)Z");
@@ -2262,12 +2264,12 @@ public class CustomColors extends Mod {
                 }
 
                 private String getSubExpression15() {
-                    addXref(9, new FieldRef("Minecraft", "renderEngine", "LRenderEngine;"));
+                    addXref(9, renderEngine);
                     addXref(10, lightmapColors);
-                    addXref(11, new FieldRef(getDeobfClass(), "lightmapTexture", "I"));
-                    addXref(12, new MethodRef("RenderEngine", "createTextureFromBytes", "([IIII)V"));
+                    addXref(11, lightmapTexture);
+                    addXref(12, createTextureFromBytes);
                     return buildExpression(
-                        // mc.renderEngine.createTextureFromBytes(lightmapColors, 16, 16, lightmapTexture);
+                        // this.mc.renderEngine.createTextureFromBytes(this.lightmapColors, 16, 16, this.lightmapTexture);
                         ALOAD_0,
                         backReference(6),
                         captureReference(GETFIELD),
@@ -2439,6 +2441,34 @@ public class CustomColors extends Mod {
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.LIGHTMAP_CLASS, "computeLightmap", "(LEntityRenderer;LWorld;[IF)Z")),
                         IFEQ, branch("A"),
 
+                        ResourceLocationMod.haveClass() ? loadTexture15() : loadTexture16(),
+
+                        // return;
+                        RETURN,
+
+                        // }
+                        label("A")
+                    );
+                }
+
+                private byte[] loadTexture15() {
+                    return buildCode(
+                        // this.mc.renderEngine.createTextureFromBytes(this.lightmapColors, 16, 16, this.lightmapTexture);
+                        ALOAD_0,
+                        reference(GETFIELD, mc),
+                        reference(GETFIELD, renderEngine),
+                        ALOAD_0,
+                        reference(GETFIELD, lightmapColors),
+                        push(16),
+                        push(16),
+                        ALOAD_0,
+                        reference(GETFIELD, lightmapTexture),
+                        reference(INVOKEVIRTUAL, createTextureFromBytes)
+                    );
+                }
+
+                private byte[] loadTexture16() {
+                    return buildCode(
                         // this.lightmapTexture.load();
                         // this.needLightmapUpdate = false;
                         ALOAD_0,
@@ -2446,13 +2476,7 @@ public class CustomColors extends Mod {
                         reference(INVOKEVIRTUAL, reloadTexture),
                         ALOAD_0,
                         push(0),
-                        reference(PUTFIELD, needLightmapUpdate),
-
-                        // return;
-                        RETURN,
-
-                        // }
-                        label("A")
+                        reference(PUTFIELD, needLightmapUpdate)
                     );
                 }
             }
