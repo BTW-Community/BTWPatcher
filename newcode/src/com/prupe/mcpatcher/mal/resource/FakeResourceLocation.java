@@ -25,7 +25,7 @@ final public class FakeResourceLocation {
     }
 
     public static String unwrap(FakeResourceLocation resourceLocation) {
-        return resourceLocation == null ? null : resourceLocation.getPath();
+        return resourceLocation == null ? null : resourceLocation.toString();
     }
 
     public static IntBuffer getIntBuffer(IntBuffer buffer, int[] data) {
