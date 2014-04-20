@@ -17,13 +17,14 @@ public class BaseTilesheetMod extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
         addClassMod(new IconMod(this));
-        ResourceLocationMod.setup(this);
-        addClassMod(new AbstractTextureMod(this));
-        addClassMod(new TextureMod(this));
+        if (ResourceLocationMod.setup(this)) {
+            addClassMod(new AbstractTextureMod(this));
+            addClassMod(new TextureMod(this));
+            addClassMod(new TextureManagerMod());
+        }
         addClassMod(new TessellatorMod(this));
         addClassMod(new IconRegisterMod());
         addClassMod(new TextureAtlasMod());
-        addClassMod(new TextureManagerMod());
         addClassMod(new TextureAtlasSpriteMod());
 
         addClassFiles("com.prupe.mcpatcher.mal.tile.*");
@@ -65,34 +66,36 @@ public class BaseTilesheetMod extends Mod {
             final MethodRef sbAppend = new MethodRef("java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;");
             final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
 
-            addClassSignature(new ResourceLocationSignature(this, blocksAtlas, "textures/atlas/blocks.png"));
-            addClassSignature(new ResourceLocationSignature(this, itemsAtlas, "textures/atlas/items.png"));
+            if (ResourceLocationMod.haveClass()) {
+                addClassSignature(new ResourceLocationSignature(this, blocksAtlas, "textures/atlas/blocks.png"));
+                addClassSignature(new ResourceLocationSignature(this, itemsAtlas, "textures/atlas/items.png"));
 
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // i = Minecraft.getMaxTextureSize();
-                        begin(),
-                        captureReference(INVOKESTATIC),
-                        ISTORE_2,
+                addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // i = Minecraft.getMaxTextureSize();
+                            begin(),
+                            captureReference(INVOKESTATIC),
+                            ISTORE_2,
 
-                        // stitcher = new Stitcher(i, i, true, ...);
-                        captureReference(NEW),
-                        DUP,
-                        ILOAD_2,
-                        ILOAD_2,
-                        push(1),
-                        any(0, 6),
-                        anyReference(INVOKESPECIAL),
-                        ASTORE_3
-                    );
+                            // stitcher = new Stitcher(i, i, true, ...);
+                            captureReference(NEW),
+                            DUP,
+                            ILOAD_2,
+                            ILOAD_2,
+                            push(1),
+                            any(0, 6),
+                            anyReference(INVOKESPECIAL),
+                            ASTORE_3
+                        );
+                    }
                 }
+                    .setMethod(refreshTextures2)
+                    .addXref(1, new MethodRef("Minecraft", "getMaxTextureSize", "()I"))
+                    .addXref(2, new ClassRef("Stitcher"))
+                );
             }
-                .setMethod(refreshTextures2)
-                .addXref(1, new MethodRef("Minecraft", "getMaxTextureSize", "()I"))
-                .addXref(2, new ClassRef("Stitcher"))
-            );
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -129,8 +132,11 @@ public class BaseTilesheetMod extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         // this.registerTiles();
-                        ALOAD_0,
-                        reference(INVOKESPECIAL, registerTiles),
+                        ResourceLocationMod.haveClass() ?
+                            buildCode(
+                                ALOAD_0,
+                                reference(INVOKESPECIAL, registerTiles)
+                            ) : new byte[0],
 
                         // registerIcons(this, this.mapName, this.mapTextures);
                         ALOAD_0,
@@ -143,7 +149,7 @@ public class BaseTilesheetMod extends Mod {
                 }
             }
                 .setInsertAfter(true)
-                .targetMethod(refreshTextures2)
+                .targetMethod(ResourceLocationMod.select(refreshTextures1, refreshTextures2))
             );
 
             addPatch(new BytecodePatch() {
@@ -319,6 +325,12 @@ public class BaseTilesheetMod extends Mod {
         TextureAtlasSpriteMod() {
             super(BaseTilesheetMod.this);
 
+            if (ResourceLocationMod.haveClass()) {
+                setup16();
+            }
+        }
+
+        private void setup16() {
             final InterfaceMethodRef listSize = new InterfaceMethodRef("java/util/List", "size", "()I");
 
             addPatch(new BytecodePatch() {

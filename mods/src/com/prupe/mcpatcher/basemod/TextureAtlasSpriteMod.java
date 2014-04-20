@@ -19,19 +19,25 @@ public class TextureAtlasSpriteMod extends com.prupe.mcpatcher.ClassMod {
         super(mod);
         setInterfaces("Icon");
 
-        addClassSignature(new BytecodeSignature() {
-            @Override
-            public String getMatchExpression() {
-                return buildExpression(repeat(build(
-                    push(0.009999999776482582),
-                    anyILOAD,
-                    I2D,
-                    DDIV,
-                    D2F,
-                    anyFSTORE
-                ), 2));
-            }
-        });
+        if (ResourceLocationMod.haveClass()) {
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(repeat(build(
+                        push(0.009999999776482582),
+                        anyILOAD,
+                        I2D,
+                        DDIV,
+                        D2F,
+                        anyFSTORE
+                    ), 2));
+                }
+            });
+        } else {
+            addClassSignature(new ConstSignature("clock"));
+            addClassSignature(new ConstSignature("compass"));
+            addClassSignature(new ConstSignature(","));
+        }
 
         addMemberMapper(new FieldMapper(textureName));
     }

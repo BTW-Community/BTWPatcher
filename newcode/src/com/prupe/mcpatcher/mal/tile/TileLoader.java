@@ -44,6 +44,7 @@ public class TileLoader {
         long maxSize = 4096L;
         try {
             maxSize = Minecraft.getMaxTextureSize();
+        } catch (NoSuchMethodError e) {
         } catch (Throwable e) {
             e.printStackTrace();
         }
