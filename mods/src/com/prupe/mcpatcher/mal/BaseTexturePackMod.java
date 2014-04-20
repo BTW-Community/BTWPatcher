@@ -35,6 +35,9 @@ public class BaseTexturePackMod extends Mod {
         if (malVersion == 1) {
             addClassMod(new RenderEngineMod());
             addClassMod(new ResourcePackRepositoryMod());
+            if (getMinecraftVersion().compareTo("1.5.2") == 0) {
+                addClassMod(new RunnableTitleScreenMod());
+            }
         } else {
             addClassMod(new TextureManagerMod());
             addClassMod(new TextureUtilMod(this));
@@ -831,6 +834,37 @@ public class BaseTexturePackMod extends Mod {
                     .accessFlag(AccessFlag.PUBLIC, true)
                     .accessFlag(AccessFlag.STATIC, false)
             );
+        }
+    }
+
+    private class RunnableTitleScreenMod extends ClassMod {
+        RunnableTitleScreenMod() {
+            setInterfaces("java/lang/Runnable");
+
+            addClassSignature(new ConstSignature("http://assets.minecraft.net/1_6_has_been_released.flag"));
+
+            final MethodRef run = new MethodRef(getDeobfClass(), "run", "()V");
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "disable 1.6 notification message";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        RETURN
+                    );
+                }
+            }.targetMethod(run));
         }
     }
 }
