@@ -2441,7 +2441,7 @@ public class CustomColors extends Mod {
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.LIGHTMAP_CLASS, "computeLightmap", "(LEntityRenderer;LWorld;[IF)Z")),
                         IFEQ, branch("A"),
 
-                        ResourceLocationMod.haveClass() ? loadTexture15() : loadTexture16(),
+                        ResourceLocationMod.haveClass() ? loadTexture16() : loadTexture15(),
 
                         // return;
                         RETURN,
