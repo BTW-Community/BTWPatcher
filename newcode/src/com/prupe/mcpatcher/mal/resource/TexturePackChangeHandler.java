@@ -6,7 +6,7 @@ import net.minecraft.src.*;
 
 import java.util.*;
 
-abstract public class TexturePackChangeHandler {
+abstract public class TexturePackChangeHandler implements Comparable<TexturePackChangeHandler> {
     private static final MCLogger logger = MCLogger.getLogger("Texture Pack");
 
     private static final ArrayList<TexturePackChangeHandler> handlers = new ArrayList<TexturePackChangeHandler>();
@@ -46,6 +46,11 @@ abstract public class TexturePackChangeHandler {
         this.updateNeeded = updateNeeded;
     }
 
+    @Override
+    public int compareTo(TexturePackChangeHandler that) {
+        return this.order - that.order;
+    }
+
     public static void scheduleTexturePackRefresh() {
         Minecraft.getInstance().scheduleTexturePackRefresh();
     }
@@ -63,11 +68,7 @@ abstract public class TexturePackChangeHandler {
             }
             handlers.add(handler);
             logger.fine("registered texture pack handler %s, priority %d", handler.name, handler.order);
-            Collections.sort(handlers, new Comparator<TexturePackChangeHandler>() {
-                public int compare(TexturePackChangeHandler o1, TexturePackChangeHandler o2) {
-                    return o1.order - o2.order;
-                }
-            });
+            Collections.sort(handlers);
         }
     }
 
