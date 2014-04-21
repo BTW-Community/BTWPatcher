@@ -217,6 +217,10 @@ abstract public class TexturePackAPI {
         }
     }
 
+    public static void flushUnusedTextures() {
+        instance.flushUnusedTextures_Impl();
+    }
+
     abstract protected boolean isInitialized_Impl();
 
     abstract protected void getResourcePacks_Impl(String namespace, List<ResourcePack> resourcePacks);
@@ -242,6 +246,8 @@ abstract public class TexturePackAPI {
     abstract protected void bindTexture_Impl(ResourceLocation resource);
 
     abstract protected void unloadTexture_Impl(ResourceLocation resource);
+
+    abstract protected void flushUnusedTextures_Impl();
 
     final private static class V1 extends TexturePackAPI {
         private final List<Field> textureMapFields = new ArrayList<Field>();
@@ -370,6 +376,11 @@ abstract public class TexturePackAPI {
                     }
                 }
             }
+        }
+
+        @Override
+        protected void flushUnusedTextures_Impl() {
+            // switching packs is so hopelessly broken in 1.5 that there's no point
         }
     }
 
@@ -514,6 +525,24 @@ abstract public class TexturePackAPI {
                 }
                 logger.finer("unloading texture %s", resource);
                 textureManager.texturesByName.remove(resource);
+            }
+        }
+
+        @Override
+        protected void flushUnusedTextures_Impl() {
+            TextureManager textureManager = Minecraft.getInstance().getTextureManager();
+            if (textureManager != null) {
+                Set<ResourceLocation> texturesToUnload = new HashSet<ResourceLocation>();
+                for (Map.Entry<ResourceLocation, TextureObject> entry : textureManager.texturesByName.entrySet()) {
+                    ResourceLocation resource = entry.getKey();
+                    TextureObject texture = entry.getValue();
+                    if (texture instanceof SimpleTexture && !(texture instanceof ThreadDownloadImageData) && !TexturePackAPI.hasResource(resource)) {
+                        texturesToUnload.add(resource);
+                    }
+                }
+                for (ResourceLocation resource : texturesToUnload) {
+                    unloadTexture(resource);
+                }
             }
         }
     }

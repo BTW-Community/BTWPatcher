@@ -124,20 +124,7 @@ abstract public class TexturePackChangeHandler {
             }
         }
 
-        TextureManager textureManager = Minecraft.getInstance().getTextureManager();
-        if (textureManager != null) {
-            Set<ResourceLocation> texturesToUnload = new HashSet<ResourceLocation>();
-            for (Map.Entry<ResourceLocation, TextureObject> entry : textureManager.texturesByName.entrySet()) {
-                ResourceLocation resource = entry.getKey();
-                TextureObject texture = entry.getValue();
-                if (texture instanceof SimpleTexture && !(texture instanceof ThreadDownloadImageData) && !TexturePackAPI.hasResource(resource)) {
-                    texturesToUnload.add(resource);
-                }
-            }
-            for (ResourceLocation resource : texturesToUnload) {
-                TexturePackAPI.unloadTexture(resource);
-            }
-        }
+        TexturePackAPI.flushUnusedTextures();
     }
 
     public static void afterChange1() {
