@@ -21,7 +21,7 @@ abstract public class TexturePackAPI {
 
     public static final String DEFAULT_NAMESPACE = "minecraft";
 
-    public static TexturePackAPI instance = MAL.newInstance(TexturePackAPI.class, "texturepack");
+    private static final TexturePackAPI instance = MAL.newInstance(TexturePackAPI.class, "texturepack");
 
     public static final String MCPATCHER_SUBDIR = TexturePackAPI.select("/", "mcpatcher/");
 
