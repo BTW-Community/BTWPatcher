@@ -29,6 +29,10 @@ abstract public class TexturePackAPI {
         return instance != null && instance.isInitialized_Impl();
     }
 
+    public static void scheduleTexturePackRefresh() {
+        Minecraft.getInstance().scheduleTexturePackRefresh();
+    }
+
     public static List<ResourcePack> getResourcePacks(String namespace) {
         List<ResourcePack> list = new ArrayList<ResourcePack>();
         instance.getResourcePacks_Impl(namespace, list);

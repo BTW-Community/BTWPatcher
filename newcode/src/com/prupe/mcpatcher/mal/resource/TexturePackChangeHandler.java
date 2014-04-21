@@ -51,10 +51,6 @@ abstract public class TexturePackChangeHandler implements Comparable<TexturePack
         return this.order - that.order;
     }
 
-    public static void scheduleTexturePackRefresh() {
-        Minecraft.getInstance().scheduleTexturePackRefresh();
-    }
-
     public static void register(TexturePackChangeHandler handler) {
         if (handler != null) {
             if (TexturePackAPI.isInitialized()) {
