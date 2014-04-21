@@ -168,29 +168,54 @@ public class BaseTilesheetMod extends Mod {
 
                 private String getMatchExpressionSB() {
                     return build(
-                        // this.basePath + name + extension
+                        // ("/" +) this.basePath + name + extension
                         reference(NEW, sbClass),
                         DUP,
-                        or(
-                            build( // vanilla mc
-                                reference(INVOKESPECIAL, sbInit0),
-                                ALOAD_0,
-                                reference(GETFIELD, basePath),
-                                reference(INVOKEVIRTUAL, sbAppend)
-                            ),
-                            build( // mcp
-                                ALOAD_0,
-                                reference(GETFIELD, basePath),
-                                optional(build(reference(INVOKESTATIC, stringValueOf))), // useless, but added by mcp
-                                reference(INVOKESPECIAL, sbInit1)
-                            )
+                        getSBExpression(
+                            ResourceLocationMod.select(build(push("/")), null),
+                            build(ALOAD_0, reference(GETFIELD, basePath)),
+                            capture(any(1, 5)),
+                            capture(anyLDC)
                         ),
-                        capture(any(1, 5)),
-                        reference(INVOKEVIRTUAL, sbAppend),
-                        capture(anyLDC),
-                        reference(INVOKEVIRTUAL, sbAppend),
                         reference(INVOKEVIRTUAL, sbToString)
                     );
+                }
+
+                private String getSBExpression(String... subexprs) {
+                    StringBuilder sb = new StringBuilder();
+                    boolean first = true;
+                    for (String subexpr : subexprs) {
+                        if (subexpr == null) {
+                            continue;
+                        }
+                        if (first) {
+                            sb.append(or(
+                                build(
+                                    // vanilla mc:
+                                    // sb = new StringBuilder();
+                                    // sb.append(value);
+                                    reference(INVOKESPECIAL, sbInit0),
+                                    subexpr,
+                                    reference(INVOKEVIRTUAL, sbAppend)
+                                ),
+                                build(
+                                    // mcp:
+                                    // sb = new StringBuilder(value);
+                                    subexpr,
+                                    optional(build(reference(INVOKESTATIC, stringValueOf))), // useless, but added by mcp
+                                    reference(INVOKESPECIAL, sbInit1)
+                                )
+                            ));
+                        } else {
+                            sb.append(build(
+                                // sb.append(value);
+                                subexpr,
+                                reference(INVOKEVIRTUAL, sbAppend)
+                            ));
+                        }
+                        first = false;
+                    }
+                    return sb.toString();
                 }
 
                 private String getMatchExpressionSprintf() {
