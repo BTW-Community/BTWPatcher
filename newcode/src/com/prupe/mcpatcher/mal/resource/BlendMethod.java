@@ -77,7 +77,12 @@ public class BlendMethod {
         this.blend = blend;
         this.fadeRGB = fadeRGB;
         this.fadeAlpha = fadeAlpha;
-        blankResource = neutralRGB == null ? null : new ResourceLocation(String.format(MCPatcherUtils.BLANK_PNG_FORMAT, neutralRGB));
+        if (neutralRGB == null) {
+            blankResource = null;
+        } else {
+            String filename = String.format(MCPatcherUtils.BLANK_PNG_FORMAT, neutralRGB);
+            blankResource = TexturePackAPI.newMCPatcherResourceLocation(filename, filename);
+        }
         if (blankResource != null) {
             blankResources.add(blankResource);
         }

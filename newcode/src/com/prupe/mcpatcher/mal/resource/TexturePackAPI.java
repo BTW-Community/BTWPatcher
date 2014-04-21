@@ -174,7 +174,7 @@ abstract public class TexturePackAPI {
     }
 
     public static ResourceLocation newMCPatcherResourceLocation(String v1Path, String v2Path) {
-        return new ResourceLocation(select(v1Path, MCPATCHER_SUBDIR + v2Path));
+        return new ResourceLocation(MCPATCHER_SUBDIR + select(v1Path, v2Path.replaceFirst("^/+", "")));
     }
 
     public static int getTextureIfLoaded(ResourceLocation resource) {

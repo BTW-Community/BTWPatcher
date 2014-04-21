@@ -69,8 +69,9 @@ public final class BaseMod extends Mod {
         }
         addClassFile(MCPatcherUtils.MAL_CLASS);
 
+        String prefix = getMinecraftVersion().compareTo("13w24a") < 0 ? "" : "assets/minecraft/mcpatcher/";
         for (int i : new int[]{0, 0x80808080, 0xffffffff}) {
-            addFile(String.format("%s" + MCPatcherUtils.BLANK_PNG_FORMAT, "assets/minecraft/", i));
+            addFile(String.format("%s" + MCPatcherUtils.BLANK_PNG_FORMAT, prefix, i));
         }
     }
 
