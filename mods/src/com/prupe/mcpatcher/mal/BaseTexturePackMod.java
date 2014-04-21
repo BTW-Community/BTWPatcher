@@ -336,7 +336,7 @@ public class BaseTexturePackMod extends Mod {
                 tmp.add(new InterfaceMethodRef(getDeobfClass(), "getInputStream2", "(" + d + "Z)Ljava/io/InputStream;"));
                 tmp.add(new InterfaceMethodRef(getDeobfClass(), "getInputStream", "(" + d + ")Ljava/io/InputStream;"));
                 tmp.add(new InterfaceMethodRef(getDeobfClass(), "getTexturePackID", "()Ljava/lang/String;"));
-                tmp.add(new InterfaceMethodRef(getDeobfClass(), "getTexturePackFileName", "()Ljava/lang/String;"));
+                tmp.add(new InterfaceMethodRef(getDeobfClass(), "getName", "()Ljava/lang/String;"));
                 tmp.add(new InterfaceMethodRef(getDeobfClass(), "getFirstDescriptionLine", "()Ljava/lang/String;"));
                 tmp.add(new InterfaceMethodRef(getDeobfClass(), "getSecondDescriptionLine", "()Ljava/lang/String;"));
                 tmp.add(new InterfaceMethodRef(getDeobfClass(), "hasResource", "(Ljava/lang/String;Z)Z"));
