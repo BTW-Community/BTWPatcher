@@ -14,7 +14,7 @@ import java.util.Properties;
 public class FireworksHelper {
     private static final int LIT_LAYER = 3;
     private static final int EXTRA_LAYER = LIT_LAYER + 1;
-    private static final ResourceLocation PARTICLE_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("/particles.properties", "particle.properties");
+    private static final ResourceLocation PARTICLE_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("particle.properties");
 
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.BETTER_SKIES);
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.BETTER_SKIES, "brightenFireworks", true);

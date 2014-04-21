@@ -25,7 +25,7 @@ import java.util.*;
 public class MipmapHelper {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
 
-    private static final ResourceLocation MIPMAP_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("/mipmap.properties", "mipmap.properties");
+    private static final ResourceLocation MIPMAP_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("mipmap.properties");
 
     static final int TEX_FORMAT = GL12.GL_BGRA;
     static final int TEX_DATA_TYPE = GL12.GL_UNSIGNED_INT_8_8_8_8_REV;

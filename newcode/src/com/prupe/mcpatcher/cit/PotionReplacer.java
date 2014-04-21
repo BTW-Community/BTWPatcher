@@ -93,7 +93,7 @@ class PotionReplacer {
 
     private static ResourceLocation getPotionPath(String name, boolean splash) {
         String path = "cit/potion/" + (splash ? "splash/" : "normal/") + name + ".png";
-        return TexturePackAPI.newMCPatcherResourceLocation("/" + path, path);
+        return TexturePackAPI.newMCPatcherResourceLocation(path);
     }
 
     private static Properties newProperties(ResourceLocation path, String itemID, String layer) {

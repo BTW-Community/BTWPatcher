@@ -177,6 +177,10 @@ abstract public class TexturePackAPI {
         return new ResourceLocation(MCPATCHER_SUBDIR + select(v1Path, v2Path.replaceFirst("^/+", "")));
     }
 
+    public static ResourceLocation newMCPatcherResourceLocation(String path) {
+        return newMCPatcherResourceLocation(path, path);
+    }
+
     public static int getTextureIfLoaded(ResourceLocation resource) {
         return resource == null ? -1 : instance.getTextureIfLoaded_Impl(resource);
     }

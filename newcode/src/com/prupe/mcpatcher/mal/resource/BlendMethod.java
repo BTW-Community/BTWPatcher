@@ -81,7 +81,7 @@ public class BlendMethod {
             blankResource = null;
         } else {
             String filename = String.format(MCPatcherUtils.BLANK_PNG_FORMAT, neutralRGB);
-            blankResource = TexturePackAPI.newMCPatcherResourceLocation(filename, filename);
+            blankResource = TexturePackAPI.newMCPatcherResourceLocation(filename);
         }
         if (blankResource != null) {
             blankResources.add(blankResource);
