@@ -452,7 +452,7 @@ public class BetterGlass extends Mod {
             final MethodRef renderWorld = new MethodRef(getDeobfClass(), "renderWorld", "(FJ)V");
             final MethodRef renderRainSnow = new MethodRef(getDeobfClass(), "renderRainSnow", "(F)V");
 
-            addClassSignature(new ConstSignature("textures/environment/snow.png"));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("/environment/snow.png", "textures/environment/snow.png")));
             addClassSignature(new ConstSignature("ambient.weather.rain"));
 
             addClassSignature(new BytecodeSignature() {
@@ -632,7 +632,7 @@ public class BetterGlass extends Mod {
             final MethodRef enableDisableLightmap = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "enableDisableLightmap", "(LEntityRenderer;D)V");
 
             addClassSignature(new ConstSignature("smoke"));
-            addClassSignature(new ConstSignature("textures/environment/clouds.png"));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("/environment/clouds.png", "textures/environment/clouds.png")));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
