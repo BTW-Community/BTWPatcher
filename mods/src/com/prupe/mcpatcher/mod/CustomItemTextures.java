@@ -14,7 +14,7 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class CustomItemTextures extends Mod {
-    private static final String GLINT_PNG = "textures/misc/enchanted_item_glint.png";
+    private final String GLINT_PNG;
 
     private static final MethodRef glDepthFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthFunc", "(I)V");
     private static final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
@@ -55,6 +55,7 @@ public class CustomItemTextures extends Mod {
         addDependency(MCPatcherUtils.ITEM_API_MOD);
 
         newEntityRendering = getMinecraftVersion().compareTo("14w05a") >= 0;
+        GLINT_PNG = ResourceLocationMod.select("%blur%/misc/glint.png", "textures/misc/enchanted_item_glint.png");
 
         ResourceLocationMod.setup(this);
         addClassMod(new TessellatorMod(this));
@@ -78,7 +79,9 @@ public class CustomItemTextures extends Mod {
         addClassMod(new EntityLivingBaseMod());
         addClassMod(new EntityLivingMod(this));
         addClassMod(new EntityPlayerMod());
-        addClassMod(new AbstractClientPlayerMod());
+        if (ResourceLocationMod.haveClass()) {
+            addClassMod(new AbstractClientPlayerMod());
+        }
         addClassMod(new PotionMod());
         addClassMod(new PotionHelperMod());
 
@@ -222,8 +225,8 @@ public class CustomItemTextures extends Mod {
 
     private class ItemArmorMod extends ClassMod {
         ItemArmorMod() {
-            addClassSignature(new ConstSignature("leather_helmet_overlay"));
-            addClassSignature(new ConstSignature("empty_armor_slot_helmet"));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("helmetCloth_overlay", "leather_helmet_overlay")));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("slot_empty_helmet", "empty_armor_slot_helmet")));
         }
     }
 
@@ -298,6 +301,25 @@ public class CustomItemTextures extends Mod {
     }
 
     private void addGlintSignature(ClassMod classMod, MethodRef method, final String opcode) {
+        if (ResourceLocationMod.haveClass()) {
+            addGlintSignature16(classMod, method, opcode);
+        } else {
+            addGlintSignature15(classMod, method);
+        }
+    }
+
+    private void addGlintSignature15(ClassMod classMod, MethodRef method) {
+        classMod.addClassSignature(new BytecodeSignature(classMod) {
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    push(GLINT_PNG)
+                );
+            }
+        }.setMethod(method));
+    }
+
+    private void addGlintSignature16(ClassMod classMod, MethodRef method, final String opcode) {
         final FieldRef glint = new FieldRef(classMod.getDeobfClass(), "glint", "LResourceLocation;");
 
         classMod.addClassSignature(new ResourceLocationSignature(classMod, glint, GLINT_PNG));
@@ -334,8 +356,8 @@ public class CustomItemTextures extends Mod {
             final MethodRef getEntityItemIcon = new MethodRef("EntityLivingBase", "getItemIcon", "(LItemStack;I)LIcon;");
             final MethodRef renderItemForge = new MethodRef(getDeobfClass(), "renderItem", "(LEntityLivingBase;LItemStack;ILnet/minecraftforge/client/IItemRenderer$ItemRenderType;)V");
 
-            addClassSignature(new ConstSignature("textures/map/map_background.png"));
-            addClassSignature(new ConstSignature("textures/misc/underwater.png"));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("/misc/mapbg.png", "textures/map/map_background.png")));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("/misc/water.png", "textures/misc/underwater.png")));
             // 13w24b: this.minecraft.getTextureManager.bindTexture(glint);
             // 13w25a: var4 = this.minecraft.getTextureManager(); ... var4.bindTexture(glint);
             addGlintSignature(this, renderItem, anyALOAD);
@@ -452,7 +474,7 @@ public class CustomItemTextures extends Mod {
             final MethodRef getMaxDamage = new MethodRef("ItemStack", "getMaxDamage", "()I");
             final boolean needAlphaTest = getMinecraftVersion().compareTo("13w42a") >= 0;
 
-            addClassSignature(new ConstSignature("missingno"));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("/gui/items.png", "missingno")));
             addGlintSignature(this, renderDroppedItem);
             addGlintSignature(this, renderItemAndEffectIntoGUI, build(ALOAD_2));
 
@@ -984,7 +1006,7 @@ public class CustomItemTextures extends Mod {
 
         @Override
         String getEntityClass() {
-            return "AbstractClientPlayer";
+            return ResourceLocationMod.select("EntityLivingBase", "AbstractClientPlayer");
         }
     }
 
@@ -1242,8 +1264,8 @@ public class CustomItemTextures extends Mod {
 
             final MethodRef doRender = new MethodRef(getDeobfClass(), "doRender", "(LEntity;DDDFF)V");
 
-            addClassSignature(new ConstSignature("bottle_splash"));
-            addClassSignature(new ConstSignature("overlay"));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("potion_splash", "bottle_splash")));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("potion_contents", "overlay")));
 
             addClassSignature(new BytecodeSignature() {
                 @Override
