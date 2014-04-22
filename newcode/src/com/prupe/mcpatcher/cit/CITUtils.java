@@ -64,7 +64,7 @@ public class CITUtils {
                 itemCompass = ItemAPI.getFixedItem("minecraft:compass");
                 itemClock = ItemAPI.getFixedItem("minecraft:clock");
 
-                tileLoader = new TileLoader(TexturePackAPI.select("items", "textures/items"), logger);
+                tileLoader = new TileLoader("textures/items", logger);
                 items.clear();
                 enchantments.clear();
                 allItemEnchantments.clear();

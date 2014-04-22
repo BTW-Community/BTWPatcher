@@ -59,7 +59,7 @@ public class CTMUtils {
                 tileOverrides.clear();
                 lastOverride = null;
                 blankIcon = null;
-                tileLoader = new TileLoader(TexturePackAPI.select("terrain", "textures/blocks"), logger);
+                tileLoader = new TileLoader("textures/blocks", logger);
                 BlockOrientation.reset();
                 RenderPassAPI.instance.refreshBlendingOptions();
 

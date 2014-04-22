@@ -85,8 +85,8 @@ public class TileLoader {
     }
 
     public static void registerIcons(TextureAtlas textureMap, String mapName, Map<String, TextureAtlasSprite> map) {
-        logger.fine("before registerIcons(%s) %d icons", mapName, map.size());
         mapName = mapName.replaceFirst("/$", "");
+        logger.fine("before registerIcons(%s) %d icons", mapName, map.size());
         registerIconsCalled = true;
         if (!changeHandlerCalled) {
             logger.severe("beforeChange was not called, invoking directly");
