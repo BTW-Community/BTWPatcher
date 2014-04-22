@@ -14,6 +14,7 @@ import net.minecraft.src.TextureAtlasSprite;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.*;
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class TileLoader {
     private static final TexturePackChangeHandler changeHandler;
     private static boolean changeHandlerCalled;
     private static boolean registerIconsCalled;
+    private static boolean useFullPath;
 
     private static final long MAX_TILESHEET_SIZE;
 
@@ -108,20 +110,33 @@ public class TileLoader {
         logger.fine("after registerIcons(%s) %d icons", mapName, map.size());
     }
 
-    public static String getOverridePath(String prefix, String name, String ext) {
+    public static String getOverridePath(String prefix, String basePath, String name, String ext) {
         String path;
         if (name.endsWith(".png")) {
-            path = name.replaceFirst("\\.[^.]+$", "") + ext;
+            path = name.replaceFirst("^/", "").replaceFirst("\\.[^.]+$", "") + ext;
+            useFullPath = true;
         } else {
-            path = prefix;
-            if (!prefix.endsWith("/")) {
+            path = basePath;
+            if (!basePath.endsWith("/")) {
                 path += "/";
             }
             path += name;
             path += ext;
+            useFullPath = false;
         }
-        logger.finer("getOverridePath(%s, %s, %s) -> %s", prefix, name, ext, path);
+        path = prefix + path;
+        logger.finer("getOverridePath(%s, %s, %s, %s) -> %s", prefix, basePath, name, ext, path);
         return path;
+    }
+
+    public static String getOverrideBasename(Object o, String path) {
+        if (useFullPath) {
+            useFullPath = false;
+            return "/" + path;
+        } else {
+            File file = new File(path);
+            return file.getName().substring(0, file.getName().lastIndexOf('.'));
+        }
     }
 
     public static boolean isSpecialTexture(TextureAtlas map, String texture, String special) {

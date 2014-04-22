@@ -20,8 +20,8 @@ public class BaseTilesheetMod extends Mod {
         if (ResourceLocationMod.setup(this)) {
             addClassMod(new AbstractTextureMod(this));
             addClassMod(new TextureMod(this));
-            addClassMod(new TextureManagerMod());
         }
+        addClassMod(new TextureManagerMod());
         addClassMod(new TessellatorMod(this));
         addClassMod(new IconRegisterMod());
         addClassMod(new TextureAtlasMod());
@@ -65,6 +65,7 @@ public class BaseTilesheetMod extends Mod {
             final MethodRef sbInit1 = new MethodRef("java/lang/StringBuilder", "<init>", "(Ljava/lang/String;)V");
             final MethodRef sbAppend = new MethodRef("java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;");
             final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
+            final MethodRef getOverridePath = new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverridePath", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
 
             if (ResourceLocationMod.haveClass()) {
                 addClassSignature(new ResourceLocationSignature(this, blocksAtlas, "textures/atlas/blocks.png"));
@@ -171,11 +172,18 @@ public class BaseTilesheetMod extends Mod {
                         // ("/" +) this.basePath + name + extension
                         reference(NEW, sbClass),
                         DUP,
-                        getSBExpression(
-                            ResourceLocationMod.select(build(push("/")), null),
-                            build(ALOAD_0, reference(GETFIELD, basePath)),
-                            capture(any(1, 5)),
-                            capture(anyLDC)
+                        or(
+                            getSBExpression(
+                                ResourceLocationMod.select(capture(build(push("/"))), null),
+                                build(ALOAD_0, reference(GETFIELD, basePath)),
+                                capture(any(1, 5)),
+                                capture(any(1, 5))
+                            ),
+                            getSBExpression(
+                                build(ALOAD_0, reference(GETFIELD, basePath)),
+                                capture(any(1, 5)),
+                                capture(any(1, 5))
+                            )
                         ),
                         reference(INVOKEVIRTUAL, sbToString)
                     );
@@ -243,21 +251,28 @@ public class BaseTilesheetMod extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    byte[] name = getCaptureGroup(1);
-                    byte[] extension = getCaptureGroup(2);
-                    if (name == null) {
-                        name = getCaptureGroup(3);
+                    byte[] prefix = getCaptureGroup(1);
+                    if (prefix == null) {
+                        prefix = buildCode(push(""));
                     }
-                    if (extension == null) {
-                        extension = getCaptureGroup(4);
+                    byte[] name = getCaptureGroup(2);
+                    byte[] extension = getCaptureGroup(3);
+                    if (name == null) {
+                        name = getCaptureGroup(4);
+                        extension = getCaptureGroup(5);
+                        if (name == null) {
+                            name = getCaptureGroup(6);
+                            extension = getCaptureGroup(7);
+                        }
                     }
                     return buildCode(
-                        // TileLoader.getOverridePath(this.basePath, name, extension)
+                        // TileLoader.getOverridePath(prefix, this.basePath, name, extension)
+                        prefix,
                         ALOAD_0,
                         reference(GETFIELD, basePath),
                         name,
                         extension,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverridePath", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"))
+                        reference(INVOKESTATIC, getOverridePath)
                     );
                 }
             });
@@ -323,6 +338,54 @@ public class BaseTilesheetMod extends Mod {
 
     private class TextureManagerMod extends ClassMod {
         TextureManagerMod() {
+            if (ResourceLocationMod.haveClass()) {
+                setup16();
+            } else {
+                setup15();
+            }
+        }
+
+        private void setup15() {
+            final MethodRef getBasename = new MethodRef(getDeobfClass(), "getBasename", "(Ljava/lang/String;)Ljava/lang/String;");
+            final MethodRef lastIndexOf = new MethodRef("java/lang/String", "lastIndexOf", "(I)I");
+            final MethodRef getOverrideBasename = new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverrideBasename", "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;");
+
+            addClassSignature(new ConstSignature("/"));
+            addClassSignature(new ConstSignature(".txt"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(46),
+                        reference(INVOKEVIRTUAL, lastIndexOf)
+                    );
+                }
+            }.setMethod(getBasename));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override texture name";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKESPECIAL, getBasename)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(INVOKESTATIC, getOverrideBasename)
+                    );
+                }
+            });
+        }
+
+        private void setup16() {
             final MethodRef updateAnimations = new MethodRef(getDeobfClass(), "updateAnimations", "()V");
             final InterfaceMethodRef listIterator = new InterfaceMethodRef("java/util/List", "iterator", "()Ljava/util/Iterator;");
 
