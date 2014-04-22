@@ -324,8 +324,10 @@ abstract public class TexturePackAPI {
                 // Relative to properties file:
                 // ./path -> (dir of base file)/path
                 return new ResourceLocation(baseResource.getNamespace(), baseResource.getPath().replaceFirst("[^/]+$", "") + path.substring(2));
-            } else {
+            } else if (path.startsWith("/")) {
                 return new ResourceLocation(path);
+            } else {
+                return new ResourceLocation(baseResource.getNamespace(), baseResource.getPath().replaceFirst("[^/]+$", "") + path);
             }
         }
 
