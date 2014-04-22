@@ -73,7 +73,11 @@ public class CustomItemTextures extends Mod {
         } else {
             addClassMod(new RenderLivingEntityMod());
             addClassMod(new RenderBipedMod());
-            addClassMod(new RenderPlayerMod());
+            if (ResourceLocationMod.haveClass()) {
+                addClassMod(new RenderPlayerMod());
+            } else {
+                addClassMod(new RenderArmor15Mod());
+            }
         }
         addClassMod(new RenderSnowballMod());
         addClassMod(new EntityLivingBaseMod());
@@ -966,29 +970,33 @@ public class CustomItemTextures extends Mod {
         RenderBipedMod() {
             setParentClass("RenderLiving");
 
-            final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(LEntityLiving;IF)V");
+            String entityLivingSubclass = ResourceLocationMod.select("EntityLivingBase", "EntityLiving");
+            final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(L" + entityLivingSubclass + ";IF)V");
             final MethodRef getCurrentArmor = new MethodRef("EntityLiving", "getCurrentArmor", "(I)LItemStack;");
 
-            addClassSignature(new ConstSignature("textures/models/armor/%s_layer_%d%s.png"));
+            if (ResourceLocationMod.haveClass()) {
+                addClassSignature(new ConstSignature("textures/models/armor/%s_layer_%d%s.png"));
+
+                addMemberMapper(new MethodMapper(getArmorTexture2).accessFlag(AccessFlag.STATIC, true));
+                addMemberMapper(new MethodMapper(getArmorTexture3).accessFlag(AccessFlag.STATIC, true));
+            }
 
             addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_1,
-                        push(3),
-                        ILOAD_2,
-                        ISUB,
-                        captureReference(INVOKEVIRTUAL)
-                    );
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // entity.getCurrentArmor(3 - pass);
+                            ALOAD_1,
+                            push(3),
+                            ILOAD_2,
+                            ISUB,
+                            captureReference(INVOKEVIRTUAL)
+                        );
+                    }
                 }
-            }
-                .setMethod(loadTextureForPass)
-                .addXref(1, getCurrentArmor)
+                    .setMethod(loadTextureForPass)
+                    .addXref(1, getCurrentArmor)
             );
-
-            addMemberMapper(new MethodMapper(getArmorTexture2).accessFlag(AccessFlag.STATIC, true));
-            addMemberMapper(new MethodMapper(getArmorTexture3).accessFlag(AccessFlag.STATIC, true));
         }
 
         @Override
@@ -1006,7 +1014,7 @@ public class CustomItemTextures extends Mod {
 
         @Override
         String getEntityClass() {
-            return ResourceLocationMod.select("EntityLivingBase", "AbstractClientPlayer");
+            return "AbstractClientPlayer";
         }
     }
 
@@ -1014,11 +1022,12 @@ public class CustomItemTextures extends Mod {
         protected final MethodRef getArmorTexture2 = new MethodRef("RenderBiped", "getArmorTexture2", "(LItemArmor;I)LResourceLocation;");
         protected final MethodRef getArmorTexture3 = new MethodRef("RenderBiped", "getArmorTexture3", "(LItemArmor;ILjava/lang/String;)LResourceLocation;");
         protected final MethodRef getArmorResourceForge = new MethodRef("RenderBiped", "getArmorResource", "(LEntity;LItemStack;ILjava/lang/String;)LResourceLocation;");
+        private final com.prupe.mcpatcher.BytecodeSignature renderArmorSignature;
 
         RenderArmorMod() {
             final MethodRef renderArmor = new MethodRef(getDeobfClass(), "renderArmor", "(L" + getEntityClass() + ";IF)V");
 
-            final com.prupe.mcpatcher.BytecodeSignature signature = new BytecodeSignature() {
+            renderArmorSignature = new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -1037,8 +1046,14 @@ public class CustomItemTextures extends Mod {
                 }
             }.setMethod(renderArmor);
 
-            addClassSignature(signature);
+            addClassSignature(renderArmorSignature);
 
+            if (ResourceLocationMod.haveClass()) {
+                addArmorPatch();
+            }
+        }
+
+        private void addArmorPatch() {
             addPatch(new BytecodePatch() {
                 private int armorRegister;
 
@@ -1046,7 +1061,7 @@ public class CustomItemTextures extends Mod {
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
                         public String getMatchExpression() {
-                            return signature.getMatchExpression();
+                            return renderArmorSignature.getMatchExpression();
                         }
 
                         @Override
@@ -1088,6 +1103,98 @@ public class CustomItemTextures extends Mod {
         }
 
         abstract String getEntityClass();
+    }
+
+    private class RenderArmor15Mod extends ClassMod {
+        RenderArmor15Mod() {
+            setParentClass("RenderLiving");
+            setMultipleMatchesAllowed(true);
+
+            final ClassRef sbClass = new ClassRef("java/lang/StringBuilder");
+            final MethodRef sbInit0 = new MethodRef("java/lang/StringBuilder", "<init>", "()V");
+            final MethodRef sbInit1 = new MethodRef("java/lang/StringBuilder", "<init>", "(Ljava/lang/String;)V");
+            final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
+
+            addClassSignature(new ConstSignature("/armor/"));
+            addClassSignature(new ConstSignature("_"));
+            addClassSignature(new ConstSignature("_b.png"));
+
+            addPatch(new BytecodePatch() {
+                private int armorRegister;
+
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                begin(),
+                                // itemStack = entityLiving.getCurrentArmor(3 - slot);
+                                // - or -
+                                // itemStack = entityPlayer.inventory.armorItemInSlot(3 - slot);
+                                ALOAD_1,
+                                optional(build(anyReference(GETFIELD))),
+                                push(3),
+                                ILOAD_2,
+                                ISUB,
+                                anyReference(INVOKEVIRTUAL),
+                                capture(anyASTORE)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            armorRegister = extractRegisterNum(getCaptureGroup(1));
+                            return true;
+                        }
+                    });
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override armor texture";
+                }
+
+                @Override
+                public boolean filterMethod() {
+                    return getMethodInfo().getDescriptor().matches("\\(L[a-z]+;IF\\)[IV]");
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // "/armor/" + ...
+                        reference(NEW, sbClass),
+                        DUP,
+                        or(
+                            build(
+                                // new StringBuilder("/armor/")
+                                push("/armor/"),
+                                reference(INVOKESPECIAL, sbInit1)
+                            ),
+                            build(
+                                // new StringBuilder().append("/armor/")
+                                reference(INVOKESPECIAL, sbInit0),
+                                push("/armor/")
+                            )
+                        ),
+                        nonGreedy(any(0, 100)),
+                        reference(INVOKEVIRTUAL, sbToString)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // CITUtils.getArmorTexture(..., entity, itemArmor)
+                        ResourceLocationMod.wrap(this),
+                        ALOAD_1,
+                        ALOAD, armorRegister,
+                        reference(INVOKESTATIC, getArmorTexture),
+                        ResourceLocationMod.unwrap(this)
+                    );
+                }
+            }.setInsertAfter(true));
+        }
     }
 
     private class RenderArmor18Mod extends ClassMod {
