@@ -51,23 +51,25 @@ public class FontUtils {
     }
 
     public static ResourceLocation getFontName(FontRenderer fontRenderer, ResourceLocation font) {
-        if (fontRenderer.defaultFont == null) {
-            fontRenderer.defaultFont = font;
+        if (fontRenderer.getDefaultFont() == null) {
+            fontRenderer.setDefaultFont(font);
         }
-        if (fontRenderer.hdFont == null) {
-            String namespace = fontRenderer.defaultFont.getNamespace();
-            String name = fontRenderer.defaultFont.getPath().replaceAll(".*/", "");
-            fontRenderer.hdFont = new ResourceLocation(namespace, TexturePackAPI.MCPATCHER_SUBDIR + "font/" + name);
+        ResourceLocation defaultFont = fontRenderer.getDefaultFont();
+        if (fontRenderer.getHDFont() == null) {
+            String namespace = defaultFont.getNamespace();
+            String name = defaultFont.getPath().replaceAll(".*/", "");
+            fontRenderer.setHDFont(new ResourceLocation(namespace, TexturePackAPI.MCPATCHER_SUBDIR + "font/" + name));
         }
+        ResourceLocation hdFont = fontRenderer.getHDFont();
         ResourceLocation newFont;
-        if (enable && TexturePackAPI.hasResource(fontRenderer.hdFont)) {
-            logger.fine("using %s instead of %s", fontRenderer.hdFont, fontRenderer.defaultFont);
+        if (enable && TexturePackAPI.hasResource(hdFont)) {
+            logger.fine("using %s instead of %s", hdFont, defaultFont);
             fontRenderer.isHD = true;
-            newFont = fontRenderer.hdFont;
+            newFont = hdFont;
         } else {
-            logger.fine("using default %s", fontRenderer.defaultFont);
+            logger.fine("using default %s", defaultFont);
             fontRenderer.isHD = enable && enableNonHD;
-            newFont = fontRenderer.defaultFont;
+            newFont = defaultFont;
         }
         fontRenderer.fontAdj = fontRenderer.isHD ? 0.0f : 1.0f;
         return newFont;

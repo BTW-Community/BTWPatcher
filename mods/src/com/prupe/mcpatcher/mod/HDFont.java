@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.basemod.ResourceLocationMod;
 import com.prupe.mcpatcher.mal.BaseTexturePackMod;
 import javassist.bytecode.AccessFlag;
 
@@ -43,17 +44,19 @@ public class HDFont extends Mod {
         FontRendererMod(Mod mod) {
             super(mod);
 
-            final FieldRef fontResource = new FieldRef(getDeobfClass(), "fontResource", "LResourceLocation;");
+            String d = ResourceLocationMod.getDescriptor();
+            final FieldRef fontResource = new FieldRef(getDeobfClass(), "fontResource", d);
             final FieldRef charWidth = new FieldRef(getDeobfClass(), "charWidth", "[I");
             final FieldRef fontHeight = new FieldRef(getDeobfClass(), "fontHeight", "I");
             final FieldRef charWidthf = new FieldRef(getDeobfClass(), "charWidthf", "[F");
-            final FieldRef defaultFont = new FieldRef(getDeobfClass(), "defaultFont", "LResourceLocation;");
-            final FieldRef hdFont = new FieldRef(getDeobfClass(), "hdFont", "LResourceLocation;");
+            final FieldRef defaultFont = new FieldRef(getDeobfClass(), "defaultFont", d);
+            final FieldRef hdFont = new FieldRef(getDeobfClass(), "hdFont", d);
             final FieldRef isHD = new FieldRef(getDeobfClass(), "isHD", "Z");
             final MethodRef readFontData = new MethodRef(getDeobfClass(), "readFontData", "()V");
             final MethodRef getStringWidth = new MethodRef(getDeobfClass(), "getStringWidth", "(Ljava/lang/String;)I");
             final MethodRef getCharWidth = new MethodRef(getDeobfClass(), "getCharWidth", "(C)I");
-            final MethodRef computeCharWidths = haveReadFontData ? new MethodRef(getDeobfClass(), "computeCharWidths", "()V") : readFontData;
+            String computeCharWidthsArg = ResourceLocationMod.select("Ljava/lang/String;", "");
+            final MethodRef computeCharWidths = haveReadFontData ? new MethodRef(getDeobfClass(), "computeCharWidths", "(" + computeCharWidthsArg + ")V") : readFontData;
             final MethodRef getImageWidth = new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I");
             final MethodRef getFontName = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getFontName", "(LFontRenderer;LResourceLocation;)LResourceLocation;");
             final MethodRef computeCharWidthsf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "computeCharWidthsf", "(LFontRenderer;LResourceLocation;Ljava/awt/image/BufferedImage;[I[IF)[F");
@@ -90,6 +93,7 @@ public class HDFont extends Mod {
                             ALOAD_0,
                             anyReference(INVOKESPECIAL),
                             ALOAD_0,
+                            ResourceLocationMod.haveClass() ? "" : build(ALOAD_0, anyReference(GETFIELD)),
                             anyReference(INVOKESPECIAL)
                         );
                     }
@@ -109,8 +113,10 @@ public class HDFont extends Mod {
             addMemberMapper(new MethodMapper(getCharWidth));
 
             addPatch(new AddFieldPatch(charWidthf));
-            addPatch(new AddFieldPatch(defaultFont));
-            addPatch(new AddFieldPatch(hdFont));
+            addPatch(new AddFieldPatch(defaultFont, AccessFlag.PRIVATE));
+            addPatch(new AddFieldPatch(hdFont, AccessFlag.PRIVATE));
+            addFontMethods(defaultFont, "DefaultFont");
+            addFontMethods(hdFont, "HDFont");
             addPatch(new AddFieldPatch(isHD));
             addPatch(new AddFieldPatch(fontAdj));
 
@@ -143,8 +149,16 @@ public class HDFont extends Mod {
                         ALOAD_0,
                         ALOAD_0,
                         reference(GETFIELD, fontResource),
+                        ResourceLocationMod.wrap(this),
                         reference(INVOKESTATIC, getFontName),
-                        reference(PUTFIELD, fontResource)
+                        ResourceLocationMod.unwrap(this),
+                        reference(PUTFIELD, fontResource),
+                        ResourceLocationMod.haveClass() ? new byte[0] :
+                            buildCode(
+                                ALOAD_0,
+                                reference(GETFIELD, fontResource),
+                                ASTORE_1
+                            )
                     );
                 }
             }.targetMethod(readFontData));
@@ -198,6 +212,7 @@ public class HDFont extends Mod {
                         ALOAD_0,
                         ALOAD_0,
                         reference(GETFIELD, fontResource),
+                        ResourceLocationMod.wrap(this),
                         ALOAD, imageRegister,
                         ALOAD, rgbRegister,
                         ALOAD_0,
@@ -305,10 +320,37 @@ public class HDFont extends Mod {
                 }
             });
 
-            setupUnicode();
+            if (ResourceLocationMod.haveClass()) {
+                setupUnicode();
+            }
             if (haveFontWidthHack) {
                 setupFontHack();
             }
+        }
+
+        private void addFontMethods(final FieldRef field, String name) {
+            addPatch(new AddMethodPatch(new MethodRef(getDeobfClass(), "get" + name, "()LResourceLocation;")) {
+                @Override
+                public byte[] generateMethod() {
+                    return buildCode(
+                        ALOAD_0,
+                        reference(GETFIELD, field),
+                        ResourceLocationMod.wrap(this)
+                    );
+                }
+            });
+
+            addPatch(new AddMethodPatch(new MethodRef(getDeobfClass(), "set" + name, "(LResourceLocation;)V")) {
+                @Override
+                public byte[] generateMethod() {
+                    return buildCode(
+                        ALOAD_0,
+                        ALOAD_1,
+                        ResourceLocationMod.unwrap(this),
+                        reference(PUTFIELD, field)
+                    );
+                }
+            });
         }
 
         private void setupUnicode() {
