@@ -87,14 +87,18 @@ public class ResourceList {
                 MCPatcherUtils.close(zipFile);
             }
         }
-        Map<String, File> map = resourcePack.map;
-        if (map != null) {
-            for (Map.Entry<String, File> entry : map.entrySet()) {
-                String key = entry.getKey();
-                File file = entry.getValue();
-                ResourceLocation resource = new ResourceLocation(key);
-                addResource(resource, file.isFile(), file.isDirectory());
+        try {
+            Map<String, File> map = resourcePack.map;
+            if (map != null) {
+                for (Map.Entry<String, File> entry : map.entrySet()) {
+                    String key = entry.getKey();
+                    File file = entry.getValue();
+                    ResourceLocation resource = new ResourceLocation(key);
+                    addResource(resource, file.isFile(), file.isDirectory());
+                }
             }
+        } catch (NoSuchFieldError e) {
+            // field not present in 1.5
         }
         if (!allResources.isEmpty()) {
             logger.fine("new %s", this);
