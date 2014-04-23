@@ -3,9 +3,9 @@ package com.prupe.mcpatcher.mal.biome;
 import com.prupe.mcpatcher.MAL;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.src.BiomeGenBase;
 import net.minecraft.src.IBlockAccess;
+import net.minecraft.src.Minecraft;
 import net.minecraft.src.Position;
 
 import java.lang.reflect.Method;

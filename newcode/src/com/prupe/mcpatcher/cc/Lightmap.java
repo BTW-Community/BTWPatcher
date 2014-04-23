@@ -4,8 +4,8 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
-import net.minecraft.client.Minecraft;
 import net.minecraft.src.EntityRenderer;
+import net.minecraft.src.Minecraft;
 import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.World;
 

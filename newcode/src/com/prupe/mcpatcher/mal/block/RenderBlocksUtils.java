@@ -2,10 +2,10 @@ package com.prupe.mcpatcher.mal.block;
 
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.Icon;
+import net.minecraft.src.Minecraft;
 
 // Shared by both CTM and Custom Colors.
 public class RenderBlocksUtils {

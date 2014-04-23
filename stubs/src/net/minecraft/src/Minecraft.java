@@ -1,6 +1,4 @@
-package net.minecraft.client;
-
-import net.minecraft.src.*;
+package net.minecraft.src;
 
 import java.io.File;
 

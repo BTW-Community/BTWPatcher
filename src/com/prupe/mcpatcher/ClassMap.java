@@ -98,9 +98,7 @@ public class ClassMap {
         if (entry == null) {
             entry = new ClassMapEntry(descName, obfName);
             putEntry(entry);
-            if (descName.equals("Minecraft") || descName.equals("MinecraftApplet")) {
-                putEntry(new ClassMapEntry("net.minecraft.client." + descName, entry));
-            } else if (!descName.contains(".")) {
+            if (!descName.contains(".")) {
                 putEntry(new ClassMapEntry("net.minecraft.src." + descName, entry));
             }
         }
@@ -268,9 +266,7 @@ public class ClassMap {
         if (parentEntry == null) {
             parentEntry = new ClassMapEntry(parent);
             putEntry(parentEntry);
-            if (parent.equals("Minecraft") || parent.equals("MinecraftApplet")) {
-                putEntry(new ClassMapEntry("net.minecraft.client." + parent, parentEntry));
-            } else if (!parent.contains(".")) {
+            if (!parent.contains(".")) {
                 putEntry(new ClassMapEntry("net.minecraft.src." + parent, parentEntry));
             }
         }
@@ -800,7 +796,7 @@ public class ClassMap {
      * <p/>
      * e.g.,
      * LStillWater; -> Lrb;
-     * ([ILMinecraft;)V -> ([ILnet/minecraft/client/Minecraft;)V
+     * ([ILMinecraft;)V -> ([ILnet/minecraft/src/Minecraft;)V
      *
      * @param old Java type descriptor using descriptive class names
      * @return mapped Java type descriptor

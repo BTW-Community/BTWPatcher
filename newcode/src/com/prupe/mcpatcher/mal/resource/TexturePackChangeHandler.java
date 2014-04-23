@@ -1,10 +1,12 @@
 package com.prupe.mcpatcher.mal.resource;
 
 import com.prupe.mcpatcher.MCLogger;
-import net.minecraft.client.Minecraft;
-import net.minecraft.src.*;
+import net.minecraft.src.ResourcePack;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 abstract public class TexturePackChangeHandler implements Comparable<TexturePackChangeHandler> {
     private static final MCLogger logger = MCLogger.getLogger("Texture Pack");

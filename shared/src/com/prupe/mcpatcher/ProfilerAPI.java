@@ -1,6 +1,6 @@
 package com.prupe.mcpatcher;
 
-import net.minecraft.client.Minecraft;
+import net.minecraft.src.Minecraft;
 
 public class ProfilerAPI {
     private static final boolean enable = Config.getInstance().extraProfiling;

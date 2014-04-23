@@ -6,11 +6,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
-import net.minecraft.client.Minecraft;
-import net.minecraft.src.Icon;
-import net.minecraft.src.ResourceLocation;
-import net.minecraft.src.TextureAtlas;
-import net.minecraft.src.TextureAtlasSprite;
+import net.minecraft.src.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

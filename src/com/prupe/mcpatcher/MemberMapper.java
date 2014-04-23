@@ -16,7 +16,7 @@ public abstract class MemberMapper {
     /**
      * Java type descriptor, e.g.,<br>
      * "[B" represents an array of bytes.<br>
-     * "(I)Lnet/minecraft/client/Minecraft;" represents a method taking an int and returning a Minecraft object.
+     * "(I)Lnet/minecraft/src/Minecraft;" represents a method taking an int and returning a Minecraft object.
      */
     protected String descriptor;
 
