@@ -38,25 +38,28 @@ public class ExtendedHD extends Mod {
             return;
         }
 
-        ResourceLocationMod.setup(this);
-        addClassMod(new ResourceMod(this));
-        addClassMod(new IconMod(this));
-        addClassMod(new TextureObjectMod(this));
-        addClassMod(new AbstractTextureMod(this));
-        addClassMod(new TextureMod(this));
-        addClassMod(new TextureManagerMod());
-        addClassMod(new TextureAtlasMod());
-        if (haveMipmapping) {
-            addClassMod(new com.prupe.mcpatcher.basemod.TextureAtlasSpriteMod(this));
+        if (ResourceLocationMod.setup(this)) {
+            addClassMod(new ResourceMod(this));
+            addClassMod(new TextureObjectMod(this));
+            addClassMod(new AbstractTextureMod(this));
+            addClassMod(new TextureMod(this));
+            addClassMod(new TextureManagerMod());
+            addClassMod(new TextureAtlasMod());
+            if (haveMipmapping) {
+                addClassMod(new com.prupe.mcpatcher.basemod.TextureAtlasSpriteMod(this));
+            } else {
+                addClassMod(new MinecraftMod());
+                addClassMod(new TextureUtilMod());
+                addClassMod(new TextureAtlasSpriteMod());
+                addClassMod(new SimpleTextureMod());
+            }
+            addClassMod(new SimpleResourceMod());
         } else {
             addClassMod(new MinecraftMod());
-            addClassMod(new TextureUtilMod());
-            addClassMod(new TextureAtlasSpriteMod());
-            addClassMod(new SimpleTextureMod());
         }
+        addClassMod(new IconMod(this));
         addClassMod(new TextureCompassMod());
         addClassMod(new TextureClockMod());
-        addClassMod(new SimpleResourceMod());
         HDFont.setupMod(this, getMinecraftVersion(), false);
 
         addClassFiles("com.prupe.mcpatcher.hd.*");
