@@ -251,19 +251,20 @@ public class BaseTilesheetMod extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    byte[] prefix = getCaptureGroup(1);
+                    int group = 1;
+                    byte[] prefix = null;
+                    if (!ResourceLocationMod.haveClass()) {
+                        prefix = getCaptureGroup(group);
+                        group++;
+                    }
                     if (prefix == null) {
                         prefix = buildCode(push(""));
                     }
-                    byte[] name = getCaptureGroup(2);
-                    byte[] extension = getCaptureGroup(3);
-                    if (name == null) {
-                        name = getCaptureGroup(4);
-                        extension = getCaptureGroup(5);
-                        if (name == null) {
-                            name = getCaptureGroup(6);
-                            extension = getCaptureGroup(7);
-                        }
+                    byte[] name = null;
+                    byte[] extension = null;
+                    for (; name == null && group < 6; group += 2) {
+                        name = getCaptureGroup(group);
+                        extension = getCaptureGroup(group + 1);
                     }
                     return buildCode(
                         // TileLoader.getOverridePath(prefix, this.basePath, name, extension)
