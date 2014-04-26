@@ -122,6 +122,10 @@ public class MipmapHelper {
         return glTexture;
     }
 
+    public static void setupTexture(BufferedImage image, int glTexture, boolean blur, boolean clamp, ResourceLocation textureName) {
+        setupTexture(glTexture, image, blur, clamp, textureName);
+    }
+
     public static void setupTexture(int glTexture, int width, int height, String textureName) {
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTexture);
         logger.finer("setupTexture(tilesheet %s, %d, %dx%d)", textureName, glTexture, width, height);

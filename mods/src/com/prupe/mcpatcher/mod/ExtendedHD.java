@@ -14,9 +14,11 @@ public class ExtendedHD extends Mod {
     private static final MethodRef setupTexture2 = new MethodRef("TextureUtil", "setupTexture2", "(III)V");
 
     private static final MethodRef setupTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(ILjava/awt/image/BufferedImage;ZZLResourceLocation;)I");
-    private static final MethodRef setupTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(IIILjava/lang/String;)V");
+    private static final MethodRef setupTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(Ljava/awt/image/BufferedImage;IZZLResourceLocation;)V");
+    private static final MethodRef setupTextureMipmaps3 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(IIILjava/lang/String;)V");
     private static final MethodRef copySubTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "([IIIIILjava/lang/String;)V");
     private static final MethodRef copySubTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "(LTextureAtlasSprite;I)V");
+    private static final MethodRef updateCustomAnimations = new MethodRef(MCPatcherUtils.CUSTOM_ANIMATION_CLASS, "updateAll", "()V");
 
     private static final MethodRef imageRead = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
 
@@ -56,6 +58,7 @@ public class ExtendedHD extends Mod {
             addClassMod(new SimpleResourceMod());
         } else {
             addClassMod(new MinecraftMod());
+            addClassMod(new RenderEngineMod());
         }
         addClassMod(new IconMod(this));
         addClassMod(new TextureCompassMod());
@@ -158,7 +161,7 @@ public class ExtendedHD extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CUSTOM_ANIMATION_CLASS, "updateAll", "()V"))
+                        reference(INVOKESTATIC, updateCustomAnimations)
                     );
                 }
             }
@@ -232,7 +235,7 @@ public class ExtendedHD extends Mod {
                     return buildCode(
                         ALOAD_0,
                         reference(GETFIELD, basePath),
-                        reference(INVOKESTATIC, setupTextureMipmaps2)
+                        reference(INVOKESTATIC, setupTextureMipmaps3)
                     );
                 }
             });
@@ -625,6 +628,110 @@ public class ExtendedHD extends Mod {
             addClassSignature(new ConstSignature(new ClassRef("java/io/InputStreamReader")));
             addClassSignature(new ConstSignature(new MethodRef("com/google/gson/JsonElement", "getAsJsonObject", "()Lcom/google/gson/JsonObject;")));
             addClassSignature(new ConstSignature("pack.mcmeta").negate(true));
+        }
+    }
+
+    private class RenderEngineMod extends com.prupe.mcpatcher.basemod.RenderEngineMod {
+        RenderEngineMod() {
+            super(ExtendedHD.this);
+
+            setupCustomAnimations();
+            setupMipmaps();
+        }
+
+        private void setupCustomAnimations() {
+            final MethodRef updateDynamicTextures = new MethodRef(getDeobfClass(), "updateDynamicTextures", "()V");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin(),
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        captureReference(INVOKEVIRTUAL),
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        backReference(1),
+                        RETURN
+                    );
+                }
+            }.setMethod(updateDynamicTextures));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "update custom animations";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        RETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // CustomAnimations.updateAll();
+                        reference(INVOKESTATIC, updateCustomAnimations)
+                    );
+                }
+            }.targetMethod(updateDynamicTextures));
+        }
+
+        private void setupMipmaps() {
+            final MethodRef setupTextureExt = new MethodRef(getDeobfClass(), "setupTextureExt", "(Ljava/awt/image/BufferedImage;IZZ)V");
+            final MethodRef startsWith = new MethodRef("java/lang/String", "startsWith", "(Ljava/lang/String;)Z");
+
+            addMemberMapper(new MethodMapper(setupTextureExt));
+
+            addPatch(new BytecodePatch() {
+                private int nameRegister;
+
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                capture(anyALOAD),
+                                push("%blur%"),
+                                reference(INVOKEVIRTUAL, startsWith)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            nameRegister = extractRegisterNum(getCaptureGroup(1));
+                            return true;
+                        }
+                    });
+                }
+
+                @Override
+                public String getDescription() {
+                    return "generate mipmaps";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.setupTextureExt(...);
+                        reference(INVOKEVIRTUAL, setupTextureExt)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // MipmapHelper.setupTexture(..., this.currentTextureName);
+                        registerLoadStore(ALOAD, nameRegister),
+                        ResourceLocationMod.wrap(this),
+                        reference(INVOKESTATIC, setupTextureMipmaps2)
+                    );
+                }
+            });
         }
     }
 }
