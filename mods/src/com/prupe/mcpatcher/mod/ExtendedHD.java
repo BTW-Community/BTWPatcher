@@ -14,7 +14,7 @@ public class ExtendedHD extends Mod {
     private static final MethodRef setupTexture2 = new MethodRef("TextureUtil", "setupTexture2", "(III)V");
 
     private static final MethodRef setupTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(ILjava/awt/image/BufferedImage;ZZLResourceLocation;)I");
-    private static final MethodRef setupTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(Ljava/awt/image/BufferedImage;IZZLResourceLocation;)V");
+    private static final MethodRef setupTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(Ljava/lang/Object;Ljava/awt/image/BufferedImage;IZZLResourceLocation;)V");
     private static final MethodRef setupTextureMipmaps3 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(IIILjava/lang/String;)V");
     private static final MethodRef copySubTextureMipmaps1 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "([IIIIILjava/lang/String;)V");
     private static final MethodRef copySubTextureMipmaps2 = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "(LTextureAtlasSprite;I)V");
@@ -678,7 +678,10 @@ public class ExtendedHD extends Mod {
                         reference(INVOKESTATIC, updateCustomAnimations)
                     );
                 }
-            }.targetMethod(updateDynamicTextures));
+            }
+                .setInsertBefore(true)
+                .targetMethod(updateDynamicTextures)
+            );
         }
 
         private void setupMipmaps() {

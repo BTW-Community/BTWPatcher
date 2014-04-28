@@ -21,12 +21,16 @@ public class AAHelper {
     private static Field addressField;
 
     static {
-        for (Field f : SimpleResource.class.getDeclaredFields()) {
-            if (ResourceLocation.class.isAssignableFrom(f.getType())) {
-                f.setAccessible(true);
-                addressField = f;
-                break;
+        try {
+            for (Field f : SimpleResource.class.getDeclaredFields()) {
+                if (ResourceLocation.class.isAssignableFrom(f.getType())) {
+                    f.setAccessible(true);
+                    addressField = f;
+                    break;
+                }
             }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
     }
 

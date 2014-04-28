@@ -335,7 +335,8 @@ public class HDFont extends Mod {
                     return buildCode(
                         ALOAD_0,
                         reference(GETFIELD, field),
-                        ResourceLocationMod.wrap(this)
+                        ResourceLocationMod.wrap(this),
+                        ARETURN
                     );
                 }
             });
@@ -347,7 +348,8 @@ public class HDFont extends Mod {
                         ALOAD_0,
                         ALOAD_1,
                         ResourceLocationMod.unwrap(this),
-                        reference(PUTFIELD, field)
+                        reference(PUTFIELD, field),
+                        RETURN
                     );
                 }
             });
