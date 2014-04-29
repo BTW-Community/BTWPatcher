@@ -126,6 +126,22 @@ public class MipmapHelper {
         setupTexture(glTexture, image, blur, clamp, textureName);
     }
 
+    public static void setupTexture(ByteBuffer rgb, int width, int height) {
+        IntBuffer buffer = rgb.asIntBuffer();
+        int mipmaps = getMipmapLevelsForCurrentTexture();
+        for (int level = 0; ; level++) {
+            GL11.glTexImage2D(GL11.GL_TEXTURE_2D, level, GL11.GL_RGBA, width, height, 0, TEX_FORMAT, TEX_DATA_TYPE, buffer);
+            if (level >= mipmaps) {
+                break;
+            }
+            IntBuffer newBuffer = getPooledBuffer(width * height).asIntBuffer();
+            scaleHalf(buffer, width, height, newBuffer, 0);
+            buffer = newBuffer;
+            width >>= 1;
+            height >>= 1;
+        }
+    }
+
     public static void setupTexture(int glTexture, int width, int height, String textureName) {
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTexture);
         logger.finer("setupTexture(tilesheet %s, %d, %dx%d)", textureName, glTexture, width, height);

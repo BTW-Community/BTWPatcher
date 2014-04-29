@@ -763,61 +763,67 @@ public class ExtendedHD extends Mod {
             final MethodRef copyFrom = new MethodRef(getDeobfClass(), "copyFrom", "(IILTexture;Z)V");
             final MethodRef copyFromSub = new MethodRef(getDeobfClass(), "copyFromSub", "(IILTexture;)V");
             final FieldRef textureData = new FieldRef(getDeobfClass(), "textureData", "Ljava/nio/ByteBuffer;");
-            final MethodRef allocateDirect = new MethodRef("java/nio/ByteBuffer", "allocateDirect", "(I)Ljava/nio/ByteBuffer;");
             final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V");
             final MethodRef glTexSubImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V");
-            final MethodRef allocateByteBuffer = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "allocateByteBuffer", "(I)Ljava/nio/ByteBuffer;");
 
             addClassSignature(new ConstSignature("png"));
 
             addClassSignature(new BytecodeSignature() {
-                    @Override
-                    public String getMatchExpression() {
-                        return buildExpression(
-                            ALOAD_0,
-                            captureReference(GETFIELD),
-                            ALOAD_0,
-                            captureReference(GETFIELD),
-                            reference(INVOKESTATIC, glBindTexture)
-                        );
-                    }
+                {
+                    matchConstructorOnly(true);
+                    addXref(1, textureTarget);
+                    addXref(2, glTextureId);
                 }
-                    .matchConstructorOnly(true)
-                    .addXref(1, textureTarget)
-                    .addXref(2, glTextureId)
-            );
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // GL11.glBindTexture(this,textureTarget, this.glTextureId);
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        reference(INVOKESTATIC, glBindTexture)
+                    );
+                }
+            });
 
             addClassSignature(new BytecodeSignature() {
-                    @Override
-                    public String getMatchExpression() {
-                        return buildExpression(
-                            ALOAD_0,
-                            push(1),
-                            captureReference(PUTFIELD),
-                            RETURN,
-                            end()
-                        );
-                    }
+                {
+                    setMethod(createTexture);
+                    addXref(1, textureCreated);
                 }
-                    .setMethod(createTexture)
-                    .addXref(1, textureCreated)
-            );
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.textureCreated = true;
+                        ALOAD_0,
+                        push(1),
+                        captureReference(PUTFIELD),
+                        RETURN,
+                        end()
+                    );
+                }
+            });
 
             addClassSignature(new BytecodeSignature() {
-                    @Override
-                    public String getMatchExpression() {
-                        return buildExpression(
-                            ALOAD_0,
-                            nonGreedy(any(0, 20)),
-                            push(9728), // GL_NEAREST
-                            nonGreedy(any(0, 20)),
-                            captureReference(PUTFIELD)
-                        );
-                    }
+                {
+                    matchConstructorOnly(true);
+                    addXref(1, mipmapActive);
                 }
-                    .matchConstructorOnly(true)
-                    .addXref(1, mipmapActive)
-            );
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        nonGreedy(any(0, 20)),
+                        push(9728), // GL_NEAREST
+                        nonGreedy(any(0, 20)),
+                        captureReference(PUTFIELD)
+                    );
+                }
+            });
 
             addMemberMapper(new MethodMapper(getTextureId, getGlTextureId, getWidth, getHeight));
             addMemberMapper(new MethodMapper(getTextureData));
@@ -859,6 +865,10 @@ public class ExtendedHD extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // GL11.glTexImage2D(...);
+                        ALOAD_0,
+                        reference(GETFIELD, textureTarget),
+                        any(0, 20),
                         reference(INVOKESTATIC, glTexImage2D)
                     );
                 }
@@ -866,29 +876,14 @@ public class ExtendedHD extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // MipmapHelper.setupTexture(this.textureData, this.width, this.height);
                         ALOAD_0,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(IIIIIIIILjava/nio/ByteBuffer;LTexture;)V"))
-                    );
-                }
-            });
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override byte buffer allocation";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        reference(INVOKESTATIC, allocateDirect)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKESTATIC, allocateByteBuffer)
+                        reference(GETFIELD, textureData),
+                        ALOAD_0,
+                        reference(INVOKEVIRTUAL, getWidth),
+                        ALOAD_0,
+                        reference(INVOKEVIRTUAL, getHeight),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(Ljava/nio/ByteBuffer;II)V"))
                     );
                 }
             });
@@ -909,7 +904,7 @@ public class ExtendedHD extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (this.loaded) {
+                        // if (this.textureCreated) {
                         ALOAD_0,
                         reference(GETFIELD, textureCreated),
                         IFEQ, branch("A"),
@@ -1020,18 +1015,20 @@ public class ExtendedHD extends Mod {
             final FieldRef field = new FieldRef(getDeobfClass(), name, "I");
 
             addClassSignature(new BytecodeSignature() {
-                    @Override
-                    public String getMatchExpression() {
-                        return buildExpression(
-                            ALOAD_0,
-                            registerLoadStore(ILOAD, register),
-                            captureReference(PUTFIELD)
-                        );
-                    }
+                {
+                    matchConstructorOnly(true);
+                    addXref(1, field);
                 }
-                    .matchConstructorOnly(true)
-                    .addXref(1, field)
-            );
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_0,
+                        registerLoadStore(ILOAD, register),
+                        captureReference(PUTFIELD)
+                    );
+                }
+            });
 
             return field;
         }
