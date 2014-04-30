@@ -217,6 +217,9 @@ public class ExtendedHD extends Mod {
                 return;
             }
 
+            if (!ResourceLocationMod.haveClass()) {
+                addPatch(new MakeMemberPublicPatch(basePath));
+            }
             addPatch(new TextureMipmapPatch(this, basePath));
 
             addPatch(new BytecodePatch() {
