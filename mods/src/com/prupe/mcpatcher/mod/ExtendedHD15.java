@@ -15,7 +15,9 @@ class ExtendedHD15 {
     static void setup(Mod mod) {
         mod.addClassMod(new RenderEngineMod(mod));
         mod.addClassMod(new TextureMod(mod));
+        mod.addClassMod(new TextureManagerMod(mod));
         mod.addClassMod(new TextureAtlasSpriteMod(mod));
+        mod.addClassMod(new TileEntityBeaconRendererMod(mod));
     }
 
     private static class RenderEngineMod extends com.prupe.mcpatcher.basemod.RenderEngineMod {
@@ -418,6 +420,85 @@ class ExtendedHD15 {
         }
     }
 
+    private static class TextureManagerMod extends ClassMod {
+        TextureManagerMod(Mod mod) {
+            super(mod);
+
+            final MethodRef createTextureFromImage = new MethodRef(getDeobfClass(), "createTextureFromImage", "(Ljava/lang/String;IIIIIIIZLjava/awt/image/BufferedImage;)LTexture;");
+            final MethodRef lastIndexOf = new MethodRef("java/lang/String", "lastIndexOf", "(I)I");
+
+            addClassSignature(new ConstSignature("/"));
+            addClassSignature(new ConstSignature(".txt"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(46),
+                        reference(INVOKEVIRTUAL, lastIndexOf)
+                    );
+                }
+            });
+
+            addMemberMapper(new MethodMapper(createTextureFromImage));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "add texture border";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(NEW, new ClassRef("Texture")),
+                        DUP,
+                        any(0, 30),
+                        anyReference(INVOKESPECIAL),
+                        ASTORE, capture(any())
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // image = AAHelper.addBorder(name, image, false);
+                        ALOAD_1,
+                        ALOAD, 10,
+                        push(0),
+                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(Ljava/lang/String;Ljava/awt/image/BufferedImage;Z)Ljava/awt/image/BufferedImage;")),
+                        ASTORE, 10,
+
+                        // if (image != null) {
+                        ALOAD, 10,
+                        IFNULL, branch("A"),
+
+                        // width = image.getWidth();
+                        ALOAD, 10,
+                        reference(INVOKEVIRTUAL, new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I")),
+                        ISTORE_3,
+
+                        // height = image.getHeight();
+                        ALOAD, 10,
+                        reference(INVOKEVIRTUAL, new MethodRef("java/awt/image/BufferedImage", "getHeight", "()I")),
+                        ISTORE, 4,
+
+                        // }
+                        label("A"),
+
+                        // ...
+                        getMatch(),
+
+                        // texture.border = AAHelper.border;
+                        ALOAD, getCaptureGroup(1),
+                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.AA_HELPER_CLASS, "border", "I")),
+                        reference(PUTFIELD, textureBorder)
+                    );
+                }
+            }.targetMethod(createTextureFromImage));
+        }
+    }
+
     private static class TextureAtlasSpriteMod extends ClassMod {
         TextureAtlasSpriteMod(Mod mod) {
             super(mod);
@@ -463,6 +544,52 @@ class ExtendedHD15 {
                         // BorderedTexture.create(name)
                         ALOAD_0,
                         reference(INVOKESTATIC, createSprite)
+                    );
+                }
+            });
+        }
+    }
+
+    private static class TileEntityBeaconRendererMod extends ClassMod {
+        private static final long MODULUS = 0x7fff77L;
+
+        TileEntityBeaconRendererMod(Mod mod) {
+            super(mod);
+
+            addClassSignature(new ConstSignature("/misc/beam.png"));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "fix beacon beam rendering when time > 49.7 days";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // var11 = (float) tileEntityBeacon.getWorldObj().getWorldTime() + partialTick;
+                        capture(build(
+                            ALOAD_1,
+                            anyReference(INVOKEVIRTUAL),
+                            anyReference(INVOKEVIRTUAL)
+                        )),
+                        capture(build(
+                            L2F,
+                            FLOAD, 8,
+                            FADD,
+                            anyFSTORE
+                        ))
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // ... = (float) (... % MODULUS) + ...;
+                        getCaptureGroup(1),
+                        push(MODULUS),
+                        LREM,
+                        getCaptureGroup(2)
                     );
                 }
             });
