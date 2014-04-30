@@ -12,8 +12,9 @@ import static javassist.bytecode.Opcode.*;
 class ExtendedHD15 {
     static final String WRAPPER_15_CLASS = "com.prupe.mcpatcher.hd.Wrapper15";
 
-    private static final MethodRef setupTextureMipmaps = new MethodRef(WRAPPER_15_CLASS, "setupTexture", "(LTexture;Ljava/awt/image/BufferedImage;IZZLResourceLocation;)V");
-    
+    private static final MethodRef setupTextureMipmaps1 = new MethodRef(WRAPPER_15_CLASS, "setupTexture", "(LTexture;Ljava/awt/image/BufferedImage;IZZLResourceLocation;)V");
+    private static final MethodRef setupTextureMipmaps2 = new MethodRef(WRAPPER_15_CLASS, "setupTexture", "(LTexture;LResourceLocation;)V");
+
     private static final FieldRef textureBorder = new FieldRef("Texture", "border", "I");
 
     static void setup(Mod mod) {
@@ -124,7 +125,7 @@ class ExtendedHD15 {
                         // Wrapper15.setupTexture(..., this.currentTextureName);
                         registerLoadStore(ALOAD, nameRegister),
                         ResourceLocationMod.wrap(this),
-                        reference(INVOKESTATIC, setupTextureMipmaps)
+                        reference(INVOKESTATIC, setupTextureMipmaps1)
                     );
                 }
             });
@@ -258,7 +259,7 @@ class ExtendedHD15 {
                         // GL11.glTexImage2D(...);
                         ALOAD_0,
                         reference(GETFIELD, textureTarget),
-                        any(0, 20),
+                        nonGreedy(any(0, 40)),
                         reference(INVOKESTATIC, glTexImage2D)
                     );
                 }
@@ -266,14 +267,12 @@ class ExtendedHD15 {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // Wrapper15.setupTexture(this.textureData, this.width, this.height);
+                        // Wrapper15.setupTexture(this, this.getTextureName());
                         ALOAD_0,
-                        reference(GETFIELD, textureData),
                         ALOAD_0,
-                        reference(INVOKEVIRTUAL, getWidth),
-                        ALOAD_0,
-                        reference(INVOKEVIRTUAL, getHeight),
-                        reference(INVOKESTATIC, new MethodRef(WRAPPER_15_CLASS, "setupTexture", "(Ljava/nio/ByteBuffer;II)V"))
+                        reference(INVOKEVIRTUAL, getTextureName),
+                        ResourceLocationMod.wrap(this),
+                        reference(INVOKESTATIC, setupTextureMipmaps2)
                     );
                 }
             });
