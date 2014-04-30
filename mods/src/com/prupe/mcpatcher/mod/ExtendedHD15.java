@@ -10,6 +10,10 @@ import static com.prupe.mcpatcher.mod.ExtendedHD.*;
 import static javassist.bytecode.Opcode.*;
 
 class ExtendedHD15 {
+    static final String WRAPPER_15_CLASS = "com.prupe.mcpatcher.hd.Wrapper15";
+
+    private static final MethodRef setupTextureMipmaps = new MethodRef(WRAPPER_15_CLASS, "setupTexture", "(LTexture;Ljava/awt/image/BufferedImage;IZZLResourceLocation;)V");
+    
     private static final FieldRef textureBorder = new FieldRef("Texture", "border", "I");
 
     static void setup(Mod mod) {
@@ -117,10 +121,10 @@ class ExtendedHD15 {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // MipmapHelper.setupTexture(..., this.currentTextureName);
+                        // Wrapper15.setupTexture(..., this.currentTextureName);
                         registerLoadStore(ALOAD, nameRegister),
                         ResourceLocationMod.wrap(this),
-                        reference(INVOKESTATIC, setupTextureMipmaps2)
+                        reference(INVOKESTATIC, setupTextureMipmaps)
                     );
                 }
             });
@@ -262,14 +266,14 @@ class ExtendedHD15 {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // MipmapHelper.setupTexture(this.textureData, this.width, this.height);
+                        // Wrapper15.setupTexture(this.textureData, this.width, this.height);
                         ALOAD_0,
                         reference(GETFIELD, textureData),
                         ALOAD_0,
                         reference(INVOKEVIRTUAL, getWidth),
                         ALOAD_0,
                         reference(INVOKEVIRTUAL, getHeight),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "setupTexture", "(Ljava/nio/ByteBuffer;II)V"))
+                        reference(INVOKESTATIC, new MethodRef(WRAPPER_15_CLASS, "setupTexture", "(Ljava/nio/ByteBuffer;II)V"))
                     );
                 }
             });
@@ -295,13 +299,13 @@ class ExtendedHD15 {
                         reference(GETFIELD, textureCreated),
                         IFEQ, branch("A"),
 
-                        // MipmapHelper.copySubTexture(this, src, x, y, flipped);
+                        // Wrapper15.copySubTexture(this, src, x, y, flipped);
                         ALOAD_0,
                         ALOAD_3,
                         ILOAD_1,
                         ILOAD_2,
                         ILOAD, 4,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "(LTexture;LTexture;IIZ)V")),
+                        reference(INVOKESTATIC, new MethodRef(WRAPPER_15_CLASS, "copySubTexture", "(LTexture;LTexture;IIZ)V")),
                         RETURN,
 
                         // }
@@ -343,13 +347,13 @@ class ExtendedHD15 {
                             reference(GETFIELD, textureCreated),
                             IFEQ, branch("A"),
 
-                            // MipmapHelper.copySubTexture(this, src, x, y, false);
+                            // Wrapper15.copySubTexture(this, src, x, y, false);
                             ALOAD_0,
                             ALOAD_3,
                             ILOAD_1,
                             ILOAD_2,
                             push(0),
-                            reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "(LTexture;LTexture;IIZ)V")),
+                            reference(INVOKESTATIC, new MethodRef(WRAPPER_15_CLASS, "copySubTexture", "(LTexture;LTexture;IIZ)V")),
                             RETURN,
 
                             // }
@@ -364,7 +368,7 @@ class ExtendedHD15 {
 
         private void patchBTW() {
             final MethodRef uploadByteBufferToGPU = new MethodRef(getDeobfClass(), "UploadByteBufferToGPU", "(IILjava/nio/ByteBuffer;II)V");
-            final MethodRef copySubTexture = new MethodRef(MCPatcherUtils.MIPMAP_HELPER_CLASS, "copySubTexture", "(LTexture;Ljava/nio/ByteBuffer;IIII)V");
+            final MethodRef copySubTexture = new MethodRef(WRAPPER_15_CLASS, "copySubTexture", "(LTexture;Ljava/nio/ByteBuffer;IIII)V");
 
             addPatch(new BytecodePatch() {
                 @Override

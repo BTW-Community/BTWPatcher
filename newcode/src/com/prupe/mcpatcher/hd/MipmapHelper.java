@@ -122,10 +122,6 @@ public class MipmapHelper {
         return glTexture;
     }
 
-    public static void setupTexture(Object object, BufferedImage image, int glTexture, boolean blur, boolean clamp, ResourceLocation textureName) {
-        setupTexture(glTexture, image, blur, clamp, textureName);
-    }
-
     public static void setupTexture(ByteBuffer rgb, int width, int height) {
         IntBuffer buffer = rgb.asIntBuffer();
         int mipmaps = getMipmapLevelsForCurrentTexture();
