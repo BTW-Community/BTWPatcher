@@ -14,6 +14,8 @@ class ExtendedHD15 {
 
     private static final MethodRef setupTextureMipmaps1 = new MethodRef(WRAPPER_15_CLASS, "setupTexture", "(LTexture;Ljava/awt/image/BufferedImage;IZZLResourceLocation;)V");
     private static final MethodRef setupTextureMipmaps2 = new MethodRef(WRAPPER_15_CLASS, "setupTexture", "(LTexture;LResourceLocation;)V");
+    private static final MethodRef copySubTexture1 = new MethodRef(WRAPPER_15_CLASS, "copySubTexture", "(LTexture;LTexture;IIZ)V");
+    private static final MethodRef copySubTexture2 = new MethodRef(WRAPPER_15_CLASS, "copySubTexture", "(LTexture;Ljava/nio/ByteBuffer;IIII)V");
 
     private static final FieldRef textureBorder = new FieldRef("Texture", "border", "I");
 
@@ -154,6 +156,7 @@ class ExtendedHD15 {
             final MethodRef copyFrom = new MethodRef(getDeobfClass(), "copyFrom", "(IILTexture;Z)V");
             final MethodRef copyFromSub = new MethodRef(getDeobfClass(), "copyFromSub", "(IILTexture;)V");
             final FieldRef textureData = new FieldRef(getDeobfClass(), "textureData", "Ljava/nio/ByteBuffer;");
+            final FieldRef mipmapData = new FieldRef(getDeobfClass(), "mipmapData", "[Ljava/nio/IntBuffer;");
             final MethodRef glTexImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V");
             final MethodRef glTexSubImage2D = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexSubImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V");
 
@@ -246,6 +249,7 @@ class ExtendedHD15 {
 
             addPatch(new MakeMemberPublicPatch(textureData));
             addPatch(new AddFieldPatch(textureBorder));
+            addPatch(new AddFieldPatch(mipmapData));
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -304,7 +308,7 @@ class ExtendedHD15 {
                         ILOAD_1,
                         ILOAD_2,
                         ILOAD, 4,
-                        reference(INVOKESTATIC, new MethodRef(WRAPPER_15_CLASS, "copySubTexture", "(LTexture;LTexture;IIZ)V")),
+                        reference(INVOKESTATIC, copySubTexture1),
                         RETURN,
 
                         // }
@@ -352,7 +356,7 @@ class ExtendedHD15 {
                             ILOAD_1,
                             ILOAD_2,
                             push(0),
-                            reference(INVOKESTATIC, new MethodRef(WRAPPER_15_CLASS, "copySubTexture", "(LTexture;LTexture;IIZ)V")),
+                            reference(INVOKESTATIC, copySubTexture1),
                             RETURN,
 
                             // }
@@ -367,7 +371,6 @@ class ExtendedHD15 {
 
         private void patchBTW() {
             final MethodRef uploadByteBufferToGPU = new MethodRef(getDeobfClass(), "UploadByteBufferToGPU", "(IILjava/nio/ByteBuffer;II)V");
-            final MethodRef copySubTexture = new MethodRef(WRAPPER_15_CLASS, "copySubTexture", "(LTexture;Ljava/nio/ByteBuffer;IIII)V");
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -393,7 +396,7 @@ class ExtendedHD15 {
                         ILOAD_2,
                         ILOAD, 4,
                         ILOAD, 5,
-                        reference(INVOKESTATIC, copySubTexture),
+                        reference(INVOKESTATIC, copySubTexture2),
                         RETURN
                     );
                 }

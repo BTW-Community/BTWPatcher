@@ -2,6 +2,7 @@ package net.minecraft.src;
 
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 // 1.5 only
 public class Texture {
@@ -11,6 +12,7 @@ public class Texture {
     public ByteBuffer textureData;
 
     public int border; // added by Extended HD
+    public IntBuffer[] mipmapData; // added by Extended HD
 
     public int getGlTextureId() {
         return 0;

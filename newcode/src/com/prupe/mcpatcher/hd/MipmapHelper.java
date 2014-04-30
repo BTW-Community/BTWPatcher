@@ -331,7 +331,7 @@ public class MipmapHelper {
         return image;
     }
 
-    private static IntBuffer newIntBuffer(int size) {
+    static IntBuffer newIntBuffer(int size) {
         ByteBuffer buffer = ByteBuffer.allocateDirect(size);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         return buffer.asIntBuffer();
