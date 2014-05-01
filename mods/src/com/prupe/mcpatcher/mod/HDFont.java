@@ -64,6 +64,12 @@ public class HDFont extends Mod {
             final MethodRef getStringWidthf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getStringWidthf", "(LFontRenderer;Ljava/lang/String;)F");
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    matchConstructorOnly(true);
+                    addXref(1, fontHeight);
+                    addXref(2, fontResource);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -78,11 +84,7 @@ public class HDFont extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, fontHeight)
-                .addXref(2, fontResource)
-            );
+            });
 
             if (haveReadFontData) {
                 addClassSignature(new BytecodeSignature() {
@@ -168,6 +170,9 @@ public class HDFont extends Mod {
                 private int rgbRegister;
 
                 {
+                    setInsertBefore(true);
+                    targetMethod(computeCharWidths);
+
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
                         public String getMatchExpression() {
@@ -222,10 +227,7 @@ public class HDFont extends Mod {
                         reference(PUTFIELD, charWidthf)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(computeCharWidths)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -362,6 +364,11 @@ public class HDFont extends Mod {
             addMemberMapper(new MethodMapper(getUnicodePage));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(getUnicodePage);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override unicode font name";
@@ -380,10 +387,7 @@ public class HDFont extends Mod {
                         reference(INVOKESTATIC, getUnicodePage1)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(getUnicodePage)
-            );
+            });
         }
 
         private void setupFontHack() {

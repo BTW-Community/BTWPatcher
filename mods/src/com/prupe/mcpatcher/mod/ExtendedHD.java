@@ -132,6 +132,11 @@ public class ExtendedHD extends Mod {
             addClassSignature(new ConstSignature("dynamic/%s_%d"));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(updateAnimations);
+                    addXref(1, animations);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -139,15 +144,16 @@ public class ExtendedHD extends Mod {
                         captureReference(GETFIELD),
                         reference(INVOKEINTERFACE, listIterator),
                         ASTORE_1
-
                     );
                 }
-            }
-                .setMethod(updateAnimations)
-                .addXref(1, animations)
-            );
+            });
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(updateAnimations);
+                }
+
                 @Override
                 public String getDescription() {
                     return "update custom animations";
@@ -166,10 +172,7 @@ public class ExtendedHD extends Mod {
                         reference(INVOKESTATIC, updateCustomAnimations)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(updateAnimations)
-            );
+            });
         }
     }
 
@@ -183,6 +186,12 @@ public class ExtendedHD extends Mod {
             final MethodRef createTextureStitched = new MethodRef(MCPatcherUtils.BORDERED_TEXTURE_CLASS, "create", "(Ljava/lang/String;Ljava/lang/String;)LTextureAtlasSprite;");
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    addXref(2, new MethodRef("TextureAtlasSprite", "getFrameRGB", "(I)" + (haveMipmapping ? "[" : "") + "[I"));
+                    addXref(3, new MethodRef("TextureAtlasSprite", "getX0", "()I"));
+                    addXref(4, new MethodRef("TextureAtlasSprite", "getY0", "()I"));
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -203,11 +212,7 @@ public class ExtendedHD extends Mod {
                         anyReference(INVOKESTATIC)
                     );
                 }
-            }
-                .addXref(2, new MethodRef("TextureAtlasSprite", "getFrameRGB", "(I)" + (haveMipmapping ? "[" : "") + "[I"))
-                .addXref(3, new MethodRef("TextureAtlasSprite", "getX0", "()I"))
-                .addXref(4, new MethodRef("TextureAtlasSprite", "getY0", "()I"))
-            );
+            });
 
             addMemberMapper(new FieldMapper(animations));
 
@@ -481,6 +486,11 @@ public class ExtendedHD extends Mod {
             setParentClass("TextureAtlasSprite");
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    matchConstructorOnly(true);
+                }
+
                 @Override
                 public String getDescription() {
                     return "setup custom " + name;
@@ -500,12 +510,14 @@ public class ExtendedHD extends Mod {
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FANCY_DIAL_CLASS, "setup", "(LTextureAtlasSprite;)V"))
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .matchConstructorOnly(true)
-            );
+            });
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(update);
+                }
+
                 @Override
                 public String getDescription() {
                     return "render custom " + name;
@@ -538,10 +550,7 @@ public class ExtendedHD extends Mod {
                         label("A")
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(update)
-            );
+            });
         }
 
         abstract protected MethodRef getUpdateMethod();
@@ -560,6 +569,11 @@ public class ExtendedHD extends Mod {
             addClassSignature(new ConstSignature(180.0));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(update);
+                    addXref(1, currentAngle);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -571,10 +585,7 @@ public class ExtendedHD extends Mod {
                         DADD
                     );
                 }
-            }
-                .setMethod(update)
-                .addXref(1, currentAngle)
-            );
+            });
         }
 
         @Override
@@ -599,6 +610,11 @@ public class ExtendedHD extends Mod {
             addClassSignature(new ConstSignature(new MethodRef("java/lang/Math", "random", "()D")));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(update);
+                    addXref(1, currentAngle);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -611,10 +627,7 @@ public class ExtendedHD extends Mod {
                         PUTFIELD, backReference(2)
                     );
                 }
-            }
-                .setMethod(update)
-                .addXref(1, currentAngle)
-            );
+            });
 
             addPatch(new MakeMemberPublicPatch(currentAngle));
         }

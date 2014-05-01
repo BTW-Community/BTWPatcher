@@ -7,7 +7,6 @@ import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
-import static com.prupe.mcpatcher.mod.ExtendedHD.*;
 import static javassist.bytecode.Opcode.*;
 
 class ExtendedHD15 {
@@ -72,7 +71,7 @@ class ExtendedHD15 {
                     public byte[] getReplacementBytes() {
                         return buildCode(
                             // CustomAnimations.updateAll();
-                            reference(INVOKESTATIC, updateCustomAnimations)
+                            reference(INVOKESTATIC, ExtendedHD.updateCustomAnimations)
                         );
                     }
                 }
@@ -319,8 +318,8 @@ class ExtendedHD15 {
             }.targetMethod(copyFrom));
 
             // 1.5.2 (.3, .4, ...) or 13w17a+
-            if ((getMinecraftVersion().compareTo("1.5.2") >= 0 && getMinecraftVersion().compareTo("13w16a") < 0) ||
-                getMinecraftVersion().compareTo("13w17a") >= 0) {
+            if ((Mod.getMinecraftVersion().compareTo("1.5.2") >= 0 && Mod.getMinecraftVersion().compareTo("13w16a") < 0) ||
+                Mod.getMinecraftVersion().compareTo("13w17a") >= 0) {
                 addClassSignature(new BytecodeSignature() {
                     @Override
                     public String getMatchExpression() {

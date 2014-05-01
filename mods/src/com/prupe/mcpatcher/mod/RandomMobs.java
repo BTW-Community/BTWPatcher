@@ -73,6 +73,16 @@ public class RandomMobs extends Mod {
             addClassSignature(new ConstSignature("Rotation"));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(new MethodRef(getDeobfClass(), "setPositionAndRotation", "(DDDFF)V"));
+                    addXref(1, new FieldRef(getDeobfClass(), "posX", "D"));
+                    addXref(2, new FieldRef(getDeobfClass(), "prevPosX", "D"));
+                    addXref(3, new FieldRef(getDeobfClass(), "posY", "D"));
+                    addXref(4, new FieldRef(getDeobfClass(), "prevPosY", "D"));
+                    addXref(5, new FieldRef(getDeobfClass(), "posZ", "D"));
+                    addXref(6, new FieldRef(getDeobfClass(), "prevPosZ", "D"));
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -103,34 +113,26 @@ public class RandomMobs extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .setMethod(new MethodRef(getDeobfClass(), "setPositionAndRotation", "(DDDFF)V"))
-                .addXref(1, new FieldRef(getDeobfClass(), "posX", "D"))
-                .addXref(2, new FieldRef(getDeobfClass(), "prevPosX", "D"))
-                .addXref(3, new FieldRef(getDeobfClass(), "posY", "D"))
-                .addXref(4, new FieldRef(getDeobfClass(), "prevPosY", "D"))
-                .addXref(5, new FieldRef(getDeobfClass(), "posZ", "D"))
-                .addXref(6, new FieldRef(getDeobfClass(), "prevPosZ", "D"))
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // this.entityId = Entity.nextEntityID++;
-                        ALOAD_0,
-                        capture(build(GETSTATIC, capture(any(2)))),
-                        DUP,
-                        push(1),
-                        IADD,
-                        PUTSTATIC, backReference(2),
-                        captureReference(PUTFIELD)
-                    );
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // this.entityId = Entity.nextEntityID++;
+                            ALOAD_0,
+                            capture(build(GETSTATIC, capture(any(2)))),
+                            DUP,
+                            push(1),
+                            IADD,
+                            PUTSTATIC, backReference(2),
+                            captureReference(PUTFIELD)
+                        );
+                    }
                 }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, nextEntityID)
-                .addXref(3, entityId)
+                    .matchConstructorOnly(true)
+                    .addXref(1, nextEntityID)
+                    .addXref(3, entityId)
             );
 
             addPatch(new MakeMemberPublicPatch(entityId));
@@ -147,7 +149,7 @@ public class RandomMobs extends Mod {
 
             addMemberMapper(new MethodMapper(getEntityTexture));
             addMemberMapper(new MethodMapper(writeToNBT, readFromNBT)
-                .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.PUBLIC, true)
             );
 
             addPatch(new BytecodePatch() {
@@ -217,14 +219,14 @@ public class RandomMobs extends Mod {
             final MethodRef getEntityTexture = new MethodRef(getDeobfClass(), "getEntityTexture", "(LEntity;)LResourceLocation;");
 
             addMemberMapper(new MethodMapper(loadTexture)
-                // 14w05a+: public
-                // older: protected
-                .accessFlag(AccessFlag.STATIC, false)
+                    // 14w05a+: public
+                    // older: protected
+                    .accessFlag(AccessFlag.STATIC, false)
             );
 
             addMemberMapper(new MethodMapper(getEntityTexture)
-                .accessFlag(AccessFlag.PROTECTED, true)
-                .accessFlag(AccessFlag.STATIC, false)
+                    .accessFlag(AccessFlag.PROTECTED, true)
+                    .accessFlag(AccessFlag.STATIC, false)
             );
 
             addPatch(new BytecodePatch() {
@@ -268,13 +270,13 @@ public class RandomMobs extends Mod {
                     return buildExpression(
                         push(0.0f),
                         or(build(
-                            // pre-14w04a
-                            push(-24.0f),
-                            anyFLOAD,
-                            FMUL,
-                            push(0.0078125f),
-                            FSUB
-                        ),
+                                // pre-14w04a
+                                push(-24.0f),
+                                anyFLOAD,
+                                FMUL,
+                                push(0.0078125f),
+                                FSUB
+                            ),
                             build(
                                 // 14w04a+
                                 push(-1.5078125f)
@@ -516,7 +518,8 @@ public class RandomMobs extends Mod {
                             build(
                                 haveOverlayRenderer ? anyReference(GETFIELD) : "",
                                 captureReference(GETSTATIC)
-                            ) : build(
+                            ) :
+                            build(
                                 push("/terrain.png")
                             ),
                         anyReference(INVOKEVIRTUAL),
@@ -614,6 +617,11 @@ public class RandomMobs extends Mod {
             }.targetMethod(renderEquippedItems));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(renderEquippedItems);
+                }
+
                 @Override
                 public String getDescription() {
                     return "finish mooshroom overlay";
@@ -632,10 +640,7 @@ public class RandomMobs extends Mod {
                         reference(INVOKESTATIC, finishMooshroom)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(renderEquippedItems)
-            );
+            });
         }
     }
 
