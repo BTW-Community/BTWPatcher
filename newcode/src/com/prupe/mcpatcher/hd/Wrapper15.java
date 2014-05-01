@@ -18,7 +18,6 @@ public class Wrapper15 {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
 
     public static TextureAtlas currentAtlas;
-    public static TextureAtlasSprite currentSprite;
 
     private static boolean flippedTextureLogged;
 
@@ -104,11 +103,7 @@ public class Wrapper15 {
     }
 
     public static BufferedImage addAABorder(String name, BufferedImage input) {
-        if (currentSprite == null) {
-            return input;
-        } else {
-            return AAHelper.addBorder(currentSprite, new ResourceLocation(name), input);
-        }
+        return AAHelper.addBorder(new ResourceLocation(name), input);
     }
 
     public static TextureAtlasSprite createSprite(String name) {

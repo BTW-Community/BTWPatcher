@@ -58,10 +58,14 @@ public class AAHelper {
             addressField = null;
             return input;
         }
-        return addBorder(stitched, name, input);
+        input = addBorder(name, input);
+        if (stitched instanceof BorderedTexture) {
+            ((BorderedTexture) stitched).setBorderWidth(lastBorder);
+        }
+        return input;
     }
 
-    public static BufferedImage addBorder(TextureAtlasSprite stitched, ResourceLocation name, BufferedImage input) {
+    static BufferedImage addBorder(ResourceLocation name, BufferedImage input) {
         lastBorder = 0;
         if (input == null) {
             return input;
@@ -69,19 +73,14 @@ public class AAHelper {
         if (name != null && MipmapHelper.useMipmapsForTexture(name.getPath())) {
             input = MipmapHelper.fixTransparency(name, input);
         }
-        if (!(stitched instanceof BorderedTexture)) {
-            return input;
-        }
         int width = input.getWidth();
         int height = input.getHeight();
         int numFrames = height / width;
         height = width;
-        int border = getBorderWidth(width);
-        ((BorderedTexture) stitched).setBorderWidth(border);
+        int border = lastBorder = getBorderWidth(width);
         if (border <= 0) {
             return input;
         }
-        lastBorder = border;
         int newWidth = width + 2 * border;
         int newHeight = height + 2 * border;
         BufferedImage output = new BufferedImage(newWidth, numFrames * newHeight, BufferedImage.TYPE_INT_ARGB);
