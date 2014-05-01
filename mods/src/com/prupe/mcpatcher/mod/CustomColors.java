@@ -600,6 +600,11 @@ public class CustomColors extends Mod {
                 final FieldRef blockID = new FieldRef(getDeobfClass(), "blockID", "I");
 
                 addClassSignature(new BytecodeSignature() {
+                    {
+                        matchConstructorOnly(true);
+                        addXref(1, blockID);
+                    }
+
                     @Override
                     public String getMatchExpression() {
                         return buildExpression(
@@ -610,10 +615,7 @@ public class CustomColors extends Mod {
                             captureReference(PUTFIELD)
                         );
                     }
-                }
-                    .matchConstructorOnly(true)
-                    .addXref(1, blockID)
-                );
+                });
 
                 addPatch(new ItemBlockPatch() {
                     @Override
@@ -713,6 +715,11 @@ public class CustomColors extends Mod {
 
             if (haveItemID) {
                 addClassSignature(new BytecodeSignature() {
+                    {
+                        addXref(1, itemID);
+                        setMethod(renderItem);
+                    }
+
                     @Override
                     public String getMatchExpression() {
                         return buildExpression(
@@ -725,16 +732,16 @@ public class CustomColors extends Mod {
                             )
                         );
                     }
-                }
-                    .addXref(1, itemID)
-                    .setMethod(renderItem)
-                );
+                });
             }
 
             addPatch(new BytecodePatch() {
                 private int blockRegister;
 
                 {
+                    setInsertAfter(true);
+                    targetMethod(renderItem);
+
                     if (!haveItemID) {
                         addPreMatchSignature(new BytecodeSignature() {
                             @Override
@@ -790,10 +797,7 @@ public class CustomColors extends Mod {
                         );
                     }
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderItem)
-            );
+            });
         }
     }
 
@@ -809,6 +813,11 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature("potion.moveSlowdown"));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(setPotionName);
+                    addXref(1, potionName);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     if (getMethodInfo().getDescriptor().startsWith("(Ljava/lang/String;)")) {
@@ -825,12 +834,14 @@ public class CustomColors extends Mod {
                         return null;
                     }
                 }
-            }
-                .setMethod(setPotionName)
-                .addXref(1, potionName)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    matchConstructorOnly(true);
+                    addXref(1, potionID);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -839,12 +850,14 @@ public class CustomColors extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, potionID)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    matchConstructorOnly(true);
+                    addXref(1, color);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -853,10 +866,7 @@ public class CustomColors extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, color)
-            );
+            });
 
             addPatch(new MakeMemberPublicPatch(potionName));
             addPatch(new AddFieldPatch(origColor));
@@ -869,6 +879,11 @@ public class CustomColors extends Mod {
             });
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(setPotionName);
+                }
+
                 @Override
                 public String getDescription() {
                     return "map potions by name";
@@ -890,10 +905,7 @@ public class CustomColors extends Mod {
                         reference(INVOKESTATIC, setupPotion)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(setPotionName)
-            );
+            });
         }
     }
 
@@ -923,6 +935,11 @@ public class CustomColors extends Mod {
             }
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(getPotionColor);
+                    addXref(1, potionColorCache);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -933,10 +950,7 @@ public class CustomColors extends Mod {
                         reference(mapOpcode, mapContains)
                     );
                 }
-            }
-                .setMethod(getPotionColor)
-                .addXref(1, potionColorCache)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -1132,6 +1146,11 @@ public class CustomColors extends Mod {
             addPatch(new MakeMemberPublicPatch(worldObj));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(getFogColor);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override fog color";
@@ -1183,10 +1202,7 @@ public class CustomColors extends Mod {
                         label("A")
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(getFogColor)
-            );
+            });
         }
     }
 
@@ -1365,6 +1381,16 @@ public class CustomColors extends Mod {
             }
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(new MethodRef(getDeobfClass(), "setPositionAndRotation", "(DDDFF)V"));
+                    addXref(1, new FieldRef(getDeobfClass(), "posX", "D"));
+                    addXref(2, new FieldRef(getDeobfClass(), "prevPosX", "D"));
+                    addXref(3, new FieldRef(getDeobfClass(), "posY", "D"));
+                    addXref(4, new FieldRef(getDeobfClass(), "prevPosY", "D"));
+                    addXref(5, new FieldRef(getDeobfClass(), "posZ", "D"));
+                    addXref(6, new FieldRef(getDeobfClass(), "prevPosZ", "D"));
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -1395,15 +1421,7 @@ public class CustomColors extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .setMethod(new MethodRef(getDeobfClass(), "setPositionAndRotation", "(DDDFF)V"))
-                .addXref(1, new FieldRef(getDeobfClass(), "posX", "D"))
-                .addXref(2, new FieldRef(getDeobfClass(), "prevPosX", "D"))
-                .addXref(3, new FieldRef(getDeobfClass(), "posY", "D"))
-                .addXref(4, new FieldRef(getDeobfClass(), "prevPosY", "D"))
-                .addXref(5, new FieldRef(getDeobfClass(), "posZ", "D"))
-                .addXref(6, new FieldRef(getDeobfClass(), "prevPosZ", "D"))
-            );
+            });
 
             addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "worldObj", "LWorld;")));
         }
@@ -1427,26 +1445,26 @@ public class CustomColors extends Mod {
             }.matchConstructorOnly(true));
 
             addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // particleRed = particleGreen = particleBlue = 1.0f;
-                        ALOAD_0,
-                        ALOAD_0,
-                        ALOAD_0,
-                        FCONST_1,
-                        DUP_X1,
-                        captureReference(PUTFIELD),
-                        DUP_X1,
-                        captureReference(PUTFIELD),
-                        captureReference(PUTFIELD)
-                    );
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // particleRed = particleGreen = particleBlue = 1.0f;
+                            ALOAD_0,
+                            ALOAD_0,
+                            ALOAD_0,
+                            FCONST_1,
+                            DUP_X1,
+                            captureReference(PUTFIELD),
+                            DUP_X1,
+                            captureReference(PUTFIELD),
+                            captureReference(PUTFIELD)
+                        );
+                    }
                 }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, new FieldRef(getDeobfClass(), "particleBlue", "F"))
-                .addXref(2, new FieldRef(getDeobfClass(), "particleGreen", "F"))
-                .addXref(3, new FieldRef(getDeobfClass(), "particleRed", "F"))
+                    .matchConstructorOnly(true)
+                    .addXref(1, new FieldRef(getDeobfClass(), "particleBlue", "F"))
+                    .addXref(2, new FieldRef(getDeobfClass(), "particleGreen", "F"))
+                    .addXref(3, new FieldRef(getDeobfClass(), "particleRed", "F"))
             );
         }
     }
@@ -1615,6 +1633,11 @@ public class CustomColors extends Mod {
             final MethodRef onUpdate = new MethodRef(getDeobfClass(), "onUpdate", "()V");
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(onUpdate);
+                    addXref(1, new FieldRef(getDeobfClass(), "timer", "I"));
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -1643,10 +1666,7 @@ public class CustomColors extends Mod {
                         ISUB
                     );
                 }
-            }
-                .setMethod(onUpdate)
-                .addXref(1, new FieldRef(getDeobfClass(), "timer", "I"))
-            );
+            });
 
             addWaterColorPatch("water drop", true, new float[]{0.0f, 0.0f, 1.0f}, new float[]{0.2f, 0.3f, 1.0f});
 
@@ -1932,6 +1952,11 @@ public class CustomColors extends Mod {
             addPortalPatch(0.3f, 1, "green");
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    matchConstructorOnly(true);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override portal particle color (blue)";
@@ -1954,10 +1979,7 @@ public class CustomColors extends Mod {
                         reference(PUTFIELD, particleBlue)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .matchConstructorOnly(true)
-            );
+            });
         }
 
         private void addPortalPatch(final float origValue, final int index, final String color) {
@@ -2101,6 +2123,11 @@ public class CustomColors extends Mod {
             }.targetMethod(updatePotionEffects));
 
             addPatch(new BytecodePatch() {
+                {
+                    targetMethod(updatePotionEffects);
+                    setInsertAfter(true);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override potion effect colors around players (part 2)";
@@ -2128,12 +2155,14 @@ public class CustomColors extends Mod {
                         reference(PUTFIELD, overridePotionColor)
                     );
                 }
-            }
-                .targetMethod(updatePotionEffects)
-                .setInsertAfter(true)
-            );
+            });
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(updatePotionEffects);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override potion effect colors around players (part 3)";
@@ -2158,10 +2187,7 @@ public class CustomColors extends Mod {
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "getPotionEffectColor", "(ILEntityLivingBase;)I"))
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(updatePotionEffects)
-            );
+            });
         }
     }
 
@@ -2189,6 +2215,18 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature("ambient.weather.rain"));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(updateLightmap);
+                    addXref(1, new MethodRef("World", "getSunAngle", "(F)F"));
+                    addXref(2, new FieldRef("World", "worldProvider", "LWorldProvider;"));
+                    addXref(3, new FieldRef(getDeobfClass(), "torchFlickerX", "F"));
+                    addXref(4, WorldMod.getLightningFlashRef());
+                    addXref(5, WorldProviderMod.getWorldTypeRef());
+                    addXref(6, mc);
+                    addXref(7, new FieldRef("Minecraft", "gameSettings", "LGameSettings;"));
+                    addXref(8, new FieldRef("GameSettings", "gammaSetting", "F"));
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -2308,84 +2346,74 @@ public class CustomColors extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .setMethod(updateLightmap)
-                .addXref(1, new MethodRef("World", "getSunAngle", "(F)F"))
-                .addXref(2, new FieldRef("World", "worldProvider", "LWorldProvider;"))
-                .addXref(3, new FieldRef(getDeobfClass(), "torchFlickerX", "F"))
-                .addXref(4, WorldMod.getLightningFlashRef())
-                .addXref(5, WorldProviderMod.getWorldTypeRef())
-                .addXref(6, mc)
-                .addXref(7, new FieldRef("Minecraft", "gameSettings", "LGameSettings;"))
-                .addXref(8, new FieldRef("GameSettings", "gammaSetting", "F"))
+            });
+
+            addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // fogColorRed = 0.02f;
+                            ALOAD_0,
+                            push(0.02f),
+                            capture(optional(build( // 13w16a+
+                                anyFLOAD,
+                                FADD
+                            ))),
+                            captureReference(PUTFIELD),
+
+                            // fogColorGreen = 0.02f;
+                            ALOAD_0,
+                            push(0.02f),
+                            backReference(1),
+                            captureReference(PUTFIELD),
+
+                            // fogColorBlue = 0.2f;
+                            ALOAD_0,
+                            push(0.2f),
+                            backReference(1),
+                            captureReference(PUTFIELD)
+                        );
+                    }
+                }
+                    .setMethod(updateFogColor)
+                    .addXref(2, fogColorRed)
+                    .addXref(3, fogColorGreen)
+                    .addXref(4, fogColorBlue)
             );
 
             addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // fogColorRed = 0.02f;
-                        ALOAD_0,
-                        push(0.02f),
-                        capture(optional(build( // 13w16a+
-                            anyFLOAD,
-                            FADD
-                        ))),
-                        captureReference(PUTFIELD),
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // if (mc.thePlayer.isPotionActive(Potion.nightVision)) {
+                            capture(build(
+                                ALOAD_0,
+                                captureReference(GETFIELD),
+                                captureReference(GETFIELD),
+                                captureReference(GETSTATIC),
+                                captureReference(INVOKEVIRTUAL)
+                            )),
+                            IFEQ, any(2),
 
-                        // fogColorGreen = 0.02f;
-                        ALOAD_0,
-                        push(0.02f),
-                        backReference(1),
-                        captureReference(PUTFIELD),
-
-                        // fogColorBlue = 0.2f;
-                        ALOAD_0,
-                        push(0.2f),
-                        backReference(1),
-                        captureReference(PUTFIELD)
-                    );
+                            // var16 = getNightVisionStrength1(mc.thePlayer, var1);
+                            capture(build(
+                                ALOAD_0,
+                                ALOAD_0,
+                                backReference(2),
+                                backReference(3),
+                                FLOAD_1,
+                                captureReference(INVOKESPECIAL)
+                            )),
+                            FSTORE, any()
+                        );
+                    }
                 }
-            }
-                .setMethod(updateFogColor)
-                .addXref(2, fogColorRed)
-                .addXref(3, fogColorGreen)
-                .addXref(4, fogColorBlue)
-            );
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // if (mc.thePlayer.isPotionActive(Potion.nightVision)) {
-                        capture(build(
-                            ALOAD_0,
-                            captureReference(GETFIELD),
-                            captureReference(GETFIELD),
-                            captureReference(GETSTATIC),
-                            captureReference(INVOKEVIRTUAL)
-                        )),
-                        IFEQ, any(2),
-
-                        // var16 = getNightVisionStrength1(mc.thePlayer, var1);
-                        capture(build(
-                            ALOAD_0,
-                            ALOAD_0,
-                            backReference(2),
-                            backReference(3),
-                            FLOAD_1,
-                            captureReference(INVOKESPECIAL)
-                        )),
-                        FSTORE, any()
-                    );
-                }
-            }
-                .setMethod(updateLightmap)
-                .addXref(2, mc)
-                .addXref(3, thePlayer)
-                .addXref(4, nightVision)
-                .addXref(5, isPotionActive)
-                .addXref(7, getNightVisionStrength1)
+                    .setMethod(updateLightmap)
+                    .addXref(2, mc)
+                    .addXref(3, thePlayer)
+                    .addXref(4, nightVision)
+                    .addXref(5, isPotionActive)
+                    .addXref(7, getNightVisionStrength1)
             );
 
             addPatch(new AddMethodPatch(getNightVisionStrength) {
@@ -2417,6 +2445,11 @@ public class CustomColors extends Mod {
             addPatch(new MakeMemberPublicPatch(new FieldRef(getDeobfClass(), "torchFlickerX", "F")));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(updateLightmap);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override lightmap";
@@ -2479,12 +2512,14 @@ public class CustomColors extends Mod {
                         reference(PUTFIELD, needLightmapUpdate)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(updateLightmap)
-            );
+            });
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(updateFogColor);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override underwater ambient color";
@@ -2551,10 +2586,7 @@ public class CustomColors extends Mod {
                         label("A")
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(updateFogColor)
-            );
+            });
         }
     }
 
@@ -3081,6 +3113,11 @@ public class CustomColors extends Mod {
             addMemberMapper(new FieldMapper(mixedBrightness));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(computeVertexColors);
+                }
+
                 @Override
                 public String getDescription() {
                     return "smooth biome colors (standard blocks)";
@@ -3142,10 +3179,7 @@ public class CustomColors extends Mod {
                         label("A")
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(computeVertexColors)
-            );
+            });
         }
     }
 
@@ -3251,8 +3285,8 @@ public class CustomColors extends Mod {
             addPrerequisiteClass("RenderBlockCustom");
 
             addMemberMapper(new MethodMapper(vertexColorMethods)
-                .accessFlag(AccessFlag.SYNTHETIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
+                    .accessFlag(AccessFlag.SYNTHETIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
             );
         }
     }
@@ -3317,7 +3351,7 @@ public class CustomColors extends Mod {
         }
     }
 
-    private void setupFluids(final com.prupe.mcpatcher.ClassMod classMod, MethodRef renderBlockFluids) {
+    private void setupFluids(final com.prupe.mcpatcher.ClassMod classMod, final MethodRef renderBlockFluids) {
         final FieldRef blockAccess = new FieldRef(classMod.getDeobfClass(), "blockAccess", "LIBlockAccess;");
 
         classMod.addPatch(new TessellatorPatch(classMod) {
@@ -3532,6 +3566,8 @@ public class CustomColors extends Mod {
             {
                 firstPatchOffset = getMinecraftVersion().compareTo("13w48a") >= 0 ? 1 : 0;
 
+                targetMethod(renderBlockFluids);
+
                 addPreMatchSignature(new BytecodeSignature(classMod) {
                     @Override
                     public String getMatchExpression() {
@@ -3635,9 +3671,7 @@ public class CustomColors extends Mod {
                     reference(GETFIELD, new FieldRef(classMod.getDeobfClass(), "color" + colorNames[channel] + vertexNames[vertex], "F"))
                 );
             }
-        }
-            .targetMethod(renderBlockFluids)
-        );
+        });
 
         classMod.addPatch(new BytecodePatch(classMod) {
             @Override
@@ -3708,8 +3742,13 @@ public class CustomColors extends Mod {
         }.targetMethod(renderBlockFluids));
     }
 
-    private void setupCauldron(com.prupe.mcpatcher.ClassMod classMod, MethodRef renderBlockCauldron) {
+    private void setupCauldron(com.prupe.mcpatcher.ClassMod classMod, final MethodRef renderBlockCauldron) {
         classMod.addPatch(new TessellatorPatch(classMod) {
+            {
+                setInsertAfter(true);
+                targetMethod(renderBlockCauldron);
+            }
+
             @Override
             public String getDescription() {
                 return "colorize cauldron water";
@@ -3744,10 +3783,7 @@ public class CustomColors extends Mod {
                     reference(INVOKEVIRTUAL, setColorOpaque_F)
                 );
             }
-        }
-            .setInsertAfter(true)
-            .targetMethod(renderBlockCauldron)
-        );
+        });
     }
 
     abstract private class TessellatorPatch extends BytecodePatch {
@@ -4059,6 +4095,12 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature("entity."));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(getItemNameIS);
+                    addXref(1, getItemDamage);
+                    addXref(2, getEntityString);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -4070,11 +4112,7 @@ public class CustomColors extends Mod {
                         ALOAD_3
                     );
                 }
-            }
-                .setMethod(getItemNameIS)
-                .addXref(1, getItemDamage)
-                .addXref(2, getEntityString)
-            );
+            });
 
             addClassSignature(new OrSignature(
                 new BytecodeSignature() {
@@ -4105,6 +4143,11 @@ public class CustomColors extends Mod {
             ));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(getColorFromDamage2);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override spawner egg color";
@@ -4126,10 +4169,7 @@ public class CustomColors extends Mod {
                         reference(INVOKESTATIC, colorizeSpawnerEgg)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(getColorFromDamage2)
-            );
+            });
         }
     }
 
@@ -4159,6 +4199,11 @@ public class CustomColors extends Mod {
             });
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(new MethodRef(getDeobfClass(), "<init>", "(II)V"));
+                }
+
                 @Override
                 public String getDescription() {
                     return "set map origColorValue";
@@ -4181,10 +4226,7 @@ public class CustomColors extends Mod {
                         reference(PUTFIELD, origColorValue)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(new MethodRef(getDeobfClass(), "<init>", "(II)V"))
-            );
+            });
         }
     }
 
@@ -4201,12 +4243,12 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature(0x1e1b1b));
 
             addMemberMapper(new FieldMapper(dyeColorNames)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
             );
             addMemberMapper(new FieldMapper(dyeColors)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
             );
         }
     }
@@ -4247,8 +4289,8 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature("mob.sheep.say"));
 
             addMemberMapper(new FieldMapper(fleeceColorTable)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
             );
         }
     }
@@ -4358,6 +4400,11 @@ public class CustomColors extends Mod {
             final FieldRef colorCode = new FieldRef(getDeobfClass(), "colorCode", "[I");
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    matchConstructorOnly(true);
+                    addXref(1, colorCode);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -4367,10 +4414,7 @@ public class CustomColors extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, colorCode)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -4384,6 +4428,11 @@ public class CustomColors extends Mod {
             }.setMethod(renderString));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(renderString);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override text color";
@@ -4406,10 +4455,7 @@ public class CustomColors extends Mod {
                         ISTORE, 4
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(renderString)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override

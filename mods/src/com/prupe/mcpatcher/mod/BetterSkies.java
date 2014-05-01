@@ -141,6 +141,17 @@ public class BetterSkies extends Mod {
             )));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderSky);
+                    addXref(1, mc);
+                    addXref(2, worldProvider);
+                    addXref(3, WorldProviderMod.getWorldTypeRef());
+                    addXref(4, tessellator);
+                    addXref(5, worldObj);
+                    addXref(6, getRainStrength);
+                    addXref(7, getCelestialAngle);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -196,105 +207,96 @@ public class BetterSkies extends Mod {
                         reference(INVOKESTATIC, glRotatef)
                     );
                 }
-            }
-                .setMethod(renderSky)
-                .addXref(1, mc)
-                .addXref(2, worldProvider)
-                .addXref(3, WorldProviderMod.getWorldTypeRef())
-                .addXref(4, tessellator)
-                .addXref(5, worldObj)
-                .addXref(6, getRainStrength)
-                .addXref(7, getCelestialAngle)
+            });
+
+            addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            ALOAD_0,
+                            captureReference(GETFIELD),
+                            reference(INVOKESTATIC, glCallList),
+
+                            nonGreedy(any(0, 1000)),
+
+                            ALOAD_0,
+                            captureReference(GETFIELD),
+                            reference(INVOKESTATIC, glCallList),
+
+                            nonGreedy(any(0, 1000)),
+
+                            ALOAD_0,
+                            captureReference(GETFIELD),
+                            reference(INVOKESTATIC, glCallList)
+                        );
+                    }
+                }
+                    .setMethod(renderSky)
+                    .addXref(1, glSkyList)
+                    .addXref(2, glStarList)
+                    .addXref(3, glSkyList2)
             );
 
             addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        reference(INVOKESTATIC, glCallList),
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // tessellator.startDrawingQuads();
+                            ALOAD_2,
+                            captureReference(INVOKEVIRTUAL),
 
-                        nonGreedy(any(0, 1000)),
+                            // tessellator.setColorOpaque_I(0x...);
+                            ALOAD_2,
+                            anyLDC,
+                            captureReference(INVOKEVIRTUAL),
 
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        reference(INVOKESTATIC, glCallList),
+                            // tessellator.addVertexWithUV(-100D, -100D, -100D, 0.0D, 0.0D);
+                            ALOAD_2,
+                            push(-100.0),
+                            push(-100.0),
+                            push(-100.0),
+                            push(0.0),
+                            push(0.0),
+                            captureReference(INVOKEVIRTUAL),
 
-                        nonGreedy(any(0, 1000)),
+                            // tessellator.addVertexWithUV(-100D, -100D, 100D, 0.0D, 16D);
+                            ALOAD_2,
+                            push(-100.0),
+                            push(-100.0),
+                            push(100.0),
+                            push(0.0),
+                            push(16.0),
+                            backReference(3),
 
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        reference(INVOKESTATIC, glCallList)
-                    );
+                            // tessellator.addVertexWithUV(100D, -100D, 100D, 16D, 16D);
+                            ALOAD_2,
+                            push(100.0),
+                            push(-100.0),
+                            push(100.0),
+                            push(16.0),
+                            push(16.0),
+                            backReference(3),
+
+                            // tessellator.addVertexWithUV(100D, -100D, -100D, 16D, 0.0D);
+                            ALOAD_2,
+                            push(100.0),
+                            push(-100.0),
+                            push(-100.0),
+                            push(16.0),
+                            push(0.0),
+                            backReference(3),
+
+                            // tessellator.draw();
+                            ALOAD_2,
+                            captureReference(INVOKEVIRTUAL),
+                            POP
+                        );
+                    }
                 }
-            }
-                .setMethod(renderSky)
-                .addXref(1, glSkyList)
-                .addXref(2, glStarList)
-                .addXref(3, glSkyList2)
-            );
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // tessellator.startDrawingQuads();
-                        ALOAD_2,
-                        captureReference(INVOKEVIRTUAL),
-
-                        // tessellator.setColorOpaque_I(0x...);
-                        ALOAD_2,
-                        anyLDC,
-                        captureReference(INVOKEVIRTUAL),
-
-                        // tessellator.addVertexWithUV(-100D, -100D, -100D, 0.0D, 0.0D);
-                        ALOAD_2,
-                        push(-100.0),
-                        push(-100.0),
-                        push(-100.0),
-                        push(0.0),
-                        push(0.0),
-                        captureReference(INVOKEVIRTUAL),
-
-                        // tessellator.addVertexWithUV(-100D, -100D, 100D, 0.0D, 16D);
-                        ALOAD_2,
-                        push(-100.0),
-                        push(-100.0),
-                        push(100.0),
-                        push(0.0),
-                        push(16.0),
-                        backReference(3),
-
-                        // tessellator.addVertexWithUV(100D, -100D, 100D, 16D, 16D);
-                        ALOAD_2,
-                        push(100.0),
-                        push(-100.0),
-                        push(100.0),
-                        push(16.0),
-                        push(16.0),
-                        backReference(3),
-
-                        // tessellator.addVertexWithUV(100D, -100D, -100D, 16D, 0.0D);
-                        ALOAD_2,
-                        push(100.0),
-                        push(-100.0),
-                        push(-100.0),
-                        push(16.0),
-                        push(0.0),
-                        backReference(3),
-
-                        // tessellator.draw();
-                        ALOAD_2,
-                        captureReference(INVOKEVIRTUAL),
-                        POP
-                    );
-                }
-            }
-                .addXref(1, startDrawingQuads)
-                .addXref(2, setColorOpaque_I)
-                .addXref(3, addVertexWithUV)
-                .addXref(4, draw)
+                    .addXref(1, startDrawingQuads)
+                    .addXref(2, setColorOpaque_I)
+                    .addXref(3, addVertexWithUV)
+                    .addXref(4, draw)
             );
 
             addPatch(new BytecodePatch() {
@@ -326,6 +328,11 @@ public class BetterSkies extends Mod {
             }.targetMethod(renderSky));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(renderSky);
+                }
+
                 @Override
                 public String getDescription() {
                     return "render custom sky";
@@ -354,10 +361,7 @@ public class BetterSkies extends Mod {
                         reference(INVOKESTATIC, renderAllSky)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(renderSky)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -443,6 +447,11 @@ public class BetterSkies extends Mod {
             }
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderSky);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override " + objName + " texture";
@@ -469,10 +478,7 @@ public class BetterSkies extends Mod {
                         ResourceLocationMod.unwrap(this)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderSky)
-            );
+            });
         }
     }
 
@@ -503,6 +509,11 @@ public class BetterSkies extends Mod {
             }
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    matchConstructorOnly(true);
+                    addXref(1, fxLayers);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -512,10 +523,7 @@ public class BetterSkies extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, fxLayers)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -529,6 +537,11 @@ public class BetterSkies extends Mod {
             }.setMethod(renderParticles));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(addEffect);
+                    addXref(1, getFXLayer);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -539,10 +552,7 @@ public class BetterSkies extends Mod {
 
                     );
                 }
-            }
-                .setMethod(addEffect)
-                .addXref(1, getFXLayer)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -558,9 +568,10 @@ public class BetterSkies extends Mod {
                             build(push(ORIG_LAYERS - 1))
                         ),
                         lookAhead(or(
-                            build(reference(ANEWARRAY, list)),
-                            build(IF_ICMPLT_or_IF_ICMPGE, any(2))),
-                            true)
+                                build(reference(ANEWARRAY, list)),
+                                build(IF_ICMPLT_or_IF_ICMPGE, any(2))),
+                            true
+                        )
                     );
                 }
 
@@ -594,6 +605,11 @@ public class BetterSkies extends Mod {
             }.targetMethod(addEffect));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderParticles);
+                }
+
                 @Override
                 public String getDescription() {
                     return "render extra fx layers";
@@ -618,10 +634,7 @@ public class BetterSkies extends Mod {
                         reference(INVOKESTATIC, skipThisLayer)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderParticles)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override

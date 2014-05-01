@@ -91,6 +91,11 @@ public class BetterGlass extends Mod {
             final MethodRef checkRenderPasses = new MethodRef(MCPatcherUtils.RENDER_PASS_CLASS, "checkRenderPasses", "(LBlock;Z)Z");
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(updateRenderer);
+                    addXref(1, getRenderBlockPass);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -116,10 +121,7 @@ public class BetterGlass extends Mod {
                         ISTORE, any()
                     );
                 }
-            }
-                .setMethod(updateRenderer)
-                .addXref(1, getRenderBlockPass)
-            );
+            });
 
             addMemberMapper(new FieldMapper(skipRenderPass));
 
@@ -127,6 +129,9 @@ public class BetterGlass extends Mod {
                 private int loopRegister;
 
                 {
+                    setInsertAfter(true);
+                    targetMethod(updateRenderer);
+
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
                         public String getMatchExpression() {
@@ -190,10 +195,7 @@ public class BetterGlass extends Mod {
                         reference(INVOKESTATIC, startPass)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(updateRenderer)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -274,6 +276,11 @@ public class BetterGlass extends Mod {
             }.targetMethod(updateRenderer));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(updateRenderer);
+                }
+
                 @Override
                 public String getDescription() {
                     return "finish render pass";
@@ -292,10 +299,7 @@ public class BetterGlass extends Mod {
                         reference(INVOKESTATIC, finishPass)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(updateRenderer)
-            );
+            });
 
             if (!RenderPassEnumMod.haveRenderPassEnum()) {
                 setupPre18();
@@ -456,6 +460,11 @@ public class BetterGlass extends Mod {
             addClassSignature(new ConstSignature("ambient.weather.rain"));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderWorld);
+                    addXref(1, sortAndRender);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -472,10 +481,7 @@ public class BetterGlass extends Mod {
                         )
                     );
                 }
-            }
-                .setMethod(renderWorld)
-                .addXref(1, sortAndRender)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -574,6 +580,11 @@ public class BetterGlass extends Mod {
             }.setInsertAfter(true));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(renderWorld);
+                }
+
                 @Override
                 public String getDescription() {
                     return "do overlay render pass";
@@ -614,10 +625,7 @@ public class BetterGlass extends Mod {
                         reference(INVOKEVIRTUAL, renderRainSnow)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(renderWorld)
-            );
+            });
         }
     }
 
@@ -635,6 +643,12 @@ public class BetterGlass extends Mod {
             addClassSignature(new ConstSignature(ResourceLocationMod.select("/environment/clouds.png", "textures/environment/clouds.png")));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    matchConstructorOnly(true);
+                    addXref(1, generateDisplayLists);
+                    addXref(2, glRenderListBase);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -645,11 +659,7 @@ public class BetterGlass extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, generateDisplayLists)
-                .addXref(2, glRenderListBase)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -873,6 +883,11 @@ public class BetterGlass extends Mod {
             }.targetMethod(sortAndRender));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(sortAndRender);
+                }
+
                 @Override
                 public String getDescription() {
                     return "set post-render pass options";
@@ -893,10 +908,7 @@ public class BetterGlass extends Mod {
                         reference(INVOKESTATIC, postRenderPass)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(sortAndRender)
-            );
+            });
         }
     }
 
@@ -908,7 +920,7 @@ public class BetterGlass extends Mod {
 
             if (directionWithAO == 0) {
                 addPatch(new AOMultiplierPatch(this)
-                    .targetMethod(renderStandardBlockWithAmbientOcclusion)
+                        .targetMethod(renderStandardBlockWithAmbientOcclusion)
                 );
             }
 
@@ -1037,11 +1049,11 @@ public class BetterGlass extends Mod {
 
             if (directionWithAO == 1) {
                 addMemberMapper(new MethodMapper(getAOMultiplier18)
-                    .accessFlag(AccessFlag.STATIC, true)
+                        .accessFlag(AccessFlag.STATIC, true)
                 );
             } else {
                 addMemberMapper(new FieldMapper(aoMultiplier18)
-                    .accessFlag(AccessFlag.STATIC, false)
+                        .accessFlag(AccessFlag.STATIC, false)
                 );
             }
         }

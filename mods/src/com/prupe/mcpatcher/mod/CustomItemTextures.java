@@ -172,6 +172,11 @@ public class CustomItemTextures extends Mod {
             }
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(getIconIndex);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override item texture";
@@ -192,12 +197,14 @@ public class CustomItemTextures extends Mod {
                         reference(INVOKESTATIC, getCITIcon)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(getIconIndex)
-            );
+            });
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(getIconForge);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override item texture (forge)";
@@ -218,10 +225,7 @@ public class CustomItemTextures extends Mod {
                         reference(INVOKESTATIC, getCITIcon)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(getIconForge)
-            );
+            });
 
             addMemberMapper(new MethodMapper(getIconFromDamageForRenderPass));
         }
@@ -246,6 +250,12 @@ public class CustomItemTextures extends Mod {
             addClassSignature(new ConstSignature("Damage"));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    matchConstructorOnly(true);
+                    addXref(1, stackSize);
+                    addXref(2, itemDamage);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -263,13 +273,14 @@ public class CustomItemTextures extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, stackSize)
-                .addXref(2, itemDamage)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(getItemDamage);
+                    addXref(1, itemDamage);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -280,10 +291,7 @@ public class CustomItemTextures extends Mod {
                         end()
                     );
                 }
-            }
-                .setMethod(getItemDamage)
-                .addXref(1, itemDamage)
-            );
+            });
 
             addMemberMapper(new FieldMapper(stackTagCompound));
             addMemberMapper(new MethodMapper(getItem));
@@ -323,12 +331,17 @@ public class CustomItemTextures extends Mod {
         }.setMethod(method));
     }
 
-    private void addGlintSignature16(ClassMod classMod, MethodRef method, final String opcode) {
+    private void addGlintSignature16(ClassMod classMod, final MethodRef method, final String opcode) {
         final FieldRef glint = new FieldRef(classMod.getDeobfClass(), "glint", "LResourceLocation;");
 
         classMod.addClassSignature(new ResourceLocationSignature(classMod, glint, GLINT_PNG));
 
         classMod.addClassSignature(new BytecodeSignature(classMod) {
+            {
+                setMethod(method);
+                addXref(1, glint);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -347,10 +360,7 @@ public class CustomItemTextures extends Mod {
                 String cl2 = getClassFile().getName();
                 return cl1.equals(cl2);
             }
-        }
-            .setMethod(method)
-            .addXref(1, glint)
-        );
+        });
     }
 
     private class ItemRendererMod extends ClassMod {
@@ -367,6 +377,11 @@ public class CustomItemTextures extends Mod {
             addGlintSignature(this, renderItem, anyALOAD);
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderItem);
+                    addXref(1, hasEffect);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -382,14 +397,16 @@ public class CustomItemTextures extends Mod {
                         IFNE, any(2)
                     );
                 }
-            }
-                .setMethod(renderItem)
-                .addXref(1, hasEffect)
-            );
+            });
 
             addMemberMapper(new MethodMapper(renderItemIn2D).accessFlag(AccessFlag.STATIC, true));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderItem, renderItemForge);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override item texture (held)";
@@ -411,10 +428,7 @@ public class CustomItemTextures extends Mod {
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getIcon", "(LIcon;LItemStack;I)LIcon;"))
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderItem, renderItemForge)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -497,6 +511,11 @@ public class CustomItemTextures extends Mod {
             }.setMethod(renderItemIntoGUI));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderItemOverlayIntoGUI);
+                    addXref(1, getMaxDamage);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -510,10 +529,7 @@ public class CustomItemTextures extends Mod {
                         captureReference(INVOKEVIRTUAL)
                     );
                 }
-            }
-                .setMethod(renderItemOverlayIntoGUI)
-                .addXref(1, getMaxDamage)
-            );
+            });
 
             addMemberMapper(new FieldMapper(zLevel).accessFlag(AccessFlag.STATIC, false));
 
@@ -615,6 +631,11 @@ public class CustomItemTextures extends Mod {
 
             if (needAlphaTest) {
                 addPatch(new BytecodePatch() {
+                    {
+                        setInsertBefore(true);
+                        targetMethod(renderItemAndEffectIntoGUI);
+                    }
+
                     @Override
                     public String getDescription() {
                         return "enable alpha test in gui";
@@ -650,10 +671,7 @@ public class CustomItemTextures extends Mod {
                             reference(INVOKESTATIC, glAlphaFunc)
                         );
                     }
-                }
-                    .setInsertBefore(true)
-                    .targetMethod(renderItemAndEffectIntoGUI)
-                );
+                });
 
                 addPatch(new BytecodePatch() {
                     @Override
@@ -752,6 +770,11 @@ public class CustomItemTextures extends Mod {
             }.targetMethod(renderItemIntoGUIForge));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderItemIntoGUI, renderItemIntoGUIForge);
+                }
+
                 @Override
                 public String getDescription() {
                     return "handle items with multiple render passes (gui)";
@@ -789,10 +812,7 @@ public class CustomItemTextures extends Mod {
                         reference(INVOKESTATIC, getCITIcon)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderItemIntoGUI, renderItemIntoGUIForge)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -1210,6 +1230,11 @@ public class CustomItemTextures extends Mod {
             addGlintSignature(this, renderEnchantment);
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderArmor);
+                    addXref(1, renderModel);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -1225,10 +1250,7 @@ public class CustomItemTextures extends Mod {
                         captureReference(INVOKEVIRTUAL)
                     );
                 }
-            }
-                .setMethod(renderArmor)
-                .addXref(1, renderModel)
-            );
+            });
 
             addMemberMapper(new MethodMapper(getArmorTexture1));
             addMemberMapper(new MethodMapper(getArmorTexture2));
@@ -1237,6 +1259,9 @@ public class CustomItemTextures extends Mod {
                 private int itemStackRegister;
 
                 {
+                    setInsertAfter(true);
+                    targetMethod(renderArmor);
+
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
                         public String getMatchExpression() {
@@ -1281,10 +1306,7 @@ public class CustomItemTextures extends Mod {
                         reference(INVOKESTATIC, getArmorTexture)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderArmor)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -1375,6 +1397,12 @@ public class CustomItemTextures extends Mod {
             addClassSignature(new ConstSignature(ResourceLocationMod.select("potion_contents", "overlay")));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(doRender);
+                    addXref(1, new ClassRef("EntityPotion"));
+                    addXref(2, new MethodRef("EntityPotion", "getPotionDamage", "()I"));
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -1383,11 +1411,7 @@ public class CustomItemTextures extends Mod {
                         captureReference(INVOKEVIRTUAL)
                     );
                 }
-            }
-                .setMethod(doRender)
-                .addXref(1, new ClassRef("EntityPotion"))
-                .addXref(2, new MethodRef("EntityPotion", "getPotionDamage", "()I"))
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -1401,8 +1425,8 @@ public class CustomItemTextures extends Mod {
                         // icon = ...;
                         begin(),
                         capture(build(
-                            ALOAD_0,
-                            nonGreedy(any(0, 20)))
+                                ALOAD_0,
+                                nonGreedy(any(0, 20)))
                         ),
                         capture(anyASTORE)
                     );
@@ -1476,13 +1500,13 @@ public class CustomItemTextures extends Mod {
             addClassSignature(new ConstSignature("potion.moveSlowdown"));
 
             addMemberMapper(new FieldMapper(potionTypes)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
             );
 
             addMemberMapper(new MethodMapper(getName)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, false)
             );
         }
     }
@@ -1495,8 +1519,8 @@ public class CustomItemTextures extends Mod {
             addClassSignature(new ConstSignature("potion.prefix.uninteresting"));
 
             addMemberMapper(new MethodMapper(getMundaneName)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
             );
         }
     }

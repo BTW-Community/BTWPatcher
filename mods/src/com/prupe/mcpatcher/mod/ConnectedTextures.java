@@ -68,8 +68,8 @@ public class ConnectedTextures extends Mod {
                 addClassMod(new RenderBlockPaneMod("RenderBlockGlassPane"));
             } else {
                 addClassMod(new BlockModelFaceMod(this)
-                    .mapDirectionMethods()
-                    .mapIntBufferMethods()
+                        .mapDirectionMethods()
+                        .mapIntBufferMethods()
                 );
             }
             addClassMod(renderBlockManagerMod);
@@ -163,6 +163,12 @@ public class ConnectedTextures extends Mod {
             mapBlockIconMethods();
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(getBlockIcon);
+                    addXref(1, IBlockAccessMod.getBlockMetadata);
+                    addXref(2, getBlockIconFromSideAndMetadata);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -177,13 +183,14 @@ public class ConnectedTextures extends Mod {
                         end()
                     );
                 }
-            }
-                .setMethod(getBlockIcon)
-                .addXref(1, IBlockAccessMod.getBlockMetadata)
-                .addXref(2, getBlockIconFromSideAndMetadata)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(constructor);
+                    addXref(1, blockMaterial);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -192,10 +199,7 @@ public class ConnectedTextures extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .setMethod(constructor)
-                .addXref(1, blockMaterial)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -226,8 +230,8 @@ public class ConnectedTextures extends Mod {
             }
 
             addMemberMapper(new MethodMapper(getGrassSideTexture)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
             );
         }
     }
@@ -240,6 +244,11 @@ public class ConnectedTextures extends Mod {
 
             if (!haveSubclasses()) {
                 addClassSignature(new BytecodeSignature() {
+                    {
+                        setMethod(renderBlockByRenderType);
+                        addXref(1, BlockMod.getRenderType);
+                    }
+
                     @Override
                     public String getMatchExpression() {
                         return buildExpression(
@@ -248,10 +257,7 @@ public class ConnectedTextures extends Mod {
                             registerLoadStore(ISTORE, 2 + PositionMod.getDescriptorLength())
                         );
                     }
-                }
-                    .setMethod(renderBlockByRenderType)
-                    .addXref(1, BlockMod.getRenderType)
-                );
+                });
             }
 
             addMemberMapper(new FieldMapper(blockAccess));
@@ -352,8 +358,13 @@ public class ConnectedTextures extends Mod {
             abstract byte[] getCTMUtilsArgs();
         }
 
-        private void mapRenderTypeMethod(final int type, MethodRef renderMethod) {
+        private void mapRenderTypeMethod(final int type, final MethodRef renderMethod) {
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderBlockByRenderType);
+                    addXref(1, renderMethod);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -370,10 +381,7 @@ public class ConnectedTextures extends Mod {
                         capture(build(subset(new int[]{INVOKEVIRTUAL, INVOKESPECIAL}, true), any(2)))
                     );
                 }
-            }
-                .setMethod(renderBlockByRenderType)
-                .addXref(1, renderMethod)
-            );
+            });
         }
 
         private void setupGlassPanes() {
@@ -413,9 +421,7 @@ public class ConnectedTextures extends Mod {
                         reference(INVOKESTATIC, newBlockIconFromPosition)
                     );
                 }
-            }
-                .setInsertAfter(true)
-            );
+            }.setInsertAfter(true));
         }
 
         private void setupSecondaryTexture18() {
@@ -1053,6 +1059,11 @@ public class ConnectedTextures extends Mod {
             }.targetMethod(renderBlock));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderFaceAO, renderFaceNonAO);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override texture (custom model faces)";
@@ -1087,10 +1098,7 @@ public class ConnectedTextures extends Mod {
                         reference(INVOKESTATIC, setFace)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderFaceAO, renderFaceNonAO)
-            );
+            });
         }
     }
 
