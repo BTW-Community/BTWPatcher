@@ -2,9 +2,9 @@ package com.prupe.mcpatcher.mob;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.util.WeightedIndex;
-import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import net.minecraft.src.ResourceLocation;
 
 import java.util.*;
