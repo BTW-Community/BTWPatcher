@@ -1,6 +1,9 @@
 package com.prupe.mcpatcher.basemod;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.FieldRef;
+import com.prupe.mcpatcher.MethodRef;
+import com.prupe.mcpatcher.Mod;
+import com.prupe.mcpatcher.PatchComponent;
 import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BytecodeMatcher.anyReference;
@@ -66,12 +69,12 @@ public class RenderPassEnumMod extends com.prupe.mcpatcher.ClassMod {
         addClassSignature(new ConstSignature("TRANSLUCENT"));
 
         addMemberMapper(new FieldMapper(SOLID, CUTOUT_MIPPED, CUTOUT, TRANSLUCENT)
-            .accessFlag(AccessFlag.PUBLIC, true)
-            .accessFlag(AccessFlag.STATIC, true)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, true)
         );
 
         addMemberMapper(new FieldMapper(valuesArray)
-            .accessFlag(AccessFlag.STATIC, true)
+                .accessFlag(AccessFlag.STATIC, true)
         );
     }
 }

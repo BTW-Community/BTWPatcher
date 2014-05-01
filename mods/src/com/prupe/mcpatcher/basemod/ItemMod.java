@@ -28,8 +28,8 @@ public class ItemMod extends com.prupe.mcpatcher.ClassMod {
         }
 
         addMemberMapper(new MethodMapper(getItemName)
-            .accessFlag(AccessFlag.PUBLIC, true)
-            .accessFlag(AccessFlag.STATIC, false)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, false)
         );
     }
 }

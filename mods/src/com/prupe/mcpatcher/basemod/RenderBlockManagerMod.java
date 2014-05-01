@@ -1,15 +1,17 @@
 package com.prupe.mcpatcher.basemod;
 
-import com.prupe.mcpatcher.*;
-import javassist.bytecode.AccessFlag;
+import com.prupe.mcpatcher.ClassMod;
+import com.prupe.mcpatcher.ClassRef;
+import com.prupe.mcpatcher.MethodRef;
+import com.prupe.mcpatcher.Mod;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 /**
-* Matches RenderBlockManager class (14w04a+).
-*/
+ * Matches RenderBlockManager class (14w04a+).
+ */
 public class RenderBlockManagerMod extends ClassMod {
     public static final MethodRef registerRenderType = new MethodRef("RenderBlockManager", "registerRenderType", "(ILRenderBlocks;)V");
     public static final MethodRef renderBlockAsItem = new MethodRef("RenderBlockManager", "renderBlockAsItem", "(LBlock;IF)V");
@@ -35,6 +37,12 @@ public class RenderBlockManagerMod extends ClassMod {
         }
 
         addClassSignature(new BytecodeSignature() {
+            {
+                matchConstructorOnly(true);
+                addXref(1, renderBlocksClass);
+                addXref(2, registerRenderType);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -58,13 +66,14 @@ public class RenderBlockManagerMod extends ClassMod {
                     ), 10)
                 );
             }
-        }
-            .matchConstructorOnly(true)
-            .addXref(1, renderBlocksClass)
-            .addXref(2, registerRenderType)
-        );
+        });
 
         addClassSignature(new BytecodeSignature() {
+            {
+                setMethod(renderBlockByRenderType);
+                addXref(1, BlockMod.getRenderType);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -82,12 +91,14 @@ public class RenderBlockManagerMod extends ClassMod {
                     )
                 );
             }
-        }
-            .setMethod(renderBlockByRenderType)
-            .addXref(1, BlockMod.getRenderType)
-        );
+        });
 
         addClassSignature(new BytecodeSignature() {
+            {
+                setMethod(renderBlockAsItem);
+                addXref(1, RenderBlocksMod.renderBlockAsItem);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -98,14 +109,16 @@ public class RenderBlockManagerMod extends ClassMod {
                     captureReference(INVOKEVIRTUAL)
                 );
             }
-        }
-            .setMethod(renderBlockAsItem)
-            .addXref(1, RenderBlocksMod.renderBlockAsItem)
-        );
+        });
     }
 
-    public RenderBlockManagerMod mapRenderType(final int type, String className) {
+    public RenderBlockManagerMod mapRenderType(final int type, final String className) {
         addClassSignature(new BytecodeSignature() {
+            {
+                matchConstructorOnly(true);
+                addXref(1, new ClassRef(className));
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -118,10 +131,7 @@ public class RenderBlockManagerMod extends ClassMod {
                     anyReference(INVOKEVIRTUAL)
                 );
             }
-        }
-            .matchConstructorOnly(true)
-            .addXref(1, new ClassRef(className))
-        );
+        });
         return this;
     }
 }

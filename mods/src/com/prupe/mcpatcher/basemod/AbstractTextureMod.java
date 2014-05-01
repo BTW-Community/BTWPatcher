@@ -32,6 +32,11 @@ public class AbstractTextureMod extends com.prupe.mcpatcher.ClassMod {
         }.matchConstructorOnly(true));
 
         addClassSignature(new BytecodeSignature() {
+            {
+                setMethod(getGLTextureId);
+                addXref(2, new MethodRef("TextureUtil", "newGLTexture", "()I"));
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -46,10 +51,7 @@ public class AbstractTextureMod extends com.prupe.mcpatcher.ClassMod {
                     PUTFIELD, backReference(1)
                 );
             }
-        }
-            .setMethod(getGLTextureId)
-            .addXref(2, new MethodRef("TextureUtil", "newGLTexture", "()I"))
-        );
+        });
 
         addMemberMapper(new FieldMapper(glTextureId));
     }

@@ -72,6 +72,12 @@ public class BaseTilesheetMod extends Mod {
                 addClassSignature(new ResourceLocationSignature(this, itemsAtlas, "textures/atlas/items.png"));
 
                 addClassSignature(new BytecodeSignature() {
+                    {
+                        setMethod(refreshTextures2);
+                        addXref(1, new MethodRef("Minecraft", "getMaxTextureSize", "()I"));
+                        addXref(2, new ClassRef("Stitcher"));
+                    }
+
                     @Override
                     public String getMatchExpression() {
                         return buildExpression(
@@ -91,14 +97,15 @@ public class BaseTilesheetMod extends Mod {
                             ASTORE_3
                         );
                     }
-                }
-                    .setMethod(refreshTextures2)
-                    .addXref(1, new MethodRef("Minecraft", "getMaxTextureSize", "()I"))
-                    .addXref(2, new ClassRef("Stitcher"))
-                );
+                });
             }
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(registerTiles);
+                    addXref(1, texturesByName);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -108,12 +115,14 @@ public class BaseTilesheetMod extends Mod {
                         reference(INVOKEINTERFACE, mapClear)
                     );
                 }
-            }
-                .setMethod(registerTiles)
-                .addXref(1, texturesByName)
-            );
+            });
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(ResourceLocationMod.select(refreshTextures1, refreshTextures2));
+                }
+
                 @Override
                 public String getDescription() {
                     return "register additional tiles";
@@ -148,10 +157,7 @@ public class BaseTilesheetMod extends Mod {
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "registerIcons", "(LTextureAtlas;Ljava/lang/String;Ljava/util/Map;)V"))
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(ResourceLocationMod.select(refreshTextures1, refreshTextures2))
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -393,6 +399,11 @@ public class BaseTilesheetMod extends Mod {
             addClassSignature(new ConstSignature("dynamic/%s_%d"));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(updateAnimations);
+                    addXref(1, new FieldRef(getDeobfClass(), "animations", "Ljava/util/List;"));
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -403,10 +414,7 @@ public class BaseTilesheetMod extends Mod {
 
                     );
                 }
-            }
-                .setMethod(updateAnimations)
-                .addXref(1, new FieldRef(getDeobfClass(), "animations", "Ljava/util/List;"))
-            );
+            });
         }
     }
 

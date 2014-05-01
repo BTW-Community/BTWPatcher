@@ -2,9 +2,7 @@ package com.prupe.mcpatcher.basemod;
 
 import com.prupe.mcpatcher.*;
 
-import static com.prupe.mcpatcher.BinaryRegex.backReference;
-import static com.prupe.mcpatcher.BinaryRegex.begin;
-import static com.prupe.mcpatcher.BinaryRegex.end;
+import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.captureReference;
 import static javassist.bytecode.Opcode.*;
 

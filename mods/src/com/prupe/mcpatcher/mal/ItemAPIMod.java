@@ -1,6 +1,8 @@
 package com.prupe.mcpatcher.mal;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.FieldRef;
+import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.Mod;
 import javassist.bytecode.AccessFlag;
 
 public class ItemAPIMod extends Mod {
@@ -41,22 +43,22 @@ public class ItemAPIMod extends Mod {
                 final FieldRef itemRegistry = new FieldRef(getDeobfClass(), "itemRegistry", "LRegistry;");
 
                 addMemberMapper(new FieldMapper(itemRegistry)
-                    .accessFlag(AccessFlag.PUBLIC, true)
-                    .accessFlag(AccessFlag.STATIC, true)
+                        .accessFlag(AccessFlag.PUBLIC, true)
+                        .accessFlag(AccessFlag.STATIC, true)
                 );
             } else {
                 final FieldRef itemsList = new FieldRef(getDeobfClass(), "itemsList", "[LItem;");
                 final FieldRef itemID = new FieldRef(getDeobfClass(), "itemID", "I");
 
                 addMemberMapper(new FieldMapper(itemsList)
-                    .accessFlag(AccessFlag.PUBLIC, true)
-                    .accessFlag(AccessFlag.STATIC, true)
+                        .accessFlag(AccessFlag.PUBLIC, true)
+                        .accessFlag(AccessFlag.STATIC, true)
                 );
 
                 addMemberMapper(new FieldMapper(itemID)
-                    .accessFlag(AccessFlag.PUBLIC, true)
-                    .accessFlag(AccessFlag.STATIC, false)
-                    .accessFlag(AccessFlag.FINAL, true)
+                        .accessFlag(AccessFlag.PUBLIC, true)
+                        .accessFlag(AccessFlag.STATIC, false)
+                        .accessFlag(AccessFlag.FINAL, true)
                 );
             }
         }

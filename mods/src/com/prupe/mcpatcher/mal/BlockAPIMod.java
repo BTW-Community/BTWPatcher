@@ -408,6 +408,11 @@ public class BlockAPIMod extends Mod {
         classMod.addPatch(new com.prupe.mcpatcher.BytecodePatch(classMod) {
             private final MethodRef setupColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "setupColorMultiplier", "(LBlock;LIBlockAccess;IIIZFFF)V");
 
+            {
+                setInsertBefore(true);
+                targetMethod(RenderBlocksMod.renderStandardBlock);
+            }
+
             @Override
             public String getDescription() {
                 return "set per-face color multipliers";
@@ -437,10 +442,7 @@ public class BlockAPIMod extends Mod {
                     reference(INVOKESTATIC, setupColorMultiplier)
                 );
             }
-        }
-            .setInsertBefore(true)
-            .targetMethod(RenderBlocksMod.renderStandardBlock)
-        );
+        });
     }
 
     private class RenderBlockCustomMod extends com.prupe.mcpatcher.basemod.RenderBlockCustomMod {
@@ -451,6 +453,11 @@ public class BlockAPIMod extends Mod {
             final InterfaceMethodRef listIterator = new InterfaceMethodRef("java/util/List", "iterator", "()Ljava/util/Iterator;");
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderFaceAO);
+                    addXref(1, useTint);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -472,14 +479,16 @@ public class BlockAPIMod extends Mod {
                         FMUL
                     );
                 }
-            }
-                .setMethod(renderFaceAO)
-                .addXref(1, useTint)
-            );
+            });
 
             presetupColorMultipliers(this);
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderFaceAO, renderFaceNonAO, renderBlockHeld);
+                }
+
                 @Override
                 public String getDescription() {
                     return "initialize layer index";
@@ -503,16 +512,16 @@ public class BlockAPIMod extends Mod {
                         reference(PUTSTATIC, layerIndex)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderFaceAO, renderFaceNonAO, renderBlockHeld)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 private boolean isMetadataMethod;
                 private int direction;
 
                 {
+                    setInsertAfter(true);
+                    targetMethod(renderFaceAO, renderFaceNonAO, renderBlockHeld);
+
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
                         public String getMatchExpression() {
@@ -569,10 +578,7 @@ public class BlockAPIMod extends Mod {
                         reference(INVOKESTATIC, useColorMultiplier2)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderFaceAO, renderFaceNonAO, renderBlockHeld)
-            );
+            });
         }
     }
 }

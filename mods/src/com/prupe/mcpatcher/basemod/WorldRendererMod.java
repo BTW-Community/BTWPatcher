@@ -36,6 +36,13 @@ public class WorldRendererMod extends com.prupe.mcpatcher.ClassMod {
 
         if (PositionMod.havePositionClass()) {
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(updateRenderer);
+                    addXref(1, posX);
+                    addXref(2, posY);
+                    addXref(3, posZ);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -60,12 +67,7 @@ public class WorldRendererMod extends com.prupe.mcpatcher.ClassMod {
                         anyASTORE
                     );
                 }
-            }
-                .setMethod(updateRenderer)
-                .addXref(1, posX)
-                .addXref(2, posY)
-                .addXref(3, posZ)
-            );
+            });
         } else {
             addClassSignature(new BytecodeSignature() {
                 {

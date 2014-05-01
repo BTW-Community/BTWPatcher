@@ -69,8 +69,8 @@ public class ResourceLocationMod extends com.prupe.mcpatcher.ClassMod {
         });
 
         addMemberMapper(new MethodMapper(getPath, getNamespace)
-            .accessFlag(AccessFlag.PUBLIC, true)
-            .accessFlag(AccessFlag.STATIC, false)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, false)
         );
     }
 }

@@ -497,6 +497,11 @@ public class BaseTexturePackMod extends Mod {
             addClassSignature(new ConstSignature(mapClear));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(getResource);
+                    addXref(1, addressToString);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -508,10 +513,7 @@ public class BaseTexturePackMod extends Mod {
                         ATHROW
                     );
                 }
-            }
-                .setMethod(getResource)
-                .addXref(1, addressToString)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -548,6 +550,11 @@ public class BaseTexturePackMod extends Mod {
             }.targetMethod(loadResources));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(loadResources);
+                }
+
                 @Override
                 public String getDescription() {
                     return "after texture pack change";
@@ -566,10 +573,7 @@ public class BaseTexturePackMod extends Mod {
                         reference(INVOKESTATIC, afterChange1)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(loadResources)
-            );
+            });
         }
     }
 
@@ -722,6 +726,11 @@ public class BaseTexturePackMod extends Mod {
             }.targetMethod(refreshTextures));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(refreshTextures);
+                }
+
                 @Override
                 public String getDescription() {
                     return "after texture refresh";
@@ -740,10 +749,7 @@ public class BaseTexturePackMod extends Mod {
                         reference(INVOKESTATIC, afterChange1)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(refreshTextures)
-            );
+            });
         }
 
         private void addNullCheckPatch(final MethodRef method, final int register, final int[] returnValue) {
@@ -801,6 +807,12 @@ public class BaseTexturePackMod extends Mod {
             }.setMethod(updateAvailableTexturePacks));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(onDownloadFinished);
+                    addXref(1, mc);
+                    addXref(2, scheduleTexturePackRefresh);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -810,18 +822,14 @@ public class BaseTexturePackMod extends Mod {
                         captureReference(INVOKEVIRTUAL)
                     );
                 }
-            }
-                .setMethod(onDownloadFinished)
-                .addXref(1, mc)
-                .addXref(2, scheduleTexturePackRefresh)
-            );
+            });
 
             addMemberMapper(new MethodMapper(setTexturePack));
 
             addMemberMapper(new FieldMapper(selectedTexturePack)
-                .accessFlag(AccessFlag.PRIVATE, true)
-                .accessFlag(AccessFlag.STATIC, false)
-                .accessFlag(AccessFlag.FINAL, false)
+                    .accessFlag(AccessFlag.PRIVATE, true)
+                    .accessFlag(AccessFlag.STATIC, false)
+                    .accessFlag(AccessFlag.FINAL, false)
             );
 
             addMemberMapper(new MethodMapper(getSelectedTexturePack)

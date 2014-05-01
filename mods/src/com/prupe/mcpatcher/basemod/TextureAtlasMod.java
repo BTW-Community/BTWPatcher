@@ -5,8 +5,9 @@ import com.prupe.mcpatcher.InterfaceMethodRef;
 import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
 
-import static com.prupe.mcpatcher.BinaryRegex.*;
-import static com.prupe.mcpatcher.BytecodeMatcher.*;
+import static com.prupe.mcpatcher.BinaryRegex.begin;
+import static com.prupe.mcpatcher.BytecodeMatcher.anyASTORE;
+import static com.prupe.mcpatcher.BytecodeMatcher.captureReference;
 import static javassist.bytecode.Opcode.*;
 
 /**
@@ -44,6 +45,11 @@ public class TextureAtlasMod extends com.prupe.mcpatcher.ClassMod {
 
         if (ResourceLocationMod.haveClass()) {
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(refreshTextures2);
+                    addXref(1, texturesByName);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -55,12 +61,14 @@ public class TextureAtlasMod extends com.prupe.mcpatcher.ClassMod {
                         anyASTORE
                     );
                 }
-            }
-                .setMethod(refreshTextures2)
-                .addXref(1, texturesByName)
-            );
+            });
         } else {
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(refreshTextures1);
+                    addXref(1, texturesByName);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -71,13 +79,15 @@ public class TextureAtlasMod extends com.prupe.mcpatcher.ClassMod {
                         reference(INVOKEINTERFACE, mapClear)
                     );
                 }
-            }
-                .setMethod(refreshTextures1)
-                .addXref(1, texturesByName)
-            );
+            });
         }
 
         addClassSignature(new BytecodeSignature() {
+            {
+                matchConstructorOnly(true);
+                addXref(1, basePath);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -87,10 +97,7 @@ public class TextureAtlasMod extends com.prupe.mcpatcher.ClassMod {
                     captureReference(PUTFIELD)
                 );
             }
-        }
-            .matchConstructorOnly(true)
-            .addXref(1, basePath)
-        );
+        });
 
         addMemberMapper(new MethodMapper(registerIcon));
     }

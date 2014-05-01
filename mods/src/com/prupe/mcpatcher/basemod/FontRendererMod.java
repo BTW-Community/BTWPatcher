@@ -16,6 +16,11 @@ public class FontRendererMod extends com.prupe.mcpatcher.ClassMod {
         super(mod);
 
         addClassSignature(new BytecodeSignature() {
+            {
+                matchConstructorOnly(true);
+                addXref(1, new FieldRef(getDeobfClass(), "charWidth", "[I"));
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -28,10 +33,7 @@ public class FontRendererMod extends com.prupe.mcpatcher.ClassMod {
                     captureReference(PUTFIELD)
                 );
             }
-        }
-            .matchConstructorOnly(true)
-            .addXref(1, new FieldRef(getDeobfClass(), "charWidth", "[I"))
-        );
+        });
 
         addClassSignature(new OrSignature(
             new ConstSignature("0123456789abcdef"),
