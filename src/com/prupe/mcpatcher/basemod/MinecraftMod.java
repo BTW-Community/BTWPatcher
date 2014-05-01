@@ -43,8 +43,8 @@ public class MinecraftMod extends com.prupe.mcpatcher.ClassMod {
 
         if (haveGetInstance) {
             addMemberMapper(new MethodMapper(getInstance)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
             );
         }
     }

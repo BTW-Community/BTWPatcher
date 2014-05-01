@@ -1,6 +1,7 @@
 package net.minecraft.src;
 
-public class Position { // 14w02a+
+// 14w02a+
+public class Position {
     public Position(int i, int j, int k) {
     }
 

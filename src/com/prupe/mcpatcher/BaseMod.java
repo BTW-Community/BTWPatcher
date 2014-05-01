@@ -274,6 +274,11 @@ public final class BaseMod extends Mod {
             }
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    matchConstructorOnly(true);
+                }
+
                 @Override
                 public String getDescription() {
                     return "MCPatcherUtils.setMinecraft(this)";
@@ -308,15 +313,17 @@ public final class BaseMod extends Mod {
                         return buildCode(ACONST_NULL);
                     }
                 }
-            }
-                .setInsertAfter(true)
-                .matchConstructorOnly(true)
-            );
+            });
 
             if (!haveGetInstance) {
                 addPatch(new AddFieldPatch(instance, AccessFlag.PUBLIC | AccessFlag.STATIC));
 
                 addPatch(new BytecodePatch() {
+                    {
+                        setInsertAfter(true);
+                        matchConstructorOnly(true);
+                    }
+
                     @Override
                     public String getDescription() {
                         return "set instance";
@@ -338,10 +345,7 @@ public final class BaseMod extends Mod {
                             reference(PUTSTATIC, instance)
                         );
                     }
-                }
-                    .setInsertAfter(true)
-                    .matchConstructorOnly(true)
-                );
+                });
 
                 addPatch(new AddMethodPatch(getInstance, AccessFlag.PUBLIC | AccessFlag.STATIC) {
                     @Override

@@ -22,6 +22,12 @@ public class ProfilerMod extends com.prupe.mcpatcher.ClassMod {
         final MethodRef endStartSection = new MethodRef(getDeobfClass(), "endStartSection", "(Ljava/lang/String;)V");
 
         addClassSignature(new BytecodeSignature() {
+            {
+                setMethod(endStartSection);
+                addXref(1, endSection);
+                addXref(2, startSection);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -32,10 +38,6 @@ public class ProfilerMod extends com.prupe.mcpatcher.ClassMod {
                     captureReference(INVOKEVIRTUAL)
                 );
             }
-        }
-            .setMethod(endStartSection)
-            .addXref(1, endSection)
-            .addXref(2, startSection)
-        );
+        });
     }
 }
