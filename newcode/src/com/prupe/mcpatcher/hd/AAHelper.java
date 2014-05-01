@@ -20,6 +20,8 @@ public class AAHelper {
 
     private static Field addressField;
 
+    public static int lastBorder;
+
     static {
         try {
             for (Field f : SimpleResource.class.getDeclaredFields()) {
@@ -44,6 +46,7 @@ public class AAHelper {
     }
 
     public static BufferedImage addBorder(TextureAtlasSprite stitched, Resource resource, BufferedImage input) {
+        lastBorder = 0;
         if (!(resource instanceof SimpleResource) || addressField == null) {
             return input;
         }
@@ -59,6 +62,7 @@ public class AAHelper {
     }
 
     public static BufferedImage addBorder(TextureAtlasSprite stitched, ResourceLocation name, BufferedImage input) {
+        lastBorder = 0;
         if (input == null) {
             return input;
         }
@@ -77,6 +81,7 @@ public class AAHelper {
         if (border <= 0) {
             return input;
         }
+        lastBorder = border;
         int newWidth = width + 2 * border;
         int newHeight = height + 2 * border;
         BufferedImage output = new BufferedImage(newWidth, numFrames * newHeight, BufferedImage.TYPE_INT_ARGB);

@@ -432,6 +432,7 @@ class ExtendedHD15 {
 
             final MethodRef createTextureFromImage = new MethodRef(getDeobfClass(), "createTextureFromImage", "(Ljava/lang/String;IIIIIIIZLjava/awt/image/BufferedImage;)LTexture;");
             final MethodRef addAABorder = new MethodRef(WRAPPER_15_CLASS, "addAABorder", "(Ljava/lang/String;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
+            final FieldRef lastBorder = new FieldRef(MCPatcherUtils.AA_HELPER_CLASS, "lastBorder", "I");
             final MethodRef getImageWidth = new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I");
             final MethodRef getImageHeight = new MethodRef("java/awt/image/BufferedImage", "getHeight", "()I");
             final MethodRef lastIndexOf = new MethodRef("java/lang/String", "lastIndexOf", "(I)I");
@@ -499,7 +500,7 @@ class ExtendedHD15 {
 
                         // texture.border = AAHelper.border;
                         ALOAD, getCaptureGroup(1),
-                        reference(GETSTATIC, new FieldRef(MCPatcherUtils.AA_HELPER_CLASS, "border", "I")),
+                        reference(GETSTATIC, lastBorder),
                         reference(PUTFIELD, textureBorder)
                     );
                 }
