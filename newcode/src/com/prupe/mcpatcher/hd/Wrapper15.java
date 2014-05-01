@@ -70,9 +70,10 @@ public class Wrapper15 {
     private static IntBuffer[] getMipmaps(ByteBuffer buffer, int width, int height) {
         int levels = MipmapHelper.getMipmapLevelsForCurrentTexture();
         IntBuffer[] mipmaps = new IntBuffer[levels + 1];
+        buffer.position(0);
         mipmaps[0] = getDirectByteBuffer(buffer).asIntBuffer();
         for (int level = 1; level < mipmaps.length; level++) {
-            mipmaps[level] = MipmapHelper.newIntBuffer(mipmaps[level - 1].capacity() >> 2);
+            mipmaps[level] = MipmapHelper.newIntBuffer(mipmaps[level - 1].capacity());
             MipmapHelper.scaleHalf(mipmaps[level - 1], width, height, mipmaps[level], 0);
             width >>= 1;
             height >>= 1;
