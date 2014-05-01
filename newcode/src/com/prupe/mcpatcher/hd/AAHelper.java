@@ -31,6 +31,8 @@ public class AAHelper {
                     break;
                 }
             }
+        } catch (NoClassDefFoundError e) {
+            // nothing
         } catch (Throwable e) {
             e.printStackTrace();
         }
