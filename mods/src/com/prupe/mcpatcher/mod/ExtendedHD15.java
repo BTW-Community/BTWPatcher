@@ -12,7 +12,7 @@ import static javassist.bytecode.Opcode.*;
 class ExtendedHD15 {
     static final String WRAPPER_15_CLASS = "com.prupe.mcpatcher.hd.Wrapper15";
 
-    private static final MethodRef setupTextureMipmaps1 = new MethodRef(WRAPPER_15_CLASS, "setupTexture", "(LTexture;Ljava/awt/image/BufferedImage;IZZLResourceLocation;)V");
+    private static final MethodRef setupTextureMipmaps1 = new MethodRef(WRAPPER_15_CLASS, "setupTexture", "(LRenderEngine;Ljava/awt/image/BufferedImage;IZZLResourceLocation;)V");
     private static final MethodRef setupTextureMipmaps2 = new MethodRef(WRAPPER_15_CLASS, "setupTexture", "(LTexture;LResourceLocation;)V");
     private static final MethodRef copySubTexture1 = new MethodRef(WRAPPER_15_CLASS, "copySubTexture", "(LTexture;LTexture;IIZ)V");
     private static final MethodRef copySubTexture2 = new MethodRef(WRAPPER_15_CLASS, "copySubTexture", "(LTexture;Ljava/nio/ByteBuffer;IIII)V");

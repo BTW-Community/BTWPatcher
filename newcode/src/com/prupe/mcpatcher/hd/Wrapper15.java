@@ -3,10 +3,7 @@ package com.prupe.mcpatcher.hd;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
-import net.minecraft.src.ResourceLocation;
-import net.minecraft.src.Texture;
-import net.minecraft.src.TextureAtlas;
-import net.minecraft.src.TextureAtlasSprite;
+import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.image.BufferedImage;
@@ -31,7 +28,7 @@ public class Wrapper15 {
         MipmapHelper.setupTexture(rgb, width, height, 0, 0, false, false, textureName.getPath());
     }
 
-    public static void setupTexture(Texture texture, BufferedImage image, int glTextureId, boolean blur, boolean clamp, ResourceLocation textureName) {
+    public static void setupTexture(RenderEngine renderEngine, BufferedImage image, int glTextureId, boolean blur, boolean clamp, ResourceLocation textureName) {
         int width = image.getWidth();
         int height = image.getHeight();
         int[] rgb = new int[width * height];
