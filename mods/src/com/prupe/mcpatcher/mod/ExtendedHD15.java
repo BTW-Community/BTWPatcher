@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.ResourceLocationMod;
+import com.prupe.mcpatcher.basemod.TextureAtlasMod;
 import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -506,6 +507,32 @@ class ExtendedHD15 {
                 }
             }.targetMethod(createTextureFromImage));
         }
+    }
+
+    static void setupTextureAtlasMod(final ClassMod classMod) {
+        classMod.addPatch(new MakeMemberPublicPatch(classMod, TextureAtlasMod.basePath));
+
+        classMod.addPatch(new BytecodePatch(classMod) {
+            @Override
+            public String getDescription() {
+                return "set current tilesheet";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    begin()
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                return buildCode(
+                    ALOAD_0,
+                    reference(PUTSTATIC, new FieldRef(ExtendedHD15.WRAPPER_15_CLASS, "currentAtlas", "L" + classMod.getDeobfClass() + ";"))
+                );
+            }
+        }.targetMethod(TextureAtlasMod.refreshTextures1));
     }
 
     private static class TextureAtlasSpriteMod extends ClassMod {
