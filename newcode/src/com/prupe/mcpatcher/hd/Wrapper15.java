@@ -5,6 +5,8 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.Texture;
+import net.minecraft.src.TextureAtlas;
+import net.minecraft.src.TextureAtlasSprite;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.image.BufferedImage;
@@ -14,6 +16,9 @@ import java.nio.IntBuffer;
 // 1.5 only
 public class Wrapper15 {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
+
+    public static TextureAtlas currentAtlas;
+    public static TextureAtlasSprite currentSprite;
 
     private static boolean flippedTextureLogged;
 
@@ -95,6 +100,22 @@ public class Wrapper15 {
             newBuffer.put(buffer);
             newBuffer.flip();
             return newBuffer;
+        }
+    }
+
+    public static BufferedImage addAABorder(String name, BufferedImage input) {
+        if (currentSprite == null) {
+            return input;
+        } else {
+            return AAHelper.addBorder(currentSprite, new ResourceLocation(name), input);
+        }
+    }
+
+    public static TextureAtlasSprite createSprite(String name) {
+        if (currentAtlas == null) {
+            return new TextureAtlasSprite(name);
+        } else {
+            return BorderedTexture.create(currentAtlas.basePath, name);
         }
     }
 }

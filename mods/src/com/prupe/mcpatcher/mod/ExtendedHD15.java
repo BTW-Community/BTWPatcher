@@ -431,6 +431,9 @@ class ExtendedHD15 {
             super(mod);
 
             final MethodRef createTextureFromImage = new MethodRef(getDeobfClass(), "createTextureFromImage", "(Ljava/lang/String;IIIIIIIZLjava/awt/image/BufferedImage;)LTexture;");
+            final MethodRef addAABorder = new MethodRef(WRAPPER_15_CLASS, "addAABorder", "(Ljava/lang/String;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
+            final MethodRef getImageWidth = new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I");
+            final MethodRef getImageHeight = new MethodRef("java/awt/image/BufferedImage", "getHeight", "()I");
             final MethodRef lastIndexOf = new MethodRef("java/lang/String", "lastIndexOf", "(I)I");
 
             addClassSignature(new ConstSignature("/"));
@@ -468,11 +471,10 @@ class ExtendedHD15 {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // image = AAHelper.addBorder(name, image, false);
+                        // image = Wrapper15.addAABorder(name, image);
                         ALOAD_1,
                         ALOAD, 10,
-                        push(0),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.AA_HELPER_CLASS, "addBorder", "(Ljava/lang/String;Ljava/awt/image/BufferedImage;Z)Ljava/awt/image/BufferedImage;")),
+                        reference(INVOKESTATIC, addAABorder),
                         ASTORE, 10,
 
                         // if (image != null) {
@@ -481,12 +483,12 @@ class ExtendedHD15 {
 
                         // width = image.getWidth();
                         ALOAD, 10,
-                        reference(INVOKEVIRTUAL, new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I")),
+                        reference(INVOKEVIRTUAL, getImageWidth),
                         ISTORE_3,
 
                         // height = image.getHeight();
                         ALOAD, 10,
-                        reference(INVOKEVIRTUAL, new MethodRef("java/awt/image/BufferedImage", "getHeight", "()I")),
+                        reference(INVOKEVIRTUAL, getImageHeight),
                         ISTORE, 4,
 
                         // }
@@ -515,7 +517,7 @@ class ExtendedHD15 {
             final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(Ljava/lang/String;)V");
             final MethodRef init = new MethodRef(getDeobfClass(), "init", "(LTexture;Ljava/util/List;IIIIZ)V");
             final MethodRef updateAnimation = new MethodRef(getDeobfClass(), "updateAnimation", "()V");
-            final MethodRef createSprite = new MethodRef(MCPatcherUtils.BORDERED_TEXTURE_CLASS, "create", "(Ljava/lang/String;)L" + getDeobfClass() + ";");
+            final MethodRef createSprite = new MethodRef(WRAPPER_15_CLASS, "createSprite", "(Ljava/lang/String;)L" + getDeobfClass() + ";");
 
             addClassSignature(new ConstSignature("clock"));
             addClassSignature(new ConstSignature("compass"));
@@ -540,14 +542,14 @@ class ExtendedHD15 {
                         reference(NEW, new ClassRef(getDeobfClass())),
                         DUP,
                         ALOAD_0,
-                        reference(INVOKESPECIAL, new MethodRef(getDeobfClass(), "<init>", "(Ljava/lang/String;)V"))
+                        reference(INVOKESPECIAL, constructor)
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // BorderedTexture.create(name)
+                        // Wrapper15.createSprite(name)
                         ALOAD_0,
                         reference(INVOKESTATIC, createSprite)
                     );

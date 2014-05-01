@@ -44,7 +44,7 @@ public class AAHelper {
     }
 
     public static BufferedImage addBorder(TextureAtlasSprite stitched, Resource resource, BufferedImage input) {
-        if (input == null || !(resource instanceof SimpleResource) || addressField == null) {
+        if (!(resource instanceof SimpleResource) || addressField == null) {
             return input;
         }
         ResourceLocation name;
@@ -53,6 +53,13 @@ public class AAHelper {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             addressField = null;
+            return input;
+        }
+        return addBorder(stitched, name, input);
+    }
+
+    public static BufferedImage addBorder(TextureAtlasSprite stitched, ResourceLocation name, BufferedImage input) {
+        if (input == null) {
             return input;
         }
         if (name != null && MipmapHelper.useMipmapsForTexture(name.getPath())) {
