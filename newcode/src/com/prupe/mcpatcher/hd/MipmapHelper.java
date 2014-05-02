@@ -293,7 +293,17 @@ public class MipmapHelper {
             texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "dial/") ||
             texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "font/") ||
             texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "lightmap/") ||
-            texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "sky/")) {
+            texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "sky/") ||
+            // 1.5 stuff
+            texture.startsWith("%") ||
+            texture.startsWith("##") ||
+            texture.startsWith("/achievement/") ||
+            texture.startsWith("/environment/") ||
+            texture.startsWith("/font/") ||
+            texture.startsWith("/gui/") ||
+            texture.startsWith("/misc/") ||
+            texture.startsWith("/terrain/") ||
+            texture.startsWith("/title/")) {
             return false;
         } else {
             return true;
