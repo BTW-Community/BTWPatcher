@@ -18,14 +18,11 @@ public class Wrapper15 {
 
     private static boolean flippedTextureLogged;
 
-    public static void setupTexture(Texture texture, ResourceLocation textureName) {
+    public static void setupTexture(Texture texture, String textureName) {
         int width = texture.getWidth();
         int height = texture.getHeight();
-        int[] rgb = new int[width * height];
-        IntBuffer buffer = texture.getTextureData().asIntBuffer();
-        buffer.position(0);
-        buffer.get(rgb);
-        MipmapHelper.setupTexture(rgb, width, height, 0, 0, false, false, textureName.getPath());
+        MipmapHelper.setupTexture(width, height, false, false, textureName);
+        copySubTexture(texture, texture.getTextureData(), 0, 0, width, height);
     }
 
     public static void setupTexture(RenderEngine renderEngine, BufferedImage image, int glTextureId, boolean blur, boolean clamp, ResourceLocation textureName) {

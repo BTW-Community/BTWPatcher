@@ -76,7 +76,7 @@ public class MipmapHelper {
         logger.config("lod bias: supported=%s, bias=%d", lodSupported, lodBias);
     }
 
-    private static void setupTexture(int width, int height, boolean blur, boolean clamp, String textureName) {
+    static void setupTexture(int width, int height, boolean blur, boolean clamp, String textureName) {
         int mipmaps = useMipmapsForTexture(textureName) ? getMipmapLevels(width, height, 1) : 0;
         logger.finer("setupTexture(%s) %dx%d %d mipmaps", textureName, width, height, mipmaps);
         int magFilter = blur ? GL11.GL_LINEAR : GL11.GL_NEAREST;
