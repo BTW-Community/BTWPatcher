@@ -651,6 +651,7 @@ public class BaseTexturePackMod extends Mod {
             addMemberMapper(new MethodMapper(bindTextureByName));
 
             addPatch(new MakeMemberPublicPatch(bindTexture));
+            addPatch(new MakeMemberPublicPatch(getTexture));
 
             addPatch(new BytecodePatch() {
                 @Override

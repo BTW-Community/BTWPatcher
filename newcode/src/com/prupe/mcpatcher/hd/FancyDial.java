@@ -21,7 +21,7 @@ import java.util.*;
 public class FancyDial {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ANIMATIONS, "Animation");
 
-    private static final ResourceLocation ITEMS_PNG = new ResourceLocation("textures/atlas/items.png");
+    private static final ResourceLocation ITEMS_PNG = new ResourceLocation(TexturePackAPI.select("/gui/items.png", "textures/atlas/items.png"));
     private static final double ANGLE_UNSET = Double.MAX_VALUE;
     private static final int NUM_SCRATCH_TEXTURES = 3;
 

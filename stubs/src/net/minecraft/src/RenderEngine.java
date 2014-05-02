@@ -12,6 +12,10 @@ public class RenderEngine {
     public void resetBoundTexture() {
     }
 
+    public int getTexture(String texture) { // made public by Extended HD
+        return 0;
+    }
+
     public void deleteTexture(int texture) {
     }
 

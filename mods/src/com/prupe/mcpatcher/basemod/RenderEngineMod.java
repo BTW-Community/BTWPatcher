@@ -16,6 +16,7 @@ public class RenderEngineMod extends ClassMod {
     public static final MethodRef refreshTextureMaps = new MethodRef("RenderEngine", "refreshTextureMaps", "()V");
     public static final MethodRef refreshTextures = new MethodRef("RenderEngine", "refreshTextures", "()V");
     public static final MethodRef allocateAndSetupTexture = new MethodRef("RenderEngine", "allocateAndSetupTexture", "(Ljava/awt/image/BufferedImage;)I");
+    public static final MethodRef getTexture = new MethodRef("RenderEngine", "getTexture", "(Ljava/lang/String;)I");
     public static final FieldRef imageData = new FieldRef("RenderEngine", "imageData", "Ljava/nio/IntBuffer;");
 
     private String updateAnimationsMapped;
@@ -67,6 +68,7 @@ public class RenderEngineMod extends ClassMod {
 
         addMemberMapper(new FieldMapper(imageData));
         addMemberMapper(new MethodMapper(allocateAndSetupTexture));
+        addMemberMapper(new MethodMapper(getTexture));
     }
 
     private class VoidSignature extends BytecodeSignature {

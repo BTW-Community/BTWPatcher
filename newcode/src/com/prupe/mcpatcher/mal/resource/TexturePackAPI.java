@@ -344,6 +344,10 @@ abstract public class TexturePackAPI {
         @Override
         protected int getTextureIfLoaded_Impl(ResourceLocation resource) {
             RenderEngine renderEngine = Minecraft.getInstance().renderEngine;
+            String path = resource.getPath();
+            if (path.equals("/terrain.png") || path.equals("/gui/items.png")) {
+                return renderEngine.getTexture(path);
+            }
             for (Field field : textureMapFields) {
                 try {
                     HashMap map = (HashMap) field.get(renderEngine);
