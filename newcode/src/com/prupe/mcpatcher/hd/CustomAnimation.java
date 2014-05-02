@@ -67,9 +67,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
                         }
                     }
                 }
-                if (TexturePackAPI.select(false, true)) {
-                    FancyDial.registerAnimations();
-                }
+                IconMAL.instance.registerTileAnimations();
             }
         });
     }

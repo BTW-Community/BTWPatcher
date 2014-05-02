@@ -175,8 +175,8 @@ public class MipmapHelper {
     }
 
     public static void copySubTexture(TextureAtlasSprite texture, int index) {
-        int width = texture.getWidth();
-        int height = texture.getHeight();
+        int width = IconMAL.instance.getIconWidth(texture);
+        int height = IconMAL.instance.getIconHeight(texture);
         if (texture.mipmaps == null || texture.mipmaps.size() != texture.animationFrames.size()) {
             texture.mipmaps = new ArrayList<IntBuffer[]>(texture.animationFrames.size());
             int mipmaps = getMipmapLevelsForCurrentTexture();
@@ -187,8 +187,8 @@ public class MipmapHelper {
                 texture.mipmaps.add(generateMipmaps(texture.animationFrames.get(i), width, height, mipmaps));
             }
         }
-        int x = texture.getX0();
-        int y = texture.getY0();
+        int x = IconMAL.instance.getIconX0(texture);
+        int y = IconMAL.instance.getIconY0(texture);
         IntBuffer[] mipmapData = texture.mipmaps.get(index);
         if (mipmapData == null) {
             return;

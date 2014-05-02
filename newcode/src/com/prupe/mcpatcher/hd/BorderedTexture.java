@@ -90,8 +90,8 @@ public class BorderedTexture extends TextureAtlasSprite {
 
     void setBorderWidth(int border) {
         this.border = border;
-        int width = getWidth();
-        int height = getHeight();
+        int width = IconMAL.instance.getIconWidth(this);
+        int height = IconMAL.instance.getIconHeight(this);
         if (width <= 0 || height <= 0) {
             x0 = y0 = 0;
             minU = maxU = minV = maxV = 0.0f;

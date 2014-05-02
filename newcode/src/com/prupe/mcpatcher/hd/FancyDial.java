@@ -201,10 +201,10 @@ public class FancyDial {
         this.icon = icon;
         this.resource = resource;
         name = icon.getIconName();
-        x0 = icon.getX0();
-        y0 = icon.getY0();
-        width = icon.getWidth();
-        height = icon.getHeight();
+        x0 = IconMAL.instance.getIconX0(icon);
+        y0 = IconMAL.instance.getIconY0(icon);
+        width = IconMAL.instance.getIconWidth(icon);
+        height = IconMAL.instance.getIconHeight(icon);
         scratchBuffer = ByteBuffer.allocateDirect(4 * width * height);
 
         int itemsTexture = TexturePackAPI.getTextureIfLoaded(ITEMS_PNG);
