@@ -8,6 +8,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 
 // 1.5 only
@@ -46,7 +47,7 @@ public class Wrapper15 {
     }
 
     public static void copySubTexture(Texture dst, ByteBuffer srcBuffer, int x, int y, int width, int height) {
-        copySubTexture(getMipmaps(srcBuffer, width, height), x, y, width, height);
+        copySubTexture(getMipmaps(reformatTextureData(srcBuffer), width, height), x, y, width, height);
     }
 
     private static void copySubTexture(IntBuffer[] mipmaps, int x, int y, int width, int height) {
@@ -65,11 +66,11 @@ public class Wrapper15 {
         }
     }
 
-    private static IntBuffer[] getMipmaps(ByteBuffer buffer, int width, int height) {
+    private static IntBuffer[] getMipmaps(IntBuffer buffer, int width, int height) {
         int levels = MipmapHelper.getMipmapLevelsForCurrentTexture();
         IntBuffer[] mipmaps = new IntBuffer[levels + 1];
         buffer.position(0);
-        mipmaps[0] = getDirectByteBuffer(buffer).asIntBuffer();
+        mipmaps[0] = buffer;
         for (int level = 1; level < mipmaps.length; level++) {
             mipmaps[level] = MipmapHelper.newIntBuffer(mipmaps[level - 1].capacity());
             MipmapHelper.scaleHalf(mipmaps[level - 1], width, height, mipmaps[level], 0);
@@ -81,9 +82,13 @@ public class Wrapper15 {
 
     private static IntBuffer[] getMipmaps(Texture texture) {
         if (texture.mipmapData == null) {
-            texture.mipmapData = getMipmaps(texture.getTextureData(), texture.getWidth(), texture.getHeight());
+            texture.mipmapData = getMipmaps(reformatTextureData(texture.getTextureData()), texture.getWidth(), texture.getHeight());
         }
         return texture.mipmapData;
+    }
+
+    private static IntBuffer reformatTextureData(ByteBuffer buffer) {
+        return getDirectByteBuffer(buffer.order(ByteOrder.LITTLE_ENDIAN)).asIntBuffer();
     }
 
     private static ByteBuffer getDirectByteBuffer(ByteBuffer buffer) {
