@@ -26,12 +26,13 @@ public class Wrapper15 {
     }
 
     public static void setupTexture(RenderEngine renderEngine, BufferedImage image, int glTextureId, boolean blur, boolean clamp, ResourceLocation textureName) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-        int[] rgb = new int[width * height];
-        image.getRGB(0, 0, width, height, rgb, 0, width);
-        TexturePackAPI.bindTexture(glTextureId);
-        MipmapHelper.setupTexture(rgb, width, height, 0, 0, blur, clamp, textureName.getPath());
+        if (image != null) {
+            int width = image.getWidth();
+            int height = image.getHeight();
+            int[] rgb = MCPatcherUtils.getImageRGB(image);
+            TexturePackAPI.bindTexture(glTextureId);
+            MipmapHelper.setupTexture(rgb, width, height, 0, 0, blur, clamp, textureName.getPath());
+        }
     }
 
     public static void copySubTexture(Texture dst, Texture src, int x, int y, boolean flipped) {
