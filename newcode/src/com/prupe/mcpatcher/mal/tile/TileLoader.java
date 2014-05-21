@@ -182,7 +182,7 @@ public class TileLoader {
     }
 
     private static long getTextureSize(TextureAtlasSprite texture) {
-        return texture == null ? 0 : 4 * texture.getWidth() * texture.getHeight();
+        return texture == null ? 0 : 4 * IconAPI.getIconWidth(texture) * IconAPI.getIconHeight(texture);
     }
 
     private static long getTextureSize(Collection<TextureAtlasSprite> textures) {

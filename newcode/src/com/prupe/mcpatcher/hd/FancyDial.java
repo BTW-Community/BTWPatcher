@@ -5,6 +5,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.tile.IconAPI;
 import com.prupe.mcpatcher.mal.util.InputHandler;
 import net.minecraft.src.*;
 import org.lwjgl.input.Keyboard;
@@ -201,10 +202,10 @@ public class FancyDial {
         this.icon = icon;
         this.resource = resource;
         name = icon.getIconName();
-        x0 = IconMAL.instance.getIconX0(icon);
-        y0 = IconMAL.instance.getIconY0(icon);
-        width = IconMAL.instance.getIconWidth(icon);
-        height = IconMAL.instance.getIconHeight(icon);
+        x0 = IconAPI.getIconX0(icon);
+        y0 = IconAPI.getIconY0(icon);
+        width = IconAPI.getIconWidth(icon);
+        height = IconAPI.getIconHeight(icon);
         scratchBuffer = ByteBuffer.allocateDirect(4 * width * height);
 
         int itemsTexture = TexturePackAPI.getTextureIfLoaded(ITEMS_PNG);

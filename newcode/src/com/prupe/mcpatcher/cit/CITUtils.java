@@ -7,6 +7,7 @@ import com.prupe.mcpatcher.mal.item.ItemAPI;
 import com.prupe.mcpatcher.mal.resource.ResourceList;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
+import com.prupe.mcpatcher.mal.tile.IconAPI;
 import com.prupe.mcpatcher.mal.tile.TileLoader;
 import net.minecraft.src.*;
 
@@ -244,11 +245,11 @@ public class CITUtils {
         }
         int width;
         int height;
-        if (lastIcon == null) {
-            width = height = 256;
+        if (lastIcon instanceof TextureAtlasSprite) {
+            width = IconAPI.getIconWidth((TextureAtlasSprite) lastIcon);
+            height = IconAPI.getIconHeight((TextureAtlasSprite) lastIcon);
         } else {
-            width = lastIcon.getWidth();
-            height = lastIcon.getHeight();
+            width = height = 256;
         }
         Enchantment.beginOuter3D();
         for (int i = 0; i < matches.size(); i++) {

@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.hd;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.tile.IconAPI;
 import net.minecraft.src.TextureAtlasSprite;
 
 public class BorderedTexture extends TextureAtlasSprite {
@@ -90,8 +91,8 @@ public class BorderedTexture extends TextureAtlasSprite {
 
     void setBorderWidth(int border) {
         this.border = border;
-        int width = IconMAL.instance.getIconWidth(this);
-        int height = IconMAL.instance.getIconHeight(this);
+        int width = IconAPI.getIconWidth(this);
+        int height = IconAPI.getIconHeight(this);
         if (width <= 0 || height <= 0) {
             x0 = y0 = 0;
             minU = maxU = minV = maxV = 0.0f;

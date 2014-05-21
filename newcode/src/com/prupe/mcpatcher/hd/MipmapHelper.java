@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.tile.IconAPI;
 import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.TextureAtlasSprite;
 import org.lwjgl.opengl.*;
@@ -175,8 +176,8 @@ public class MipmapHelper {
     }
 
     public static void copySubTexture(TextureAtlasSprite texture, int index) {
-        int width = IconMAL.instance.getIconWidth(texture);
-        int height = IconMAL.instance.getIconHeight(texture);
+        int width = IconAPI.getIconWidth(texture);
+        int height = IconAPI.getIconHeight(texture);
         if (texture.mipmaps == null || texture.mipmaps.size() != texture.animationFrames.size()) {
             texture.mipmaps = new ArrayList<IntBuffer[]>(texture.animationFrames.size());
             int mipmaps = getMipmapLevelsForCurrentTexture();
@@ -187,8 +188,8 @@ public class MipmapHelper {
                 texture.mipmaps.add(generateMipmaps(texture.animationFrames.get(i), width, height, mipmaps));
             }
         }
-        int x = IconMAL.instance.getIconX0(texture);
-        int y = IconMAL.instance.getIconY0(texture);
+        int x = IconAPI.getIconX0(texture);
+        int y = IconAPI.getIconY0(texture);
         IntBuffer[] mipmapData = texture.mipmaps.get(index);
         if (mipmapData == null) {
             return;
