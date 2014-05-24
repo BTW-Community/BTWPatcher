@@ -104,7 +104,7 @@ abstract public class BytecodeSignature extends ClassSignature {
         } catch (BadBytecode e) {
             Logger.log(e);
         }
-        return false;
+        return afterNonMatch();
     }
 
     private boolean afterMatch1(String className, ClassMap tempClassMap) {
@@ -241,6 +241,15 @@ abstract public class BytecodeSignature extends ClassSignature {
      */
     public boolean afterMatch() {
         return true;
+    }
+
+    /**
+     * Called after unsuccessful match.  Can be used to create optional signatures.
+     *
+     * @return true if non-match should be ignored
+     */
+    public boolean afterNonMatch() {
+        return false;
     }
 
     /**
