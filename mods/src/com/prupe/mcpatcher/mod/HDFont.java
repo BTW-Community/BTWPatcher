@@ -57,11 +57,14 @@ public class HDFont extends Mod {
             final MethodRef getCharWidth = new MethodRef(getDeobfClass(), "getCharWidth", "(C)I");
             String computeCharWidthsArg = ResourceLocationMod.select("Ljava/lang/String;", "");
             final MethodRef computeCharWidths = haveReadFontData ? new MethodRef(getDeobfClass(), "computeCharWidths", "(" + computeCharWidthsArg + ")V") : readFontData;
+            final MethodRef getResourceAsStream = new MethodRef("java/lang/Class", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
+            final MethodRef readImage = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
             final MethodRef getImageWidth = new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I");
             final MethodRef getFontName = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getFontName", "(LFontRenderer;LResourceLocation;)LResourceLocation;");
             final MethodRef computeCharWidthsf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "computeCharWidthsf", "(LFontRenderer;LResourceLocation;Ljava/awt/image/BufferedImage;[I[IF)[F");
             final MethodRef getCharWidthf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getCharWidthf", "(LFontRenderer;[II)F");
             final MethodRef getStringWidthf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getStringWidthf", "(LFontRenderer;Ljava/lang/String;)F");
+            final MethodRef getNewImage = new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(LResourceLocation;)Ljava/awt/image/BufferedImage;");
 
             addClassSignature(new BytecodeSignature() {
                 {
@@ -164,6 +167,34 @@ public class HDFont extends Mod {
                     );
                 }
             }.targetMethod(readFontData));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override font image";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // ImageIO.read(RenderEngine.class.getResourceAsStream(name));
+                        anyLDC,
+                        ALOAD_1,
+                        reference(INVOKEVIRTUAL, getResourceAsStream),
+                        reference(INVOKESTATIC, readImage)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // TexturePackAPI.getImage(name)
+                        ALOAD_1,
+                        ResourceLocationMod.wrap(this),
+                        reference(INVOKESTATIC, getNewImage)
+                    );
+                }
+            });
 
             addPatch(new BytecodePatch() {
                 private int imageRegister;
