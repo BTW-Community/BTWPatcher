@@ -3535,6 +3535,12 @@ public class CustomColors extends Mod {
                         faceRegister = extractRegisterNum(getCaptureGroup(1));
                         return true;
                     }
+
+                    @Override
+                    public boolean afterNonMatch() {
+                        faceRegister = 0;
+                        return true;
+                    }
                 });
             }
 
@@ -3581,16 +3587,22 @@ public class CustomColors extends Mod {
                         faceCode = new byte[]{ICONST_0}; // bottom face
                         break;
 
-                    case 2:
-                        faceCode = buildCode(
-                            registerLoadStore(ILOAD, faceRegister),
-                            push(2),
-                            IADD
-                        ); // other faces
-                        break;
-
                     default:
-                        return null;
+                        if (faceRegister > 0) {
+                            if (getMethodMatchCount() == 2) {
+                                faceCode = buildCode(
+                                    registerLoadStore(ILOAD, faceRegister),
+                                    push(2),
+                                    IADD
+                                ); // other faces
+                            } else {
+                                return null;
+                            }
+                        } else {
+                            // btw uses 4 code blocks with fixed face values instead of a loop
+                            faceCode = buildCode(push(getMethodMatchCount() % 6));
+                        }
+                        break;
                 }
                 return buildCode(
                     // ColorizeBlock.isSmooth = ColorizeBlock.setupBlockSmoothing(this, block, this,blockAccess,
@@ -3772,9 +3784,11 @@ public class CustomColors extends Mod {
                         ),
                     anyReference(INVOKEVIRTUAL),
 
-                    // flag = true;
-                    push(1),
-                    anyISTORE
+                    optional(build(
+                        // flag = true;
+                        push(1),
+                        anyISTORE
+                    ))
                 );
             }
 
