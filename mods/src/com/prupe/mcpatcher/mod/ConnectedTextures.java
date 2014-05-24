@@ -479,7 +479,7 @@ public class ConnectedTextures extends Mod {
                 protected String getMoreArgs() {
                     return buildExpression(
                         // this.getBlockIconFromSideAndMetadata(block, face, metadata)
-                        any(0, 20)
+                        any(0, ResourceLocationMod.select(10, 20))
                     );
                 }
             });
