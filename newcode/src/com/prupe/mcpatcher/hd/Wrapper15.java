@@ -110,7 +110,11 @@ public class Wrapper15 {
     }
 
     public static BufferedImage addAABorder(String name, BufferedImage input) {
-        return AAHelper.addBorder(new ResourceLocation(name), input);
+        if (input == null || currentAtlas == null || !MipmapHelper.useMipmapsForTexture(currentAtlas.basePath)) {
+            return input;
+        } else {
+            return AAHelper.addBorder(new ResourceLocation(currentAtlas.basePath), input);
+        }
     }
 
     public static TextureAtlasSprite createSprite(String name) {
