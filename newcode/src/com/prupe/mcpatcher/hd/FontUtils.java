@@ -65,7 +65,9 @@ public class FontUtils {
         ResourceLocation hdFont = fontRenderer.getHDFont();
         ResourceLocation newFont;
         if (enable && TexturePackAPI.hasResource(hdFont)) {
-            logger.fine("using %s instead of %s", hdFont, defaultFont);
+            if (!hdFont.equals(defaultFont)) {
+                logger.fine("using %s instead of %s", hdFont, defaultFont);
+            }
             fontRenderer.isHD = true;
             newFont = hdFont;
         } else {
@@ -103,7 +105,7 @@ public class FontUtils {
                     int pixel = rgb[x + y * width];
                     if (isOpaque(pixel)) {
                         if (printThis(ch)) {
-                            logger.finer("'%c' pixel (%d, %d) = %08x, colIdx = %d", (char) ch, x, y, pixel, colIdx);
+                            logger.finer("%d '%c' pixel (%d, %d) = %08x, colIdx = %d", ch, (char) ch, x, y, pixel, colIdx);
                         }
                         charWidthf[ch] = (128.0f * (float) (colIdx + 1)) / (float) width + 1.0f;
                         if (showLines) {
@@ -139,7 +141,7 @@ public class FontUtils {
         for (int ch = 0; ch < charWidth.length; ch++) {
             charWidth[ch] = Math.round(charWidthf[ch]);
             if (printThis(ch)) {
-                logger.finer("charWidth['%c'] = %f", (char) ch, charWidthf[ch]);
+                logger.finer("charWidth[%d '%c'] = %f", ch, (char) ch, charWidthf[ch]);
             }
         }
         return charWidthf;
@@ -187,7 +189,7 @@ public class FontUtils {
     public static ResourceLocation getUnicodePage(ResourceLocation resource) {
         if (enable && resource != null) {
             ResourceLocation newResource = new ResourceLocation(resource.getNamespace(), resource.getPath().replaceFirst("^textures/", "mcpatcher/"));
-            if (TexturePackAPI.hasResource(newResource)) {
+            if (!newResource.equals(resource) && TexturePackAPI.hasResource(newResource)) {
                 logger.fine("using %s instead of %s", newResource, resource);
                 return newResource;
             }
@@ -205,7 +207,7 @@ public class FontUtils {
     }
 
     private static boolean printThis(int ch) {
-        return "ABCDEF abcdef".indexOf(ch) >= 0;
+        return "ABCDEF abcdef0123456789".indexOf(ch) >= 0;
     }
 
     private static float defaultSpaceWidth(float[] charWidthf) {
@@ -242,7 +244,7 @@ public class FontUtils {
                     int ch = Integer.parseInt(key.substring(6));
                     float width = Float.parseFloat(value);
                     if (ch >= 0 && ch < charWidthf.length) {
-                        logger.finer("setting charWidthf[%d] to %f", ch, width);
+                        logger.finer("setting charWidthf[%d '%c'] to %f", ch, (char) ch, width);
                         charWidthf[ch] = width;
                         isOverride[ch] = true;
                     }
