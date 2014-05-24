@@ -3819,9 +3819,19 @@ public class CustomColors extends Mod {
 
             @Override
             public String getMatchExpression() {
-                return buildExpression(
-                    push("water_still"),
-                    anyReference(INVOKESTATIC),
+                return buildExpression(or(
+                        build(
+                            // vanilla: BlockLiquid.getBlockIconByName("water_still")
+                            push("water_still"),
+                            anyReference(INVOKESTATIC)
+                        ),
+                        build(
+                            // btw: block.getBlockIconFromSide(2)
+                            ALOAD_1,
+                            push(2),
+                            anyReference(INVOKEVIRTUAL)
+                        )
+                    ),
                     anyASTORE
                 );
             }
