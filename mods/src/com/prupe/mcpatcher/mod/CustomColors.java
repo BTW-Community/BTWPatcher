@@ -110,6 +110,9 @@ public class CustomColors extends Mod {
         addClassMod(new MinecraftMod(this).mapWorldClient());
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new TessellatorMod(this));
+        if (!ResourceLocationMod.haveClass()) {
+            addClassMod(new IconMod(this));
+        }
         ResourceLocationMod.setup(this);
         PositionMod.setup(this);
 
@@ -3113,11 +3116,33 @@ public class CustomColors extends Mod {
             final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
             final MethodRef renderBlockAO = new MethodRef(getDeobfClass(), "RenderStandardFullBlockWithAmbientOcclusion", "(LBlock;III)Z");
             final MethodRef renderBlockCM = new MethodRef(getDeobfClass(), "RenderStandardFullBlockWithColorMultiplier", "(LBlock;III)Z");
+            final MethodRef renderGrassBlockAO = new MethodRef(getDeobfClass(), "renderGrassBlockWithAmbientOcclusion", "(LBlock;IIIFFFLIcon;)Z");
+            final MethodRef renderGrassBlockCM = new MethodRef(getDeobfClass(), "renderGrassBlockWithColorMultiplier", "(LBlock;IIIFFFLIcon;)Z");
 
             addPatch(new BytecodePatch() {
+                private int topLeftRegister;
+
                 {
-                    setInsertAfter(true);
-                    targetMethod(renderBlockAO, renderBlockCM);
+                    targetMethod(renderBlockAO, renderBlockCM, renderGrassBlockAO, renderGrassBlockCM);
+
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                // topLeft = (...) / 4.0f
+                                push(4.0f),
+                                FDIV,
+                                capture(anyFSTORE)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            topLeftRegister = extractRegisterNum(getCaptureGroup(1));
+                            Logger.log(Logger.LOG_CONST, "top left register %d", topLeftRegister);
+                            return true;
+                        }
+                    });
                 }
 
                 @Override
@@ -3128,13 +3153,13 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(repeat(build(
-                        // this.vertexColorAAA = this.vertexColorBBB = this.vertexColorCCC = this.vertexColorDDD = <constant>;
+                        // this.vertexColorAAA = this.vertexColorBBB = this.vertexColorCCC = this.vertexColorDDD = <value>;
                         // x3
                         ALOAD_0,
                         ALOAD_0,
                         ALOAD_0,
                         ALOAD_0,
-                        or(build(FCONST_1), anyLDC),
+                        or(build(FCONST_1), anyLDC, anyFLOAD),
                         DUP_X1,
                         anyReference(PUTFIELD),
                         DUP_X1,
@@ -3148,7 +3173,8 @@ public class CustomColors extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // ColorizeBlock.setupBiomeSmoothing(this, block, this.blockAccess, i, j, k, face, topLeft, bottomLeft, bottomRight, topRight);
+                        // if (ColorizeBlock.setupBiomeSmoothing(this, block, this.blockAccess, i, j, k, face,
+                        //                                       topLeft, bottomLeft, bottomRight, topRight)) {
                         ALOAD_0,
                         ALOAD_1,
                         ALOAD_0,
@@ -3157,12 +3183,18 @@ public class CustomColors extends Mod {
                         ILOAD_3,
                         ILOAD, 4,
                         push(getMethodMatchCount() % 6),
-                        FLOAD, 6,
-                        FLOAD, 7,
-                        FLOAD, 8,
-                        FLOAD, 9,
+                        registerLoadStore(FLOAD, topLeftRegister),
+                        registerLoadStore(FLOAD, topLeftRegister + 1),
+                        registerLoadStore(FLOAD, topLeftRegister + 2),
+                        registerLoadStore(FLOAD, topLeftRegister + 3),
                         reference(INVOKESTATIC, setupBlockSmoothing3),
-                        POP
+                        IFNE, branch("A"),
+
+                        // ...
+                        getMatch(),
+
+                        // }
+                        label("A")
                     );
                 }
             });
