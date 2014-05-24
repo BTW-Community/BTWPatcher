@@ -95,7 +95,9 @@ public class Wrapper15 {
     }
 
     private static IntBuffer reformatTextureData(ByteBuffer buffer) {
-        return getDirectByteBuffer(buffer.order(ByteOrder.LITTLE_ENDIAN)).asIntBuffer();
+        buffer.position(0);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        return getDirectByteBuffer(buffer).asIntBuffer();
     }
 
     private static ByteBuffer getDirectByteBuffer(ByteBuffer buffer) {
