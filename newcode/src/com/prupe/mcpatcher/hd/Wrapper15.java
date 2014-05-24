@@ -43,6 +43,7 @@ public class Wrapper15 {
                 dst.getTextureName(), src.getTextureName(), x, y, flipped
             );
         }
+        TexturePackAPI.bindTexture(dst.getGlTextureId());
         copySubTexture(getMipmaps(src), x, y, src.getWidth(), src.getHeight());
     }
 
