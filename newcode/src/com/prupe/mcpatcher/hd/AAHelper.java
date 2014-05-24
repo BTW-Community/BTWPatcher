@@ -62,7 +62,7 @@ public class AAHelper {
         }
         input = addBorder(name, input);
         if (stitched instanceof BorderedTexture) {
-            ((BorderedTexture) stitched).setBorderWidth(lastBorder);
+            ((BorderedTexture) stitched).setBorderWidth(input.getWidth(), input.getWidth(), lastBorder);
         }
         return input;
     }

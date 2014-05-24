@@ -255,7 +255,7 @@ public class MipmapHelper {
             setBackgroundColor(buffer, image.getWidth(), image.getHeight(), scaledBuffer, image.getWidth() / width);
         }
         long s3 = System.currentTimeMillis();
-        logger.finer("bg fix (tile %s): scaling %dms, setbg %dms", name, s2 - s1, s3 - s2);
+        logger.finest("bg fix (tile %s): scaling %dms, setbg %dms", name, s2 - s1, s3 - s2);
         return image;
     }
 
