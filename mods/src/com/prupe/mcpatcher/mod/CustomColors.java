@@ -44,6 +44,7 @@ public class CustomColors extends Mod {
     private static final MethodRef setupBlockSmoothing2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)Z");
     private static final MethodRef setupBlockSmoothing3 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothingGrassSide", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)Z");
     private static final MethodRef setupBlockSmoothing4 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LBlock;LIBlockAccess;IIIIFFF)V");
+    private static final MethodRef setColorF = new MethodRef(MCPatcherUtils.COLORIZER_CLASS, "setColorF", "(I)V");
 
     private static final FieldRef setColor = new FieldRef(MCPatcherUtils.COLORIZER_CLASS, "setColor", "[F");
     private static final FieldRef blockColor = new FieldRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "blockColor", "I");
@@ -2743,6 +2744,9 @@ public class CustomColors extends Mod {
             }
             setupBiomeSmoothing();
             setupFallingSand();
+            if (!ResourceLocationMod.haveClass()) {
+                setupBTW();
+            }
         }
 
         private void setupFallingSand() {
@@ -3103,6 +3107,65 @@ public class CustomColors extends Mod {
                     );
                 }
             }.targetMethod(renderStandardBlockWithAmbientOcclusion));
+        }
+
+        private void setupBTW() {
+            final FieldRef blockAccess = new FieldRef(getDeobfClass(), "blockAccess", "LIBlockAccess;");
+            final MethodRef renderBlockAO = new MethodRef(getDeobfClass(), "RenderStandardFullBlockWithAmbientOcclusion", "(LBlock;III)Z");
+            final MethodRef renderBlockCM = new MethodRef(getDeobfClass(), "RenderStandardFullBlockWithColorMultiplier", "(LBlock;III)Z");
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderBlockAO, renderBlockCM);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "use block color multiplier (btw)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(repeat(build(
+                        // this.vertexColorAAA = this.vertexColorBBB = this.vertexColorCCC = this.vertexColorDDD = <constant>;
+                        // x3
+                        ALOAD_0,
+                        ALOAD_0,
+                        ALOAD_0,
+                        ALOAD_0,
+                        or(build(FCONST_1), anyLDC),
+                        DUP_X1,
+                        anyReference(PUTFIELD),
+                        DUP_X1,
+                        anyReference(PUTFIELD),
+                        DUP_X1,
+                        anyReference(PUTFIELD),
+                        anyReference(PUTFIELD)
+                    ), 3));
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // ColorizeBlock.setupBiomeSmoothing(this, block, this.blockAccess, i, j, k, face, topLeft, bottomLeft, bottomRight, topRight);
+                        ALOAD_0,
+                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, blockAccess),
+                        ILOAD_2,
+                        ILOAD_3,
+                        ILOAD, 4,
+                        push(getMethodMatchCount() % 6),
+                        FLOAD, 6,
+                        FLOAD, 7,
+                        FLOAD, 8,
+                        FLOAD, 9,
+                        reference(INVOKESTATIC, setupBlockSmoothing3),
+                        POP
+                    );
+                }
+            });
         }
     }
 
