@@ -51,6 +51,9 @@ public class Wrapper15 {
     }
 
     private static void copySubTexture(IntBuffer[] mipmaps, int x, int y, int width, int height) {
+        if (mipmaps == null) {
+            return;
+        }
         for (int level = 0; level < mipmaps.length; level++) {
             IntBuffer mipmap = mipmaps[level];
             if (mipmap != null) {
@@ -67,6 +70,9 @@ public class Wrapper15 {
     }
 
     private static IntBuffer[] getMipmaps(IntBuffer buffer, int width, int height) {
+        if (buffer.capacity() == 0) {
+            return null;
+        }
         int levels = MipmapHelper.getMipmapLevelsForCurrentTexture();
         IntBuffer[] mipmaps = new IntBuffer[levels + 1];
         buffer.position(0);
