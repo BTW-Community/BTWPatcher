@@ -88,16 +88,19 @@ public class FancyDial {
             return;
         }
         String name = icon.getIconName();
-        if ("compass".equals(icon.getIconName())) {
+        if (icon instanceof TextureClock && name.equals("compass")) { // 1.5 bug
+            name = "clock";
+        }
+        if ("compass".equals(name)) {
             if (!enableCompass) {
                 return;
             }
-        } else if ("clock".equals(icon.getIconName())) {
+        } else if ("clock".equals(name)) {
             if (!enableClock) {
                 return;
             }
         } else {
-            logger.warning("ignoring custom animation for %s not compass or clock", icon.getIconName());
+            logger.warning("ignoring custom animation for %s not compass or clock", name);
             return;
         }
         ResourceLocation resource = TexturePackAPI.newMCPatcherResourceLocation("/misc/" + name + ".properties", "dial/" + name + ".properties");
