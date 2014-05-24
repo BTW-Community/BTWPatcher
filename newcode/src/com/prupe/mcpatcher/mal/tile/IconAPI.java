@@ -54,12 +54,20 @@ abstract public class IconAPI {
 
         @Override
         int getIconWidth_Impl(TextureAtlasSprite icon) {
-            return Math.round(icon.getSheetWidth() * (icon.getMaxU() - icon.getMinU()));
+            try {
+                return Math.round(icon.getSheetWidth() * (icon.getMaxU() - icon.getMinU()));
+            } catch (NullPointerException e) {
+                return 0;
+            }
         }
 
         @Override
         int getIconHeight_Impl(TextureAtlasSprite icon) {
-            return Math.round(icon.getSheetHeight() * (icon.getMaxV() - icon.getMinV()));
+            try {
+                return Math.round(icon.getSheetHeight() * (icon.getMaxV() - icon.getMinV()));
+            } catch (NullPointerException e) {
+                return 0;
+            }
         }
     }
 
