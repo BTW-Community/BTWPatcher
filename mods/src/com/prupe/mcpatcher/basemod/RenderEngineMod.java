@@ -75,7 +75,7 @@ public class RenderEngineMod extends ClassMod {
         VoidSignature(MethodRef method, String textureMethod) {
             setMethod(method);
             addXref(1, textureMapBlocks);
-            addXref(2, new MethodRef("TextureMap", textureMethod, "()V"));
+            addXref(2, new MethodRef("TextureAtlas", textureMethod, "()V"));
             addXref(3, textureMapItems);
         }
 
