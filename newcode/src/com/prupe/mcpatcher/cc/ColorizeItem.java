@@ -18,6 +18,8 @@ public class ColorizeItem {
     private static int waterBottleColor; // potion.water
     private static final List<Potion> potions = new ArrayList<Potion>(); // potion.*
 
+    private static boolean potionsInitialized;
+
     private static final String[] MAP_MATERIALS = new String[]{
         "air",
         "grass",
@@ -47,9 +49,15 @@ public class ColorizeItem {
         spawnerEggShellColors.clear();
         spawnerEggSpotColors.clear();
 
-        if (PotionHelper.getPotionColorCache() != null) {
-            PotionHelper.getPotionColorCache().clear();
+        // 1.5+btw: Calling PotionHelper on startup runs the static initializer which crashes because Potion class
+        // hasn't finished initializing yet.
+        if (potionsInitialized) {
+            if (PotionHelper.getPotionColorCache() != null) {
+                PotionHelper.getPotionColorCache().clear();
+            }
         }
+        potionsInitialized = true;
+
         waterBottleColor = 0x385dc6;
         for (Potion potion : potions) {
             potion.color = potion.origColor;
