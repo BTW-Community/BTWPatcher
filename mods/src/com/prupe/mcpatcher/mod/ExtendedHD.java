@@ -223,9 +223,6 @@ public class ExtendedHD extends Mod {
                 return;
             }
 
-            if (!ResourceLocationMod.haveClass()) {
-                ExtendedHD15.setupTextureAtlasMod(this);
-            }
             addPatch(new TextureMipmapPatch(this, basePath));
 
             addPatch(new BytecodePatch() {

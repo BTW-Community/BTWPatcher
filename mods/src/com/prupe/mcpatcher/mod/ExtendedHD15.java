@@ -23,6 +23,7 @@ class ExtendedHD15 {
         mod.addClassMod(new RenderEngineMod(mod));
         mod.addClassMod(new TextureMod(mod));
         mod.addClassMod(new TextureManagerMod(mod));
+        mod.addClassMod(new TextureAtlasMod(mod));
         mod.addClassMod(new TextureAtlasSpriteMod(mod));
         mod.addClassMod(new TileEntityBeaconRendererMod(mod));
     }
@@ -507,30 +508,34 @@ class ExtendedHD15 {
         }
     }
 
-    static void setupTextureAtlasMod(final ClassMod classMod) {
-        classMod.addPatch(new MakeMemberPublicPatch(classMod, TextureAtlasMod.basePath));
+    private static class TextureAtlasMod extends com.prupe.mcpatcher.basemod.TextureAtlasMod {
+        public TextureAtlasMod(Mod mod) {
+            super(mod);
 
-        classMod.addPatch(new BytecodePatch(classMod) {
-            @Override
-            public String getDescription() {
-                return "set current tilesheet";
-            }
+            addPatch(new MakeMemberPublicPatch(TextureAtlasMod.basePath));
 
-            @Override
-            public String getMatchExpression() {
-                return buildExpression(
-                    begin()
-                );
-            }
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "set current tilesheet";
+                }
 
-            @Override
-            public byte[] getReplacementBytes() {
-                return buildCode(
-                    ALOAD_0,
-                    reference(PUTSTATIC, new FieldRef(ExtendedHD15.WRAPPER_15_CLASS, "currentAtlas", "L" + classMod.getDeobfClass() + ";"))
-                );
-            }
-        }.targetMethod(TextureAtlasMod.refreshTextures1));
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_0,
+                        reference(PUTSTATIC, new FieldRef(ExtendedHD15.WRAPPER_15_CLASS, "currentAtlas", "L" + getDeobfClass() + ";"))
+                    );
+                }
+            }.targetMethod(TextureAtlasMod.refreshTextures1));
+        }
     }
 
     private static class TextureAtlasSpriteMod extends ClassMod {
