@@ -639,7 +639,7 @@ public class ConnectedTextures extends Mod {
             private int connectNorthRegister;
 
             {
-                setInsertBefore(true);
+                setInsertAfter(true);
                 if (methods.length > 0) {
                     targetMethod(methods);
                 }
@@ -705,32 +705,45 @@ public class ConnectedTextures extends Mod {
 
             @Override
             public String getMatchExpression() {
-                return buildExpression(
-                    or(
-                        build(
-                            // 1.6 panes and 1.7+ thin panes
-                            push(0.01),
-                            anyDSTORE,
-                            push(0.005),
-                            anyDSTORE
-                        ),
-                        build(
-                            // 1.7+ thick panes
-                            push(0.001),
-                            anyDSTORE,
-                            push(0.999),
-                            anyDSTORE,
-                            push(0.001),
-                            anyDSTORE
+                if (ResourceLocationMod.haveClass()) {
+                    return buildExpression(
+                        or(
+                            build(
+                                // 1.6 panes and 1.7+ thin panes
+                                push(0.01),
+                                anyDSTORE,
+                                push(0.005),
+                                anyDSTORE
+                            ),
+                            build(
+                                // 1.7+ thick panes
+                                push(0.001),
+                                anyDSTORE,
+                                push(0.999),
+                                anyDSTORE,
+                                push(0.001),
+                                anyDSTORE
+                            )
                         )
-                    )
-                );
+                    );
+                } else {
+                    return buildExpression(
+                        // flag = this.shouldSideBeRendered(...);
+                        registerLoadStore(ISTORE, connectNorthRegister + 5)
+                    );
+                }
             }
 
             @Override
             public byte[] getReplacementBytes() {
-                int index = extractConstPoolIndex(getMatch());
-                double width = getMethodInfo().getConstPool().getDoubleInfo(index);
+                MethodRef newRenderPane = newRenderPaneThin;
+                if (getMatch()[0] == LDC2_W) {
+                    int index = extractConstPoolIndex(getMatch());
+                    double width = getMethodInfo().getConstPool().getDoubleInfo(index);
+                    if (width == 0.001) {
+                        newRenderPane = newRenderPaneThick;
+                    }
+                }
                 return buildCode(
                     // GlassPaneRenderer.render(renderBlocks, blockPane, i, j, k, connectNorth, ...);
                     ALOAD_0,
@@ -741,7 +754,7 @@ public class ConnectedTextures extends Mod {
                     ILOAD, connectNorthRegister + 1,
                     ILOAD, connectNorthRegister + 2,
                     ILOAD, connectNorthRegister + 3,
-                    reference(INVOKESTATIC, width == 0.001 ? newRenderPaneThick : newRenderPaneThin)
+                    reference(INVOKESTATIC, newRenderPane)
                 );
             }
         });
