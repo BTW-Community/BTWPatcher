@@ -275,6 +275,10 @@ public class ConnectedTextures extends Mod {
             } else {
                 setupSecondaryTexture18();
             }
+
+            if (!ResourceLocationMod.haveClass()) {
+                setupCrossedSquares15();
+            }
         }
 
         private void setupTileOverrides() {
@@ -463,6 +467,55 @@ public class ConnectedTextures extends Mod {
                 }
             });
         }
+
+        private void setupCrossedSquares15() {
+            final MethodRef drawCrossedSquares = new MethodRef("RenderBlocks", "drawCrossedSquares", "(LBlock;IDDDF)V");
+
+            addMemberMapper(new MethodMapper(drawCrossedSquares));
+
+            addPatch(new BytecodePatch() {
+                private final MethodRef round = new MethodRef("java/lang/Math", "round", "(D)J");
+
+                @Override
+                public String getDescription() {
+                    return "use block coordinates where possible (crossed squares)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.getBlockIconFromSideAndMetadata(block, 0, metadata);
+                        ALOAD_0,
+                        ALOAD_1,
+                        push(0),
+                        ILOAD_2,
+                        reference(INVOKEVIRTUAL, RenderBlocksMod.getBlockIconFromSideAndMetadata)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // this.getBlockIconFromPosition(block, this.blockAccess, (int) Math.round(x), (int) Math.round(y), (int) Math.round(z), -1);
+                        ALOAD_0,
+                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, RenderBlocksMod.blockAccess),
+                        DLOAD_3,
+                        reference(INVOKESTATIC, round),
+                        L2I,
+                        DLOAD, 5,
+                        reference(INVOKESTATIC, round),
+                        L2I,
+                        DLOAD, 7,
+                        reference(INVOKESTATIC, round),
+                        L2I,
+                        push(-1),
+                        reference(INVOKEVIRTUAL, RenderBlocksMod.getBlockIconFromPosition)
+                    );
+                }
+            }.targetMethod(drawCrossedSquares));
+        }
     }
 
     private class RenderBlocksSubclassMod extends ClassMod {
@@ -485,10 +538,6 @@ public class ConnectedTextures extends Mod {
             });
 
             addPatch(new GetBlockIconPatch(RenderBlocksMod.getBlockIconFromSide, "side"));
-
-            if (!ResourceLocationMod.haveClass()) {
-                setupCrossedSquares15();
-            }
         }
 
         private void setupSecondaryTexture() {
@@ -627,60 +676,6 @@ public class ConnectedTextures extends Mod {
             protected String getMoreArgs() {
                 return "";
             }
-        }
-
-        private void setupCrossedSquares15() {
-            addPatch(new BytecodePatch() {
-                private final MethodRef round = new MethodRef("java/lang/Math", "round", "(D)J");
-                private String prefix;
-
-                @Override
-                public boolean filterMethod() {
-                    if (prefix == null) {
-                        prefix = getClassMap().mapTypeString("(LBlock;IDDD");
-                    }
-                    return getMethodInfo().getDescriptor().startsWith(prefix);
-                }
-
-                @Override
-                public String getDescription() {
-                    return "use block coordinates where possible (crossed squares)";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // this.getBlockIconFromSideAndMetadata(block, 0, metadata);
-                        ALOAD_0,
-                        ALOAD_1,
-                        push(0),
-                        ILOAD_2,
-                        reference(INVOKEVIRTUAL, RenderBlocksMod.getBlockIconFromSideAndMetadata)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // this.getBlockIconFromPosition(block, this.blockAccess, (int) Math.round(x), (int) Math.round(y), (int) Math.round(z), -1);
-                        ALOAD_0,
-                        ALOAD_1,
-                        ALOAD_0,
-                        reference(GETFIELD, RenderBlocksMod.blockAccess),
-                        DLOAD_3,
-                        reference(INVOKESTATIC, round),
-                        L2I,
-                        DLOAD, 5,
-                        reference(INVOKESTATIC, round),
-                        L2I,
-                        DLOAD, 7,
-                        reference(INVOKESTATIC, round),
-                        L2I,
-                        push(-1),
-                        reference(INVOKEVIRTUAL, RenderBlocksMod.getBlockIconFromPosition)
-                    );
-                }
-            });
         }
     }
 
