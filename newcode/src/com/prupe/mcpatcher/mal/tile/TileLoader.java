@@ -33,7 +33,7 @@ public class TileLoader {
     protected final MCLogger subLogger;
 
     private TextureAtlas baseTextureMap;
-    private Map<String, TextureAtlasSprite> baseTexturesByName;
+    private final Map<String, TextureAtlasSprite> baseTexturesByName = new HashMap<String, TextureAtlasSprite>();
     private final Set<ResourceLocation> tilesToRegister = new HashSet<ResourceLocation>();
     private final Map<ResourceLocation, BufferedImage> tileImages = new HashMap<ResourceLocation, BufferedImage>();
     private final Map<String, Icon> iconMap = new HashMap<String, Icon>();
@@ -93,7 +93,7 @@ public class TileLoader {
         for (TileLoader loader : loaders) {
             if (loader.baseTextureMap == null && mapName.equals(loader.mapName)) {
                 loader.baseTextureMap = textureMap;
-                loader.baseTexturesByName = map;
+                loader.baseTexturesByName.putAll(map);
             }
             if (loader.isForThisMap(mapName) && !loader.tilesToRegister.isEmpty()) {
                 loader.subLogger.fine("adding icons to %s (%d remaining)", mapName, loader.tilesToRegister.size(), mapName);
@@ -303,11 +303,11 @@ public class TileLoader {
     }
 
     public Icon getIcon(String name) {
-        if (name == null || name.equals("")) {
+        if (MCPatcherUtils.isNullOrEmpty(name)) {
             return null;
         }
         Icon icon = iconMap.get(name);
-        if (icon == null && baseTexturesByName != null) {
+        if (icon == null) {
             icon = baseTexturesByName.get(name);
         }
         return icon;
