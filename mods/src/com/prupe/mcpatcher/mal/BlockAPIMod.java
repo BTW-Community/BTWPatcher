@@ -2,11 +2,6 @@ package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
-import javassist.bytecode.ClassFile;
-import javassist.bytecode.MethodInfo;
-
-import java.util.Iterator;
-import java.util.List;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -375,39 +370,7 @@ public class BlockAPIMod extends Mod {
                 }
             });
 
-            addClassMod(new ClassMod() {
-                {
-                    setMatchAddedFiles(true);
-                    addClassSignature(new FilenameSignature(ClassMap.classNameToFilename(getDeobfClass())));
-
-                    addPatch(new ClassPatch() {
-                        @Override
-                        public String getDescription() {
-                            return "remove getBlockIcon method";
-                        }
-
-                        @Override
-                        @SuppressWarnings("unchecked")
-                        public boolean apply(ClassFile classFile) {
-                            boolean found = false;
-                            String iconClass = getClassMap().map("Icon");
-                            for (Iterator<MethodInfo> i = ((List<MethodInfo>) classFile.getMethods()).iterator(); i.hasNext(); ) {
-                                MethodInfo method = i.next();
-                                if (method.getDescriptor().endsWith(")L" + iconClass + ";")) {
-                                    i.remove();
-                                    found = true;
-                                }
-                            }
-                            return found;
-                        }
-                    });
-                }
-
-                @Override
-                public String getDeobfClass() {
-                    return "FCBlockGrass";
-                }
-            });
+            addClassMod(new FCBlockGrassMod());
         }
 
         private void setupColorMultipliers17() {
@@ -589,6 +552,50 @@ public class BlockAPIMod extends Mod {
                 );
             }
         });
+    }
+
+    private class FCBlockGrassMod extends ClassMod {
+        FCBlockGrassMod() {
+            setMatchAddedFiles(true);
+            setParentClass("BlockGrass");
+
+            final MethodRef grassGetBlockIcon = new MethodRef("BlockGrass", "getBlockIcon", "(LIBlockAccess;IIII)LIcon;");
+
+            addClassSignature(new FilenameSignature(ClassMap.classNameToFilename(getDeobfClass())));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "call super.getBlockIcon";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // return this.icon;
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        ARETURN,
+                        end()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // return super.getBlockIcon(blockAccess, i, j, k, face);
+                        ALOAD_0,
+                        ALOAD_1,
+                        ILOAD_2,
+                        ILOAD_3,
+                        ILOAD, 4,
+                        ILOAD, 5,
+                        reference(INVOKESPECIAL, grassGetBlockIcon),
+                        ARETURN
+                    );
+                }
+            }.targetMethod(BlockMod.getBlockIcon));
+        }
     }
 
     private class RenderBlockCustomMod extends com.prupe.mcpatcher.basemod.RenderBlockCustomMod {
