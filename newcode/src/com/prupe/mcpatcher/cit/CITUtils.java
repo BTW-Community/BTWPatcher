@@ -147,7 +147,7 @@ public class CITUtils {
                         for (Item item : override.items) {
                             registerOverride(map, item, override);
                             if (i < 10) {
-                                logger.fine("registered %s to item %d (%s)", override, item);
+                                logger.fine("registered %s to item %s", override, ItemAPI.getItemName(item));
                             } else if (i == 10) {
                                 logger.fine("... %d total", override.items.size());
                             }
