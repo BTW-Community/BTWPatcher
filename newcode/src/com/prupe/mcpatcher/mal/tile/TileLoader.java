@@ -24,7 +24,6 @@ public class TileLoader {
 
     private static final TexturePackChangeHandler changeHandler;
     private static boolean changeHandlerCalled;
-    private static boolean registerIconsCalled;
     private static boolean useFullPath;
 
     private static final long MAX_TILESHEET_SIZE;
@@ -85,7 +84,6 @@ public class TileLoader {
     public static void registerIcons(TextureAtlas textureMap, String mapName, Map<String, TextureAtlasSprite> map) {
         mapName = mapName.replaceFirst("/$", "");
         logger.fine("before registerIcons(%s) %d icons", mapName, map.size());
-        registerIconsCalled = true;
         if (!changeHandlerCalled) {
             logger.severe("beforeChange was not called, invoking directly");
             changeHandler.beforeChange();
