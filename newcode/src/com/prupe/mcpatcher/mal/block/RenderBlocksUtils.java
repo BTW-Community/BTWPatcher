@@ -15,48 +15,56 @@ public class RenderBlocksUtils {
     private static final Block snowBlock = BlockAPI.getFixedBlock("minecraft:snow_layer");
     private static final Block craftedSnowBlock = BlockAPI.getFixedBlock("minecraft:snow");
 
-    private static final boolean[] useColorMultiplier = new boolean[]{true, true, true, true, true, true};
+    private static final int COLOR = 0;
+    private static final int NONCOLOR = 1;
+    private static final int COLOR_AND_NONCOLOR = 2;
+
+    private static final int[] colorMultiplierType = new int[6];
     private static final float[][] nonAOMultipliers = new float[6][3];
 
     public static final float[] AO_BASE = new float[]{0.5f, 1.0f, 0.8f, 0.8f, 0.6f, 0.6f};
 
     public static int layerIndex;
+    public static Icon blankIcon;
+
+    private static int grassFace;
+    private static Icon grassIcon;
 
     public static void setupColorMultiplier(Block block, IBlockAccess blockAccess, int i, int j, int k,
                                             boolean haveOverrideTexture, float r, float g, float b) {
         if (haveOverrideTexture || !RenderPassAPI.instance.useColorMultiplierThisPass(block)) {
-            useColorMultiplier[0] = false;
-            useColorMultiplier[2] = false;
-            useColorMultiplier[3] = false;
-            useColorMultiplier[4] = false;
-            useColorMultiplier[5] = false;
+            colorMultiplierType[0] = COLOR;
+            colorMultiplierType[2] = COLOR;
+            colorMultiplierType[3] = COLOR;
+            colorMultiplierType[4] = COLOR;
+            colorMultiplierType[5] = COLOR;
         } else if (block == grassBlock) {
-            useColorMultiplier[0] = false;
+            colorMultiplierType[0] = NONCOLOR;
             if (enableBetterGrass) {
                 if (isSnowCovered(blockAccess, i, j, k)) {
-                    useColorMultiplier[2] = false;
-                    useColorMultiplier[3] = false;
-                    useColorMultiplier[4] = false;
-                    useColorMultiplier[5] = false;
+                    colorMultiplierType[2] = NONCOLOR;
+                    colorMultiplierType[3] = NONCOLOR;
+                    colorMultiplierType[4] = NONCOLOR;
+                    colorMultiplierType[5] = NONCOLOR;
                 } else {
                     j--;
-                    useColorMultiplier[2] = block == BlockAPI.getBlockAt(blockAccess, i, j, k - 1) && !isSnowCovered(blockAccess, i, j, k - 1);
-                    useColorMultiplier[3] = block == BlockAPI.getBlockAt(blockAccess, i, j, k + 1) && !isSnowCovered(blockAccess, i, j, k + 1);
-                    useColorMultiplier[4] = block == BlockAPI.getBlockAt(blockAccess, i - 1, j, k) && !isSnowCovered(blockAccess, i - 1, j, k);
-                    useColorMultiplier[5] = block == BlockAPI.getBlockAt(blockAccess, i + 1, j, k) && !isSnowCovered(blockAccess, i + 1, j, k);
+                    colorMultiplierType[2] = block == BlockAPI.getBlockAt(blockAccess, i, j, k - 1) && !isSnowCovered(blockAccess, i, j, k - 1) ? COLOR : COLOR_AND_NONCOLOR;
+                    colorMultiplierType[3] = block == BlockAPI.getBlockAt(blockAccess, i, j, k + 1) && !isSnowCovered(blockAccess, i, j, k + 1) ? COLOR : COLOR_AND_NONCOLOR;
+                    colorMultiplierType[4] = block == BlockAPI.getBlockAt(blockAccess, i - 1, j, k) && !isSnowCovered(blockAccess, i - 1, j, k) ? COLOR : COLOR_AND_NONCOLOR;
+                    colorMultiplierType[5] = block == BlockAPI.getBlockAt(blockAccess, i + 1, j, k) && !isSnowCovered(blockAccess, i + 1, j, k) ? COLOR : COLOR_AND_NONCOLOR;
                 }
             } else {
-                useColorMultiplier[2] = false;
-                useColorMultiplier[3] = false;
-                useColorMultiplier[4] = false;
-                useColorMultiplier[5] = false;
+                colorMultiplierType[2] = COLOR_AND_NONCOLOR;
+                colorMultiplierType[3] = COLOR_AND_NONCOLOR;
+                colorMultiplierType[4] = COLOR_AND_NONCOLOR;
+                colorMultiplierType[5] = COLOR_AND_NONCOLOR;
             }
         } else {
-            useColorMultiplier[0] = true;
-            useColorMultiplier[2] = true;
-            useColorMultiplier[3] = true;
-            useColorMultiplier[4] = true;
-            useColorMultiplier[5] = true;
+            colorMultiplierType[0] = COLOR;
+            colorMultiplierType[2] = COLOR;
+            colorMultiplierType[3] = COLOR;
+            colorMultiplierType[4] = COLOR;
+            colorMultiplierType[5] = COLOR;
         }
         if (!isAmbientOcclusionEnabled() || BlockAPI.getBlockLightValue(block) != 0) {
             setupColorMultiplier(0, r, g, b);
@@ -70,17 +78,17 @@ public class RenderBlocksUtils {
 
     public static void setupColorMultiplier(Block block, int metadata, boolean useColor) {
         if (block == grassBlock || !useColor) {
-            useColorMultiplier[0] = false;
-            useColorMultiplier[2] = false;
-            useColorMultiplier[3] = false;
-            useColorMultiplier[4] = false;
-            useColorMultiplier[5] = false;
+            colorMultiplierType[0] = NONCOLOR;
+            colorMultiplierType[2] = NONCOLOR;
+            colorMultiplierType[3] = NONCOLOR;
+            colorMultiplierType[4] = NONCOLOR;
+            colorMultiplierType[5] = NONCOLOR;
         } else {
-            useColorMultiplier[0] = true;
-            useColorMultiplier[2] = true;
-            useColorMultiplier[3] = true;
-            useColorMultiplier[4] = true;
-            useColorMultiplier[5] = true;
+            colorMultiplierType[0] = COLOR;
+            colorMultiplierType[2] = COLOR;
+            colorMultiplierType[3] = COLOR;
+            colorMultiplierType[4] = COLOR;
+            colorMultiplierType[5] = COLOR;
         }
     }
 
@@ -90,7 +98,7 @@ public class RenderBlocksUtils {
         mult[0] = ao;
         mult[1] = ao;
         mult[2] = ao;
-        if (useColorMultiplier[face]) {
+        if (colorMultiplierType[face] != NONCOLOR) {
             mult[0] *= r;
             mult[1] *= g;
             mult[2] *= b;
@@ -99,7 +107,7 @@ public class RenderBlocksUtils {
 
     public static boolean useColorMultiplier(int face) {
         layerIndex = 0;
-        return useColorMultiplier[getFaceIndex(face)];
+        return colorMultiplierType[getFaceIndex(face)] != NONCOLOR;
     }
 
     public static boolean useColorMultiplier(boolean useTint, int face) {
@@ -156,6 +164,29 @@ public class RenderBlocksUtils {
             return null;
         }
         return isSnow ? BlockAPI.getBlockIcon(snowBlock, blockAccess, i, j, k, face) : topIcon;
+    }
+
+    public static Icon getGrassIconBTW(Icon origIcon, int face) {
+        grassFace = face;
+        if (blankIcon != null && colorMultiplierType[face] == COLOR) {
+            grassIcon = origIcon;
+            return blankIcon;
+        } else {
+            grassIcon = null;
+            return origIcon;
+        }
+    }
+
+    public static Icon getGrassOverlayIconBTW(Icon origIcon) {
+        if (grassIcon != null) {
+            Icon t = grassIcon;
+            grassIcon = null;
+            return t;
+        } else if (blankIcon != null && colorMultiplierType[grassFace] == NONCOLOR) {
+            return blankIcon;
+        } else {
+            return origIcon;
+        }
     }
 
     private static boolean isSnowCovered(IBlockAccess blockAccess, int i, int j, int k) {
