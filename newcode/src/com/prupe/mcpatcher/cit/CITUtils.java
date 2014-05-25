@@ -245,11 +245,11 @@ public class CITUtils {
         }
         int width;
         int height;
-        if (lastIcon instanceof TextureAtlasSprite) {
-            width = IconAPI.getIconWidth((TextureAtlasSprite) lastIcon);
-            height = IconAPI.getIconHeight((TextureAtlasSprite) lastIcon);
-        } else {
+        if (lastIcon == null) {
             width = height = 256;
+        } else {
+            width = IconAPI.getIconWidth(lastIcon);
+            height = IconAPI.getIconHeight(lastIcon);
         }
         Enchantment.beginOuter3D();
         for (int i = 0; i < matches.size(); i++) {

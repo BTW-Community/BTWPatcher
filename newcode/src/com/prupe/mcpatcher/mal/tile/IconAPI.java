@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mal.tile;
 
 import com.prupe.mcpatcher.MAL;
+import net.minecraft.src.Icon;
 import net.minecraft.src.TextureAtlasSprite;
 
 abstract public class IconAPI {
@@ -16,6 +17,14 @@ abstract public class IconAPI {
 
     public static int getIconY0(TextureAtlasSprite icon) {
         return instance.getIconY0_Impl(icon);
+    }
+
+    public static int getIconWidth(Icon icon) {
+        return getIconWidth((TextureAtlasSprite) icon);
+    }
+
+    public static int getIconHeight(Icon icon) {
+        return getIconHeight((TextureAtlasSprite) icon);
     }
 
     public static int getIconWidth(TextureAtlasSprite icon) {
