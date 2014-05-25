@@ -29,7 +29,7 @@ public class RandomMobs extends Mod {
         author = "Balthichou";
         description = "Randomize mob skins if texture pack supports it. Based on Balthichou's mod.";
         website = "http://www.minecraftforum.net/topic/244172-";
-        version = "1.8";
+        version = "1.9";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BIOME_API_MOD);

@@ -26,7 +26,7 @@ public class BiomeAPIMod extends Mod {
         } else {
             malVersion = 1;
         }
-        version = String.valueOf(malVersion) + ".0";
+        version = String.valueOf(malVersion) + ".1";
         setMALVersion("biome", malVersion);
 
         addClassMod(new IBlockAccessMod(this));

@@ -26,7 +26,7 @@ public class BaseTexturePackMod extends Mod {
         name = MCPatcherUtils.BASE_TEXTURE_PACK_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
-        version = "4.2";
+        version = "4.3";
 
         malVersion = ResourceLocationMod.haveClass() ? 2 : 1;
         setMALVersion("texturepack", malVersion);

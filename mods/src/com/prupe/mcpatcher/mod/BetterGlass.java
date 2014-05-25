@@ -33,7 +33,7 @@ public class BetterGlass extends Mod {
         name = MCPatcherUtils.BETTER_GLASS;
         author = "MCPatcher";
         description = "Enables partial transparency for glass blocks.";
-        version = "2.5";
+        version = "2.6";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.CONNECTED_TEXTURES);
