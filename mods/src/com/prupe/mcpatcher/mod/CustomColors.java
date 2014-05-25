@@ -3153,28 +3153,22 @@ public class CustomColors extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(repeat(build(
-                        // this.vertexColorAAA = this.vertexColorBBB = this.vertexColorCCC = this.vertexColorDDD = <value>;
-                        // x3
+                        // this.vertexColorXXX *= color;
+                        // x9
                         ALOAD_0,
-                        ALOAD_0,
-                        ALOAD_0,
-                        ALOAD_0,
-                        or(build(FCONST_1), anyLDC, anyFLOAD),
-                        DUP_X1,
-                        anyReference(PUTFIELD),
-                        DUP_X1,
-                        anyReference(PUTFIELD),
-                        DUP_X1,
-                        anyReference(PUTFIELD),
+                        DUP,
+                        anyReference(GETFIELD),
+                        FLOAD, subset(new int[]{5, 6, 7}, true),
+                        FMUL,
                         anyReference(PUTFIELD)
-                    ), 3));
+                    ), 12));
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (ColorizeBlock.setupBiomeSmoothing(this, block, this.blockAccess, i, j, k, face,
-                        //                                       topLeft, bottomLeft, bottomRight, topRight)) {
+                        // if (!ColorizeBlock.setupBiomeSmoothing(this, block, this.blockAccess, i, j, k, face,
+                        //                                        topLeft, bottomLeft, bottomRight, topRight)) {
                         ALOAD_0,
                         ALOAD_1,
                         ALOAD_0,
@@ -3182,7 +3176,7 @@ public class CustomColors extends Mod {
                         ILOAD_2,
                         ILOAD_3,
                         ILOAD, 4,
-                        push(getMethodMatchCount() % 6),
+                        push(2 + getMethodMatchCount() % 4),
                         registerLoadStore(FLOAD, topLeftRegister),
                         registerLoadStore(FLOAD, topLeftRegister + 1),
                         registerLoadStore(FLOAD, topLeftRegister + 2),
