@@ -3123,7 +3123,8 @@ public class CustomColors extends Mod {
                 private int topLeftRegister;
 
                 {
-                    targetMethod(renderBlockAO, renderBlockCM, renderGrassBlockAO, renderGrassBlockCM);
+                    setInsertAfter(true);
+                    targetMethod(renderBlockAO, renderBlockCM);
 
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
@@ -3148,6 +3149,80 @@ public class CustomColors extends Mod {
                 @Override
                 public String getDescription() {
                     return "use block color multiplier (btw)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(repeat(build(
+                        // this.vertexColorAAA = this.vertexColorBBB = this.vertexColorCCC = this.vertexColorDDD = <value>;
+                        // x3
+                        ALOAD_0,
+                        ALOAD_0,
+                        ALOAD_0,
+                        ALOAD_0,
+                        or(anyLDC, build(push(1.0f))),
+                        DUP_X1,
+                        anyReference(PUTFIELD),
+                        DUP_X1,
+                        anyReference(PUTFIELD),
+                        DUP_X1,
+                        anyReference(PUTFIELD),
+                        anyReference(PUTFIELD)
+                    ), 3));
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // ColorizeBlock.setupBiomeSmoothing(this, block, this.blockAccess, i, j, k, face,
+                        //                                   topLeft, bottomLeft, bottomRight, topRight)
+                        ALOAD_0,
+                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, blockAccess),
+                        ILOAD_2,
+                        ILOAD_3,
+                        ILOAD, 4,
+                        push(getMethodMatchCount() % 6),
+                        registerLoadStore(FLOAD, topLeftRegister),
+                        registerLoadStore(FLOAD, topLeftRegister + 1),
+                        registerLoadStore(FLOAD, topLeftRegister + 2),
+                        registerLoadStore(FLOAD, topLeftRegister + 3),
+                        reference(INVOKESTATIC, setupBlockSmoothing3),
+                        POP
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                private int topLeftRegister;
+
+                {
+                    targetMethod(renderGrassBlockAO, renderGrassBlockCM);
+
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                // topLeft = (...) / 4.0f
+                                push(4.0f),
+                                FDIV,
+                                capture(anyFSTORE)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            topLeftRegister = extractRegisterNum(getCaptureGroup(1));
+                            Logger.log(Logger.LOG_CONST, "top left register %d", topLeftRegister);
+                            return true;
+                        }
+                    });
+                }
+
+                @Override
+                public String getDescription() {
+                    return "use grass color multiplier (btw)";
                 }
 
                 @Override
