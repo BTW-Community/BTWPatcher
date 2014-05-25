@@ -319,6 +319,11 @@ abstract public class TexturePackAPI {
 
         @Override
         protected ResourceLocation parseResourceLocation_Impl(ResourceLocation baseResource, String path) {
+            if (path.startsWith("~/")) {
+                // Relative to namespace mcpatcher dir:
+                // ~/path -> /path
+                path = path.substring(1);
+            }
             if (path.startsWith("./")) {
                 // Relative to properties file:
                 // ./path -> (dir of base file)/path
