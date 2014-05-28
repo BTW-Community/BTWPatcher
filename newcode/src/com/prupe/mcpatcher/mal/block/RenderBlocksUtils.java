@@ -7,6 +7,8 @@ import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.Icon;
 import net.minecraft.src.Minecraft;
 
+import java.lang.reflect.Field;
+
 // Shared by both CTM and Custom Colors.
 public class RenderBlocksUtils {
     private static final boolean enableBetterGrass = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "grass", false);
@@ -14,6 +16,7 @@ public class RenderBlocksUtils {
     private static final Block grassBlock = BlockAPI.getFixedBlock("minecraft:grass");
     private static final Block snowBlock = BlockAPI.getFixedBlock("minecraft:snow_layer");
     private static final Block craftedSnowBlock = BlockAPI.getFixedBlock("minecraft:snow");
+    private static final Block fcDirtSlab;
 
     private static final int COLOR = 0;
     private static final int NONCOLOR = 1;
@@ -29,6 +32,17 @@ public class RenderBlocksUtils {
 
     private static int grassFace;
     private static Icon grassIcon;
+
+    static {
+        Block block = null;
+        try {
+            Field field = Class.forName("FCBetterThanWolves").getDeclaredField("fcBlockDirtSlabID");
+            field.setAccessible(true);
+            block = BlockAPI.getBlockById(field.getInt(null));
+        } catch (Throwable e) {
+        }
+        fcDirtSlab = block;
+    }
 
     public static void setupColorMultiplier(Block block, IBlockAccess blockAccess, int i, int j, int k,
                                             boolean haveOverrideTexture, float r, float g, float b) {
@@ -59,6 +73,12 @@ public class RenderBlocksUtils {
                 colorMultiplierType[4] = COLOR_AND_NONCOLOR;
                 colorMultiplierType[5] = COLOR_AND_NONCOLOR;
             }
+        } else if (fcDirtSlab != null && block == fcDirtSlab) {
+            colorMultiplierType[0] = COLOR;
+            colorMultiplierType[2] = COLOR_AND_NONCOLOR;
+            colorMultiplierType[3] = COLOR_AND_NONCOLOR;
+            colorMultiplierType[4] = COLOR_AND_NONCOLOR;
+            colorMultiplierType[5] = COLOR_AND_NONCOLOR;
         } else {
             colorMultiplierType[0] = COLOR;
             colorMultiplierType[2] = COLOR;
