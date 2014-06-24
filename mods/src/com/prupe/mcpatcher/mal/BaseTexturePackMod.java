@@ -320,7 +320,10 @@ public class BaseTexturePackMod extends Mod {
             final FieldRef map = new FieldRef(getDeobfClass(), "map", "Ljava/util/Map;");
 
             addClassSignature(new ConstSignature("minecraft"));
-            addClassSignature(new ConstSignature("/assets/minecraft/"));
+            addClassSignature(new OrSignature(
+                new ConstSignature("/assets/minecraft/"), // pre-realms
+                new ConstSignature("/assets/")            // 1.7.10-pre4+
+            ));
 
             addMemberMapper(new FieldMapper(map));
 
