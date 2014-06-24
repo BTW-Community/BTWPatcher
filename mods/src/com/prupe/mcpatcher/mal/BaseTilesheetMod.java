@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
+import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -430,6 +431,11 @@ public class BaseTilesheetMod extends Mod {
 
         private void setup16() {
             final InterfaceMethodRef listSize = new InterfaceMethodRef("java/util/List", "size", "()I");
+
+            addMemberMapper(new MethodMapper(getX0, getY0)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, false)
+            );
 
             addPatch(new BytecodePatch() {
                 @Override

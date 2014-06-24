@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.basemod;
 
 import com.prupe.mcpatcher.FieldRef;
+import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
 
 import static com.prupe.mcpatcher.BinaryRegex.build;
@@ -13,7 +14,9 @@ import static javassist.bytecode.Opcode.*;
  * Maps TextureAtlasSprite class.
  */
 public class TextureAtlasSpriteMod extends com.prupe.mcpatcher.ClassMod {
-    protected final FieldRef textureName = new FieldRef(getDeobfClass(), "textureName", "Ljava/lang/String;");
+    public static final FieldRef textureName = new FieldRef("TextureAtlasSprite", "textureName", "Ljava/lang/String;");
+    public static final MethodRef getX0 = new MethodRef("TextureAtlasSprite", "getX0", "()I");
+    public static final MethodRef getY0 = new MethodRef("TextureAtlasSprite", "getY0", "()I");
 
     public TextureAtlasSpriteMod(Mod mod) {
         super(mod);
