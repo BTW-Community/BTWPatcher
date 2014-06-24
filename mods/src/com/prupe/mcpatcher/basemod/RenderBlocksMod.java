@@ -65,6 +65,13 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
         }.setMethod(renderStandardBlockWithAmbientOcclusion));
 
         addClassSignature(new BytecodeSignature() {
+            {
+                setMethod(renderStandardBlockWithAmbientOcclusion);
+                addXref(1, renderAllFaces);
+                addXref(2, blockAccess);
+                addXref(3, shouldSideBeRendered);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -107,12 +114,7 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
                     IFEQ, any(2)
                 );
             }
-        }
-            .setMethod(renderStandardBlockWithAmbientOcclusion)
-            .addXref(1, renderAllFaces)
-            .addXref(2, blockAccess)
-            .addXref(3, shouldSideBeRendered)
-        );
+        });
 
         grassTopSignature = new BytecodeSignature() {
             @Override
@@ -141,6 +143,11 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
 
     public RenderBlocksMod mapRenderStandardBlock() {
         addClassSignature(new BytecodeSignature() {
+            {
+                setMethod(renderStandardBlock);
+                addXref(1, MinecraftMod.isAmbientOcclusionEnabled);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -171,10 +178,7 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
                     captureReference(INVOKEVIRTUAL)
                 );
             }
-        }
-            .setMethod(renderStandardBlock)
-            .addXref(1, MinecraftMod.isAmbientOcclusionEnabled)
-        );
+        });
 
         if (haveSubclasses()) {
             addMemberMapper(new MethodMapper(renderBlock));
@@ -184,6 +188,11 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
 
     public RenderBlocksMod mapHasOverrideTexture() {
         addClassSignature(new BytecodeSignature() {
+            {
+                setMethod(hasOverrideBlockTexture);
+                addXref(1, overrideBlockTexture);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -197,19 +206,22 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
                     end()
                 );
             }
-        }
-            .setMethod(hasOverrideBlockTexture)
-            .addXref(1, overrideBlockTexture)
-        );
+        });
         return this;
     }
 
-    public RenderBlocksMod mapRenderType(final int type, MethodRef method) {
+    public RenderBlocksMod mapRenderType(final int type, final MethodRef method) {
         if (haveSubclasses()) {
             throw new IllegalStateException("mapRenderType cannot be used in " + MIN_VERSION_SUBCLASS.toString() + "+");
         }
 
         addClassSignature(new BytecodeSignature() {
+            {
+                setMethod(renderBlockByRenderType);
+                addXref(1, BlockMod.getRenderType);
+                addXref(2, method);
+            }
+
             @Override
             public String getMatchExpression() {
                 int register = 2 + PositionMod.getDescriptorLength();
@@ -237,11 +249,7 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
                     subset(new int[]{GOTO, IRETURN}, true)
                 );
             }
-        }
-            .setMethod(renderBlockByRenderType)
-            .addXref(1, BlockMod.getRenderType)
-            .addXref(2, method)
-        );
+        });
         return this;
     }
 }

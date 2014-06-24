@@ -6,7 +6,7 @@ import com.prupe.mcpatcher.MinecraftVersion;
 import com.prupe.mcpatcher.Mod;
 
 import static com.prupe.mcpatcher.BinaryRegex.end;
-import static com.prupe.mcpatcher.BytecodeMatcher.*;
+import static com.prupe.mcpatcher.BytecodeMatcher.anyFLOAD;
 import static javassist.bytecode.Opcode.*;
 
 public class RenderBlockHelperMod extends com.prupe.mcpatcher.ClassMod {

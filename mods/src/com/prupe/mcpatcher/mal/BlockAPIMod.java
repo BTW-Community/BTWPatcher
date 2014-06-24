@@ -2,7 +2,6 @@ package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
-import javassist.bytecode.MethodInfo;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -11,6 +10,7 @@ import static javassist.bytecode.Opcode.*;
 public class BlockAPIMod extends Mod {
     private final int malVersion;
 
+    private static final MethodRef setupColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "setupColorMultiplier", "(LBlock;LIBlockAccess;IIIZFFF)V");
     public static final MethodRef useColorMultiplier1 = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(I)Z");
     public static final MethodRef useColorMultiplier2 = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "useColorMultiplier", "(ZI)Z");
     public static final FieldRef layerIndex = new FieldRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "layerIndex", "I");
@@ -27,7 +27,7 @@ public class BlockAPIMod extends Mod {
         } else {
             malVersion = 1;
         }
-        version = String.valueOf(malVersion) + ".0";
+        version = String.valueOf(malVersion) + ".1";
         setMALVersion("block", malVersion);
 
         addClassMod(new BlockMod());
@@ -36,7 +36,7 @@ public class BlockAPIMod extends Mod {
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new IconMod(this));
         addClassMod(new TessellatorMod(this));
-        addClassMod(new ResourceLocationMod(this));
+        ResourceLocationMod.setup(this);
         addClassMod(new RenderBlocksMod());
         if (RenderBlocksMod.haveSubclasses()) {
             addClassMod(new RenderBlockManagerMod(this));
@@ -84,34 +84,53 @@ public class BlockAPIMod extends Mod {
         protected final MethodRef getGrassTexture = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getGrassTexture", "(LBlock;LIBlockAccess;IIIILIcon;)LIcon;");
         private final FieldRef topIcon = new FieldRef(getDeobfClass(), "topIcon", "LIcon;");
 
-        BetterGrassMod() {
+        BetterGrassMod(final String prefix) {
             setParentClass("Block");
 
-            addClassSignature(new ConstSignature("_side"));
-            addClassSignature(new ConstSignature("_top"));
+            if (ResourceLocationMod.haveClass()) {
+                addClassSignature(new ConstSignature("_side"));
+                addClassSignature(new ConstSignature("_top"));
 
-            addClassSignature(new BytecodeSignature() {
-                final ClassRef stringBuilderClass = new ClassRef("java/lang/StringBuilder");
+                addClassSignature(new BytecodeSignature() {
+                    final ClassRef stringBuilderClass = new ClassRef("java/lang/StringBuilder");
 
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // this.field = iconRegister.registerIcon(this.getTextureName() + name);
-                        ALOAD_0,
-                        ALOAD_1,
-                        // new StringBuilder(this.getTextureName()).append(suffix).toString();
-                        // -or-
-                        // new StringBuilder().append(this.getTextureName()).append(suffix).toString();
-                        reference(NEW, stringBuilderClass),
-                        DUP,
-                        nonGreedy(any(0, 12)),
-                        push("_top"),
-                        nonGreedy(any(0, 8)),
-                        anyReference(INVOKEINTERFACE),
-                        captureReference(PUTFIELD)
-                    );
-                }
-            }.addXref(1, topIcon));
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // this.field = iconRegister.registerIcon(this.getTextureName() + name);
+                            ALOAD_0,
+                            ALOAD_1,
+                            // new StringBuilder(this.getTextureName()).append(suffix).toString();
+                            // -or-
+                            // new StringBuilder().append(this.getTextureName()).append(suffix).toString();
+                            reference(NEW, stringBuilderClass),
+                            DUP,
+                            nonGreedy(any(0, 12)),
+                            push("_top"),
+                            nonGreedy(any(0, 8)),
+                            anyReference(INVOKEINTERFACE),
+                            captureReference(PUTFIELD)
+                        );
+                    }
+                }.addXref(1, topIcon));
+            } else {
+                addClassSignature(new ConstSignature(prefix + "_side"));
+                addClassSignature(new ConstSignature(prefix + "_top"));
+
+                addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // this.field = iconRegister.registerIcon("...");
+                            ALOAD_0,
+                            ALOAD_1,
+                            push(prefix + "_top"),
+                            anyReference(INVOKEINTERFACE),
+                            captureReference(PUTFIELD)
+                        );
+                    }
+                }.addXref(1, topIcon));
+            }
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -165,8 +184,15 @@ public class BlockAPIMod extends Mod {
 
     private class BlockGrassMod extends BetterGrassMod {
         BlockGrassMod() {
-            addClassSignature(new ConstSignature("_side_snowed"));
-            addClassSignature(new ConstSignature("_side_overlay"));
+            super("grass");
+
+            if (ResourceLocationMod.haveClass()) {
+                addClassSignature(new ConstSignature("_side_snowed"));
+                addClassSignature(new ConstSignature("_side_overlay"));
+            } else {
+                addClassSignature(new ConstSignature("snow_side"));
+                addClassSignature(new ConstSignature("grass_side_overlay"));
+            }
 
             if (BlockMod.getSecondaryBlockIcon != null) {
                 addPatch(new BytecodePatch() {
@@ -208,7 +234,9 @@ public class BlockAPIMod extends Mod {
 
     private class BlockMyceliumMod extends BetterGrassMod {
         BlockMyceliumMod() {
-            addClassSignature(new ConstSignature("grass_side_snowed"));
+            super("mycel");
+
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("snow_side", "grass_side_snowed")));
             addClassSignature(new ConstSignature("townaura"));
         }
     }
@@ -230,9 +258,119 @@ public class BlockAPIMod extends Mod {
                 if (haveSubclasses()) {
                     setupColorMultipliers18(this);
                 } else {
+                    if (!ResourceLocationMod.haveClass()) {
+                        setupBTW();
+                    }
                     setupColorMultipliers17();
                 }
             }
+        }
+
+        private void setupBTW() {
+            final MethodRef renderGrassBlockAO = new MethodRef(getDeobfClass(), "renderGrassBlockWithAmbientOcclusion", "(LBlock;IIIFFFLIcon;)Z");
+            final MethodRef renderGrassBlockCM = new MethodRef(getDeobfClass(), "renderGrassBlockWithColorMultiplier", "(LBlock;IIIFFFLIcon;)Z");
+            final MethodRef getGrassIconBTW = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getGrassIconBTW", "(LIcon;I)LIcon;");
+            final MethodRef getGrassOverlayIconBTW = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "getGrassOverlayIconBTW", "(LIcon;)LIcon;");
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "set up side grass texture";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // RenderBlocksUtils.setupColorMultiplier(block, blockAccess, i, j, k, this.hasOverrideTexture(), r, g, b)
+                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, blockAccess),
+                        ILOAD_2,
+                        ILOAD_3,
+                        ILOAD, 4,
+                        ALOAD_0,
+                        reference(INVOKEVIRTUAL, hasOverrideBlockTexture),
+                        FLOAD, 5,
+                        FLOAD, 6,
+                        FLOAD, 7,
+                        reference(INVOKESTATIC, setupColorMultiplier)
+                    );
+                }
+            }.targetMethod(renderGrassBlockAO, renderGrassBlockCM));
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderGrassBlockAO, renderGrassBlockCM);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override grass side texture";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.getBlockIconFromPosition(block, this.blockAccess, i, j, k, face)
+                        ALOAD_0,
+                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, blockAccess),
+                        ILOAD_2,
+                        ILOAD_3,
+                        ILOAD, 4,
+                        capture(or(build(push(2)), build(push(3)), build(push(4)), build(push(5)))),
+                        anyReference(INVOKEVIRTUAL)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // RenderBlocksUtils.getGrassIconBTW(..., face)
+                        getCaptureGroup(1),
+                        reference(INVOKESTATIC, getGrassIconBTW)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderGrassBlockAO, renderGrassBlockCM);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override grass overlay texture";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // sideOverlayTexture
+                        ALOAD, 8
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // RenderBlocksUtils.getGrassOverlayIconBTW(...)
+                        reference(INVOKESTATIC, getGrassOverlayIconBTW)
+                    );
+                }
+            });
+
+            addClassMod(new FCBlockGrassMod());
         }
 
         private void setupColorMultipliers17() {
@@ -379,7 +517,10 @@ public class BlockAPIMod extends Mod {
 
     private void presetupColorMultipliers(com.prupe.mcpatcher.ClassMod classMod) {
         classMod.addPatch(new com.prupe.mcpatcher.BytecodePatch(classMod) {
-            private final MethodRef setupColorMultiplier = new MethodRef(MCPatcherUtils.RENDER_BLOCKS_UTILS_CLASS, "setupColorMultiplier", "(LBlock;LIBlockAccess;IIIZFFF)V");
+            {
+                setInsertBefore(true);
+                targetMethod(RenderBlocksMod.renderStandardBlock);
+            }
 
             @Override
             public String getDescription() {
@@ -410,10 +551,51 @@ public class BlockAPIMod extends Mod {
                     reference(INVOKESTATIC, setupColorMultiplier)
                 );
             }
+        });
+    }
+
+    private class FCBlockGrassMod extends ClassMod {
+        FCBlockGrassMod() {
+            setMatchAddedFiles(true);
+            setParentClass("BlockGrass");
+
+            final MethodRef grassGetBlockIcon = new MethodRef("BlockGrass", "getBlockIcon", "(LIBlockAccess;IIII)LIcon;");
+
+            addClassSignature(new FilenameSignature(ClassMap.classNameToFilename(getDeobfClass())));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "call super.getBlockIcon";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // return this.icon;
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        ARETURN,
+                        end()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // return super.getBlockIcon(blockAccess, i, j, k, face);
+                        ALOAD_0,
+                        ALOAD_1,
+                        ILOAD_2,
+                        ILOAD_3,
+                        ILOAD, 4,
+                        ILOAD, 5,
+                        reference(INVOKESPECIAL, grassGetBlockIcon),
+                        ARETURN
+                    );
+                }
+            }.targetMethod(BlockMod.getBlockIcon));
         }
-            .setInsertBefore(true)
-            .targetMethod(RenderBlocksMod.renderStandardBlock)
-        );
     }
 
     private class RenderBlockCustomMod extends com.prupe.mcpatcher.basemod.RenderBlockCustomMod {
@@ -424,6 +606,11 @@ public class BlockAPIMod extends Mod {
             final InterfaceMethodRef listIterator = new InterfaceMethodRef("java/util/List", "iterator", "()Ljava/util/Iterator;");
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderFaceAO);
+                    addXref(1, useTint);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -445,14 +632,16 @@ public class BlockAPIMod extends Mod {
                         FMUL
                     );
                 }
-            }
-                .setMethod(renderFaceAO)
-                .addXref(1, useTint)
-            );
+            });
 
             presetupColorMultipliers(this);
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderFaceAO, renderFaceNonAO, renderBlockHeld);
+                }
+
                 @Override
                 public String getDescription() {
                     return "initialize layer index";
@@ -476,16 +665,16 @@ public class BlockAPIMod extends Mod {
                         reference(PUTSTATIC, layerIndex)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderFaceAO, renderFaceNonAO, renderBlockHeld)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 private boolean isMetadataMethod;
                 private int direction;
 
                 {
+                    setInsertAfter(true);
+                    targetMethod(renderFaceAO, renderFaceNonAO, renderBlockHeld);
+
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
                         public String getMatchExpression() {
@@ -542,10 +731,7 @@ public class BlockAPIMod extends Mod {
                         reference(INVOKESTATIC, useColorMultiplier2)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderFaceAO, renderFaceNonAO, renderBlockHeld)
-            );
+            });
         }
     }
 }

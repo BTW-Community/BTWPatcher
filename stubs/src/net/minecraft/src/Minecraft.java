@@ -1,11 +1,10 @@
-package net.minecraft.client;
-
-import net.minecraft.src.*;
+package net.minecraft.src;
 
 import java.io.File;
 
 public class Minecraft {
     public ResourcePackRepository texturePackList;
+    public RenderEngine renderEngine; // 1.5
     public GameSettings gameSettings;
     public EntityLivingBase renderViewEntity;
     public EntityRenderer entityRenderer;

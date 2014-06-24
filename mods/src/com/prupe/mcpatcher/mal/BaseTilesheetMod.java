@@ -2,7 +2,6 @@ package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
-import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -13,18 +12,20 @@ public class BaseTilesheetMod extends Mod {
         name = MCPatcherUtils.BASE_TILESHEET_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
-        version = "2.3";
+        version = "2.4";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
+        addClassMod(new MinecraftMod(this));
         addClassMod(new IconMod(this));
-        addClassMod(new ResourceLocationMod(this));
-        addClassMod(new AbstractTextureMod(this));
-        addClassMod(new TextureMod(this));
+        if (ResourceLocationMod.setup(this)) {
+            addClassMod(new AbstractTextureMod(this));
+            addClassMod(new TextureMod(this));
+        }
+        addClassMod(new TextureManagerMod());
         addClassMod(new TessellatorMod(this));
         addClassMod(new IconRegisterMod());
         addClassMod(new TextureAtlasMod());
-        addClassMod(new TextureManagerMod());
         addClassMod(new TextureAtlasSpriteMod());
 
         addClassFiles("com.prupe.mcpatcher.mal.tile.*");
@@ -55,8 +56,6 @@ public class BaseTilesheetMod extends Mod {
             final FieldRef itemsAtlas = new FieldRef(getDeobfClass(), "itemssAtlas", "LResourceLocation;");
             final MethodRef registerTiles = new MethodRef(getDeobfClass(), "registerTiles", "()V");
             final InterfaceMethodRef mapClear = new InterfaceMethodRef("java/util/Map", "clear", "()V");
-            final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
-            final InterfaceMethodRef setIterator = new InterfaceMethodRef("java/util/Set", "iterator", "()Ljava/util/Iterator;");
             final ClassRef sbClass = new ClassRef("java/lang/StringBuilder");
             final ClassRef objClass = new ClassRef("java/lang/Object");
             final MethodRef stringValueOf = new MethodRef("java/lang/String", "valueOf", "(Ljava/lang/Object;)Ljava/lang/String;");
@@ -67,37 +66,47 @@ public class BaseTilesheetMod extends Mod {
             final MethodRef sbInit1 = new MethodRef("java/lang/StringBuilder", "<init>", "(Ljava/lang/String;)V");
             final MethodRef sbAppend = new MethodRef("java/lang/StringBuilder", "append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;");
             final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
+            final MethodRef getOverridePath = new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverridePath", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
 
-            addClassSignature(new ResourceLocationSignature(this, blocksAtlas, "textures/atlas/blocks.png"));
-            addClassSignature(new ResourceLocationSignature(this, itemsAtlas, "textures/atlas/items.png"));
+            if (ResourceLocationMod.haveClass()) {
+                addClassSignature(new ResourceLocationSignature(this, blocksAtlas, "textures/atlas/blocks.png"));
+                addClassSignature(new ResourceLocationSignature(this, itemsAtlas, "textures/atlas/items.png"));
 
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // i = Minecraft.getMaxTextureSize();
-                        begin(),
-                        captureReference(INVOKESTATIC),
-                        ISTORE_2,
+                addClassSignature(new BytecodeSignature() {
+                    {
+                        setMethod(refreshTextures2);
+                        addXref(1, new MethodRef("Minecraft", "getMaxTextureSize", "()I"));
+                        addXref(2, new ClassRef("Stitcher"));
+                    }
 
-                        // stitcher = new Stitcher(i, i, true, ...);
-                        captureReference(NEW),
-                        DUP,
-                        ILOAD_2,
-                        ILOAD_2,
-                        push(1),
-                        any(0, 6),
-                        anyReference(INVOKESPECIAL),
-                        ASTORE_3
-                    );
-                }
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // i = Minecraft.getMaxTextureSize();
+                            begin(),
+                            captureReference(INVOKESTATIC),
+                            ISTORE_2,
+
+                            // stitcher = new Stitcher(i, i, true, ...);
+                            captureReference(NEW),
+                            DUP,
+                            ILOAD_2,
+                            ILOAD_2,
+                            push(1),
+                            any(0, 6),
+                            anyReference(INVOKESPECIAL),
+                            ASTORE_3
+                        );
+                    }
+                });
             }
-                .setMethod(refreshTextures2)
-                .addXref(1, new MethodRef("Minecraft", "getMaxTextureSize", "()I"))
-                .addXref(2, new ClassRef("Stitcher"))
-            );
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(registerTiles);
+                    addXref(1, texturesByName);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -107,12 +116,14 @@ public class BaseTilesheetMod extends Mod {
                         reference(INVOKEINTERFACE, mapClear)
                     );
                 }
-            }
-                .setMethod(registerTiles)
-                .addXref(1, texturesByName)
-            );
+            });
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(ResourceLocationMod.select(refreshTextures1, refreshTextures2));
+                }
+
                 @Override
                 public String getDescription() {
                     return "register additional tiles";
@@ -132,8 +143,11 @@ public class BaseTilesheetMod extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         // this.registerTiles();
-                        ALOAD_0,
-                        reference(INVOKESPECIAL, registerTiles),
+                        ResourceLocationMod.haveClass() ?
+                            buildCode(
+                                ALOAD_0,
+                                reference(INVOKESPECIAL, registerTiles)
+                            ) : new byte[0],
 
                         // registerIcons(this, this.mapName, this.mapTextures);
                         ALOAD_0,
@@ -144,10 +158,7 @@ public class BaseTilesheetMod extends Mod {
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "registerIcons", "(LTextureAtlas;Ljava/lang/String;Ljava/util/Map;)V"))
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(refreshTextures2)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -165,29 +176,61 @@ public class BaseTilesheetMod extends Mod {
 
                 private String getMatchExpressionSB() {
                     return build(
-                        // this.basePath + name + extension
+                        // ("/" +) this.basePath + name + extension
                         reference(NEW, sbClass),
                         DUP,
                         or(
-                            build( // vanilla mc
-                                reference(INVOKESPECIAL, sbInit0),
-                                ALOAD_0,
-                                reference(GETFIELD, basePath),
-                                reference(INVOKEVIRTUAL, sbAppend)
+                            getSBExpression(
+                                ResourceLocationMod.select(capture(build(push("/"))), null),
+                                build(ALOAD_0, reference(GETFIELD, basePath)),
+                                capture(any(1, 5)),
+                                capture(any(1, 5))
                             ),
-                            build( // mcp
-                                ALOAD_0,
-                                reference(GETFIELD, basePath),
-                                optional(build(reference(INVOKESTATIC, stringValueOf))), // useless, but added by mcp
-                                reference(INVOKESPECIAL, sbInit1)
+                            getSBExpression(
+                                build(ALOAD_0, reference(GETFIELD, basePath)),
+                                capture(any(1, 5)),
+                                capture(any(1, 5))
                             )
                         ),
-                        capture(any(1, 5)),
-                        reference(INVOKEVIRTUAL, sbAppend),
-                        capture(anyLDC),
-                        reference(INVOKEVIRTUAL, sbAppend),
                         reference(INVOKEVIRTUAL, sbToString)
                     );
+                }
+
+                private String getSBExpression(String... subexprs) {
+                    StringBuilder sb = new StringBuilder();
+                    boolean first = true;
+                    for (String subexpr : subexprs) {
+                        if (subexpr == null) {
+                            continue;
+                        }
+                        if (first) {
+                            sb.append(or(
+                                build(
+                                    // vanilla mc:
+                                    // sb = new StringBuilder();
+                                    // sb.append(value);
+                                    reference(INVOKESPECIAL, sbInit0),
+                                    subexpr,
+                                    reference(INVOKEVIRTUAL, sbAppend)
+                                ),
+                                build(
+                                    // mcp:
+                                    // sb = new StringBuilder(value);
+                                    subexpr,
+                                    optional(build(reference(INVOKESTATIC, stringValueOf))), // useless, but added by mcp
+                                    reference(INVOKESPECIAL, sbInit1)
+                                )
+                            ));
+                        } else {
+                            sb.append(build(
+                                // sb.append(value);
+                                subexpr,
+                                reference(INVOKEVIRTUAL, sbAppend)
+                            ));
+                        }
+                        first = false;
+                    }
+                    return sb.toString();
                 }
 
                 private String getMatchExpressionSprintf() {
@@ -215,21 +258,29 @@ public class BaseTilesheetMod extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    byte[] name = getCaptureGroup(1);
-                    byte[] extension = getCaptureGroup(2);
-                    if (name == null) {
-                        name = getCaptureGroup(3);
+                    int group = 1;
+                    byte[] prefix = null;
+                    if (!ResourceLocationMod.haveClass()) {
+                        prefix = getCaptureGroup(group);
+                        group++;
                     }
-                    if (extension == null) {
-                        extension = getCaptureGroup(4);
+                    if (prefix == null) {
+                        prefix = buildCode(push(""));
+                    }
+                    byte[] name = null;
+                    byte[] extension = null;
+                    for (; name == null && group < 6; group += 2) {
+                        name = getCaptureGroup(group);
+                        extension = getCaptureGroup(group + 1);
                     }
                     return buildCode(
-                        // TileLoader.getOverridePath(this.basePath, name, extension)
+                        // TileLoader.getOverridePath(prefix, this.basePath, name, extension)
+                        prefix,
                         ALOAD_0,
                         reference(GETFIELD, basePath),
                         name,
                         extension,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverridePath", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"))
+                        reference(INVOKESTATIC, getOverridePath)
                     );
                 }
             });
@@ -295,12 +346,65 @@ public class BaseTilesheetMod extends Mod {
 
     private class TextureManagerMod extends ClassMod {
         TextureManagerMod() {
+            if (ResourceLocationMod.haveClass()) {
+                setup16();
+            } else {
+                setup15();
+            }
+        }
+
+        private void setup15() {
+            final MethodRef getBasename = new MethodRef(getDeobfClass(), "getBasename", "(Ljava/lang/String;)Ljava/lang/String;");
+            final MethodRef lastIndexOf = new MethodRef("java/lang/String", "lastIndexOf", "(I)I");
+            final MethodRef getOverrideBasename = new MethodRef(MCPatcherUtils.TILE_LOADER_CLASS, "getOverrideBasename", "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;");
+
+            addClassSignature(new ConstSignature("/"));
+            addClassSignature(new ConstSignature(".txt"));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(46),
+                        reference(INVOKEVIRTUAL, lastIndexOf)
+                    );
+                }
+            }.setMethod(getBasename));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override texture name";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKESPECIAL, getBasename)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        reference(INVOKESTATIC, getOverrideBasename)
+                    );
+                }
+            });
+        }
+
+        private void setup16() {
             final MethodRef updateAnimations = new MethodRef(getDeobfClass(), "updateAnimations", "()V");
             final InterfaceMethodRef listIterator = new InterfaceMethodRef("java/util/List", "iterator", "()Ljava/util/Iterator;");
 
             addClassSignature(new ConstSignature("dynamic/%s_%d"));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(updateAnimations);
+                    addXref(1, new FieldRef(getDeobfClass(), "animations", "Ljava/util/List;"));
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -311,10 +415,7 @@ public class BaseTilesheetMod extends Mod {
 
                     );
                 }
-            }
-                .setMethod(updateAnimations)
-                .addXref(1, new FieldRef(getDeobfClass(), "animations", "Ljava/util/List;"))
-            );
+            });
         }
     }
 
@@ -322,6 +423,12 @@ public class BaseTilesheetMod extends Mod {
         TextureAtlasSpriteMod() {
             super(BaseTilesheetMod.this);
 
+            if (ResourceLocationMod.haveClass()) {
+                setup16();
+            }
+        }
+
+        private void setup16() {
             final InterfaceMethodRef listSize = new InterfaceMethodRef("java/util/List", "size", "()I");
 
             addPatch(new BytecodePatch() {

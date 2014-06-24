@@ -109,6 +109,11 @@ public class DirectionMod extends com.prupe.mcpatcher.ClassMod {
         addClassSignature(new ConstSignature(new MethodRef("java/util/Random", "nextInt", "(I)I")));
 
         addClassSignature(new BytecodeSignature() {
+            {
+                matchConstructorOnly(true);
+                addXref(1, id);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -118,24 +123,21 @@ public class DirectionMod extends com.prupe.mcpatcher.ClassMod {
                     captureReference(PUTFIELD)
                 );
             }
-        }
-            .matchConstructorOnly(true)
-            .addXref(1, id)
-        );
+        });
 
         addMemberMapper(new MethodMapper(getID)
-            .accessFlag(AccessFlag.PUBLIC, true)
-            .accessFlag(AccessFlag.STATIC, false)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, false)
         );
 
         addMemberMapper(new FieldMapper(ALL_FIELDS)
-            .accessFlag(AccessFlag.PUBLIC, true)
-            .accessFlag(AccessFlag.STATIC, true)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, true)
         );
 
         addMemberMapper(new FieldMapper(ALL, SIDES)
-            .accessFlag(AccessFlag.PRIVATE, true)
-            .accessFlag(AccessFlag.STATIC, true)
+                .accessFlag(AccessFlag.PRIVATE, true)
+                .accessFlag(AccessFlag.STATIC, true)
         );
     }
 }

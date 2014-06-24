@@ -2,7 +2,11 @@ package com.prupe.mcpatcher.hd;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.tile.IconAPI;
+import net.minecraft.src.Texture;
 import net.minecraft.src.TextureAtlasSprite;
+
+import java.util.List;
 
 public class BorderedTexture extends TextureAtlasSprite {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
@@ -35,6 +39,19 @@ public class BorderedTexture extends TextureAtlasSprite {
         this.tilesheet = tilesheet;
     }
 
+    // 1.5
+    @Override
+    public void init(Texture texture, List<Texture> animations, int x0, int y0, int width, int height, boolean flipped) {
+        super.init(texture, animations, x0, y0, width, height, flipped);
+        this.tilesheetWidth = texture.getWidth();
+        this.tilesheetHeight = texture.getHeight();
+        this.x0 = x0;
+        this.y0 = y0;
+        border = MCPatcherUtils.isNullOrEmpty(animations) ? 0 : animations.get(0).border;
+        setBorderWidth(width, height, border);
+    }
+
+    // 1.6+
     @Override
     public void init(int tilesheetWidth, int tilesheetHeight, int x0, int y0, boolean flipped) {
         super.init(tilesheetWidth, tilesheetHeight, x0, y0, flipped);
@@ -42,7 +59,7 @@ public class BorderedTexture extends TextureAtlasSprite {
         this.tilesheetHeight = tilesheetHeight;
         this.x0 = x0;
         this.y0 = y0;
-        setBorderWidth(border);
+        setBorderWidth(IconAPI.getIconWidth(this), IconAPI.getIconHeight(this), border);
     }
 
     @Override
@@ -88,10 +105,8 @@ public class BorderedTexture extends TextureAtlasSprite {
         }
     }
 
-    void setBorderWidth(int border) {
+    void setBorderWidth(int width, int height, int border) {
         this.border = border;
-        int width = getWidth();
-        int height = getHeight();
         if (width <= 0 || height <= 0) {
             x0 = y0 = 0;
             minU = maxU = minV = maxV = 0.0f;

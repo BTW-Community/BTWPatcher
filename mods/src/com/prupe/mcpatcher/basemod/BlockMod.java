@@ -48,15 +48,15 @@ public class BlockMod extends com.prupe.mcpatcher.ClassMod {
             addClassSignature(new ConstSignature(" is already occupied by "));
 
             addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "blockID", "I"))
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
-                .accessFlag(AccessFlag.FINAL, true)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, false)
+                    .accessFlag(AccessFlag.FINAL, true)
             );
 
             addMemberMapper(new FieldMapper(new FieldRef(getDeobfClass(), "blocksList", "[LBlock;"))
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
-                .accessFlag(AccessFlag.FINAL, true)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
+                    .accessFlag(AccessFlag.FINAL, true)
             );
         }
 

@@ -20,13 +20,21 @@ public class AAHelper {
 
     private static Field addressField;
 
+    public static int lastBorder;
+
     static {
-        for (Field f : SimpleResource.class.getDeclaredFields()) {
-            if (ResourceLocation.class.isAssignableFrom(f.getType())) {
-                f.setAccessible(true);
-                addressField = f;
-                break;
+        try {
+            for (Field f : SimpleResource.class.getDeclaredFields()) {
+                if (ResourceLocation.class.isAssignableFrom(f.getType())) {
+                    f.setAccessible(true);
+                    addressField = f;
+                    break;
+                }
             }
+        } catch (NoClassDefFoundError e) {
+            // nothing
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
     }
 
@@ -40,7 +48,8 @@ public class AAHelper {
     }
 
     public static BufferedImage addBorder(TextureAtlasSprite stitched, Resource resource, BufferedImage input) {
-        if (input == null || !(resource instanceof SimpleResource) || addressField == null) {
+        lastBorder = 0;
+        if (!(resource instanceof SimpleResource) || addressField == null) {
             return input;
         }
         ResourceLocation name;
@@ -51,18 +60,26 @@ public class AAHelper {
             addressField = null;
             return input;
         }
+        input = addBorder(name, input);
+        if (stitched instanceof BorderedTexture) {
+            ((BorderedTexture) stitched).setBorderWidth(input.getWidth(), input.getWidth(), lastBorder);
+        }
+        return input;
+    }
+
+    static BufferedImage addBorder(ResourceLocation name, BufferedImage input) {
+        lastBorder = 0;
+        if (input == null) {
+            return input;
+        }
         if (name != null && MipmapHelper.useMipmapsForTexture(name.getPath())) {
             input = MipmapHelper.fixTransparency(name, input);
-        }
-        if (!(stitched instanceof BorderedTexture)) {
-            return input;
         }
         int width = input.getWidth();
         int height = input.getHeight();
         int numFrames = height / width;
         height = width;
-        int border = getBorderWidth(width);
-        ((BorderedTexture) stitched).setBorderWidth(border);
+        int border = lastBorder = getBorderWidth(width);
         if (border <= 0) {
             return input;
         }

@@ -6,8 +6,8 @@ import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.Tessellator;
 
 public class MobOverlay {
-    private static final ResourceLocation MOOSHROOM_OVERLAY = TexturePackAPI.newMCPatcherResourceLocation("mob/cow/mooshroom_overlay.png");
-    private static final ResourceLocation SNOWMAN_OVERLAY = TexturePackAPI.newMCPatcherResourceLocation("mob/snowman_overlay.png");
+    private static final ResourceLocation MOOSHROOM_OVERLAY = TexturePackAPI.newMCPatcherResourceLocation("/mob/redcow_overlay.png", "mob/cow/mooshroom_overlay.png");
+    private static final ResourceLocation SNOWMAN_OVERLAY = TexturePackAPI.newMCPatcherResourceLocation("/mob/snowman_overlay.png", "mob/snowman_overlay.png");
 
     private static final double MOO_X0 = -0.45;
     private static final double MOO_X1 = 0.45;

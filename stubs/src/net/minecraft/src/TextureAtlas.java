@@ -7,6 +7,7 @@ public class TextureAtlas extends AbstractTexture implements TickableTextureObje
     public static ResourceLocation itemsAtlas;
 
     public List<TextureAtlasSprite> animations; // made public by Extended HD
+    public String basePath; // made public by Extended HD
 
     public TextureAtlas(int type, String basePath) {
     }

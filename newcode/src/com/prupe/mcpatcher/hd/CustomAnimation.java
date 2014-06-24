@@ -1,9 +1,12 @@
 package com.prupe.mcpatcher.hd;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.Config;
+import com.prupe.mcpatcher.MCLogger;
+import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.ResourceList;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
+import com.prupe.mcpatcher.mal.tile.IconAPI;
 import net.minecraft.src.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
@@ -65,7 +68,9 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
                         }
                     }
                 }
-                FancyDial.registerAnimations();
+                if (IconAPI.needRegisterTileAnimations()) {
+                    FancyDial.registerAnimations();
+                }
             }
         });
     }

@@ -73,6 +73,11 @@ public class RenderBlockCustomMod extends ClassMod {
 
     public RenderBlockCustomMod mapHelper() {
         addClassSignature(new BytecodeSignature() {
+            {
+                matchConstructorOnly(true);
+                addXref(1, helper);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -85,10 +90,7 @@ public class RenderBlockCustomMod extends ClassMod {
                     captureReference(PUTFIELD)
                 );
             }
-        }
-            .matchConstructorOnly(true)
-            .addXref(1, helper)
-        );
+        });
 
         return this;
     }

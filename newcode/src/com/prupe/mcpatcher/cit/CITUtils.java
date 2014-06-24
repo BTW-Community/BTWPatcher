@@ -1,10 +1,13 @@
 package com.prupe.mcpatcher.cit;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.Config;
+import com.prupe.mcpatcher.MCLogger;
+import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.item.ItemAPI;
 import com.prupe.mcpatcher.mal.resource.ResourceList;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
+import com.prupe.mcpatcher.mal.tile.IconAPI;
 import com.prupe.mcpatcher.mal.tile.TileLoader;
 import net.minecraft.src.*;
 
@@ -144,7 +147,7 @@ public class CITUtils {
                         for (Item item : override.items) {
                             registerOverride(map, item, override);
                             if (i < 10) {
-                                logger.fine("registered %s to item %d (%s)", override, item);
+                                logger.fine("registered %s to item %s", override, ItemAPI.getItemName(item));
                             } else if (i == 10) {
                                 logger.fine("... %d total", override.items.size());
                             }
@@ -245,8 +248,8 @@ public class CITUtils {
         if (lastIcon == null) {
             width = height = 256;
         } else {
-            width = lastIcon.getWidth();
-            height = lastIcon.getHeight();
+            width = IconAPI.getIconWidth(lastIcon);
+            height = IconAPI.getIconHeight(lastIcon);
         }
         Enchantment.beginOuter3D();
         for (int i = 0; i < matches.size(); i++) {

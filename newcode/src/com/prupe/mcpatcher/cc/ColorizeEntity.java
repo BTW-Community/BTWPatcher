@@ -1,8 +1,8 @@
 package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
+import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.EntityLivingBase;
 import net.minecraft.src.EntitySheep;
 import net.minecraft.src.ItemDye;
@@ -12,9 +12,9 @@ import java.util.Properties;
 import java.util.Random;
 
 public class ColorizeEntity {
-    private static final ResourceLocation LAVA_DROP_COLORS = TexturePackAPI.newMCPatcherResourceLocation("colormap/lavadrop.png");
-    private static final ResourceLocation MYCELIUM_COLORS = TexturePackAPI.newMCPatcherResourceLocation("colormap/myceliumparticle.png");
-    private static final ResourceLocation XPORB_COLORS = TexturePackAPI.newMCPatcherResourceLocation("colormap/xporb.png");
+    private static final ResourceLocation LAVA_DROP_COLORS = TexturePackAPI.newMCPatcherResourceLocation("/misc/lavadropcolor.png", "colormap/lavadrop.png");
+    private static final ResourceLocation MYCELIUM_COLORS = TexturePackAPI.newMCPatcherResourceLocation("/misc/myceliumparticlecolor.png", "colormap/myceliumparticle.png");
+    private static final ResourceLocation XPORB_COLORS = TexturePackAPI.newMCPatcherResourceLocation("/misc/xporbcolor.png", "colormap/xporb.png");
 
     static float[] waterBaseColor; // particle.water
     private static float[] lavaDropColors; // misc/lavadropcolor.png

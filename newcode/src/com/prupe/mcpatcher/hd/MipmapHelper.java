@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.tile.IconAPI;
 import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.TextureAtlasSprite;
 import org.lwjgl.opengl.*;
@@ -76,7 +77,7 @@ public class MipmapHelper {
         logger.config("lod bias: supported=%s, bias=%d", lodSupported, lodBias);
     }
 
-    private static void setupTexture(int width, int height, boolean blur, boolean clamp, String textureName) {
+    static void setupTexture(int width, int height, boolean blur, boolean clamp, String textureName) {
         int mipmaps = useMipmapsForTexture(textureName) ? getMipmapLevels(width, height, 1) : 0;
         logger.finer("setupTexture(%s) %dx%d %d mipmaps", textureName, width, height, mipmaps);
         int magFilter = blur ? GL11.GL_LINEAR : GL11.GL_NEAREST;
@@ -122,6 +123,22 @@ public class MipmapHelper {
         return glTexture;
     }
 
+    public static void setupTexture(ByteBuffer rgb, int width, int height) {
+        IntBuffer buffer = rgb.asIntBuffer();
+        int mipmaps = getMipmapLevelsForCurrentTexture();
+        for (int level = 0; ; level++) {
+            GL11.glTexImage2D(GL11.GL_TEXTURE_2D, level, GL11.GL_RGBA, width, height, 0, TEX_FORMAT, TEX_DATA_TYPE, buffer);
+            if (level >= mipmaps) {
+                break;
+            }
+            IntBuffer newBuffer = getPooledBuffer(width * height).asIntBuffer();
+            scaleHalf(buffer, width, height, newBuffer, 0);
+            buffer = newBuffer;
+            width >>= 1;
+            height >>= 1;
+        }
+    }
+
     public static void setupTexture(int glTexture, int width, int height, String textureName) {
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTexture);
         logger.finer("setupTexture(tilesheet %s, %d, %dx%d)", textureName, glTexture, width, height);
@@ -159,8 +176,8 @@ public class MipmapHelper {
     }
 
     public static void copySubTexture(TextureAtlasSprite texture, int index) {
-        int width = texture.getWidth();
-        int height = texture.getHeight();
+        int width = IconAPI.getIconWidth(texture);
+        int height = IconAPI.getIconHeight(texture);
         if (texture.mipmaps == null || texture.mipmaps.size() != texture.animationFrames.size()) {
             texture.mipmaps = new ArrayList<IntBuffer[]>(texture.animationFrames.size());
             int mipmaps = getMipmapLevelsForCurrentTexture();
@@ -171,8 +188,8 @@ public class MipmapHelper {
                 texture.mipmaps.add(generateMipmaps(texture.animationFrames.get(i), width, height, mipmaps));
             }
         }
-        int x = texture.getX0();
-        int y = texture.getY0();
+        int x = IconAPI.getIconX0(texture);
+        int y = IconAPI.getIconY0(texture);
         IntBuffer[] mipmapData = texture.mipmaps.get(index);
         if (mipmapData == null) {
             return;
@@ -238,7 +255,7 @@ public class MipmapHelper {
             setBackgroundColor(buffer, image.getWidth(), image.getHeight(), scaledBuffer, image.getWidth() / width);
         }
         long s3 = System.currentTimeMillis();
-        logger.finer("bg fix (tile %s): scaling %dms, setbg %dms", name, s2 - s1, s3 - s2);
+        logger.finest("bg fix (tile %s): scaling %dms, setbg %dms", name, s2 - s1, s3 - s2);
         return image;
     }
 
@@ -277,7 +294,17 @@ public class MipmapHelper {
             texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "dial/") ||
             texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "font/") ||
             texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "lightmap/") ||
-            texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "sky/")) {
+            texture.startsWith(TexturePackAPI.MCPATCHER_SUBDIR + "sky/") ||
+            // 1.5 stuff
+            texture.startsWith("%") ||
+            texture.startsWith("##") ||
+            texture.startsWith("/achievement/") ||
+            texture.startsWith("/environment/") ||
+            texture.startsWith("/font/") ||
+            texture.startsWith("/gui/") ||
+            texture.startsWith("/misc/") ||
+            texture.startsWith("/terrain/") ||
+            texture.startsWith("/title/")) {
             return false;
         } else {
             return true;
@@ -315,7 +342,7 @@ public class MipmapHelper {
         return image;
     }
 
-    private static IntBuffer newIntBuffer(int size) {
+    static IntBuffer newIntBuffer(int size) {
         ByteBuffer buffer = ByteBuffer.allocateDirect(size);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         return buffer.asIntBuffer();

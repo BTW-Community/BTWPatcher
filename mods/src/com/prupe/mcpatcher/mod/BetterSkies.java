@@ -18,14 +18,14 @@ public class BetterSkies extends Mod {
         name = MCPatcherUtils.BETTER_SKIES;
         author = "MCPatcher";
         description = "Adds support for custom skyboxes.";
-        version = "1.6";
+        version = "1.7";
 
         configPanel = new ConfigPanel();
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
         addClassMod(new MinecraftMod(this).mapWorldClient());
-        addClassMod(new ResourceLocationMod(this));
+        ResourceLocationMod.setup(this);
         addClassMod(new WorldMod());
         addClassMod(new WorldProviderMod(this));
         addClassMod(new WorldClientMod(this));
@@ -121,6 +121,7 @@ public class BetterSkies extends Mod {
             final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
             final MethodRef glCallList = new MethodRef(MCPatcherUtils.GL11_CLASS, "glCallList", "(I)V");
             final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
+            final MethodRef glColor4f = new MethodRef(MCPatcherUtils.GL11_CLASS, "glColor4f", "(FFFF)V");
             final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final FieldRef worldProvider = new FieldRef("World", "worldProvider", "LWorldProvider;");
@@ -130,11 +131,27 @@ public class BetterSkies extends Mod {
             final FieldRef glStarList = new FieldRef(getDeobfClass(), "glStarList", "I");
             final FieldRef active = new FieldRef(MCPatcherUtils.SKY_RENDERER_CLASS, "active", "Z");
             final FieldRef horizonHeight = new FieldRef(MCPatcherUtils.SKY_RENDERER_CLASS, "horizonHeight", "D");
+            final MethodRef setupSky = new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setup", "(LWorld;FF)V");
+            final MethodRef renderAllSky = new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "renderAll", "()V");
 
             addClassSignature(new ConstSignature("smoke"));
-            addClassSignature(new ConstSignature("textures/environment/clouds.png"));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select(
+                "/environment/clouds.png",
+                "textures/environment/clouds.png"
+            )));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderSky);
+                    addXref(1, mc);
+                    addXref(2, worldProvider);
+                    addXref(3, WorldProviderMod.getWorldTypeRef());
+                    addXref(4, tessellator);
+                    addXref(5, worldObj);
+                    addXref(6, getRainStrength);
+                    addXref(7, getCelestialAngle);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -190,105 +207,96 @@ public class BetterSkies extends Mod {
                         reference(INVOKESTATIC, glRotatef)
                     );
                 }
-            }
-                .setMethod(renderSky)
-                .addXref(1, mc)
-                .addXref(2, worldProvider)
-                .addXref(3, WorldProviderMod.getWorldTypeRef())
-                .addXref(4, tessellator)
-                .addXref(5, worldObj)
-                .addXref(6, getRainStrength)
-                .addXref(7, getCelestialAngle)
+            });
+
+            addClassSignature(new BytecodeSignature() {
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            ALOAD_0,
+                            captureReference(GETFIELD),
+                            reference(INVOKESTATIC, glCallList),
+
+                            nonGreedy(any(0, 1000)),
+
+                            ALOAD_0,
+                            captureReference(GETFIELD),
+                            reference(INVOKESTATIC, glCallList),
+
+                            nonGreedy(any(0, 1000)),
+
+                            ALOAD_0,
+                            captureReference(GETFIELD),
+                            reference(INVOKESTATIC, glCallList)
+                        );
+                    }
+                }
+                    .setMethod(renderSky)
+                    .addXref(1, glSkyList)
+                    .addXref(2, glStarList)
+                    .addXref(3, glSkyList2)
             );
 
             addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        reference(INVOKESTATIC, glCallList),
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // tessellator.startDrawingQuads();
+                            ALOAD_2,
+                            captureReference(INVOKEVIRTUAL),
 
-                        nonGreedy(any(0, 1000)),
+                            // tessellator.setColorOpaque_I(0x...);
+                            ALOAD_2,
+                            anyLDC,
+                            captureReference(INVOKEVIRTUAL),
 
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        reference(INVOKESTATIC, glCallList),
+                            // tessellator.addVertexWithUV(-100D, -100D, -100D, 0.0D, 0.0D);
+                            ALOAD_2,
+                            push(-100.0),
+                            push(-100.0),
+                            push(-100.0),
+                            push(0.0),
+                            push(0.0),
+                            captureReference(INVOKEVIRTUAL),
 
-                        nonGreedy(any(0, 1000)),
+                            // tessellator.addVertexWithUV(-100D, -100D, 100D, 0.0D, 16D);
+                            ALOAD_2,
+                            push(-100.0),
+                            push(-100.0),
+                            push(100.0),
+                            push(0.0),
+                            push(16.0),
+                            backReference(3),
 
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        reference(INVOKESTATIC, glCallList)
-                    );
+                            // tessellator.addVertexWithUV(100D, -100D, 100D, 16D, 16D);
+                            ALOAD_2,
+                            push(100.0),
+                            push(-100.0),
+                            push(100.0),
+                            push(16.0),
+                            push(16.0),
+                            backReference(3),
+
+                            // tessellator.addVertexWithUV(100D, -100D, -100D, 16D, 0.0D);
+                            ALOAD_2,
+                            push(100.0),
+                            push(-100.0),
+                            push(-100.0),
+                            push(16.0),
+                            push(0.0),
+                            backReference(3),
+
+                            // tessellator.draw();
+                            ALOAD_2,
+                            captureReference(INVOKEVIRTUAL),
+                            POP
+                        );
+                    }
                 }
-            }
-                .setMethod(renderSky)
-                .addXref(1, glSkyList)
-                .addXref(2, glStarList)
-                .addXref(3, glSkyList2)
-            );
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // tessellator.startDrawingQuads();
-                        ALOAD_2,
-                        captureReference(INVOKEVIRTUAL),
-
-                        // tessellator.setColorOpaque_I(0x...);
-                        ALOAD_2,
-                        anyLDC,
-                        captureReference(INVOKEVIRTUAL),
-
-                        // tessellator.addVertexWithUV(-100D, -100D, -100D, 0.0D, 0.0D);
-                        ALOAD_2,
-                        push(-100.0),
-                        push(-100.0),
-                        push(-100.0),
-                        push(0.0),
-                        push(0.0),
-                        captureReference(INVOKEVIRTUAL),
-
-                        // tessellator.addVertexWithUV(-100D, -100D, 100D, 0.0D, 16D);
-                        ALOAD_2,
-                        push(-100.0),
-                        push(-100.0),
-                        push(100.0),
-                        push(0.0),
-                        push(16.0),
-                        backReference(3),
-
-                        // tessellator.addVertexWithUV(100D, -100D, 100D, 16D, 16D);
-                        ALOAD_2,
-                        push(100.0),
-                        push(-100.0),
-                        push(100.0),
-                        push(16.0),
-                        push(16.0),
-                        backReference(3),
-
-                        // tessellator.addVertexWithUV(100D, -100D, -100D, 16D, 0.0D);
-                        ALOAD_2,
-                        push(100.0),
-                        push(-100.0),
-                        push(-100.0),
-                        push(16.0),
-                        push(0.0),
-                        backReference(3),
-
-                        // tessellator.draw();
-                        ALOAD_2,
-                        captureReference(INVOKEVIRTUAL),
-                        POP
-                    );
-                }
-            }
-                .addXref(1, startDrawingQuads)
-                .addXref(2, setColorOpaque_I)
-                .addXref(3, addVertexWithUV)
-                .addXref(4, draw)
+                    .addXref(1, startDrawingQuads)
+                    .addXref(2, setColorOpaque_I)
+                    .addXref(3, addVertexWithUV)
+                    .addXref(4, draw)
             );
 
             addPatch(new BytecodePatch() {
@@ -314,12 +322,17 @@ public class BetterSkies extends Mod {
                         reference(GETFIELD, worldObj),
                         FLOAD_1,
                         reference(INVOKEVIRTUAL, getCelestialAngle),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setup", "(LWorld;FF)V"))
+                        reference(INVOKESTATIC, setupSky)
                     );
                 }
             }.targetMethod(renderSky));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(renderSky);
+                }
+
                 @Override
                 public String getDescription() {
                     return "render custom sky";
@@ -345,13 +358,10 @@ public class BetterSkies extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "renderAll", "()V"))
+                        reference(INVOKESTATIC, renderAllSky)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(renderSky)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -366,7 +376,7 @@ public class BetterSkies extends Mod {
                         FLOAD, backReference(1),
                         FLOAD, backReference(1),
                         FLOAD, backReference(1),
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.GL11_CLASS, "glColor4f", "(FFFF)V")),
+                        reference(INVOKESTATIC, glColor4f),
 
                         ALOAD_0,
                         reference(GETFIELD, glStarList),
@@ -425,12 +435,23 @@ public class BetterSkies extends Mod {
             addCelestialObjectPatch("moon", "moon_phases.png");
         }
 
-        private void addCelestialObjectPatch(final String objName, String textureName) {
-            final FieldRef textureField = new FieldRef(getDeobfClass(), objName, "LResourceLocation;");
+        private void addCelestialObjectPatch(final String objName, final String textureName) {
+            final MethodRef setupCelestialObject = new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setupCelestialObject", "(LResourceLocation;)LResourceLocation;");
+            final FieldRef textureField;
+            if (ResourceLocationMod.haveClass()) {
+                textureField = new FieldRef(getDeobfClass(), objName, "LResourceLocation;");
 
-            addClassSignature(new ResourceLocationSignature(this, textureField, "textures/environment/" + textureName));
+                addClassSignature(new ResourceLocationSignature(this, textureField, "textures/environment/" + textureName));
+            } else {
+                textureField = null;
+            }
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderSky);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override " + objName + " texture";
@@ -438,21 +459,26 @@ public class BetterSkies extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    return buildExpression(
-                        reference(GETSTATIC, textureField)
-                    );
+                    if (textureField == null) {
+                        return buildExpression(
+                            push("/environment/" + textureName)
+                        );
+                    } else {
+                        return buildExpression(
+                            reference(GETSTATIC, textureField)
+                        );
+                    }
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setupCelestialObject", "(LResourceLocation;)LResourceLocation;"))
+                        ResourceLocationMod.wrap(this),
+                        reference(INVOKESTATIC, setupCelestialObject),
+                        ResourceLocationMod.unwrap(this)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderSky)
-            );
+            });
         }
     }
 
@@ -469,11 +495,25 @@ public class BetterSkies extends Mod {
             final MethodRef addEffect = new MethodRef(getDeobfClass(), "addEffect", "(LEntityFX;)V");
             final MethodRef getFXLayer = new MethodRef("EntityFX", "getFXLayer", "()I");
             final MethodRef glBlendFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBlendFunc", "(II)V");
-            final MethodRef glAlphaFunc = new MethodRef("org/lwjgl/opengl/GL11", "glAlphaFunc", "(IF)V");
+            final MethodRef glAlphaFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glAlphaFunc", "(IF)V");
+            final InterfaceMethodRef listIsEmpty = new InterfaceMethodRef("java/util/List", "isEmpty", "()Z");
+            final MethodRef newGetFXLayer = new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "getFXLayer", "(LEntityFX;)I");
+            final MethodRef setParticleBlendMethod = new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "setParticleBlendMethod", "(I)V");
+            final MethodRef skipThisLayer = new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "skipThisLayer", "(ZI)Z");
 
-            addClassSignature(new ConstSignature("textures/particle/particles.png"));
+            if (ResourceLocationMod.haveClass()) {
+                addClassSignature(new ConstSignature("textures/particle/particles.png"));
+            } else {
+                addClassSignature(new ConstSignature("/particles.png"));
+                addClassSignature(new ConstSignature("/gui/items.png"));
+            }
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    matchConstructorOnly(true);
+                    addXref(1, fxLayers);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -483,10 +523,7 @@ public class BetterSkies extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, fxLayers)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -500,6 +537,11 @@ public class BetterSkies extends Mod {
             }.setMethod(renderParticles));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(addEffect);
+                    addXref(1, getFXLayer);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -510,10 +552,7 @@ public class BetterSkies extends Mod {
 
                     );
                 }
-            }
-                .setMethod(addEffect)
-                .addXref(1, getFXLayer)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -529,9 +568,10 @@ public class BetterSkies extends Mod {
                             build(push(ORIG_LAYERS - 1))
                         ),
                         lookAhead(or(
-                            build(reference(ANEWARRAY, list)),
-                            build(IF_ICMPLT_or_IF_ICMPGE, any(2))),
-                            true)
+                                build(reference(ANEWARRAY, list)),
+                                build(IF_ICMPLT_or_IF_ICMPGE, any(2))),
+                            true
+                        )
                     );
                 }
 
@@ -559,12 +599,17 @@ public class BetterSkies extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "getFXLayer", "(LEntityFX;)I"))
+                        reference(INVOKESTATIC, newGetFXLayer)
                     );
                 }
             }.targetMethod(addEffect));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderParticles);
+                }
+
                 @Override
                 public String getDescription() {
                     return "render extra fx layers";
@@ -577,7 +622,7 @@ public class BetterSkies extends Mod {
                         reference(GETFIELD, fxLayers),
                         ILOAD, capture(any()),
                         AALOAD,
-                        reference(INVOKEINTERFACE, new InterfaceMethodRef("java/util/List", "isEmpty", "()Z"))
+                        reference(INVOKEINTERFACE, listIsEmpty)
                     );
                 }
 
@@ -586,13 +631,10 @@ public class BetterSkies extends Mod {
                     layerRegister = getCaptureGroup(1)[0] & 0xff;
                     return buildCode(
                         ILOAD, layerRegister,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "skipThisLayer", "(ZI)Z"))
+                        reference(INVOKESTATIC, skipThisLayer)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderParticles)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -617,7 +659,7 @@ public class BetterSkies extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         ILOAD, layerRegister,
-                        reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "setParticleBlendMethod", "(I)V"))
+                        reference(INVOKESTATIC, setParticleBlendMethod)
                     );
                 }
             }.targetMethod(renderParticles));

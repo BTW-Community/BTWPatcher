@@ -1,7 +1,10 @@
 package com.prupe.mcpatcher.ctm;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.Config;
+import com.prupe.mcpatcher.MCLogger;
+import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
+import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
 import com.prupe.mcpatcher.mal.resource.ResourceList;
@@ -24,7 +27,6 @@ public class CTMUtils {
     private static TileLoader tileLoader;
 
     private static ITileOverride lastOverride;
-    private static Icon blankIcon;
 
     private static final TileOverrideIterator.IJK ijkIterator = new TileOverrideIterator.IJK(blockOverrides, tileOverrides);
     private static final TileOverrideIterator.Metadata metadataIterator = new TileOverrideIterator.Metadata(blockOverrides, tileOverrides);
@@ -58,7 +60,7 @@ public class CTMUtils {
                 blockOverrides.clear();
                 tileOverrides.clear();
                 lastOverride = null;
-                blankIcon = null;
+                RenderBlocksUtils.blankIcon = null;
                 tileLoader = new TileLoader("textures/blocks", logger);
                 BlockOrientation.reset();
                 RenderPassAPI.instance.refreshBlendingOptions();
@@ -113,7 +115,7 @@ public class CTMUtils {
             }
         }
         clearBlockFace();
-        return lastOverride == null && skipDefaultRendering(block) ? blankIcon : icon;
+        return lastOverride == null && skipDefaultRendering(block) ? RenderBlocksUtils.blankIcon : icon;
     }
 
     public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, int face, int metadata) {
@@ -191,7 +193,7 @@ public class CTMUtils {
     }
 
     public static void setBlankResource() {
-        blankIcon = tileLoader.getIcon(RenderPassAPI.instance.getBlankResource());
+        RenderBlocksUtils.blankIcon = tileLoader.getIcon(RenderPassAPI.instance.getBlankResource());
     }
 
     public static class Ext18 {

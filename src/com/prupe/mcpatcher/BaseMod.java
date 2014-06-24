@@ -69,8 +69,9 @@ public final class BaseMod extends Mod {
         }
         addClassFile(MCPatcherUtils.MAL_CLASS);
 
+        String prefix = getMinecraftVersion().compareTo("13w24a") < 0 ? "" : "assets/minecraft/mcpatcher/";
         for (int i : new int[]{0, 0x80808080, 0xffffffff}) {
-            addFile(String.format("%s" + MCPatcherUtils.BLANK_PNG_FORMAT, "assets/minecraft/", i));
+            addFile(String.format("%s" + MCPatcherUtils.BLANK_PNG_FORMAT, prefix, i));
         }
     }
 
@@ -273,6 +274,11 @@ public final class BaseMod extends Mod {
             }
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    matchConstructorOnly(true);
+                }
+
                 @Override
                 public String getDescription() {
                     return "MCPatcherUtils.setMinecraft(this)";
@@ -307,15 +313,17 @@ public final class BaseMod extends Mod {
                         return buildCode(ACONST_NULL);
                     }
                 }
-            }
-                .setInsertAfter(true)
-                .matchConstructorOnly(true)
-            );
+            });
 
             if (!haveGetInstance) {
                 addPatch(new AddFieldPatch(instance, AccessFlag.PUBLIC | AccessFlag.STATIC));
 
                 addPatch(new BytecodePatch() {
+                    {
+                        setInsertAfter(true);
+                        matchConstructorOnly(true);
+                    }
+
                     @Override
                     public String getDescription() {
                         return "set instance";
@@ -337,10 +345,7 @@ public final class BaseMod extends Mod {
                             reference(PUTSTATIC, instance)
                         );
                     }
-                }
-                    .setInsertAfter(true)
-                    .matchConstructorOnly(true)
-                );
+                });
 
                 addPatch(new AddMethodPatch(getInstance, AccessFlag.PUBLIC | AccessFlag.STATIC) {
                     @Override

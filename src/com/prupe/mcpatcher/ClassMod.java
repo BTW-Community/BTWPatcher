@@ -112,7 +112,7 @@ abstract public class ClassMod implements PatchComponent {
      * @return deobfuscated class name
      */
     public String getDeobfClass() {
-        return getClass().getSimpleName().replaceFirst("^_", "").replaceFirst("Mod$", "");
+        return getClass().getSimpleName().replaceFirst("^_", "").replaceFirst("Mod\\d*$", "");
     }
 
     boolean okToApply() {

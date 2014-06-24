@@ -6,14 +6,11 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
-import net.minecraft.client.Minecraft;
-import net.minecraft.src.Icon;
-import net.minecraft.src.ResourceLocation;
-import net.minecraft.src.TextureAtlas;
-import net.minecraft.src.TextureAtlasSprite;
+import net.minecraft.src.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.*;
 import java.util.List;
 
@@ -27,7 +24,7 @@ public class TileLoader {
 
     private static final TexturePackChangeHandler changeHandler;
     private static boolean changeHandlerCalled;
-    private static boolean registerIconsCalled;
+    private static boolean useFullPath;
 
     private static final long MAX_TILESHEET_SIZE;
 
@@ -35,7 +32,7 @@ public class TileLoader {
     protected final MCLogger subLogger;
 
     private TextureAtlas baseTextureMap;
-    private Map<String, TextureAtlasSprite> baseTexturesByName;
+    private final Map<String, TextureAtlasSprite> baseTexturesByName = new HashMap<String, TextureAtlasSprite>();
     private final Set<ResourceLocation> tilesToRegister = new HashSet<ResourceLocation>();
     private final Map<ResourceLocation, BufferedImage> tileImages = new HashMap<ResourceLocation, BufferedImage>();
     private final Map<String, Icon> iconMap = new HashMap<String, Icon>();
@@ -44,6 +41,7 @@ public class TileLoader {
         long maxSize = 4096L;
         try {
             maxSize = Minecraft.getMaxTextureSize();
+        } catch (NoSuchMethodError e) {
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -84,9 +82,8 @@ public class TileLoader {
     }
 
     public static void registerIcons(TextureAtlas textureMap, String mapName, Map<String, TextureAtlasSprite> map) {
-        logger.fine("before registerIcons(%s) %d icons", mapName, map.size());
         mapName = mapName.replaceFirst("/$", "");
-        registerIconsCalled = true;
+        logger.fine("before registerIcons(%s) %d icons", mapName, map.size());
         if (!changeHandlerCalled) {
             logger.severe("beforeChange was not called, invoking directly");
             changeHandler.beforeChange();
@@ -94,7 +91,7 @@ public class TileLoader {
         for (TileLoader loader : loaders) {
             if (loader.baseTextureMap == null && mapName.equals(loader.mapName)) {
                 loader.baseTextureMap = textureMap;
-                loader.baseTexturesByName = map;
+                loader.baseTexturesByName.putAll(map);
             }
             if (loader.isForThisMap(mapName) && !loader.tilesToRegister.isEmpty()) {
                 loader.subLogger.fine("adding icons to %s (%d remaining)", mapName, loader.tilesToRegister.size(), mapName);
@@ -107,20 +104,33 @@ public class TileLoader {
         logger.fine("after registerIcons(%s) %d icons", mapName, map.size());
     }
 
-    public static String getOverridePath(String prefix, String name, String ext) {
+    public static String getOverridePath(String prefix, String basePath, String name, String ext) {
         String path;
         if (name.endsWith(".png")) {
-            path = name.replaceFirst("\\.[^.]+$", "") + ext;
+            path = name.replaceFirst("^/", "").replaceFirst("\\.[^.]+$", "") + ext;
+            useFullPath = true;
         } else {
-            path = prefix;
-            if (!prefix.endsWith("/")) {
+            path = basePath;
+            if (!basePath.endsWith("/")) {
                 path += "/";
             }
             path += name;
             path += ext;
+            useFullPath = false;
         }
-        logger.finer("getOverridePath(%s, %s, %s) -> %s", prefix, name, ext, path);
+        path = prefix + path;
+        logger.finer("getOverridePath(%s, %s, %s, %s) -> %s", prefix, basePath, name, ext, path);
         return path;
+    }
+
+    public static String getOverrideBasename(Object o, String path) {
+        if (useFullPath) {
+            useFullPath = false;
+            return "/" + path;
+        } else {
+            File file = new File(path);
+            return file.getName().substring(0, file.getName().lastIndexOf('.'));
+        }
     }
 
     public static boolean isSpecialTexture(TextureAtlas map, String texture, String special) {
@@ -170,7 +180,7 @@ public class TileLoader {
     }
 
     private static long getTextureSize(TextureAtlasSprite texture) {
-        return texture == null ? 0 : 4 * texture.getWidth() * texture.getHeight();
+        return texture == null ? 0 : 4 * IconAPI.getIconWidth(texture) * IconAPI.getIconHeight(texture);
     }
 
     private static long getTextureSize(Collection<TextureAtlasSprite> textures) {
@@ -291,11 +301,11 @@ public class TileLoader {
     }
 
     public Icon getIcon(String name) {
-        if (name == null || name.equals("")) {
+        if (MCPatcherUtils.isNullOrEmpty(name)) {
             return null;
         }
         Icon icon = iconMap.get(name);
-        if (icon == null && baseTexturesByName != null) {
+        if (icon == null) {
             icon = baseTexturesByName.get(name);
         }
         return icon;

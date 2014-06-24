@@ -36,7 +36,7 @@ public class ConnectedTextures extends Mod {
         name = MCPatcherUtils.CONNECTED_TEXTURES;
         author = "MCPatcher";
         description = "Enables support for connected, randomized, and other custom terrain textures.";
-        version = "2.6";
+        version = "2.7";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
         addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
@@ -51,7 +51,7 @@ public class ConnectedTextures extends Mod {
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new TessellatorMod(this));
         addClassMod(new IconMod(this));
-        addClassMod(new ResourceLocationMod(this));
+        ResourceLocationMod.setup(this);
         PositionMod.setup(this);
         addClassMod(new BlockMod());
         addClassMod(new RenderBlocksMod());
@@ -68,8 +68,8 @@ public class ConnectedTextures extends Mod {
                 addClassMod(new RenderBlockPaneMod("RenderBlockGlassPane"));
             } else {
                 addClassMod(new BlockModelFaceMod(this)
-                    .mapDirectionMethods()
-                    .mapIntBufferMethods()
+                        .mapDirectionMethods()
+                        .mapIntBufferMethods()
                 );
             }
             addClassMod(renderBlockManagerMod);
@@ -163,6 +163,12 @@ public class ConnectedTextures extends Mod {
             mapBlockIconMethods();
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(getBlockIcon);
+                    addXref(1, IBlockAccessMod.getBlockMetadata);
+                    addXref(2, getBlockIconFromSideAndMetadata);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -177,13 +183,14 @@ public class ConnectedTextures extends Mod {
                         end()
                     );
                 }
-            }
-                .setMethod(getBlockIcon)
-                .addXref(1, IBlockAccessMod.getBlockMetadata)
-                .addXref(2, getBlockIconFromSideAndMetadata)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(constructor);
+                    addXref(1, blockMaterial);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -192,10 +199,7 @@ public class ConnectedTextures extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .setMethod(constructor)
-                .addXref(1, blockMaterial)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -213,14 +217,21 @@ public class ConnectedTextures extends Mod {
 
     private class BlockGrassMod extends ClassMod {
         BlockGrassMod() {
-            addClassSignature(new ConstSignature("_side"));
-            addClassSignature(new ConstSignature("_top"));
-            addClassSignature(new ConstSignature("_side_snowed"));
-            addClassSignature(new ConstSignature("_side_overlay"));
+            if (ResourceLocationMod.haveClass()) {
+                addClassSignature(new ConstSignature("_side"));
+                addClassSignature(new ConstSignature("_top"));
+                addClassSignature(new ConstSignature("_side_snowed"));
+                addClassSignature(new ConstSignature("_side_overlay"));
+            } else {
+                addClassSignature(new ConstSignature("grass_side"));
+                addClassSignature(new ConstSignature("grass_top"));
+                addClassSignature(new ConstSignature("snow_side"));
+                addClassSignature(new ConstSignature("grass_side_overlay"));
+            }
 
             addMemberMapper(new MethodMapper(getGrassSideTexture)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
             );
         }
     }
@@ -233,6 +244,11 @@ public class ConnectedTextures extends Mod {
 
             if (!haveSubclasses()) {
                 addClassSignature(new BytecodeSignature() {
+                    {
+                        setMethod(renderBlockByRenderType);
+                        addXref(1, BlockMod.getRenderType);
+                    }
+
                     @Override
                     public String getMatchExpression() {
                         return buildExpression(
@@ -241,10 +257,7 @@ public class ConnectedTextures extends Mod {
                             registerLoadStore(ISTORE, 2 + PositionMod.getDescriptorLength())
                         );
                     }
-                }
-                    .setMethod(renderBlockByRenderType)
-                    .addXref(1, BlockMod.getRenderType)
-                );
+                });
             }
 
             addMemberMapper(new FieldMapper(blockAccess));
@@ -261,6 +274,10 @@ public class ConnectedTextures extends Mod {
                 setupSecondaryTexture17();
             } else {
                 setupSecondaryTexture18();
+            }
+
+            if (!ResourceLocationMod.haveClass()) {
+                setupCrossedSquares15();
             }
         }
 
@@ -345,8 +362,13 @@ public class ConnectedTextures extends Mod {
             abstract byte[] getCTMUtilsArgs();
         }
 
-        private void mapRenderTypeMethod(final int type, MethodRef renderMethod) {
+        private void mapRenderTypeMethod(final int type, final MethodRef renderMethod) {
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderBlockByRenderType);
+                    addXref(1, renderMethod);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -363,10 +385,7 @@ public class ConnectedTextures extends Mod {
                         capture(build(subset(new int[]{INVOKEVIRTUAL, INVOKESPECIAL}, true), any(2)))
                     );
                 }
-            }
-                .setMethod(renderBlockByRenderType)
-                .addXref(1, renderMethod)
-            );
+            });
         }
 
         private void setupGlassPanes() {
@@ -406,9 +425,7 @@ public class ConnectedTextures extends Mod {
                         reference(INVOKESTATIC, newBlockIconFromPosition)
                     );
                 }
-            }
-                .setInsertAfter(true)
-            );
+            }.setInsertAfter(true));
         }
 
         private void setupSecondaryTexture18() {
@@ -450,6 +467,55 @@ public class ConnectedTextures extends Mod {
                 }
             });
         }
+
+        private void setupCrossedSquares15() {
+            final MethodRef drawCrossedSquares = new MethodRef("RenderBlocks", "drawCrossedSquares", "(LBlock;IDDDF)V");
+
+            addMemberMapper(new MethodMapper(drawCrossedSquares));
+
+            addPatch(new BytecodePatch() {
+                private final MethodRef round = new MethodRef("java/lang/Math", "round", "(D)J");
+
+                @Override
+                public String getDescription() {
+                    return "use block coordinates where possible (crossed squares)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.getBlockIconFromSideAndMetadata(block, 0, metadata);
+                        ALOAD_0,
+                        ALOAD_1,
+                        push(0),
+                        ILOAD_2,
+                        reference(INVOKEVIRTUAL, RenderBlocksMod.getBlockIconFromSideAndMetadata)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // this.getBlockIconFromPosition(block, this.blockAccess, (int) Math.round(x), (int) Math.round(y), (int) Math.round(z), -1);
+                        ALOAD_0,
+                        ALOAD_1,
+                        ALOAD_0,
+                        reference(GETFIELD, RenderBlocksMod.blockAccess),
+                        DLOAD_3,
+                        reference(INVOKESTATIC, round),
+                        L2I,
+                        DLOAD, 5,
+                        reference(INVOKESTATIC, round),
+                        L2I,
+                        DLOAD, 7,
+                        reference(INVOKESTATIC, round),
+                        L2I,
+                        push(-1),
+                        reference(INVOKEVIRTUAL, RenderBlocksMod.getBlockIconFromPosition)
+                    );
+                }
+            }.targetMethod(drawCrossedSquares));
+        }
     }
 
     private class RenderBlocksSubclassMod extends ClassMod {
@@ -466,7 +532,7 @@ public class ConnectedTextures extends Mod {
                 protected String getMoreArgs() {
                     return buildExpression(
                         // this.getBlockIconFromSideAndMetadata(block, face, metadata)
-                        any(0, 20)
+                        any(0, ResourceLocationMod.select(10, 20))
                     );
                 }
             });
@@ -626,7 +692,7 @@ public class ConnectedTextures extends Mod {
             private int connectNorthRegister;
 
             {
-                setInsertBefore(true);
+                setInsertAfter(true);
                 if (methods.length > 0) {
                     targetMethod(methods);
                 }
@@ -692,32 +758,45 @@ public class ConnectedTextures extends Mod {
 
             @Override
             public String getMatchExpression() {
-                return buildExpression(
-                    or(
-                        build(
-                            // 1.6 panes and 1.7+ thin panes
-                            push(0.01),
-                            anyDSTORE,
-                            push(0.005),
-                            anyDSTORE
-                        ),
-                        build(
-                            // 1.7+ thick panes
-                            push(0.001),
-                            anyDSTORE,
-                            push(0.999),
-                            anyDSTORE,
-                            push(0.001),
-                            anyDSTORE
+                if (ResourceLocationMod.haveClass()) {
+                    return buildExpression(
+                        or(
+                            build(
+                                // 1.6 panes and 1.7+ thin panes
+                                push(0.01),
+                                anyDSTORE,
+                                push(0.005),
+                                anyDSTORE
+                            ),
+                            build(
+                                // 1.7+ thick panes
+                                push(0.001),
+                                anyDSTORE,
+                                push(0.999),
+                                anyDSTORE,
+                                push(0.001),
+                                anyDSTORE
+                            )
                         )
-                    )
-                );
+                    );
+                } else {
+                    return buildExpression(
+                        // flag = this.shouldSideBeRendered(...);
+                        registerLoadStore(ISTORE, connectNorthRegister + 5)
+                    );
+                }
             }
 
             @Override
             public byte[] getReplacementBytes() {
-                int index = extractConstPoolIndex(getMatch());
-                double width = getMethodInfo().getConstPool().getDoubleInfo(index);
+                MethodRef newRenderPane = newRenderPaneThin;
+                if (getMatch()[0] == LDC2_W) {
+                    int index = extractConstPoolIndex(getMatch());
+                    double width = getMethodInfo().getConstPool().getDoubleInfo(index);
+                    if (width == 0.001) {
+                        newRenderPane = newRenderPaneThick;
+                    }
+                }
                 return buildCode(
                     // GlassPaneRenderer.render(renderBlocks, blockPane, i, j, k, connectNorth, ...);
                     ALOAD_0,
@@ -728,7 +807,7 @@ public class ConnectedTextures extends Mod {
                     ILOAD, connectNorthRegister + 1,
                     ILOAD, connectNorthRegister + 2,
                     ILOAD, connectNorthRegister + 3,
-                    reference(INVOKESTATIC, width == 0.001 ? newRenderPaneThick : newRenderPaneThin)
+                    reference(INVOKESTATIC, newRenderPane)
                 );
             }
         });
@@ -1046,6 +1125,11 @@ public class ConnectedTextures extends Mod {
             }.targetMethod(renderBlock));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderFaceAO, renderFaceNonAO);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override texture (custom model faces)";
@@ -1080,10 +1164,7 @@ public class ConnectedTextures extends Mod {
                         reference(INVOKESTATIC, setFace)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderFaceAO, renderFaceNonAO)
-            );
+            });
         }
     }
 

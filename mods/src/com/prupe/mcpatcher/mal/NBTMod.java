@@ -4,7 +4,8 @@ import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.NBTTagListMod;
 import javassist.bytecode.AccessFlag;
 
-import static com.prupe.mcpatcher.BinaryRegex.*;
+import static com.prupe.mcpatcher.BinaryRegex.begin;
+import static com.prupe.mcpatcher.BinaryRegex.end;
 import static javassist.bytecode.Opcode.*;
 
 public class NBTMod extends Mod {
@@ -51,7 +52,7 @@ public class NBTMod extends Mod {
             addClassSignature(new ConstSignature("SHORT"));
 
             addMemberMapper(new MethodMapper(getId)
-                .accessFlag(AccessFlag.ABSTRACT, true)
+                    .accessFlag(AccessFlag.ABSTRACT, true)
             );
         }
     }

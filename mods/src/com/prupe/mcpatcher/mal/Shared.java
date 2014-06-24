@@ -3,7 +3,7 @@ package com.prupe.mcpatcher.mal;
 import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
 
-import static javassist.bytecode.Opcode.*;
+import static javassist.bytecode.Opcode.INVOKEVIRTUAL;
 
 class Shared {
     static class RegistryBaseMod extends com.prupe.mcpatcher.ClassMod {

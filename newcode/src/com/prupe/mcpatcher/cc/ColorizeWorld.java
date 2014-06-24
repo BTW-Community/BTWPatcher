@@ -1,10 +1,9 @@
 package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.Config;
-import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
+import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.*;
 
 import java.util.HashMap;
@@ -14,13 +13,11 @@ import java.util.Properties;
 import static com.prupe.mcpatcher.cc.Colorizer.*;
 
 public class ColorizeWorld {
-    private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
-
     private static final int fogBlendRadius = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "fogBlendRadius", 7);
 
-    private static final ResourceLocation UNDERWATERCOLOR = TexturePackAPI.newMCPatcherResourceLocation("colormap/underwater.png");
-    private static final ResourceLocation FOGCOLOR0 = TexturePackAPI.newMCPatcherResourceLocation("colormap/fog0.png");
-    private static final ResourceLocation SKYCOLOR0 = TexturePackAPI.newMCPatcherResourceLocation("colormap/sky0.png");
+    private static final ResourceLocation UNDERWATERCOLOR = TexturePackAPI.newMCPatcherResourceLocation("/misc/underwatercolor.png", "colormap/underwater.png");
+    private static final ResourceLocation FOGCOLOR0 = TexturePackAPI.newMCPatcherResourceLocation("/misc/fogcolor0.png", "colormap/fog0.png");
+    private static final ResourceLocation SKYCOLOR0 = TexturePackAPI.newMCPatcherResourceLocation("/misc/skycolor0.png", "colormap/sky0.png");
 
     private static final String TEXT_KEY = "text.";
     private static final String TEXT_CODE_KEY = TEXT_KEY + "code.";

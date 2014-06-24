@@ -1,8 +1,11 @@
 package com.prupe.mcpatcher.hd;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.Config;
+import com.prupe.mcpatcher.MCLogger;
+import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.tile.IconAPI;
 import com.prupe.mcpatcher.mal.util.InputHandler;
 import net.minecraft.src.*;
 import org.lwjgl.input.Keyboard;
@@ -19,7 +22,7 @@ import java.util.*;
 public class FancyDial {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ANIMATIONS, "Animation");
 
-    private static final ResourceLocation ITEMS_PNG = new ResourceLocation("textures/atlas/items.png");
+    private static final ResourceLocation ITEMS_PNG = new ResourceLocation(TexturePackAPI.select("/gui/items.png", "textures/atlas/items.png"));
     private static final double ANGLE_UNSET = Double.MAX_VALUE;
     private static final int NUM_SCRATCH_TEXTURES = 3;
 
@@ -85,19 +88,22 @@ public class FancyDial {
             return;
         }
         String name = icon.getIconName();
-        if ("compass".equals(icon.getIconName())) {
+        if (icon instanceof TextureClock && name.equals("compass")) { // 1.5 bug
+            name = "clock";
+        }
+        if ("compass".equals(name)) {
             if (!enableCompass) {
                 return;
             }
-        } else if ("clock".equals(icon.getIconName())) {
+        } else if ("clock".equals(name)) {
             if (!enableClock) {
                 return;
             }
         } else {
-            logger.warning("ignoring custom animation for %s not compass or clock", icon.getIconName());
+            logger.warning("ignoring custom animation for %s not compass or clock", name);
             return;
         }
-        ResourceLocation resource = TexturePackAPI.newMCPatcherResourceLocation("dial/" + name + ".properties");
+        ResourceLocation resource = TexturePackAPI.newMCPatcherResourceLocation("/misc/" + name + ".properties", "dial/" + name + ".properties");
         if (TexturePackAPI.hasResource(resource)) {
             logger.fine("found custom %s (%s)", name, resource);
             setupInfo.put(icon, resource);
@@ -199,10 +205,10 @@ public class FancyDial {
         this.icon = icon;
         this.resource = resource;
         name = icon.getIconName();
-        x0 = icon.getX0();
-        y0 = icon.getY0();
-        width = icon.getWidth();
-        height = icon.getHeight();
+        x0 = IconAPI.getIconX0(icon);
+        y0 = IconAPI.getIconY0(icon);
+        width = IconAPI.getIconWidth(icon);
+        height = IconAPI.getIconHeight(icon);
         scratchBuffer = ByteBuffer.allocateDirect(4 * width * height);
 
         int itemsTexture = TexturePackAPI.getTextureIfLoaded(ITEMS_PNG);

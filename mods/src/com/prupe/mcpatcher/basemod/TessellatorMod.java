@@ -34,6 +34,11 @@ public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
         }.setMethod(draw));
 
         addClassSignature(new BytecodeSignature() {
+            {
+                setMethod(startDrawingQuads);
+                addXref(1, startDrawing);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -43,12 +48,15 @@ public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
                     RETURN
                 );
             }
-        }
-            .setMethod(startDrawingQuads)
-            .addXref(1, startDrawing)
-        );
+        });
 
         addClassSignature(new BytecodeSignature() {
+            {
+                setMethod(addVertexWithUV);
+                addXref(1, setTextureUV);
+                addXref(2, addVertex);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -66,11 +74,7 @@ public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
                     RETURN
                 );
             }
-        }
-            .setMethod(addVertexWithUV)
-            .addXref(1, setTextureUV)
-            .addXref(2, addVertex)
-        );
+        });
 
         addMemberMapper(new FieldMapper(instance).accessFlag(AccessFlag.STATIC, true));
         addMemberMapper(new MethodMapper(setColorOpaque_F));

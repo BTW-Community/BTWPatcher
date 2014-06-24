@@ -87,14 +87,18 @@ public class ResourceList {
                 MCPatcherUtils.close(zipFile);
             }
         }
-        Map<String, File> map = resourcePack.map;
-        if (map != null) {
-            for (Map.Entry<String, File> entry : map.entrySet()) {
-                String key = entry.getKey();
-                File file = entry.getValue();
-                ResourceLocation resource = new ResourceLocation(key);
-                addResource(resource, file.isFile(), file.isDirectory());
+        try {
+            Map<String, File> map = resourcePack.map;
+            if (map != null) {
+                for (Map.Entry<String, File> entry : map.entrySet()) {
+                    String key = entry.getKey();
+                    File file = entry.getValue();
+                    ResourceLocation resource = new ResourceLocation(key);
+                    addResource(resource, file.isFile(), file.isDirectory());
+                }
             }
+        } catch (NoSuchFieldError e) {
+            // field not present in 1.5
         }
         if (!allResources.isEmpty()) {
             logger.fine("new %s", this);
@@ -107,20 +111,12 @@ public class ResourceList {
         if (directory == null || !directory.isDirectory()) {
             return;
         }
-        directory = new File(directory, "assets");
-        if (!directory.isDirectory()) {
-            return;
-        }
-        File[] subdirs = directory.listFiles();
-        if (subdirs == null) {
-            return;
-        }
-        for (File subdir : subdirs) {
-            Set<String> allFiles = new HashSet<String>();
-            listAllFiles(subdir, "", allFiles);
-            for (String path : allFiles) {
-                File file = new File(subdir, path);
-                ResourceLocation resource = new ResourceLocation(subdir.getName(), path.replace(File.separatorChar, '/'));
+        Set<String> allFiles = new HashSet<String>();
+        listAllFiles(directory, "", allFiles);
+        for (String path : allFiles) {
+            ResourceLocation resource = TexturePackAPI.parsePath(path);
+            if (resource != null) {
+                File file = new File(directory, path);
                 addResource(resource, file.isFile(), file.isDirectory());
             }
         }
@@ -133,18 +129,10 @@ public class ResourceList {
         }
         for (ZipEntry entry : Collections.list(zipFile.entries())) {
             String path = entry.getName();
-            if (!path.startsWith("assets/")) {
-                continue;
+            ResourceLocation resource = TexturePackAPI.parsePath(path);
+            if (resource != null) {
+                addResource(resource, !entry.isDirectory(), entry.isDirectory());
             }
-            path = path.substring(7);
-            int slash = path.indexOf('/');
-            if (slash < 0) {
-                continue;
-            }
-            String namespace = path.substring(0, slash);
-            path = path.substring(slash + 1);
-            ResourceLocation resource = new ResourceLocation(namespace, path);
-            addResource(resource, !entry.isDirectory(), entry.isDirectory());
         }
     }
 

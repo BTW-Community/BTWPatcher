@@ -418,7 +418,7 @@ abstract public class BytecodePatch extends ClassPatch {
     }
 
     @Override
-    boolean apply(ClassFile classFile) throws BadBytecode {
+    public boolean apply(ClassFile classFile) throws BadBytecode {
         boolean patched = false;
         for (Object o : classFile.getMethods()) {
             MethodInfo methodInfo = (MethodInfo) o;

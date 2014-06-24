@@ -1,6 +1,8 @@
 package com.prupe.mcpatcher.hd;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.Config;
+import com.prupe.mcpatcher.MCLogger;
+import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
 import net.minecraft.src.FontRenderer;
@@ -51,23 +53,27 @@ public class FontUtils {
     }
 
     public static ResourceLocation getFontName(FontRenderer fontRenderer, ResourceLocation font) {
-        if (fontRenderer.defaultFont == null) {
-            fontRenderer.defaultFont = font;
+        if (fontRenderer.getDefaultFont() == null) {
+            fontRenderer.setDefaultFont(font);
         }
-        if (fontRenderer.hdFont == null) {
-            String namespace = fontRenderer.defaultFont.getNamespace();
-            String name = fontRenderer.defaultFont.getPath().replaceAll(".*/", "");
-            fontRenderer.hdFont = new ResourceLocation(namespace, TexturePackAPI.MCPATCHER_SUBDIR + "font/" + name);
+        ResourceLocation defaultFont = fontRenderer.getDefaultFont();
+        if (fontRenderer.getHDFont() == null) {
+            String namespace = defaultFont.getNamespace();
+            String name = defaultFont.getPath().replaceAll(".*/", "");
+            fontRenderer.setHDFont(new ResourceLocation(namespace, TexturePackAPI.MCPATCHER_SUBDIR + "font/" + name));
         }
+        ResourceLocation hdFont = fontRenderer.getHDFont();
         ResourceLocation newFont;
-        if (enable && TexturePackAPI.hasResource(fontRenderer.hdFont)) {
-            logger.fine("using %s instead of %s", fontRenderer.hdFont, fontRenderer.defaultFont);
+        if (enable && TexturePackAPI.hasResource(hdFont)) {
+            if (!hdFont.equals(defaultFont)) {
+                logger.fine("using %s instead of %s", hdFont, defaultFont);
+            }
             fontRenderer.isHD = true;
-            newFont = fontRenderer.hdFont;
+            newFont = hdFont;
         } else {
-            logger.fine("using default %s", fontRenderer.defaultFont);
+            logger.fine("using default %s", defaultFont);
             fontRenderer.isHD = enable && enableNonHD;
-            newFont = fontRenderer.defaultFont;
+            newFont = defaultFont;
         }
         fontRenderer.fontAdj = fontRenderer.isHD ? 0.0f : 1.0f;
         return newFont;
@@ -99,7 +105,7 @@ public class FontUtils {
                     int pixel = rgb[x + y * width];
                     if (isOpaque(pixel)) {
                         if (printThis(ch)) {
-                            logger.finer("'%c' pixel (%d, %d) = %08x, colIdx = %d", (char) ch, x, y, pixel, colIdx);
+                            logger.finer("%d '%c' pixel (%d, %d) = %08x, colIdx = %d", ch, (char) ch, x, y, pixel, colIdx);
                         }
                         charWidthf[ch] = (128.0f * (float) (colIdx + 1)) / (float) width + 1.0f;
                         if (showLines) {
@@ -135,7 +141,7 @@ public class FontUtils {
         for (int ch = 0; ch < charWidth.length; ch++) {
             charWidth[ch] = Math.round(charWidthf[ch]);
             if (printThis(ch)) {
-                logger.finer("charWidth['%c'] = %f", (char) ch, charWidthf[ch]);
+                logger.finer("charWidth[%d '%c'] = %f", ch, (char) ch, charWidthf[ch]);
             }
         }
         return charWidthf;
@@ -183,7 +189,7 @@ public class FontUtils {
     public static ResourceLocation getUnicodePage(ResourceLocation resource) {
         if (enable && resource != null) {
             ResourceLocation newResource = new ResourceLocation(resource.getNamespace(), resource.getPath().replaceFirst("^textures/", "mcpatcher/"));
-            if (TexturePackAPI.hasResource(newResource)) {
+            if (!newResource.equals(resource) && TexturePackAPI.hasResource(newResource)) {
                 logger.fine("using %s instead of %s", newResource, resource);
                 return newResource;
             }
@@ -201,7 +207,7 @@ public class FontUtils {
     }
 
     private static boolean printThis(int ch) {
-        return "ABCDEF abcdef".indexOf(ch) >= 0;
+        return "ABCDEF abcdef0123456789".indexOf(ch) >= 0;
     }
 
     private static float defaultSpaceWidth(float[] charWidthf) {
@@ -238,7 +244,7 @@ public class FontUtils {
                     int ch = Integer.parseInt(key.substring(6));
                     float width = Float.parseFloat(value);
                     if (ch >= 0 && ch < charWidthf.length) {
-                        logger.finer("setting charWidthf[%d] to %f", ch, width);
+                        logger.finer("setting charWidthf[%d '%c'] to %f", ch, (char) ch, width);
                         charWidthf[ch] = width;
                         isOverride[ch] = true;
                     }

@@ -16,6 +16,11 @@ public class FontRendererMod extends com.prupe.mcpatcher.ClassMod {
         super(mod);
 
         addClassSignature(new BytecodeSignature() {
+            {
+                matchConstructorOnly(true);
+                addXref(1, new FieldRef(getDeobfClass(), "charWidth", "[I"));
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -28,15 +33,12 @@ public class FontRendererMod extends com.prupe.mcpatcher.ClassMod {
                     captureReference(PUTFIELD)
                 );
             }
-        }
-            .matchConstructorOnly(true)
-            .addXref(1, new FieldRef(getDeobfClass(), "charWidth", "[I"))
-        );
+        });
 
         addClassSignature(new OrSignature(
             new ConstSignature("0123456789abcdef"),
             new ConstSignature("0123456789abcdefk"),
-            new ConstSignature("font/glyph_sizes.bin")
+            new ConstSignature(ResourceLocationMod.select("/font/glyph_sizes.bin", "font/glyph_sizes.bin"))
         ));
     }
 }

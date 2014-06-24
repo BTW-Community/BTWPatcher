@@ -32,6 +32,11 @@ public class NBTTagCompoundMod extends com.prupe.mcpatcher.ClassMod {
         }
 
         addClassSignature(new BytecodeSignature() {
+            {
+                setMethod(new MethodRef(getDeobfClass(), "hasKey", "(Ljava/lang/String;)Z"));
+                addXref(1, tagMap);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -42,12 +47,14 @@ public class NBTTagCompoundMod extends com.prupe.mcpatcher.ClassMod {
                     IRETURN
                 );
             }
-        }
-            .setMethod(new MethodRef(getDeobfClass(), "hasKey", "(Ljava/lang/String;)Z"))
-            .addXref(1, tagMap)
-        );
+        });
 
         addClassSignature(new BytecodeSignature() {
+            {
+                setMethod(new MethodRef(getDeobfClass(), "removeTag", "(Ljava/lang/String;)V"));
+                addXref(1, tagMap);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -57,10 +64,7 @@ public class NBTTagCompoundMod extends com.prupe.mcpatcher.ClassMod {
                     reference(INVOKEINTERFACE, mapRemove)
                 );
             }
-        }
-            .setMethod(new MethodRef(getDeobfClass(), "removeTag", "(Ljava/lang/String;)V"))
-            .addXref(1, tagMap)
-        );
+        });
 
         mapNBTMethod("Byte", "B");
         mapNBTMethod("ByteArray", "[B");

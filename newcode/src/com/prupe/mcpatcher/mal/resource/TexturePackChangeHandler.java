@@ -1,17 +1,19 @@
 package com.prupe.mcpatcher.mal.resource;
 
 import com.prupe.mcpatcher.MCLogger;
-import net.minecraft.client.Minecraft;
-import net.minecraft.src.*;
+import net.minecraft.src.ResourcePack;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
-abstract public class TexturePackChangeHandler {
+abstract public class TexturePackChangeHandler implements Comparable<TexturePackChangeHandler> {
     private static final MCLogger logger = MCLogger.getLogger("Texture Pack");
 
     private static final ArrayList<TexturePackChangeHandler> handlers = new ArrayList<TexturePackChangeHandler>();
-    private static boolean initializing;
-    private static boolean changing;
+    private static int recurseDepth;
+    private static boolean initialized;
     private static long startTime;
     private static long startMem;
 
@@ -46,13 +48,14 @@ abstract public class TexturePackChangeHandler {
         this.updateNeeded = updateNeeded;
     }
 
-    public static void scheduleTexturePackRefresh() {
-        Minecraft.getInstance().scheduleTexturePackRefresh();
+    @Override
+    public int compareTo(TexturePackChangeHandler that) {
+        return this.order - that.order;
     }
 
     public static void register(TexturePackChangeHandler handler) {
         if (handler != null) {
-            if (Minecraft.getInstance().getResourceManager() != null) {
+            if (TexturePackAPI.isInitialized()) {
                 try {
                     logger.info("initializing %s...", handler.name);
                     handler.initialize();
@@ -63,11 +66,7 @@ abstract public class TexturePackChangeHandler {
             }
             handlers.add(handler);
             logger.fine("registered texture pack handler %s, priority %d", handler.name, handler.order);
-            Collections.sort(handlers, new Comparator<TexturePackChangeHandler>() {
-                public int compare(TexturePackChangeHandler o1, TexturePackChangeHandler o2) {
-                    return o1.order - o2.order;
-                }
-            });
+            Collections.sort(handlers);
         }
     }
 
@@ -94,24 +93,17 @@ abstract public class TexturePackChangeHandler {
         }
     }
 
-    public static void beforeChange1(boolean initializing1) {
-        logger.finer("beforeChange1(%s) initializing=%s changing=%s", initializing1, initializing, changing);
-        if (initializing1) {
-            logger.finer("skipping beforeChange1 because we are still initializing");
-            initializing = true;
+    public static void beforeChange1() {
+        logger.finer("beforeChange1 depth %d", recurseDepth);
+        if (recurseDepth++ > 0) {
             return;
         }
-        if (changing && !initializing) {
-            new RuntimeException("unexpected recursive call to TexturePackChangeHandler").printStackTrace();
-            return;
-        }
-        changing = true;
         startTime = System.currentTimeMillis();
         Runtime runtime = Runtime.getRuntime();
         startMem = runtime.totalMemory() - runtime.freeMemory();
         ResourceList.clearInstance();
         List<ResourcePack> resourcePacks = TexturePackAPI.getResourcePacks(null);
-        logger.fine("%s resource packs (%d selected):", initializing ? "initializing" : "changing", resourcePacks.size());
+        logger.fine("%s resource packs (%d selected):", initialized ? "changing" : "initializing", resourcePacks.size());
         for (ResourcePack pack : resourcePacks) {
             logger.fine("resource pack: %s", pack.getName());
         }
@@ -131,26 +123,12 @@ abstract public class TexturePackChangeHandler {
             }
         }
 
-        TextureManager textureManager = Minecraft.getInstance().getTextureManager();
-        if (textureManager != null) {
-            Set<ResourceLocation> texturesToUnload = new HashSet<ResourceLocation>();
-            for (Map.Entry<ResourceLocation, TextureObject> entry : textureManager.texturesByName.entrySet()) {
-                ResourceLocation resource = entry.getKey();
-                TextureObject texture = entry.getValue();
-                if (texture instanceof SimpleTexture && !(texture instanceof ThreadDownloadImageData) && !TexturePackAPI.hasResource(resource)) {
-                    texturesToUnload.add(resource);
-                }
-            }
-            for (ResourceLocation resource : texturesToUnload) {
-                TexturePackAPI.unloadTexture(resource);
-            }
-        }
+        TexturePackAPI.flushUnusedTextures();
     }
 
-    public static void afterChange1(boolean initializing1) {
-        logger.finer("afterChange1(%s) initializing=%s changing=%s", initializing1, initializing, changing);
-        if (initializing && !initializing1) {
-            logger.finer("deferring afterChange1 because we are still initializing");
+    public static void afterChange1() {
+        logger.finer("afterChange1 depth %d", recurseDepth - 1);
+        if (--recurseDepth > 0) {
             return;
         }
         for (TexturePackChangeHandler handler : handlers) {
@@ -178,7 +156,7 @@ abstract public class TexturePackChangeHandler {
         Runtime runtime = Runtime.getRuntime();
         long memDiff = runtime.totalMemory() - runtime.freeMemory() - startMem;
         logger.info("done (%.3fs elapsed, mem usage %+.1fMB)\n", timeDiff / 1000.0, memDiff / 1048576.0);
-        changing = false;
-        initializing = false;
+        initialized = true;
+        recurseDepth = 0;
     }
 }

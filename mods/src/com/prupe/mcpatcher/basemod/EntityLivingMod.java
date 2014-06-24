@@ -8,7 +8,7 @@ import com.prupe.mcpatcher.Mod;
 public class EntityLivingMod extends com.prupe.mcpatcher.ClassMod {
     public EntityLivingMod(Mod mod) {
         super(mod);
-        setParentClass("EntityLivingBase");
+        setParentClass(ResourceLocationMod.select("Entity", "EntityLivingBase"));
 
         addClassSignature(new ConstSignature("explode"));
         addClassSignature(new ConstSignature("CanPickUpLoot"));

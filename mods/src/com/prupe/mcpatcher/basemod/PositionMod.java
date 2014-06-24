@@ -130,6 +130,13 @@ public class PositionMod extends com.prupe.mcpatcher.ClassMod {
         getK = new MethodRef(deobfClass, "getK", "()I");
 
         classMod.addClassSignature(new com.prupe.mcpatcher.BytecodeSignature(classMod) {
+            {
+                setMethod(hashCode);
+                addXref(1, j);
+                addXref(2, k);
+                addXref(3, i);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -148,16 +155,11 @@ public class PositionMod extends com.prupe.mcpatcher.ClassMod {
                     IADD
                 );
             }
-        }
-            .setMethod(hashCode)
-            .addXref(1, j)
-            .addXref(2, k)
-            .addXref(3, i)
-        );
+        });
 
         classMod.addMemberMapper(new com.prupe.mcpatcher.MethodMapper(classMod, null, getI, getJ, getK)
-            .accessFlag(AccessFlag.PUBLIC, true)
-            .accessFlag(AccessFlag.STATIC, false)
+                .accessFlag(AccessFlag.PUBLIC, true)
+                .accessFlag(AccessFlag.STATIC, false)
         );
     }
 }

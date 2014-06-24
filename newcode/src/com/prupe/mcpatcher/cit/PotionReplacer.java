@@ -15,10 +15,10 @@ class PotionReplacer {
     private static final String ITEM_ID_POTION = "minecraft:potion";
     private static final String ITEM_ID_GLASS_BOTTLE = "minecraft:glass_bottle";
 
-    private static final String LAYER_POTION_CONTENTS = "potion_overlay";
-    private static final String LAYER_POTION_DRINKABLE = "potion_bottle_drinkable";
-    private static final String LAYER_POTION_SPLASH = "potion_bottle_splash";
-    private static final String LAYER_EMPTY_BOTTLE = "potion_bottle_empty";
+    private static final String LAYER_POTION_CONTENTS = TexturePackAPI.select("potion_contents", "potion_overlay");
+    private static final String LAYER_POTION_DRINKABLE = TexturePackAPI.select("potion", "potion_bottle_drinkable");
+    private static final String LAYER_POTION_SPLASH = TexturePackAPI.select("potion_splash", "potion_bottle_splash");
+    private static final String LAYER_EMPTY_BOTTLE = TexturePackAPI.select("potion", "potion_bottle_empty");
 
     private static final int SPLASH_BIT = 0x4000;
     private static final int EFFECT_BITS = 0x400f;
@@ -92,7 +92,8 @@ class PotionReplacer {
     }
 
     private static ResourceLocation getPotionPath(String name, boolean splash) {
-        return TexturePackAPI.newMCPatcherResourceLocation("cit/potion/" + (splash ? "splash/" : "normal/") + name + ".png");
+        String path = "cit/potion/" + (splash ? "splash/" : "normal/") + name + ".png";
+        return TexturePackAPI.newMCPatcherResourceLocation(path);
     }
 
     private static Properties newProperties(ResourceLocation path, String itemID, String layer) {

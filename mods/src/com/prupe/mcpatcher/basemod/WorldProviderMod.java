@@ -28,7 +28,7 @@ public class WorldProviderMod extends com.prupe.mcpatcher.ClassMod {
     public WorldProviderMod(Mod mod) {
         super(mod);
 
-        addClassSignature(new ConstSignature(0.75f));
+        addClassSignature(new ConstSignature(24000.0f));
         addClassSignature(new ConstSignature(0.5f));
         addClassSignature(new ConstSignature(0.25f));
         addClassSignature(new ConstSignature(15.0f));
@@ -56,6 +56,11 @@ public class WorldProviderMod extends com.prupe.mcpatcher.ClassMod {
 
         if (haveGetWorldType()) {
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(getWorldType);
+                    addXref(1, worldType);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -66,14 +71,11 @@ public class WorldProviderMod extends com.prupe.mcpatcher.ClassMod {
                         IRETURN
                     );
                 }
-            }
-                .setMethod(getWorldType)
-                .addXref(1, worldType)
-            );
+            });
         } else {
             addMemberMapper(new FieldMapper(worldType)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, false)
             );
 
             addPatch(new AddMethodPatch(getWorldType) {

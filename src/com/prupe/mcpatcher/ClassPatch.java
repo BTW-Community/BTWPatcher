@@ -41,7 +41,7 @@ abstract public class ClassPatch implements PatchComponent {
      * @throws DuplicateMemberException propagated by javassist.bytecode
      * @throws IOException              if an error occurs while writing new bytecode
      */
-    abstract boolean apply(ClassFile classFile) throws BadBytecode, DuplicateMemberException, IOException;
+    abstract public boolean apply(ClassFile classFile) throws BadBytecode, DuplicateMemberException, IOException;
 
     private void addPatch(String desc) {
         int val = 0;

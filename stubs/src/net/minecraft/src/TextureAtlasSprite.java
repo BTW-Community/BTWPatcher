@@ -54,6 +54,11 @@ public class TextureAtlasSprite implements Icon {
     public TextureAtlasSprite(String name) {
     }
 
+    // 1.5
+    public void init(Texture texture, List<Texture> animations, int x0, int y0, int width, int height, boolean flipped) {
+    }
+
+    // 1.6+
     public void init(int tilesheetWidth, int tilesheetHeight, int x0, int y0, boolean flipped) {
     }
 

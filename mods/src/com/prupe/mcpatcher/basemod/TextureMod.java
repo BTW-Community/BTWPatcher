@@ -23,6 +23,11 @@ public class TextureMod extends com.prupe.mcpatcher.ClassMod {
         setParentClass("AbstractTexture");
 
         addClassSignature(new BytecodeSignature() {
+            {
+                matchConstructorOnly(true);
+                addXref(1, rgb);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -34,10 +39,7 @@ public class TextureMod extends com.prupe.mcpatcher.ClassMod {
                     captureReference(PUTFIELD)
                 );
             }
-        }
-            .matchConstructorOnly(true)
-            .addXref(1, rgb)
-        );
+        });
 
         addMemberMapper(new MethodMapper(getRGB));
     }

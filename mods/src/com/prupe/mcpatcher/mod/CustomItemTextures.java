@@ -14,7 +14,7 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class CustomItemTextures extends Mod {
-    private static final String GLINT_PNG = "textures/misc/enchanted_item_glint.png";
+    private final String GLINT_PNG;
 
     private static final MethodRef glDepthFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthFunc", "(I)V");
     private static final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
@@ -46,7 +46,7 @@ public class CustomItemTextures extends Mod {
         name = MCPatcherUtils.CUSTOM_ITEM_TEXTURES;
         author = "MCPatcher";
         description = "Enables support for custom item textures, enchantments, and armor.";
-        version = "1.0";
+        version = "1.1";
         configPanel = new ConfigPanel();
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
@@ -55,8 +55,9 @@ public class CustomItemTextures extends Mod {
         addDependency(MCPatcherUtils.ITEM_API_MOD);
 
         newEntityRendering = getMinecraftVersion().compareTo("14w05a") >= 0;
+        GLINT_PNG = ResourceLocationMod.select("%blur%/misc/glint.png", "textures/misc/enchanted_item_glint.png");
 
-        addClassMod(new ResourceLocationMod(this));
+        ResourceLocationMod.setup(this);
         addClassMod(new TessellatorMod(this));
         addClassMod(new NBTTagCompoundMod(this));
         addClassMod(new NBTTagListMod(this));
@@ -72,13 +73,19 @@ public class CustomItemTextures extends Mod {
         } else {
             addClassMod(new RenderLivingEntityMod());
             addClassMod(new RenderBipedMod());
-            addClassMod(new RenderPlayerMod());
+            if (ResourceLocationMod.haveClass()) {
+                addClassMod(new RenderPlayerMod());
+            } else {
+                addClassMod(new RenderArmor15Mod());
+            }
         }
         addClassMod(new RenderSnowballMod());
         addClassMod(new EntityLivingBaseMod());
         addClassMod(new EntityLivingMod(this));
         addClassMod(new EntityPlayerMod());
-        addClassMod(new AbstractClientPlayerMod());
+        if (ResourceLocationMod.haveClass()) {
+            addClassMod(new AbstractClientPlayerMod());
+        }
         addClassMod(new PotionMod());
         addClassMod(new PotionHelperMod());
 
@@ -165,6 +172,11 @@ public class CustomItemTextures extends Mod {
             }
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(getIconIndex);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override item texture";
@@ -185,12 +197,14 @@ public class CustomItemTextures extends Mod {
                         reference(INVOKESTATIC, getCITIcon)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(getIconIndex)
-            );
+            });
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(getIconForge);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override item texture (forge)";
@@ -211,10 +225,7 @@ public class CustomItemTextures extends Mod {
                         reference(INVOKESTATIC, getCITIcon)
                     );
                 }
-            }
-                .setInsertBefore(true)
-                .targetMethod(getIconForge)
-            );
+            });
 
             addMemberMapper(new MethodMapper(getIconFromDamageForRenderPass));
         }
@@ -222,8 +233,8 @@ public class CustomItemTextures extends Mod {
 
     private class ItemArmorMod extends ClassMod {
         ItemArmorMod() {
-            addClassSignature(new ConstSignature("leather_helmet_overlay"));
-            addClassSignature(new ConstSignature("empty_armor_slot_helmet"));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("helmetCloth_overlay", "leather_helmet_overlay")));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("slot_empty_helmet", "empty_armor_slot_helmet")));
         }
     }
 
@@ -239,6 +250,12 @@ public class CustomItemTextures extends Mod {
             addClassSignature(new ConstSignature("Damage"));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    matchConstructorOnly(true);
+                    addXref(1, stackSize);
+                    addXref(2, itemDamage);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -256,13 +273,14 @@ public class CustomItemTextures extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, stackSize)
-                .addXref(2, itemDamage)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(getItemDamage);
+                    addXref(1, itemDamage);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -273,10 +291,7 @@ public class CustomItemTextures extends Mod {
                         end()
                     );
                 }
-            }
-                .setMethod(getItemDamage)
-                .addXref(1, itemDamage)
-            );
+            });
 
             addMemberMapper(new FieldMapper(stackTagCompound));
             addMemberMapper(new MethodMapper(getItem));
@@ -298,11 +313,35 @@ public class CustomItemTextures extends Mod {
     }
 
     private void addGlintSignature(ClassMod classMod, MethodRef method, final String opcode) {
+        if (ResourceLocationMod.haveClass()) {
+            addGlintSignature16(classMod, method, opcode);
+        } else {
+            addGlintSignature15(classMod, method);
+        }
+    }
+
+    private void addGlintSignature15(ClassMod classMod, MethodRef method) {
+        classMod.addClassSignature(new BytecodeSignature(classMod) {
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    push(GLINT_PNG)
+                );
+            }
+        }.setMethod(method));
+    }
+
+    private void addGlintSignature16(ClassMod classMod, final MethodRef method, final String opcode) {
         final FieldRef glint = new FieldRef(classMod.getDeobfClass(), "glint", "LResourceLocation;");
 
         classMod.addClassSignature(new ResourceLocationSignature(classMod, glint, GLINT_PNG));
 
         classMod.addClassSignature(new BytecodeSignature(classMod) {
+            {
+                setMethod(method);
+                addXref(1, glint);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -321,10 +360,7 @@ public class CustomItemTextures extends Mod {
                 String cl2 = getClassFile().getName();
                 return cl1.equals(cl2);
             }
-        }
-            .setMethod(method)
-            .addXref(1, glint)
-        );
+        });
     }
 
     private class ItemRendererMod extends ClassMod {
@@ -334,13 +370,18 @@ public class CustomItemTextures extends Mod {
             final MethodRef getEntityItemIcon = new MethodRef("EntityLivingBase", "getItemIcon", "(LItemStack;I)LIcon;");
             final MethodRef renderItemForge = new MethodRef(getDeobfClass(), "renderItem", "(LEntityLivingBase;LItemStack;ILnet/minecraftforge/client/IItemRenderer$ItemRenderType;)V");
 
-            addClassSignature(new ConstSignature("textures/map/map_background.png"));
-            addClassSignature(new ConstSignature("textures/misc/underwater.png"));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("/misc/mapbg.png", "textures/map/map_background.png")));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("/misc/water.png", "textures/misc/underwater.png")));
             // 13w24b: this.minecraft.getTextureManager.bindTexture(glint);
             // 13w25a: var4 = this.minecraft.getTextureManager(); ... var4.bindTexture(glint);
             addGlintSignature(this, renderItem, anyALOAD);
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderItem);
+                    addXref(1, hasEffect);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -356,14 +397,16 @@ public class CustomItemTextures extends Mod {
                         IFNE, any(2)
                     );
                 }
-            }
-                .setMethod(renderItem)
-                .addXref(1, hasEffect)
-            );
+            });
 
             addMemberMapper(new MethodMapper(renderItemIn2D).accessFlag(AccessFlag.STATIC, true));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderItem, renderItemForge);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override item texture (held)";
@@ -385,10 +428,7 @@ public class CustomItemTextures extends Mod {
                         reference(INVOKESTATIC, new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getIcon", "(LIcon;LItemStack;I)LIcon;"))
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderItem, renderItemForge)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -452,7 +492,7 @@ public class CustomItemTextures extends Mod {
             final MethodRef getMaxDamage = new MethodRef("ItemStack", "getMaxDamage", "()I");
             final boolean needAlphaTest = getMinecraftVersion().compareTo("13w42a") >= 0;
 
-            addClassSignature(new ConstSignature("missingno"));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("/gui/items.png", "missingno")));
             addGlintSignature(this, renderDroppedItem);
             addGlintSignature(this, renderItemAndEffectIntoGUI, build(ALOAD_2));
 
@@ -471,6 +511,11 @@ public class CustomItemTextures extends Mod {
             }.setMethod(renderItemIntoGUI));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderItemOverlayIntoGUI);
+                    addXref(1, getMaxDamage);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -484,10 +529,7 @@ public class CustomItemTextures extends Mod {
                         captureReference(INVOKEVIRTUAL)
                     );
                 }
-            }
-                .setMethod(renderItemOverlayIntoGUI)
-                .addXref(1, getMaxDamage)
-            );
+            });
 
             addMemberMapper(new FieldMapper(zLevel).accessFlag(AccessFlag.STATIC, false));
 
@@ -589,6 +631,11 @@ public class CustomItemTextures extends Mod {
 
             if (needAlphaTest) {
                 addPatch(new BytecodePatch() {
+                    {
+                        setInsertBefore(true);
+                        targetMethod(renderItemAndEffectIntoGUI);
+                    }
+
                     @Override
                     public String getDescription() {
                         return "enable alpha test in gui";
@@ -624,10 +671,7 @@ public class CustomItemTextures extends Mod {
                             reference(INVOKESTATIC, glAlphaFunc)
                         );
                     }
-                }
-                    .setInsertBefore(true)
-                    .targetMethod(renderItemAndEffectIntoGUI)
-                );
+                });
 
                 addPatch(new BytecodePatch() {
                     @Override
@@ -726,6 +770,11 @@ public class CustomItemTextures extends Mod {
             }.targetMethod(renderItemIntoGUIForge));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderItemIntoGUI, renderItemIntoGUIForge);
+                }
+
                 @Override
                 public String getDescription() {
                     return "handle items with multiple render passes (gui)";
@@ -763,10 +812,7 @@ public class CustomItemTextures extends Mod {
                         reference(INVOKESTATIC, getCITIcon)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderItemIntoGUI, renderItemIntoGUIForge)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -944,29 +990,33 @@ public class CustomItemTextures extends Mod {
         RenderBipedMod() {
             setParentClass("RenderLiving");
 
-            final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(LEntityLiving;IF)V");
+            String entityLivingSubclass = ResourceLocationMod.select("EntityLivingBase", "EntityLiving");
+            final MethodRef loadTextureForPass = new MethodRef(getDeobfClass(), "loadTextureForPass", "(L" + entityLivingSubclass + ";IF)V");
             final MethodRef getCurrentArmor = new MethodRef("EntityLiving", "getCurrentArmor", "(I)LItemStack;");
 
-            addClassSignature(new ConstSignature("textures/models/armor/%s_layer_%d%s.png"));
+            if (ResourceLocationMod.haveClass()) {
+                addClassSignature(new ConstSignature("textures/models/armor/%s_layer_%d%s.png"));
+
+                addMemberMapper(new MethodMapper(getArmorTexture2).accessFlag(AccessFlag.STATIC, true));
+                addMemberMapper(new MethodMapper(getArmorTexture3).accessFlag(AccessFlag.STATIC, true));
+            }
 
             addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_1,
-                        push(3),
-                        ILOAD_2,
-                        ISUB,
-                        captureReference(INVOKEVIRTUAL)
-                    );
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // entity.getCurrentArmor(3 - pass);
+                            ALOAD_1,
+                            push(3),
+                            ILOAD_2,
+                            ISUB,
+                            captureReference(INVOKEVIRTUAL)
+                        );
+                    }
                 }
-            }
-                .setMethod(loadTextureForPass)
-                .addXref(1, getCurrentArmor)
+                    .setMethod(loadTextureForPass)
+                    .addXref(1, getCurrentArmor)
             );
-
-            addMemberMapper(new MethodMapper(getArmorTexture2).accessFlag(AccessFlag.STATIC, true));
-            addMemberMapper(new MethodMapper(getArmorTexture3).accessFlag(AccessFlag.STATIC, true));
         }
 
         @Override
@@ -992,11 +1042,12 @@ public class CustomItemTextures extends Mod {
         protected final MethodRef getArmorTexture2 = new MethodRef("RenderBiped", "getArmorTexture2", "(LItemArmor;I)LResourceLocation;");
         protected final MethodRef getArmorTexture3 = new MethodRef("RenderBiped", "getArmorTexture3", "(LItemArmor;ILjava/lang/String;)LResourceLocation;");
         protected final MethodRef getArmorResourceForge = new MethodRef("RenderBiped", "getArmorResource", "(LEntity;LItemStack;ILjava/lang/String;)LResourceLocation;");
+        private final com.prupe.mcpatcher.BytecodeSignature renderArmorSignature;
 
         RenderArmorMod() {
             final MethodRef renderArmor = new MethodRef(getDeobfClass(), "renderArmor", "(L" + getEntityClass() + ";IF)V");
 
-            final com.prupe.mcpatcher.BytecodeSignature signature = new BytecodeSignature() {
+            renderArmorSignature = new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -1015,8 +1066,14 @@ public class CustomItemTextures extends Mod {
                 }
             }.setMethod(renderArmor);
 
-            addClassSignature(signature);
+            addClassSignature(renderArmorSignature);
 
+            if (ResourceLocationMod.haveClass()) {
+                addArmorPatch();
+            }
+        }
+
+        private void addArmorPatch() {
             addPatch(new BytecodePatch() {
                 private int armorRegister;
 
@@ -1024,7 +1081,7 @@ public class CustomItemTextures extends Mod {
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
                         public String getMatchExpression() {
-                            return signature.getMatchExpression();
+                            return renderArmorSignature.getMatchExpression();
                         }
 
                         @Override
@@ -1068,6 +1125,98 @@ public class CustomItemTextures extends Mod {
         abstract String getEntityClass();
     }
 
+    private class RenderArmor15Mod extends ClassMod {
+        RenderArmor15Mod() {
+            setParentClass("RenderLiving");
+            setMultipleMatchesAllowed(true);
+
+            final ClassRef sbClass = new ClassRef("java/lang/StringBuilder");
+            final MethodRef sbInit0 = new MethodRef("java/lang/StringBuilder", "<init>", "()V");
+            final MethodRef sbInit1 = new MethodRef("java/lang/StringBuilder", "<init>", "(Ljava/lang/String;)V");
+            final MethodRef sbToString = new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
+
+            addClassSignature(new ConstSignature("/armor/"));
+            addClassSignature(new ConstSignature("_"));
+            addClassSignature(new ConstSignature("_b.png"));
+
+            addPatch(new BytecodePatch() {
+                private int armorRegister;
+
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                begin(),
+                                // itemStack = entityLiving.getCurrentArmor(3 - slot);
+                                // - or -
+                                // itemStack = entityPlayer.inventory.armorItemInSlot(3 - slot);
+                                ALOAD_1,
+                                optional(build(anyReference(GETFIELD))),
+                                push(3),
+                                ILOAD_2,
+                                ISUB,
+                                anyReference(INVOKEVIRTUAL),
+                                capture(anyASTORE)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            armorRegister = extractRegisterNum(getCaptureGroup(1));
+                            return true;
+                        }
+                    });
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override armor texture";
+                }
+
+                @Override
+                public boolean filterMethod() {
+                    return getMethodInfo().getDescriptor().matches("\\(L[a-z]+;IF\\)[IV]");
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // "/armor/" + ...
+                        reference(NEW, sbClass),
+                        DUP,
+                        or(
+                            build(
+                                // new StringBuilder("/armor/")
+                                push("/armor/"),
+                                reference(INVOKESPECIAL, sbInit1)
+                            ),
+                            build(
+                                // new StringBuilder().append("/armor/")
+                                reference(INVOKESPECIAL, sbInit0),
+                                push("/armor/")
+                            )
+                        ),
+                        nonGreedy(any(0, 100)),
+                        reference(INVOKEVIRTUAL, sbToString)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // CITUtils.getArmorTexture(..., entity, itemArmor)
+                        ResourceLocationMod.wrap(this),
+                        ALOAD_1,
+                        ALOAD, armorRegister,
+                        reference(INVOKESTATIC, getArmorTexture),
+                        ResourceLocationMod.unwrap(this)
+                    );
+                }
+            }.setInsertAfter(true));
+        }
+    }
+
     private class RenderArmor18Mod extends ClassMod {
         RenderArmor18Mod() {
             final MethodRef renderArmor = new MethodRef(getDeobfClass(), "renderArmor", "(LEntityLivingBase;FFFFFFFI)V");
@@ -1081,6 +1230,11 @@ public class CustomItemTextures extends Mod {
             addGlintSignature(this, renderEnchantment);
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderArmor);
+                    addXref(1, renderModel);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -1096,10 +1250,7 @@ public class CustomItemTextures extends Mod {
                         captureReference(INVOKEVIRTUAL)
                     );
                 }
-            }
-                .setMethod(renderArmor)
-                .addXref(1, renderModel)
-            );
+            });
 
             addMemberMapper(new MethodMapper(getArmorTexture1));
             addMemberMapper(new MethodMapper(getArmorTexture2));
@@ -1108,6 +1259,9 @@ public class CustomItemTextures extends Mod {
                 private int itemStackRegister;
 
                 {
+                    setInsertAfter(true);
+                    targetMethod(renderArmor);
+
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
                         public String getMatchExpression() {
@@ -1152,10 +1306,7 @@ public class CustomItemTextures extends Mod {
                         reference(INVOKESTATIC, getArmorTexture)
                     );
                 }
-            }
-                .setInsertAfter(true)
-                .targetMethod(renderArmor)
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -1242,10 +1393,16 @@ public class CustomItemTextures extends Mod {
 
             final MethodRef doRender = new MethodRef(getDeobfClass(), "doRender", "(LEntity;DDDFF)V");
 
-            addClassSignature(new ConstSignature("bottle_splash"));
-            addClassSignature(new ConstSignature("overlay"));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("potion_splash", "bottle_splash")));
+            addClassSignature(new ConstSignature(ResourceLocationMod.select("potion_contents", "overlay")));
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(doRender);
+                    addXref(1, new ClassRef("EntityPotion"));
+                    addXref(2, new MethodRef("EntityPotion", "getPotionDamage", "()I"));
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -1254,11 +1411,7 @@ public class CustomItemTextures extends Mod {
                         captureReference(INVOKEVIRTUAL)
                     );
                 }
-            }
-                .setMethod(doRender)
-                .addXref(1, new ClassRef("EntityPotion"))
-                .addXref(2, new MethodRef("EntityPotion", "getPotionDamage", "()I"))
-            );
+            });
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -1272,8 +1425,8 @@ public class CustomItemTextures extends Mod {
                         // icon = ...;
                         begin(),
                         capture(build(
-                            ALOAD_0,
-                            nonGreedy(any(0, 20)))
+                                ALOAD_0,
+                                nonGreedy(any(0, 20)))
                         ),
                         capture(anyASTORE)
                     );
@@ -1347,13 +1500,13 @@ public class CustomItemTextures extends Mod {
             addClassSignature(new ConstSignature("potion.moveSlowdown"));
 
             addMemberMapper(new FieldMapper(potionTypes)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
             );
 
             addMemberMapper(new MethodMapper(getName)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, false)
             );
         }
     }
@@ -1366,8 +1519,8 @@ public class CustomItemTextures extends Mod {
             addClassSignature(new ConstSignature("potion.prefix.uninteresting"));
 
             addMemberMapper(new MethodMapper(getMundaneName)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, true)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, true)
             );
         }
     }

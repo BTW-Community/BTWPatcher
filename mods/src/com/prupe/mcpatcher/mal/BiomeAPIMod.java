@@ -1,10 +1,13 @@
 package com.prupe.mcpatcher.mal;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.FieldRef;
+import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.MethodRef;
+import com.prupe.mcpatcher.Mod;
 import com.prupe.mcpatcher.basemod.*;
 import javassist.bytecode.AccessFlag;
 
-import static com.prupe.mcpatcher.BinaryRegex.*;
+import static com.prupe.mcpatcher.BinaryRegex.begin;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
@@ -23,7 +26,7 @@ public class BiomeAPIMod extends Mod {
         } else {
             malVersion = 1;
         }
-        version = String.valueOf(malVersion) + ".0";
+        version = String.valueOf(malVersion) + ".1";
         setMALVersion("biome", malVersion);
 
         addClassMod(new IBlockAccessMod(this));
@@ -53,6 +56,11 @@ public class BiomeAPIMod extends Mod {
             final FieldRef color = new FieldRef(getDeobfClass(), "color", "I");
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    matchConstructorOnly(true);
+                    addXref(1, waterColorMultiplier);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -61,12 +69,15 @@ public class BiomeAPIMod extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, waterColorMultiplier)
-            );
+            });
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    matchConstructorOnly(true);
+                    addXref(1, temperature);
+                    addXref(2, rainfall);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -78,11 +89,7 @@ public class BiomeAPIMod extends Mod {
                         captureReference(PUTFIELD)
                     );
                 }
-            }
-                .matchConstructorOnly(true)
-                .addXref(1, temperature)
-                .addXref(2, rainfall)
-            );
+            });
 
             addMemberMapper(new FieldMapper(color).accessFlag(AccessFlag.PUBLIC, true));
 
@@ -102,6 +109,11 @@ public class BiomeAPIMod extends Mod {
             final MethodRef getFoliageColor = new MethodRef(getDeobfClass(), "getFoliageColor", "(" + desc + ")I");
 
             addClassSignature(new BytecodeSignature() {
+                {
+                    addXref(1, getTemperaturef);
+                    addXref(2, getRainfallf);
+                }
+
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
@@ -132,15 +144,12 @@ public class BiomeAPIMod extends Mod {
                         IRETURN
                     );
                 }
-            }
-                .addXref(1, getTemperaturef)
-                .addXref(2, getRainfallf)
-            );
+            });
 
             addMemberMapper(new MethodMapper(getGrassColor, getFoliageColor)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
-                .accessFlag(AccessFlag.FINAL, false)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, false)
+                    .accessFlag(AccessFlag.FINAL, false)
             );
         }
     }

@@ -27,6 +27,11 @@ public class BiomeGenBaseMod extends com.prupe.mcpatcher.ClassMod {
         addClassSignature(new ConstSignature("Desert"));
 
         addClassSignature(new BytecodeSignature() {
+            {
+                matchConstructorOnly(true);
+                addXref(1, biomeID);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -35,12 +40,14 @@ public class BiomeGenBaseMod extends com.prupe.mcpatcher.ClassMod {
                     captureReference(PUTFIELD)
                 );
             }
-        }
-            .matchConstructorOnly(true)
-            .addXref(1, biomeID)
-        );
+        });
 
         addClassSignature(new BytecodeSignature() {
+            {
+                setMethod(setBiomeName);
+                addXref(1, biomeName);
+            }
+
             @Override
             public String getMatchExpression() {
                 return buildExpression(
@@ -53,13 +60,10 @@ public class BiomeGenBaseMod extends com.prupe.mcpatcher.ClassMod {
                     end()
                 );
             }
-        }
-            .setMethod(setBiomeName)
-            .addXref(1, biomeName)
-        );
+        });
 
         addMemberMapper(new FieldMapper(biomeList)
-            .accessFlag(AccessFlag.STATIC, true)
+                .accessFlag(AccessFlag.STATIC, true)
         );
     }
 }
