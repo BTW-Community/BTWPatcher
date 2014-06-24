@@ -302,6 +302,10 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             addKnownVersion("1.7.7", "088506a375d9200e2d935d7df872366b");
             addKnownVersion("1.7.8", "befddbe9e0bb5fe85c48ab8a42638953");
             addKnownVersion("1.7.9", "5f7cc7eb01cbd935a9973cb6e9c4c10e");
+            addKnownVersion("1.7.10-pre1", "06ad980b920e64b387ba3ec18a9779ee");
+            addKnownVersion("1.7.10-pre2", "7acd7cfc93739b34fdbe0dfc043a6f3e");
+            addKnownVersion("1.7.10-pre3", "595007b790548806f66762507203b896");
+            addKnownVersion("1.7.10-pre4", "3145b95f485932d9a25f75a9d5498eec");
             addKnownVersion("1.7.9999", null);
 
             // Position, Direction classes
@@ -331,6 +335,16 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             addKnownVersion("14w10c", "eeb76d42f89d7ca43866efaf7445bce4");
             addKnownVersion("14w11a", "65518da998381074b646e66f425768e8");
             addKnownVersion("14w11b", "4225294f2cc7c46d692c0d9c2b5b93cd");
+            addKnownVersion("14w17a", "3db0dccfc6585a16616ea2bcdff71687");
+            addKnownVersion("14w18a", "6afbc45b49d12a25934007ab4758d3eb");
+            addKnownVersion("14w18b", "b79db7340036c1d7088d13d30fdb9e95");
+            addKnownVersion("14w19a", "33c05b97aad8c357bafc93d71c97739d");
+            addKnownVersion("14w20a", "839936768a6213c0d026e7919c2fd30c");
+            addKnownVersion("14w20b", "e3974165c5f4a4d6598f5cf9930e9bd3");
+            addKnownVersion("14w21a", "a450c63285b983fab1eb1973ba8f6878");
+            addKnownVersion("14w21b", "8153688bdfe02eca940cbb32ffd1bb65");
+            addKnownVersion("14w25a", "22ffc07d66bb622edba5e6c10acbba58");
+            addKnownVersion("14w25b", "d03a9bcc88fcb961c295abbaf2877040");
 
             for (int i = 0; i < versionOrdering.size(); i++) {
                 MinecraftVersion a = versionOrdering.get(i);
