@@ -28,7 +28,7 @@ public class BaseTexturePackMod extends Mod {
         description = "Internal mod required by the patcher.";
         version = "4.3";
 
-        malVersion = ResourceLocationMod.haveClass() ? 2 : 1;
+        malVersion = ResourceLocationMod.select(1, 2);
         setMALVersion("texturepack", malVersion);
 
         addClassMod(new MinecraftMod());
@@ -153,6 +153,7 @@ public class BaseTexturePackMod extends Mod {
 
                 private String getMatchExpression1() {
                     return buildExpression(
+                        // this.renderEngine.refreshTextureMaps();
                         ALOAD_0,
                         reference(GETFIELD, renderEngine),
                         reference(INVOKEVIRTUAL, refreshTextureMaps)
@@ -161,9 +162,29 @@ public class BaseTexturePackMod extends Mod {
 
                 private String getMatchExpression2() {
                     return buildExpression(
-                        reference(NEW, textureResourceManagerClass),
-                        any(0, 700),
-                        reference(INVOKESTATIC, glViewport)
+                        capture(build(
+                            // this.resourceManager = new TextureResourceManager(...);
+                            ALOAD_0,
+                            reference(NEW, textureResourceManagerClass),
+                            DUP,
+                            nonGreedy(any(0, 12)),
+                            anyReference(PUTFIELD),
+
+                            // ...
+                            nonGreedy(any(0, 60)),
+
+                            // this.refreshResources();
+                            ALOAD_0,
+                            anyReference(INVOKEVIRTUAL)
+                        )),
+
+                        capture(build(
+                            // ...
+                            any(0, 700),
+
+                            // GL11.glViewport(...);
+                            reference(INVOKESTATIC, glViewport)
+                        ))
                     );
                 }
 
@@ -181,8 +202,23 @@ public class BaseTexturePackMod extends Mod {
                     }
                     return buildCode(
                         earlyInitCode,
+                        malVersion == 1 ? getReplacementBytes1() : getReplacementBytes2()
+                    );
+                }
+
+                private byte[] getReplacementBytes1() {
+                    return buildCode(
                         reference(INVOKESTATIC, beforeChange1),
                         getMatch(),
+                        reference(INVOKESTATIC, afterChange1)
+                    );
+                }
+
+                private byte[] getReplacementBytes2() {
+                    return buildCode(
+                        getCaptureGroup(1),
+                        reference(INVOKESTATIC, beforeChange1),
+                        getCaptureGroup(2),
                         reference(INVOKESTATIC, afterChange1)
                     );
                 }
