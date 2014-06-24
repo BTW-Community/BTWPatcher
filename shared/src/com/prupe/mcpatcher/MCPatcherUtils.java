@@ -88,7 +88,7 @@ public class MCPatcherUtils {
     public static final String ITEM_API_CLASS = "com.prupe.mcpatcher.mal.item.ItemAPI";
     public static final String NBT_RULE_CLASS = "com.prupe.mcpatcher.mal.nbt.NBTRule";
     public static final String BIOME_API_CLASS = "com.prupe.mcpatcher.mal.biome.BiomeAPI";
-    public static final String BIOME_HELPER_CLASS = "com.prupe.mcpatcher.BiomeHelper";
+    public static final String BIOME_HELPER_CLASS = "com.prupe.mcpatcher.cc.BiomeHelper";
 
     public static final String RANDOM_MOBS_CLASS = "com.prupe.mcpatcher.mob.MobRandomizer";
     public static final String MOB_RULE_LIST_CLASS = "com.prupe.mcpatcher.mob.MobRuleList";

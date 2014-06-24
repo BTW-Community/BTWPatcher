@@ -407,26 +407,4 @@ public final class BaseMod extends Mod {
             }.matchConstructorOnly(true));
         }
     }
-
-    @Deprecated
-    public static class MinecraftMod extends com.prupe.mcpatcher.basemod.MinecraftMod {
-        public MinecraftMod(Mod mod) {
-            super(mod);
-        }
-
-        public MinecraftMod mapWorldClient() {
-            super.mapWorldClient();
-            return this;
-        }
-
-        public MinecraftMod mapPlayer() {
-            super.mapPlayer();
-            return this;
-        }
-
-        public MinecraftMod addWorldGetter() {
-            super.addWorldGetter();
-            return this;
-        }
-    }
 }
