@@ -1,4 +1,4 @@
-MCVER ?= 1.7.5
+MCVER ?= 1.7.10
 MCPROFILE ?= MCPatcher
 MCDIR ?= $(HOME)/.minecraft
 JAVA_OPTS ?= -Xmx256M

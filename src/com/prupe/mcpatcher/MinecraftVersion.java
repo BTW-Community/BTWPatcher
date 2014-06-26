@@ -306,6 +306,7 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             addKnownVersion("1.7.10-pre2", "7acd7cfc93739b34fdbe0dfc043a6f3e");
             addKnownVersion("1.7.10-pre3", "595007b790548806f66762507203b896");
             addKnownVersion("1.7.10-pre4", "3145b95f485932d9a25f75a9d5498eec");
+            addKnownVersion("1.7.10", "e6b7a531b95d0c172acb704d1f54d1b3");
             addKnownVersion("1.7.9999", null);
 
             // Position, Direction classes
@@ -343,8 +344,13 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             addKnownVersion("14w20b", "e3974165c5f4a4d6598f5cf9930e9bd3");
             addKnownVersion("14w21a", "a450c63285b983fab1eb1973ba8f6878");
             addKnownVersion("14w21b", "8153688bdfe02eca940cbb32ffd1bb65");
+
+            // new item/block rendering, block states
             addKnownVersion("14w25a", "22ffc07d66bb622edba5e6c10acbba58");
             addKnownVersion("14w25b", "d03a9bcc88fcb961c295abbaf2877040");
+            addKnownVersion("14w26a", "a384f8d7a9c17ba774f906e1247a292a");
+            addKnownVersion("14w26b", "d4c0f61ae3ce5c2b834ce1ad322c7708");
+            addKnownVersion("14w26c", "898bdfdef6c2dd391ba9c0275e68827c");
 
             for (int i = 0; i < versionOrdering.size(); i++) {
                 MinecraftVersion a = versionOrdering.get(i);
