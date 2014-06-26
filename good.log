@@ -2,8 +2,6 @@ MCPatcher version is 4.3.2_03
 OS: Linux 3.14.8-200.fc20.x86_64 amd64
 JVM: Sun Microsystems Inc. 1.6.0_45 (64 bit)
 Classpath: out/artifacts/mcpatcher/mcpatcher.jar
-removing version 14w26c-mcpatcher from config since local version is no longer installed
-removing orphaned version 14w26c-mcpatcher
 Minecraft version is 1.7.10 (md5 e6b7a531b95d0c172acb704d1f54d1b3)
 
 Analyzing /home/prupe/.minecraft/versions/1.7.10/1.7.10.jar (2847 files)
