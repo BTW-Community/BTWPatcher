@@ -295,6 +295,20 @@ public class ClassMap {
         }
     }
 
+    public void addAlias(String from, String to) {
+        ClassMapEntry toEntry = getEntry(to);
+        if (toEntry == null) {
+            toEntry = new ClassMapEntry(to);
+            putEntry(toEntry);
+        }
+        ClassMapEntry fromEntry = getEntry(from);
+        if (fromEntry == null) {
+            fromEntry = new ClassMapEntry(from, toEntry);
+            putEntry(fromEntry);
+        }
+        fromEntry.aliasFor = toEntry;
+    }
+
     public boolean isEmpty() {
         return classMap.isEmpty();
     }
