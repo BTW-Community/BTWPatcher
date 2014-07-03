@@ -61,7 +61,7 @@ public class CustomItemTextures extends Mod {
         addClassMod(new TessellatorMod(this));
         addClassMod(new NBTTagCompoundMod(this));
         addClassMod(new NBTTagListMod(this));
-        addClassMod(new IconMod(this));
+        IconMod.setupMod(this);
         addClassMod(new ItemMod());
         addClassMod(new ItemArmorMod());
         addClassMod(new ItemStackMod());

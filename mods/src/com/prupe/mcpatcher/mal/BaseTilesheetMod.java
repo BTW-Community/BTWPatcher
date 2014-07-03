@@ -18,7 +18,7 @@ public class BaseTilesheetMod extends Mod {
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
 
         addClassMod(new MinecraftMod(this));
-        addClassMod(new IconMod(this));
+        IconMod.setupMod(this);
         if (ResourceLocationMod.setup(this)) {
             addClassMod(new AbstractTextureMod(this));
             addClassMod(new TextureMod(this));

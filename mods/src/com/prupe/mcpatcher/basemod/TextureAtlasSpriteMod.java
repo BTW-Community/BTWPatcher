@@ -20,7 +20,9 @@ public class TextureAtlasSpriteMod extends com.prupe.mcpatcher.ClassMod {
 
     public TextureAtlasSpriteMod(Mod mod) {
         super(mod);
-        setInterfaces("Icon");
+        if (IconMod.haveClass()) {
+            setInterfaces("Icon");
+        }
 
         if (ResourceLocationMod.haveClass()) {
             addClassSignature(new BytecodeSignature() {

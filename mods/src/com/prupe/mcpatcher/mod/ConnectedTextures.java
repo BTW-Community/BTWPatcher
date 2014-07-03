@@ -50,7 +50,7 @@ public class ConnectedTextures extends Mod {
 
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new TessellatorMod(this));
-        addClassMod(new IconMod(this));
+        IconMod.setupMod(this);
         ResourceLocationMod.setup(this);
         PositionMod.setup(this);
         addClassMod(new BlockMod());

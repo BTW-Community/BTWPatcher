@@ -60,7 +60,7 @@ public class ExtendedHD extends Mod {
             addClassMod(new MinecraftMod());
             ExtendedHD15.setup(this);
         }
-        addClassMod(new IconMod(this));
+        IconMod.setupMod(this);
         addClassMod(new TextureCompassMod());
         addClassMod(new TextureClockMod());
         HDFont.setupMod(this, getMinecraftVersion(), false);

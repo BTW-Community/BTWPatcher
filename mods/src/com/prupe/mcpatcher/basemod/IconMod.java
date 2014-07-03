@@ -24,7 +24,20 @@ public class IconMod extends com.prupe.mcpatcher.ClassMod {
     public static InterfaceMethodRef getSheetWidth;
     public static InterfaceMethodRef getSheetHeight;
 
-    public IconMod(Mod mod) {
+    public static boolean haveClass() {
+        return Mod.getMinecraftVersion().compareTo("14w25a") < 0;
+    }
+
+    public static void setupMod(Mod mod) {
+        if (haveClass()) {
+            mod.addClassMod(new IconMod(mod));
+        } else {
+            mod.getClassMap().addAlias("Icon", "TextureAtlasSprite");
+            mod.getClassMap().addAlias("net.minecraft.src.Icon", "Icon");
+        }
+    }
+
+    private IconMod(Mod mod) {
         super(mod);
 
         List<InterfaceMethodRef> methods = new ArrayList<InterfaceMethodRef>();

@@ -34,7 +34,7 @@ public class BlockAPIMod extends Mod {
         addClassMod(new BlockGrassMod());
         addClassMod(new BlockMyceliumMod());
         addClassMod(new IBlockAccessMod(this));
-        addClassMod(new IconMod(this));
+        IconMod.setupMod(this);
         addClassMod(new TessellatorMod(this));
         ResourceLocationMod.setup(this);
         addClassMod(new RenderBlocksMod());

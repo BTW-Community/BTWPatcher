@@ -52,7 +52,7 @@ public class BaseTexturePackMod extends Mod {
             addClassMod(new FallbackResourceManagerMod());
             addClassMod(new ResourceMod(this));
         }
-        addClassMod(new IconMod(this));
+        IconMod.setupMod(this);
         addClassMod(new ResourcePackMod());
         addClassMod(new DefaultResourcePackMod());
         addClassMod(new AbstractResourcePackMod());
