@@ -4,7 +4,8 @@ import com.prupe.mcpatcher.FieldRef;
 import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
 
-import static com.prupe.mcpatcher.BytecodeMatcher.anyASTORE;
+import static com.prupe.mcpatcher.BytecodeMatcher.*;
+import static javassist.bytecode.Opcode.ALOAD_2;
 import static javassist.bytecode.Opcode.INVOKESTATIC;
 
 /**
@@ -18,16 +19,25 @@ public class SimpleTextureMod extends com.prupe.mcpatcher.ClassMod {
         super(mod);
         setParentClass("AbstractTexture");
 
-        final MethodRef imageRead = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
-
         addClassSignature(new ConstSignature("texture"));
 
         addClassSignature(new BytecodeSignature() {
             @Override
             public String getMatchExpression() {
                 return buildExpression(
-                    reference(INVOKESTATIC, imageRead),
-                    anyASTORE
+                    // 14w26a+: image = ImageUtils.read(path);
+                    // older: image = ImageIO.read(path);
+                    ALOAD_2,
+                    anyReference(INVOKESTATIC),
+                    anyASTORE,
+
+                    // blur = false;
+                    push(0),
+                    anyISTORE,
+
+                    // clamp = false;
+                    push(0),
+                    anyISTORE
                 );
             }
         }.setMethod(load));
