@@ -102,6 +102,8 @@ public class BaseTilesheetMod extends Mod {
                 });
             }
 
+            addMemberMapper(new MethodMapper(registerIcon));
+
             addClassSignature(new BytecodeSignature() {
                 {
                     setMethod(registerTiles);

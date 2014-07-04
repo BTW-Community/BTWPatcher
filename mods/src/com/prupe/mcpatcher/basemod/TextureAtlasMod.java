@@ -23,9 +23,16 @@ public class TextureAtlasMod extends com.prupe.mcpatcher.ClassMod {
     public TextureAtlasMod(Mod mod) {
         super(mod);
 
+        final int basePathOpcode;
         if (ResourceLocationMod.haveClass()) {
             setParentClass("AbstractTexture");
-            setInterfaces("TickableTextureObject", "IconRegister");
+            if (IconMod.haveClass()) {
+                setInterfaces("TickableTextureObject", "IconRegister");
+                basePathOpcode = ALOAD_2;
+            } else {
+                setInterfaces("TickableIconRegister");
+                basePathOpcode = ALOAD_1;
+            }
             refreshTextures1 = new MethodRef("TextureAtlas", "refreshTextures1", "(LResourceManager;)V");
             refreshTextures2 = new MethodRef("TextureAtlas", "refreshTextures2", "(LResourceManager;)V");
             addMemberMapper(new MethodMapper(refreshTextures1, refreshTextures2));
@@ -34,6 +41,7 @@ public class TextureAtlasMod extends com.prupe.mcpatcher.ClassMod {
             refreshTextures1 = new MethodRef("TextureAtlas", "refreshTextures", "()V");
             refreshTextures2 = null;
             addMemberMapper(new MethodMapper(refreshTextures1));
+            basePathOpcode = ALOAD_3;
         }
 
         final InterfaceMethodRef mapEntrySet = new InterfaceMethodRef("java/util/Map", "entrySet", "()Ljava/util/Set;");
@@ -93,12 +101,10 @@ public class TextureAtlasMod extends com.prupe.mcpatcher.ClassMod {
                 return buildExpression(
                     // this.basePath = basePath;
                     ALOAD_0,
-                    ResourceLocationMod.haveClass() ? ALOAD_2 : ALOAD_3,
+                    basePathOpcode,
                     captureReference(PUTFIELD)
                 );
             }
         });
-
-        addMemberMapper(new MethodMapper(registerIcon));
     }
 }
