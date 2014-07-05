@@ -127,39 +127,18 @@ public class IconMod extends com.prupe.mcpatcher.ClassMod {
             }
         });
 
-        addMemberMapper(new MethodMapper(
-                (MethodRef) getX0,
-                (MethodRef) getY0,
-                (MethodRef) getWidth,
-                (MethodRef) getHeight
-            )
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
-        );
-
-        addMemberMapper(new MethodMapper(
-                (MethodRef) getMinU,
-                (MethodRef) getMaxU,
-                (MethodRef) getMinV,
-                (MethodRef) getMaxV
-            )
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
-        );
-
-        addMemberMapper(new MethodMapper(
-                (MethodRef) getInterpolatedU,
-                (MethodRef) getInterpolatedV
-            )
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
-        );
-
-        addMemberMapper(new MethodMapper(
-                (MethodRef) getIconName
-            )
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
+        addMemberMappers("public !static",
+            getX0,
+            getY0,
+            getWidth,
+            getHeight,
+            getMinU,
+            getMaxU,
+            getInterpolatedU,
+            getMinV,
+            getMaxV,
+            getInterpolatedV,
+            getIconName
         );
     }
 }
