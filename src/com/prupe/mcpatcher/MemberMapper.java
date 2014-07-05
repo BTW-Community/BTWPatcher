@@ -1,8 +1,11 @@
 package com.prupe.mcpatcher;
 
+import javassist.bytecode.AccessFlag;
 import javassist.bytecode.ClassFile;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a field or method to be located within a class.  By default,
@@ -29,6 +32,51 @@ public abstract class MemberMapper {
     private int count;
     protected final ClassMod classMod;
     final String mapSource;
+
+    private static final Map<String, Integer> accessFlagMap = new HashMap<String, Integer>();
+
+    static {
+        accessFlagMap.put("public", AccessFlag.PUBLIC);
+        accessFlagMap.put("private", AccessFlag.PRIVATE);
+        accessFlagMap.put("protected", AccessFlag.PROTECTED);
+        accessFlagMap.put("static", AccessFlag.STATIC);
+        accessFlagMap.put("final", AccessFlag.FINAL);
+        accessFlagMap.put("synchronized", AccessFlag.SYNCHRONIZED);
+        accessFlagMap.put("volatile", AccessFlag.VOLATILE);
+        accessFlagMap.put("bridge", AccessFlag.BRIDGE);
+        accessFlagMap.put("transient", AccessFlag.TRANSIENT);
+        accessFlagMap.put("varargs", AccessFlag.VARARGS);
+        accessFlagMap.put("native", AccessFlag.NATIVE);
+        accessFlagMap.put("interface", AccessFlag.INTERFACE);
+        accessFlagMap.put("abstract", AccessFlag.ABSTRACT);
+        accessFlagMap.put("strict", AccessFlag.STRICT);
+        accessFlagMap.put("synthetic", AccessFlag.SYNTHETIC);
+        accessFlagMap.put("annotation", AccessFlag.ANNOTATION);
+        accessFlagMap.put("enum", AccessFlag.ENUM);
+        accessFlagMap.put("super", AccessFlag.SUPER);
+    }
+
+    static int[] parseModifiers(String modifiers) {
+        int[] flags = new int[2];
+        if (!MCPatcherUtils.isNullOrEmpty(modifiers)) {
+            for (String token : modifiers.split("\\s+")) {
+                int pos;
+                if (token.startsWith("!")) {
+                    pos = 0;
+                    token = token.substring(1);
+                } else {
+                    pos = 1;
+                }
+                token = token.toLowerCase();
+                try {
+                    flags[pos] |= accessFlagMap.get(token);
+                } catch (NullPointerException e) {
+                    throw new IllegalArgumentException("unknown modifier: " + token);
+                }
+            }
+        }
+        return flags;
+    }
 
     MemberMapper(ClassMod classMod, JavaRef... refs) {
         this.classMod = classMod;
