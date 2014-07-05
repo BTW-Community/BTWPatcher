@@ -111,7 +111,7 @@ public class CustomColors extends Mod {
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new TessellatorMod(this));
         if (!ResourceLocationMod.haveClass()) {
-            IconMod.setupMod(this);
+            addClassMod(new IconMod(this));
         }
         ResourceLocationMod.setup(this);
         PositionMod.setup(this);
