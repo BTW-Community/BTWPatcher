@@ -231,6 +231,45 @@ abstract public class ClassMod implements PatchComponent {
         memberMappers.add(memberMapper);
     }
 
+    public void addMemberMappers(String modifiers, JavaRef... refs) {
+        int[] modifierFlags = MemberMapper.parseModifiers(modifiers);
+        List<JavaRef> refList = new ArrayList<JavaRef>(Arrays.asList(refs));
+        while (!refList.isEmpty()) {
+            JavaRef ref = refList.get(0);
+            MemberMapper mapper;
+            if (ref == null) {
+                throw new NullPointerException("null javaref");
+            } else if (ref instanceof MethodRef) {
+                List<MethodRef> matches = extractMatches((MethodRef) ref, refList);
+                mapper = new MethodMapper(matches.toArray(new MethodRef[matches.size()]));
+            } else if (ref instanceof FieldRef) {
+                List<FieldRef> matches = extractMatches((FieldRef) ref, refList);
+                mapper = new FieldMapper(matches.toArray(new FieldRef[matches.size()]));
+            } else {
+                throw new IllegalArgumentException(ref.toString());
+            }
+            mapper.accessFlag(modifierFlags[0], false);
+            mapper.accessFlag(modifierFlags[1], true);
+            addMemberMapper(mapper);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends JavaRef> List<T> extractMatches(T key, List<JavaRef> refs) {
+        List<T> result = new ArrayList<T>();
+        for (JavaRef ref : refs) {
+            if (ref.getClass() == key.getClass() && ref.getType().equals(key.getType())) {
+                if (MCPatcherUtils.isNullOrEmpty(ref.getName())) {
+                    result.add(null);
+                } else {
+                    result.add((T) ref);
+                }
+            }
+        }
+        refs.removeAll(result);
+        return result;
+    }
+
     public void setMultipleMatchesAllowed(boolean match) {
         global = match;
     }
