@@ -420,6 +420,9 @@ public class TilesheetAPIMod extends Mod {
 
             if (ResourceLocationMod.haveClass()) {
                 setup16();
+                if (!IconMod.haveClass()) {
+                    setup18();
+                }
             }
         }
 
@@ -472,6 +475,12 @@ public class TilesheetAPIMod extends Mod {
                     );
                 }
             });
+        }
+
+        private void setup18() {
+            final MethodRef getIconName = new MethodRef(getDeobfClass(), "getIconName", "()Ljava/lang/String;");
+
+            addMemberMappers("public !static", getIconName);
         }
     }
 }

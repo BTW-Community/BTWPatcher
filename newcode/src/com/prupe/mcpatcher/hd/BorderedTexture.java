@@ -114,7 +114,7 @@ public class BorderedTexture extends TextureAtlasSprite {
             return;
         }
         logger.finer("setBorderWidth(%s, %s, %d): %dx%d -> %dx%d",
-            tilesheet, getIconName(), border, width - 2 * border, height - 2 * border, width, height
+            tilesheet, IconAPI.getIconName(this), border, width - 2 * border, height - 2 * border, width, height
         );
         if (border > 0) {
             x0 += border;

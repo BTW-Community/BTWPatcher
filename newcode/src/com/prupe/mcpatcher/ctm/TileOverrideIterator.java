@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.ctm;
 
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.tile.IconAPI;
 import net.minecraft.src.Block;
 import net.minecraft.src.Icon;
 
@@ -41,7 +42,7 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
 
     private void resetForNextPass() {
         blockOverrides = null;
-        tileOverrides = allTileOverrides.get(currentIcon.getIconName());
+        tileOverrides = allTileOverrides.get(IconAPI.getIconName(currentIcon));
         blockPos = 0;
         iconPos = 0;
         foundNext = false;
@@ -96,7 +97,7 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
     ITileOverride go(BlockOrientation blockOrientation, Icon origIcon) {
         currentIcon = origIcon;
         blockOverrides = allBlockOverrides.get(blockOrientation.block);
-        tileOverrides = allTileOverrides.get(origIcon.getIconName());
+        tileOverrides = allTileOverrides.get(IconAPI.getIconName(origIcon));
         blockPos = 0;
         iconPos = 0;
         foundNext = false;

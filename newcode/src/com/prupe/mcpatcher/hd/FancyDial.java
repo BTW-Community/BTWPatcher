@@ -87,7 +87,7 @@ public class FancyDial {
         if (!fboSupported) {
             return;
         }
-        String name = icon.getIconName();
+        String name = IconAPI.getIconName(icon);
         if (icon instanceof TextureClock && name.equals("compass")) { // 1.5 bug
             name = "clock";
         }
@@ -113,7 +113,7 @@ public class FancyDial {
 
     public static boolean update(TextureAtlasSprite icon, boolean itemFrameRenderer) {
         if (!initialized) {
-            logger.finer("deferring %s update until initialization finishes", icon.getIconName());
+            logger.finer("deferring %s update until initialization finishes", IconAPI.getIconName(icon));
             return false;
         }
         if (!active) {
@@ -121,7 +121,7 @@ public class FancyDial {
         }
         int oldFB = GL11.glGetInteger(EXTFramebufferObject.GL_FRAMEBUFFER_BINDING_EXT);
         if (oldFB != 0 && warnCount < 10) {
-            logger.finer("rendering %s while non-default framebuffer %d is active", icon.getIconName(), oldFB);
+            logger.finer("rendering %s while non-default framebuffer %d is active", IconAPI.getIconName(icon), oldFB);
             warnCount++;
         }
         int oldTexture = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
@@ -204,7 +204,7 @@ public class FancyDial {
     private FancyDial(TextureAtlasSprite icon, ResourceLocation resource, Properties properties) {
         this.icon = icon;
         this.resource = resource;
-        name = icon.getIconName();
+        name = IconAPI.getIconName(icon);
         x0 = IconAPI.getIconX0(icon);
         y0 = IconAPI.getIconY0(icon);
         width = IconAPI.getIconWidth(icon);

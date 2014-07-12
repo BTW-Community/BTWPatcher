@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.cit;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.tile.IconAPI;
 import net.minecraft.src.Icon;
 import net.minecraft.src.ItemRenderer;
 import net.minecraft.src.ResourceLocation;
@@ -137,7 +138,7 @@ final class Enchantment extends OverrideBase {
     boolean bindTexture(Icon icon) {
         ResourceLocation texture;
         if (alternateTextures != null && icon != null) {
-            texture = alternateTextures.get(icon.getIconName());
+            texture = alternateTextures.get(IconAPI.getIconName(icon));
             if (texture == null) {
                 texture = textureName;
             }
