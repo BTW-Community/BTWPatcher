@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
+import com.prupe.mcpatcher.mal.tessellator.TessellatorAPI;
 import net.minecraft.src.Minecraft;
 import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.Tessellator;
@@ -71,7 +72,7 @@ public class SkyRenderer {
 
     public static void renderAll() {
         if (active) {
-            currentWorld.renderAll(Tessellator.instance);
+            currentWorld.renderAll(TessellatorAPI.getTessellator());
         }
     }
 

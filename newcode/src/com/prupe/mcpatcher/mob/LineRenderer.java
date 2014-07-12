@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.tessellator.TessellatorAPI;
 import com.prupe.mcpatcher.mal.util.InputHandler;
 import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.Tessellator;
@@ -119,7 +120,7 @@ public class LineRenderer {
             plusSZ -= D_POS;
         }
         TexturePackAPI.bindTexture(texture);
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = TessellatorAPI.getTessellator();
         tessellator.startDrawingQuads();
         GL11.glDisable(GL11.GL_CULL_FACE);
         GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

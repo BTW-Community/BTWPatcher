@@ -23,6 +23,7 @@ public class BetterSkies extends Mod {
         configPanel = new ConfigPanel();
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
+        addDependency(MCPatcherUtils.TESSELLATOR_API_MOD);
 
         addClassMod(new MinecraftMod(this).mapWorldClient());
         ResourceLocationMod.setup(this);

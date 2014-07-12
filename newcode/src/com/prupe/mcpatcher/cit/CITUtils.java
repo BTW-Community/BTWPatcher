@@ -7,6 +7,7 @@ import com.prupe.mcpatcher.mal.item.ItemAPI;
 import com.prupe.mcpatcher.mal.resource.ResourceList;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
+import com.prupe.mcpatcher.mal.tessellator.TessellatorAPI;
 import com.prupe.mcpatcher.mal.tile.IconAPI;
 import com.prupe.mcpatcher.mal.tile.TileLoader;
 import net.minecraft.src.*;
@@ -253,7 +254,7 @@ public class CITUtils {
         }
         Enchantment.beginOuter3D();
         for (int i = 0; i < matches.size(); i++) {
-            matches.getEnchantment(i).render3D(Tessellator.instance, matches.getIntensity(i), width, height);
+            matches.getEnchantment(i).render3D(TessellatorAPI.getTessellator(), matches.getIntensity(i), width, height);
         }
         Enchantment.endOuter3D();
         return !useGlint;
@@ -273,7 +274,7 @@ public class CITUtils {
         }
         Enchantment.beginOuter2D();
         for (int i = 0; i < matches.size(); i++) {
-            matches.getEnchantment(i).render2D(Tessellator.instance, matches.getIntensity(i), x, y, x + 16, y + 16, z);
+            matches.getEnchantment(i).render2D(TessellatorAPI.getTessellator(), matches.getIntensity(i), x, y, x + 16, y + 16, z);
         }
         Enchantment.endOuter2D();
         return !useGlint;

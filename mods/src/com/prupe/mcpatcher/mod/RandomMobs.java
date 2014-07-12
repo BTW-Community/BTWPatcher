@@ -32,6 +32,7 @@ public class RandomMobs extends Mod {
         version = "1.9";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
+        addDependency(MCPatcherUtils.TESSELLATOR_API_MOD);
         addDependency(MCPatcherUtils.BIOME_API_MOD);
 
         haveOverlayRenderer = getMinecraftVersion().compareTo("14w05a") >= 0;

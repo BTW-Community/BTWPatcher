@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mob;
 
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.tessellator.TessellatorAPI;
 import net.minecraft.src.EntityLivingBase;
 import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.Tessellator;
@@ -49,7 +50,7 @@ public class MobOverlay {
             float tileX0 = overlayCounter / 3.0f;
             float tileX1 = ++overlayCounter / 3.0f;
 
-            Tessellator tessellator = Tessellator.instance;
+            Tessellator tessellator = TessellatorAPI.getTessellator();
             tessellator.startDrawingQuads();
             tessellator.addVertexWithUV(MOO_X0, MOO_Y1, MOO_Z0, tileX0, 0.0);
             tessellator.addVertexWithUV(MOO_X0, MOO_Y0, MOO_Z0, tileX0, 1.0);
@@ -82,7 +83,7 @@ public class MobOverlay {
             return false;
         }
         TexturePackAPI.bindTexture(MobRandomizer.randomTexture(entity, SNOWMAN_OVERLAY));
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = TessellatorAPI.getTessellator();
         tessellator.startDrawingQuads();
 
         double[] c = new double[4];

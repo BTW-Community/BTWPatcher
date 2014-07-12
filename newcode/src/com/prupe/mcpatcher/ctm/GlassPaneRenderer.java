@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.ctm;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
+import com.prupe.mcpatcher.mal.tessellator.TessellatorAPI;
 import net.minecraft.src.*;
 
 import java.util.Arrays;
@@ -321,7 +322,7 @@ public class GlassPaneRenderer {
 
     private static void drawFace(double x0, double y0, double z0, double u0, double v0,   // top left
                                  double x1, double y1, double z1, double u1, double v1) { // lower right
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = TessellatorAPI.getTessellator();
         tessellator.addVertexWithUV(x0, y0, z0, u0, v0);
         tessellator.addVertexWithUV(x0, y1, z0, u0, v1);
         tessellator.addVertexWithUV(x1, y1, z1, u1, v1);
