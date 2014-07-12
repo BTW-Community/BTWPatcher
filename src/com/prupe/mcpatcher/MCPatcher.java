@@ -474,7 +474,9 @@ final public class MCPatcher {
                         if (classMod.bestMatch == null) {
                             bestInfo = "";
                         } else {
-                            bestInfo = String.format(" (best match: %s, %d signatures)", classMod.bestMatch, classMod.bestMatchCount + 1);
+                            bestInfo = String.format(" (best match: %s, %d signatures [failed: %s])",
+                                classMod.bestMatch, classMod.bestMatchCount + 1, classMod.classSignatures.get(classMod.bestMatchCount + 1).mapSource
+                            );
                         }
                         classMod.addError("no classes matched" + bestInfo);
                         Logger.log(Logger.LOG_MOD, "no classes matched %s%s", classMod.getDeobfClass(), bestInfo);
