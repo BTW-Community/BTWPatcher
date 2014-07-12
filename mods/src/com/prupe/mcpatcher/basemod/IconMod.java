@@ -99,6 +99,8 @@ public class IconMod extends com.prupe.mcpatcher.ClassMod {
     }
 
     private void setup18() {
+        getClassMap().addAlias("Icon", "TextureAtlasSprite");
+
         getWidth = new MethodRef("Icon", "getWidth", "()I");
         getHeight = new MethodRef("Icon", "getHeight", "()I");
         getX0 = new MethodRef("Icon", "getX0", "()I");
