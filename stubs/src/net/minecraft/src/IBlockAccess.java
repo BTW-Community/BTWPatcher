@@ -19,4 +19,7 @@ public interface IBlockAccess {
     public Block getBlock(Position position);
 
     public int getBlockMetadata(Position position);
+
+    // 14w25a+
+    public IBlockState getBlockState(Position position);
 }

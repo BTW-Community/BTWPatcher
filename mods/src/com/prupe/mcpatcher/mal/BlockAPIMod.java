@@ -54,6 +54,10 @@ public class BlockAPIMod extends Mod {
         if (malVersion >= 3) {
             PositionMod.setup(this);
         }
+        if (IBlockStateMod.haveClass()) {
+            addClassMod(new IBlockStateMod(this));
+            addClassMod(new IBlockStatePropertyMod(this));
+        }
 
         addClassFiles("com.prupe.mcpatcher.mal.block.*");
     }

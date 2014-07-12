@@ -121,6 +121,7 @@ public class PositionMod extends com.prupe.mcpatcher.ClassMod {
     private static void addBaseSignatures(ClassMod classMod) {
         String deobfClass = classMod.getDeobfClass();
         final MethodRef hashCode = new MethodRef(deobfClass, "hashCode", "()I");
+        final boolean useGetters = Mod.getMinecraftVersion().compareTo("14w25a") >= 0;
 
         final FieldRef i = new FieldRef(deobfClass, "i", "I");
         final FieldRef j = new FieldRef(deobfClass, "j", "I");
@@ -130,36 +131,50 @@ public class PositionMod extends com.prupe.mcpatcher.ClassMod {
         getK = new MethodRef(deobfClass, "getK", "()I");
 
         classMod.addClassSignature(new com.prupe.mcpatcher.BytecodeSignature(classMod) {
+            private final int opcode;
+
             {
                 setMethod(hashCode);
-                addXref(1, j);
-                addXref(2, k);
-                addXref(3, i);
+                if (useGetters) {
+                    addXref(1, getJ);
+                    addXref(2, getK);
+                    addXref(3, getI);
+                    opcode = INVOKEVIRTUAL;
+                } else {
+                    addXref(1, j);
+                    addXref(2, k);
+                    addXref(3, i);
+                    opcode = GETFIELD;
+                }
             }
 
             @Override
             public String getMatchExpression() {
                 return buildExpression(
                     // (this.j + this.k * 31) * 31 + this.i
+                    // -or-
+                    // (this.getJ() + this.getK() * 31) * 31 + this.getI()
                     ALOAD_0,
-                    captureReference(GETFIELD),
+                    captureReference(opcode),
                     ALOAD_0,
-                    captureReference(GETFIELD),
+                    captureReference(opcode),
                     push(31),
                     IMUL,
                     IADD,
                     push(31),
                     IMUL,
                     ALOAD_0,
-                    captureReference(GETFIELD),
+                    captureReference(opcode),
                     IADD
                 );
             }
         });
 
-        classMod.addMemberMapper(new com.prupe.mcpatcher.MethodMapper(classMod, null, getI, getJ, getK)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
-        );
+        if (!useGetters) {
+            classMod.addMemberMapper(new com.prupe.mcpatcher.MethodMapper(classMod, null, getI, getJ, getK)
+                    .accessFlag(AccessFlag.PUBLIC, true)
+                    .accessFlag(AccessFlag.STATIC, false)
+            );
+        }
     }
 }

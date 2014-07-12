@@ -81,4 +81,9 @@ public class World implements IBlockAccess {
     public int getBlockMetadata(Position position) {
         return 0;
     }
+
+    @Override
+    public IBlockState getBlockState(Position position) {
+        return null;
+    }
 }

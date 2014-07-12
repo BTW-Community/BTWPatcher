@@ -411,12 +411,12 @@ abstract public class BlockAPI {
 
         @Override
         protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
-            return blockAccess.getBlock(new Position(i, j, k));
+            return blockAccess.getBlockState(new Position(i, j, k)).getBlock();
         }
 
         @Override
         protected int getMetadataAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
-            return blockAccess.getBlockMetadata(new Position(i, j, k));
+            return 0; // TODO
         }
 
         @Override
