@@ -26,7 +26,6 @@ public class TilesheetAPIMod extends Mod {
         }
         addClassMod(new TextureManagerMod());
         addClassMod(new TessellatorMod(this));
-        addClassMod(new IconRegisterMod());
         addClassMod(new TextureAtlasMod());
         addClassMod(new TextureAtlasSpriteMod());
 
@@ -40,23 +39,13 @@ public class TilesheetAPIMod extends Mod {
         return new String[]{"Tilesheet"};
     }
 
-    private class IconRegisterMod extends ClassMod {
-        IconRegisterMod() {
-            final InterfaceMethodRef registerIcon = new InterfaceMethodRef(getDeobfClass(), "registerIcon", "(Ljava/lang/String;)LIcon;");
-
-            addClassSignature(new InterfaceSignature(
-                registerIcon
-            ).setInterfaceOnly(true));
-        }
-    }
-
     private class TextureAtlasMod extends com.prupe.mcpatcher.basemod.TextureAtlasMod {
         TextureAtlasMod() {
             super(TilesheetAPIMod.this);
 
             final FieldRef blocksAtlas = new FieldRef(getDeobfClass(), "blocksAtlas", "LResourceLocation;");
             final FieldRef itemsAtlas = new FieldRef(getDeobfClass(), "itemssAtlas", "LResourceLocation;");
-            final MethodRef registerTiles = new MethodRef(getDeobfClass(), "registerTiles", "()V");
+            final MethodRef registerTiles = new MethodRef(getDeobfClass(), "registerTiles", IconMod.haveClass() ? "()V" : "(LResourceManager;LUnknownInterface1;)V");
             final InterfaceMethodRef mapClear = new InterfaceMethodRef("java/util/Map", "clear", "()V");
             final ClassRef sbClass = new ClassRef("java/lang/StringBuilder");
             final ClassRef objClass = new ClassRef("java/lang/Object");
@@ -72,7 +61,9 @@ public class TilesheetAPIMod extends Mod {
 
             if (ResourceLocationMod.haveClass()) {
                 addClassSignature(new ResourceLocationSignature(this, blocksAtlas, "textures/atlas/blocks.png"));
-                addClassSignature(new ResourceLocationSignature(this, itemsAtlas, "textures/atlas/items.png"));
+                // In 14w25a, blocks and items are stored on a single atlas.
+                // Let itemsAtlas be an alias for blocksAtlas in this case.
+                addClassSignature(new ResourceLocationSignature(this, itemsAtlas, "textures/atlas/" + (IconMod.haveClass() ? "items" : "blocks") + ".png"));
 
                 addClassSignature(new BytecodeSignature() {
                     {
@@ -147,7 +138,7 @@ public class TilesheetAPIMod extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         // this.registerTiles();
-                        ResourceLocationMod.haveClass() ?
+                        ResourceLocationMod.haveClass() && IconMod.haveClass() ?
                             buildCode(
                                 ALOAD_0,
                                 reference(INVOKESPECIAL, registerTiles)
