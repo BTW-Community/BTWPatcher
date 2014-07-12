@@ -22,7 +22,6 @@ import java.util.*;
 public class FancyDial {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ANIMATIONS, "Animation");
 
-    private static final ResourceLocation ITEMS_PNG = new ResourceLocation(TexturePackAPI.select("/gui/items.png", "textures/atlas/items.png"));
     private static final double ANGLE_UNSET = Double.MAX_VALUE;
     private static final int NUM_SCRATCH_TEXTURES = 3;
 
@@ -150,7 +149,10 @@ public class FancyDial {
     }
 
     static void registerAnimations() {
-        TextureObject texture = TexturePackAPI.getTextureObject(ITEMS_PNG);
+        TextureObject texture = TexturePackAPI.getTextureObject(TexturePackAPI.ITEMS_PNG);
+        if (texture == null) {
+            texture = TexturePackAPI.getTextureObject(TexturePackAPI.BLOCKS_PNG);
+        }
         if (texture instanceof TextureAtlas) {
             List<TextureAtlasSprite> animations = ((TextureAtlas) texture).animations;
             for (FancyDial instance : instances.values()) {
@@ -211,10 +213,13 @@ public class FancyDial {
         height = IconAPI.getIconHeight(icon);
         scratchBuffer = ByteBuffer.allocateDirect(4 * width * height);
 
-        int itemsTexture = TexturePackAPI.getTextureIfLoaded(ITEMS_PNG);
+        int itemsTexture = TexturePackAPI.getTextureIfLoaded(TexturePackAPI.ITEMS_PNG);
         if (itemsTexture < 0) {
-            logger.severe("could not get items texture");
-            return;
+            itemsTexture = TexturePackAPI.getTextureIfLoaded(TexturePackAPI.BLOCKS_PNG);
+            if (itemsTexture < 0) {
+                logger.severe("could not get items texture");
+                return;
+            }
         }
         itemsFBO = new FBO(itemsTexture, x0, y0, width, height);
 
@@ -224,7 +229,7 @@ public class FancyDial {
                 scratchFBO[i] = new FBO(width, height);
             }
         } else {
-            logger.fine("rendering %s directly to %s", name, ITEMS_PNG);
+            logger.fine("rendering %s directly to atlas", name);
         }
 
         boolean debug = false;

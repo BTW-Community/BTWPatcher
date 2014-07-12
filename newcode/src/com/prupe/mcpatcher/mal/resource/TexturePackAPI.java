@@ -23,6 +23,8 @@ abstract public class TexturePackAPI {
     private static final TexturePackAPI instance = MAL.newInstance(TexturePackAPI.class, "texturepack");
 
     public static final String MCPATCHER_SUBDIR = TexturePackAPI.select("/", "mcpatcher/");
+    public static final ResourceLocation ITEMS_PNG = new ResourceLocation(TexturePackAPI.select("/gui/items.png", "textures/atlas/items.png"));
+    public static final ResourceLocation BLOCKS_PNG = new ResourceLocation(TexturePackAPI.select("terrain.png", "textures/atlas/blocks.png"));
 
     public static boolean isInitialized() {
         return instance != null && instance.isInitialized_Impl();
