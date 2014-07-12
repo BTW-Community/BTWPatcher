@@ -5,8 +5,6 @@ JAVA_OPTS ?= -Xmx256M
 EXT_OPTS ?=
 
 VERSIONS_DIR = $(MCDIR)/versions
-VERSIONS_URL = https://s3.amazonaws.com/Minecraft.Download/versions/versions.json
-VERSIONS_LCL = src/resources/versions.json
 MCJAR = $(VERSIONS_DIR)/$(MCVER)/$(MCVER).jar
 
 MCPATCHER = out/artifacts/mcpatcher/mcpatcher.jar
@@ -29,7 +27,7 @@ TMPDIR = t.1
 FILTER = ./testfilter.pl
 
 .PHONY: default build release run test testfilter control testclean clean
-.PHONY: rmall javadoc profile updversions
+.PHONY: rmall javadoc profile
 
 default:
 
@@ -76,7 +74,3 @@ javadoc:
 
 profile: $(MCPATCHER) $(JIP)
 	java -Xmx512M -javaagent:$(JIP) -Dprofile.properties=profile.properties -jar $(MCPATCHER) $(TEST_OPTS) > $(TEST_LOG) 2>&1
-
-updversions:
-	wget -O $(VERSIONS_LCL) $(VERSIONS_URL)
-	dos2unix $(VERSIONS_LCL)
