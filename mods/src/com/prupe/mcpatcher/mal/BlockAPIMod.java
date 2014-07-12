@@ -48,8 +48,8 @@ public class BlockAPIMod extends Mod {
             addClassMod(new RenderBlockCustomMod());
         }
         if (malVersion >= 2) {
-            addClassMod(new Shared.RegistryBaseMod(this));
-            addClassMod(new Shared.RegistryMod(this));
+            addClassMod(new RegistryBaseMod(this));
+            addClassMod(new RegistryMod(this));
         }
         if (malVersion >= 3) {
             PositionMod.setup(this);

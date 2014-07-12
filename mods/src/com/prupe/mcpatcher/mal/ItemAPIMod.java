@@ -3,6 +3,8 @@ package com.prupe.mcpatcher.mal;
 import com.prupe.mcpatcher.FieldRef;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.Mod;
+import com.prupe.mcpatcher.basemod.RegistryBaseMod;
+import com.prupe.mcpatcher.basemod.RegistryMod;
 import javassist.bytecode.AccessFlag;
 
 public class ItemAPIMod extends Mod {
@@ -23,8 +25,8 @@ public class ItemAPIMod extends Mod {
 
         addClassMod(new ItemMod());
         if (ItemMod.haveItemRegistry()) {
-            addClassMod(new Shared.RegistryBaseMod(this));
-            addClassMod(new Shared.RegistryMod(this));
+            addClassMod(new RegistryBaseMod(this));
+            addClassMod(new RegistryMod(this));
         }
 
         addClassFiles("com.prupe.mcpatcher.mal.item.*");
