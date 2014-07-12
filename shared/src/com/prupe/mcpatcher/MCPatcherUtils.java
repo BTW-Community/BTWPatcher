@@ -39,13 +39,13 @@ public class MCPatcherUtils {
     public static final String CUSTOM_ITEM_TEXTURES = "Custom Item Textures";
     public static final String GLSL_SHADERS = "GLSL Shaders";
     public static final String BASE_MOD = "__Base";
-    public static final String BASE_TEXTURE_PACK_MOD = "__TexturePackBase";
-    public static final String BASE_TILESHEET_MOD = "__TilesheetBase";
-    public static final String NBT_MOD = "__NBT";
+    public static final String TEXTURE_PACK_API_MOD = "__TexturePackAPI";
+    public static final String TESSELLATOR_API_MOD = "__TessellatorAPI";
+    public static final String TILESHEET_API_MOD = "__TilesheetAPI";
+    public static final String NBT_API_MOD = "__NBTAPI";
     public static final String BLOCK_API_MOD = "__BlockAPI";
     public static final String ITEM_API_MOD = "__ItemAPI";
     public static final String BIOME_API_MOD = "__BiomeAPI";
-    public static final String TESSELLATOR_API_MOD = "__TessellatorAPI";
 
     public static final String CUSTOM_ANIMATIONS = "Custom Animations";
     public static final String MIPMAP = "Mipmap";

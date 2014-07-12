@@ -8,11 +8,11 @@ import static com.prupe.mcpatcher.BinaryRegex.begin;
 import static com.prupe.mcpatcher.BinaryRegex.end;
 import static javassist.bytecode.Opcode.*;
 
-public class NBTMod extends Mod {
+public class NBTAPIMod extends Mod {
     private final boolean newBaseClass;
 
-    public NBTMod() {
-        name = MCPatcherUtils.NBT_MOD;
+    public NBTAPIMod() {
+        name = MCPatcherUtils.NBT_API_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
         version = "1.1";
@@ -122,7 +122,7 @@ public class NBTMod extends Mod {
 
     private class NBTTagCompoundMod extends com.prupe.mcpatcher.basemod.NBTTagCompoundMod {
         NBTTagCompoundMod() {
-            super(NBTMod.this);
+            super(NBTAPIMod.this);
 
             final MethodRef setCompoundTag = new MethodRef(getDeobfClass(), "setCompoundTag", "(Ljava/lang/String;L" + getDeobfClass() + ";)V");
             final MethodRef getTags = new MethodRef(getDeobfClass(), "getTags", "()Ljava/util/Collection;");

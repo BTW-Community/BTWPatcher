@@ -2,7 +2,7 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
-import com.prupe.mcpatcher.mal.BaseTexturePackMod;
+import com.prupe.mcpatcher.mal.TexturePackAPIMod;
 import javassist.bytecode.AccessFlag;
 
 import javax.swing.*;
@@ -38,8 +38,8 @@ public class ConnectedTextures extends Mod {
         description = "Enables support for connected, randomized, and other custom terrain textures.";
         version = "2.7";
 
-        addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
-        addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
+        addDependency(MCPatcherUtils.TEXTURE_PACK_API_MOD);
+        addDependency(MCPatcherUtils.TILESHEET_API_MOD);
         addDependency(MCPatcherUtils.TESSELLATOR_API_MOD);
         addDependency(MCPatcherUtils.BLOCK_API_MOD);
         addDependency(MCPatcherUtils.BIOME_API_MOD);
@@ -89,7 +89,7 @@ public class ConnectedTextures extends Mod {
             removeAddedClassFile(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS);
         }
 
-        BaseTexturePackMod.earlyInitialize(2, MCPatcherUtils.CTM_UTILS_CLASS, "reset");
+        TexturePackAPIMod.earlyInitialize(2, MCPatcherUtils.CTM_UTILS_CLASS, "reset");
     }
 
     private class ConfigPanel extends ModConfigPanel {

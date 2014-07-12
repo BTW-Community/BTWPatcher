@@ -12,7 +12,7 @@ import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
-public class BaseTexturePackMod extends Mod {
+public class TexturePackAPIMod extends Mod {
     private static final List<EarlyInitEntry> earlyInitMethods = new ArrayList<EarlyInitEntry>();
 
     private final int malVersion;
@@ -22,8 +22,8 @@ public class BaseTexturePackMod extends Mod {
     protected final MethodRef beforeChange1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "beforeChange1", "()V");
     protected final MethodRef afterChange1 = new MethodRef(MCPatcherUtils.TEXTURE_PACK_CHANGE_HANDLER_CLASS, "afterChange1", "()V");
 
-    public BaseTexturePackMod() {
-        name = MCPatcherUtils.BASE_TEXTURE_PACK_MOD;
+    public TexturePackAPIMod() {
+        name = MCPatcherUtils.TEXTURE_PACK_API_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
         version = "4.3";
@@ -96,7 +96,7 @@ public class BaseTexturePackMod extends Mod {
 
     private class MinecraftMod extends com.prupe.mcpatcher.basemod.MinecraftMod {
         MinecraftMod() {
-            super(BaseTexturePackMod.this);
+            super(TexturePackAPIMod.this);
 
             final ClassRef textureResourceManagerClass = new ClassRef("SimpleReloadableResourceManager");
             final MethodRef getTextureManager = new MethodRef(getDeobfClass(), "getTextureManager", "()LTextureManager;");
@@ -300,7 +300,7 @@ public class BaseTexturePackMod extends Mod {
 
     private class AbstractTextureMod extends com.prupe.mcpatcher.basemod.AbstractTextureMod {
         AbstractTextureMod() {
-            super(BaseTexturePackMod.this);
+            super(TexturePackAPIMod.this);
 
             final MethodRef unloadGLTexture = new MethodRef(getDeobfClass(), "unloadGLTexture", "()V");
 
@@ -631,7 +631,7 @@ public class BaseTexturePackMod extends Mod {
 
     private class RenderEngineMod extends com.prupe.mcpatcher.basemod.RenderEngineMod {
         public RenderEngineMod() {
-            super(BaseTexturePackMod.this);
+            super(TexturePackAPIMod.this);
 
             final FieldRef missingTextureImage = new FieldRef(getDeobfClass(), "missingTextureImage", "Ljava/awt/image/BufferedImage;");
             final MethodRef deleteTexture = new MethodRef(getDeobfClass(), "deleteTexture", "(I)V");

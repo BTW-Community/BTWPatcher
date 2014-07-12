@@ -32,8 +32,8 @@ public class ExtendedHD extends Mod {
         haveMipmapping = getMinecraftVersion().compareTo("13w38a") >= 0;
         configPanel = new HDConfig(!haveMipmapping);
 
-        addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
-        addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
+        addDependency(MCPatcherUtils.TEXTURE_PACK_API_MOD);
+        addDependency(MCPatcherUtils.TILESHEET_API_MOD);
 
         if (getMinecraftVersion().compareTo("13w02a") < 0) {
             addError("Requires Minecraft 1.5 or newer");

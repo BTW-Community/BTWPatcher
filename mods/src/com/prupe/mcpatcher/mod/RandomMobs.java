@@ -5,7 +5,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
 import com.prupe.mcpatcher.basemod.*;
-import com.prupe.mcpatcher.mal.BaseTexturePackMod;
+import com.prupe.mcpatcher.mal.TexturePackAPIMod;
 import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -31,7 +31,7 @@ public class RandomMobs extends Mod {
         website = "http://www.minecraftforum.net/topic/244172-";
         version = "1.9";
 
-        addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
+        addDependency(MCPatcherUtils.TEXTURE_PACK_API_MOD);
         addDependency(MCPatcherUtils.TESSELLATOR_API_MOD);
         addDependency(MCPatcherUtils.BIOME_API_MOD);
 
@@ -61,7 +61,7 @@ public class RandomMobs extends Mod {
 
         addClassFiles("com.prupe.mcpatcher.mob.*");
 
-        BaseTexturePackMod.earlyInitialize(3, MCPatcherUtils.RANDOM_MOBS_CLASS, "init");
+        TexturePackAPIMod.earlyInitialize(3, MCPatcherUtils.RANDOM_MOBS_CLASS, "init");
     }
 
     private class EntityMod extends ClassMod {

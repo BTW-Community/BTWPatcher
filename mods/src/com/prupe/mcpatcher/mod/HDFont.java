@@ -2,7 +2,7 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.ResourceLocationMod;
-import com.prupe.mcpatcher.mal.BaseTexturePackMod;
+import com.prupe.mcpatcher.mal.TexturePackAPIMod;
 import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -19,7 +19,7 @@ public class HDFont extends Mod {
         description = "Provides support for higher resolution fonts.";
         version = "1.6";
 
-        addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
+        addDependency(MCPatcherUtils.TEXTURE_PACK_API_MOD);
 
         setupMod(this, getMinecraftVersion(), true);
     }
@@ -35,7 +35,7 @@ public class HDFont extends Mod {
             mod.addClassFile(MCPatcherUtils.FONT_UTILS_CLASS + "$1");
         }
 
-        BaseTexturePackMod.earlyInitialize(3, MCPatcherUtils.FONT_UTILS_CLASS, "init");
+        TexturePackAPIMod.earlyInitialize(3, MCPatcherUtils.FONT_UTILS_CLASS, "init");
     }
 
     private static class FontRendererMod extends com.prupe.mcpatcher.basemod.FontRendererMod {

@@ -8,14 +8,14 @@ import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
-public class BaseTilesheetMod extends Mod {
-    public BaseTilesheetMod() {
-        name = MCPatcherUtils.BASE_TILESHEET_MOD;
+public class TilesheetAPIMod extends Mod {
+    public TilesheetAPIMod() {
+        name = MCPatcherUtils.TILESHEET_API_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
         version = "2.4";
 
-        addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
+        addDependency(MCPatcherUtils.TEXTURE_PACK_API_MOD);
         addDependency(MCPatcherUtils.TESSELLATOR_API_MOD);
 
         addClassMod(new MinecraftMod(this));
@@ -32,7 +32,7 @@ public class BaseTilesheetMod extends Mod {
 
         addClassFiles("com.prupe.mcpatcher.mal.tile.*");
 
-        BaseTexturePackMod.earlyInitialize(1, MCPatcherUtils.TILE_LOADER_CLASS, "init");
+        TexturePackAPIMod.earlyInitialize(1, MCPatcherUtils.TILE_LOADER_CLASS, "init");
     }
 
     @Override
@@ -52,7 +52,7 @@ public class BaseTilesheetMod extends Mod {
 
     private class TextureAtlasMod extends com.prupe.mcpatcher.basemod.TextureAtlasMod {
         TextureAtlasMod() {
-            super(BaseTilesheetMod.this);
+            super(TilesheetAPIMod.this);
 
             final FieldRef blocksAtlas = new FieldRef(getDeobfClass(), "blocksAtlas", "LResourceLocation;");
             final FieldRef itemsAtlas = new FieldRef(getDeobfClass(), "itemssAtlas", "LResourceLocation;");
@@ -425,7 +425,7 @@ public class BaseTilesheetMod extends Mod {
 
     private class TextureAtlasSpriteMod extends com.prupe.mcpatcher.basemod.TextureAtlasSpriteMod {
         TextureAtlasSpriteMod() {
-            super(BaseTilesheetMod.this);
+            super(TilesheetAPIMod.this);
 
             if (ResourceLocationMod.haveClass()) {
                 setup16();

@@ -2,7 +2,7 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
-import com.prupe.mcpatcher.mal.BaseTexturePackMod;
+import com.prupe.mcpatcher.mal.TexturePackAPIMod;
 import javassist.bytecode.AccessFlag;
 
 import javax.swing.*;
@@ -49,10 +49,10 @@ public class CustomItemTextures extends Mod {
         version = "1.1";
         configPanel = new ConfigPanel();
 
-        addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
-        addDependency(MCPatcherUtils.BASE_TILESHEET_MOD);
+        addDependency(MCPatcherUtils.TEXTURE_PACK_API_MOD);
+        addDependency(MCPatcherUtils.TILESHEET_API_MOD);
         addDependency(MCPatcherUtils.TESSELLATOR_API_MOD);
-        addDependency(MCPatcherUtils.NBT_MOD);
+        addDependency(MCPatcherUtils.NBT_API_MOD);
         addDependency(MCPatcherUtils.ITEM_API_MOD);
 
         newEntityRendering = getMinecraftVersion().compareTo("14w05a") >= 0;
@@ -92,7 +92,7 @@ public class CustomItemTextures extends Mod {
 
         addClassFiles("com.prupe.mcpatcher.cit.*");
 
-        BaseTexturePackMod.earlyInitialize(2, MCPatcherUtils.CIT_UTILS_CLASS, "init");
+        TexturePackAPIMod.earlyInitialize(2, MCPatcherUtils.CIT_UTILS_CLASS, "init");
     }
 
     private class ConfigPanel extends ModConfigPanel {

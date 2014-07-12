@@ -35,7 +35,7 @@ public class BetterGlass extends Mod {
         description = "Enables partial transparency for glass blocks.";
         version = "2.6";
 
-        addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
+        addDependency(MCPatcherUtils.TEXTURE_PACK_API_MOD);
         addDependency(MCPatcherUtils.CONNECTED_TEXTURES);
 
         if (getMinecraftVersion().compareTo("14w06a") >= 0) {

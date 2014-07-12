@@ -2,7 +2,7 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
-import com.prupe.mcpatcher.mal.BaseTexturePackMod;
+import com.prupe.mcpatcher.mal.TexturePackAPIMod;
 import com.prupe.mcpatcher.mal.BlockAPIMod;
 import javassist.bytecode.AccessFlag;
 
@@ -101,7 +101,7 @@ public class CustomColors extends Mod {
         description = "Gives texture packs control over hardcoded colors in the game.";
         version = "1.9";
 
-        addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
+        addDependency(MCPatcherUtils.TEXTURE_PACK_API_MOD);
         addDependency(MCPatcherUtils.BLOCK_API_MOD);
         addDependency(MCPatcherUtils.BIOME_API_MOD);
 
@@ -198,7 +198,7 @@ public class CustomColors extends Mod {
 
         addClassFiles("com.prupe.mcpatcher.cc.*");
 
-        BaseTexturePackMod.earlyInitialize(3, MCPatcherUtils.COLORIZER_CLASS, "init");
+        TexturePackAPIMod.earlyInitialize(3, MCPatcherUtils.COLORIZER_CLASS, "init");
     }
 
     private class ConfigPanel extends ModConfigPanel {
