@@ -208,6 +208,10 @@ abstract public class TexturePackAPI {
         }
     }
 
+    public static int getBoundTexture() {
+        return GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
+    }
+
     public static void unloadTexture(ResourceLocation resource) {
         if (resource != null) {
             instance.unloadTexture_Impl(resource);

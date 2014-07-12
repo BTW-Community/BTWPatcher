@@ -87,7 +87,7 @@ public class FancyDial {
         if (!fboSupported) {
             return;
         }
-        String name = IconAPI.getIconName(icon);
+        String name = IconAPI.getIconName(icon).replaceFirst("^minecraft:items/", "");
         if (icon instanceof TextureClock && name.equals("compass")) { // 1.5 bug
             name = "clock";
         }
