@@ -13,7 +13,8 @@ public class RegistryBaseMod extends com.prupe.mcpatcher.ClassMod {
             new MethodRef(getDeobfClass(), "get", "(Ljava/lang/Object;)Ljava/lang/Object;"),
             new MethodRef(getDeobfClass(), "put", "(Ljava/lang/Object;Ljava/lang/Object;)V"),
             new MethodRef(getDeobfClass(), "getKeys", "()Ljava/util/Set;"),
-            new MethodRef(getDeobfClass(), "containsKey", "(Ljava/lang/Object;)Z")
+            new MethodRef(getDeobfClass(), "containsKey", "(Ljava/lang/Object;)Z"),
+            new MethodRef(getDeobfClass(), "iterator", "()Ljava/util/Iterator;")
         ).setInterfaceOnly(false));
     }
 }
