@@ -98,6 +98,7 @@ class ModList {
 
             register(new BuiltInMod(MCPatcherUtils.BASE_TEXTURE_PACK_MOD, "com.prupe.mcpatcher.mal.BaseTexturePackMod", loader).setInternal(true));
             register(new BuiltInMod(MCPatcherUtils.BASE_TILESHEET_MOD, "com.prupe.mcpatcher.mal.BaseTilesheetMod", loader).setInternal(true));
+            register(new BuiltInMod(MCPatcherUtils.TESSELLATOR_API_MOD, "com.prupe.mcpatcher.mal.TessellatorAPIMod", loader).setInternal(true));
             register(new BuiltInMod(MCPatcherUtils.NBT_MOD, "com.prupe.mcpatcher.mal.NBTMod", loader).setInternal(true));
             register(new BuiltInMod(MCPatcherUtils.BLOCK_API_MOD, "com.prupe.mcpatcher.mal.BlockAPIMod", loader).setInternal(true));
             register(new BuiltInMod(MCPatcherUtils.ITEM_API_MOD, "com.prupe.mcpatcher.mal.ItemAPIMod", loader).setInternal(true));

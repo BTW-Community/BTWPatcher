@@ -16,6 +16,7 @@ public class BaseTilesheetMod extends Mod {
         version = "2.4";
 
         addDependency(MCPatcherUtils.BASE_TEXTURE_PACK_MOD);
+        addDependency(MCPatcherUtils.TESSELLATOR_API_MOD);
 
         addClassMod(new MinecraftMod(this));
         addClassMod(new IconMod(this));

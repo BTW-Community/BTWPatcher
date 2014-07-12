@@ -45,6 +45,7 @@ public class MCPatcherUtils {
     public static final String BLOCK_API_MOD = "__BlockAPI";
     public static final String ITEM_API_MOD = "__ItemAPI";
     public static final String BIOME_API_MOD = "__BiomeAPI";
+    public static final String TESSELLATOR_API_MOD = "__TessellatorAPI";
 
     public static final String CUSTOM_ANIMATIONS = "Custom Animations";
     public static final String MIPMAP = "Mipmap";

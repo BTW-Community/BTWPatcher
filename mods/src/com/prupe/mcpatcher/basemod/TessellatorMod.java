@@ -19,7 +19,7 @@ public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
     public static final MethodRef addVertex = new MethodRef("Tessellator", "addVertex", "(DDD)V");
     public static final MethodRef setTextureUV = new MethodRef("Tessellator", "setTextureUV", "(DD)V");
     public static final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
-    public static final FieldRef instance = new FieldRef("Tessellator", "instance", "LTessellator;");
+    public static FieldRef instance;
 
     public TessellatorMod(Mod mod) {
         super(mod);
@@ -28,7 +28,7 @@ public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
             @Override
             public String getMatchExpression() {
                 return buildExpression(
-                    push("Not tesselating!")
+                    push(TessellatorFactoryMod.haveClass() ? "Not building!" : "Not tesselating!")
                 );
             }
         }.setMethod(draw));
@@ -76,7 +76,13 @@ public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
             }
         });
 
-        addMemberMapper(new FieldMapper(instance).accessFlag(AccessFlag.STATIC, true));
+        if (TessellatorFactoryMod.haveClass()) {
+            instance = null;
+        } else {
+            instance = new FieldRef("Tessellator", "instance", "LTessellator;");
+            addMemberMapper(new FieldMapper(instance).accessFlag(AccessFlag.STATIC, true));
+        }
+
         addMemberMapper(new MethodMapper(setColorOpaque_F));
     }
 }
