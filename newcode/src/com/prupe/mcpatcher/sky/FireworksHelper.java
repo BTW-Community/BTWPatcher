@@ -34,10 +34,10 @@ public class FireworksHelper {
         return skip || layer == LIT_LAYER || (!enable && layer > LIT_LAYER);
     }
 
-    public static void setParticleBlendMethod(int layer, int inner) {
+    public static void setParticleBlendMethod(int layer, int pass, boolean setDefault) {
         if (enable && layer == EXTRA_LAYER && blendMethod != null) {
             blendMethod.applyBlending();
-        } else {
+        } else if (setDefault) {
             TexturePackAPI.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         }
     }

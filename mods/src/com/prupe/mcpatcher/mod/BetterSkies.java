@@ -415,7 +415,7 @@ public class BetterSkies extends Mod {
         private static final int EXTRA_LAYERS = 1;
 
         private int layerRegister;
-        private int innerRegister;
+        private int passRegister;
 
         EffectRendererMod() {
             final boolean have2dArray = getMinecraftVersion().compareTo("14w25a") >= 0;
@@ -426,7 +426,7 @@ public class BetterSkies extends Mod {
             final MethodRef getFXLayer = new MethodRef("EntityFX", "getFXLayer", "()I");
             final InterfaceMethodRef listIsEmpty = new InterfaceMethodRef("java/util/List", "isEmpty", "()Z");
             final MethodRef newGetFXLayer = new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "getFXLayer", "(LEntityFX;)I");
-            final MethodRef setParticleBlendMethod = new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "setParticleBlendMethod", "(II)V");
+            final MethodRef setParticleBlendMethod = new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "setParticleBlendMethod", "(IIZ)V");
             final MethodRef skipThisLayer = new MethodRef(MCPatcherUtils.FIREWORKS_HELPER_CLASS, "skipThisLayer", "(ZI)Z");
 
             RenderUtilsMod.setup(this);
@@ -562,7 +562,7 @@ public class BetterSkies extends Mod {
                 public byte[] getReplacementBytes() {
                     layerRegister = extractRegisterNum(getCaptureGroup(1));
                     if (have2dArray) {
-                        innerRegister = extractRegisterNum(getCaptureGroup(2));
+                        passRegister = extractRegisterNum(getCaptureGroup(2));
                     }
                     return buildCode(
                         getCaptureGroup(1),
@@ -608,7 +608,8 @@ public class BetterSkies extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         ILOAD, layerRegister,
-                        have2dArray ? buildCode(ILOAD, innerRegister) : buildCode(push(0)),
+                        have2dArray ? buildCode(ILOAD, passRegister) : buildCode(push(0)),
+                        push(!have2dArray),
                         reference(INVOKESTATIC, setParticleBlendMethod)
                     );
                 }
