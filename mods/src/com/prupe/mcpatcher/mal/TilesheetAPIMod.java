@@ -18,6 +18,8 @@ public class TilesheetAPIMod extends Mod {
         addDependency(MCPatcherUtils.TEXTURE_PACK_API_MOD);
         addDependency(MCPatcherUtils.TESSELLATOR_API_MOD);
 
+        setMALVersion("icon", ResourceLocationMod.select(1, 2));
+
         addClassMod(new MinecraftMod(this));
         addClassMod(new IconMod(this));
         if (ResourceLocationMod.setup(this)) {

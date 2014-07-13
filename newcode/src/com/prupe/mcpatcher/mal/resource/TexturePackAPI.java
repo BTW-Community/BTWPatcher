@@ -23,7 +23,7 @@ abstract public class TexturePackAPI {
     private static final TexturePackAPI instance = MAL.newInstance(TexturePackAPI.class, "texturepack");
 
     public static final String MCPATCHER_SUBDIR = TexturePackAPI.select("/", "mcpatcher/");
-    public static final ResourceLocation ITEMS_PNG = new ResourceLocation(TexturePackAPI.select("/gui/items.png", "textures/atlas/items.png"));
+    public static final ResourceLocation ITEMS_PNG = new ResourceLocation(TexturePackAPI.select("/gui/items.png", "textures/atlas/items.png", "textures/atlas/blocks.png"));
     public static final ResourceLocation BLOCKS_PNG = new ResourceLocation(TexturePackAPI.select("terrain.png", "textures/atlas/blocks.png"));
 
     public static boolean isInitialized() {
@@ -174,8 +174,12 @@ abstract public class TexturePackAPI {
         return MCPatcherUtils.isNullOrEmpty(path) ? null : instance.parseResourceLocation_Impl(baseResource, path);
     }
 
+    public static <T> T select(T v1, T v2, T v3) {
+        return instance.select_Impl(v1, v2, v3);
+    }
+
     public static <T> T select(T v1, T v2) {
-        return instance.select_Impl(v1, v2);
+        return instance.select_Impl(v1, v2, v2);
     }
 
     public static ResourceLocation newMCPatcherResourceLocation(String v1Path, String v2Path) {
@@ -206,7 +210,7 @@ abstract public class TexturePackAPI {
 
     public static void bindTexture(int texture) {
         if (texture >= 0) {
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
+            instance.bindTexture_Impl(texture);
         }
     }
 
@@ -246,7 +250,7 @@ abstract public class TexturePackAPI {
 
     abstract protected ResourceLocation parseResourceLocation_Impl(ResourceLocation baseResource, String path);
 
-    abstract protected <T> T select_Impl(T v1, T v2);
+    abstract protected <T> T select_Impl(T v1, T v2, T v3);
 
     abstract protected boolean isDefaultResourcePack_Impl();
 
@@ -255,6 +259,8 @@ abstract public class TexturePackAPI {
     abstract protected void bindTexture_Impl(ResourceLocation resource);
 
     abstract protected void unloadTexture_Impl(ResourceLocation resource);
+
+    abstract protected void bindTexture_Impl(int texture);
 
     abstract protected void flushUnusedTextures_Impl();
 
@@ -342,7 +348,7 @@ abstract public class TexturePackAPI {
         }
 
         @Override
-        protected <T> T select_Impl(T v1, T v2) {
+        protected <T> T select_Impl(T v1, T v2, T v3) {
             return v1;
         }
 
@@ -399,12 +405,17 @@ abstract public class TexturePackAPI {
         }
 
         @Override
+        protected void bindTexture_Impl(int texture) {
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
+        }
+
+        @Override
         protected void flushUnusedTextures_Impl() {
             // switching packs is so hopelessly broken in 1.5 that there's no point
         }
     }
 
-    final private static class V2 extends TexturePackAPI {
+    private static class V2 extends TexturePackAPI {
         private static final String ASSETS = "assets/";
 
         private ResourceManager getResourceManager() {
@@ -515,7 +526,7 @@ abstract public class TexturePackAPI {
         }
 
         @Override
-        protected <T> T select_Impl(T v1, T v2) {
+        protected <T> T select_Impl(T v1, T v2, T v3) {
             return v2;
         }
 
@@ -549,6 +560,11 @@ abstract public class TexturePackAPI {
         }
 
         @Override
+        protected void bindTexture_Impl(int texture) {
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
+        }
+
+        @Override
         protected void flushUnusedTextures_Impl() {
             TextureManager textureManager = Minecraft.getInstance().getTextureManager();
             if (textureManager != null) {
@@ -564,6 +580,18 @@ abstract public class TexturePackAPI {
                     unloadTexture(resource);
                 }
             }
+        }
+    }
+
+    final private static class V3 extends V2 {
+        @Override
+        protected <T> T select_Impl(T v1, T v2, T v3) {
+            return v3;
+        }
+
+        @Override
+        protected void bindTexture_Impl(int texture) {
+            RenderUtils.glBindTexture(texture);
         }
     }
 }

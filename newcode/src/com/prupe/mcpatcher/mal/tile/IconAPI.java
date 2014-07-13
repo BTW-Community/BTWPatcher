@@ -5,7 +5,7 @@ import net.minecraft.src.Icon;
 import net.minecraft.src.TextureAtlasSprite;
 
 abstract public class IconAPI {
-    private static final IconAPI instance = MAL.newInstance(IconAPI.class, "texturepack");
+    private static final IconAPI instance = MAL.newInstance(IconAPI.class, "icon");
 
     public static boolean needRegisterTileAnimations() {
         return instance.needRegisterTileAnimations_Impl();
@@ -83,7 +83,7 @@ abstract public class IconAPI {
         }
     }
 
-    final private static class V2 extends IconAPI {
+    private static class V2 extends IconAPI {
         @Override
         protected boolean needRegisterTileAnimations_Impl() {
             return true;

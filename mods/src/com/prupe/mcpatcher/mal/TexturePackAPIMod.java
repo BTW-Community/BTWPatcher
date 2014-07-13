@@ -28,7 +28,7 @@ public class TexturePackAPIMod extends Mod {
         description = "Internal mod required by the patcher.";
         version = "4.3";
 
-        malVersion = ResourceLocationMod.select(1, 2);
+        malVersion = RenderUtilsMod.select(ResourceLocationMod.select(1, 2), 3);
         setMALVersion("texturepack", malVersion);
 
         addClassMod(new MinecraftMod());
@@ -58,6 +58,7 @@ public class TexturePackAPIMod extends Mod {
         addClassMod(new FileResourcePackMod());
         addClassMod(new FolderResourcePackMod());
         ResourceLocationMod.setup(this);
+        RenderUtilsMod.setup(this);
 
         addClassFiles("com.prupe.mcpatcher.mal.resource.*");
         addClassFiles("com.prupe.mcpatcher.mal.util.*");

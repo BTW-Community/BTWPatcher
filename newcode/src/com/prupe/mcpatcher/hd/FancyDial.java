@@ -129,7 +129,7 @@ public class FancyDial {
             return instance != null && instance.render(itemFrameRenderer);
         } finally {
             EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, oldFB);
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, oldTexture);
+            TexturePackAPI.bindTexture(oldTexture);
         }
     }
 
@@ -150,9 +150,6 @@ public class FancyDial {
 
     static void registerAnimations() {
         TextureObject texture = TexturePackAPI.getTextureObject(TexturePackAPI.ITEMS_PNG);
-        if (texture == null) {
-            texture = TexturePackAPI.getTextureObject(TexturePackAPI.BLOCKS_PNG);
-        }
         if (texture instanceof TextureAtlas) {
             List<TextureAtlasSprite> animations = ((TextureAtlas) texture).animations;
             for (FancyDial instance : instances.values()) {
@@ -215,11 +212,8 @@ public class FancyDial {
 
         int itemsTexture = TexturePackAPI.getTextureIfLoaded(TexturePackAPI.ITEMS_PNG);
         if (itemsTexture < 0) {
-            itemsTexture = TexturePackAPI.getTextureIfLoaded(TexturePackAPI.BLOCKS_PNG);
-            if (itemsTexture < 0) {
-                logger.severe("could not get items texture");
-                return;
-            }
+            logger.severe("could not get items texture");
+            return;
         }
         itemsFBO = new FBO(itemsTexture, x0, y0, width, height);
 
@@ -574,7 +568,7 @@ public class FancyDial {
             if (frameBuffer < 0) {
                 throw new RuntimeException("could not get framebuffer object");
             }
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
+            TexturePackAPI.bindTexture(texture);
             EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer);
             EXTFramebufferObject.glFramebufferTexture2DEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT, GL11.GL_TEXTURE_2D, texture, 0);
         }

@@ -29,6 +29,10 @@ public class RenderUtilsMod extends ClassMod {
         return Mod.getMinecraftVersion().compareTo("14w25a") >= 0;
     }
 
+    public static <T> T select(T v1, T v2) {
+        return haveClass() ? v2 : v1;
+    }
+
     public static boolean setup(Mod mod) {
         if (haveClass()) {
             mod.addClassMod(new RenderUtilsMod(mod));

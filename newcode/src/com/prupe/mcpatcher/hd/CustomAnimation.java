@@ -85,11 +85,9 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
                 pending.clear();
             }
         }
-        int oldTexture = TexturePackAPI.getBoundTexture();
         for (CustomAnimation animation : animations) {
             animation.update();
         }
-        TexturePackAPI.bindTexture(oldTexture);
     }
 
     private static void checkPendingAnimations() {
