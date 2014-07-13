@@ -4,4 +4,7 @@ package net.minecraft.src;
 public class RenderUtils {
     public static void glBindTexture(int texture) {
     }
+
+    public static void glBlendFunc(int src, int dst) {
+    }
 }

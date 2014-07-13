@@ -208,10 +208,14 @@ abstract public class TexturePackAPI {
         }
     }
 
-    public static void bindTexture(int texture) {
+    public static void glBindTexture(int texture) {
         if (texture >= 0) {
-            instance.bindTexture_Impl(texture);
+            instance.glBindTexture_Impl(texture);
         }
+    }
+
+    public static void glBlendFunc(int src, int dst) {
+        instance.glBlendFunc_Impl(src, dst);
     }
 
     public static int getBoundTexture() {
@@ -260,7 +264,9 @@ abstract public class TexturePackAPI {
 
     abstract protected void unloadTexture_Impl(ResourceLocation resource);
 
-    abstract protected void bindTexture_Impl(int texture);
+    abstract protected void glBindTexture_Impl(int texture);
+
+    abstract protected void glBlendFunc_Impl(int src, int dst);
 
     abstract protected void flushUnusedTextures_Impl();
 
@@ -405,8 +411,13 @@ abstract public class TexturePackAPI {
         }
 
         @Override
-        protected void bindTexture_Impl(int texture) {
+        protected void glBindTexture_Impl(int texture) {
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
+        }
+
+        @Override
+        protected void glBlendFunc_Impl(int src, int dst) {
+            GL11.glBlendFunc(src, dst);
         }
 
         @Override
@@ -560,8 +571,13 @@ abstract public class TexturePackAPI {
         }
 
         @Override
-        protected void bindTexture_Impl(int texture) {
+        protected void glBindTexture_Impl(int texture) {
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
+        }
+
+        @Override
+        protected void glBlendFunc_Impl(int src, int dst) {
+            GL11.glBlendFunc(src, dst);
         }
 
         @Override
@@ -590,8 +606,13 @@ abstract public class TexturePackAPI {
         }
 
         @Override
-        protected void bindTexture_Impl(int texture) {
+        protected void glBindTexture_Impl(int texture) {
             RenderUtils.glBindTexture(texture);
+        }
+
+        @Override
+        protected void glBlendFunc_Impl(int src, int dst) {
+            RenderUtils.glBlendFunc(src, dst);
         }
     }
 }

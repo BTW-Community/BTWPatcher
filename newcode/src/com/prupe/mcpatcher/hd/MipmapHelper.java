@@ -115,7 +115,7 @@ public class MipmapHelper {
     public static int setupTexture(int glTexture, BufferedImage image, boolean blur, boolean clamp, ResourceLocation textureName) {
         int width = image.getWidth();
         int height = image.getHeight();
-        TexturePackAPI.bindTexture(glTexture);
+        TexturePackAPI.glBindTexture(glTexture);
         logger.finer("setupTexture(%s, %d, %dx%d, %s, %s)", textureName, glTexture, width, height, blur, clamp);
         int[] rgb = new int[width * height];
         image.getRGB(0, 0, width, height, rgb, 0, width);
@@ -140,7 +140,7 @@ public class MipmapHelper {
     }
 
     public static void setupTexture(int glTexture, int width, int height, String textureName) {
-        TexturePackAPI.bindTexture(glTexture);
+        TexturePackAPI.glBindTexture(glTexture);
         logger.finer("setupTexture(tilesheet %s, %d, %dx%d)", textureName, glTexture, width, height);
         setupTexture(width, height, false, false, textureName);
     }

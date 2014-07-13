@@ -38,7 +38,7 @@ public class FireworksHelper {
         if (enable && layer == EXTRA_LAYER && blendMethod != null) {
             blendMethod.applyBlending();
         } else {
-            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            TexturePackAPI.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         }
     }
 

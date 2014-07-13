@@ -23,6 +23,7 @@ public class BlendMethod {
     public static final BlendMethod REPLACE = new BlendMethod("replace", 0, 0, false, false, true, null);
 
     private static final boolean gl14Available = GLContext.getCapabilities().OpenGL14;
+    private static final boolean useGlBlendFunc = !gl14Available || TexturePackAPI.select(false, false, true);
 
     private final int srcBlend;
     private final int dstBlend;
@@ -124,10 +125,11 @@ public class BlendMethod {
     public void applyBlending() {
         if (blend) {
             GL11.glEnable(GL11.GL_BLEND);
+            if (useGlBlendFunc) {
+                TexturePackAPI.glBlendFunc(srcBlend, dstBlend);
+            }
             if (gl14Available) {
                 GL14.glBlendFuncSeparate(srcBlend, dstBlend, GL11.GL_ONE, GL11.GL_ZERO);
-            } else {
-                GL11.glBlendFunc(srcBlend, dstBlend);
             }
         } else {
             GL11.glDisable(GL11.GL_BLEND);

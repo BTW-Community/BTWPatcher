@@ -220,7 +220,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         if (++currentFrame >= numFrames) {
             currentFrame = 0;
         }
-        TexturePackAPI.bindTexture(texture);
+        TexturePackAPI.glBindTexture(texture);
         update(texture, 0, 0);
         int glError = GL11.glGetError();
         if (glError != 0) {

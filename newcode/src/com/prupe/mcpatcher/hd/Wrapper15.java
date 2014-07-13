@@ -31,7 +31,7 @@ public class Wrapper15 {
             int width = image.getWidth();
             int height = image.getHeight();
             int[] rgb = MCPatcherUtils.getImageRGB(image);
-            TexturePackAPI.bindTexture(glTextureId);
+            TexturePackAPI.glBindTexture(glTextureId);
             MipmapHelper.setupTexture(rgb, width, height, 0, 0, blur, clamp, textureName.getPath());
         }
     }
@@ -43,7 +43,7 @@ public class Wrapper15 {
                 dst.getTextureName(), src.getTextureName(), x, y, flipped
             );
         }
-        TexturePackAPI.bindTexture(dst.getGlTextureId());
+        TexturePackAPI.glBindTexture(dst.getGlTextureId());
         copySubTexture(getMipmaps(src), x, y, src.getWidth(), src.getHeight());
     }
 
