@@ -34,7 +34,7 @@ public class FireworksHelper {
         return skip || layer == LIT_LAYER || (!enable && layer > LIT_LAYER);
     }
 
-    public static void setParticleBlendMethod(int layer) {
+    public static void setParticleBlendMethod(int layer, int inner) {
         if (enable && layer == EXTRA_LAYER && blendMethod != null) {
             blendMethod.applyBlending();
         } else {

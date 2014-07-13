@@ -11,6 +11,7 @@ public class RenderUtilsMod extends ClassMod {
     private static MethodRef rotatef;
     private static MethodRef color4f;
     private static MethodRef blendFunc;
+    private static MethodRef alphaFunc;
     private static MethodRef pushMatrix;
     private static MethodRef popMatrix;
     private static MethodRef callList;
@@ -20,6 +21,7 @@ public class RenderUtilsMod extends ClassMod {
     private static final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
     private static final MethodRef glColor4f = new MethodRef(MCPatcherUtils.GL11_CLASS, "glColor4f", "(FFFF)V");
     private static final MethodRef glBlendFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBlendFunc", "(II)V");
+    private static final MethodRef glAlphaFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glAlphaFunc", "(IF)V");
     private static final MethodRef glPushMatrix = new MethodRef(MCPatcherUtils.GL11_CLASS, "glPushMatrix", "()V");
     private static final MethodRef glPopMatrix = new MethodRef(MCPatcherUtils.GL11_CLASS, "glPopMatrix", "()V");
     private static final MethodRef glCallList = new MethodRef(MCPatcherUtils.GL11_CLASS, "glCallList", "(I)V");
@@ -67,6 +69,10 @@ public class RenderUtilsMod extends ClassMod {
         return patchComponent.reference(INVOKESTATIC, blendFunc);
     }
 
+    public static byte[] glAlphaFunc(PatchComponent patchComponent) {
+        return patchComponent.reference(INVOKESTATIC, alphaFunc);
+    }
+
     public static byte[] glPushMatrix(PatchComponent patchComponent) {
         return patchComponent.reference(INVOKESTATIC, pushMatrix);
     }
@@ -101,6 +107,7 @@ public class RenderUtilsMod extends ClassMod {
         rotatef = simpleWrapper(glRotatef);
         color4f = simpleWrapper(glColor4f);
         blendFunc = simpleWrapper(glBlendFunc);
+        alphaFunc = simpleWrapper(glAlphaFunc);
         pushMatrix = simpleWrapper(glPushMatrix);
         popMatrix = simpleWrapper(glPopMatrix);
         callList = simpleWrapper(glCallList);
