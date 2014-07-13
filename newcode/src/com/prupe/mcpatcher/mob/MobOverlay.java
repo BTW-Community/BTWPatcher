@@ -68,7 +68,7 @@ public class MobOverlay {
             tessellator.addVertexWithUV(MOO_X1, MOO_Y0, MOO_Z0, tileX0, 1.0);
             tessellator.addVertexWithUV(MOO_X0, MOO_Y0, MOO_Z1, tileX1, 1.0);
             tessellator.addVertexWithUV(MOO_X0, MOO_Y1, MOO_Z1, tileX1, 0.0);
-            tessellator.draw();
+            TessellatorAPI.draw(tessellator);
         }
         return overlayActive;
     }
@@ -130,7 +130,7 @@ public class MobOverlay {
         tessellator.addVertexWithUV(SNOW_X0, SNOW_Y0, SNOW_Z1, c[1], c[3]);
         tessellator.addVertexWithUV(SNOW_X1, SNOW_Y0, SNOW_Z1, c[0], c[3]);
 
-        tessellator.draw();
+        TessellatorAPI.draw(tessellator);
         return true;
     }
 

@@ -19,6 +19,7 @@ public class TessellatorFactoryMod extends ClassMod {
         final FieldRef instance = new FieldRef(getDeobfClass(), "instance", "LTessellatorFactory;");
         final MethodRef getInstance = new MethodRef(getDeobfClass(), "getInstance", "()LTessellatorFactory;");
         final MethodRef getTessellator = new MethodRef(getDeobfClass(), "getTessellator", "()LTessellator;");
+        final MethodRef draw = new MethodRef(getDeobfClass(), "draw", "()I");
 
         addClassSignature(new BytecodeSignature() {
             {
@@ -45,9 +46,6 @@ public class TessellatorFactoryMod extends ClassMod {
                 .accessFlag(AccessFlag.STATIC, true)
         );
 
-        addMemberMapper(new MethodMapper(getTessellator)
-                .accessFlag(AccessFlag.PUBLIC, true)
-                .accessFlag(AccessFlag.STATIC, false)
-        );
+        addMemberMappers("public !static", getTessellator, draw);
     }
 }

@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.cit;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.tessellator.TessellatorAPI;
 import com.prupe.mcpatcher.mal.tile.IconAPI;
 import net.minecraft.src.Icon;
 import net.minecraft.src.ItemRenderer;
@@ -116,7 +117,7 @@ final class Enchantment extends OverrideBase {
         tessellator.addVertexWithUV(x0, y1, z, 0.0f, 1.0f);
         tessellator.addVertexWithUV(x1, y1, z, 1.0f, 1.0f);
         tessellator.addVertexWithUV(x1, y0, z, 1.0f, 0.0f);
-        tessellator.draw();
+        TessellatorAPI.draw(tessellator);
         end();
     }
 

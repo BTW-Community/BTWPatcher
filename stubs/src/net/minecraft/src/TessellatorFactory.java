@@ -9,4 +9,8 @@ public class TessellatorFactory {
     public Tessellator getTessellator() {
         return null;
     }
+
+    public int draw() {
+        return 0;
+    }
 }

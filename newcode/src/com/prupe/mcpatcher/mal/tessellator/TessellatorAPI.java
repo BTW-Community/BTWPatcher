@@ -11,12 +11,23 @@ abstract public class TessellatorAPI {
         return instance.getTessellator_Impl();
     }
 
+    public static int draw(Tessellator tessellator) {
+        return instance.draw_Impl(tessellator);
+    }
+
     abstract protected Tessellator getTessellator_Impl();
+
+    abstract protected int draw_Impl(Tessellator tessellator);
 
     final private static class V1 extends TessellatorAPI {
         @Override
         protected Tessellator getTessellator_Impl() {
             return Tessellator.instance;
+        }
+
+        @Override
+        protected int draw_Impl(Tessellator tessellator) {
+            return tessellator.draw();
         }
     }
 
@@ -24,6 +35,11 @@ abstract public class TessellatorAPI {
         @Override
         protected Tessellator getTessellator_Impl() {
             return TessellatorFactory.getInstance().getTessellator();
+        }
+
+        @Override
+        protected int draw_Impl(Tessellator tessellator) {
+            return TessellatorFactory.getInstance().draw();
         }
     }
 }

@@ -167,7 +167,7 @@ public class LineRenderer {
             z0 = z1;
             u0 = u1;
         }
-        tessellator.draw();
+        TessellatorAPI.draw(tessellator);
         GL11.glEnable(GL11.GL_CULL_FACE);
         return true;
     }
