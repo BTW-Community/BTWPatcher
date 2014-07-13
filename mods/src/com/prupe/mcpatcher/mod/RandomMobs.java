@@ -44,7 +44,9 @@ public class RandomMobs extends Mod {
         addClassMod(new EntityMod());
         addClassMod(new EntityLivingBaseMod());
         addClassMod(new RenderMod());
-        addClassMod(new RenderLivingEntityMod());
+        if (IconMod.haveClass()) {
+            addClassMod(new RenderLivingEntityMod());
+        }
         if (ResourceLocationMod.haveClass()) {
             addClassMod(new RenderLivingMod());
         }
@@ -419,10 +421,12 @@ public class RandomMobs extends Mod {
                         anyFSTORE,
 
                         // GL11.glTranslatef(0.0f, -0.34375f, 0.0f);
+                        // -or-
+                        // RenderUtils.translate(0.0f, -0.34375f, 0.0f);
                         push(0.0f),
                         push(-0.34375f),
                         push(0.0f),
-                        reference(INVOKESTATIC, glTranslatef)
+                        anyReference(INVOKESTATIC)
                     );
                 }
             }.setMethod(renderEquippedItems));
@@ -435,26 +439,32 @@ public class RandomMobs extends Mod {
 
                 @Override
                 public String getMatchExpression() {
-                    return buildExpression(
-                        // 14w05b+: this.renderManager.getItemRenderer().renderItem(entity, new ItemStack(BlockList.pumpkin, 1), 0);
-                        // older: renderManager.itemRenderer.renderItem(entity, itemstack, 0);
-                        ALOAD_0,
-                        anyReference(GETFIELD),
-                        haveOverlayRenderer ? anyReference(INVOKEVIRTUAL) : "",
-                        anyReference(GETFIELD),
-                        ALOAD_1,
-                        haveOverlayRenderer ?
-                            build(
-                                anyReference(NEW),
-                                DUP,
-                                anyReference(GETSTATIC),
-                                push(1),
-                                anyReference(INVOKESPECIAL)
-                            ) :
+                    if (haveOverlayRenderer) {
+                        return buildExpression(
+                            // 14w25a+: RenderManager.getInstance().getItemRenderer().renderItem(entity, new ItemStack(BlockList.pumpkin, 1), ItemRenderType.HEAD);
+                            anyReference(INVOKESTATIC),
+                            anyReference(INVOKEVIRTUAL),
+                            ALOAD_1,
+                            anyReference(NEW),
+                            DUP,
+                            anyReference(GETSTATIC),
+                            push(1),
+                            anyReference(INVOKESPECIAL),
+                            anyReference(GETSTATIC),
+                            anyReference(INVOKEVIRTUAL)
+                        );
+                    } else {
+                        return buildExpression(
+                            // older: this.renderManager.itemRenderer.renderItem(entity, itemstack, 0);
+                            ALOAD_0,
+                            anyReference(GETFIELD),
+                            anyReference(GETFIELD),
+                            ALOAD_1,
                             anyALOAD,
-                        push(0),
-                        anyReference(INVOKEVIRTUAL)
-                    );
+                            push(0),
+                            anyReference(INVOKEVIRTUAL)
+                        );
+                    }
                 }
 
                 @Override
@@ -525,15 +535,20 @@ public class RandomMobs extends Mod {
                             ),
                         anyReference(INVOKEVIRTUAL),
 
-                        // GL11.glEnable(GL11.GL_CULL_FACE);
-                        push(2884),
-                        reference(INVOKESTATIC, glEnable),
+                        // ...
+                        any(0, 50),
 
-                        // GL11.glPushMatrix();
-                        reference(INVOKESTATIC, glPushMatrix),
+                        // GL11.glRotatef(42.0f, 0.0f, 1.0f, 0.0f);
+                        // -or-
+                        // RenderUtils.rotate(42.0f, 0.0f, 1.0f, 0.0f);
+                        push(42.0f),
+                        push(0.0f),
+                        push(1.0f),
+                        push(0.0f),
+                        anyReference(INVOKESTATIC),
 
                         // ...
-                        any(0, 100),
+                        any(0, 50),
 
                         // pre-14w04a: this.renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
                         // 14w04a-14w08a: RenderBlockManager.instance.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
