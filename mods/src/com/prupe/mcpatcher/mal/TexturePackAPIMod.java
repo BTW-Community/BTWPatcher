@@ -246,6 +246,10 @@ public class TexturePackAPIMod extends Mod {
             }.targetMethod(runGameLoop));
 
             if (getMinecraftVersion().compareTo("1.7.2") > 0) {
+                final FieldRef mojangPng = new FieldRef(getDeobfClass(), "mojangPng", "LResourceLocation;");
+
+                addClassSignature(new ResourceLocationSignature(this, mojangPng, "textures/gui/title/mojang.png"));
+
                 addPatch(new BytecodePatch() {
                     @Override
                     public String getDescription() {
@@ -258,9 +262,12 @@ public class TexturePackAPIMod extends Mod {
                             // ImageIO.read(this.defaultTexturePack.getInputStream(Minecraft.mojangPng));
                             ALOAD_0,
                             anyReference(GETFIELD),
-                            captureReference(GETSTATIC),
+                            reference(GETSTATIC, mojangPng),
                             anyReference(INVOKEVIRTUAL),
-                            reference(INVOKESTATIC, imageIORead)
+                            lookAhead(build(
+                                any(0, 20),
+                                reference(INVOKESTATIC, imageIORead)
+                            ), true)
                         );
                     }
 
@@ -270,10 +277,9 @@ public class TexturePackAPIMod extends Mod {
                             // ImageIO.read(this.getResourceManager().getResource(Minecraft.mojangPng).getInputStream());
                             ALOAD_0,
                             reference(INVOKEVIRTUAL, getResourceManager),
-                            getCaptureGroup(1),
+                            reference(GETSTATIC, mojangPng),
                             reference(INVOKEINTERFACE, getResource),
-                            reference(INVOKEINTERFACE, getResourceInputStream),
-                            reference(INVOKESTATIC, imageIORead)
+                            reference(INVOKEINTERFACE, getResourceInputStream)
                         );
                     }
                 });

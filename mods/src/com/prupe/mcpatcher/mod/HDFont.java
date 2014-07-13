@@ -168,33 +168,35 @@ public class HDFont extends Mod {
                 }
             }.targetMethod(readFontData));
 
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override font image";
-                }
+            if (!ResourceLocationMod.haveClass()) {
+                addPatch(new BytecodePatch() {
+                    @Override
+                    public String getDescription() {
+                        return "override font image";
+                    }
 
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // ImageIO.read(RenderEngine.class.getResourceAsStream(name));
-                        anyLDC,
-                        ALOAD_1,
-                        reference(INVOKEVIRTUAL, getResourceAsStream),
-                        reference(INVOKESTATIC, readImage)
-                    );
-                }
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // ImageIO.read(RenderEngine.class.getResourceAsStream(name));
+                            anyLDC,
+                            ALOAD_1,
+                            reference(INVOKEVIRTUAL, getResourceAsStream),
+                            reference(INVOKESTATIC, readImage)
+                        );
+                    }
 
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // TexturePackAPI.getImage(name)
-                        ALOAD_1,
-                        ResourceLocationMod.wrap(this),
-                        reference(INVOKESTATIC, getNewImage)
-                    );
-                }
-            });
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            // TexturePackAPI.getImage(name)
+                            ALOAD_1,
+                            ResourceLocationMod.wrap(this),
+                            reference(INVOKESTATIC, getNewImage)
+                        );
+                    }
+                });
+            }
 
             addPatch(new BytecodePatch() {
                 private int imageRegister;
