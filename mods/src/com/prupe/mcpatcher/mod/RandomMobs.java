@@ -38,6 +38,7 @@ public class RandomMobs extends Mod {
         haveOverlayRenderer = getMinecraftVersion().compareTo("14w05a") >= 0;
 
         ResourceLocationMod.setup(this);
+        RenderUtilsMod.setup(this);
         addClassMod(new NBTTagCompoundMod(this));
         addClassMod(new TessellatorMod(this));
         addClassMod(new IBlockAccessMod(this));
@@ -401,6 +402,8 @@ public class RandomMobs extends Mod {
             final MethodRef renderEquippedItems;
             final MethodRef renderSnowmanOverlay = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "renderSnowmanOverlay", "(LEntityLivingBase;)Z");
 
+            RenderUtilsMod.setup(this);
+
             if (haveOverlayRenderer) {
                 setInterfaces("OverlayRenderer");
                 renderEquippedItems = new MethodRef(getDeobfClass(), "render", "(LEntitySnowman;FFFFFFF)V");
@@ -421,12 +424,10 @@ public class RandomMobs extends Mod {
                         anyFSTORE,
 
                         // GL11.glTranslatef(0.0f, -0.34375f, 0.0f);
-                        // -or-
-                        // RenderUtils.translate(0.0f, -0.34375f, 0.0f);
                         push(0.0f),
                         push(-0.34375f),
                         push(0.0f),
-                        anyReference(INVOKESTATIC)
+                        RenderUtilsMod.glTranslatef(this)
                     );
                 }
             }.setMethod(renderEquippedItems));

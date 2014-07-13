@@ -27,6 +27,7 @@ public class BetterSkies extends Mod {
 
         addClassMod(new MinecraftMod(this).mapWorldClient());
         ResourceLocationMod.setup(this);
+        RenderUtilsMod.setup(this);
         addClassMod(new WorldMod());
         addClassMod(new WorldProviderMod(this));
         addClassMod(new WorldClientMod(this));
@@ -110,7 +111,7 @@ public class BetterSkies extends Mod {
     }
 
     private class RenderGlobalMod extends ClassMod {
-        private final MethodRef renderSky = new MethodRef(getDeobfClass(), "renderSky", "(F)V");
+        private final MethodRef renderSky = new MethodRef(getDeobfClass(), "renderSky", "(F" + (IconMod.haveClass() ? "" : "I") + ")V");
 
         RenderGlobalMod() {
             final MethodRef getCelestialAngle = new MethodRef("WorldClient", "getCelestialAngle", "(F)F");
@@ -119,11 +120,6 @@ public class BetterSkies extends Mod {
             final MethodRef setColorOpaque_I = new MethodRef("Tessellator", "setColorOpaque_I", "(I)V");
             final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
             final MethodRef draw = new MethodRef("Tessellator", "draw", "()I");
-            final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
-            final MethodRef glCallList = new MethodRef(MCPatcherUtils.GL11_CLASS, "glCallList", "(I)V");
-            final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
-            final MethodRef glColor4f = new MethodRef(MCPatcherUtils.GL11_CLASS, "glColor4f", "(FFFF)V");
-            final FieldRef tessellator = new FieldRef("Tessellator", "instance", "LTessellator;");
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final FieldRef worldProvider = new FieldRef("World", "worldProvider", "LWorldProvider;");
             final FieldRef worldObj = new FieldRef(getDeobfClass(), "worldObj", "LWorldClient;");
@@ -135,7 +131,11 @@ public class BetterSkies extends Mod {
             final MethodRef setupSky = new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "setup", "(LWorld;FF)V");
             final MethodRef renderAllSky = new MethodRef(MCPatcherUtils.SKY_RENDERER_CLASS, "renderAll", "()V");
 
-            addClassSignature(new ConstSignature("smoke"));
+            RenderUtilsMod.setup(this);
+
+            if (IconMod.haveClass()) {
+                addClassSignature(new ConstSignature("smoke"));
+            }
             addClassSignature(new ConstSignature(ResourceLocationMod.select(
                 "/environment/clouds.png",
                 "textures/environment/clouds.png"
@@ -147,17 +147,16 @@ public class BetterSkies extends Mod {
                     addXref(1, mc);
                     addXref(2, worldProvider);
                     addXref(3, WorldProviderMod.getWorldTypeRef());
-                    addXref(4, tessellator);
-                    addXref(5, worldObj);
-                    addXref(6, getRainStrength);
-                    addXref(7, getCelestialAngle);
+                    addXref(4, worldObj);
+                    addXref(5, getRainStrength);
+                    addXref(6, getCelestialAngle);
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // mc.theWorld.worldProvider.worldType == 1
-                        // 14w02a+: mc.theWorld.worldProvider.getWorldType() == 1
+                        // this.mc.theWorld.worldProvider.worldType == 1
+                        // 14w02a+: this.mc.theWorld.worldProvider.getWorldType() == 1
                         ALOAD_0,
                         captureReference(GETFIELD),
                         any(3),
@@ -166,16 +165,9 @@ public class BetterSkies extends Mod {
                         push(1),
 
                         // ...
-                        any(0, 100),
-
-                        // Tessellator tessellator = Tessellator.instance;
-                        captureReference(GETSTATIC),
-                        anyASTORE,
-
-                        // ...
                         any(0, 1000),
 
-                        // d = 1.0F - worldObj.getRainStrength(par1);
+                        // d = 1.0f - this.worldObj.getRainStrength(par1);
                         push(1.0f),
                         ALOAD_0,
                         captureReference(GETFIELD),
@@ -195,9 +187,9 @@ public class BetterSkies extends Mod {
                         // ..
                         any(0, 500),
 
-                        // GL11.glRotatef(worldObj.getCelestialAngle(par1) * 360F, 1.0F, 0.0F, 0.0F);
+                        // GL11.glRotatef(this.worldObj.getCelestialAngle(par1) * 360.0f, 1.0f, 0.0f, 0.0f);
                         ALOAD_0,
-                        backReference(5),
+                        backReference(4),
                         FLOAD_1,
                         captureReference(INVOKEVIRTUAL),
                         push(360.0f),
@@ -205,7 +197,7 @@ public class BetterSkies extends Mod {
                         push(1.0f),
                         push(0.0f),
                         push(0.0f),
-                        reference(INVOKESTATIC, glRotatef)
+                        RenderUtilsMod.glRotatef(this)
                     );
                 }
             });
@@ -216,19 +208,19 @@ public class BetterSkies extends Mod {
                         return buildExpression(
                             ALOAD_0,
                             captureReference(GETFIELD),
-                            reference(INVOKESTATIC, glCallList),
+                            RenderUtilsMod.glCallList(this),
 
                             nonGreedy(any(0, 1000)),
 
                             ALOAD_0,
                             captureReference(GETFIELD),
-                            reference(INVOKESTATIC, glCallList),
+                            RenderUtilsMod.glCallList(this),
 
                             nonGreedy(any(0, 1000)),
 
                             ALOAD_0,
                             captureReference(GETFIELD),
-                            reference(INVOKESTATIC, glCallList)
+                            RenderUtilsMod.glCallList(this)
                         );
                     }
                 }
@@ -352,7 +344,7 @@ public class BetterSkies extends Mod {
                         push(1.0f),
                         push(0.0f),
                         push(0.0f),
-                        reference(INVOKESTATIC, glRotatef)
+                        RenderUtilsMod.glRotatef(this)
                     );
                 }
 
@@ -377,11 +369,11 @@ public class BetterSkies extends Mod {
                         FLOAD, backReference(1),
                         FLOAD, backReference(1),
                         FLOAD, backReference(1),
-                        reference(INVOKESTATIC, glColor4f),
+                        RenderUtilsMod.glColor4f(this),
 
                         ALOAD_0,
                         reference(GETFIELD, glStarList),
-                        reference(INVOKESTATIC, glCallList)
+                        RenderUtilsMod.glCallList(this)
                     );
                 }
 
@@ -416,7 +408,7 @@ public class BetterSkies extends Mod {
                             D2F,
                             FNEG,
                             push(0.0f),
-                            reference(INVOKESTATIC, glTranslatef)
+                            RenderUtilsMod.glTranslatef(this)
                         ))
                     );
                 }
