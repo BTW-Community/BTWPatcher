@@ -38,8 +38,9 @@ public class RenderUtilsMod extends ClassMod {
     }
 
     public static boolean setup(Mod mod) {
+        RenderUtilsMod renderUtilsMod = new RenderUtilsMod(mod);
         if (haveClass()) {
-            mod.addClassMod(new RenderUtilsMod(mod));
+            mod.addClassMod(renderUtilsMod);
             return true;
         } else {
             return false;
@@ -128,7 +129,6 @@ public class RenderUtilsMod extends ClassMod {
 
     private MethodRef simpleWrapper(final MethodRef glMethod, final MethodRef wrapperMethod) {
         if (haveClass()) {
-
             addClassSignature(new BytecodeSignature() {
                 {
                     setMethod(wrapperMethod);

@@ -419,8 +419,15 @@ public class BetterSkies extends Mod {
 
         EffectRendererMod() {
             final boolean have2dArray = getMinecraftVersion().compareTo("14w25a") >= 0;
-            final ClassRef list = new ClassRef((have2dArray ? "[" : "") + "Ljava/util/List;");
-            final FieldRef fxLayers = new FieldRef(getDeobfClass(), "fxLayers", "[" + list.getClassName());
+            final ClassRef list;
+            final FieldRef fxLayers;
+            if (have2dArray) {
+                list = new ClassRef("[Ljava/util/List;");
+                fxLayers = new FieldRef(getDeobfClass(), "fxLayers", "[" + list.getClassName());
+            } else {
+                list = new ClassRef("java/util/List");
+                fxLayers = new FieldRef(getDeobfClass(), "fxLayers", "[Ljava/util/List;");
+            }
             final MethodRef renderParticles = new MethodRef(getDeobfClass(), "renderParticles", "(LEntity;F)V");
             final MethodRef addEffect = new MethodRef(getDeobfClass(), "addEffect", "(LEntityFX;)V");
             final MethodRef getFXLayer = new MethodRef("EntityFX", "getFXLayer", "()I");
