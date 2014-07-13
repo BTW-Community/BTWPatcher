@@ -18,7 +18,6 @@ public class RandomMobs extends Mod {
     private static final MethodRef glEnable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glEnable", "(I)V");
     private static final MethodRef glDisable = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDisable", "(I)V");
     private static final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
-    private static final MethodRef glPushMatrix = new MethodRef(MCPatcherUtils.GL11_CLASS, "glPushMatrix", "()V");
 
     private static final MethodRef randomTexture = new MethodRef(MCPatcherUtils.RANDOM_MOBS_CLASS, "randomTexture", "(LEntity;LResourceLocation;)LResourceLocation;");
 
@@ -712,15 +711,29 @@ public class RandomMobs extends Mod {
                         ), true),
 
                         // GL11.glDisable(GL11.GL_TEXTURE_2D);
-                        push(3553),
-                        reference(INVOKESTATIC, glDisable),
+                        RenderUtilsMod.haveClass() ?
+                            build(
+                                anyReference(INVOKESTATIC),
+                                anyReference(INVOKESTATIC)
+                            ) :
+                            build(
+                                push(3553),
+                                reference(INVOKESTATIC, glDisable)
+                            ),
 
                         // ...
                         any(0, 1000),
 
                         // GL11.glEnable(GL11.GL_TEXTURE_2D);
-                        push(3553),
-                        reference(INVOKESTATIC, glEnable)
+                        RenderUtilsMod.haveClass() ?
+                            build(
+                                anyReference(INVOKESTATIC),
+                                anyReference(INVOKESTATIC)
+                            ) :
+                            build(
+                                push(3553),
+                                reference(INVOKESTATIC, glEnable)
+                            )
                     );
                 }
 
