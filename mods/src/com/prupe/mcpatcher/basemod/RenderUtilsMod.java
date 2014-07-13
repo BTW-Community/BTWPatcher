@@ -16,6 +16,7 @@ public class RenderUtilsMod extends ClassMod {
     private static MethodRef popMatrix;
     private static MethodRef callList;
     private static MethodRef bindTexture;
+    private static MethodRef viewport;
 
     private static final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
     private static final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
@@ -26,6 +27,7 @@ public class RenderUtilsMod extends ClassMod {
     private static final MethodRef glPopMatrix = new MethodRef(MCPatcherUtils.GL11_CLASS, "glPopMatrix", "()V");
     private static final MethodRef glCallList = new MethodRef(MCPatcherUtils.GL11_CLASS, "glCallList", "(I)V");
     private static final MethodRef glBindTexture = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V");
+    private static final MethodRef glViewport = new MethodRef(MCPatcherUtils.GL11_CLASS, "glViewport", "(IIII)V");
 
     public static boolean haveClass() {
         return Mod.getMinecraftVersion().compareTo("14w25a") >= 0;
@@ -100,6 +102,10 @@ public class RenderUtilsMod extends ClassMod {
         }
     }
 
+    public static byte[] glViewport(PatchComponent patchComponent) {
+        return patchComponent.reference(INVOKESTATIC, viewport);
+    }
+
     private RenderUtilsMod(Mod mod) {
         super(mod);
 
@@ -112,6 +118,7 @@ public class RenderUtilsMod extends ClassMod {
         popMatrix = simpleWrapper(glPopMatrix);
         callList = simpleWrapper(glCallList);
         bindTexture = simpleWrapper(glBindTexture, new MethodRef(CLASS_NAME, "glBindTexture", "(I)V"));
+        viewport = simpleWrapper(glViewport);
     }
 
     private MethodRef simpleWrapper(final MethodRef glMethod) {

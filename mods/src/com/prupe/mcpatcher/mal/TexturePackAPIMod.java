@@ -99,7 +99,7 @@ public class TexturePackAPIMod extends Mod {
         MinecraftMod() {
             super(TexturePackAPIMod.this);
 
-            final ClassRef textureResourceManagerClass = new ClassRef("SimpleReloadableResourceManager");
+            final ClassRef simpleReloadableResourceManagerClass = new ClassRef("SimpleReloadableResourceManager");
             final MethodRef getTextureManager = new MethodRef(getDeobfClass(), "getTextureManager", "()LTextureManager;");
             final MethodRef getResourceManager = new MethodRef(getDeobfClass(), "getResourceManager", "()LResourceManager;");
             final FieldRef texturePackList = new FieldRef(getDeobfClass(), "texturePackList", "LResourcePackRepository;");
@@ -109,17 +109,24 @@ public class TexturePackAPIMod extends Mod {
             final MethodRef runGameLoop = new MethodRef(getDeobfClass(), "runGameLoop", "()V");
             final MethodRef setTitle = new MethodRef("org/lwjgl/opengl/Display", "setTitle", "(Ljava/lang/String;)V");
             final MethodRef isCloseRequested = new MethodRef("org/lwjgl/opengl/Display", "isCloseRequested", "()Z");
-            final MethodRef glViewport = new MethodRef(MCPatcherUtils.GL11_CLASS, "glViewport", "(IIII)V");
             final MethodRef imageIORead = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
             final InterfaceMethodRef getResource = new InterfaceMethodRef("ResourceManager", "getResource", "(LResourceLocation;)LResource;");
             final InterfaceMethodRef getResourceInputStream = new InterfaceMethodRef("Resource", "getInputStream", "()Ljava/io/InputStream;");
 
+            RenderUtilsMod.setup(this);
+
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
-                    return buildExpression(
-                        reference(INVOKESTATIC, setTitle)
-                    );
+                    if (RenderUtilsMod.haveClass()) {
+                        return buildExpression(
+                            push("server-resource-packs")
+                        );
+                    } else {
+                        return buildExpression(
+                            reference(INVOKESTATIC, setTitle)
+                        );
+                    }
                 }
             }.setMethod(startGame));
 
@@ -163,9 +170,9 @@ public class TexturePackAPIMod extends Mod {
                 private String getMatchExpression2() {
                     return buildExpression(
                         capture(build(
-                            // this.resourceManager = new TextureResourceManager(...);
+                            // this.resourceManager = new SimpleReloadableResourceManager(...);
                             ALOAD_0,
-                            reference(NEW, textureResourceManagerClass),
+                            reference(NEW, simpleReloadableResourceManagerClass),
                             DUP,
                             nonGreedy(any(0, 12)),
                             anyReference(PUTFIELD),
@@ -180,10 +187,10 @@ public class TexturePackAPIMod extends Mod {
 
                         capture(build(
                             // ...
-                            any(0, 700),
+                            any(0, 800),
 
                             // GL11.glViewport(...);
-                            reference(INVOKESTATIC, glViewport)
+                            RenderUtilsMod.glViewport(this)
                         ))
                     );
                 }
