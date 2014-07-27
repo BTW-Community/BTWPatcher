@@ -7,4 +7,7 @@ public class RenderUtils {
 
     public static void glBlendFunc(int src, int dst) {
     }
+
+    public static void glClearColor(float r, float g, float b, float a) {
+    }
 }

@@ -17,6 +17,7 @@ public class RenderUtilsMod extends ClassMod {
     private static MethodRef callList;
     private static MethodRef bindTexture;
     private static MethodRef viewport;
+    private static MethodRef clearColor;
 
     private static final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
     private static final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
@@ -28,6 +29,7 @@ public class RenderUtilsMod extends ClassMod {
     private static final MethodRef glCallList = new MethodRef(MCPatcherUtils.GL11_CLASS, "glCallList", "(I)V");
     private static final MethodRef glBindTexture = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBindTexture", "(II)V");
     private static final MethodRef glViewport = new MethodRef(MCPatcherUtils.GL11_CLASS, "glViewport", "(IIII)V");
+    private static final MethodRef glClearColor = new MethodRef(MCPatcherUtils.GL11_CLASS, "glClearColor", "(FFFF)V");
 
     public static boolean haveClass() {
         return Mod.getMinecraftVersion().compareTo("14w25a") >= 0;
@@ -107,6 +109,10 @@ public class RenderUtilsMod extends ClassMod {
         return patchComponent.reference(INVOKESTATIC, viewport);
     }
 
+    public static byte[] glClearColor(PatchComponent patchComponent) {
+        return patchComponent.reference(INVOKESTATIC, clearColor);
+    }
+
     private RenderUtilsMod(Mod mod) {
         super(mod);
 
@@ -120,6 +126,7 @@ public class RenderUtilsMod extends ClassMod {
         callList = simpleWrapper(glCallList);
         bindTexture = simpleWrapper(glBindTexture, new MethodRef(CLASS_NAME, "glBindTexture", "(I)V"));
         viewport = simpleWrapper(glViewport);
+        clearColor = simpleWrapper(glClearColor);
     }
 
     private MethodRef simpleWrapper(final MethodRef glMethod) {

@@ -600,7 +600,7 @@ public class FancyDial {
                 GL11.glDisable(GL13.GL_MULTISAMPLE);
             }
 
-            GL11.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            TexturePackAPI.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
             GL11.glMatrixMode(GL11.GL_PROJECTION);

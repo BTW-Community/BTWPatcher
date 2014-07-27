@@ -218,6 +218,10 @@ abstract public class TexturePackAPI {
         instance.glBlendFunc_Impl(src, dst);
     }
 
+    public static void glClearColor(float r, float g, float b, float a) {
+        instance.glClearColor_Impl(r, g, b, a);
+    }
+
     public static int getBoundTexture() {
         return GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
     }
@@ -267,6 +271,8 @@ abstract public class TexturePackAPI {
     abstract protected void glBindTexture_Impl(int texture);
 
     abstract protected void glBlendFunc_Impl(int src, int dst);
+
+    abstract protected void glClearColor_Impl(float r, float g, float b, float a);
 
     abstract protected void flushUnusedTextures_Impl();
 
@@ -418,6 +424,11 @@ abstract public class TexturePackAPI {
         @Override
         protected void glBlendFunc_Impl(int src, int dst) {
             GL11.glBlendFunc(src, dst);
+        }
+
+        @Override
+        protected void glClearColor_Impl(float r, float g, float b, float a) {
+            GL11.glClearColor(r, g, b, a);
         }
 
         @Override
@@ -581,6 +592,11 @@ abstract public class TexturePackAPI {
         }
 
         @Override
+        protected void glClearColor_Impl(float r, float g, float b, float a) {
+            GL11.glClearColor(r, g, b, a);
+        }
+
+        @Override
         protected void flushUnusedTextures_Impl() {
             TextureManager textureManager = Minecraft.getInstance().getTextureManager();
             if (textureManager != null) {
@@ -613,6 +629,11 @@ abstract public class TexturePackAPI {
         @Override
         protected void glBlendFunc_Impl(int src, int dst) {
             RenderUtils.glBlendFunc(src, dst);
+        }
+
+        @Override
+        protected void glClearColor_Impl(float r, float g, float b, float a) {
+            RenderUtils.glClearColor(r, g, b, a);
         }
     }
 }
