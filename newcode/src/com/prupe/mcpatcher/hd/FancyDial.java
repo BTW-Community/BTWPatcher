@@ -593,10 +593,10 @@ public class FancyDial {
             }
             GL11.glEnable(GL11.GL_TEXTURE_2D);
             GL11.glDisable(GL11.GL_DEPTH_TEST);
-            GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+            GLAPI.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
             GL11.glDisable(GL11.GL_LIGHTING);
             GL11.glEnable(GL11.GL_ALPHA_TEST);
-            GL11.glAlphaFunc(GL11.GL_GREATER, 0.01f);
+            GLAPI.glAlphaFunc(GL11.GL_GREATER, 0.01f);
             if (useGL13) {
                 GL11.glDisable(GL13.GL_MULTISAMPLE);
             }

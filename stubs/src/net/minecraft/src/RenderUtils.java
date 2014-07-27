@@ -11,6 +11,15 @@ public class RenderUtils {
     public static void glAlphaFunc(int func, float ref) {
     }
 
+    public static void glDepthFunc(int func) {
+    }
+
+    public static void glDepthMask(boolean enable) {
+    }
+
+    public static void glColor4f(float r, float g, float b, float a) {
+    }
+
     public static void glClearColor(float r, float g, float b, float a) {
     }
 }

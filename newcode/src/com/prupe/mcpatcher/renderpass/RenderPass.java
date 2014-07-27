@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.ctm.CTMUtils;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
+import com.prupe.mcpatcher.mal.resource.GLAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
 import net.minecraft.src.*;
@@ -288,7 +289,7 @@ public class RenderPass {
                 break;
 
             case RenderPassAPI.OVERLAY_RENDER_PASS:
-                GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+                GLAPI.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
                 GL11.glPolygonOffset(-2.0f, -2.0f);
                 GL11.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
                 if (backfaceCulling[pass]) {

@@ -7,6 +7,7 @@ import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.BlockAndMetadata;
 import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
+import com.prupe.mcpatcher.mal.resource.GLAPI;
 import com.prupe.mcpatcher.mal.resource.ResourceList;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.Block;
@@ -434,7 +435,7 @@ public class ColorizeBlock {
                 waterColor = new float[3];
                 Colorizer.intToFloat3(waterColorMap.getColorMultiplier(), waterColor);
             }
-            GL11.glColor4f(waterColor[0], waterColor[1], waterColor[2], 1.0f);
+            GLAPI.glColor4f(waterColor[0], waterColor[1], waterColor[2], 1.0f);
         }
     }
 

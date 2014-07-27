@@ -447,7 +447,7 @@ public class SkyRenderer {
             GL11.glDisable(GL11.GL_ALPHA_TEST);
             GL11.glEnable(GL11.GL_BLEND);
             GLAPI.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-            GL11.glColor4f(1.0f, 1.0f, 1.0f, rainStrength);
+            GLAPI.glColor4f(1.0f, 1.0f, 1.0f, rainStrength);
         }
     }
 }

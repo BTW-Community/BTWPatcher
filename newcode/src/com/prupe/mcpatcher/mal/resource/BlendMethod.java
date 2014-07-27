@@ -93,11 +93,11 @@ public class BlendMethod {
 
     public void applyFade(float fade) {
         if (fadeRGB && fadeAlpha) {
-            GL11.glColor4f(fade, fade, fade, fade);
+            GLAPI.glColor4f(fade, fade, fade, fade);
         } else if (fadeRGB) {
-            GL11.glColor4f(fade, fade, fade, 1.0f);
+            GLAPI.glColor4f(fade, fade, fade, 1.0f);
         } else if (fadeAlpha) {
-            GL11.glColor4f(1.0f, 1.0f, 1.0f, fade);
+            GLAPI.glColor4f(1.0f, 1.0f, 1.0f, fade);
         }
     }
 
@@ -106,16 +106,16 @@ public class BlendMethod {
             GL11.glDisable(GL11.GL_ALPHA_TEST);
         } else {
             GL11.glEnable(GL11.GL_ALPHA_TEST);
-            GL11.glAlphaFunc(GL11.GL_GREATER, 0.01f);
+            GLAPI.glAlphaFunc(GL11.GL_GREATER, 0.01f);
         }
     }
 
     public void applyDepthFunc() {
         if (blend) {
-            GL11.glDepthFunc(GL11.GL_EQUAL);
+            GLAPI.glDepthFunc(GL11.GL_EQUAL);
         } else {
-            GL11.glDepthFunc(GL11.GL_LEQUAL);
-            GL11.glDepthMask(true);
+            GLAPI.glDepthFunc(GL11.GL_LEQUAL);
+            GLAPI.glDepthMask(true);
         }
     }
 

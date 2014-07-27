@@ -27,6 +27,18 @@ abstract public class GLAPI {
         instance.glAlphaFunc_Impl(func, ref);
     }
 
+    public static void glDepthFunc(int func) {
+        instance.glDepthFunc_Impl(func);
+    }
+
+    public static void glDepthMask(boolean enable) {
+        instance.glDepthMask_Impl(enable);
+    }
+
+    public static void glColor4f(float r, float g, float b, float a) {
+        instance.glColor4f_Impl(r, g, b, a);
+    }
+
     public static void glClearColor(float r, float g, float b, float a) {
         instance.glClearColor_Impl(r, g, b, a);
     }
@@ -48,6 +60,12 @@ abstract public class GLAPI {
     abstract protected void glBlendFunc_Impl(int src, int dst);
 
     abstract protected void glAlphaFunc_Impl(int func, float ref);
+
+    abstract protected void glDepthFunc_Impl(int func);
+
+    abstract protected void glDepthMask_Impl(boolean enable);
+
+    abstract protected void glColor4f_Impl(float r, float g, float b, float a);
 
     abstract protected void glClearColor_Impl(float r, float g, float b, float a);
 
@@ -79,6 +97,21 @@ abstract public class GLAPI {
         }
 
         @Override
+        protected void glDepthFunc_Impl(int func) {
+            GL11.glDepthFunc(func);
+        }
+
+        @Override
+        protected void glDepthMask_Impl(boolean enable) {
+            GL11.glDepthMask(enable);
+        }
+
+        @Override
+        protected void glColor4f_Impl(float r, float g, float b, float a) {
+            GL11.glColor4f(r, g, b, a);
+        }
+
+        @Override
         protected void glClearColor_Impl(float r, float g, float b, float a) {
             GL11.glClearColor(r, g, b, a);
         }
@@ -103,6 +136,21 @@ abstract public class GLAPI {
         @Override
         protected void glAlphaFunc_Impl(int func, float ref) {
             RenderUtils.glAlphaFunc(func, ref);
+        }
+
+        @Override
+        protected void glDepthFunc_Impl(int func) {
+            RenderUtils.glDepthFunc(func);
+        }
+
+        @Override
+        protected void glDepthMask_Impl(boolean enable) {
+            RenderUtils.glDepthMask(enable);
+        }
+
+        @Override
+        protected void glColor4f_Impl(float r, float g, float b, float a) {
+            RenderUtils.glColor4f(r, g, b, a);
         }
 
         @Override
