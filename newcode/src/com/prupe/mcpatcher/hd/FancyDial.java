@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
+import com.prupe.mcpatcher.mal.resource.GLAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.tile.IconAPI;
 import com.prupe.mcpatcher.mal.util.InputHandler;
@@ -129,7 +130,7 @@ public class FancyDial {
             return instance != null && instance.render(itemFrameRenderer);
         } finally {
             EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, oldFB);
-            TexturePackAPI.glBindTexture(oldTexture);
+            GLAPI.glBindTexture(oldTexture);
         }
     }
 
@@ -568,7 +569,7 @@ public class FancyDial {
             if (frameBuffer < 0) {
                 throw new RuntimeException("could not get framebuffer object");
             }
-            TexturePackAPI.glBindTexture(texture);
+            GLAPI.glBindTexture(texture);
             EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, frameBuffer);
             EXTFramebufferObject.glFramebufferTexture2DEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT, GL11.GL_TEXTURE_2D, texture, 0);
         }
@@ -600,7 +601,7 @@ public class FancyDial {
                 GL11.glDisable(GL13.GL_MULTISAMPLE);
             }
 
-            TexturePackAPI.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            GLAPI.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
             GL11.glMatrixMode(GL11.GL_PROJECTION);
@@ -628,7 +629,7 @@ public class FancyDial {
                 GL13.glActiveTexture(GL13.GL_TEXTURE0);
             }
             GL11.glEnable(GL11.GL_BLEND);
-            TexturePackAPI.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            GLAPI.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
             EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
         }
@@ -640,7 +641,7 @@ public class FancyDial {
         }
 
         void write(ByteBuffer buffer) {
-            TexturePackAPI.glBindTexture(texture);
+            GLAPI.glBindTexture(texture);
             buffer.position(0);
             GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, x0, y0, width, height, MipmapHelper.TEX_FORMAT, MipmapHelper.TEX_DATA_TYPE, buffer);
         }

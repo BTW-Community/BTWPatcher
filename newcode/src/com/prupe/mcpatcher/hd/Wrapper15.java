@@ -2,7 +2,7 @@ package com.prupe.mcpatcher.hd;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.resource.GLAPI;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
@@ -31,7 +31,7 @@ public class Wrapper15 {
             int width = image.getWidth();
             int height = image.getHeight();
             int[] rgb = MCPatcherUtils.getImageRGB(image);
-            TexturePackAPI.glBindTexture(glTextureId);
+            GLAPI.glBindTexture(glTextureId);
             MipmapHelper.setupTexture(rgb, width, height, 0, 0, blur, clamp, textureName.getPath());
         }
     }
@@ -43,7 +43,7 @@ public class Wrapper15 {
                 dst.getTextureName(), src.getTextureName(), x, y, flipped
             );
         }
-        TexturePackAPI.glBindTexture(dst.getGlTextureId());
+        GLAPI.glBindTexture(dst.getGlTextureId());
         copySubTexture(getMipmaps(src), x, y, src.getWidth(), src.getHeight());
     }
 

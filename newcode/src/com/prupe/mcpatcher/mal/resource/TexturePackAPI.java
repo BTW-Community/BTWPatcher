@@ -4,7 +4,6 @@ import com.prupe.mcpatcher.MAL;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.*;
-import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -23,7 +22,7 @@ abstract public class TexturePackAPI {
     private static final TexturePackAPI instance = MAL.newInstance(TexturePackAPI.class, "texturepack");
 
     public static final String MCPATCHER_SUBDIR = TexturePackAPI.select("/", "mcpatcher/");
-    public static final ResourceLocation ITEMS_PNG = new ResourceLocation(TexturePackAPI.select("/gui/items.png", "textures/atlas/items.png", "textures/atlas/blocks.png"));
+    public static final ResourceLocation ITEMS_PNG = new ResourceLocation(TexturePackAPI.select("/gui/items.png", GLAPI.select("textures/atlas/items.png", "textures/atlas/blocks.png")));
     public static final ResourceLocation BLOCKS_PNG = new ResourceLocation(TexturePackAPI.select("terrain.png", "textures/atlas/blocks.png"));
 
     public static boolean isInitialized() {
@@ -174,12 +173,8 @@ abstract public class TexturePackAPI {
         return MCPatcherUtils.isNullOrEmpty(path) ? null : instance.parseResourceLocation_Impl(baseResource, path);
     }
 
-    public static <T> T select(T v1, T v2, T v3) {
-        return instance.select_Impl(v1, v2, v3);
-    }
-
     public static <T> T select(T v1, T v2) {
-        return instance.select_Impl(v1, v2, v2);
+        return instance.select_Impl(v1, v2);
     }
 
     public static ResourceLocation newMCPatcherResourceLocation(String v1Path, String v2Path) {
@@ -208,33 +203,9 @@ abstract public class TexturePackAPI {
         }
     }
 
-    public static void glBindTexture(int texture) {
-        if (texture >= 0) {
-            instance.glBindTexture_Impl(texture);
-        }
-    }
-
-    public static void glBlendFunc(int src, int dst) {
-        instance.glBlendFunc_Impl(src, dst);
-    }
-
-    public static void glClearColor(float r, float g, float b, float a) {
-        instance.glClearColor_Impl(r, g, b, a);
-    }
-
-    public static int getBoundTexture() {
-        return GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
-    }
-
     public static void unloadTexture(ResourceLocation resource) {
         if (resource != null) {
             instance.unloadTexture_Impl(resource);
-        }
-    }
-
-    public static void deleteTexture(int texture) {
-        if (texture >= 0) {
-            GL11.glDeleteTextures(texture);
         }
     }
 
@@ -258,7 +229,7 @@ abstract public class TexturePackAPI {
 
     abstract protected ResourceLocation parseResourceLocation_Impl(ResourceLocation baseResource, String path);
 
-    abstract protected <T> T select_Impl(T v1, T v2, T v3);
+    abstract protected <T> T select_Impl(T v1, T v2);
 
     abstract protected boolean isDefaultResourcePack_Impl();
 
@@ -267,12 +238,6 @@ abstract public class TexturePackAPI {
     abstract protected void bindTexture_Impl(ResourceLocation resource);
 
     abstract protected void unloadTexture_Impl(ResourceLocation resource);
-
-    abstract protected void glBindTexture_Impl(int texture);
-
-    abstract protected void glBlendFunc_Impl(int src, int dst);
-
-    abstract protected void glClearColor_Impl(float r, float g, float b, float a);
 
     abstract protected void flushUnusedTextures_Impl();
 
@@ -360,7 +325,7 @@ abstract public class TexturePackAPI {
         }
 
         @Override
-        protected <T> T select_Impl(T v1, T v2, T v3) {
+        protected <T> T select_Impl(T v1, T v2) {
             return v1;
         }
 
@@ -417,27 +382,12 @@ abstract public class TexturePackAPI {
         }
 
         @Override
-        protected void glBindTexture_Impl(int texture) {
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
-        }
-
-        @Override
-        protected void glBlendFunc_Impl(int src, int dst) {
-            GL11.glBlendFunc(src, dst);
-        }
-
-        @Override
-        protected void glClearColor_Impl(float r, float g, float b, float a) {
-            GL11.glClearColor(r, g, b, a);
-        }
-
-        @Override
         protected void flushUnusedTextures_Impl() {
             // switching packs is so hopelessly broken in 1.5 that there's no point
         }
     }
 
-    private static class V2 extends TexturePackAPI {
+    final private static class V2 extends TexturePackAPI {
         private static final String ASSETS = "assets/";
 
         private ResourceManager getResourceManager() {
@@ -548,7 +498,7 @@ abstract public class TexturePackAPI {
         }
 
         @Override
-        protected <T> T select_Impl(T v1, T v2, T v3) {
+        protected <T> T select_Impl(T v1, T v2) {
             return v2;
         }
 
@@ -582,21 +532,6 @@ abstract public class TexturePackAPI {
         }
 
         @Override
-        protected void glBindTexture_Impl(int texture) {
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
-        }
-
-        @Override
-        protected void glBlendFunc_Impl(int src, int dst) {
-            GL11.glBlendFunc(src, dst);
-        }
-
-        @Override
-        protected void glClearColor_Impl(float r, float g, float b, float a) {
-            GL11.glClearColor(r, g, b, a);
-        }
-
-        @Override
         protected void flushUnusedTextures_Impl() {
             TextureManager textureManager = Minecraft.getInstance().getTextureManager();
             if (textureManager != null) {
@@ -612,28 +547,6 @@ abstract public class TexturePackAPI {
                     unloadTexture(resource);
                 }
             }
-        }
-    }
-
-    final private static class V3 extends V2 {
-        @Override
-        protected <T> T select_Impl(T v1, T v2, T v3) {
-            return v3;
-        }
-
-        @Override
-        protected void glBindTexture_Impl(int texture) {
-            RenderUtils.glBindTexture(texture);
-        }
-
-        @Override
-        protected void glBlendFunc_Impl(int src, int dst) {
-            RenderUtils.glBlendFunc(src, dst);
-        }
-
-        @Override
-        protected void glClearColor_Impl(float r, float g, float b, float a) {
-            RenderUtils.glClearColor(r, g, b, a);
         }
     }
 }

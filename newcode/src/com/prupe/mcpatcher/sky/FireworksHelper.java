@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
+import com.prupe.mcpatcher.mal.resource.GLAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.EntityFX;
 import net.minecraft.src.EntityFireworkOverlayFX;
@@ -38,7 +39,7 @@ public class FireworksHelper {
         if (enable && layer == EXTRA_LAYER && blendMethod != null) {
             blendMethod.applyBlending();
         } else if (setDefault) {
-            TexturePackAPI.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            GLAPI.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         }
     }
 

@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.hd;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.resource.GLAPI;
 import com.prupe.mcpatcher.mal.resource.ResourceList;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
@@ -220,7 +221,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         if (++currentFrame >= numFrames) {
             currentFrame = 0;
         }
-        TexturePackAPI.glBindTexture(texture);
+        GLAPI.glBindTexture(texture);
         update(texture, 0, 0);
         int glError = GL11.glGetError();
         if (glError != 0) {

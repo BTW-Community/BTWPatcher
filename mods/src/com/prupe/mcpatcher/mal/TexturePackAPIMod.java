@@ -28,8 +28,9 @@ public class TexturePackAPIMod extends Mod {
         description = "Internal mod required by the patcher.";
         version = "4.3";
 
-        malVersion = RenderUtilsMod.select(ResourceLocationMod.select(1, 2), 3);
+        malVersion = ResourceLocationMod.select(1, 2);
         setMALVersion("texturepack", malVersion);
+        setMALVersion("glwrapper", RenderUtilsMod.select(1, 2));
 
         addClassMod(new MinecraftMod());
         if (malVersion == 1) {
