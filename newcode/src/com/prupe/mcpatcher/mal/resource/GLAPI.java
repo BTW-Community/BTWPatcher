@@ -20,7 +20,11 @@ abstract public class GLAPI {
     }
 
     public static void glBlendFunc(int src, int dst) {
-        instance.glBlendFunc_Impl(src, dst);
+        glBlendFuncSeparate(src, dst, GL11.GL_ONE, GL11.GL_ZERO);
+    }
+
+    public static void glBlendFuncSeparate(int src, int dst, int srcAlpha, int dstAlpha) {
+        instance.glBlendFunc_Impl(src, dst, srcAlpha, dstAlpha);
     }
 
     public static void glAlphaFunc(int func, float ref) {
@@ -57,7 +61,7 @@ abstract public class GLAPI {
 
     abstract protected void glBindTexture_Impl(int texture);
 
-    abstract protected void glBlendFunc_Impl(int src, int dst);
+    abstract protected void glBlendFunc_Impl(int src, int dst, int srcAlpha, int dstAlpha);
 
     abstract protected void glAlphaFunc_Impl(int func, float ref);
 
@@ -83,9 +87,9 @@ abstract public class GLAPI {
         }
 
         @Override
-        protected void glBlendFunc_Impl(int src, int dst) {
+        protected void glBlendFunc_Impl(int src, int dst, int srcAlpha, int dstAlpha) {
             if (useGlBlendFuncSeparate) {
-                GL14.glBlendFuncSeparate(src, dst, GL11.GL_ONE, GL11.GL_ZERO);
+                GL14.glBlendFuncSeparate(src, dst, srcAlpha, dstAlpha);
             } else {
                 GL11.glBlendFunc(src, dst);
             }
@@ -129,8 +133,8 @@ abstract public class GLAPI {
         }
 
         @Override
-        protected void glBlendFunc_Impl(int src, int dst) {
-            RenderUtils.glBlendFunc(src, dst);
+        protected void glBlendFunc_Impl(int src, int dst, int srcAlpha, int dstAlpha) {
+            RenderUtils.glBlendFuncSeparate(src, dst, srcAlpha, dstAlpha);
         }
 
         @Override

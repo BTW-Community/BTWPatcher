@@ -141,6 +141,11 @@ public class RenderUtilsMod extends ClassMod {
         bindTexture = simpleWrapper(glBindTexture, new MethodRef(CLASS_NAME, "glBindTexture", "(I)V"));
         viewport = simpleWrapper(glViewport);
         clearColor = simpleWrapper(glClearColor);
+
+        if (haveClass()) {
+            MethodRef glBlendFuncSeparate = new MethodRef(CLASS_NAME, "glBlendFuncSeparate", "(IIII)V");
+            addMemberMapper(new MethodMapper(glBlendFuncSeparate));
+        }
     }
 
     private MethodRef simpleWrapper(final MethodRef glMethod) {

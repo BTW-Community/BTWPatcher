@@ -122,7 +122,7 @@ public class BlendMethod {
     public void applyBlending() {
         if (blend) {
             GL11.glEnable(GL11.GL_BLEND);
-            GLAPI.glBlendFunc(srcBlend, dstBlend);
+            GLAPI.glBlendFuncSeparate(srcBlend, dstBlend, GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_ALPHA);
         } else {
             GL11.glDisable(GL11.GL_BLEND);
         }
