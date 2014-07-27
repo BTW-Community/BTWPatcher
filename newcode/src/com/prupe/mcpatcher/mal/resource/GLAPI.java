@@ -3,6 +3,8 @@ package com.prupe.mcpatcher.mal.resource;
 import com.prupe.mcpatcher.MAL;
 import net.minecraft.src.RenderUtils;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL14;
+import org.lwjgl.opengl.GLContext;
 
 abstract public class GLAPI {
     private static final GLAPI instance = MAL.newInstance(GLAPI.class, "glwrapper");
@@ -19,6 +21,10 @@ abstract public class GLAPI {
 
     public static void glBlendFunc(int src, int dst) {
         instance.glBlendFunc_Impl(src, dst);
+    }
+
+    public static void glAlphaFunc(int func, float ref) {
+        instance.glAlphaFunc_Impl(func, ref);
     }
 
     public static void glClearColor(float r, float g, float b, float a) {
@@ -41,9 +47,13 @@ abstract public class GLAPI {
 
     abstract protected void glBlendFunc_Impl(int src, int dst);
 
+    abstract protected void glAlphaFunc_Impl(int func, float ref);
+
     abstract protected void glClearColor_Impl(float r, float g, float b, float a);
 
     private static final class V1 extends GLAPI {
+        private static final boolean useGlBlendFuncSeparate = GLContext.getCapabilities().OpenGL14;
+
         @Override
         protected <T> T select_Impl(T v1, T v2) {
             return v1;
@@ -56,7 +66,16 @@ abstract public class GLAPI {
 
         @Override
         protected void glBlendFunc_Impl(int src, int dst) {
-            GL11.glBlendFunc(src, dst);
+            if (useGlBlendFuncSeparate) {
+                GL14.glBlendFuncSeparate(src, dst, GL11.GL_ONE, GL11.GL_ZERO);
+            } else {
+                GL11.glBlendFunc(src, dst);
+            }
+        }
+
+        @Override
+        protected void glAlphaFunc_Impl(int func, float ref) {
+            GL11.glAlphaFunc(func, ref);
         }
 
         @Override
@@ -79,6 +98,11 @@ abstract public class GLAPI {
         @Override
         protected void glBlendFunc_Impl(int src, int dst) {
             RenderUtils.glBlendFunc(src, dst);
+        }
+
+        @Override
+        protected void glAlphaFunc_Impl(int func, float ref) {
+            RenderUtils.glAlphaFunc(func, ref);
         }
 
         @Override

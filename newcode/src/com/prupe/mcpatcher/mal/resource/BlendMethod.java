@@ -22,9 +22,6 @@ public class BlendMethod {
     public static final BlendMethod OVERLAY = new BlendMethod("overlay", GL11.GL_DST_COLOR, GL11.GL_SRC_COLOR, true, true, false, 0x80808080);
     public static final BlendMethod REPLACE = new BlendMethod("replace", 0, 0, false, false, true, null);
 
-    private static final boolean gl14Available = GLContext.getCapabilities().OpenGL14;
-    private static final boolean useGlBlendFunc = !gl14Available || GLAPI.select(false, true);
-
     private final int srcBlend;
     private final int dstBlend;
     private final String name;
@@ -125,12 +122,7 @@ public class BlendMethod {
     public void applyBlending() {
         if (blend) {
             GL11.glEnable(GL11.GL_BLEND);
-            if (useGlBlendFunc) {
-                GLAPI.glBlendFunc(srcBlend, dstBlend);
-            }
-            if (gl14Available) {
-                GL14.glBlendFuncSeparate(srcBlend, dstBlend, GL11.GL_ONE, GL11.GL_ZERO);
-            }
+            GLAPI.glBlendFunc(srcBlend, dstBlend);
         } else {
             GL11.glDisable(GL11.GL_BLEND);
         }
