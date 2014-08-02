@@ -141,6 +141,9 @@ public class Profile {
             args.put("game_directory", gameDir);
         }
         Authentication authentication = profileList.authenticationDatabase.get(playerUUID);
+        if (authentication == null) {
+            authentication = profileList.authenticationDatabase.get(profileList.selectedUser);
+        }
         if (authentication != null) {
             if (authentication.username != null) {
                 args.put("auth_player_name", authentication.username);

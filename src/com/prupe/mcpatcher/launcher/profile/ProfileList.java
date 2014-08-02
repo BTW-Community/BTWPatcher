@@ -13,6 +13,7 @@ import java.util.Map;
 public class ProfileList {
     Map<String, Profile> profiles = new HashMap<String, Profile>();
     String selectedProfile;
+    String selectedUser;
     Map<String, Authentication> authenticationDatabase = new HashMap<String, Authentication>();
 
     public static ProfileList getProfileList() {
