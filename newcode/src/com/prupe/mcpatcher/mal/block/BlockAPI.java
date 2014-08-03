@@ -288,9 +288,9 @@ abstract public class BlockAPI {
 
         try {
             return instance.getBlockStateMatcherClass_Impl().getDeclaredConstructor(
-                MCLogger.class, ResourceLocation.class, Block.class, String.class, Map.class
+                MCLogger.class, ResourceLocation.class, String.class, Block.class, String.class, Map.class
             ).newInstance(
-                logger, source, block, metadata.toString(), propertyMap
+                logger, source, matchString, block, metadata.toString(), propertyMap
             );
         } catch (Throwable e) {
             e.printStackTrace();

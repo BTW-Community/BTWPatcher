@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.BlockAndMetadata;
+import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
 import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
 import com.prupe.mcpatcher.mal.resource.GLAPI;
 import com.prupe.mcpatcher.mal.resource.ResourceList;
@@ -14,7 +15,6 @@ import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.RenderBlocks;
 import net.minecraft.src.ResourceLocation;
-import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 
@@ -45,9 +45,7 @@ public class ColorizeBlock {
     private static Block staticWaterBlock;
     private static Block doublePlantBlock;
 
-    private static final Map<Block, IColorMap[]> blockColorMaps = new IdentityHashMap<Block, IColorMap[]>(); // bitmaps from palette.block.*
-    private static boolean multithreadedCheckDone;
-    private static ThreadLocal<Map<Block, IColorMap[]>> threadColorMaps;
+    private static final Map<Block, List<BlockStateMatcher>> blockColorMaps = new IdentityHashMap<Block, List<BlockStateMatcher>>(); // bitmaps from palette.block.*
     private static IColorMap waterColorMap;
     private static float[][] redstoneColor; // colormap/redstone.png
 
@@ -170,8 +168,6 @@ public class ColorizeBlock {
         staticWaterBlock = BlockAPI.getFixedBlock("minecraft:water");
         doublePlantBlock = BlockAPI.parseBlockName("minecraft:double_plant");
 
-        multithreadedCheckDone = false;
-        threadColorMaps = null;
         blockColorMaps.clear();
         waterColorMap = null;
         resetVertexColors();
@@ -262,22 +258,18 @@ public class ColorizeBlock {
         }
         colorMap = wrapBlockMap(colorMap);
         for (String idString : idList.split("\\s+")) {
-            BlockAndMetadata blockMeta = BlockAndMetadata.parse(idString, "");
-            if (blockMeta != null) {
-                IColorMap[] maps = blockColorMaps.get(blockMeta.getBlock());
+            BlockStateMatcher blockMatcher = BlockAPI.createMatcher(logger, resource, idString);
+            if (blockMatcher != null) {
+                List<BlockStateMatcher> maps = blockColorMaps.get(blockMatcher.getBlock());
                 if (maps == null) {
-                    maps = new IColorMap[METADATA_ARRAY_SIZE];
-                    blockColorMaps.put(blockMeta.getBlock(), maps);
+                    maps = new ArrayList<BlockStateMatcher>();
+                    blockColorMaps.put(blockMatcher.getBlock(), maps);
                 }
-                for (int i : blockMeta.getMetadataList()) {
-                    maps[i] = colorMap;
-                }
-                if (!blockMeta.hasMetadata()) {
-                    maps[NO_METADATA] = colorMap;
-                }
+                blockMatcher.setData(colorMap);
+                maps.add(blockMatcher);
                 if (resource != null) {
                     logger.fine("using %s for block %s, default color %06x",
-                        colorMap, blockMeta, colorMap.getColorMultiplier()
+                        colorMap, blockMatcher, colorMap.getColorMultiplier()
                     );
                 }
             }
@@ -315,54 +307,23 @@ public class ColorizeBlock {
         }
     }
 
-    private static synchronized void checkMultithreaded() {
-        threadColorMaps = null;
-        try {
-            Class<?> cl = Class.forName("com.thevoxelbox.voxelmap.VoxelMap");
-            threadColorMaps = new ThreadLocal<Map<Block, IColorMap[]>>();
-            threadColorMaps.set(blockColorMaps);
-            logger.info("%s detected, enabling colormap thread support", cl);
-        } catch (ClassNotFoundException e) {
-        } finally {
-            multithreadedCheckDone = true;
-        }
-    }
-
     private static IColorMap findColorMap(Block block, int metadata) {
-        IColorMap[] maps;
-        if (!multithreadedCheckDone) {
-            checkMultithreaded();
-        }
-        if (threadColorMaps == null) {
-            maps = blockColorMaps.get(block);
-        } else {
-            Map<Block, IColorMap[]> blockMaps = threadColorMaps.get();
-            if (blockMaps == null) {
-                logger.info("copying colormaps for %s, free memory: %.1f",
-                    Thread.currentThread(), Runtime.getRuntime().freeMemory() / 1048576.0
-                );
-                blockMaps = new HashMap<Block, IColorMap[]>();
-                for (Map.Entry<Block, IColorMap[]> entry : blockColorMaps.entrySet()) {
-                    IColorMap[] oldMaps = entry.getValue();
-                    IColorMap[] newMaps = new IColorMap[oldMaps.length];
-                    for (int i = 0; i < newMaps.length; i++) {
-                        newMaps[i] = oldMaps[i] == null ? null : oldMaps[i].copy();
-                    }
-                    blockMaps.put(entry.getKey(), newMaps);
-                }
-                threadColorMaps.set(blockMaps);
-                logger.info("done, free memory: %.1f", Runtime.getRuntime().freeMemory() / 1048576.0);
-            }
-            maps = blockMaps.get(block);
-        }
+        List<BlockStateMatcher> maps = blockColorMaps.get(block);
         if (maps == null) {
             return null;
         }
-        IColorMap colorMap = maps[metadata];
-        if (colorMap != null) {
-            return colorMap;
+        for (BlockStateMatcher matcher : maps) {
+            if (matcher.match(block, metadata)) {
+                IColorMap newMap = (IColorMap) matcher.getThreadData();
+                if (newMap == null) {
+                    IColorMap oldMap = (IColorMap) matcher.getData();
+                    newMap = oldMap.copy();
+                    matcher.setThreadData(newMap);
+                }
+                return newMap;
+            }
         }
-        return maps[NO_METADATA];
+        return null;
     }
 
     private static IColorMap findColorMap(Block block, IBlockAccess blockAccess, int i, int j, int k) {

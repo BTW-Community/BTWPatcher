@@ -10,14 +10,40 @@ import java.util.Map;
 import java.util.Set;
 
 abstract public class BlockStateMatcher {
-    protected final Block block;
+    private final String fullString;
+    private final ThreadLocal<Object> threadLocal = new ThreadLocal<Object>();
 
-    protected BlockStateMatcher(MCLogger logger, ResourceLocation source, Block block, String metadataList, Map<String, String> properties) {
+    protected final Block block;
+    protected Object data;
+
+    protected BlockStateMatcher(MCLogger logger, ResourceLocation source, String fullString, Block block, String metadataList, Map<String, String> properties) {
+        this.fullString = fullString;
         this.block = block;
     }
 
     final public Block getBlock() {
         return block;
+    }
+
+    final public Object getData() {
+        return data;
+    }
+
+    final public void setData(Object data) {
+        this.data = data;
+    }
+
+    final public Object getThreadData() {
+        return threadLocal.get();
+    }
+
+    final public void setThreadData(Object data) {
+        threadLocal.set(data);
+    }
+
+    @Override
+    final public String toString() {
+        return fullString;
     }
 
     abstract public boolean match(IBlockAccess blockAccess, int i, int j, int k);
@@ -32,8 +58,8 @@ abstract public class BlockStateMatcher {
 
         private final int metadataBits;
 
-        V1(MCLogger logger, ResourceLocation source, Block block, String metadataList, Map<String, String> properties) {
-            super(logger, source, block, metadataList, properties);
+        V1(MCLogger logger, ResourceLocation source, String fullString, Block block, String metadataList, Map<String, String> properties) {
+            super(logger, source, fullString, block, metadataList, properties);
             if (MCPatcherUtils.isNullOrEmpty(metadataList)) {
                 metadataBits = NO_METADATA;
             } else {
@@ -64,8 +90,8 @@ abstract public class BlockStateMatcher {
     final static class V2 extends BlockStateMatcher {
         private final Map<IBlockStateProperty, Set<Comparable>> propertyMap = new HashMap<IBlockStateProperty, Set<Comparable>>();
 
-        V2(MCLogger logger, ResourceLocation source, Block block, String metadataList, Map<String, String> properties) {
-            super(logger, source, block, metadataList, properties);
+        V2(MCLogger logger, ResourceLocation source, String fullString, Block block, String metadataList, Map<String, String> properties) {
+            super(logger, source, fullString, block, metadataList, properties);
             IBlockState state = block.getBlockState();
             for (Map.Entry<String, String> entry : properties.entrySet()) {
                 String name = entry.getKey();
