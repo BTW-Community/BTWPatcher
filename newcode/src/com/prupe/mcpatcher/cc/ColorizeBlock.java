@@ -38,12 +38,8 @@ public class ColorizeBlock {
 
     private static final String PALETTE_BLOCK_KEY = "palette.block.";
 
-    private static final int NO_METADATA = BlockAndMetadata.MAX_METADATA + 1;
-    private static final int METADATA_ARRAY_SIZE = NO_METADATA + 1;
-
     private static Block waterBlock;
     private static Block staticWaterBlock;
-    private static Block doublePlantBlock;
 
     private static final Map<Block, List<BlockStateMatcher>> blockColorMaps = new IdentityHashMap<Block, List<BlockStateMatcher>>(); // bitmaps from palette.block.*
     private static IColorMap waterColorMap;
@@ -166,7 +162,6 @@ public class ColorizeBlock {
     static void reset() {
         waterBlock = BlockAPI.getFixedBlock("minecraft:flowing_water");
         staticWaterBlock = BlockAPI.getFixedBlock("minecraft:water");
-        doublePlantBlock = BlockAPI.parseBlockName("minecraft:double_plant");
 
         blockColorMaps.clear();
         waterColorMap = null;
@@ -327,18 +322,26 @@ public class ColorizeBlock {
     }
 
     private static IColorMap findColorMap(Block block, IBlockAccess blockAccess, int i, int j, int k) {
-        int metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
-        if (block == doublePlantBlock) {
-            if ((metadata & 0x8) != 0 && BlockAPI.getBlockAt(blockAccess, i, j - 1, k) == block) {
-                metadata = BlockAPI.getMetadataAt(blockAccess, i, j - 1, k);
-            }
-            metadata &= 0x7;
+        List<BlockStateMatcher> maps = blockColorMaps.get(block);
+        if (maps == null) {
+            return null;
         }
-        return findColorMap(block, metadata);
+        for (BlockStateMatcher matcher : maps) {
+            if (matcher.match(blockAccess, i, j, k)) {
+                IColorMap newMap = (IColorMap) matcher.getThreadData();
+                if (newMap == null) {
+                    IColorMap oldMap = (IColorMap) matcher.getData();
+                    newMap = oldMap.copy();
+                    matcher.setThreadData(newMap);
+                }
+                return newMap;
+            }
+        }
+        return null;
     }
 
     public static boolean colorizeBlock(Block block) {
-        return colorizeBlock(block, NO_METADATA);
+        return colorizeBlock(block, 16);
     }
 
     public static boolean colorizeBlock(Block block, int metadata) {

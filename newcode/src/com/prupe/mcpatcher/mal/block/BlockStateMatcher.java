@@ -58,6 +58,8 @@ abstract public class BlockStateMatcher {
 
         private final int metadataBits;
 
+        private static Block doublePlantBlock;
+
         V1(MCLogger logger, ResourceLocation source, String fullString, Block block, String metadataList, Map<String, String> properties) {
             super(logger, source, fullString, block, metadataList, properties);
             if (MCPatcherUtils.isNullOrEmpty(metadataList)) {
@@ -69,11 +71,23 @@ abstract public class BlockStateMatcher {
                 }
                 metadataBits = bits;
             }
+            doublePlantBlock = BlockAPI.parseBlockName("minecraft:double_plant");
         }
 
         @Override
         public boolean match(IBlockAccess blockAccess, int i, int j, int k) {
-            return match(blockAccess.getBlock(i, j, k), blockAccess.getBlockMetadata(i, j, k));
+            Block block = BlockAPI.getBlockAt(blockAccess, i, j, k);
+            if (block != this.block) {
+                return false;
+            }
+            int metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
+            if (block == doublePlantBlock) {
+                if ((metadata & 0x8) != 0 && BlockAPI.getBlockAt(blockAccess, i, j - 1, k) == block) {
+                    metadata = BlockAPI.getMetadataAt(blockAccess, i, j - 1, k);
+                }
+                metadata &= 0x7;
+            }
+            return (metadataBits & (1 << metadata)) != 0;
         }
 
         @Override
