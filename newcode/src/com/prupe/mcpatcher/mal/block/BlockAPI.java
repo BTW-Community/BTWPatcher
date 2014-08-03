@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mal.block;
 
 import com.prupe.mcpatcher.MAL;
+import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.*;
 
@@ -247,6 +248,56 @@ abstract public class BlockAPI {
         return instance.getBlockLightValue_Impl(block);
     }
 
+    public static BlockStateMatcher createMatcher(MCLogger logger, ResourceLocation source, String matchString) {
+        Map<String, String> propertyMap = new HashMap<String, String>();
+        String namespace = null;
+        String blockName = null;
+        StringBuilder metadata = new StringBuilder();
+        for (String s : matchString.split("\\s*:\\s*")) {
+            if (s.equals("")) {
+                continue;
+            }
+            String[] tokens = s.split("\\s*=\\s*", 2);
+            if (blockName == null) {
+                blockName = s;
+            } else if (tokens.length == 2) {
+                propertyMap.put(tokens[0], tokens[1]);
+            } else if (namespace == null) {
+                namespace = blockName;
+                blockName = s;
+            } else if (s.matches("\\d[-, 0-9]*")) {
+                metadata.append(' ').append(s);
+            } else {
+                logger.warning("%s: invalid token '%s' in %s", source, s, matchString);
+                return null;
+            }
+        }
+
+        if (MCPatcherUtils.isNullOrEmpty(namespace)) {
+            namespace = source.getNamespace();
+        }
+        if (MCPatcherUtils.isNullOrEmpty(blockName)) {
+            logger.warning("%s: cannot parse namespace/block name from %s", source, matchString);
+            return null;
+        }
+        Block block = BlockAPI.parseBlockName(namespace + ':' + blockName);
+        if (block == null) {
+            logger.warning("%s: unknown block %s:%s", source, namespace, blockName);
+            return null;
+        }
+
+        try {
+            return instance.getBlockStateMatcherClass_Impl().getDeclaredConstructor(
+                MCLogger.class, ResourceLocation.class, Block.class, String.class, Map.class
+            ).newInstance(
+                logger, source, block, metadata.toString(), propertyMap
+            );
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     abstract protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k);
 
     abstract protected int getMetadataAt_Impl(IBlockAccess blockAccess, int i, int j, int k);
@@ -264,6 +315,8 @@ abstract public class BlockAPI {
     abstract protected String getBlockName_Impl(Block block);
 
     abstract protected int getBlockLightValue_Impl(Block block);
+
+    abstract protected Class<? extends BlockStateMatcher> getBlockStateMatcherClass_Impl();
 
     BlockAPI() {
     }
@@ -319,6 +372,11 @@ abstract public class BlockAPI {
         @Override
         protected int getBlockLightValue_Impl(Block block) {
             return Block.lightValue[block.blockID];
+        }
+
+        @Override
+        protected Class<? extends BlockStateMatcher> getBlockStateMatcherClass_Impl() {
+            return BlockStateMatcher.V1.class;
         }
     }
 
@@ -397,6 +455,11 @@ abstract public class BlockAPI {
         protected int getBlockLightValue_Impl(Block block) {
             return block.getLightValue();
         }
+
+        @Override
+        protected Class<? extends BlockStateMatcher> getBlockStateMatcherClass_Impl() {
+            return BlockStateMatcher.V1.class;
+        }
     }
 
     final private static class V3 extends V2 {
@@ -427,6 +490,11 @@ abstract public class BlockAPI {
         @Override
         protected boolean shouldSideBeRendered_Impl(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
             return block.shouldSideBeRendered(blockAccess, new Position(i, j, k), DIRS[face]);
+        }
+
+        @Override
+        protected Class<? extends BlockStateMatcher> getBlockStateMatcherClass_Impl() {
+            return BlockStateMatcher.V2.class;
         }
     }
 }

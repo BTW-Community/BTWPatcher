@@ -64,4 +64,9 @@ public class Block {
     public RenderPassEnum getRenderBlockPassEnum() {
         return null;
     }
+
+    // 14w25a+
+    public IBlockState getBlockState() {
+        return null;
+    }
 }

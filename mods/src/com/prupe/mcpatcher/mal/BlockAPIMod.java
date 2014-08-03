@@ -31,8 +31,10 @@ public class BlockAPIMod extends Mod {
         setMALVersion("block", malVersion);
 
         addClassMod(new BlockMod());
-        addClassMod(new BlockGrassMod());
-        addClassMod(new BlockMyceliumMod());
+        if (malVersion < 3) {
+            addClassMod(new BlockGrassMod());
+            addClassMod(new BlockMyceliumMod());
+        }
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new IconMod(this));
         addClassMod(new TessellatorMod(this));
@@ -71,15 +73,13 @@ public class BlockAPIMod extends Mod {
         BlockMod() {
             super(BlockAPIMod.this);
 
-            mapBlockIconMethods();
+            if (malVersion <= 2) {
+                mapBlockIconMethods();
+            }
             addMemberMapper(new MethodMapper(shouldSideBeRendered));
 
-            if (malVersion >= 2) {
+            if (malVersion == 2) {
                 addMemberMapper(new FieldMapper(blockRegistry));
-            }
-
-            if (RenderBlocksMod.haveSubclasses()) {
-                addMemberMapper(new MethodMapper(useColorMultiplierOnFace));
             }
         }
     }
