@@ -63,6 +63,27 @@ abstract public class ClassMod implements PatchComponent {
         if (!filterFile(filename)) {
             return false;
         }
+        if (parentClass != null && getClassMap().hasMap(parentClass)) {
+            String parentObfClass = getClassMap().map(parentClass);
+            if (!classFile.getSuperclass().equals(parentObfClass)) {
+                return false;
+            }
+        }
+        if (interfaces != null) {
+            String[] classInterfaces = classFile.getInterfaces();
+            if (classInterfaces == null || classInterfaces.length < interfaces.length) {
+                return false;
+            }
+            for (int i = 0; i < interfaces.length; i++) {
+                String interface1 = interfaces[i];
+                if (getClassMap().hasMap(interface1)) {
+                    String interfaceObfClass = getClassMap().map(interface1);
+                    if (!classInterfaces[i].equals(interfaceObfClass)) {
+                        return false;
+                    }
+                }
+            }
+        }
 
         ClassMap newMap = new ClassMap();
         String deobfName = getDeobfClass();
