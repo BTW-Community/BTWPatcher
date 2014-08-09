@@ -16,12 +16,16 @@ public class RenderBlockManagerMod extends ClassMod {
     public static final MethodRef registerRenderType = new MethodRef("RenderBlockManager", "registerRenderType", "(ILRenderBlocks;)V");
     public static MethodRef renderBlockAsItem;
 
+    public static void setup() {
+        renderBlockAsItem = new MethodRef("RenderBlockManager", "renderBlockAsItem", Mod.getMinecraftVersion().compareTo("14w32a") >= 0 ? "(LIBlockState;F)V" : "(LBlock;IF)V");
+    }
+
     public RenderBlockManagerMod(Mod mod) {
         super(mod);
 
         final ClassRef renderBlocksClass = new ClassRef("RenderBlocks");
         final MethodRef renderBlockByRenderType = new MethodRef("RenderBlockManager", "renderBlockByRenderType", "(LBlock;" + PositionMod.getDescriptor() + (Mod.getMinecraftVersion().compareTo("14w06a") >= 0 ? "LIBlockAccess;" : "") + ")Z");
-        renderBlockAsItem = new MethodRef("RenderBlockManager", "renderBlockAsItem", Mod.getMinecraftVersion().compareTo("14w32a") >= 0 ? "(LIBlockState;F)V" : "(LBlock;IF)V");
+        setup();
 
         if (RenderBlockCustomMod.haveCustomModels()) {
             addClassSignature(new BytecodeSignature() {

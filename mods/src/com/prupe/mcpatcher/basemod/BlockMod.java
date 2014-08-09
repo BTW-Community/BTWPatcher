@@ -37,7 +37,13 @@ public class BlockMod extends com.prupe.mcpatcher.ClassMod {
         getSecondaryBlockIcon = RenderBlocksMod.haveSubclasses() ? new MethodRef("Block", "getSecondaryBlockIcon", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")LIcon;") : null;
         useColorMultiplierOnFace = DirectionMod.haveDirectionClass() ? new MethodRef("Block", "useColorMultiplierOnFace", "(" + DirectionMod.getDescriptor() + ")Z") : null;
         shouldSideBeRendered = new MethodRef("Block", "shouldSideBeRendered", "(LIBlockAccess;" + PositionMod.getDescriptor() + DirectionMod.getDescriptor() + ")Z");
-        blockRegistry = haveBlockRegistry() ? new FieldRef(getDeobfClass(), "blockRegistry", "LRegistry;") : null;
+        if (BlockRegistryMod.haveClass()) {
+            blockRegistry = new FieldRef(getDeobfClass(), "blockRegistry1", "LBlockRegistry;");
+        } else if (haveBlockRegistry()) {
+            blockRegistry = new FieldRef(getDeobfClass(), "blockRegistry", "LRegistry;");
+        } else {
+            blockRegistry = null;
+        }
 
         if (haveBlockRegistry()) {
             addClassSignature(new ConstSignature("stone"));

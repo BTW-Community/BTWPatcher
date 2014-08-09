@@ -1,7 +1,8 @@
 package net.minecraft.src;
 
 public class Block {
-    public static Registry<Block> blockRegistry; // 13w36a+
+    public static Registry<Block> blockRegistry; // 13w36a-14w24
+    public static BlockRegistry blockRegistry1; // 14w25a+
 
     // pre-13w36a
     public static Block[] blocksList;

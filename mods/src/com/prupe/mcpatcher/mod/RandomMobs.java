@@ -38,6 +38,7 @@ public class RandomMobs extends Mod {
 
         ResourceLocationMod.setup(this);
         RenderUtilsMod.setup(this);
+        RenderBlockManagerMod.setup();
         addClassMod(new NBTTagCompoundMod(this));
         addClassMod(new TessellatorMod(this));
         addClassMod(new IBlockAccessMod(this));

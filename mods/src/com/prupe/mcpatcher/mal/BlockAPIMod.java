@@ -39,19 +39,24 @@ public class BlockAPIMod extends Mod {
         addClassMod(new IconMod(this));
         addClassMod(new TessellatorMod(this));
         ResourceLocationMod.setup(this);
-        addClassMod(new RenderBlocksMod());
-        if (RenderBlocksMod.haveSubclasses()) {
-            addClassMod(new RenderBlockManagerMod(this));
-        }
-        if (RenderBlockHelperMod.haveClass() && !RenderBlockCustomMod.haveCustomModels()) {
-            addClassMod(new RenderBlockHelperMod());
-        }
-        if (RenderBlockCustomMod.haveCustomModels()) {
-            addClassMod(new RenderBlockCustomMod());
+        if (malVersion < 3) {
+            addClassMod(new RenderBlocksMod());
+            if (RenderBlocksMod.haveSubclasses()) {
+                addClassMod(new RenderBlockManagerMod(this));
+            }
+            if (RenderBlockHelperMod.haveClass() && !RenderBlockCustomMod.haveCustomModels()) {
+                addClassMod(new RenderBlockHelperMod());
+            }
+            if (RenderBlockCustomMod.haveCustomModels()) {
+                addClassMod(new RenderBlockCustomMod());
+            }
         }
         if (malVersion >= 2) {
             addClassMod(new RegistryBaseMod(this));
             addClassMod(new RegistryMod(this));
+            if (BlockRegistryMod.haveClass()) {
+                addClassMod(new BlockRegistryMod(this));
+            }
         }
         if (malVersion >= 3) {
             PositionMod.setup(this);
@@ -77,10 +82,7 @@ public class BlockAPIMod extends Mod {
                 mapBlockIconMethods();
             }
             addMemberMapper(new MethodMapper(shouldSideBeRendered));
-
-            if (malVersion == 2) {
-                addMemberMapper(new FieldMapper(blockRegistry));
-            }
+            addMemberMapper(new FieldMapper(blockRegistry));
         }
     }
 

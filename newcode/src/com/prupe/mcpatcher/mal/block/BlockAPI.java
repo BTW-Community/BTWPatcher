@@ -381,17 +381,20 @@ abstract public class BlockAPI {
     }
 
     private static class V2 extends BlockAPI {
-        {
+        private final Registry<Block> registry;
+
+        V2(Registry<Block> registry) {
+            this.registry = registry;
             File outputFile = new File("blocks17.txt");
             if (outputFile.isFile()) {
                 PrintStream ps = null;
                 try {
                     ps = new PrintStream(outputFile);
                     String[] nameList = new String[4096];
-                    for (String name17 : Block.blockRegistry.getKeys()) {
-                        Block block = Block.blockRegistry.getValue(name17);
+                    for (String name17 : registry.getKeys()) {
+                        Block block = registry.getValue(name17);
                         if (block != null) {
-                            int id = Block.blockRegistry.getId(block);
+                            int id = registry.getId(block);
                             if (id >= 0 && id < nameList.length) {
                                 nameList[id] = name17;
                             }
@@ -408,6 +411,10 @@ abstract public class BlockAPI {
                     MCPatcherUtils.close(ps);
                 }
             }
+        }
+
+        V2() {
+            this(Block.blockRegistry);
         }
 
         @Override
@@ -432,23 +439,23 @@ abstract public class BlockAPI {
 
         @Override
         protected Iterator<Block> iterator_Impl() {
-            return Block.blockRegistry.iterator();
+            return registry.iterator();
         }
 
         @Override
         protected Block getBlockById_Impl(int id) {
-            return Block.blockRegistry.getById(id);
+            return registry.getById(id);
         }
 
         @Override
         protected Block getBlockByName_Impl(String name) {
-            return Block.blockRegistry.getValue(name);
+            return registry.getValue(name);
         }
 
         @Override
         protected String getBlockName_Impl(Block block) {
-            String name = Block.blockRegistry.getKey(block);
-            return name == null ? String.valueOf(Block.blockRegistry.getId(block)) : name;
+            String name = registry.getKey(block);
+            return name == null ? String.valueOf(registry.getId(block)) : name;
         }
 
         @Override
@@ -471,6 +478,10 @@ abstract public class BlockAPI {
             Direction.WEST,
             Direction.EAST
         };
+
+        V3() {
+            super(Block.blockRegistry1);
+        }
 
         @Override
         protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k) {
