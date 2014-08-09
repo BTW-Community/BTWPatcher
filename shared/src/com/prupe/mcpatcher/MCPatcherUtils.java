@@ -38,6 +38,7 @@ public class MCPatcherUtils {
     public static final String BETTER_GLASS = "Better Glass";
     public static final String CUSTOM_ITEM_TEXTURES = "Custom Item Textures";
     public static final String GLSL_SHADERS = "GLSL Shaders";
+    public static final String CUSTOM_TEXTURES_MODELS = "Custom Textures and Models";
     public static final String BASE_MOD = "__Base";
     public static final String TEXTURE_PACK_API_MOD = "__TexturePackAPI";
     public static final String TESSELLATOR_API_MOD = "__TessellatorAPI";
@@ -107,6 +108,7 @@ public class MCPatcherUtils {
     public static final String LIGHTMAP_CLASS = "com.prupe.mcpatcher.cc.Lightmap";
 
     public static final String CTM_UTILS_CLASS = "com.prupe.mcpatcher.ctm.CTMUtils";
+    public static final String CTM_UTILS18_CLASS = "com.prupe.mcpatcher.ctm.CTMUtils18";
     public static final String TILE_OVERRIDE_INTERFACE = "com.prupe.mcpatcher.ctm.ITileOverride";
     public static final String TILE_OVERRIDE_CLASS = "com.prupe.mcpatcher.ctm.TileOverride";
     public static final String TILE_OVERRIDE_IMPL_CLASS = "com.prupe.mcpatcher.ctm.TileOverrideImpl";

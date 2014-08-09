@@ -104,13 +104,20 @@ class ModList {
             register(new BuiltInMod(MCPatcherUtils.ITEM_API_MOD, "com.prupe.mcpatcher.mal.ItemAPIMod", loader).setInternal(true));
             register(new BuiltInMod(MCPatcherUtils.BIOME_API_MOD, "com.prupe.mcpatcher.mal.BiomeAPIMod", loader).setInternal(true));
 
+            boolean is18 = version.compareTo("14w25a") >= 0;
             register(new BuiltInMod(MCPatcherUtils.EXTENDED_HD, "com.prupe.mcpatcher.mod.ExtendedHD", loader));
             register(new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, "com.prupe.mcpatcher.mod.RandomMobs", loader));
             register(new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, "com.prupe.mcpatcher.mod.CustomColors", loader));
-            register(new BuiltInMod(MCPatcherUtils.CONNECTED_TEXTURES, "com.prupe.mcpatcher.mod.ConnectedTextures", loader));
-            register(new BuiltInMod(MCPatcherUtils.BETTER_GLASS, "com.prupe.mcpatcher.mod.BetterGlass", loader));
+            if (!is18) {
+                register(new BuiltInMod(MCPatcherUtils.CONNECTED_TEXTURES, "com.prupe.mcpatcher.mod.ConnectedTextures", loader));
+                register(new BuiltInMod(MCPatcherUtils.BETTER_GLASS, "com.prupe.mcpatcher.mod.BetterGlass", loader));
+            }
             register(new BuiltInMod(MCPatcherUtils.BETTER_SKIES, "com.prupe.mcpatcher.mod.BetterSkies", loader));
-            register(new BuiltInMod(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "com.prupe.mcpatcher.mod.CustomItemTextures", loader));
+            if (is18) {
+                register(new BuiltInMod(MCPatcherUtils.CUSTOM_TEXTURES_MODELS, "com.prupe.mcpatcher.mod.CustomTexturesModels", loader));
+            } else {
+                register(new BuiltInMod(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "com.prupe.mcpatcher.mod.CustomItemTextures", loader));
+            }
         }
         loadBuiltInMods(true);
     }
