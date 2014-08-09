@@ -499,6 +499,9 @@ public class RandomMobs extends Mod {
             if (haveOverlayRenderer) {
                 setInterfaces("OverlayRenderer");
                 renderEquippedItems = new MethodRef(getDeobfClass(), "render", "(LEntityMooshroom;FFFFFFF)V");
+                addClassSignature(new ConstSignature(42.0f));
+                addClassSignature(new ConstSignature(12.0f));
+                addClassSignature(new ConstSignature(0.35f));
             } else {
                 setParentClass("RenderLiving");
                 renderEquippedItems = new MethodRef(getDeobfClass(), "renderEquippedItems1", "(LEntityMooshroom;F)V");
@@ -552,14 +555,15 @@ public class RandomMobs extends Mod {
 
                         // pre-14w04a: this.renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
                         // 14w04a-14w08a: RenderBlockManager.instance.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
-                        // other: renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
+                        // 14w09-14w31: renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
+                        // 14w32+: renderBlocks.renderBlockAsItem(BlockList.mushroomRed.getBlockState(), 1.0f);
                         or(
                             build(ALOAD_0, anyReference(GETFIELD)),
                             anyALOAD,
                             anyReference(GETSTATIC)
                         ),
                         captureReference(GETSTATIC),
-                        push(0),
+                        getMinecraftVersion().compareTo("14w32a") >= 0 ? anyReference(INVOKEVIRTUAL) : push(0),
                         push(1.0f),
                         captureReference(INVOKEVIRTUAL)
                     );
@@ -603,14 +607,15 @@ public class RandomMobs extends Mod {
                     return buildExpression(
                         // pre-14w04a: this.renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
                         // 14w04a-14w08a: RenderBlockManager.instance.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
-                        // other: renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
+                        // 14w09-14w31: renderBlocks.renderBlockAsItem(BlockList.mushroomRed, 0, 1.0f);
+                        // 14w32+: renderBlocks.renderBlockAsItem(BlockList.mushroomRed.getBlockState(), 1.0f);
                         or(
                             build(ALOAD_0, anyReference(GETFIELD)),
                             anyALOAD,
                             anyReference(GETSTATIC)
                         ),
                         reference(GETSTATIC, mushroomRed),
-                        push(0),
+                        getMinecraftVersion().compareTo("14w32a") >= 0 ? anyReference(INVOKEVIRTUAL) : push(0),
                         push(1.0f),
                         reference(INVOKEVIRTUAL, renderBlockAsItem)
                     );

@@ -300,12 +300,22 @@ public class BetterSkies extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // GL11.glColor4f(x, x, x, x)
                         FLOAD, capture(any()),
                         FLOAD, backReference(1),
                         FLOAD, backReference(1),
                         FLOAD, backReference(1),
                         RenderUtilsMod.glColor4f(this),
 
+                        // if (...)
+                        optional(build(
+                            ALOAD_0,
+                            anyReference(GETFIELD),
+                            IFEQ, any(2),
+                            any(0, 60)
+                        )),
+
+                        // GL11.glCallList(this.glStarList);
                         ALOAD_0,
                         reference(GETFIELD, glStarList),
                         RenderUtilsMod.glCallList(this)
