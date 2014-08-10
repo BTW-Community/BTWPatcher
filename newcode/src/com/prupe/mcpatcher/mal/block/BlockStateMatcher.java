@@ -133,22 +133,21 @@ abstract public class BlockStateMatcher {
                             valueSet = new HashSet<Comparable>();
                             propertyMap.put(property, valueSet);
                         }
-                        for (String s : entry.getValue().split("\\s*,\\s*")) {
-                            if (s.equals("")) {
-                                continue;
-                            }
-                            boolean foundValue = false;
-                            for (Comparable propertyValue : property.getValues()) {
-                                if (s.equals(propertyValue.toString())) {
-                                    foundValue = true;
-                                    valueSet.add(propertyValue);
-                                    break;
+                        if (Integer.class.isAssignableFrom(property.getValueClass())) {
+                            parseIntegerValues(property, valueSet, entry.getValue());
+                        } else {
+                            for (String s : entry.getValue().split("\\s*,\\s*")) {
+                                if (s.equals("")) {
+                                    continue;
                                 }
-                            }
-                            if (!foundValue) {
-                                logger.warning("%s: unknown value %s for block %s property %s",
-                                    source, s, BlockAPI.getBlockName(block), property.getName()
-                                );
+                                Comparable propertyValue = parseNonIntegerValue(property, s);
+                                if (propertyValue == null) {
+                                    logger.warning("%s: unknown value %s for block %s property %s",
+                                        source, s, BlockAPI.getBlockName(block), property.getName()
+                                    );
+                                } else {
+                                    valueSet.add(propertyValue);
+                                }
                             }
                         }
                     }
@@ -157,6 +156,27 @@ abstract public class BlockStateMatcher {
                     logger.warning("%s: unknown property %s for block %s", source, name, BlockAPI.getBlockName(block));
                 }
             }
+        }
+
+        private void parseIntegerValues(IBlockStateProperty property, Set<Comparable> valueSet, String values) {
+            int min = Integer.MAX_VALUE;
+            int max = Integer.MIN_VALUE;
+            for (Comparable c : valueSet) {
+                min = Math.min(min, (Integer) c);
+                max = Math.max(max, (Integer) c);
+            }
+            for (int i : MCPatcherUtils.parseIntegerList(values, min, max)) {
+                valueSet.add(i);
+            }
+        }
+
+        private Comparable parseNonIntegerValue(IBlockStateProperty property, String value) {
+            for (Comparable propertyValue : property.getValues()) {
+                if (value.equals(propertyValue.toString())) {
+                    return propertyValue;
+                }
+            }
+            return null;
         }
 
         @Override
