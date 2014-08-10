@@ -83,7 +83,9 @@ public class BlockAPIMod extends Mod {
             }
             addMemberMapper(new MethodMapper(shouldSideBeRendered));
             addMemberMapper(new FieldMapper(blockRegistry));
-            addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getBlockState", "()LIBlockState;")));
+            if (malVersion >= 3) {
+                addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getBlockState", "()LIBlockState;")));
+            }
         }
     }
 
