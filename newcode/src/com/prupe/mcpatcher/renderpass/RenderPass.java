@@ -120,7 +120,6 @@ public class RenderPass {
             }
 
             private void remapProperties(PropertiesFile properties) {
-                Properties newProperties = new Properties();
                 for (Map.Entry<String, String> entry : properties.entrySet()) {
                     String key = entry.getKey();
                     key = key.replaceFirst("\\.3$", ".overlay");
