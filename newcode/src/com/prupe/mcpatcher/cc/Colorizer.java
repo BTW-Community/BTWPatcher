@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.cc;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
 import net.minecraft.src.Potion;
@@ -14,7 +15,7 @@ public class Colorizer {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
     static final ResourceLocation COLOR_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("color.properties");
-    private static Properties properties;
+    private static PropertiesFile properties;
 
     static final boolean useWaterColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "water", true);
     static final boolean useSwampColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "swamp", true);
@@ -110,7 +111,7 @@ public class Colorizer {
     }
 
     private static void reset() {
-        properties = new Properties();
+        properties = new PropertiesFile(logger, COLOR_PROPERTIES);
 
         ColorMap.reset();
         ColorizeBlock.reset();
@@ -121,9 +122,8 @@ public class Colorizer {
     }
 
     private static void reloadColorProperties() {
-        if (TexturePackAPI.getProperties(COLOR_PROPERTIES, properties)) {
-            logger.finer("reloading %s", COLOR_PROPERTIES);
-        }
+        properties = PropertiesFile.getNonNull(logger, COLOR_PROPERTIES);
+        logger.finer("reloading %s", COLOR_PROPERTIES);
     }
 
     static String getStringKey(String[] keys, int index) {
@@ -140,7 +140,7 @@ public class Colorizer {
 
     static boolean loadIntColor(String key, int[] color, int index) {
         logger.config("%s=%06x", key, color[index]);
-        String value = properties.getProperty(key, "");
+        String value = properties.getString(key, "");
         if (!value.equals("")) {
             try {
                 color[index] = Integer.parseInt(value, 16);
@@ -153,7 +153,7 @@ public class Colorizer {
 
     static int loadIntColor(String key, int color) {
         logger.config("%s=%06x", key, color);
-        return MCPatcherUtils.getHexProperty(properties, key, color);
+        return properties.getHex(key, color);
     }
 
     static void loadFloatColor(String key, float[] color) {

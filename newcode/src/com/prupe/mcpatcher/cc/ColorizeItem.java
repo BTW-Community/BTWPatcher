@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import net.minecraft.src.MapColor;
 import net.minecraft.src.Potion;
 import net.minecraft.src.PotionHelper;
@@ -70,7 +71,7 @@ public class ColorizeItem {
         }
     }
 
-    static void reloadPotionColors(Properties properties) {
+    static void reloadPotionColors(PropertiesFile properties) {
         for (Potion potion : potions) {
             Colorizer.loadIntColor(potion.name, potion);
         }
@@ -79,7 +80,7 @@ public class ColorizeItem {
         waterBottleColor = temp[0];
     }
 
-    static void reloadMapColors(Properties properties) {
+    static void reloadMapColors(PropertiesFile properties) {
         for (int i = 0; i < MapColor.mapColorArray.length; i++) {
             if (MapColor.mapColorArray[i] != null) {
                 int[] rgb = new int[]{MapColor.mapColorArray[i].origColorValue};

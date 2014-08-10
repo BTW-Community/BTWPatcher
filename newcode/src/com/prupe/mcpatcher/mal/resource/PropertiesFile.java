@@ -69,6 +69,10 @@ final public class PropertiesFile {
         return MCPatcherUtils.getIntProperty(properties, key, defaultValue);
     }
 
+    public int getHex(String key, int defaultValue) {
+        return MCPatcherUtils.getHexProperty(properties, key, defaultValue);
+    }
+
     public float getFloat(String key, float defaultValue) {
         return MCPatcherUtils.getFloatProperty(properties, key, defaultValue);
     }

@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.EntityLivingBase;
 import net.minecraft.src.EntitySheep;
@@ -62,7 +63,7 @@ public class ColorizeEntity {
         xpOrbColors = null;
     }
 
-    static void reloadParticleColors(Properties properties) {
+    static void reloadParticleColors(PropertiesFile properties) {
         Colorizer.loadFloatColor("drop.water", waterBaseColor);
         Colorizer.loadFloatColor("particle.water", waterBaseColor);
         Colorizer.loadFloatColor("particle.portal", portalColor);
@@ -76,7 +77,7 @@ public class ColorizeEntity {
         myceliumColors = MCPatcherUtils.getImageRGB(TexturePackAPI.getImage(MYCELIUM_COLORS));
     }
 
-    static void reloadDyeColors(Properties properties) {
+    static void reloadDyeColors(PropertiesFile properties) {
         for (int i = 0; i < ItemDye.dyeColors.length; i++) {
             Colorizer.loadIntColor("dye." + Colorizer.getStringKey(ItemDye.dyeColorNames, i), ItemDye.dyeColors, i);
         }
@@ -89,7 +90,7 @@ public class ColorizeEntity {
         undyedLeatherColor = Colorizer.loadIntColor("armor.default", undyedLeatherColor);
     }
 
-    static void reloadXPOrbColors(Properties properties) {
+    static void reloadXPOrbColors(PropertiesFile properties) {
         xpOrbColors = MCPatcherUtils.getImageRGB(TexturePackAPI.getImage(XPORB_COLORS));
     }
 

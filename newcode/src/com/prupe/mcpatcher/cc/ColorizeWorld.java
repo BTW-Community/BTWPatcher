@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.cc;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.*;
 
@@ -68,7 +69,7 @@ public class ColorizeWorld {
         signTextColor = 0;
     }
 
-    static void reloadFogColors(Properties properties) {
+    static void reloadFogColors(PropertiesFile properties) {
         underwaterColor = wrapFogMap(ColorMap.loadFixedColorMap(Colorizer.useFogColors, UNDERWATERCOLOR));
         fogColorMap = wrapFogMap(ColorMap.loadFixedColorMap(Colorizer.useFogColors, FOGCOLOR0));
         skyColorMap = wrapFogMap(ColorMap.loadFixedColorMap(Colorizer.useFogColors, SKYCOLOR0));
@@ -92,8 +93,8 @@ public class ColorizeWorld {
         }
     }
 
-    static void reloadCloudType(Properties properties) {
-        String value = properties.getProperty("clouds", "").trim().toLowerCase();
+    static void reloadCloudType(PropertiesFile properties) {
+        String value = properties.getString("clouds", "").toLowerCase();
         if (value.equals("fast")) {
             cloudType = CLOUDS_FAST;
         } else if (value.equals("fancy")) {
@@ -101,7 +102,7 @@ public class ColorizeWorld {
         }
     }
 
-    static void reloadTextColors(Properties properties) {
+    static void reloadTextColors(PropertiesFile properties) {
         for (int i = 0; i < textCodeColors.length; i++) {
             textCodeColorSet[i] = loadIntColor(TEXT_CODE_KEY + i, textCodeColors, i);
             if (textCodeColorSet[i] && i + 16 < textCodeColors.length) {
@@ -109,12 +110,9 @@ public class ColorizeWorld {
                 textCodeColorSet[i + 16] = true;
             }
         }
-        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-            if (!(entry.getKey() instanceof String) || !(entry.getValue() instanceof String)) {
-                continue;
-            }
-            String key = (String) entry.getKey();
-            String value = (String) entry.getValue();
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
             if (!key.startsWith(TEXT_KEY) || key.startsWith(TEXT_CODE_KEY)) {
                 continue;
             }

@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.ResourceList;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.util.WeightedIndex;
@@ -154,11 +155,11 @@ abstract class ColorMap implements IColorMap {
         defaultYVariance = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "yVariance", 0);
     }
 
-    static void reloadColorMapSettings(Properties properties) {
+    static void reloadColorMapSettings(PropertiesFile properties) {
         unusedPNGs.addAll(ResourceList.getInstance().listResources(BLOCK_COLORMAP_DIR, ".png", false));
-        defaultColorMapFormat = parseFormat(MCPatcherUtils.getStringProperty(properties, "palette.format", ""));
-        defaultFlipY = MCPatcherUtils.getBooleanProperty(properties, "palette.flipY", false);
-        defaultYVariance = MCPatcherUtils.getFloatProperty(properties, "palette.yVariance", 0.0f);
+        defaultColorMapFormat = parseFormat(properties.getString("palette.format", ""));
+        defaultFlipY = properties.getBoolean("palette.flipY", false);
+        defaultYVariance = properties.getFloat("palette.yVariance", 0.0f);
     }
 
     private static int parseFormat(String value) {

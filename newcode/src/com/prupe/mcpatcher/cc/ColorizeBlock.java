@@ -169,7 +169,7 @@ public class ColorizeBlock {
         redstoneColor = null;
     }
 
-    static void reloadFoliageColors(Properties properties) {
+    static void reloadFoliageColors(PropertiesFile properties) {
         IColorMap colorMap = ColorMap.loadVanillaColorMap(DEFAULT_GRASSCOLOR, SWAMPGRASSCOLOR);
         registerColorMap(colorMap, DEFAULT_GRASSCOLOR, "minecraft:grass minecraft:tallgrass:1,2 minecraft:double_plant:2,3 minecraft:reeds");
         colorMap = ColorMap.loadVanillaColorMap(DEFAULT_FOLIAGECOLOR, SWAMPFOLIAGECOLOR);
@@ -191,7 +191,7 @@ public class ColorizeBlock {
         }
     }
 
-    static void reloadWaterColors(Properties properties) {
+    static void reloadWaterColors(PropertiesFile properties) {
         waterColorMap = registerColorMap(WATERCOLOR, "minecraft:flowing_water minecraft:water");
         if (waterColorMap == null) {
             waterColorMap = new ColorMap.Water();
@@ -199,7 +199,7 @@ public class ColorizeBlock {
         }
     }
 
-    static void reloadSwampColors(Properties properties) {
+    static void reloadSwampColors(PropertiesFile properties) {
         int[] lilypadColor = new int[]{0x020830};
         if (Colorizer.loadIntColor("lilypad", lilypadColor, 0)) {
             IColorMap colorMap = new ColorMap.Fixed(lilypadColor[0]);
@@ -207,13 +207,10 @@ public class ColorizeBlock {
         }
     }
 
-    static void reloadBlockColors(Properties properties) {
-        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-            if (!(entry.getKey() instanceof String) || !(entry.getValue() instanceof String)) {
-                continue;
-            }
-            String key = (String) entry.getKey();
-            String value = (String) entry.getValue();
+    static void reloadBlockColors(PropertiesFile properties) {
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
             if (!key.startsWith(PALETTE_BLOCK_KEY)) {
                 continue;
             }
@@ -272,7 +269,7 @@ public class ColorizeBlock {
         return colorMap;
     }
 
-    static void reloadRedstoneColors(Properties properties) {
+    static void reloadRedstoneColors(PropertiesFile properties) {
         int[] rgb = MCPatcherUtils.getImageRGB(TexturePackAPI.getImage(REDSTONE_COLORS));
         if (rgb != null && rgb.length >= 16) {
             redstoneColor = new float[16][];
@@ -284,7 +281,7 @@ public class ColorizeBlock {
         }
     }
 
-    static void reloadStemColors(Properties properties) {
+    static void reloadStemColors(PropertiesFile properties) {
         ResourceLocation resource = TexturePackAPI.hasResource(PUMPKIN_STEM_COLORS) ? PUMPKIN_STEM_COLORS : STEM_COLORS;
         registerMetadataRGB("minecraft:pumpkin_stem", resource, 8);
         resource = TexturePackAPI.hasResource(MELON_STEM_COLORS) ? MELON_STEM_COLORS : STEM_COLORS;
