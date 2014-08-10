@@ -6,11 +6,11 @@ import net.minecraft.src.ResourceLocation;
 
 import java.util.Properties;
 
-public class PropertiesFile {
+final public class PropertiesFile {
     private static final MCLogger staticLogger = MCLogger.getLogger("Texture Pack");
 
     private final MCLogger logger;
-    private final String resource;
+    private final ResourceLocation resource;
     private final String prefix;
     private final Properties properties;
 
@@ -19,6 +19,10 @@ public class PropertiesFile {
 
     public static PropertiesFile get(ResourceLocation resource) {
         return get(staticLogger, resource);
+    }
+
+    public static PropertiesFile getNonNull(ResourceLocation resource) {
+        return getNonNull(staticLogger, resource);
     }
 
     public static PropertiesFile get(MCLogger logger, ResourceLocation resource) {
@@ -30,15 +34,29 @@ public class PropertiesFile {
         }
     }
 
+    public static PropertiesFile getNonNull(MCLogger logger, ResourceLocation resource) {
+        PropertiesFile propertiesFile = get(logger, resource);
+        if (propertiesFile == null) {
+            return new PropertiesFile(logger, resource, new Properties());
+        } else {
+            return propertiesFile;
+        }
+    }
+
     private PropertiesFile(MCLogger logger, ResourceLocation resource, Properties properties) {
         this.logger = logger;
-        this.resource = resource.toString();
-        prefix = (this.resource + ": ").replace("%", "%%");
+        this.resource = resource;
+        prefix = (resource.toString() + ": ").replace("%", "%%");
         this.properties = properties;
     }
 
     public String getString(String key, String defaultValue) {
         return MCPatcherUtils.getStringProperty(properties, key, defaultValue);
+    }
+
+    public ResourceLocation getResourceLocation(String key, String defaultValue) {
+        String value = getString(key, defaultValue);
+        return TexturePackAPI.parseResourceLocation(resource, value);
     }
 
     public int getInt(String key, int defaultValue) {
@@ -62,8 +80,20 @@ public class PropertiesFile {
         }
     }
 
+    public boolean getBooleanProperty(String key, boolean defaultValue) {
+        return MCPatcherUtils.getBooleanProperty(properties, key, defaultValue);
+    }
+
+    public void setProperty(String key, String value) {
+        properties.setProperty(key, value);
+    }
+
     public void info(String format, Object... params) {
         logger.info(prefix + format, params);
+    }
+
+    public void config(String format, Object... params) {
+        logger.config(format, params);
     }
 
     public void warning(String format, Object... params) {
@@ -71,9 +101,10 @@ public class PropertiesFile {
         warningCount++;
     }
 
-    public void error(String format, Object... params) {
+    public boolean error(String format, Object... params) {
         logger.error(prefix + format, params);
         errorCount++;
+        return false;
     }
 
     public int getWarningCount() {
@@ -84,8 +115,12 @@ public class PropertiesFile {
         return errorCount;
     }
 
+    public boolean valid() {
+        return getErrorCount() == 0;
+    }
+
     @Override
     public String toString() {
-        return resource;
+        return resource.toString();
     }
 }

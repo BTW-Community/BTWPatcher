@@ -5,6 +5,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
 import com.prupe.mcpatcher.mal.resource.GLAPI;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.EntityFX;
 import net.minecraft.src.EntityFireworkOverlayFX;
@@ -44,15 +45,15 @@ public class FireworksHelper {
     }
 
     static void reload() {
-        Properties properties = TexturePackAPI.getProperties(PARTICLE_PROPERTIES);
-        String blend = MCPatcherUtils.getStringProperty(properties, "blend." + EXTRA_LAYER, "add");
+        PropertiesFile properties = PropertiesFile.getNonNull(logger, PARTICLE_PROPERTIES);
+        String blend = properties.getString("blend." + EXTRA_LAYER, "add");
         blendMethod = BlendMethod.parse(blend);
         if (blendMethod == null) {
-            logger.error("%s: unknown blend method %s", PARTICLE_PROPERTIES, blend);
+            properties.error("%s: unknown blend method %s", PARTICLE_PROPERTIES, blend);
         } else if (enable) {
-            logger.config("using %s blending for fireworks particles", blendMethod);
+            properties.config("using %s blending for fireworks particles", blendMethod);
         } else {
-            logger.config("using default blending for fireworks particles");
+            properties.config("using default blending for fireworks particles");
         }
     }
 }

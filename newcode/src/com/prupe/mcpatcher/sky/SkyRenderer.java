@@ -3,10 +3,7 @@ package com.prupe.mcpatcher.sky;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.mal.resource.BlendMethod;
-import com.prupe.mcpatcher.mal.resource.GLAPI;
-import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
-import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
+import com.prupe.mcpatcher.mal.resource.*;
 import com.prupe.mcpatcher.mal.tessellator.TessellatorAPI;
 import net.minecraft.src.Minecraft;
 import net.minecraft.src.ResourceLocation;
@@ -121,7 +118,7 @@ public class SkyRenderer {
                     if (i > 0) {
                         break;
                     }
-                } else if (layer.valid) {
+                } else if (layer.properties.valid()) {
                     logger.fine("loaded %s", resource);
                     skies.add(layer);
                     textures.add(layer.texture);
@@ -134,12 +131,12 @@ public class SkyRenderer {
             String v1Path = "/environment/sky" + worldType + "/" + objName + ".properties";
             String v2Path = "sky/world" + worldType + "/" + objName + ".properties";
             ResourceLocation resource = TexturePackAPI.newMCPatcherResourceLocation(v1Path, v2Path);
-            Properties properties = TexturePackAPI.getProperties(resource);
+            PropertiesFile properties = PropertiesFile.get(logger, resource);
             if (properties != null) {
                 properties.setProperty("fade", "false");
                 properties.setProperty("rotate", "true");
-                Layer layer = new Layer(resource, properties);
-                if (layer.valid) {
+                Layer layer = new Layer(properties);
+                if (properties.valid()) {
                     logger.fine("using %s (%s) for the %s", resource, layer.texture, objName);
                     objects.put(textureName, layer);
                 }
@@ -194,8 +191,7 @@ public class SkyRenderer {
 
         private static final double SKY_DISTANCE = 100.0;
 
-        private final ResourceLocation propertiesName;
-        private final Properties properties;
+        private final PropertiesFile properties;
         private ResourceLocation texture;
         private boolean fade;
         private boolean rotate;
@@ -207,45 +203,37 @@ public class SkyRenderer {
         private double b;
         private double c;
 
-        boolean valid;
-
         float brightness;
 
         static Layer create(ResourceLocation resource) {
-            Properties properties = TexturePackAPI.getProperties(resource);
+            PropertiesFile properties = PropertiesFile.get(logger, resource);
             if (properties == null) {
                 return null;
             } else {
-                return new Layer(resource, properties);
+                return new Layer(properties);
             }
         }
 
-        Layer(ResourceLocation propertiesName, Properties properties) {
-            this.propertiesName = propertiesName;
+        Layer(PropertiesFile properties) {
             this.properties = properties;
-            valid = true;
-            valid = (readTexture() && readRotation() & readBlendingMethod() && readFadeTimers());
+            boolean valid = (readTexture() && readRotation() & readBlendingMethod() && readFadeTimers());
         }
 
         private boolean readTexture() {
-            texture = TexturePackAPI.parseResourceLocation(propertiesName, properties.getProperty("source", propertiesName.getPath().replaceFirst("\\.properties$", ".png")));
+            texture = properties.getResourceLocation("source", properties.toString().replaceFirst("\\.properties$", ".png"));
             if (TexturePackAPI.hasResource(texture)) {
                 return true;
             } else {
-                return addError("source texture %s not found", texture);
+                return properties.error("source texture %s not found", texture);
             }
         }
 
         private boolean readRotation() {
-            rotate = MCPatcherUtils.getBooleanProperty(properties, "rotate", true);
+            rotate = properties.getBooleanProperty("rotate", true);
             if (rotate) {
-                try {
-                    speed = Float.parseFloat(properties.getProperty("speed", "1.0"));
-                } catch (NumberFormatException e) {
-                    return addError("invalid rotation speed");
-                }
+                speed = properties.getFloat("speed", 1.0f);
 
-                String value = properties.getProperty("axis", "0.0 0.0 1.0").trim().toLowerCase();
+                String value = properties.getString("axis", "0.0 0.0 1.0");
                 String[] tokens = value.split("\\s+");
                 if (tokens.length == 3) {
                     float x;
@@ -256,37 +244,37 @@ public class SkyRenderer {
                         y = Float.parseFloat(tokens[1]);
                         z = Float.parseFloat(tokens[2]);
                     } catch (NumberFormatException e) {
-                        return addError("invalid rotation axis");
+                        return properties.error("invalid rotation axis");
                     }
                     if (x * x + y * y + z * z == 0.0f) {
-                        return addError("rotation axis cannot be 0");
+                        return properties.error("rotation axis cannot be 0");
                     }
                     axis = new float[]{z, y, -x};
                 } else {
-                    return addError("invalid rotate value %s", value);
+                    return properties.error("invalid rotate value %s", value);
                 }
             }
             return true;
         }
 
         private boolean readBlendingMethod() {
-            String value = properties.getProperty("blend", "add");
+            String value = properties.getString("blend", "add");
             blendMethod = BlendMethod.parse(value);
             if (blendMethod == null) {
-                return addError("unknown blend method %s", value);
+                return properties.error("unknown blend method %s", value);
             }
             return true;
         }
 
         private boolean readFadeTimers() {
-            fade = Boolean.parseBoolean(properties.getProperty("fade", "true"));
+            fade = properties.getBooleanProperty("fade", true);
             if (!fade) {
                 return true;
             }
             int startFadeIn = parseTime(properties, "startFadeIn");
             int endFadeIn = parseTime(properties, "endFadeIn");
             int endFadeOut = parseTime(properties, "endFadeOut");
-            if (!valid) {
+            if (!properties.valid()) {
                 return false;
             }
             while (endFadeIn <= startFadeIn) {
@@ -296,7 +284,7 @@ public class SkyRenderer {
                 endFadeOut += SECS_PER_DAY;
             }
             if (endFadeOut - startFadeIn >= SECS_PER_DAY) {
-                return addError("fade times must fall within a 24 hour period");
+                return properties.error("fade times must fall within a 24 hour period");
             }
             int startFadeOut = startFadeIn + endFadeOut - endFadeIn;
 
@@ -312,13 +300,13 @@ public class SkyRenderer {
             double det = Math.cos(s0) * Math.sin(s1) + Math.cos(e1) * Math.sin(s0) + Math.cos(s1) * Math.sin(e1) -
                 Math.cos(s0) * Math.sin(e1) - Math.cos(s1) * Math.sin(s0) - Math.cos(e1) * Math.sin(s1);
             if (det == 0.0) {
-                return addError("determinant is 0");
+                return properties.error("determinant is 0");
             }
             a = (Math.sin(e1) - Math.sin(s0)) / det;
             b = (Math.cos(s0) - Math.cos(e1)) / det;
             c = (Math.cos(e1) * Math.sin(s0) - Math.cos(s0) * Math.sin(e1)) / det;
 
-            logger.finer("%s: y = %f cos x + %f sin x + %f", propertiesName, a, b, c);
+            logger.finer("%s: y = %f cos x + %f sin x + %f", properties, a, b, c);
             logger.finer("  at %f: %f", s0, f(s0));
             logger.finer("  at %f: %f", s1, f(s1));
             logger.finer("  at %f: %f", e0, f(e0));
@@ -326,16 +314,10 @@ public class SkyRenderer {
             return true;
         }
 
-        private boolean addError(String format, Object... params) {
-            logger.error("" + propertiesName + ": " + format, params);
-            valid = false;
-            return false;
-        }
-
-        private int parseTime(Properties properties, String key) {
-            String s = properties.getProperty(key, "").trim();
+        private int parseTime(PropertiesFile properties, String key) {
+            String s = properties.getString(key, "");
             if ("".equals(s)) {
-                addError("missing value for %s", key);
+                properties.error("missing value for %s", key);
                 return -1;
             }
             String[] t = s.split(":");
@@ -353,7 +335,7 @@ public class SkyRenderer {
                 } catch (NumberFormatException e) {
                 }
             }
-            addError("invalid %s time %s", key, s);
+            properties.error("invalid %s time %s", key, s);
             return -1;
         }
 
