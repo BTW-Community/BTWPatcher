@@ -5,10 +5,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.ctm.CTMUtils;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
-import com.prupe.mcpatcher.mal.resource.BlendMethod;
-import com.prupe.mcpatcher.mal.resource.GLAPI;
-import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
-import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
+import com.prupe.mcpatcher.mal.resource.*;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 
@@ -100,10 +97,10 @@ public class RenderPass {
 
             @Override
             public void refreshBlendingOptions() {
-                Properties properties = TexturePackAPI.getProperties(RENDERPASS_PROPERTIES);
+                PropertiesFile properties = PropertiesFile.get(logger, RENDERPASS_PROPERTIES);
                 if (properties != null) {
-                    properties = remapProperties(properties);
-                    String method = properties.getProperty("blend.overlay", "alpha").trim().toLowerCase();
+                    remapProperties(properties);
+                    String method = properties.getString("blend.overlay", "alpha").trim().toLowerCase();
                     blendMethod = BlendMethod.parse(method);
                     if (blendMethod == null) {
                         logger.error("%s: unknown blend method '%s'", RENDERPASS_PROPERTIES, method);
@@ -113,27 +110,26 @@ public class RenderPass {
                     if (blendBlankResource == null) {
                         blendBlankResource = BlendMethod.ALPHA.getBlankResource();
                     }
-                    enableLightmap = MCPatcherUtils.getBooleanProperty(properties, "enableLightmap.overlay", !blendMethod.isColorBased());
-                    enableColormap = MCPatcherUtils.getBooleanProperty(properties, "enableColormap.overlay", false);
-                    backfaceCulling[RenderPassAPI.OVERLAY_RENDER_PASS] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.overlay", true);
-                    backfaceCulling[RenderPassAPI.CUTOUT_RENDER_PASS] = backfaceCulling[RenderPassMap.instance.getCutoutRenderPass()] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.cutout", true);
-                    backfaceCulling[RenderPassAPI.CUTOUT_MIPPED_RENDER_PASS] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.cutout_mipped", backfaceCulling[RenderPassAPI.CUTOUT_RENDER_PASS]);
-                    backfaceCulling[RenderPassAPI.TRANSLUCENT_RENDER_PASS] = MCPatcherUtils.getBooleanProperty(properties, "backfaceCulling.translucent", true);
+                    enableLightmap = properties.getBoolean("enableLightmap.overlay", !blendMethod.isColorBased());
+                    enableColormap = properties.getBoolean("enableColormap.overlay", false);
+                    backfaceCulling[RenderPassAPI.OVERLAY_RENDER_PASS] = properties.getBoolean("backfaceCulling.overlay", true);
+                    backfaceCulling[RenderPassAPI.CUTOUT_RENDER_PASS] = backfaceCulling[RenderPassMap.instance.getCutoutRenderPass()] = properties.getBoolean("backfaceCulling.cutout", true);
+                    backfaceCulling[RenderPassAPI.CUTOUT_MIPPED_RENDER_PASS] = properties.getBoolean("backfaceCulling.cutout_mipped", backfaceCulling[RenderPassAPI.CUTOUT_RENDER_PASS]);
+                    backfaceCulling[RenderPassAPI.TRANSLUCENT_RENDER_PASS] = properties.getBoolean("backfaceCulling.translucent", true);
                 }
             }
 
-            private Properties remapProperties(Properties properties) {
+            private void remapProperties(PropertiesFile properties) {
                 Properties newProperties = new Properties();
-                for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-                    String key = (String) entry.getKey();
+                for (Map.Entry<String, String> entry : properties.entrySet()) {
+                    String key = entry.getKey();
                     key = key.replaceFirst("\\.3$", ".overlay");
                     key = key.replaceFirst("\\.2$", ".backface");
                     if (!key.equals(entry.getKey())) {
-                        logger.warning("%s: %s is deprecated in 1.8.  Use %s instead", RENDERPASS_PROPERTIES, entry.getKey(), key);
+                        properties.warning("%s is deprecated in 1.8.  Use %s instead", entry.getKey(), key);
                     }
-                    newProperties.put(key, entry.getValue());
+                    properties.setProperty(key, entry.getValue());
                 }
-                return newProperties;
             }
 
             @Override

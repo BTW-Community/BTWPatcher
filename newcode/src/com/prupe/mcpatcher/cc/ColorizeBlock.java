@@ -8,6 +8,7 @@ import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
 import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
 import com.prupe.mcpatcher.mal.resource.GLAPI;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.ResourceList;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.Block;
@@ -252,7 +253,7 @@ public class ColorizeBlock {
         }
         colorMap = wrapBlockMap(colorMap);
         for (String idString : idList.split("\\s+")) {
-            BlockStateMatcher blockMatcher = BlockAPI.createMatcher(logger, resource, idString);
+            BlockStateMatcher blockMatcher = BlockAPI.createMatcher(new PropertiesFile(logger, resource), idString);
             if (blockMatcher != null) {
                 List<BlockStateMatcher> maps = blockColorMaps.get(blockMatcher.getBlock());
                 if (maps == null) {

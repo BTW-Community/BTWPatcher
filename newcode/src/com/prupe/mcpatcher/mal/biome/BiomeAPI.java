@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.mal.biome;
 import com.prupe.mcpatcher.MAL;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import net.minecraft.src.BiomeGenBase;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.Minecraft;
@@ -48,10 +49,10 @@ abstract public class BiomeAPI {
         }
     }
 
-    public static BitSet getHeightListProperty(Properties properties, String suffix) {
-        int minHeight = Math.max(MCPatcherUtils.getIntProperty(properties, "minHeight" + suffix, 0), 0);
-        int maxHeight = Math.min(MCPatcherUtils.getIntProperty(properties, "maxHeight" + suffix, WORLD_MAX_HEIGHT), WORLD_MAX_HEIGHT);
-        String heightStr = MCPatcherUtils.getStringProperty(properties, "heights" + suffix, "");
+    public static BitSet getHeightListProperty(PropertiesFile properties, String suffix) {
+        int minHeight = Math.max(properties.getInt("minHeight" + suffix, 0), 0);
+        int maxHeight = Math.min(properties.getInt("maxHeight" + suffix, WORLD_MAX_HEIGHT), WORLD_MAX_HEIGHT);
+        String heightStr = properties.getString("heights" + suffix, "");
         if (minHeight == 0 && maxHeight == WORLD_MAX_HEIGHT && heightStr.length() == 0) {
             return null;
         } else {

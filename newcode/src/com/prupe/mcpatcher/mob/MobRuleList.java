@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.mob;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.util.WeightedIndex;
 import net.minecraft.src.ResourceLocation;
@@ -43,9 +44,9 @@ class MobRuleList {
 
         ResourceLocation filename = TexturePackAPI.transformResourceLocation(newSkin, ".png", ".properties");
         ResourceLocation altFilename = new ResourceLocation(newSkin.getNamespace(), filename.getPath().replaceFirst(ALTERNATIVES_REGEX, ".properties"));
-        Properties properties = TexturePackAPI.getProperties(filename);
+        PropertiesFile properties = PropertiesFile.get(logger, filename);
         if (properties == null && !filename.equals(altFilename)) {
-            properties = TexturePackAPI.getProperties(altFilename);
+            properties = PropertiesFile.get(logger, altFilename);
             if (properties != null) {
                 logger.fine("using %s for %s", altFilename, baseSkin);
             }
@@ -107,8 +108,8 @@ class MobRuleList {
         private final BitSet biomes;
         private final BitSet height;
 
-        static MobRuleEntry load(Properties properties, int index, int limit) {
-            String skinList = properties.getProperty("skins." + index, "").trim().toLowerCase();
+        static MobRuleEntry load(PropertiesFile properties, int index, int limit) {
+            String skinList = properties.getString("skins." + index, "").toLowerCase();
             int[] skins;
             if (skinList.equals("*") || skinList.equals("all") || skinList.equals("any")) {
                 skins = new int[limit];
@@ -125,13 +126,13 @@ class MobRuleList {
                 }
             }
 
-            WeightedIndex chooser = WeightedIndex.create(skins.length, properties.getProperty("weights." + index, ""));
+            WeightedIndex chooser = WeightedIndex.create(skins.length, properties.getString("weights." + index, ""));
             if (chooser == null) {
                 return null;
             }
 
             BitSet biomes;
-            String biomeList = MCPatcherUtils.getStringProperty(properties, "biomes." + index, "");
+            String biomeList = properties.getString("biomes." + index, "");
             if (biomeList.isEmpty()) {
                 biomes = null;
             } else {

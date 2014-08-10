@@ -45,6 +45,10 @@ final public class PropertiesFile {
         }
     }
 
+    public PropertiesFile(MCLogger logger, ResourceLocation resource) {
+        this(logger, resource, new Properties());
+    }
+
     private PropertiesFile(MCLogger logger, ResourceLocation resource, Properties properties) {
         this.logger = logger;
         this.resource = resource;
@@ -67,6 +71,10 @@ final public class PropertiesFile {
 
     public float getFloat(String key, float defaultValue) {
         return MCPatcherUtils.getFloatProperty(properties, key, defaultValue);
+    }
+
+    public double getDouble(String key, double defaultValue) {
+        return MCPatcherUtils.getDoubleProperty(properties, key, defaultValue);
     }
 
     public int[] getIntList(String key, int minValue, int maxValue) {

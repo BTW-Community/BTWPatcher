@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.mal.block;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import net.minecraft.src.*;
 
 import java.util.HashMap;
@@ -16,7 +17,7 @@ abstract public class BlockStateMatcher {
     protected final Block block;
     protected Object data;
 
-    protected BlockStateMatcher(MCLogger logger, ResourceLocation source, String fullString, Block block, String metadataList, Map<String, String> properties) {
+    protected BlockStateMatcher(PropertiesFile source, String fullString, Block block, String metadataList, Map<String, String> properties) {
         this.fullString = fullString;
         this.block = block;
     }
@@ -60,8 +61,8 @@ abstract public class BlockStateMatcher {
 
         private static Block doublePlantBlock;
 
-        V1(MCLogger logger, ResourceLocation source, String fullString, Block block, String metadataList, Map<String, String> properties) {
-            super(logger, source, fullString, block, metadataList, properties);
+        V1(PropertiesFile source, String fullString, Block block, String metadataList, Map<String, String> properties) {
+            super(source, fullString, block, metadataList, properties);
             if (MCPatcherUtils.isNullOrEmpty(metadataList)) {
                 metadataBits = NO_METADATA;
             } else {
@@ -119,8 +120,8 @@ abstract public class BlockStateMatcher {
             }
         }
 
-        V2(MCLogger logger, ResourceLocation source, String fullString, Block block, String metadataList, Map<String, String> properties) {
-            super(logger, source, fullString, block, metadataList, properties);
+        V2(PropertiesFile source, String fullString, Block block, String metadataList, Map<String, String> properties) {
+            super(source, fullString, block, metadataList, properties);
             IBlockState state = block.getBlockState();
             for (Map.Entry<String, String> entry : properties.entrySet()) {
                 String name = entry.getKey();
@@ -142,8 +143,8 @@ abstract public class BlockStateMatcher {
                                 }
                                 Comparable propertyValue = parseNonIntegerValue(property, s);
                                 if (propertyValue == null) {
-                                    logger.warning("%s: unknown value %s for block %s property %s",
-                                        source, s, BlockAPI.getBlockName(block), property.getName()
+                                    source.warning("unknown value %s for block %s property %s",
+                                        s, BlockAPI.getBlockName(block), property.getName()
                                     );
                                 } else {
                                     valueSet.add(propertyValue);
@@ -153,7 +154,7 @@ abstract public class BlockStateMatcher {
                     }
                 }
                 if (!foundProperty) {
-                    logger.warning("%s: unknown property %s for block %s", source, name, BlockAPI.getBlockName(block));
+                    source.warning("unknown property %s for block %s", name, BlockAPI.getBlockName(block));
                 }
             }
         }

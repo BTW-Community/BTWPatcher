@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.tile.TileLoader;
 import net.minecraft.src.Block;
@@ -28,7 +29,7 @@ abstract class TileOverride implements ITileOverride {
     private static final int CONNECT_BY_TILE = 1;
     private static final int CONNECT_BY_MATERIAL = 2;
 
-    private final ResourceLocation propertiesFile;
+    private final PropertiesFile properties;
     private final String baseFilename;
     private final TileLoader tileLoader;
     private final int renderPass;
@@ -44,74 +45,72 @@ abstract class TileOverride implements ITileOverride {
 
     private final List<ResourceLocation> tileNames = new ArrayList<ResourceLocation>();
     protected Icon[] icons;
-    private boolean disabled;
-    private int warnCount;
     private int matchMetadata = META_MASK;
 
     static TileOverride create(ResourceLocation propertiesFile, TileLoader tileLoader) {
         if (propertiesFile == null) {
             return null;
         }
-        Properties properties = TexturePackAPI.getProperties(propertiesFile);
+        PropertiesFile properties = PropertiesFile.get(logger, propertiesFile);
         if (properties == null) {
             return null;
         }
 
-        String method = properties.getProperty("method", "default").trim().toLowerCase();
+        String method = properties.getString("method", "default").toLowerCase();
         TileOverride override = null;
 
         if (method.equals("default") || method.equals("glass") || method.equals("ctm")) {
-            override = new TileOverrideImpl.CTM(propertiesFile, properties, tileLoader);
+            override = new TileOverrideImpl.CTM(properties, tileLoader);
         } else if (method.equals("random")) {
-            override = new TileOverrideImpl.Random1(propertiesFile, properties, tileLoader);
+            override = new TileOverrideImpl.Random1(properties, tileLoader);
             if (override.getNumberOfTiles() == 1) {
-                override = new TileOverrideImpl.Fixed(propertiesFile, properties, tileLoader);
+                override = new TileOverrideImpl.Fixed(properties, tileLoader);
             }
         } else if (method.equals("fixed") || method.equals("static")) {
-            override = new TileOverrideImpl.Fixed(propertiesFile, properties, tileLoader);
+            override = new TileOverrideImpl.Fixed(properties, tileLoader);
         } else if (method.equals("bookshelf") || method.equals("horizontal")) {
-            override = new TileOverrideImpl.Horizontal(propertiesFile, properties, tileLoader);
+            override = new TileOverrideImpl.Horizontal(properties, tileLoader);
         } else if (method.equals("horizontal+vertical") || method.equals("h+v")) {
-            override = new TileOverrideImpl.HorizontalVertical(propertiesFile, properties, tileLoader);
+            override = new TileOverrideImpl.HorizontalVertical(properties, tileLoader);
         } else if (method.equals("vertical")) {
-            override = new TileOverrideImpl.Vertical(propertiesFile, properties, tileLoader);
+            override = new TileOverrideImpl.Vertical(properties, tileLoader);
         } else if (method.equals("vertical+horizontal") || method.equals("v+h")) {
-            override = new TileOverrideImpl.VerticalHorizontal(propertiesFile, properties, tileLoader);
+            override = new TileOverrideImpl.VerticalHorizontal(properties, tileLoader);
         } else if (method.equals("sandstone") || method.equals("top")) {
-            override = new TileOverrideImpl.Top(propertiesFile, properties, tileLoader);
+            override = new TileOverrideImpl.Top(properties, tileLoader);
         } else if (method.equals("repeat") || method.equals("pattern")) {
-            override = new TileOverrideImpl.Repeat(propertiesFile, properties, tileLoader);
+            override = new TileOverrideImpl.Repeat(properties, tileLoader);
         } else {
-            logger.error("%s: unknown method \"%s\"", propertiesFile, method);
+            properties.error("unknown method \"%s\"", method);
         }
 
-        if (override != null && !override.disabled) {
+        if (override != null && !properties.valid()) {
             String status = override.checkTileMap();
             if (status != null) {
-                override.error("invalid %s tile map: %s", override.getMethod(), status);
+                override.properties.error("invalid %s tile map: %s", override.getMethod(), status);
             }
         }
 
-        return override == null || override.disabled ? null : override;
+        return override == null || override.isDisabled() ? null : override;
     }
 
-    protected TileOverride(ResourceLocation propertiesFile, Properties properties, TileLoader tileLoader) {
-        this.propertiesFile = propertiesFile;
-        String texturesDirectory = propertiesFile.getPath().replaceFirst("/[^/]*$", "");
-        baseFilename = propertiesFile.getPath().replaceFirst(".*/", "").replaceFirst("\\.properties$", "");
+    protected TileOverride(PropertiesFile properties, TileLoader tileLoader) {
+        this.properties = properties;
+        String texturesDirectory = properties.getResource().getPath().replaceFirst("/[^/]*$", "");
+        baseFilename = properties.getResource().getPath().replaceFirst(".*/", "").replaceFirst("\\.properties$", "");
         this.tileLoader = tileLoader;
 
-        String renderPassStr = MCPatcherUtils.getStringProperty(properties, "renderPass", "");
+        String renderPassStr = properties.getString("renderPass", "");
         renderPass = RenderPassAPI.instance.parseRenderPass(renderPassStr);
         if (renderPassStr.matches("\\d+") && renderPass >= 0 && renderPass <= RenderPassAPI.MAX_EXTRA_RENDER_PASS) {
-            warn("renderPass=%s is deprecated, use renderPass=%s instead",
+            properties.warning("renderPass=%s is deprecated, use renderPass=%s instead",
                 renderPassStr, RenderPassAPI.instance.getRenderPassName(renderPass)
             );
         }
 
-        loadIcons(properties);
+        loadIcons();
         if (tileNames.isEmpty()) {
-            error("no images found in %s/", texturesDirectory);
+            properties.error("no images found in %s/", texturesDirectory);
         }
 
         String value;
@@ -121,21 +120,21 @@ abstract class TileOverride implements ITileOverride {
             value = "";
         }
         matchBlocks = getBlockList(
-            MCPatcherUtils.getStringProperty(properties, "matchBlocks", value),
-            MCPatcherUtils.getStringProperty(properties, "metadata", "")
+            properties.getString("matchBlocks", value),
+            properties.getString("metadata", "")
         );
-        matchTiles = getTileList(properties, "matchTiles");
+        matchTiles = getTileList("matchTiles");
         if (matchBlocks.isEmpty() && matchTiles.isEmpty()) {
             matchTiles.add(baseFilename);
         }
         int bits = 0;
-        for (int i : MCPatcherUtils.parseIntegerList(MCPatcherUtils.getStringProperty(properties, "metadata", "0-15"), 0, 15)) {
+        for (int i : properties.getIntList("metadata", 0, 15, "0-15")) {
             bits |= 1 << i;
         }
         defaultMetaMask = bits;
 
         int flags = 0;
-        for (String val : properties.getProperty("faces", "all").trim().toLowerCase().split("\\s+")) {
+        for (String val : properties.getString("faces", "all").toLowerCase().split("\\s+")) {
             if (val.equals("bottom")) {
                 flags |= (1 << BOTTOM_FACE);
             } else if (val.equals("top")) {
@@ -156,7 +155,7 @@ abstract class TileOverride implements ITileOverride {
         }
         faces = flags;
 
-        String connectType1 = properties.getProperty("connect", "").trim().toLowerCase();
+        String connectType1 = properties.getString("connect", "").toLowerCase();
         if (connectType1.equals("")) {
             connectType = matchTiles.isEmpty() ? CONNECT_BY_BLOCK : CONNECT_BY_TILE;
         } else if (connectType1.equals("block")) {
@@ -166,13 +165,13 @@ abstract class TileOverride implements ITileOverride {
         } else if (connectType1.equals("material")) {
             connectType = CONNECT_BY_MATERIAL;
         } else {
-            error("invalid connect type %s", connectType1);
+            properties.error("invalid connect type %s", connectType1);
             connectType = CONNECT_BY_BLOCK;
         }
 
-        innerSeams = MCPatcherUtils.getBooleanProperty(properties, "innerSeams", false);
+        innerSeams = properties.getBoolean("innerSeams", false);
 
-        String biomeList = properties.getProperty("biomes", "");
+        String biomeList = properties.getString("biomes", "");
         if (biomeList.isEmpty()) {
             biomes = null;
         } else {
@@ -183,12 +182,12 @@ abstract class TileOverride implements ITileOverride {
         height = BiomeAPI.getHeightListProperty(properties, "");
 
         if (renderPass > RenderPassAPI.MAX_EXTRA_RENDER_PASS) {
-            error("invalid renderPass %s", renderPassStr);
+            properties.error("invalid renderPass %s", renderPassStr);
         } else if (renderPass >= 0 && !matchTiles.isEmpty()) {
-            error("renderPass=%s must be block-based not tile-based", RenderPassAPI.instance.getRenderPassName(renderPass));
+            properties.error("renderPass=%s must be block-based not tile-based", RenderPassAPI.instance.getRenderPassName(renderPass));
         }
 
-        weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
+        weight = properties.getInt("weight", 0);
     }
 
     private boolean addIcon(ResourceLocation resource) {
@@ -196,13 +195,13 @@ abstract class TileOverride implements ITileOverride {
         return tileLoader.preloadTile(resource, renderPass > RenderPassAPI.MAX_BASE_RENDER_PASS);
     }
 
-    private void loadIcons(Properties properties) {
+    private void loadIcons() {
         tileNames.clear();
-        String tileList = properties.getProperty("tiles", "").trim();
+        String tileList = properties.getString("tiles", "");
         ResourceLocation blankResource = RenderPassAPI.instance.getBlankResource(renderPass);
         if (tileList.equals("")) {
             for (int i = 0; ; i++) {
-                ResourceLocation resource = TileLoader.parseTileAddress(propertiesFile, String.valueOf(i), blankResource);
+                ResourceLocation resource = TileLoader.parseTileAddress(properties.getResource(), String.valueOf(i), blankResource);
                 if (!TexturePackAPI.hasResource(resource)) {
                     break;
                 }
@@ -221,11 +220,11 @@ abstract class TileOverride implements ITileOverride {
                         int from = Integer.parseInt(matcher.group(1));
                         int to = Integer.parseInt(matcher.group(2));
                         for (int i = from; i <= to; i++) {
-                            ResourceLocation resource = TileLoader.parseTileAddress(propertiesFile, String.valueOf(i), blankResource);
+                            ResourceLocation resource = TileLoader.parseTileAddress(properties.getResource(), String.valueOf(i), blankResource);
                             if (TexturePackAPI.hasResource(resource)) {
                                 addIcon(resource);
                             } else {
-                                warn("could not find image %s", resource);
+                                properties.warning("could not find image %s", resource);
                                 tileNames.add(null);
                             }
                         }
@@ -233,13 +232,13 @@ abstract class TileOverride implements ITileOverride {
                         e.printStackTrace();
                     }
                 } else {
-                    ResourceLocation resource = TileLoader.parseTileAddress(propertiesFile, token, blankResource);
+                    ResourceLocation resource = TileLoader.parseTileAddress(properties.getResource(), token, blankResource);
                     if (resource == null) {
                         tileNames.add(null);
                     } else if (TexturePackAPI.hasResource(resource)) {
                         addIcon(resource);
                     } else {
-                        warn("could not find image %s", resource);
+                        properties.warning("could not find image %s", resource);
                         tileNames.add(null);
                     }
                 }
@@ -257,17 +256,17 @@ abstract class TileOverride implements ITileOverride {
                 // nothing
             } else if (token.matches("\\d+-\\d+")) {
                 for (int id : MCPatcherUtils.parseIntegerList(token, 0, 65535)) {
-                    BlockStateMatcher matcher = BlockAPI.createMatcher(logger, propertiesFile, String.valueOf(id) + defaultMetadata);
+                    BlockStateMatcher matcher = BlockAPI.createMatcher(properties, String.valueOf(id) + defaultMetadata);
                     if (matcher == null) {
-                        warn("unknown block id %d", id);
+                        properties.warning("unknown block id %d", id);
                     } else {
                         blocks.add(matcher);
                     }
                 }
             } else {
-                BlockStateMatcher matcher = BlockAPI.createMatcher(logger, propertiesFile, token + defaultMetadata);
+                BlockStateMatcher matcher = BlockAPI.createMatcher(properties, token + defaultMetadata);
                 if (matcher == null) {
-                    warn("unknown block %s", token);
+                    properties.warning("unknown block %s", token);
                 } else {
                     blocks.add(matcher);
                 }
@@ -276,9 +275,9 @@ abstract class TileOverride implements ITileOverride {
         return blocks;
     }
 
-    private Set<String> getTileList(Properties properties, String key) {
+    private Set<String> getTileList(String key) {
         Set<String> list = new HashSet<String>();
-        String property = properties.getProperty(key, "");
+        String property = properties.getString(key, "");
         for (String token : property.split("\\s+")) {
             if (token.equals("")) {
                 // nothing
@@ -286,7 +285,7 @@ abstract class TileOverride implements ITileOverride {
                 if (!token.endsWith(".png")) {
                     token += ".png";
                 }
-                ResourceLocation resource = TexturePackAPI.parseResourceLocation(propertiesFile, token);
+                ResourceLocation resource = TexturePackAPI.parseResourceLocation(properties.getResource(), token);
                 if (resource != null) {
                     list.add(resource.toString());
                 }
@@ -311,7 +310,7 @@ abstract class TileOverride implements ITileOverride {
 
     @Override
     public String toString() {
-        return String.format("%s[%s] (%d tiles)", getMethod(), propertiesFile, getNumberOfTiles());
+        return String.format("%s[%s] (%d tiles)", getMethod(), properties, getNumberOfTiles());
     }
 
     @Override
@@ -322,23 +321,9 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    final void error(String format, Object... params) {
-        if (propertiesFile != null) {
-            logger.error(propertiesFile + ": " + format, params);
-        }
-        disabled = true;
-    }
-
-    final void warn(String format, Object... params) {
-        if (propertiesFile != null && warnCount < 10) {
-            logger.warning(propertiesFile + ": " + format, params);
-            warnCount++;
-        }
-    }
-
     @Override
     final public boolean isDisabled() {
-        return disabled;
+        return !properties.valid();
     }
 
     @Override
@@ -440,7 +425,7 @@ abstract class TileOverride implements ITileOverride {
     @Override
     public final Icon getTileWorld(BlockOrientation blockOrientation, Icon origIcon) {
         if (icons == null) {
-            error("no images loaded, disabling");
+            properties.error("no images loaded, disabling");
             return null;
         }
         IBlockAccess blockAccess = blockOrientation.blockAccess;
@@ -449,7 +434,7 @@ abstract class TileOverride implements ITileOverride {
         int j = blockOrientation.j;
         int k = blockOrientation.k;
         if (blockOrientation.blockFace < 0 && requiresFace()) {
-            warn("method=%s is not supported for non-standard block %s:%d @ %d %d %d",
+            properties.warning("method=%s is not supported for non-standard block %s:%d @ %d %d %d",
                 getMethod(), BlockAPI.getBlockName(block), BlockAPI.getMetadataAt(blockAccess, i, j, k), i, j, k
             );
             return null;
@@ -485,7 +470,7 @@ abstract class TileOverride implements ITileOverride {
     @Override
     public final Icon getTileHeld(BlockOrientation blockOrientation, Icon origIcon) {
         if (icons == null) {
-            error("no images loaded, disabling");
+            properties.error("no images loaded, disabling");
             return null;
         }
         Block block = blockOrientation.block;
@@ -494,7 +479,7 @@ abstract class TileOverride implements ITileOverride {
         }
         int face = blockOrientation.textureFace;
         if (face < 0 && requiresFace()) {
-            warn("method=%s is not supported for non-standard block %s:%d",
+            properties.warning("method=%s is not supported for non-standard block %s:%d",
                 getMethod(), BlockAPI.getBlockName(block), blockOrientation.metadata
             );
             return null;

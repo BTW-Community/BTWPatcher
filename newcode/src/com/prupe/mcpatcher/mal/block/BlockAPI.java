@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.mal.block;
 import com.prupe.mcpatcher.MAL;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import net.minecraft.src.*;
 
 import java.io.File;
@@ -248,7 +249,7 @@ abstract public class BlockAPI {
         return instance.getBlockLightValue_Impl(block);
     }
 
-    public static BlockStateMatcher createMatcher(MCLogger logger, ResourceLocation source, String matchString) {
+    public static BlockStateMatcher createMatcher(PropertiesFile source, String matchString) {
         Map<String, String> propertyMap = new HashMap<String, String>();
         String namespace = null;
         String blockName = null;
@@ -268,29 +269,29 @@ abstract public class BlockAPI {
             } else if (s.matches("\\d[-, 0-9]*")) {
                 metadata.append(' ').append(s);
             } else {
-                logger.warning("%s: invalid token '%s' in %s", source, s, matchString);
+                source.warning("invalid token '%s' in %s", source, s, matchString);
                 return null;
             }
         }
 
         if (MCPatcherUtils.isNullOrEmpty(namespace)) {
-            namespace = source.getNamespace();
+            namespace = source.getResource().getNamespace();
         }
         if (MCPatcherUtils.isNullOrEmpty(blockName)) {
-            logger.warning("%s: cannot parse namespace/block name from %s", source, matchString);
+            source.warning("cannot parse namespace/block name from %s", matchString);
             return null;
         }
         Block block = BlockAPI.parseBlockName(namespace + ':' + blockName);
         if (block == null) {
-            logger.warning("%s: unknown block %s:%s", source, namespace, blockName);
+            source.warning("unknown block %s:%s", namespace, blockName);
             return null;
         }
 
         try {
             return instance.getBlockStateMatcherClass_Impl().getDeclaredConstructor(
-                MCLogger.class, ResourceLocation.class, String.class, Block.class, String.class, Map.class
+                PropertiesFile.class, String.class, Block.class, String.class, Map.class
             ).newInstance(
-                logger, source, matchString, block, metadata.toString(), propertyMap
+                source, matchString, block, metadata.toString(), propertyMap
             );
         } catch (Throwable e) {
             e.printStackTrace();

@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.GLAPI;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.tessellator.TessellatorAPI;
 import com.prupe.mcpatcher.mal.util.InputHandler;
@@ -67,16 +68,16 @@ public class LineRenderer {
     private LineRenderer(String name, double width, double a, double b, int segments) {
         texture = TexturePackAPI.newMCPatcherResourceLocation("/misc/" + name + ".png", "line/" + name + ".png");
         active = TexturePackAPI.hasResource(texture);
-        Properties properties = TexturePackAPI.getProperties(TexturePackAPI.transformResourceLocation(texture, ".png", ".properties"));
-        this.width = MCPatcherUtils.getDoubleProperty(properties, "width", width);
-        this.a = MCPatcherUtils.getDoubleProperty(properties, "a", a);
-        this.b = MCPatcherUtils.getDoubleProperty(properties, "b", b);
-        this.sx = MCPatcherUtils.getDoubleProperty(properties, "sx", 0.0);
-        this.sy = MCPatcherUtils.getDoubleProperty(properties, "sy", 0.0);
-        this.sz = MCPatcherUtils.getDoubleProperty(properties, "sz", 0.0);
-        this.segments = MCPatcherUtils.getIntProperty(properties, "segments", segments);
-        this.tileFactor = MCPatcherUtils.getDoubleProperty(properties, "tileFactor", 24.0);
-        keyboard = new InputHandler(name, MCPatcherUtils.getBooleanProperty(properties, "debug", false));
+        PropertiesFile properties = PropertiesFile.get(logger, TexturePackAPI.transformResourceLocation(texture, ".png", ".properties"));
+        this.width = properties.getDouble("width", width);
+        this.a = properties.getDouble("a", a);
+        this.b = properties.getDouble("b", b);
+        this.sx = properties.getDouble("sx", 0.0);
+        this.sy = properties.getDouble("sy", 0.0);
+        this.sz = properties.getDouble("sz", 0.0);
+        this.segments = properties.getInt("segments", segments);
+        this.tileFactor = properties.getDouble("tileFactor", 24.0);
+        keyboard = new InputHandler(name, properties.getBoolean("debug", false));
     }
 
     private boolean render(double x, double y, double z, double dx, double dy, double dz) {
