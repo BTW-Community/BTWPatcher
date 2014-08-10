@@ -19,12 +19,12 @@ public class CustomTexturesModels extends Mod {
         addDependency(MCPatcherUtils.ITEM_API_MOD);
         addDependency(MCPatcherUtils.NBT_API_MOD);
         addDependency(MCPatcherUtils.BIOME_API_MOD);
-        //addDependency(MCPatcherUtils.CUSTOM_COLORS);
 
         addClassMod(new BlockMod(this));
 
         addClassMod(new ItemMod(this));
 
+        addClassFiles("com.prupe.mcpatcher.colormap.*");
         addClassFiles("com.prupe.mcpatcher.ctm.*");
         addClassFiles("com.prupe.mcpatcher.cit.*");
 

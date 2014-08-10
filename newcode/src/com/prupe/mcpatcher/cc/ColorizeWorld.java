@@ -2,6 +2,10 @@ package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.colormap.ColorMap;
+import com.prupe.mcpatcher.colormap.ColorMapBase;
+import com.prupe.mcpatcher.colormap.ColorUtils;
+import com.prupe.mcpatcher.colormap.IColorMap;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
@@ -169,7 +173,7 @@ public class ColorizeWorld {
 
     private static void computeLightningFlash(World world, float f) {
         if (world.lightningFlash > 0) {
-            f = 0.45f * clamp(world.lightningFlash - f);
+            f = 0.45f * ColorUtils.clamp(world.lightningFlash - f);
             setColor[0] = setColor[0] * (1.0f - f) + 0.8f * f;
             setColor[1] = setColor[1] * (1.0f - f) + 0.8f * f;
             setColor[2] = setColor[2] * (1.0f - f) + 0.8f * f;

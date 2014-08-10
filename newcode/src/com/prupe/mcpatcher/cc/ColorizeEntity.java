@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.colormap.ColorUtils;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
@@ -70,7 +71,7 @@ public class ColorizeEntity {
         if (rgb != null) {
             lavaDropColors = new float[3 * rgb.length];
             for (int i = 0; i < rgb.length; i++) {
-                Colorizer.intToFloat3(rgb[i], lavaDropColors, 3 * i);
+                ColorUtils.intToFloat3(rgb[i], lavaDropColors, 3 * i);
             }
         }
         myceliumColors = MCPatcherUtils.getImageRGB(TexturePackAPI.getImage(MYCELIUM_COLORS));

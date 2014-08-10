@@ -3,6 +3,8 @@ package com.prupe.mcpatcher.cc;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.colormap.ColorMap;
+import com.prupe.mcpatcher.colormap.ColorUtils;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
@@ -16,7 +18,6 @@ public class Colorizer {
     private static PropertiesFile properties;
 
     static final boolean useWaterColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "water", true);
-    static final boolean useSwampColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "swamp", true);
     static final boolean useTreeColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "tree", true);
     static final boolean usePotionColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "potion", true);
     static final boolean useParticleColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "particle", true);
@@ -61,7 +62,7 @@ public class Colorizer {
                 if (useBlockColors) {
                     ColorizeBlock.reloadBlockColors(properties);
                 }
-                if (useSwampColors) {
+                if (ColorMap.useSwampColors) {
                     ColorizeBlock.reloadSwampColors(properties);
                 }
                 if (useRedstoneColors) {
@@ -96,7 +97,7 @@ public class Colorizer {
     }
 
     public static void setColorF(int color) {
-        intToFloat3(color, setColor);
+        ColorUtils.intToFloat3(color, setColor);
     }
 
     static void setColorF(float[] color) {
@@ -155,55 +156,7 @@ public class Colorizer {
     }
 
     static void loadFloatColor(String key, float[] color) {
-        int intColor = float3ToInt(color);
-        intToFloat3(loadIntColor(key, intColor), color);
-    }
-
-    static void intToFloat3(int rgb, float[] f, int offset) {
-        if ((rgb & 0xffffff) == 0xffffff) {
-            f[offset] = f[offset + 1] = f[offset + 2] = 1.0f;
-        } else {
-            f[offset] = (float) (rgb & 0xff0000) / (float) 0xff0000;
-            f[offset + 1] = (float) (rgb & 0xff00) / (float) 0xff00;
-            f[offset + 2] = (float) (rgb & 0xff) / (float) 0xff;
-        }
-    }
-
-    static void intToFloat3(int rgb, float[] f) {
-        intToFloat3(rgb, f, 0);
-    }
-
-    static int float3ToInt(float[] f, int offset) {
-        return ((int) (255.0f * f[offset])) << 16 | ((int) (255.0f * f[offset + 1])) << 8 | (int) (255.0f * f[offset + 2]);
-    }
-
-    static int float3ToInt(float[] f) {
-        return float3ToInt(f, 0);
-    }
-
-    static float clamp(float f) {
-        if (f < 0.0f) {
-            return 0.0f;
-        } else if (f > 1.0f) {
-            return 1.0f;
-        } else {
-            return f;
-        }
-    }
-
-    static double clamp(double d) {
-        if (d < 0.0) {
-            return 0.0;
-        } else if (d > 1.0) {
-            return 1.0;
-        } else {
-            return d;
-        }
-    }
-
-    static void clamp(float[] f) {
-        for (int i = 0; i < f.length; i++) {
-            f[i] = clamp(f[i]);
-        }
+        int intColor = ColorUtils.float3ToInt(color);
+        ColorUtils.intToFloat3(loadIntColor(key, intColor), color);
     }
 }

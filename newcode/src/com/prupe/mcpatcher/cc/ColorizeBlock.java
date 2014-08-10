@@ -3,6 +3,10 @@ package com.prupe.mcpatcher.cc;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.colormap.ColorMap;
+import com.prupe.mcpatcher.colormap.ColorMapBase;
+import com.prupe.mcpatcher.colormap.ColorUtils;
+import com.prupe.mcpatcher.colormap.IColorMap;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
@@ -275,7 +279,7 @@ public class ColorizeBlock {
             redstoneColor = new float[16][];
             for (int i = 0; i < 16; i++) {
                 float[] f = new float[3];
-                Colorizer.intToFloat3(rgb[i], f);
+                ColorUtils.intToFloat3(rgb[i], f);
                 redstoneColor[i] = f;
             }
         }
@@ -394,7 +398,7 @@ public class ColorizeBlock {
                 waterColor = ColorizeEntity.waterBaseColor;
             } else {
                 waterColor = new float[3];
-                Colorizer.intToFloat3(waterColorMap.getColorMultiplier(), waterColor);
+                ColorUtils.intToFloat3(waterColorMap.getColorMultiplier(), waterColor);
             }
             GLAPI.glColor4f(waterColor[0], waterColor[1], waterColor[2], 1.0f);
         }
@@ -414,7 +418,7 @@ public class ColorizeBlock {
             return defaultColor;
         } else {
             int metadata = Math.max(Math.min(BlockAPI.getMetadataAt(blockAccess, i, j, k), 15), 0);
-            return Colorizer.float3ToInt(redstoneColor[metadata]);
+            return ColorUtils.float3ToInt(redstoneColor[metadata]);
         }
     }
 
@@ -430,7 +434,7 @@ public class ColorizeBlock {
             if ((k + offsets[2]) % 2 == 0) {
                 rgb |= 0x0000ff;
             }
-            Colorizer.intToFloat3(rgb, Colorizer.setColor);
+            ColorUtils.intToFloat3(rgb, Colorizer.setColor);
             return Colorizer.setColor;
         } else {
             return colorMap.getColorMultiplierF(blockAccess, i + offsets[0], j + offsets[1], k + offsets[2]);

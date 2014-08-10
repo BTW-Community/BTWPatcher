@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher.cc;
+package com.prupe.mcpatcher.colormap;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
@@ -11,19 +11,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
-abstract class ColorMapBase {
+abstract public class ColorMapBase {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
-    static final int DEFAULT_HEIGHT = 64;
+    public static final int DEFAULT_HEIGHT = 64;
 
-    static final class Blended implements IColorMap {
+    public static final class Blended implements IColorMap {
         private final IColorMap parent;
         private final int blendRadius;
         private final int[][] offset;
         private final float[] weight;
         private final float[] lastColor = new float[3];
 
-        Blended(IColorMap parent, int blendRadius) {
+        public Blended(IColorMap parent, int blendRadius) {
             this.parent = parent;
             this.blendRadius = blendRadius;
             List<int[]> blendOffset = new ArrayList<int[]>();
@@ -105,7 +105,7 @@ abstract class ColorMapBase {
 
         @Override
         public int getColorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
-            return Colorizer.float3ToInt(getColorMultiplierF(blockAccess, i, j, k));
+            return ColorUtils.float3ToInt(getColorMultiplierF(blockAccess, i, j, k));
         }
 
         @Override
@@ -135,7 +135,7 @@ abstract class ColorMapBase {
         }
     }
 
-    static final class Cached implements IColorMap {
+    public static final class Cached implements IColorMap {
         private final IColorMap parent;
 
         private int lastI = Integer.MIN_VALUE;
@@ -144,7 +144,7 @@ abstract class ColorMapBase {
         private int lastColorI;
         private float[] lastColorF;
 
-        Cached(IColorMap parent) {
+        public Cached(IColorMap parent) {
             this.parent = parent;
         }
 
@@ -196,14 +196,14 @@ abstract class ColorMapBase {
         }
     }
 
-    static final class Smoothed implements IColorMap {
+    public static final class Smoothed implements IColorMap {
         private final IColorMap parent;
         private final float smoothTime;
 
         private final float[] lastColor = new float[3];
         private long lastTime;
 
-        Smoothed(IColorMap parent, float smoothTime) {
+        public Smoothed(IColorMap parent, float smoothTime) {
             this.parent = parent;
             this.smoothTime = smoothTime;
         }
@@ -225,7 +225,7 @@ abstract class ColorMapBase {
 
         @Override
         public int getColorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
-            return Colorizer.float3ToInt(getColorMultiplierF(blockAccess, i, j, k));
+            return ColorUtils.float3ToInt(getColorMultiplierF(blockAccess, i, j, k));
         }
 
         @Override
@@ -237,7 +237,7 @@ abstract class ColorMapBase {
                 lastColor[1] = currentColor[1];
                 lastColor[2] = currentColor[2];
             } else {
-                float r = Colorizer.clamp((float) (now - lastTime) / smoothTime);
+                float r = ColorUtils.clamp((float) (now - lastTime) / smoothTime);
                 float s = 1.0f - r;
                 lastColor[0] = r * currentColor[0] + s * lastColor[0];
                 lastColor[1] = r * currentColor[1] + s * lastColor[1];
@@ -258,7 +258,7 @@ abstract class ColorMapBase {
         }
     }
 
-    static final class Chunked implements IColorMap {
+    public static final class Chunked implements IColorMap {
         private static final int I_MASK = ~0xf;
         private static final int K_MASK = ~0xf;
 
@@ -285,7 +285,7 @@ abstract class ColorMapBase {
         private int missSheet;
         private int missBlock;
 
-        Chunked(IColorMap parent) {
+        public Chunked(IColorMap parent) {
             this.parent = parent;
         }
 
@@ -306,7 +306,7 @@ abstract class ColorMapBase {
 
         @Override
         public int getColorMultiplier(IBlockAccess blockAccess, int i, int j, int k) {
-            return Colorizer.float3ToInt(getColorMultiplierF(blockAccess, i, j, k));
+            return ColorUtils.float3ToInt(getColorMultiplierF(blockAccess, i, j, k));
         }
 
         @Override
@@ -380,12 +380,12 @@ abstract class ColorMapBase {
         }
     }
 
-    static final class Outer implements IColorMap {
+    public static final class Outer implements IColorMap {
         private final IColorMap parent;
         private final boolean isHeightDependent;
         private final int mapDefault;
 
-        Outer(IColorMap parent) {
+        public Outer(IColorMap parent) {
             this.parent = parent;
             isHeightDependent = parent.isHeightDependent();
             mapDefault = parent.getColorMultiplier();

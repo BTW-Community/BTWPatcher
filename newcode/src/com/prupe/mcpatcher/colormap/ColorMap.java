@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher.cc;
+package com.prupe.mcpatcher.colormap;
 
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
@@ -15,8 +15,10 @@ import net.minecraft.src.ResourceLocation;
 import java.awt.image.BufferedImage;
 import java.util.*;
 
-abstract class ColorMap implements IColorMap {
+abstract public class ColorMap implements IColorMap {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
+
+    public static final boolean useSwampColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "swamp", true);
 
     private static final int FIXED = 0;
     private static final int TEMPERATURE_HUMIDITY = 1;
@@ -25,8 +27,8 @@ abstract class ColorMap implements IColorMap {
     private static final int COLORMAP_WIDTH = 256;
     private static final int COLORMAP_HEIGHT = 256;
 
-    static final String BLOCK_COLORMAP_DIR = TexturePackAPI.MCPATCHER_SUBDIR + "colormap/blocks";
-    static final List<ResourceLocation> unusedPNGs = new ArrayList<ResourceLocation>();
+    public static final String BLOCK_COLORMAP_DIR = TexturePackAPI.MCPATCHER_SUBDIR + "colormap/blocks";
+    public static final List<ResourceLocation> unusedPNGs = new ArrayList<ResourceLocation>();
 
     private static final String VANILLA_TYPE = "_vanillaType";
     private static final String ALT_SOURCE = "_altSource";
@@ -45,7 +47,7 @@ abstract class ColorMap implements IColorMap {
     private final float[] xy = new float[2];
     private final float[] lastColor = new float[3];
 
-    static IColorMap loadVanillaColorMap(ResourceLocation vanillaImage, ResourceLocation swampImage) {
+    public static IColorMap loadVanillaColorMap(ResourceLocation vanillaImage, ResourceLocation swampImage) {
         Properties properties = new Properties();
         properties.setProperty("format", "1");
         properties.setProperty("source", vanillaImage.toString());
@@ -62,11 +64,11 @@ abstract class ColorMap implements IColorMap {
         return loadColorMap(true, vanillaImage, properties);
     }
 
-    static IColorMap loadFixedColorMap(boolean useCustom, ResourceLocation resource) {
+    public static IColorMap loadFixedColorMap(boolean useCustom, ResourceLocation resource) {
         return loadColorMap(useCustom, resource, null);
     }
 
-    static IColorMap loadColorMap(boolean useCustom, ResourceLocation resource, Properties properties) {
+    public static IColorMap loadColorMap(boolean useCustom, ResourceLocation resource, Properties properties) {
         IColorMap map = loadColorMap1(useCustom, resource, properties);
         if (map != null) {
             map.claimResources(unusedPNGs);
@@ -124,7 +126,7 @@ abstract class ColorMap implements IColorMap {
                     defaultMap = new TempHumidity(imageResource, properties, image);
                 }
                 path = MCPatcherUtils.getStringProperty(properties, ALT_SOURCE, "");
-                if (Colorizer.useSwampColors && !MCPatcherUtils.isNullOrEmpty(path)) {
+                if (useSwampColors && !MCPatcherUtils.isNullOrEmpty(path)) {
                     ResourceLocation swampResource = TexturePackAPI.parseResourceLocation(resource, path);
                     image = TexturePackAPI.getImage(swampResource);
                     if (image != null) {
@@ -148,14 +150,14 @@ abstract class ColorMap implements IColorMap {
         }
     }
 
-    static void reset() {
+    public static void reset() {
         unusedPNGs.clear();
         defaultColorMapFormat = TEMPERATURE_HUMIDITY;
         defaultFlipY = false;
         defaultYVariance = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "yVariance", 0);
     }
 
-    static void reloadColorMapSettings(PropertiesFile properties) {
+    public static void reloadColorMapSettings(PropertiesFile properties) {
         unusedPNGs.addAll(ResourceList.getInstance().listResources(BLOCK_COLORMAP_DIR, ".png", false));
         defaultColorMapFormat = parseFormat(properties.getString("palette.format", ""));
         defaultFlipY = properties.getBoolean("palette.flipY", false);
@@ -215,7 +217,7 @@ abstract class ColorMap implements IColorMap {
     @Override
     public final float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k) {
         int rgb = getColorMultiplier(blockAccess, i, j, k);
-        Colorizer.intToFloat3(rgb, lastColor);
+        ColorUtils.intToFloat3(rgb, lastColor);
         return lastColor;
     }
 
@@ -307,13 +309,13 @@ abstract class ColorMap implements IColorMap {
         }
     }
 
-    static final class Fixed implements IColorMap {
+    public static final class Fixed implements IColorMap {
         private final int colorI;
         private final float[] colorF = new float[3];
 
-        Fixed(int color) {
+        public Fixed(int color) {
             colorI = color;
-            Colorizer.intToFloat3(colorI, colorF);
+            ColorUtils.intToFloat3(colorI, colorF);
         }
 
         @Override
@@ -351,7 +353,7 @@ abstract class ColorMap implements IColorMap {
         }
     }
 
-    static final class Water implements IColorMap {
+    public static final class Water implements IColorMap {
         private final float[] lastColor = new float[3];
 
         @Override
@@ -376,7 +378,7 @@ abstract class ColorMap implements IColorMap {
 
         @Override
         public float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k) {
-            Colorizer.intToFloat3(getColorMultiplier(blockAccess, i, j, k), lastColor);
+            ColorUtils.intToFloat3(getColorMultiplier(blockAccess, i, j, k), lastColor);
             return lastColor;
         }
 
@@ -390,7 +392,7 @@ abstract class ColorMap implements IColorMap {
         }
     }
 
-    abstract static class Vanilla implements IColorMap {
+    public abstract static class Vanilla implements IColorMap {
         protected final int defaultColor;
         protected final float[] lastColor = new float[3];
 
@@ -424,7 +426,7 @@ abstract class ColorMap implements IColorMap {
 
         @Override
         final public float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k) {
-            Colorizer.intToFloat3(getColorMultiplier(blockAccess, i, j, k), lastColor);
+            ColorUtils.intToFloat3(getColorMultiplier(blockAccess, i, j, k), lastColor);
             return lastColor;
         }
 
@@ -435,7 +437,7 @@ abstract class ColorMap implements IColorMap {
         abstract int getColorMultiplier(BiomeGenBase biome, int i, int j, int k);
     }
 
-    static final class Grass extends Vanilla {
+    public static final class Grass extends Vanilla {
         Grass(BufferedImage image) {
             super(image);
         }
@@ -455,7 +457,7 @@ abstract class ColorMap implements IColorMap {
         }
     }
 
-    static final class Foliage extends Vanilla {
+    public static final class Foliage extends Vanilla {
         Foliage(BufferedImage image) {
             super(image);
         }
@@ -475,7 +477,7 @@ abstract class ColorMap implements IColorMap {
         }
     }
 
-    static final class Swamp implements IColorMap {
+    public static final class Swamp implements IColorMap {
         private final IColorMap defaultMap;
         private final IColorMap swampMap;
         private final BiomeGenBase swampBiome;
@@ -525,7 +527,7 @@ abstract class ColorMap implements IColorMap {
         }
     }
 
-    static final class TempHumidity extends ColorMap {
+    public static final class TempHumidity extends ColorMap {
         private final int defaultColor;
 
         private TempHumidity(ResourceLocation resource, Properties properties, BufferedImage image) {
@@ -555,14 +557,14 @@ abstract class ColorMap implements IColorMap {
 
         @Override
         protected void computeXY(BiomeGenBase biome, int i, int j, int k, float[] f) {
-            float temperature = Colorizer.clamp(BiomeAPI.getTemperature(biome, i, j, k));
-            float rainfall = Colorizer.clamp(BiomeAPI.getRainfall(biome, i, j, k));
+            float temperature = ColorUtils.clamp(BiomeAPI.getTemperature(biome, i, j, k));
+            float rainfall = ColorUtils.clamp(BiomeAPI.getRainfall(biome, i, j, k));
             f[0] = maxX * (1.0f - temperature);
             f[1] = maxY * (1.0f - temperature * rainfall);
         }
     }
 
-    static final class Grid extends ColorMap {
+    public static final class Grid extends ColorMap {
         private final float[] biomeX = new float[BiomeGenBase.biomeList.length];
         private final float yVariance;
         private final float yOffset;
@@ -663,7 +665,7 @@ abstract class ColorMap implements IColorMap {
         }
     }
 
-    static final class IntegerGrid implements IColorMap {
+    public static final class IntegerGrid implements IColorMap {
         private final ResourceLocation resource;
         private final int[] map;
         private final int width;
@@ -708,7 +710,7 @@ abstract class ColorMap implements IColorMap {
         @Override
         public float[] getColorMultiplierF(IBlockAccess blockAccess, int i, int j, int k) {
             int rgb = getColorMultiplier(blockAccess, i, j, k);
-            Colorizer.intToFloat3(rgb, lastColor);
+            ColorUtils.intToFloat3(rgb, lastColor);
             return lastColor;
         }
 

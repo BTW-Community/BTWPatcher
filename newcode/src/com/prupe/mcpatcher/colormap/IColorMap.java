@@ -1,11 +1,11 @@
-package com.prupe.mcpatcher.cc;
+package com.prupe.mcpatcher.colormap;
 
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.ResourceLocation;
 
 import java.util.Collection;
 
-interface IColorMap {
+public interface IColorMap {
     boolean isHeightDependent();
 
     int getColorMultiplier();

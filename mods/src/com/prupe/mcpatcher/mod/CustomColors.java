@@ -196,6 +196,7 @@ public class CustomColors extends Mod {
 
         addClassMod(new RenderXPOrbMod());
 
+        addClassFiles("com.prupe.mcpatcher.colormap.*");
         addClassFiles("com.prupe.mcpatcher.cc.*");
 
         TexturePackAPIMod.earlyInitialize(3, MCPatcherUtils.COLORIZER_CLASS, "init");
