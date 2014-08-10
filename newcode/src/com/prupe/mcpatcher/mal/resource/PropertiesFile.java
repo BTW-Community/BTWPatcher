@@ -4,7 +4,9 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.ResourceLocation;
 
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 final public class PropertiesFile {
     private static final MCLogger staticLogger = MCLogger.getLogger("Texture Pack");
@@ -80,7 +82,7 @@ final public class PropertiesFile {
         }
     }
 
-    public boolean getBooleanProperty(String key, boolean defaultValue) {
+    public boolean getBoolean(String key, boolean defaultValue) {
         return MCPatcherUtils.getBooleanProperty(properties, key, defaultValue);
     }
 
@@ -119,8 +121,33 @@ final public class PropertiesFile {
         return getErrorCount() == 0;
     }
 
+    @SuppressWarnings("unchecked")
+    public Set<Map.Entry<String, String>> entrySet() {
+        return (Set<Map.Entry<String, String>>) (Set) properties.entrySet();
+    }
+
+    public ResourceLocation getResource() {
+        return resource;
+    }
+
     @Override
     public String toString() {
         return resource.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return resource.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+        if (this == that) {
+            return true;
+        } else if (!(that instanceof PropertiesFile)) {
+            return false;
+        } else {
+            return resource.equals(((PropertiesFile) that).resource);
+        }
     }
 }

@@ -5,6 +5,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
 import com.prupe.mcpatcher.mal.resource.GLAPI;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.tile.IconAPI;
 import com.prupe.mcpatcher.mal.util.InputHandler;
@@ -42,7 +43,7 @@ public class FancyDial {
     private static int warnCount;
 
     private final TextureAtlasSprite icon;
-    private final ResourceLocation resource;
+    private final PropertiesFile properties;
     private final String name;
     private final int x0;
     private final int y0;
@@ -184,12 +185,12 @@ public class FancyDial {
         if (resource == null) {
             return null;
         }
-        Properties properties = TexturePackAPI.getProperties(resource);
+        PropertiesFile properties = PropertiesFile.get(logger, resource);
         if (properties == null) {
             return null;
         }
         try {
-            FancyDial instance = new FancyDial(icon, resource, properties);
+            FancyDial instance = new FancyDial(icon, properties);
             if (instance.ok) {
                 instances.put(icon, instance);
                 return instance;
@@ -201,9 +202,9 @@ public class FancyDial {
         return null;
     }
 
-    private FancyDial(TextureAtlasSprite icon, ResourceLocation resource, Properties properties) {
+    private FancyDial(TextureAtlasSprite icon, PropertiesFile properties) {
         this.icon = icon;
-        this.resource = resource;
+        this.properties = properties;
         name = IconAPI.getIconName(icon);
         x0 = IconAPI.getIconX0(icon);
         y0 = IconAPI.getIconY0(icon);
@@ -229,7 +230,7 @@ public class FancyDial {
 
         boolean debug = false;
         for (int i = 0; ; i++) {
-            Layer layer = newLayer(resource, properties, "." + i);
+            Layer layer = newLayer(properties, "." + i);
             if (layer == null) {
                 if (i > 0) {
                     break;
@@ -246,7 +247,7 @@ public class FancyDial {
             return;
         }
 
-        outputFrames = MCPatcherUtils.getIntProperty(properties, "outputFrames", 0);
+        outputFrames = properties.getInt("outputFrames", 0);
 
         int glError = GL11.glGetError();
         if (glError != 0) {
@@ -479,32 +480,28 @@ public class FancyDial {
         }
     }
 
-    Layer newLayer(ResourceLocation resource, Properties properties, String suffix) {
-        String textureName = MCPatcherUtils.getStringProperty(properties, "source" + suffix, "");
-        if (textureName.isEmpty()) {
-            return null;
-        }
-        ResourceLocation textureResource = TexturePackAPI.parseResourceLocation(resource, textureName);
+    Layer newLayer(PropertiesFile properties, String suffix) {
+        ResourceLocation textureResource = properties.getResourceLocation("source" + suffix, "");
         if (textureResource == null) {
             return null;
         }
         if (!TexturePackAPI.hasResource(textureResource)) {
-            logger.error("%s: could not read %s", resource, textureResource);
+            properties.error("could not read %s", textureResource);
             return null;
         }
-        float scaleX = MCPatcherUtils.getFloatProperty(properties, "scaleX" + suffix, 1.0f);
-        float scaleY = MCPatcherUtils.getFloatProperty(properties, "scaleY" + suffix, 1.0f);
-        float offsetX = MCPatcherUtils.getFloatProperty(properties, "offsetX" + suffix, 0.0f);
-        float offsetY = MCPatcherUtils.getFloatProperty(properties, "offsetY" + suffix, 0.0f);
-        float angleMultiplier = MCPatcherUtils.getFloatProperty(properties, "rotationSpeed" + suffix, 0.0f);
-        float angleOffset = MCPatcherUtils.getFloatProperty(properties, "rotationOffset" + suffix, 0.0f);
-        String blend = MCPatcherUtils.getStringProperty(properties, "blend" + suffix, "alpha");
+        float scaleX = properties.getFloat("scaleX" + suffix, 1.0f);
+        float scaleY = properties.getFloat("scaleY" + suffix, 1.0f);
+        float offsetX = properties.getFloat("offsetX" + suffix, 0.0f);
+        float offsetY = properties.getFloat("offsetY" + suffix, 0.0f);
+        float angleMultiplier = properties.getFloat("rotationSpeed" + suffix, 0.0f);
+        float angleOffset = properties.getFloat("rotationOffset" + suffix, 0.0f);
+        String blend = properties.getString("blend" + suffix, "alpha");
         BlendMethod blendMethod = BlendMethod.parse(blend);
         if (blendMethod == null) {
-            logger.error("%s: unknown blend method %s", resource, blend);
+            properties.error("unknown blend method %s", blend);
             return null;
         }
-        boolean debug = MCPatcherUtils.getBooleanProperty(properties, "debug" + suffix, false);
+        boolean debug = properties.getBoolean("debug" + suffix, false);
         return new Layer(textureResource, scaleX, scaleY, offsetX, offsetY, angleMultiplier, angleOffset, blendMethod, debug);
     }
 

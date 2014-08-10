@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.GLAPI;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.tile.IconAPI;
 import net.minecraft.src.ResourceLocation;
@@ -22,7 +23,10 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MipmapHelper {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.MIPMAP);
@@ -264,15 +268,13 @@ public class MipmapHelper {
         mipmapType.clear();
         mipmapType.put("terrain", true);
         mipmapType.put("items", false);
-        Properties properties = TexturePackAPI.getProperties(MIPMAP_PROPERTIES);
+        PropertiesFile properties = PropertiesFile.get(logger, MIPMAP_PROPERTIES);
         if (properties != null) {
-            for (Map.Entry entry : properties.entrySet()) {
-                if (entry.getKey() instanceof String && entry.getValue() instanceof String) {
-                    String key = ((String) entry.getKey()).trim();
-                    boolean value = Boolean.parseBoolean(((String) entry.getValue()).trim().toLowerCase());
-                    if (key.endsWith(".png")) {
-                        mipmapType.put(key, value);
-                    }
+            for (Map.Entry<String, String> entry : properties.entrySet()) {
+                String key = entry.getKey().trim();
+                boolean value = Boolean.parseBoolean(entry.getValue().trim().toLowerCase());
+                if (key.endsWith(".png")) {
+                    mipmapType.put(key, value);
                 }
             }
         }

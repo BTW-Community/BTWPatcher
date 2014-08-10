@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.hd;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
 import net.minecraft.src.FontRenderer;
@@ -231,14 +232,14 @@ public class FontUtils {
 
     private static void getCharWidthOverrides(ResourceLocation font, float[] charWidthf, boolean[] isOverride) {
         ResourceLocation textFile = TexturePackAPI.transformResourceLocation(font, ".png", ".properties");
-        Properties props = TexturePackAPI.getProperties(textFile);
+        PropertiesFile props = PropertiesFile.get(logger, textFile);
         if (props == null) {
             return;
         }
         logger.fine("reading character widths from %s", textFile);
-        for (Map.Entry entry : props.entrySet()) {
-            String key = entry.getKey().toString().trim();
-            String value = entry.getValue().toString().trim();
+        for (Map.Entry<String, String> entry : props.entrySet()) {
+            String key = entry.getKey().trim();
+            String value = entry.getValue().trim();
             if (key.matches("^width\\.\\d+$") && !value.equals("")) {
                 try {
                     int ch = Integer.parseInt(key.substring(6));

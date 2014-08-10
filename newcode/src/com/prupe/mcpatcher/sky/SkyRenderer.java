@@ -229,7 +229,7 @@ public class SkyRenderer {
         }
 
         private boolean readRotation() {
-            rotate = properties.getBooleanProperty("rotate", true);
+            rotate = properties.getBoolean("rotate", true);
             if (rotate) {
                 speed = properties.getFloat("speed", 1.0f);
 
@@ -267,7 +267,7 @@ public class SkyRenderer {
         }
 
         private boolean readFadeTimers() {
-            fade = properties.getBooleanProperty("fade", true);
+            fade = properties.getBoolean("fade", true);
             if (!fade) {
                 return true;
             }

@@ -3,10 +3,7 @@ package com.prupe.mcpatcher.hd;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.mal.resource.GLAPI;
-import com.prupe.mcpatcher.mal.resource.ResourceList;
-import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
-import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
+import com.prupe.mcpatcher.mal.resource.*;
 import com.prupe.mcpatcher.mal.tile.IconAPI;
 import net.minecraft.src.ResourceLocation;
 import org.lwjgl.opengl.GL11;
@@ -22,10 +19,10 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ANIMATIONS, "Animation");
 
     private static final boolean enable = Config.getBoolean(MCPatcherUtils.EXTENDED_HD, "animations", true);
-    private static final Map<ResourceLocation, Properties> pending = new HashMap<ResourceLocation, Properties>();
+    private static final Set<PropertiesFile> pending = new HashSet<PropertiesFile>();
     private static final List<CustomAnimation> animations = new ArrayList<CustomAnimation>();
 
-    private final ResourceLocation propertiesName;
+    private final PropertiesFile properties;
     private final ResourceLocation dstName;
     private final ResourceLocation srcName;
     private final int mipmapLevel;
@@ -49,8 +46,8 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
             public void beforeChange() {
                 if (!pending.isEmpty()) {
                     logger.fine("%d animations were never registered:", pending.size());
-                    for (ResourceLocation resource : pending.keySet()) {
-                        logger.fine("  %s", resource);
+                    for (PropertiesFile properties : pending) {
+                        logger.fine("  %s", properties);
                     }
                     pending.clear();
                 }
@@ -63,9 +60,9 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
             public void afterChange() {
                 if (enable) {
                     for (ResourceLocation resource : ResourceList.getInstance().listResources(TexturePackAPI.MCPATCHER_SUBDIR + "anim", ".properties", false)) {
-                        Properties properties = TexturePackAPI.getProperties(resource);
+                        PropertiesFile properties = PropertiesFile.get(logger, resource);
                         if (properties != null) {
-                            pending.put(resource, properties);
+                            pending.add(properties);
                         }
                     }
                 }
@@ -92,50 +89,48 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
     }
 
     private static void checkPendingAnimations() {
-        List<ResourceLocation> done = new ArrayList<ResourceLocation>();
-        for (Map.Entry<ResourceLocation, Properties> entry : pending.entrySet()) {
-            ResourceLocation name = entry.getKey();
-            Properties properties = entry.getValue();
-            ResourceLocation textureName = TexturePackAPI.parseResourceLocation(name, MCPatcherUtils.getStringProperty(properties, "to", ""));
+        List<PropertiesFile> done = new ArrayList<PropertiesFile>();
+        for (PropertiesFile properties : pending) {
+            ResourceLocation textureName = properties.getResourceLocation("to", "");
             if (TexturePackAPI.isTextureLoaded(textureName)) {
-                addStrip(name, properties);
-                done.add(name);
+                addStrip(properties);
+                done.add(properties);
             }
         }
         if (!done.isEmpty()) {
-            for (ResourceLocation name : done) {
+            for (PropertiesFile name : done) {
                 pending.remove(name);
             }
             Collections.sort(animations);
         }
     }
 
-    private static void addStrip(ResourceLocation propertiesName, Properties properties) {
-        ResourceLocation dstName = TexturePackAPI.parseResourceLocation(propertiesName, properties.getProperty("to", ""));
+    private static void addStrip(PropertiesFile properties) {
+        ResourceLocation dstName = properties.getResourceLocation("to", "");
         if (dstName == null) {
-            logger.error("%s: missing to= property");
+            properties.error("missing to= property");
             return;
         }
-        ResourceLocation srcName = TexturePackAPI.parseResourceLocation(propertiesName, properties.getProperty("from", ""));
+        ResourceLocation srcName = properties.getResourceLocation("from", "");
         if (srcName == null) {
-            logger.error("%s: missing from= property");
+            properties.error("missing from= property");
             return;
         }
         BufferedImage srcImage = TexturePackAPI.getImage(srcName);
         if (srcImage == null) {
-            logger.error("%s: image %s not found in texture pack", propertiesName, srcName);
+            properties.error("image %s not found in texture pack", srcName);
             return;
         }
-        int x = MCPatcherUtils.getIntProperty(properties, "x", 0);
-        int y = MCPatcherUtils.getIntProperty(properties, "y", 0);
-        int w = MCPatcherUtils.getIntProperty(properties, "w", 0);
-        int h = MCPatcherUtils.getIntProperty(properties, "h", 0);
+        int x = properties.getInt("x", 0);
+        int y = properties.getInt("y", 0);
+        int w = properties.getInt("w", 0);
+        int h = properties.getInt("h", 0);
         if (dstName.toString().startsWith("minecraft:textures/atlas/")) {
-            logger.error("%s: animations cannot have a target of %s", dstName);
+            properties.error("animations cannot have a target of %s", dstName);
             return;
         }
         if (x < 0 || y < 0 || w <= 0 || h <= 0) {
-            logger.error("%s: %s has invalid dimensions x=%d,y=%d,w=%d,h=%d", propertiesName, srcName, x, y, w, h);
+            properties.error("%s has invalid dimensions x=%d,y=%d,w=%d,h=%d", srcName, x, y, w, h);
             return;
         }
         TexturePackAPI.bindTexture(dstName);
@@ -143,8 +138,8 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         int dstHeight = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
         int levels = MipmapHelper.getMipmapLevelsForCurrentTexture();
         if (x + w > dstWidth || y + h > dstHeight) {
-            logger.error("%s: %s dimensions x=%d,y=%d,w=%d,h=%d exceed %s size %dx%d",
-                propertiesName, srcName, x, y, w, h, dstName, dstWidth, dstHeight
+            properties.error("%s dimensions x=%d,y=%d,w=%d,h=%d exceed %s size %dx%d",
+                srcName, x, y, w, h, dstName, dstWidth, dstHeight
             );
             return;
         }
@@ -156,7 +151,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
             height = srcImage.getHeight();
         }
         if (width != w || height < h) {
-            logger.error("%s: %s dimensions %dx%d do not match %dx%d", propertiesName, srcName, width, height, w, h);
+            properties.error("%s dimensions %dx%d do not match %dx%d", srcName, width, height, w, h);
             return;
         }
         ByteBuffer imageData = ByteBuffer.allocateDirect(4 * width * height);
@@ -166,7 +161,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         ARGBtoRGBA(argb, rgba);
         imageData.put(rgba).flip();
         for (int mipmapLevel = 0; mipmapLevel <= levels; mipmapLevel++) {
-            add(new CustomAnimation(propertiesName, srcName, dstName, mipmapLevel, x, y, w, h, imageData, height / h, properties));
+            add(new CustomAnimation(properties, srcName, dstName, mipmapLevel, x, y, w, h, imageData, height / h));
             if (((x | y | w | h) & 0x1) != 0 || w <= 0 || h <= 0) {
                 break;
             }
@@ -191,8 +186,8 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         }
     }
 
-    private CustomAnimation(ResourceLocation propertiesName, ResourceLocation srcName, ResourceLocation dstName, int mipmapLevel, int x, int y, int w, int h, ByteBuffer imageData, int numFrames, Properties properties) {
-        this.propertiesName = propertiesName;
+    private CustomAnimation(PropertiesFile properties, ResourceLocation srcName, ResourceLocation dstName, int mipmapLevel, int x, int y, int w, int h, ByteBuffer imageData, int numFrames) {
+        this.properties = properties;
         this.srcName = srcName;
         this.dstName = dstName;
         this.mipmapLevel = mipmapLevel;
@@ -239,7 +234,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
     @Override
     public String toString() {
         return String.format("CustomAnimation{%s %s %dx%d -> %s%s @ %d,%d (%d frames)}",
-            propertiesName, srcName, w, h, dstName, (mipmapLevel > 0 ? "#" + mipmapLevel : ""), x, y, numFrames
+            properties, srcName, w, h, dstName, (mipmapLevel > 0 ? "#" + mipmapLevel : ""), x, y, numFrames
         );
     }
 
@@ -265,7 +260,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         return newImage;
     }
 
-    private void loadProperties(Properties properties) {
+    private void loadProperties(PropertiesFile properties) {
         loadTileOrder(properties);
         if (tileOrder == null) {
             tileOrder = new int[numFrames];
@@ -280,7 +275,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         }
     }
 
-    private void loadTileOrder(Properties properties) {
+    private void loadTileOrder(PropertiesFile properties) {
         if (properties == null) {
             return;
         }
@@ -296,7 +291,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         }
     }
 
-    private void loadTileDelay(Properties properties) {
+    private void loadTileDelay(PropertiesFile properties) {
         if (properties == null) {
             return;
         }
@@ -311,9 +306,9 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         }
     }
 
-    private static Integer getIntValue(Properties properties, String key) {
+    private static Integer getIntValue(PropertiesFile properties, String key) {
         try {
-            String value = properties.getProperty(key);
+            String value = properties.getString(key, "");
             if (value != null && value.matches("^\\d+$")) {
                 return Integer.parseInt(value);
             }
@@ -322,7 +317,7 @@ public class CustomAnimation implements Comparable<CustomAnimation> {
         return null;
     }
 
-    private static Integer getIntValue(Properties properties, String prefix, int index) {
+    private static Integer getIntValue(PropertiesFile properties, String prefix, int index) {
         return getIntValue(properties, prefix + index);
     }
 
