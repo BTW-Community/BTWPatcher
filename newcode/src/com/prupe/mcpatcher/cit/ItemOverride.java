@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher.cit;
 
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.tile.TileLoader;
 import net.minecraft.src.Icon;
 import net.minecraft.src.ResourceLocation;
@@ -12,11 +13,11 @@ final class ItemOverride extends OverrideBase {
     private Icon icon;
     private final Map<Icon, Icon> iconMap;
 
-    ItemOverride(ResourceLocation propertiesName, Properties properties) {
-        super(propertiesName, properties);
+    ItemOverride(PropertiesFile properties) {
+        super(properties);
 
         if (items == null) {
-            error("no matching items specified");
+            properties.error("no matching items specified");
         }
 
         iconMap = alternateTextures == null ? null : new HashMap<Icon, Icon>();

@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.item.ItemAPI;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.ResourceList;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
@@ -85,11 +86,11 @@ public class CITUtils {
                     Enchantment.baseArmorHeight = image.getHeight();
                 }
 
-                Properties properties = TexturePackAPI.getProperties(CIT_PROPERTIES1);
+                PropertiesFile properties = PropertiesFile.get(logger, CIT_PROPERTIES1);
                 if (properties == null) {
-                    properties = TexturePackAPI.getProperties(CIT_PROPERTIES2);
+                    properties = PropertiesFile.get(logger, CIT_PROPERTIES2);
                 }
-                useGlint = MCPatcherUtils.getBooleanProperty(properties, "useGlint", true);
+                useGlint = properties.getBoolean("useGlint", true);
                 EnchantmentList.setProperties(properties);
 
                 if (enableItems || enableEnchantments || enableArmor) {
@@ -125,7 +126,7 @@ public class CITUtils {
 
             @SuppressWarnings("unchecked")
             private void registerOverride(OverrideBase override) {
-                if (override != null && !override.error) {
+                if (override != null && !override.properties.valid()) {
                     Map map;
                     if (override instanceof ItemOverride) {
                         ((ItemOverride) override).preload(tileLoader);

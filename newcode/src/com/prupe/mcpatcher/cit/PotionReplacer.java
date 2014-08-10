@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.Potion;
 import net.minecraft.src.PotionHelper;
@@ -186,8 +187,8 @@ class PotionReplacer {
 
     private void addOverride(ResourceLocation path, Properties properties) {
         ResourceLocation propertiesName = TexturePackAPI.transformResourceLocation(path, ".png", ".properties");
-        ItemOverride override = new ItemOverride(propertiesName, properties);
-        if (!override.error) {
+        ItemOverride override = new ItemOverride(new PropertiesFile(logger, propertiesName, properties));
+        if (!override.properties.valid()) {
             overrides.add(override);
         }
     }

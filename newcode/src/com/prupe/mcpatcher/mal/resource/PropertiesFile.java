@@ -49,7 +49,7 @@ final public class PropertiesFile {
         this(logger, resource, new Properties());
     }
 
-    private PropertiesFile(MCLogger logger, ResourceLocation resource, Properties properties) {
+    public PropertiesFile(MCLogger logger, ResourceLocation resource, Properties properties) {
         this.logger = logger;
         this.resource = resource;
         prefix = (resource.toString() + ": ").replace("%", "%%");

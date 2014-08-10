@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher.cit;
 
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.ResourceLocation;
 
@@ -10,14 +11,14 @@ import java.util.Properties;
 final class ArmorOverride extends OverrideBase {
     private final Map<ResourceLocation, ResourceLocation> armorMap;
 
-    ArmorOverride(ResourceLocation propertiesName, Properties properties) {
-        super(propertiesName, properties);
+    ArmorOverride(PropertiesFile properties) {
+        super(properties);
 
         if (items == null) {
-            error("no matching items specified");
+            properties.error("no matching items specified");
         }
         if (textureName == null && alternateTextures == null) {
-            error("no replacement textures specified");
+            properties.error("no replacement textures specified");
         }
 
         if (alternateTextures == null) {

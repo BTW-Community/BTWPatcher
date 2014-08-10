@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.cit;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
 import com.prupe.mcpatcher.mal.resource.GLAPI;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.tessellator.TessellatorAPI;
 import com.prupe.mcpatcher.mal.tile.IconAPI;
@@ -64,25 +65,25 @@ final class Enchantment extends OverrideBase {
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
     }
 
-    Enchantment(ResourceLocation propertiesName, Properties properties) {
-        super(propertiesName, properties);
+    Enchantment(PropertiesFile properties) {
+        super(properties);
 
-        if (!error && textureName == null && alternateTextures == null) {
-            error("no source texture specified");
+        if (properties.valid() && textureName == null && alternateTextures == null) {
+            properties.error("no source texture specified");
         }
 
-        layer = MCPatcherUtils.getIntProperty(properties, "layer", 0);
-        String value = MCPatcherUtils.getStringProperty(properties, "blend", "add");
+        layer = properties.getInt("layer", 0);
+        String value = properties.getString("blend", "add");
         blendMethod = BlendMethod.parse(value);
         if (blendMethod == null) {
-            error("unknown blend type %s", value);
+            properties.error("unknown blend type %s", value);
         }
-        rotation = MCPatcherUtils.getFloatProperty(properties, "rotation", 0.0f);
-        speed = MCPatcherUtils.getDoubleProperty(properties, "speed", 0.0);
-        duration = MCPatcherUtils.getFloatProperty(properties, "duration", 1.0f);
+        rotation = properties.getFloat("rotation", 0.0f);
+        speed = properties.getDouble("speed", 0.0);
+        duration = properties.getFloat("duration", 1.0f);
 
-        String valueX = MCPatcherUtils.getStringProperty(properties, "armorScaleX", "");
-        String valueY = MCPatcherUtils.getStringProperty(properties, "armorScaleY", "");
+        String valueX = properties.getString("armorScaleX", "");
+        String valueY = properties.getString("armorScaleY", "");
         if (!valueX.isEmpty() && !valueY.isEmpty()) {
             try {
                 armorScaleX = Float.parseFloat(valueX);

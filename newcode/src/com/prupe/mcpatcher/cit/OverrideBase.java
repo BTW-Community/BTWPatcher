@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.item.ItemAPI;
 import com.prupe.mcpatcher.mal.nbt.NBTRule;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.tile.TileLoader;
 import net.minecraft.src.Item;
@@ -19,7 +20,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
     private static final int MAX_DAMAGE = 65535;
     private static final int MAX_STACK_SIZE = 65535;
 
-    final ResourceLocation propertiesName;
+    final PropertiesFile properties;
     final ResourceLocation textureName;
     final Map<String, ResourceLocation> alternateTextures;
     final int weight;
@@ -31,7 +32,6 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
     final BitSet enchantmentIDs;
     final BitSet enchantmentLevels;
     private final List<NBTRule> nbtRules = new ArrayList<NBTRule>();
-    boolean error;
 
     int lastEnchantmentLevel;
 
@@ -39,68 +39,68 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
         if (new File(filename.getPath()).getName().equals("cit.properties")) {
             return null;
         }
-        Properties properties = TexturePackAPI.getProperties(filename);
+        PropertiesFile properties = PropertiesFile.get(logger, filename);
         if (properties == null) {
             return null;
         }
-        String type = MCPatcherUtils.getStringProperty(properties, "type", "item").toLowerCase();
+        String type = properties.getString("type", "item").toLowerCase();
         OverrideBase override;
         if (type.equals("item")) {
             if (!CITUtils.enableItems) {
                 return null;
             }
-            override = new ItemOverride(filename, properties);
+            override = new ItemOverride(properties);
         } else if (type.equals("enchantment") || type.equals("overlay")) {
             if (!CITUtils.enableEnchantments) {
                 return null;
             }
-            override = new Enchantment(filename, properties);
+            override = new Enchantment(properties);
         } else if (type.equals("armor")) {
             if (!CITUtils.enableArmor) {
                 return null;
             }
-            override = new ArmorOverride(filename, properties);
+            override = new ArmorOverride(properties);
         } else {
             logger.error("%s: unknown type '%s'", filename, type);
             return null;
         }
-        return override.error ? null : override;
+        return override.properties.valid() ? override : null;
     }
 
-    OverrideBase(ResourceLocation propertiesName, Properties properties) {
-        this.propertiesName = propertiesName;
+    OverrideBase(PropertiesFile properties) {
+        this.properties = properties;
 
-        alternateTextures = getAlternateTextures(properties);
+        alternateTextures = getAlternateTextures();
 
-        String value = MCPatcherUtils.getStringProperty(properties, "source", "");
+        String value = properties.getString("source", "");
         ResourceLocation resource = null;
         if (value.equals("")) {
-            value = MCPatcherUtils.getStringProperty(properties, "texture", "");
+            value = properties.getString("texture", "");
         }
         if (value.equals("")) {
-            value = MCPatcherUtils.getStringProperty(properties, "tile", "");
+            value = properties.getString("tile", "");
         }
         if (value.equals("")) {
             if (MCPatcherUtils.isNullOrEmpty(alternateTextures)) {
-                resource = TileLoader.getDefaultAddress(propertiesName);
+                resource = TileLoader.getDefaultAddress(properties.getResource());
                 if (!TexturePackAPI.hasResource(resource)) {
                     resource = null;
                 }
             }
         } else {
-            resource = TileLoader.parseTileAddress(propertiesName, value);
+            resource = TileLoader.parseTileAddress(properties.getResource(), value);
             if (!TexturePackAPI.hasResource(resource)) {
-                error("source texture %s not found", value);
+                properties.error("source texture %s not found", value);
                 resource = null;
             }
         }
         textureName = resource;
 
-        weight = MCPatcherUtils.getIntProperty(properties, "weight", 0);
+        weight = properties.getInt("weight", 0);
 
-        value = MCPatcherUtils.getStringProperty(properties, "items", "");
+        value = properties.getString("items", "");
         if (value.equals("")) {
-            value = MCPatcherUtils.getStringProperty(properties, "matchItems", "");
+            value = properties.getString("matchItems", "");
         }
         if (value.equals("")) {
             items = null;
@@ -114,7 +114,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             }
         }
 
-        value = MCPatcherUtils.getStringProperty(properties, "damage", "");
+        value = properties.getString("damage", "");
         if (value.equals("")) {
             damage = null;
             damagePercent = null;
@@ -125,18 +125,18 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             damage = parseBitSet(value, 0, MAX_DAMAGE);
             damagePercent = null;
         }
-        damageMask = MCPatcherUtils.getIntProperty(properties, "damageMask", MAX_DAMAGE);
+        damageMask = properties.getInt("damageMask", MAX_DAMAGE);
         stackSize = parseBitSet(properties, "stackSize", 0, MAX_STACK_SIZE);
         enchantmentIDs = parseBitSet(properties, "enchantmentIDs", 0, CITUtils.MAX_ENCHANTMENTS - 1);
         enchantmentLevels = parseBitSet(properties, "enchantmentLevels", 0, CITUtils.MAX_ENCHANTMENTS - 1);
 
-        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-            String name = (String) entry.getKey();
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+            String name = entry.getKey();
             if (name.startsWith(NBTRule.NBT_RULE_PREFIX)) {
-                value = (String) entry.getValue();
+                value = entry.getValue();
                 NBTRule rule = NBTRule.create(name, value);
                 if (rule == null) {
-                    error("invalid nbt rule: %s", value);
+                    properties.error("invalid nbt rule: %s", value);
                 } else {
                     nbtRules.add(rule);
                 }
@@ -149,7 +149,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
         if (result != 0) {
             return result;
         }
-        return propertiesName.toString().compareTo(o.propertiesName.toString());
+        return properties.getResource().toString().compareTo(o.properties.getResource().toString());
     }
 
     boolean match(ItemStack itemStack, int[] itemEnchantmentLevels, boolean hasEffect) {
@@ -164,11 +164,11 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
         return name;
     }
 
-    private Map<String, ResourceLocation> getAlternateTextures(Properties properties) {
+    private Map<String, ResourceLocation> getAlternateTextures() {
         Map<String, ResourceLocation> tmpMap = new HashMap<String, ResourceLocation>();
-        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-            String key = (String) entry.getKey();
-            String value = (String) entry.getValue();
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
             String name;
             if (key.startsWith("source.")) {
                 name = key.substring(7);
@@ -183,7 +183,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
             if (MCPatcherUtils.isNullOrEmpty(name)) {
                 continue;
             }
-            ResourceLocation resource = TileLoader.parseTileAddress(propertiesName, value);
+            ResourceLocation resource = TileLoader.parseTileAddress(properties.getResource(), value);
             if (resource != null) {
                 tmpMap.put(name, resource);
             }
@@ -273,16 +273,11 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
 
     @Override
     public String toString() {
-        return String.format("ItemOverride{%s, %s, %s}", getType(), propertiesName, textureName);
+        return String.format("ItemOverride{%s, %s, %s}", getType(), properties, textureName);
     }
 
-    void error(String format, Object... o) {
-        error = true;
-        logger.error(propertiesName + ": " + format, o);
-    }
-
-    private static BitSet parseBitSet(Properties properties, String tag, int min, int max) {
-        String value = MCPatcherUtils.getStringProperty(properties, tag, "");
+    private static BitSet parseBitSet(PropertiesFile properties, String tag, int min, int max) {
+        String value = properties.getString(tag, "");
         return parseBitSet(value, min, max);
     }
 

@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import net.minecraft.src.Item;
 import net.minecraft.src.ItemStack;
 
@@ -18,12 +19,12 @@ final class EnchantmentList {
 
     private final List<Layer> layers = new ArrayList<Layer>();
 
-    static void setProperties(Properties properties) {
+    static void setProperties(PropertiesFile properties) {
         applyMethod = new Average();
         limit = 99;
         fade = 0.5f;
         if (properties != null) {
-            String value = MCPatcherUtils.getStringProperty(properties, "method", "average").toLowerCase();
+            String value = properties.getString("method", "average").toLowerCase();
             if (value.equals("layered")) {
                 applyMethod = new Layered();
             } else if (value.equals("cycle")) {
@@ -31,8 +32,8 @@ final class EnchantmentList {
             } else if (!value.equals("average")) {
                 logger.warning("%s: unknown enchantment layering method '%s'", CITUtils.CIT_PROPERTIES, value);
             }
-            limit = Math.max(MCPatcherUtils.getIntProperty(properties, "cap", limit), 0);
-            fade = Math.max(MCPatcherUtils.getFloatProperty(properties, "fade", fade), 0.0f);
+            limit = Math.max(properties.getInt("cap", limit), 0);
+            fade = Math.max(properties.getFloat("fade", fade), 0.0f);
         }
     }
 
