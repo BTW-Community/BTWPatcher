@@ -9,7 +9,6 @@ import net.minecraft.src.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import static com.prupe.mcpatcher.cc.Colorizer.*;
 

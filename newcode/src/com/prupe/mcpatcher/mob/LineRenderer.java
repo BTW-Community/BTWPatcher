@@ -13,8 +13,6 @@ import net.minecraft.src.Tessellator;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
-import java.util.Properties;
-
 public class LineRenderer {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.RANDOM_MOBS);
 

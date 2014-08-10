@@ -3,7 +3,6 @@ package com.prupe.mcpatcher.mal.item;
 import com.prupe.mcpatcher.MAL;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.Item;
-import net.minecraft.src.Registry;
 
 import java.io.File;
 import java.io.IOException;

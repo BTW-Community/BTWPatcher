@@ -1,13 +1,9 @@
 package com.prupe.mcpatcher.ctm;
 
-import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.tile.TileLoader;
 import com.prupe.mcpatcher.mal.util.WeightedIndex;
 import net.minecraft.src.Icon;
-import net.minecraft.src.ResourceLocation;
-
-import java.util.Properties;
 
 import static com.prupe.mcpatcher.ctm.BlockOrientation.*;
 

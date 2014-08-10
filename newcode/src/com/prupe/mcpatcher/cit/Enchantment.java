@@ -1,17 +1,18 @@
 package com.prupe.mcpatcher.cit;
 
-import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
 import com.prupe.mcpatcher.mal.resource.GLAPI;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.tessellator.TessellatorAPI;
 import com.prupe.mcpatcher.mal.tile.IconAPI;
-import net.minecraft.src.*;
+import net.minecraft.src.Icon;
+import net.minecraft.src.ItemRenderer;
+import net.minecraft.src.ResourceLocation;
+import net.minecraft.src.Tessellator;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.image.BufferedImage;
-import java.util.Properties;
 
 final class Enchantment extends OverrideBase {
     private static final float ITEM_2D_THICKNESS = 0.0625f;

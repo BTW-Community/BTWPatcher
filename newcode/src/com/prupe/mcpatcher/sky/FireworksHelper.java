@@ -13,8 +13,6 @@ import net.minecraft.src.EntityFireworkSparkFX;
 import net.minecraft.src.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
-import java.util.Properties;
-
 public class FireworksHelper {
     private static final int LIT_LAYER = 3;
     private static final int EXTRA_LAYER = LIT_LAYER + 1;

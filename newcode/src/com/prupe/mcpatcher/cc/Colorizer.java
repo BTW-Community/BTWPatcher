@@ -9,8 +9,6 @@ import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
 import net.minecraft.src.Potion;
 import net.minecraft.src.ResourceLocation;
 
-import java.util.Properties;
-
 public class Colorizer {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 

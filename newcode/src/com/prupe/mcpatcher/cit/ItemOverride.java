@@ -7,7 +7,6 @@ import net.minecraft.src.ResourceLocation;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 final class ItemOverride extends OverrideBase {
     private Icon icon;

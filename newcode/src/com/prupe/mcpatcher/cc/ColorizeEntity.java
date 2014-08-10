@@ -9,7 +9,6 @@ import net.minecraft.src.EntitySheep;
 import net.minecraft.src.ItemDye;
 import net.minecraft.src.ResourceLocation;
 
-import java.util.Properties;
 import java.util.Random;
 
 public class ColorizeEntity {

@@ -11,7 +11,6 @@ import net.minecraft.src.Position;
 
 import java.lang.reflect.Method;
 import java.util.BitSet;
-import java.util.Properties;
 
 abstract public class BiomeAPI {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);

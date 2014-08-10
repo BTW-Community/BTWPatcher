@@ -6,7 +6,6 @@ import net.minecraft.src.ResourceLocation;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 final class ArmorOverride extends OverrideBase {
     private final Map<ResourceLocation, ResourceLocation> armorMap;

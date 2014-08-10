@@ -1,7 +1,6 @@
 package com.prupe.mcpatcher.mal.block;
 
 import com.prupe.mcpatcher.MAL;
-import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import net.minecraft.src.*;

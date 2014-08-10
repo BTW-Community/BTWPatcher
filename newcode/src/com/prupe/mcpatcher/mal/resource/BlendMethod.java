@@ -3,8 +3,6 @@ package com.prupe.mcpatcher.mal.resource;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.ResourceLocation;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL14;
-import org.lwjgl.opengl.GLContext;
 
 import java.util.HashSet;
 import java.util.Set;
