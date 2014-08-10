@@ -12,6 +12,11 @@ public class Registry<T> extends RegistryBase<String, T> implements RegistryIter
         return null;
     }
 
+    // 14w25
+    public Object getKeyObject(T object) {
+        return null;
+    }
+
     public int getId(T object) {
         return 0;
     }

@@ -34,13 +34,14 @@ public class RegistryMod extends com.prupe.mcpatcher.ClassMod {
         }
 
         String keyType = IBlockStateMod.haveClass() ? "Ljava/lang/Object;" : "Ljava/lang/String;";
+        String methodSuffix = IBlockStateMod.haveClass() ? "Object" : "";
         addClassSignature(new InterfaceSignature(
             new MethodRef(getDeobfClass(), "<init>", "()V"),
-            new MethodRef(getDeobfClass(), "register", "(I" + keyType + "Ljava/lang/Object;)V"),
+            new MethodRef(getDeobfClass(), "register" + methodSuffix, "(I" + keyType + "Ljava/lang/Object;)V"),
             new MethodRef(getDeobfClass(), "newMap", "()Ljava/util/Map;"),
-            new MethodRef(getDeobfClass(), "getValue", "(" + keyType + ")Ljava/lang/Object;"),
-            new MethodRef(getDeobfClass(), "getKey", "(Ljava/lang/Object;)" + keyType),
-            new MethodRef(getDeobfClass(), "containsKey", "(" + keyType + ")Z"),
+            new MethodRef(getDeobfClass(), "getValue" + methodSuffix, "(" + keyType + ")Ljava/lang/Object;"),
+            new MethodRef(getDeobfClass(), "getKey" + methodSuffix, "(Ljava/lang/Object;)" + keyType),
+            new MethodRef(getDeobfClass(), "containsKey" + methodSuffix, "(" + keyType + ")Z"),
             new MethodRef(getDeobfClass(), "getId", "(Ljava/lang/Object;)I"),
             new MethodRef(getDeobfClass(), "getById", "(I)Ljava/lang/Object;"),
             new MethodRef(getDeobfClass(), "iterator", "()Ljava/util/Iterator;"),

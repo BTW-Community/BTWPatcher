@@ -381,7 +381,7 @@ abstract public class BlockAPI {
     }
 
     private static class V2 extends BlockAPI {
-        private final Registry<Block> registry;
+        protected final Registry<Block> registry;
 
         V2(Registry<Block> registry) {
             this.registry = registry;
@@ -501,6 +501,12 @@ abstract public class BlockAPI {
         @Override
         protected boolean shouldSideBeRendered_Impl(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
             return block.shouldSideBeRendered(blockAccess, new Position(i, j, k), DIRS[face]);
+        }
+
+        @Override
+        protected String getBlockName_Impl(Block block) {
+            Object name = registry.getKeyObject(block);
+            return name == null ? String.valueOf(registry.getId(block)) : name.toString();
         }
 
         @Override

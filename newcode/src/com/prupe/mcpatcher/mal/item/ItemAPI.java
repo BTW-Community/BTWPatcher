@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.mal.item;
 import com.prupe.mcpatcher.MAL;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.Item;
+import net.minecraft.src.Registry;
 
 import java.io.File;
 import java.io.IOException;
@@ -267,7 +268,7 @@ abstract public class ItemAPI {
         }
     }
 
-    final private static class V2 extends ItemAPI {
+    private static class V2 extends ItemAPI {
         {
             File outputFile = new File("items17.txt");
             if (outputFile.isFile()) {
@@ -316,6 +317,14 @@ abstract public class ItemAPI {
         protected String getItemName_Impl(Item item) {
             String name = Item.itemRegistry.getKey(item);
             return name == null ? String.valueOf(Item.itemRegistry.getId(item)) : name;
+        }
+    }
+
+    final private static class V3 extends V2 {
+        @Override
+        protected String getItemName_Impl(Item item) {
+            Object name = Item.itemRegistry.getKeyObject(item);
+            return name == null ? String.valueOf(Item.itemRegistry.getId(item)) : name.toString();
         }
     }
 }

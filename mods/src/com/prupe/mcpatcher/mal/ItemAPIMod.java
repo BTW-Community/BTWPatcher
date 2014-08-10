@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.mal;
 import com.prupe.mcpatcher.FieldRef;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.Mod;
+import com.prupe.mcpatcher.basemod.IBlockStateMod;
 import com.prupe.mcpatcher.basemod.RegistryBaseMod;
 import com.prupe.mcpatcher.basemod.RegistryMod;
 import javassist.bytecode.AccessFlag;
@@ -15,7 +16,9 @@ public class ItemAPIMod extends Mod {
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
 
-        if (ItemMod.haveItemRegistry()) {
+        if (IBlockStateMod.haveClass()) {
+            malVersion = 3;
+        } else if (ItemMod.haveItemRegistry()) {
             malVersion = 2;
         } else {
             malVersion = 1;

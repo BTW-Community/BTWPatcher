@@ -2,6 +2,8 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.Mod;
+import com.prupe.mcpatcher.basemod.BlockMod;
+import com.prupe.mcpatcher.basemod.ItemMod;
 import com.prupe.mcpatcher.mal.TexturePackAPIMod;
 
 public class CustomTexturesModels extends Mod {
@@ -18,6 +20,10 @@ public class CustomTexturesModels extends Mod {
         addDependency(MCPatcherUtils.NBT_API_MOD);
         addDependency(MCPatcherUtils.BIOME_API_MOD);
         //addDependency(MCPatcherUtils.CUSTOM_COLORS);
+
+        addClassMod(new BlockMod(this));
+
+        addClassMod(new ItemMod(this));
 
         addClassFiles("com.prupe.mcpatcher.ctm.*");
         addClassFiles("com.prupe.mcpatcher.cit.*");
