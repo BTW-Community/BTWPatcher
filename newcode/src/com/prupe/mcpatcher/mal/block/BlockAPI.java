@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.mal.block;
 import com.prupe.mcpatcher.MAL;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
+import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.*;
 
 import java.io.File;
@@ -501,6 +502,11 @@ abstract public class BlockAPI {
         @Override
         protected boolean shouldSideBeRendered_Impl(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
             return block.shouldSideBeRendered(blockAccess, new Position(i, j, k), DIRS[face]);
+        }
+
+        @Override
+        protected Block getBlockByName_Impl(String name) {
+            return registry.getValueObject(TexturePackAPI.parseResourceLocation(name));
         }
 
         @Override

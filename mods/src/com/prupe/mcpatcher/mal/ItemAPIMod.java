@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.Mod;
 import com.prupe.mcpatcher.basemod.IBlockStateMod;
 import com.prupe.mcpatcher.basemod.RegistryBaseMod;
 import com.prupe.mcpatcher.basemod.RegistryMod;
+import com.prupe.mcpatcher.basemod.ResourceLocationMod;
 import javassist.bytecode.AccessFlag;
 
 public class ItemAPIMod extends Mod {
@@ -30,6 +31,7 @@ public class ItemAPIMod extends Mod {
         if (ItemMod.haveItemRegistry()) {
             addClassMod(new RegistryBaseMod(this));
             addClassMod(new RegistryMod(this));
+            ResourceLocationMod.setup(this);
         }
 
         addClassFiles("com.prupe.mcpatcher.mal.item.*");

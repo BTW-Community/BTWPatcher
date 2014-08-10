@@ -2,7 +2,9 @@ package com.prupe.mcpatcher.mal.item;
 
 import com.prupe.mcpatcher.MAL;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.Item;
+import net.minecraft.src.ResourceLocation;
 
 import java.io.File;
 import java.io.IOException;
@@ -320,6 +322,11 @@ abstract public class ItemAPI {
     }
 
     final private static class V3 extends V2 {
+        @Override
+        protected Item getItemByName_Impl(String name) {
+            return Item.itemRegistry.getValueObject(TexturePackAPI.parseResourceLocation(name));
+        }
+
         @Override
         protected String getItemName_Impl(Item item) {
             Object name = Item.itemRegistry.getKeyObject(item);

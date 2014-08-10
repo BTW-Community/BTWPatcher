@@ -169,6 +169,10 @@ abstract public class TexturePackAPI {
         return MCPatcherUtils.isNullOrEmpty(path) ? null : instance.parsePath_Impl(path.replace(File.separatorChar, '/'));
     }
 
+    public static ResourceLocation parseResourceLocation(String path) {
+        return parseResourceLocation(new ResourceLocation(DEFAULT_NAMESPACE, "a"), path);
+    }
+
     public static ResourceLocation parseResourceLocation(ResourceLocation baseResource, String path) {
         return MCPatcherUtils.isNullOrEmpty(path) ? null : instance.parseResourceLocation_Impl(baseResource, path);
     }
