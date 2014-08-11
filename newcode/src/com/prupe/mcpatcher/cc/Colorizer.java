@@ -53,23 +53,27 @@ public class Colorizer {
                 if (useParticleColors) {
                     ColorizeEntity.reloadParticleColors(properties);
                 }
-                if (useTreeColors) {
-                    ColorizeBlock.reloadFoliageColors(properties);
-                }
-                if (useWaterColors) {
-                    ColorizeBlock.reloadWaterColors(properties);
-                }
-                if (useBlockColors) {
-                    ColorizeBlock.reloadBlockColors(properties);
-                }
-                if (ColorMap.useSwampColors) {
-                    ColorizeBlock.reloadSwampColors(properties);
-                }
-                if (useRedstoneColors) {
-                    ColorizeBlock.reloadRedstoneColors(properties);
-                }
-                if (useStemColors) {
-                    ColorizeBlock.reloadStemColors(properties);
+                try {
+                    if (useTreeColors) {
+                        ColorizeBlock.reloadFoliageColors(properties);
+                    }
+                    if (useWaterColors) {
+                        ColorizeBlock.reloadWaterColors(properties);
+                    }
+                    if (useBlockColors) {
+                        ColorizeBlock.reloadBlockColors(properties);
+                    }
+                    if (ColorMap.useSwampColors) {
+                        ColorizeBlock.reloadSwampColors(properties);
+                    }
+                    if (useRedstoneColors) {
+                        ColorizeBlock.reloadRedstoneColors(properties);
+                    }
+                    if (useStemColors) {
+                        ColorizeBlock.reloadStemColors(properties);
+                    }
+                } catch (NoClassDefFoundError e) {
+                    // not present in 1.8
                 }
                 if (useFogColors) {
                     ColorizeWorld.reloadFogColors(properties);
@@ -113,7 +117,11 @@ public class Colorizer {
         properties = new PropertiesFile(logger, COLOR_PROPERTIES);
 
         ColorMap.reset();
-        ColorizeBlock.reset();
+        try {
+            ColorizeBlock.reset();
+        } catch (NoClassDefFoundError e) {
+            // not present in 1.8
+        }
         Lightmap.reset();
         ColorizeItem.reset();
         ColorizeWorld.reset();

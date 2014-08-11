@@ -116,13 +116,17 @@ public class CustomColors extends Mod {
         ResourceLocationMod.setup(this);
         PositionMod.setup(this);
 
-        addClassMod(new BlockMod());
-        addClassMod(new BlockSubclassMod());
-        addClassMod(new BlockCauldronMod());
+        if (!IBlockStateMod.haveClass()) {
+            addClassMod(new BlockMod());
+            addClassMod(new BlockSubclassMod());
+            addClassMod(new BlockCauldronMod());
+            addClassMod(new BlockRedstoneWireMod());
+            addClassMod(new ItemBlockMod());
+            addClassMod(new RenderBlocksMod());
+        }
 
         addClassMod(new BiomeGenBaseMod(this));
         addClassMod(new ItemMod());
-        addClassMod(new ItemBlockMod());
         addClassMod(new ItemRendererMod());
 
         addClassMod(new PotionMod());
@@ -149,8 +153,7 @@ public class CustomColors extends Mod {
         //addClassMod(new EntityLivingBaseMod());
         addClassMod(new EntityRendererMod());
 
-        addClassMod(new BlockRedstoneWireMod());
-        addClassMod(new RenderBlocksMod());
+        /*
         if (RenderBlocksMod.haveSubclasses()) {
             boolean haveRenderBlockCauldron = getMinecraftVersion().compareTo("14w10a") < 0;
             RenderBlockManagerMod renderBlockManagerMod = new RenderBlockManagerMod(this)
@@ -175,6 +178,7 @@ public class CustomColors extends Mod {
                 addClassMod(new RenderBlockCauldronMod());
             }
         }
+        */
         addClassMod(new EntityReddustFXMod());
 
         addClassMod(new RenderGlobalMod());
@@ -198,6 +202,9 @@ public class CustomColors extends Mod {
 
         addClassFiles("com.prupe.mcpatcher.colormap.*");
         addClassFiles("com.prupe.mcpatcher.cc.*");
+        if (IBlockStateMod.haveClass()) {
+            removeAddedClassFile(MCPatcherUtils.COLORIZE_BLOCK_CLASS);
+        }
 
         TexturePackAPIMod.earlyInitialize(3, MCPatcherUtils.COLORIZER_CLASS, "init");
     }
