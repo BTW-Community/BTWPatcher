@@ -115,6 +115,7 @@ public class CustomColors extends Mod {
         }
         ResourceLocationMod.setup(this);
         PositionMod.setup(this);
+        RenderUtilsMod.setup(this);
 
         if (!IBlockStateMod.haveClass()) {
             addClassMod(new BlockMod());
@@ -153,7 +154,7 @@ public class CustomColors extends Mod {
         //addClassMod(new EntityLivingBaseMod());
         addClassMod(new EntityRendererMod());
 
-        /*
+        /* TODO: move to CTM
         if (RenderBlocksMod.haveSubclasses()) {
             boolean haveRenderBlockCauldron = getMinecraftVersion().compareTo("14w10a") < 0;
             RenderBlockManagerMod renderBlockManagerMod = new RenderBlockManagerMod(this)
@@ -874,7 +875,7 @@ public class CustomColors extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         ALOAD_0,
-                        ILOAD_3,
+                        or(build(ILOAD_3), build(ILOAD, 4)),
                         captureReference(PUTFIELD)
                     );
                 }
@@ -1381,16 +1382,9 @@ public class CustomColors extends Mod {
 
     private class EntityMod extends ClassMod {
         EntityMod() {
-            if (getMinecraftVersion().compareTo("13w39a") < 0) {
-                addClassSignature(new ConstSignature("tilecrack_"));
-                addClassSignature(new OrSignature(
-                    new ConstSignature("random.splash"),
-                    new ConstSignature("liquid.splash") // 12w38a+
-                ));
-            } else {
-                addClassSignature(new ConstSignature(1.8f));
-                addClassSignature(new ConstSignature("blockcrack_"));
-            }
+            addClassSignature(new ConstSignature("Pos"));
+            addClassSignature(new ConstSignature("Motion"));
+            addClassSignature(new ConstSignature("Rotation"));
 
             addClassSignature(new BytecodeSignature() {
                 {
@@ -2355,7 +2349,10 @@ public class CustomColors extends Mod {
                         captureReference(INVOKEVIRTUAL),
                         ALOAD_0,
                         push(0),
-                        captureReference(PUTFIELD)
+                        captureReference(PUTFIELD),
+
+                        // ...
+                        any(0, 20)
                     );
                 }
             });
@@ -4082,9 +4079,12 @@ public class CustomColors extends Mod {
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final FieldRef gameSettings = new FieldRef("Minecraft", "gameSettings", "LGameSettings;");
             final FieldRef fancyGraphics = new FieldRef("GameSettings", "fancyGraphics", "Z");
-            final MethodRef renderClouds = new MethodRef(getDeobfClass(), "renderClouds", "(F)V");
-            final MethodRef renderSky = new MethodRef(getDeobfClass(), "renderSky", "(F)V");
-            final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
+            final boolean intParam = getMinecraftVersion().compareTo("14w25a") >= 0;
+            final MethodRef renderClouds = new MethodRef(getDeobfClass(), "renderClouds", "(F" + (intParam ? "I" : "") + ")V");
+            final MethodRef renderCloudsFancy = new MethodRef(getDeobfClass(), "renderCloudsFancy", renderClouds.getType());
+            final MethodRef renderSky = new MethodRef(getDeobfClass(), "renderSky", "(F" + (intParam ? "I" : "") + ")V");
+
+            RenderUtilsMod.setup(this);
 
             if (ResourceLocationMod.haveClass()) {
                 clouds = new FieldRef(getDeobfClass(), "clouds", "LResourceLocation;");
@@ -4100,35 +4100,31 @@ public class CustomColors extends Mod {
                     addXref(1, mc);
                     addXref(2, gameSettings);
                     addXref(3, fancyGraphics);
+                    addXref(4, renderCloudsFancy);
                     if (clouds != null) {
-                        addXref(4, clouds);
+                        addXref(5, clouds);
                     }
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // if (mc.gameSettings.fancyGraphics)
+                        // if (mc.gameSettings.fancyGraphics) {
                         ALOAD_0,
                         captureReference(GETFIELD),
                         captureReference(GETFIELD),
                         captureReference(GETFIELD),
-                        IFEQ_or_IFNE, any(2),
+                        IFEQ, any(2),
+
+                        // this.renderCloudsFancy(...);
+                        ALOAD_0,
+                        FLOAD_1,
+                        intParam ? build(ILOAD_2) : "",
+                        captureReference(INVOKESPECIAL),
+                        or(build(GOTO, any(2)), build(RETURN)),
 
                         // ...
-                        any(0, 100),
-
-                        // var3 = 32;
-                        // var4 = 256 / var3;
-                        push(32),
-                        anyISTORE,
-                        push(256),
-                        anyILOAD,
-                        IDIV,
-                        anyISTORE,
-
-                        // ...
-                        any(1, 50),
+                        any(0, 150),
 
                         // ...(RenderGlobal.clouds);
                         // ...("/environment/clouds.png");
@@ -4145,7 +4141,7 @@ public class CustomColors extends Mod {
                         push(1.0f),
                         push(0.0f),
                         push(0.0f),
-                        reference(INVOKESTATIC, glRotatef)
+                        RenderUtilsMod.glRotatef(this)
                     );
                 }
             }.setMethod(renderSky));
@@ -4590,8 +4586,10 @@ public class CustomColors extends Mod {
     private class FontRendererMod extends com.prupe.mcpatcher.basemod.FontRendererMod {
         FontRendererMod() {
             super(CustomColors.this);
+            RenderUtilsMod.setup(this);
 
-            final MethodRef renderString = new MethodRef(getDeobfClass(), "renderString", "(Ljava/lang/String;IIIZ)I");
+            final String renderStringArgs = IBlockStateMod.haveClass() ? "FF" : "II";
+            final MethodRef renderString = new MethodRef(getDeobfClass(), "renderString", "(Ljava/lang/String;" + renderStringArgs + "IZ)I");
             final MethodRef glColor4f = new MethodRef(MCPatcherUtils.GL11_CLASS, "glColor4f", "(FFFF)V");
             final FieldRef colorCode = new FieldRef(getDeobfClass(), "colorCode", "[I");
 
@@ -4618,7 +4616,7 @@ public class CustomColors extends Mod {
                     return buildExpression(
                         push(0xff000000),
                         any(0, 100),
-                        reference(INVOKESTATIC, glColor4f)
+                        RenderUtilsMod.glColor4f(this)
                     );
                 }
             }.setMethod(renderString));
@@ -4682,10 +4680,10 @@ public class CustomColors extends Mod {
 
     private class TileEntitySignRendererMod extends ClassMod {
         TileEntitySignRendererMod() {
-            final FieldRef sign;
-            final MethodRef glDepthMask = new MethodRef(MCPatcherUtils.GL11_CLASS, "glDepthMask", "(Z)V");
+            RenderUtilsMod.setup(this);
 
-            addClassSignature(new ConstSignature(glDepthMask));
+            final FieldRef sign;
+
             if (ResourceLocationMod.haveClass()) {
                 sign = new FieldRef(getDeobfClass(), "sign", "LResourceLocation;");
                 addClassSignature(new ResourceLocationSignature(this, sign, "textures/entity/sign.png"));
@@ -4715,7 +4713,7 @@ public class CustomColors extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         push(0),
-                        reference(INVOKESTATIC, glDepthMask),
+                        RenderUtilsMod.glDepthMask(this),
                         push(0),
                         capture(anyISTORE)
                     );
@@ -4725,7 +4723,7 @@ public class CustomColors extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         push(0),
-                        reference(INVOKESTATIC, glDepthMask),
+                        RenderUtilsMod.glDepthMask(this),
                         reference(INVOKESTATIC, colorizeSignText),
                         getCaptureGroup(1)
                     );
