@@ -2,8 +2,8 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
-import com.prupe.mcpatcher.mal.TexturePackAPIMod;
 import com.prupe.mcpatcher.mal.BlockAPIMod;
+import com.prupe.mcpatcher.mal.TexturePackAPIMod;
 import javassist.bytecode.AccessFlag;
 
 import javax.swing.*;
@@ -4489,13 +4489,19 @@ public class CustomColors extends Mod {
 
     private class RenderWolfMod extends ClassMod {
         RenderWolfMod() {
-            final MethodRef glColor3f = new MethodRef(MCPatcherUtils.GL11_CLASS, "glColor3f", "(FFF)V");
-
             setParentClass("RenderLivingEntity");
+            RenderUtilsMod.setup(this);
 
             addClassSignature(new ConstSignature(ResourceLocationMod.select("/mob/wolf_collar.png", "textures/entity/wolf/wolf_collar.png")));
-            addClassSignature(new ConstSignature(glColor3f));
 
+            if (IBlockStateMod.haveClass()) {
+                setup18();
+            } else {
+                setup17();
+            }
+        }
+
+        private void setup17() {
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
@@ -4513,6 +4519,51 @@ public class CustomColors extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         reference(GETSTATIC, collarColors)
+                    );
+                }
+            });
+        }
+
+        private void setup18() {
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override wolf collar colors";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // rgb = colorEnum.getRGB();
+                        capture(anyALOAD),
+                        anyReference(INVOKESTATIC),
+                        capture(anyASTORE),
+
+                        // GL11.glColor3f(rgb[0], rgb[1], rgb[2]);
+                        lookAhead(build(
+                            capture(anyALOAD),
+                            push(0),
+                            FALOAD,
+                            backReference(3),
+                            push(1),
+                            FALOAD,
+                            backReference(3),
+                            push(2),
+                            FALOAD,
+                            RenderUtilsMod.glColor3f(this)
+                        ), true)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // rgb = ColorizeEntity.collarColors[colorEnum.ordinal()];
+                        reference(GETSTATIC, collarColors),
+                        getCaptureGroup(1),
+                        reference(INVOKEVIRTUAL, new MethodRef("java/lang/Enum", "ordinal", "()I")),
+                        AALOAD,
+                        getCaptureGroup(2)
                     );
                 }
             });

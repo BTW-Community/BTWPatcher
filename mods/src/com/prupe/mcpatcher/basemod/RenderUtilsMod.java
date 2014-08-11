@@ -2,6 +2,9 @@ package com.prupe.mcpatcher.basemod;
 
 import com.prupe.mcpatcher.*;
 
+import static com.prupe.mcpatcher.BinaryRegex.begin;
+import static com.prupe.mcpatcher.BinaryRegex.end;
+import static com.prupe.mcpatcher.BytecodeMatcher.captureReference;
 import static javassist.bytecode.Opcode.*;
 
 public class RenderUtilsMod extends ClassMod {
@@ -9,6 +12,7 @@ public class RenderUtilsMod extends ClassMod {
 
     private static MethodRef translatef;
     private static MethodRef rotatef;
+    private static MethodRef color3f;
     private static MethodRef color4f;
     private static MethodRef blendFunc;
     private static MethodRef alphaFunc;
@@ -23,6 +27,7 @@ public class RenderUtilsMod extends ClassMod {
 
     private static final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
     private static final MethodRef glRotatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glRotatef", "(FFFF)V");
+    private static final MethodRef glColor3f = new MethodRef(MCPatcherUtils.GL11_CLASS, "glColor3f", "(FFF)V");
     private static final MethodRef glColor4f = new MethodRef(MCPatcherUtils.GL11_CLASS, "glColor4f", "(FFFF)V");
     private static final MethodRef glBlendFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glBlendFunc", "(II)V");
     private static final MethodRef glAlphaFunc = new MethodRef(MCPatcherUtils.GL11_CLASS, "glAlphaFunc", "(IF)V");
@@ -72,6 +77,10 @@ public class RenderUtilsMod extends ClassMod {
 
     public static byte[] glColor4f(PatchComponent patchComponent) {
         return patchComponent.reference(INVOKESTATIC, color4f);
+    }
+
+    public static byte[] glColor3f(PatchComponent patchComponent) {
+        return patchComponent.reference(INVOKESTATIC, color3f);
     }
 
     public static byte[] glBlendFunc(PatchComponent patchComponent) {
@@ -143,8 +152,32 @@ public class RenderUtilsMod extends ClassMod {
         clearColor = simpleWrapper(glClearColor);
 
         if (haveClass()) {
+            addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(color3f);
+                    addXref(1, color4f);
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // color3f(r, g, b, 1.0f);
+                        begin(),
+                        FLOAD_0,
+                        FLOAD_1,
+                        FLOAD_2,
+                        push(1.0f),
+                        captureReference(INVOKESTATIC),
+                        RETURN,
+                        end()
+                    );
+                }
+            });
+
             MethodRef glBlendFuncSeparate = new MethodRef(CLASS_NAME, "glBlendFuncSeparate", "(IIII)V");
             addMemberMapper(new MethodMapper(glBlendFuncSeparate));
+        } else {
+            color3f = glColor3f;
         }
     }
 
