@@ -124,11 +124,11 @@ public class CustomColors extends Mod {
             addClassMod(new BlockRedstoneWireMod());
             addClassMod(new ItemBlockMod());
             addClassMod(new RenderBlocksMod());
+            addClassMod(new ItemRendererMod());
         }
 
         addClassMod(new BiomeGenBaseMod(this));
         addClassMod(new ItemMod());
-        addClassMod(new ItemRendererMod());
 
         addClassMod(new PotionMod());
         addClassMod(new PotionHelperMod());
@@ -201,10 +201,11 @@ public class CustomColors extends Mod {
 
         addClassMod(new RenderXPOrbMod());
 
-        addClassFiles("com.prupe.mcpatcher.colormap.*");
         addClassFiles("com.prupe.mcpatcher.cc.*");
         if (IBlockStateMod.haveClass()) {
             removeAddedClassFile(MCPatcherUtils.COLORIZE_BLOCK_CLASS);
+        } else {
+            addClassFiles("com.prupe.mcpatcher.colormap.*");
         }
 
         TexturePackAPIMod.earlyInitialize(3, MCPatcherUtils.COLORIZER_CLASS, "init");
@@ -706,7 +707,7 @@ public class CustomColors extends Mod {
             final FieldRef itemID = haveItemID ? new FieldRef("ItemStack", "itemID", "I") : null;
 
             if (ResourceLocationMod.haveClass()) {
-                addClassSignature(new ConstSignature("textures/misc/enchanted_item_glint.png"));
+                addClassSignature(new ConstSignature("textures/misc/underwater.png"));
                 addClassSignature(new ConstSignature("textures/map/map_background.png"));
             } else {
                 addClassSignature(new ConstSignature("%blur%/misc/glint.png"));
@@ -4423,15 +4424,24 @@ public class CustomColors extends Mod {
     }
 
     private class ItemDyeMod extends ClassMod {
+        private final FieldRef dyeColorNames = new FieldRef(getDeobfClass(), "dyeColorNames", "[Ljava/lang/String;");
+        private final FieldRef dyeColors = new FieldRef(getDeobfClass(), "dyeColors", "[I");
+
         ItemDyeMod() {
-            final FieldRef dyeColorNames = new FieldRef(getDeobfClass(), "dyeColorNames", "[Ljava/lang/String;");
-            final FieldRef dyeColors = new FieldRef(getDeobfClass(), "dyeColors", "[I");
-
-            setParentClass("Item");
-
             addClassSignature(new ConstSignature("black"));
             addClassSignature(new ConstSignature("purple"));
             addClassSignature(new ConstSignature("cyan"));
+
+            if (IBlockStateMod.haveClass()) {
+                setup18();
+            } else {
+                setup17();
+            }
+        }
+
+        private void setup17() {
+            setParentClass("Item");
+
             addClassSignature(new ConstSignature(0x1e1b1b));
 
             addMemberMapper(new FieldMapper(dyeColorNames)
@@ -4442,6 +4452,68 @@ public class CustomColors extends Mod {
                     .accessFlag(AccessFlag.PUBLIC, true)
                     .accessFlag(AccessFlag.STATIC, true)
             );
+        }
+
+        // TODO
+        private void setup18() {
+            setInterfaces("INamed");
+
+            addPatch(new AddFieldPatch(dyeColorNames, AccessFlag.PUBLIC | AccessFlag.STATIC));
+            addPatch(new AddFieldPatch(dyeColors, AccessFlag.PUBLIC | AccessFlag.STATIC));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "initialize arrays";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // dyeColorNames = new String[16];
+                        push(16),
+                        reference(ANEWARRAY, new ClassRef("java/lang/String")),
+                        reference(PUTSTATIC, dyeColorNames),
+
+                        // dyeColors = new int[16];
+                        push(16),
+                        NEWARRAY, T_INT,
+                        reference(PUTSTATIC, dyeColors)
+                    );
+                }
+            }.matchStaticInitializerOnly(true));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "set color names";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // dyeColorNames[ordinal] = name;
+                        reference(GETSTATIC, dyeColorNames),
+                        ALOAD, 6,
+                        ILOAD_2,
+                        AASTORE
+                    );
+                }
+            }.matchConstructorOnly(true));
         }
     }
 
@@ -4480,10 +4552,48 @@ public class CustomColors extends Mod {
         EntitySheepMod() {
             addClassSignature(new ConstSignature("mob.sheep.say"));
 
+            if (IBlockStateMod.haveClass()) {
+                setup18();
+            } else {
+                setup17();
+            }
+        }
+
+        private void setup17() {
             addMemberMapper(new FieldMapper(fleeceColorTable)
                     .accessFlag(AccessFlag.PUBLIC, true)
                     .accessFlag(AccessFlag.STATIC, true)
             );
+        }
+
+        // TODO
+        private void setup18() {
+            addPatch(new AddFieldPatch(fleeceColorTable, AccessFlag.PUBLIC | AccessFlag.STATIC));
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "initialize array";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // fleeceColorTable = new float[3][16];
+                        push(3),
+                        push(16),
+                        reference(MULTIANEWARRAY, new ClassRef("[[F")), 2,
+                        reference(PUTSTATIC, fleeceColorTable)
+                    );
+                }
+            }.matchStaticInitializerOnly(true));
         }
     }
 
