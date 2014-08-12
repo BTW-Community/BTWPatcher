@@ -4456,8 +4456,8 @@ public class CustomColors extends Mod {
                     return buildCode(
                         // dyeColorNames[ordinal] = name;
                         reference(GETSTATIC, dyeColorNames),
-                        ALOAD, 6,
                         ILOAD_2,
+                        ALOAD, 6,
                         AASTORE
                     );
                 }
