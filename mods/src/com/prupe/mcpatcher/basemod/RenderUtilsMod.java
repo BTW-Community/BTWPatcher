@@ -152,6 +152,7 @@ public class RenderUtilsMod extends ClassMod {
         clearColor = simpleWrapper(glClearColor);
 
         if (haveClass()) {
+            color3f = new MethodRef(CLASS_NAME, glColor3f.getName(), glColor3f.getType());
             addClassSignature(new BytecodeSignature() {
                 {
                     setMethod(color3f);
