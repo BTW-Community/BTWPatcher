@@ -4083,7 +4083,6 @@ public class CustomColors extends Mod {
             final boolean intParam = getMinecraftVersion().compareTo("14w25a") >= 0;
             final MethodRef renderClouds = new MethodRef(getDeobfClass(), "renderClouds", "(F" + (intParam ? "I" : "") + ")V");
             final MethodRef renderCloudsFancy = new MethodRef(getDeobfClass(), "renderCloudsFancy", renderClouds.getType());
-            final MethodRef renderSky = new MethodRef(getDeobfClass(), "renderSky", "(F" + (intParam ? "I" : "") + ")V");
 
             RenderUtilsMod.setup(this);
 
@@ -4134,19 +4133,6 @@ public class CustomColors extends Mod {
                 }
             });
 
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        push(90.0f),
-                        push(1.0f),
-                        push(0.0f),
-                        push(0.0f),
-                        RenderUtilsMod.glRotatef(this)
-                    );
-                }
-            }.setMethod(renderSky));
-
             addPatch(new BytecodePatch() {
                 @Override
                 public String getDescription() {
@@ -4196,44 +4182,6 @@ public class CustomColors extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         reference(GETSTATIC, endSkyColor)
-                    );
-                }
-            }.targetMethod(renderSky));
-
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override mycelium particle color";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(lookBehind(build(
-                        // if (s.equals("townaura")) {
-                        ALOAD_1,
-                        push("townaura"),
-                        reference(INVOKEVIRTUAL, new MethodRef("java/lang/String", "equals", "(Ljava/lang/Object;)Z")),
-                        IFEQ, any(2),
-
-                        // obj = new EntityAuraFX(worldObj, d, d1, d2, d3, d4, d5);
-                        reference(NEW, new ClassRef("EntityAuraFX")),
-                        DUP,
-                        ALOAD_0,
-                        anyReference(GETFIELD),
-                        anyDLOAD,
-                        anyDLOAD,
-                        anyDLOAD,
-                        anyDLOAD,
-                        anyDLOAD,
-                        anyDLOAD,
-                        reference(INVOKESPECIAL, new MethodRef("EntityAuraFX", "<init>", "(LWorld;DDDDDD)V"))
-                    ), true));
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(INVOKEVIRTUAL, new MethodRef("EntityAuraFX", "colorize", "()LEntityAuraFX;"))
                     );
                 }
             });
