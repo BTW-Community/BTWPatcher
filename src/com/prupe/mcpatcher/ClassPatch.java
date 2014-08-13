@@ -71,6 +71,10 @@ abstract public class ClassPatch implements PatchComponent {
         Logger.log(Logger.LOG_PATCH, "%s %s", desc, extra);
     }
 
+    public ClassMod getClassMod() {
+        return classMod;
+    }
+
     // PatchComponent methods
 
     final public ClassFile getClassFile() {
