@@ -1,6 +1,8 @@
 package com.prupe.mcpatcher.mod;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.MethodRef;
+import com.prupe.mcpatcher.Mod;
 import com.prupe.mcpatcher.basemod.*;
 import com.prupe.mcpatcher.mal.TexturePackAPIMod;
 
@@ -23,6 +25,7 @@ public class CustomTexturesModels extends Mod {
         addDependency(MCPatcherUtils.BIOME_API_MOD);
 
         ResourceLocationMod.setup(this);
+        addClassMod(new TextureAtlasSpriteMod(this));
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new TessellatorMod(this));
         addClassMod(new TessellatorFactoryMod(this));
@@ -30,6 +33,8 @@ public class CustomTexturesModels extends Mod {
 
         addClassMod(new BlockMod(this));
         addClassMod(new RenderBlocks18Mod());
+        addClassMod(new ModelFaceMod());
+        addClassMod(new ModelFaceSpriteMod());
 
         addClassMod(new ItemMod(this));
 
@@ -120,6 +125,44 @@ public class CustomTexturesModels extends Mod {
                         anyALOAD,
                         anyALOAD,
                         captureReference(INVOKESPECIAL)
+                    );
+                }
+            });
+        }
+    }
+
+    private class ModelFaceMod extends ClassMod {
+        ModelFaceMod() {
+            addPrerequisiteClass("ModelFaceSprite");
+
+            addClassSignature(new InterfaceSignature(
+                new MethodRef(getDeobfClass(), "<init>", "([IILDirection;)V"),
+                new MethodRef(getDeobfClass(), "getIntBuffer", "()[I"),
+                new MethodRef(getDeobfClass(), "useColormap", "()Z"),
+                new MethodRef(getDeobfClass(), "getColor", "()I"),
+                new MethodRef(getDeobfClass(), "getDirection", "()LDirection;")
+            ).setInterfaceOnly(false));
+        }
+    }
+
+    private class ModelFaceSpriteMod extends ClassMod {
+        ModelFaceSpriteMod() {
+            setParentClass("ModelFace");
+
+            addClassSignature(new ConstSignature(new MethodRef("java/util/Arrays", "copyOf", "([II)[I")));
+            addClassSignature(new ConstSignature(new MethodRef("java/lang/Float", "intBitsToFloat", "(I)F")));
+            addClassSignature(new ConstSignature(16.0f));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // j = 7 * i;
+                        begin(),
+                        push(7),
+                        ILOAD_1,
+                        IMUL,
+                        ISTORE_2
                     );
                 }
             });
