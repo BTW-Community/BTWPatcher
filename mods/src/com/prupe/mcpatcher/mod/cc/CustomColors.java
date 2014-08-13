@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher.mod;
+package com.prupe.mcpatcher.mod.cc;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;

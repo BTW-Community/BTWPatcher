@@ -107,7 +107,7 @@ class ModList {
             boolean is18 = version.compareTo("14w25a") >= 0;
             register(new BuiltInMod(MCPatcherUtils.EXTENDED_HD, "com.prupe.mcpatcher.mod.ExtendedHD", loader));
             register(new BuiltInMod(MCPatcherUtils.RANDOM_MOBS, "com.prupe.mcpatcher.mod.RandomMobs", loader));
-            register(new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, "com.prupe.mcpatcher.mod.CustomColors", loader));
+            register(new BuiltInMod(MCPatcherUtils.CUSTOM_COLORS, "com.prupe.mcpatcher.mod.cc.CustomColors", loader));
             if (!is18) {
                 register(new BuiltInMod(MCPatcherUtils.CONNECTED_TEXTURES, "com.prupe.mcpatcher.mod.ConnectedTextures", loader));
                 register(new BuiltInMod(MCPatcherUtils.BETTER_GLASS, "com.prupe.mcpatcher.mod.BetterGlass", loader));
