@@ -87,10 +87,8 @@ class CC_Block {
             }
         }
         */
-    }
 
-    static MinecraftVersion getMinecraftVersion() {
-        return Mod.getMinecraftVersion();
+        mod.addClassFiles("com.prupe.mcpatcher.colormap.*");
     }
 
     private static class BlockMod extends com.prupe.mcpatcher.basemod.BlockMod {
