@@ -17,29 +17,7 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class CustomColors extends Mod {
-    private static final MethodRef colorizeBlock1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;)Z");
-    private static final MethodRef colorizeBlock2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;I)Z");
-    private static final MethodRef colorizeBlock3 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;LIBlockAccess;III)Z");
-    private static final MethodRef colorizeRedstoneWire = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeRedstoneWire", "(LIBlockAccess;IIII)I");
-    private static final MethodRef colorizeWaterBlockGL = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeWaterBlockGL", "(LBlock;)V");
-    private static final MethodRef colorizeSpawnerEgg = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "colorizeSpawnerEgg", "(III)I");
-    private static final MethodRef colorizeText1 = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "colorizeText", "(I)I");
-    private static final MethodRef colorizeText2 = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "colorizeText", "(II)I");
-    private static final MethodRef colorizeSignText = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "colorizeSignText", "()I");
-    private static final MethodRef colorizeXPOrb = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "colorizeXPOrb", "(IF)I");
-    private static final MethodRef computeUnderwaterColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeUnderwaterColor", "()Z");
-    private static final MethodRef computeFogColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeFogColor", "(LWorldProvider;F)Z");
-    private static final MethodRef computeSkyColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeSkyColor", "(LWorld;F)Z");
-    private static final MethodRef computeLavaDropColor = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "computeLavaDropColor", "(I)Z");
-    private static final MethodRef computeWaterColor1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeWaterColor", "(ZIII)Z");
-    private static final MethodRef computeWaterColor2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeWaterColor", "()V");
-    private static final MethodRef computeMyceliumParticleColor = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "computeMyceliumParticleColor", "()Z");
     private static final MethodRef computeRedstoneWireColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeRedstoneWireColor", "(I)Z");
-    private static final MethodRef getWaterBottleColor = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "getWaterBottleColor", "()I");
-    private static final MethodRef setupPotion = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "setupPotion", "(LPotion;)V");
-    private static final MethodRef setupForFog = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "setupForFog", "(LEntity;)V");
-    private static final MethodRef setupSpawnerEgg = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "setupSpawnerEgg", "(Ljava/lang/String;III)V");
-    private static final MethodRef drawFancyClouds = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "drawFancyClouds", "(Z)Z");
     private static final MethodRef setupBlockSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIII)Z");
     private static final MethodRef setupBlockSmoothing2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)Z");
     private static final MethodRef setupBlockSmoothing3 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothingGrassSide", "(LRenderBlocks;LBlock;LIBlockAccess;IIIIFFFF)Z");
@@ -47,15 +25,6 @@ public class CustomColors extends Mod {
     private static final MethodRef setColorF = new MethodRef(MCPatcherUtils.COLORIZER_CLASS, "setColorF", "(I)V");
 
     private static final FieldRef setColor = new FieldRef(MCPatcherUtils.COLORIZER_CLASS, "setColor", "[F");
-    private static final FieldRef blockColor = new FieldRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "blockColor", "I");
-    private static final FieldRef endFogColor = new FieldRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "endFogColor", "[F");
-    private static final FieldRef endSkyColor = new FieldRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "endSkyColor", "I");
-    private static final FieldRef netherFogColor = new FieldRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "netherFogColor", "[F");
-    private static final FieldRef portalColor = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "portalColor", "[F");
-    private static final FieldRef armorColors = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "armorColors", "[[F");
-    private static final FieldRef collarColors = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "collarColors", "[[F");
-    private static final FieldRef undyedLeatherColor = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "undyedLeatherColor", "I");
-    private static final FieldRef isSmooth = new FieldRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "isSmooth", "Z");
 
     private static final MethodRef getColorFromDamage = new MethodRef("Item", "getColorFromDamage", "(LItemStack;I)I");
     private static final FieldRef fleeceColorTable = new FieldRef("EntitySheep", "fleeceColorTable", "[[F");
@@ -449,6 +418,11 @@ public class CustomColors extends Mod {
 
     private class BlockSubclassMod extends ClassMod {
         public BlockSubclassMod() {
+            final MethodRef colorizeBlock1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;)Z");
+            final MethodRef colorizeBlock2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;I)Z");
+            final MethodRef colorizeBlock3 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeBlock", "(LBlock;LIBlockAccess;III)Z");
+            final FieldRef blockColor = new FieldRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "blockColor", "I");
+
             setMultipleMatchesAllowed(true);
 
             addClassSignature(new AncestorClassSignature("Block"));
@@ -705,6 +679,7 @@ public class CustomColors extends Mod {
             final MethodRef glTranslatef = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTranslatef", "(FFF)V");
             final boolean haveItemID = getMinecraftVersion().compareTo("13w36a") < 0;
             final FieldRef itemID = haveItemID ? new FieldRef("ItemStack", "itemID", "I") : null;
+            final MethodRef colorizeWaterBlockGL = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeWaterBlockGL", "(LBlock;)V");
 
             if (ResourceLocationMod.haveClass()) {
                 addClassSignature(new ConstSignature("textures/misc/underwater.png"));
@@ -822,6 +797,7 @@ public class CustomColors extends Mod {
             final FieldRef origColor = new FieldRef(getDeobfClass(), "origColor", "I");
             final FieldRef potionName = new FieldRef(getDeobfClass(), "name", "Ljava/lang/String;");
             final MethodRef setPotionName = new MethodRef(getDeobfClass(), "setPotionName", "(Ljava/lang/String;)LPotion;");
+            final MethodRef setupPotion = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "setupPotion", "(LPotion;)V");
 
             addClassSignature(new ConstSignature("potion.moveSpeed"));
             addClassSignature(new ConstSignature("potion.moveSlowdown"));
@@ -930,6 +906,7 @@ public class CustomColors extends Mod {
             final MethodRef getPotionColor = new MethodRef(getDeobfClass(), "getPotionColor", "(IZ)I");
             final MethodRef integerValueOf = new MethodRef("java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
             final MethodRef getPotionColorCache = new MethodRef(getDeobfClass(), "getPotionColorCache", "()Ljava/util/Map;");
+            final MethodRef getWaterBottleColor = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "getWaterBottleColor", "()I");
 
             addClassSignature(new ConstSignature("potion.prefix.mundane"));
             addClassSignature(new ConstSignature(MAGIC));
@@ -1011,6 +988,8 @@ public class CustomColors extends Mod {
             mapLightningFlash();
 
             final MethodRef getWorldChunkManager = new MethodRef(getDeobfClass(), "getWorldChunkManager", "()LWorldChunkManager;");
+            final MethodRef computeSkyColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeSkyColor", "(LWorld;F)Z");
+            final MethodRef setupForFog = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "setupForFog", "(LEntity;)V");
 
             addMemberMapper(new MethodMapper(getWorldChunkManager));
 
@@ -1138,6 +1117,7 @@ public class CustomColors extends Mod {
 
             final FieldRef worldObj = new FieldRef(getDeobfClass(), "worldObj", "LWorld;");
             final MethodRef getFogColor = new MethodRef(getDeobfClass(), "getFogColor", "(FF)LVec3D;");
+            final MethodRef computeFogColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeFogColor", "(LWorldProvider;F)Z");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -1228,6 +1208,7 @@ public class CustomColors extends Mod {
             setParentClass("WorldProvider");
 
             final MethodRef getFogColor = new MethodRef(getDeobfClass(), "getFogColor", "(FF)LVec3D;");
+            final FieldRef netherFogColor = new FieldRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "netherFogColor", "[F");
 
             addClassSignature(new ConstSignature(MAGIC1));
             addClassSignature(new ConstSignature(MAGIC2));
@@ -1306,6 +1287,7 @@ public class CustomColors extends Mod {
             });
 
             final MethodRef getFogColor = new MethodRef(getDeobfClass(), "getFogColor", "(FF)LVec3D;");
+            final FieldRef endFogColor = new FieldRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "endFogColor", "[F");
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -1488,6 +1470,7 @@ public class CustomColors extends Mod {
             final FieldRef posX = new FieldRef(getDeobfClass(), "posX", "D");
             final FieldRef posY = new FieldRef(getDeobfClass(), "posY", "D");
             final FieldRef posZ = new FieldRef(getDeobfClass(), "posZ", "D");
+            final MethodRef computeWaterColor1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeWaterColor", "(ZIII)Z");
 
             addPatch(new BytecodePatch() {
                 {
@@ -1638,6 +1621,7 @@ public class CustomColors extends Mod {
             final FieldRef particleBlue = new FieldRef(getDeobfClass(), "particleBlue", "F");
             final FieldRef timer = new FieldRef(getDeobfClass(), "timer", "I");
             final MethodRef onUpdate = new MethodRef(getDeobfClass(), "onUpdate", "()V");
+            final MethodRef computeLavaDropColor = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "computeLavaDropColor", "(I)Z");
 
             addClassSignature(new BytecodeSignature() {
                 {
@@ -1927,6 +1911,8 @@ public class CustomColors extends Mod {
     }
 
     private class EntityPortalFXMod extends ClassMod {
+        private final FieldRef portalColor = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "portalColor", "[F");
+
         EntityPortalFXMod() {
             setParentClass("EntityFX");
 
@@ -2022,6 +2008,7 @@ public class CustomColors extends Mod {
             final FieldRef particleRed = new FieldRef(getDeobfClass(), "particleRed", "F");
             final FieldRef particleGreen = new FieldRef(getDeobfClass(), "particleGreen", "F");
             final FieldRef particleBlue = new FieldRef(getDeobfClass(), "particleBlue", "F");
+            final MethodRef computeMyceliumParticleColor = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "computeMyceliumParticleColor", "()Z");
 
             addClassSignature(new ConstSignature(0.019999999552965164));
 
@@ -2218,6 +2205,7 @@ public class CustomColors extends Mod {
             final MethodRef getNightVisionStrength1 = new MethodRef(getDeobfClass(), "getNightVisionStrength1", "(" + nvEntity + "F)F");
             final MethodRef getNightVisionStrength = new MethodRef(getDeobfClass(), "getNightVisionStrength", "(F)F");
             final MethodRef reloadTexture = new MethodRef("DynamicTexture", "reload", "()V");
+            final MethodRef computeUnderwaterColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeUnderwaterColor", "()Z");
 
             addClassSignature(new ConstSignature("ambient.weather.rain"));
 
@@ -2701,6 +2689,7 @@ public class CustomColors extends Mod {
             setParentClass("Block");
 
             final MethodRef randomDisplayTick = new MethodRef("BlockRedstoneWire", "randomDisplayTick", "(LWorld;" + PositionMod.getDescriptor() + "Ljava/util/Random;)V");
+            final MethodRef colorizeRedstoneWire = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "colorizeRedstoneWire", "(LIBlockAccess;IIII)I");
 
             setupRedstoneWire(this, "override redstone wire particle color", randomDisplayTick);
 
@@ -3523,6 +3512,7 @@ public class CustomColors extends Mod {
 
     private void setupFluids(final com.prupe.mcpatcher.ClassMod classMod, final MethodRef renderBlockFluids) {
         final FieldRef blockAccess = new FieldRef(classMod.getDeobfClass(), "blockAccess", "LIBlockAccess;");
+        final FieldRef isSmooth = new FieldRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "isSmooth", "Z");
 
         classMod.addPatch(new TessellatorPatch(classMod) {
             private int[] waterRegisters;
@@ -3927,6 +3917,8 @@ public class CustomColors extends Mod {
     }
 
     private void setupCauldron(com.prupe.mcpatcher.ClassMod classMod, final MethodRef renderBlockCauldron) {
+        final MethodRef computeWaterColor2 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "computeWaterColor", "()V");
+
         classMod.addPatch(new TessellatorPatch(classMod) {
             {
                 setInsertAfter(true);
@@ -4083,6 +4075,8 @@ public class CustomColors extends Mod {
             final boolean intParam = getMinecraftVersion().compareTo("14w25a") >= 0;
             final MethodRef renderClouds = new MethodRef(getDeobfClass(), "renderClouds", "(F" + (intParam ? "I" : "") + ")V");
             final MethodRef renderCloudsFancy = new MethodRef(getDeobfClass(), "renderCloudsFancy", renderClouds.getType());
+            final MethodRef drawFancyClouds = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "drawFancyClouds", "(Z)Z");
+            final FieldRef endSkyColor = new FieldRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "endSkyColor", "I");
 
             RenderUtilsMod.setup(this);
 
@@ -4193,6 +4187,7 @@ public class CustomColors extends Mod {
             addClassSignature(new ConstSignature("Skipping Entity with id "));
 
             final MethodRef addMapping = new MethodRef(getDeobfClass(), "addMapping", "(Ljava/lang/Class;Ljava/lang/String;III)V");
+            final MethodRef setupSpawnerEgg = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "setupSpawnerEgg", "(Ljava/lang/String;III)V");
 
             addMemberMapper(new MethodMapper(addMapping).accessFlag(AccessFlag.STATIC, true));
 
@@ -4229,6 +4224,7 @@ public class CustomColors extends Mod {
             final MethodRef getItemNameIS = new MethodRef(getDeobfClass(), "getItemNameIS", "(LItemStack;)Ljava/lang/String;");
             final MethodRef getItemDamage = new MethodRef("ItemStack", "getItemDamage", "()I");
             final MethodRef getEntityString = new MethodRef("EntityList", "getEntityString", "(I)Ljava/lang/String;");
+            final MethodRef colorizeSpawnerEgg = new MethodRef(MCPatcherUtils.COLORIZE_ITEM_CLASS, "colorizeSpawnerEgg", "(III)I");
 
             setParentClass("Item");
 
@@ -4469,6 +4465,8 @@ public class CustomColors extends Mod {
         private final int DEFAULT_LEATHER_COLOR = 0xa06540;
 
         ItemArmorMod() {
+            final FieldRef undyedLeatherColor = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "undyedLeatherColor", "I");
+
             addClassSignature(new ConstSignature("display"));
             addClassSignature(new ConstSignature("color"));
             addClassSignature(new ConstSignature(DEFAULT_LEATHER_COLOR));
@@ -4546,6 +4544,8 @@ public class CustomColors extends Mod {
     }
 
     private class RenderWolfMod extends ClassMod {
+        private final FieldRef collarColors = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "collarColors", "[[F");
+
         RenderWolfMod() {
             setParentClass("RenderLivingEntity");
             RenderUtilsMod.setup(this);
@@ -4630,6 +4630,8 @@ public class CustomColors extends Mod {
 
     private class RecipesDyedArmorMod extends ClassMod {
         RecipesDyedArmorMod() {
+            final FieldRef armorColors = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "armorColors", "[[F");
+
             addClassSignature(new ConstSignature(255.0f));
 
             addClassSignature(new BytecodeSignature() {
@@ -4699,8 +4701,9 @@ public class CustomColors extends Mod {
 
             final String renderStringArgs = IBlockStateMod.haveClass() ? "FF" : "II";
             final MethodRef renderString = new MethodRef(getDeobfClass(), "renderString", "(Ljava/lang/String;" + renderStringArgs + "IZ)I");
-            final MethodRef glColor4f = new MethodRef(MCPatcherUtils.GL11_CLASS, "glColor4f", "(FFFF)V");
             final FieldRef colorCode = new FieldRef(getDeobfClass(), "colorCode", "[I");
+            final MethodRef colorizeText1 = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "colorizeText", "(I)I");
+            final MethodRef colorizeText2 = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "colorizeText", "(II)I");
 
             addClassSignature(new BytecodeSignature() {
                 {
@@ -4792,6 +4795,7 @@ public class CustomColors extends Mod {
             RenderUtilsMod.setup(this);
 
             final FieldRef sign;
+            final MethodRef colorizeSignText = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "colorizeSignText", "()I");
 
             if (ResourceLocationMod.haveClass()) {
                 sign = new FieldRef(getDeobfClass(), "sign", "LResourceLocation;");
@@ -4843,6 +4847,8 @@ public class CustomColors extends Mod {
 
     private class RenderXPOrbMod extends ClassMod {
         RenderXPOrbMod() {
+            final MethodRef colorizeXPOrb = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "colorizeXPOrb", "(IF)I");
+
             addClassSignature(new ConstSignature(ResourceLocationMod.select("/item/xporb.png", "textures/entity/experience_orb.png")));
 
             addPatch(new BytecodePatch() {
