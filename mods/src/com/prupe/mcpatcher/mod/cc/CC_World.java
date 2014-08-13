@@ -5,8 +5,9 @@ import com.prupe.mcpatcher.basemod.*;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
+import static com.prupe.mcpatcher.mod.cc.CustomColors.getMinecraftVersion;
+import static com.prupe.mcpatcher.mod.cc.CustomColors.setColor;
 import static javassist.bytecode.Opcode.*;
-import static com.prupe.mcpatcher.mod.cc.CustomColors.*;
 
 class CC_World {
     static void setup(Mod mod) {

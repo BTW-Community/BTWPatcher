@@ -1,14 +1,16 @@
 package com.prupe.mcpatcher.mod.cc;
 
 import com.prupe.mcpatcher.*;
-import com.prupe.mcpatcher.basemod.*;
+import com.prupe.mcpatcher.basemod.DirectionMod;
+import com.prupe.mcpatcher.basemod.PositionMod;
+import com.prupe.mcpatcher.basemod.ResourceLocationMod;
 import com.prupe.mcpatcher.mal.BlockAPIMod;
 import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
-import static javassist.bytecode.Opcode.*;
 import static com.prupe.mcpatcher.mod.cc.CustomColors.*;
+import static javassist.bytecode.Opcode.*;
 
 class CC_Block {
     private static final MethodRef setupBlockSmoothing1 = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK_CLASS, "setupBlockSmoothing", "(LRenderBlocks;LBlock;LIBlockAccess;IIII)Z");

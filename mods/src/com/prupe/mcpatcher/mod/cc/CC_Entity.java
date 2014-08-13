@@ -6,8 +6,8 @@ import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
-import static javassist.bytecode.Opcode.*;
 import static com.prupe.mcpatcher.mod.cc.CustomColors.*;
+import static javassist.bytecode.Opcode.*;
 
 class CC_Entity {
     private static final FieldRef fleeceColorTable = new FieldRef("EntitySheep", "fleeceColorTable", "[[F");
