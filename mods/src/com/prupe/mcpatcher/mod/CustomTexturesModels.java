@@ -231,6 +231,8 @@ public class CustomTexturesModels extends Mod {
         ModelFaceSpriteMod() {
             setParentClass("ModelFace");
 
+            final FieldRef sprite = new FieldRef(getDeobfClass(), "sprite", "LTextureAtlasSprite;");
+
             addClassSignature(new ConstSignature(new MethodRef("java/util/Arrays", "copyOf", "([II)[I")));
             addClassSignature(new ConstSignature(new MethodRef("java/lang/Float", "intBitsToFloat", "(I)F")));
             addClassSignature(new ConstSignature(16.0f));
@@ -248,6 +250,10 @@ public class CustomTexturesModels extends Mod {
                     );
                 }
             });
+
+            addMemberMapper(new FieldMapper(sprite));
+
+            addPatch(new MakeMemberPublicPatch(sprite));
         }
     }
 }
