@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher.mod;
 
+import com.prupe.mcpatcher.FieldRef;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
@@ -31,8 +32,10 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new TessellatorFactoryMod(this));
         addClassMod(new BiomeGenBaseMod(this));
 
-        addClassMod(new BlockMod(this));
-        addClassMod(new RenderBlocks18Mod());
+        addClassMod(new BlockMod());
+        addClassMod(new RenderBlockCustomMod());
+        addClassMod(new RenderBlockCustomInnerMod());
+        addClassMod(new DirectionWithAOMod());
         addClassMod(new ModelFaceMod());
         addClassMod(new ModelFaceSpriteMod());
 
@@ -53,12 +56,22 @@ public class CustomTexturesModels extends Mod {
         };
     }
 
-    private class RenderBlocks18Mod extends ClassMod {
-        RenderBlocks18Mod() {
+    private class BlockMod extends com.prupe.mcpatcher.basemod.BlockMod {
+        BlockMod() {
+            super(CustomTexturesModels.this);
+
+            final MethodRef colorMultiplier = new MethodRef(getDeobfClass(), "colorMultiplier", "(LIBlockAccess;LPosition;I)I");
+
+            addMemberMapper(new MethodMapper(colorMultiplier));
+        }
+    }
+
+    private class RenderBlockCustomMod extends ClassMod {
+        RenderBlockCustomMod() {
             final MethodRef renderBlock = new MethodRef(getDeobfClass(), "renderBlock", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LTessellator;Z)Z");
             final MethodRef renderBlockAO = new MethodRef(getDeobfClass(), "renderBlockAO", "(LIBlockAccess;LIModel;LBlock;LPosition;LTessellator;Z)Z");
             final MethodRef renderBlockNonAO = new MethodRef(getDeobfClass(), "renderBlockNonAO", "(LIBlockAccess;LIModel;LBlock;LPosition;LTessellator;Z)Z");
-            final MethodRef renderFaceAO = new MethodRef(getDeobfClass(), "renderFaceAO", "(LIBlockAccess;LBlock;LPosition;LTessellator;Ljava/util/List;[FLjava/util/BitSet;LRenderBlocks18Inner;)V");
+            final MethodRef renderFaceAO = new MethodRef(getDeobfClass(), "renderFaceAO", "(LIBlockAccess;LBlock;LPosition;LTessellator;Ljava/util/List;[FLjava/util/BitSet;LRenderBlockCustomInner;)V");
             final MethodRef renderFaceNonAO = new MethodRef(getDeobfClass(), "renderFaceNonAO", "(LIBlockAccess;LBlock;LPosition;LDirection;IZLTessellator;Ljava/util/List;Ljava/util/BitSet;)V");
 
             addClassSignature(new ConstSignature(0xf000f));
@@ -128,6 +141,75 @@ public class CustomTexturesModels extends Mod {
                     );
                 }
             });
+        }
+    }
+
+    private class RenderBlockCustomInnerMod extends ClassMod {
+        public RenderBlockCustomInnerMod() {
+            final MethodRef mixAOBrightness = new MethodRef(getDeobfClass(), "mixAOBrightness", "(IIII)I");
+            final MethodRef computeVertexColors = new MethodRef(getDeobfClass(), "computeVertexColors", "(LIBlockAccess;LBlock;LPosition;LDirection;[FLjava/util/BitSet;)V");
+            final FieldRef renderBlocks = new FieldRef(getDeobfClass(), "renderBlocks", "LRenderBlockCustom;");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // (var24 + var21 + var30 + var38) / 4.0f
+                        anyFLOAD,
+                        anyFLOAD,
+                        FADD,
+                        anyFLOAD,
+                        FADD,
+                        anyFLOAD,
+                        FADD,
+                        push(0.25f),
+                        FMUL
+                    );
+                }
+            }.setMethod(computeVertexColors));
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // return ((var1 + var2 + var3 + var4) >> 2) & 0xff00ff;
+                        ILOAD_1,
+                        ILOAD_2,
+                        IADD,
+                        ILOAD_3,
+                        IADD,
+                        ILOAD, 4,
+                        IADD,
+                        push(2),
+                        ISHR,
+                        push(0xff00ff),
+                        IAND,
+                        IRETURN,
+                        end()
+                    );
+                }
+            }.setMethod(mixAOBrightness));
+
+            addMemberMapper(new FieldMapper(renderBlocks));
+        }
+    }
+
+    private class DirectionWithAOMod extends ClassMod {
+        DirectionWithAOMod() {
+            final FieldRef aoMultiplier = new FieldRef(getDeobfClass(), "aoMultiplier", "F");
+
+            addClassSignature(new ConstSignature("DOWN"));
+            addClassSignature(new ConstSignature("UP"));
+            addClassSignature(new ConstSignature("NORTH"));
+            addClassSignature(new ConstSignature("SOUTH"));
+            addClassSignature(new ConstSignature("WEST"));
+            addClassSignature(new ConstSignature("EAST"));
+
+            addClassSignature(new ConstSignature(0.5f));
+            addClassSignature(new ConstSignature(0.6f));
+            addClassSignature(new ConstSignature(0.8f));
+
+            addMemberMappers("final !static", aoMultiplier);
         }
     }
 
