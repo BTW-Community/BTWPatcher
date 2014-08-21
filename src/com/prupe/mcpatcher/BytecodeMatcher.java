@@ -190,6 +190,10 @@ public class BytecodeMatcher extends BinaryMatcher {
         return BinaryRegex.build(opcode, BinaryRegex.any(opcode == INVOKEINTERFACE ? 4 : 2));
     }
 
+    public static String anyReference(int... opcodes) {
+        return BinaryRegex.build(BinaryRegex.subset(opcodes, true), BinaryRegex.any(opcodes[0] == INVOKEINTERFACE ? 4 : 2));
+    }
+
     /**
      * Convenience method for BinaryRegex.capture(anyReference(...))
      *
@@ -198,6 +202,10 @@ public class BytecodeMatcher extends BinaryMatcher {
      */
     public static String captureReference(int opcode) {
         return BinaryRegex.capture(anyReference(opcode));
+    }
+
+    public static String captureReference(int... opcodes) {
+        return BinaryRegex.capture(anyReference(opcodes));
     }
 
     private static byte[] registerLoadStore(int[] x, int y, int register) {
