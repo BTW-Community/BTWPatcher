@@ -2,6 +2,7 @@ package com.prupe.mcpatcher;
 
 import javassist.bytecode.*;
 
+import java.util.BitSet;
 import java.util.List;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -181,6 +182,52 @@ public class BytecodeMatcher extends BinaryMatcher {
     private static final int[] DLOAD_OPCODES = {DLOAD_0, DLOAD_1, DLOAD_2, DLOAD_3};
     private static final int[] DSTORE_OPCODES = {DSTORE_0, DSTORE_1, DSTORE_2, DSTORE_3};
 
+    private static int getOpcodeByteCount(int opcode) {
+        opcode &= 0xff;
+        switch (opcode) {
+            case LDC:
+                return 1;
+
+            case LDC_W:
+            case LDC2_W:
+            case NEW:
+            case ANEWARRAY:
+            case CHECKCAST:
+            case INSTANCEOF:
+            case GETSTATIC:
+            case PUTSTATIC:
+            case GETFIELD:
+            case PUTFIELD:
+            case INVOKESPECIAL:
+            case INVOKEVIRTUAL:
+            case INVOKESTATIC:
+                return 2;
+
+            case MULTIANEWARRAY:
+                return 3;
+
+            case INVOKEINTERFACE:
+            case INVOKEDYNAMIC:
+                return 4;
+
+            default:
+                throw new IllegalArgumentException("opcode " + Mnemonic.OPCODE[opcode]);
+        }
+    }
+
+    private static String toRegex(BitSet bits) {
+        if (bits.isEmpty()) {
+            return null;
+        } else {
+            int[] ints = new int[bits.cardinality()];
+            int i = 0;
+            for (int bit = bits.nextSetBit(0); bit >= 0; bit = bits.nextSetBit(bit + 1)) {
+                ints[i++] = bit;
+            }
+            return subset(ints, true);
+        }
+    }
+
     /**
      * Regex that matches any opcode+16-bit const pool index
      *
@@ -188,11 +235,29 @@ public class BytecodeMatcher extends BinaryMatcher {
      * @return regex
      */
     public static String anyReference(int opcode) {
-        return build(opcode, any(opcode == INVOKEINTERFACE ? 4 : 2));
+        return build(opcode, any(getOpcodeByteCount(opcode)));
     }
 
+    /**
+     * Regex that matches any opcode+16-bit const pool index
+     *
+     * @param opcodes list of opcodes, e.g., INVOKEVIRTUAL, INVOKESPECIAL
+     * @return regex
+     */
     public static String anyReference(int... opcodes) {
-        return build(subset(opcodes, true), any(opcodes[0] == INVOKEINTERFACE ? 4 : 2));
+        BitSet[] bits = new BitSet[5];
+        for (int i = 1; i < bits.length; i++) {
+            bits[i] = new BitSet();
+        }
+        for (int opcode : opcodes) {
+            opcode &= 0xff;
+            bits[getOpcodeByteCount(opcode)].set(opcode);
+        }
+        String[] expr = new String[5];
+        for (int i = 1; i < bits.length; i++) {
+            expr[i] = build(toRegex(bits[i]), any(i));
+        }
+        return or(expr);
     }
 
     /**
@@ -205,6 +270,12 @@ public class BytecodeMatcher extends BinaryMatcher {
         return capture(anyReference(opcode));
     }
 
+    /**
+     * Convenience method for capture(anyReference(...))
+     *
+     * @param opcodes list of opcodes, e.g., INVOKEVIRTUAL, INVOKESPECIAL
+     * @return regex
+     */
     public static String captureReference(int... opcodes) {
         return capture(anyReference(opcodes));
     }
