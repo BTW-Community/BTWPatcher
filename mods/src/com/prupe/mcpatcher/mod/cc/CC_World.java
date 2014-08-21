@@ -458,7 +458,7 @@ class CC_World {
                         ALOAD_0,
                         FLOAD_1,
                         intParam ? build(ILOAD_2) : "",
-                        captureReference(INVOKESPECIAL),
+                        captureReference(INVOKESPECIAL, INVOKEVIRTUAL),
                         or(build(GOTO, any(2)), build(RETURN)),
 
                         // ...
