@@ -1,5 +1,7 @@
 package com.prupe.mcpatcher;
 
+import java.util.BitSet;
+
 /**
  * Collection of static methods for building regular expressions suitable for matching binary data.
  */
@@ -10,12 +12,14 @@ public class BinaryRegex {
     private static final char[] HEX_DIGIT = HEX_DIGIT_S.toCharArray();
 
     private static final char[][] BYTES = new char[256][BYTE_LEN];
+    private static final String[] BYTES_S = new String[256];
 
     static {
         for (int i = 0; i < BYTES.length; i++) {
             BYTES[i][0] = ' ';
             BYTES[i][1] = HEX_DIGIT[i >> 4];
             BYTES[i][2] = HEX_DIGIT[i & 0xf];
+            BYTES_S[i] = new String(BYTES[i]);
         }
     }
 
@@ -29,14 +33,14 @@ public class BinaryRegex {
      * @return String regex
      */
     public static String build(Object... objects) {
-        StringBuilder sb = new StringBuilder();
-        return build1(sb, objects) ? sb.toString() : null;
+        StringBuilder sb = build1(new StringBuilder(), objects);
+        return sb == null ? null : sb.toString();
     }
 
-    private static boolean build1(StringBuilder sb, Object[] objects) {
+    private static StringBuilder build1(StringBuilder sb, Object[] objects) {
         for (Object o : objects) {
             if (o == null) {
-                return false;
+                return null;
             } else if (o instanceof Byte) {
                 sb.append(literal((Byte) o));
             } else if (o instanceof byte[]) {
@@ -50,12 +54,15 @@ public class BinaryRegex {
             } else if (o instanceof Character) {
                 sb.append(literal((int) (Character) o));
             } else if (o instanceof Object[]) {
-                return build1(sb, (Object[]) o);
+                sb = build1(sb, (Object[]) o);
+                if (sb == null) {
+                    break;
+                }
             } else {
                 throw new IllegalArgumentException("unknown binary regex type: " + o.getClass().getSimpleName() + " " + o);
             }
         }
-        return true;
+        return sb;
     }
 
     /**
@@ -75,7 +82,7 @@ public class BinaryRegex {
      * @return String regex
      */
     public static String literal(byte b) {
-        return new String(BYTES[b & 0xff]);
+        return BYTES_S[b & 0xff];
     }
 
     /**
@@ -127,7 +134,11 @@ public class BinaryRegex {
      * @return String regex
      */
     public static String optional(String regex) {
-        return regex == null ? "" : String.format("(?:%s)?", regex);
+        if (regex == null) {
+            return "";
+        } else {
+            return "(?:" + regex + ")?";
+        }
     }
 
     /**
@@ -169,7 +180,7 @@ public class BinaryRegex {
      */
     public static String repeat(String regex, int count) {
         if (regex != null) {
-            return String.format("(?:%s){%d}", regex, count);
+            return "(?:" + regex + "){" + count + '}';
         } else if (count > 0) {
             return null;
         } else {
@@ -187,7 +198,7 @@ public class BinaryRegex {
      */
     public static String repeat(String regex, int min, int max) {
         if (regex != null) {
-            return String.format("(?:%s){%d,%d}", regex, min, max);
+            return "(?:" + regex + "){" + min + ',' + max + '}';
         } else if (min > 0) {
             return null;
         } else {
@@ -204,8 +215,8 @@ public class BinaryRegex {
     public static String nonGreedy(String regex) {
         if (regex == null) {
             return null;
-        } else if ("*+?}".contains(regex.substring(regex.length() - 1))) {
-            return regex + "?";
+        } else if (regex.length() > 0 && "*+?}".contains(regex.substring(regex.length() - 1))) {
+            return regex + '?';
         } else {
             return regex;
         }
@@ -219,16 +230,31 @@ public class BinaryRegex {
      * @return String regex
      */
     public static String subset(byte[] byteList, boolean positive) {
-        int[] intList;
-        if (byteList == null) {
-            intList = null;
+        return subset(positive, byteList);
+    }
+
+    /**
+     * Matches a specified set of bytes: [...] or [^...]
+     *
+     * @param byteList array of bytes to match
+     * @param positive if true, match bytes; if false, match complement
+     * @return String regex
+     */
+    public static String subset(boolean positive, byte... byteList) {
+        if (byteList == null || byteList.length == 0) {
+            return positive ? null : any();
+        } else if (positive && byteList.length == 1) {
+            return literal(byteList[0]);
         } else {
-            intList = new int[byteList.length];
-            for (int i = 0; i < byteList.length; i++) {
-                intList[i] = byteList[i];
+            BitSet allowed = new BitSet(256);
+            if (!positive) {
+                allowed.flip(0, 256);
             }
+            for (int i : byteList) {
+                allowed.set(i & 0xff, positive);
+            }
+            return subset(allowed);
         }
-        return subset(intList, positive);
     }
 
     /**
@@ -239,33 +265,54 @@ public class BinaryRegex {
      * @return String regex
      */
     public static String subset(int[] intList, boolean positive) {
-        boolean[] allowed = new boolean[256];
-        int i;
-        for (i = 0; i < allowed.length; i++) {
-            allowed[i] = !positive;
-        }
-        if (intList != null) {
-            for (i = 0; i < intList.length; i++) {
-                allowed[intList[i] & 0xff] = positive;
-            }
-        }
+        return subset(positive, intList);
+    }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("(?:");
-        boolean first = true;
-        for (i = 0; i < allowed.length; i++) {
-            if (allowed[i]) {
+    /**
+     * Matches a specified set of bytes: [...] or [^...]
+     *
+     * @param intList  array of bytes to match
+     * @param positive if true, match bytes; if false, match complement
+     * @return String regex
+     */
+    public static String subset(boolean positive, int... intList) {
+        if (intList == null || intList.length == 0) {
+            return positive ? null : any();
+        } else if (positive && intList.length == 1) {
+            return literal(intList[0]);
+        } else {
+            BitSet allowed = new BitSet(256);
+            if (!positive) {
+                allowed.flip(0, 256);
+            }
+            for (int i : intList) {
+                allowed.set(i & 0xff, positive);
+            }
+            return subset(allowed);
+        }
+    }
+
+    private static String subset(BitSet allowed) {
+        if (allowed.isEmpty()) {
+            return null;
+        } else if (allowed.cardinality() == 1) {
+            return literal(allowed.nextSetBit(0));
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append("(?:");
+            boolean first = true;
+            for (int i = allowed.nextSetBit(0); i >= 0; i = allowed.nextSetBit(i + 1)) {
                 if (first) {
                     first = false;
                 } else {
-                    sb.append("|");
+                    sb.append('|');
                 }
                 sb.append(BYTES[i]);
             }
-        }
-        sb.append(")");
+            sb.append(')');
 
-        return sb.toString();
+            return sb.toString();
+        }
     }
 
     /**
@@ -277,19 +324,24 @@ public class BinaryRegex {
     public static String or(String... regexes) {
         StringBuilder sb = new StringBuilder();
         sb.append("(?:");
-        boolean first = true;
+        String firstNonNull = null;
+        int nonNullCount = 0;
         for (String regex : regexes) {
             if (regex == null) {
                 continue;
-            } else if (first) {
-                first = false;
+            }
+            if (nonNullCount++ == 0) {
+                firstNonNull = regex;
             } else {
-                sb.append("|");
+                sb.append('|');
             }
             sb.append(regex);
         }
-        sb.append(")");
-        return first ? null : sb.toString();
+        if (nonNullCount <= 1) {
+            return firstNonNull;
+        } else {
+            return sb.append(')').toString();
+        }
     }
 
     /**
@@ -299,7 +351,7 @@ public class BinaryRegex {
      * @return String regex
      */
     public static String capture(String regex) {
-        return regex == null ? null : "(" + regex + ")";
+        return regex == null ? null : '(' + regex + ')';
     }
 
     /**
@@ -309,7 +361,7 @@ public class BinaryRegex {
      * @return String regex
      */
     public static String backReference(int group) {
-        return "\\" + group;
+        return '\\' + String.valueOf(group);
     }
 
     /**
@@ -321,7 +373,7 @@ public class BinaryRegex {
      */
     public static String lookAhead(String regex, boolean positive) {
         if (regex != null) {
-            return String.format("(?%s%s)", (positive ? "=" : "!"), regex);
+            return "(?" + (positive ? '=' : '!') + regex + ')';
         } else if (positive) {
             return null;
         } else {
@@ -338,7 +390,7 @@ public class BinaryRegex {
      */
     public static String lookBehind(String regex, boolean positive) {
         if (regex != null) {
-            return String.format("(?<%s%s)", (positive ? "=" : "!"), regex);
+            return "(?<" + (positive ? '=' : '!') + regex + ')';
         } else if (positive) {
             return null;
         } else {
@@ -346,9 +398,9 @@ public class BinaryRegex {
         }
     }
 
-    static String binToStr(final byte[] b) {
-        final int length = b.length;
-        final char[] buffer = new char[length * BYTE_LEN];
+    static String binToStr(byte[] b) {
+        int length = b.length;
+        char[] buffer = new char[length * BYTE_LEN];
         for (int i = 0, j = 0; i < b.length; i++, j += BYTE_LEN) {
             char[] src = BYTES[b[i] & 0xff];
             buffer[j] = src[0];
@@ -358,9 +410,9 @@ public class BinaryRegex {
         return new String(buffer);
     }
 
-    static byte[] strToBin(final String s) {
-        final int length = s.length();
-        final byte[] buffer = new byte[length / BYTE_LEN];
+    static byte[] strToBin(String s) {
+        int length = s.length();
+        byte[] buffer = new byte[length / BYTE_LEN];
         for (int i = 0, j = 0; j < length; i++, j += BYTE_LEN) {
             buffer[i] = (byte) ((HEX_DIGIT_S.indexOf(s.charAt(j + 1)) << 4) | HEX_DIGIT_S.indexOf(s.charAt(j + 2)));
         }
