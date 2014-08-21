@@ -4,6 +4,7 @@ import javassist.bytecode.*;
 
 import java.util.List;
 
+import static com.prupe.mcpatcher.BinaryRegex.*;
 import static javassist.bytecode.Opcode.*;
 
 /**
@@ -13,130 +14,130 @@ public class BytecodeMatcher extends BinaryMatcher {
     /**
      * Fixed regex that matches any ALOAD ... instruction.
      */
-    public static final String anyALOAD = BinaryRegex.or(
-        BinaryRegex.build(ALOAD_0),
-        BinaryRegex.build(ALOAD_1),
-        BinaryRegex.build(ALOAD_2),
-        BinaryRegex.build(ALOAD_3),
-        BinaryRegex.build(ALOAD, BinaryRegex.any()),
-        BinaryRegex.build(WIDE, ALOAD, BinaryRegex.any(2))
+    public static final String anyALOAD = or(
+        build(ALOAD_0),
+        build(ALOAD_1),
+        build(ALOAD_2),
+        build(ALOAD_3),
+        build(ALOAD, any()),
+        build(WIDE, ALOAD, any(2))
     );
 
     /**
      * Fixed regex that matches any ASTORE ... instruction.
      */
-    public static final String anyASTORE = BinaryRegex.or(
-        BinaryRegex.build(ASTORE_0),
-        BinaryRegex.build(ASTORE_1),
-        BinaryRegex.build(ASTORE_2),
-        BinaryRegex.build(ASTORE_3),
-        BinaryRegex.build(ASTORE, BinaryRegex.any()),
-        BinaryRegex.build(WIDE, ASTORE, BinaryRegex.any(2))
+    public static final String anyASTORE = or(
+        build(ASTORE_0),
+        build(ASTORE_1),
+        build(ASTORE_2),
+        build(ASTORE_3),
+        build(ASTORE, any()),
+        build(WIDE, ASTORE, any(2))
     );
 
     /**
      * Fixed regex that matches any ILOAD ... instruction.
      */
-    public static final String anyILOAD = BinaryRegex.or(
-        BinaryRegex.build(ILOAD_0),
-        BinaryRegex.build(ILOAD_1),
-        BinaryRegex.build(ILOAD_2),
-        BinaryRegex.build(ILOAD_3),
-        BinaryRegex.build(ILOAD, BinaryRegex.any()),
-        BinaryRegex.build(WIDE, ILOAD, BinaryRegex.any(2))
+    public static final String anyILOAD = or(
+        build(ILOAD_0),
+        build(ILOAD_1),
+        build(ILOAD_2),
+        build(ILOAD_3),
+        build(ILOAD, any()),
+        build(WIDE, ILOAD, any(2))
     );
 
     /**
      * Fixed regex that matches any ISTORE ... instruction.
      */
-    public static final String anyISTORE = BinaryRegex.or(
-        BinaryRegex.build(ISTORE_0),
-        BinaryRegex.build(ISTORE_1),
-        BinaryRegex.build(ISTORE_2),
-        BinaryRegex.build(ISTORE_3),
-        BinaryRegex.build(ISTORE, BinaryRegex.any()),
-        BinaryRegex.build(WIDE, ISTORE, BinaryRegex.any(2))
+    public static final String anyISTORE = or(
+        build(ISTORE_0),
+        build(ISTORE_1),
+        build(ISTORE_2),
+        build(ISTORE_3),
+        build(ISTORE, any()),
+        build(WIDE, ISTORE, any(2))
     );
 
     /**
      * Fixed regex that matches any LLOAD ... instruction.
      */
-    public static final String anyLLOAD = BinaryRegex.or(
-        BinaryRegex.build(LLOAD_0),
-        BinaryRegex.build(LLOAD_1),
-        BinaryRegex.build(LLOAD_2),
-        BinaryRegex.build(LLOAD_3),
-        BinaryRegex.build(LLOAD, BinaryRegex.any()),
-        BinaryRegex.build(WIDE, LLOAD, BinaryRegex.any(2))
+    public static final String anyLLOAD = or(
+        build(LLOAD_0),
+        build(LLOAD_1),
+        build(LLOAD_2),
+        build(LLOAD_3),
+        build(LLOAD, any()),
+        build(WIDE, LLOAD, any(2))
     );
 
     /**
      * Fixed regex that matches any LSTORE ... instruction.
      */
-    public static final String anyLSTORE = BinaryRegex.or(
-        BinaryRegex.build(LSTORE_0),
-        BinaryRegex.build(LSTORE_1),
-        BinaryRegex.build(LSTORE_2),
-        BinaryRegex.build(LSTORE_3),
-        BinaryRegex.build(LSTORE, BinaryRegex.any()),
-        BinaryRegex.build(WIDE, LSTORE, BinaryRegex.any(2))
+    public static final String anyLSTORE = or(
+        build(LSTORE_0),
+        build(LSTORE_1),
+        build(LSTORE_2),
+        build(LSTORE_3),
+        build(LSTORE, any()),
+        build(WIDE, LSTORE, any(2))
     );
 
     /**
      * Fixed regex that matches any FLOAD ... instruction.
      */
-    public static final String anyFLOAD = BinaryRegex.or(
-        BinaryRegex.build(FLOAD_0),
-        BinaryRegex.build(FLOAD_1),
-        BinaryRegex.build(FLOAD_2),
-        BinaryRegex.build(FLOAD_3),
-        BinaryRegex.build(FLOAD, BinaryRegex.any()),
-        BinaryRegex.build(WIDE, FLOAD, BinaryRegex.any(2))
+    public static final String anyFLOAD = or(
+        build(FLOAD_0),
+        build(FLOAD_1),
+        build(FLOAD_2),
+        build(FLOAD_3),
+        build(FLOAD, any()),
+        build(WIDE, FLOAD, any(2))
     );
 
     /**
      * Fixed regex that matches any FSTORE ... instruction.
      */
-    public static final String anyFSTORE = BinaryRegex.or(
-        BinaryRegex.build(FSTORE_0),
-        BinaryRegex.build(FSTORE_1),
-        BinaryRegex.build(FSTORE_2),
-        BinaryRegex.build(FSTORE_3),
-        BinaryRegex.build(FSTORE, BinaryRegex.any()),
-        BinaryRegex.build(WIDE, FSTORE, BinaryRegex.any(2))
+    public static final String anyFSTORE = or(
+        build(FSTORE_0),
+        build(FSTORE_1),
+        build(FSTORE_2),
+        build(FSTORE_3),
+        build(FSTORE, any()),
+        build(WIDE, FSTORE, any(2))
     );
 
     /**
      * Fixed regex that matches any DLOAD ... instruction.
      */
-    public static final String anyDLOAD = BinaryRegex.or(
-        BinaryRegex.build(DLOAD_0),
-        BinaryRegex.build(DLOAD_1),
-        BinaryRegex.build(DLOAD_2),
-        BinaryRegex.build(DLOAD_3),
-        BinaryRegex.build(DLOAD, BinaryRegex.any()),
-        BinaryRegex.build(WIDE, DLOAD, BinaryRegex.any(2))
+    public static final String anyDLOAD = or(
+        build(DLOAD_0),
+        build(DLOAD_1),
+        build(DLOAD_2),
+        build(DLOAD_3),
+        build(DLOAD, any()),
+        build(WIDE, DLOAD, any(2))
     );
 
     /**
      * Fixed regex that matches any DSTORE ... instruction.
      */
-    public static final String anyDSTORE = BinaryRegex.or(
-        BinaryRegex.build(DSTORE_0),
-        BinaryRegex.build(DSTORE_1),
-        BinaryRegex.build(DSTORE_2),
-        BinaryRegex.build(DSTORE_3),
-        BinaryRegex.build(DSTORE, BinaryRegex.any()),
-        BinaryRegex.build(WIDE, DSTORE, BinaryRegex.any(2))
+    public static final String anyDSTORE = or(
+        build(DSTORE_0),
+        build(DSTORE_1),
+        build(DSTORE_2),
+        build(DSTORE_3),
+        build(DSTORE, any()),
+        build(WIDE, DSTORE, any(2))
     );
 
     /**
      * Fixed regex that matches any LDC/LDC_W ... instruction.
      */
-    public static final String anyLDC = BinaryRegex.or(
-        BinaryRegex.build(LDC, BinaryRegex.any()),
-        BinaryRegex.build(LDC_W, BinaryRegex.any(2)),
-        BinaryRegex.build(LDC2_W, BinaryRegex.any(2))
+    public static final String anyLDC = or(
+        build(LDC, any()),
+        build(LDC_W, any(2)),
+        build(LDC2_W, any(2))
     );
 
     /**
@@ -145,28 +146,28 @@ public class BytecodeMatcher extends BinaryMatcher {
      * or<br/>
      * if (a <= b) { bar(); } else { foo(); }
      */
-    public static final String IFEQ_or_IFNE = BinaryRegex.subset(new int[]{IFEQ, IFNE}, true);
+    public static final String IFEQ_or_IFNE = subset(new int[]{IFEQ, IFNE}, true);
     public static final String IFNE_or_IFEQ = IFEQ_or_IFNE;
 
-    public static final String IFGE_or_IFLT = BinaryRegex.subset(new int[]{IFGE, IFLT}, true);
+    public static final String IFGE_or_IFLT = subset(new int[]{IFGE, IFLT}, true);
     public static final String IFLT_or_IFGE = IFGE_or_IFLT;
 
-    public static final String IFLE_or_IFGT = BinaryRegex.subset(new int[]{IFLE, IFGT}, true);
+    public static final String IFLE_or_IFGT = subset(new int[]{IFLE, IFGT}, true);
     public static final String IFGT_or_IFLE = IFLE_or_IFGT;
 
-    public static final String IFNULL_or_IFNONNULL = BinaryRegex.subset(new int[]{IFNULL, IFNONNULL}, true);
+    public static final String IFNULL_or_IFNONNULL = subset(new int[]{IFNULL, IFNONNULL}, true);
     public static final String IFNONNULL_or_IFNULL = IFNULL_or_IFNONNULL;
 
-    public static final String IF_ACMPEQ_or_IF_ACMPNE = BinaryRegex.subset(new int[]{IF_ACMPEQ, IF_ACMPNE}, true);
+    public static final String IF_ACMPEQ_or_IF_ACMPNE = subset(new int[]{IF_ACMPEQ, IF_ACMPNE}, true);
     public static final String IF_ACMPNE_or_IF_ACMPEQ = IF_ACMPEQ_or_IF_ACMPNE;
 
-    public static final String IF_ICMPEQ_or_IF_ICMPNE = BinaryRegex.subset(new int[]{IF_ICMPEQ, IF_ICMPNE}, true);
+    public static final String IF_ICMPEQ_or_IF_ICMPNE = subset(new int[]{IF_ICMPEQ, IF_ICMPNE}, true);
     public static final String IF_ICMPNE_or_IF_ICMPEQ = IF_ICMPEQ_or_IF_ICMPNE;
 
-    public static final String IF_ICMPGE_or_IF_ICMPLT = BinaryRegex.subset(new int[]{IF_ICMPGE, IF_ICMPLT}, true);
+    public static final String IF_ICMPGE_or_IF_ICMPLT = subset(new int[]{IF_ICMPGE, IF_ICMPLT}, true);
     public static final String IF_ICMPLT_or_IF_ICMPGE = IF_ICMPGE_or_IF_ICMPLT;
 
-    public static final String IF_ICMPLE_or_IF_ICMPGT = BinaryRegex.subset(new int[]{IF_ICMPLE, IF_ICMPGT}, true);
+    public static final String IF_ICMPLE_or_IF_ICMPGT = subset(new int[]{IF_ICMPLE, IF_ICMPGT}, true);
     public static final String IF_ICMPGT_or_IF_ICMPLE = IF_ICMPLE_or_IF_ICMPGT;
 
     private static final int[] ALOAD_OPCODES = {ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3};
@@ -187,25 +188,25 @@ public class BytecodeMatcher extends BinaryMatcher {
      * @return regex
      */
     public static String anyReference(int opcode) {
-        return BinaryRegex.build(opcode, BinaryRegex.any(opcode == INVOKEINTERFACE ? 4 : 2));
+        return build(opcode, any(opcode == INVOKEINTERFACE ? 4 : 2));
     }
 
     public static String anyReference(int... opcodes) {
-        return BinaryRegex.build(BinaryRegex.subset(opcodes, true), BinaryRegex.any(opcodes[0] == INVOKEINTERFACE ? 4 : 2));
+        return build(subset(opcodes, true), any(opcodes[0] == INVOKEINTERFACE ? 4 : 2));
     }
 
     /**
-     * Convenience method for BinaryRegex.capture(anyReference(...))
+     * Convenience method for capture(anyReference(...))
      *
      * @param opcode opcode, e.g., INVOKEVIRTUAL
      * @return regex
      */
     public static String captureReference(int opcode) {
-        return BinaryRegex.capture(anyReference(opcode));
+        return capture(anyReference(opcode));
     }
 
     public static String captureReference(int... opcodes) {
-        return BinaryRegex.capture(anyReference(opcodes));
+        return capture(anyReference(opcodes));
     }
 
     private static byte[] registerLoadStore(int[] x, int y, int register) {
