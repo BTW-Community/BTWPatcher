@@ -261,10 +261,10 @@ public class CustomItemTextures extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         ALOAD_0,
-                        subset(new int[]{
+                        subset(true,
                             ILOAD_1 /* pre-13w36a */,
                             ALOAD_1 /* 13w36a+ */
-                        }, true),
+                        ),
                         anyReference(PUTFIELD),
                         ALOAD_0,
                         ILOAD_2,

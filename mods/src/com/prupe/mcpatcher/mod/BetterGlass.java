@@ -114,7 +114,7 @@ public class BetterGlass extends Mod {
                         RenderPassEnumMod.getOrdinalExpr(),
                         RenderPassEnumMod.getLoadOpcode(), any(),
                         RenderPassEnumMod.getOrdinalExpr(),
-                        subset(new int[]{IF_ICMPEQ, IF_ICMPLE}, true), any(2),
+                        subset(true, IF_ICMPEQ, IF_ICMPLE), any(2),
 
                         // flag = true;
                         push(1),
@@ -223,7 +223,7 @@ public class BetterGlass extends Mod {
                         ordinalExpr,
                         loadOpcode, any(),
                         ordinalExpr,
-                        subset(new int[]{IF_ICMPLE, IF_ICMPEQ}, true), any(2),
+                        subset(true, IF_ICMPLE, IF_ICMPEQ), any(2),
 
                         // moreRenderPasses = true;
                         push(1),
@@ -236,7 +236,7 @@ public class BetterGlass extends Mod {
                         // if (...)
                         capture(nonGreedy(any(0, 12))),
                         capture(or(
-                            subset(new int[]{cmpOpcode, IFEQ}, true),
+                            subset(true, cmpOpcode, IFEQ),
                             build(
                                 // the recompiled code has an IFNE followed immediately by a GOTO for some
                                 // strange reason

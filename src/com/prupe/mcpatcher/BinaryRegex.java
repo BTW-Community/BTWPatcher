@@ -228,6 +228,7 @@ public class BinaryRegex {
      * @param byteList array of bytes to match
      * @param positive if true, match bytes; if false, match complement
      * @return String regex
+     * @deprecated
      */
     public static String subset(byte[] byteList, boolean positive) {
         return subset(positive, byteList);
@@ -263,6 +264,7 @@ public class BinaryRegex {
      * @param intList  array of bytes to match
      * @param positive if true, match bytes; if false, match complement
      * @return String regex
+     * @deprecated
      */
     public static String subset(int[] intList, boolean positive) {
         return subset(positive, intList);

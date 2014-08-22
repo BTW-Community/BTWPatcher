@@ -1144,7 +1144,7 @@ class CC_Block {
                         ALOAD_0,
                         DUP,
                         anyReference(GETFIELD),
-                        FLOAD, subset(new int[]{5, 6, 7}, true),
+                        FLOAD, subset(true, 5, 6, 7),
                         FMUL,
                         anyReference(PUTFIELD)
                     ), 12));

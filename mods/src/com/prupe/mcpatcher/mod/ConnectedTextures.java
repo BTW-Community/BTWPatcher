@@ -383,7 +383,7 @@ public class ConnectedTextures extends Mod {
                         ALOAD_1,
                         optional(anyReference(CHECKCAST)),
                         PositionMod.passArguments(2),
-                        capture(build(subset(new int[]{INVOKEVIRTUAL, INVOKESPECIAL}, true), any(2)))
+                        captureReference(INVOKEVIRTUAL, INVOKESPECIAL)
                     );
                 }
             });
@@ -826,8 +826,8 @@ public class ConnectedTextures extends Mod {
                     // x4 or x8
                     ALOAD, any(),
                     nonGreedy(any(0, 15)),
-                    DLOAD, subset(sideUVRegisters, false),
-                    DLOAD, subset(sideUVRegisters, false),
+                    DLOAD, subset(false, sideUVRegisters),
+                    DLOAD, subset(false, sideUVRegisters),
                     reference(INVOKEVIRTUAL, TessellatorMod.addVertexWithUV)
                 ), 4, 8));
             }
@@ -899,8 +899,8 @@ public class ConnectedTextures extends Mod {
                     DLOAD, any(),
                     first ? capture(getJExpression()) : backReference(1),
                     DLOAD, any(),
-                    DLOAD, subset(sideUVRegisters, true),
-                    DLOAD, subset(sideUVRegisters, true),
+                    DLOAD, subset(true, sideUVRegisters),
+                    DLOAD, subset(true, sideUVRegisters),
                     reference(INVOKEVIRTUAL, TessellatorMod.addVertexWithUV)
                 );
             }

@@ -601,7 +601,7 @@ public class ClassMap {
                 @Override
                 public String getMatchExpression() {
                     return BinaryRegex.build(
-                        BinaryRegex.capture(BinaryRegex.subset(opcodes, true)),
+                        BinaryRegex.capture(BinaryRegex.subset(true, opcodes)),
                         ConstPoolUtils.reference(getMethodInfo().getConstPool(), oldRef, false)
                     );
                 }

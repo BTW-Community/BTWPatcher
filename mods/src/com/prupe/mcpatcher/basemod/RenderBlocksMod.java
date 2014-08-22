@@ -242,11 +242,8 @@ public class RenderBlocksMod extends com.prupe.mcpatcher.ClassMod {
                     ALOAD_1,
                     optional(anyReference(CHECKCAST)),
                     PositionMod.passArguments(2),
-                    capture(build(
-                        subset(new int[]{INVOKEVIRTUAL, INVOKESPECIAL}, true),
-                        any(2)
-                    )),
-                    subset(new int[]{GOTO, IRETURN}, true)
+                    captureReference(INVOKEVIRTUAL, INVOKESPECIAL),
+                    subset(true, GOTO, IRETURN)
                 );
             }
         });

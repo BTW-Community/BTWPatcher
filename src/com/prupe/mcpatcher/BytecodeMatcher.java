@@ -147,28 +147,28 @@ public class BytecodeMatcher extends BinaryMatcher {
      * or<br/>
      * if (a <= b) { bar(); } else { foo(); }
      */
-    public static final String IFEQ_or_IFNE = subset(new int[]{IFEQ, IFNE}, true);
+    public static final String IFEQ_or_IFNE = subset(true, IFEQ, IFNE);
     public static final String IFNE_or_IFEQ = IFEQ_or_IFNE;
 
-    public static final String IFGE_or_IFLT = subset(new int[]{IFGE, IFLT}, true);
+    public static final String IFGE_or_IFLT = subset(true, IFGE, IFLT);
     public static final String IFLT_or_IFGE = IFGE_or_IFLT;
 
-    public static final String IFLE_or_IFGT = subset(new int[]{IFLE, IFGT}, true);
+    public static final String IFLE_or_IFGT = subset(true, IFLE, IFGT);
     public static final String IFGT_or_IFLE = IFLE_or_IFGT;
 
-    public static final String IFNULL_or_IFNONNULL = subset(new int[]{IFNULL, IFNONNULL}, true);
+    public static final String IFNULL_or_IFNONNULL = subset(true, IFNULL, IFNONNULL);
     public static final String IFNONNULL_or_IFNULL = IFNULL_or_IFNONNULL;
 
-    public static final String IF_ACMPEQ_or_IF_ACMPNE = subset(new int[]{IF_ACMPEQ, IF_ACMPNE}, true);
+    public static final String IF_ACMPEQ_or_IF_ACMPNE = subset(true, IF_ACMPEQ, IF_ACMPNE);
     public static final String IF_ACMPNE_or_IF_ACMPEQ = IF_ACMPEQ_or_IF_ACMPNE;
 
-    public static final String IF_ICMPEQ_or_IF_ICMPNE = subset(new int[]{IF_ICMPEQ, IF_ICMPNE}, true);
+    public static final String IF_ICMPEQ_or_IF_ICMPNE = subset(true, IF_ICMPEQ, IF_ICMPNE);
     public static final String IF_ICMPNE_or_IF_ICMPEQ = IF_ICMPEQ_or_IF_ICMPNE;
 
-    public static final String IF_ICMPGE_or_IF_ICMPLT = subset(new int[]{IF_ICMPGE, IF_ICMPLT}, true);
+    public static final String IF_ICMPGE_or_IF_ICMPLT = subset(true, IF_ICMPGE, IF_ICMPLT);
     public static final String IF_ICMPLT_or_IF_ICMPGE = IF_ICMPGE_or_IF_ICMPLT;
 
-    public static final String IF_ICMPLE_or_IF_ICMPGT = subset(new int[]{IF_ICMPLE, IF_ICMPGT}, true);
+    public static final String IF_ICMPLE_or_IF_ICMPGT = subset(true, IF_ICMPLE, IF_ICMPGT);
     public static final String IF_ICMPGT_or_IF_ICMPLE = IF_ICMPLE_or_IF_ICMPGT;
 
     private static final int[] ALOAD_OPCODES = {ALOAD_0, ALOAD_1, ALOAD_2, ALOAD_3};
@@ -224,7 +224,7 @@ public class BytecodeMatcher extends BinaryMatcher {
             for (int bit = bits.nextSetBit(0); bit >= 0; bit = bits.nextSetBit(bit + 1)) {
                 ints[i++] = bit;
             }
-            return subset(ints, true);
+            return subset(true, ints);
         }
     }
 
