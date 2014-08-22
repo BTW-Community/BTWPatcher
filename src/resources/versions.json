@@ -1,25 +1,25 @@
 { 
   "latest": {
-    "snapshot": "14w33c",
+    "snapshot": "1.8-pre1",
     "release": "1.7.10"
   },
   "versions": [
     {
+      "id": "1.8-pre1",
+      "time": "2014-08-21T13:56:26+00:00",
+      "releaseTime": "2014-08-21T13:56:26+00:00",
+      "type": "snapshot"
+    },
+    {
+      "id": "14w34d",
+      "time": "2014-08-20T12:46:59+00:00",
+      "releaseTime": "2014-08-20T12:46:59+00:00",
+      "type": "snapshot"
+    },
+    {
       "id": "14w33c",
       "time": "2014-08-15T18:00:26+00:00",
       "releaseTime": "2014-08-15T18:00:26+00:00",
-      "type": "snapshot"
-    },
-    {
-      "id": "14w33b",
-      "time": "2014-08-15T16:23:51+00:00",
-      "releaseTime": "2014-08-15T16:23:51+00:00",
-      "type": "snapshot"
-    },
-    {
-      "id": "14w33a",
-      "time": "2014-08-13T15:08:14+00:00",
-      "releaseTime": "2014-08-13T15:08:14+00:00",
       "type": "snapshot"
     },
     {
