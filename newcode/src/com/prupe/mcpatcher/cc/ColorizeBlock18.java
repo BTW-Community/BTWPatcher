@@ -28,7 +28,9 @@ public class ColorizeBlock18 {
     private Position position;
     private Block block;
     private boolean useAO;
+    private Direction direction;
 
+    private boolean useCM;
     private IColorMap colorMap;
 
     static {
@@ -77,14 +79,24 @@ public class ColorizeBlock18 {
         this.position = position;
         this.block = block;
         this.useAO = useAO;
+        direction = null;
 
-        colorMap = ColorizeBlock.findColorMap(block, blockAccess, position.getI(), position.getJ(), position.getK());
+        useCM = RenderPassAPI.instance.useColorMultiplierThisPass(block);
+        if (useCM) {
+            colorMap = ColorizeBlock.findColorMap(block, blockAccess, position.getI(), position.getJ(), position.getK());
+        } else {
+            colorMap = null;
+        }
 
         return true;
     }
 
+    public void setDirection(Direction direction) {
+        this.direction = direction;
+    }
+
     public boolean useColormap(boolean use) {
-        return RenderPassAPI.instance.useColorMultiplierThisPass(block) && (use || (colorMap != null && block != grassBlock && block != mycelBlock));
+        return useCM && (use || (colorMap != null && block != grassBlock && block != mycelBlock));
     }
 
     public int colorMultiplier(int color) {

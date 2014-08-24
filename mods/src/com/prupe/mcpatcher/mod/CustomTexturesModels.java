@@ -161,7 +161,7 @@ public class CustomTexturesModels extends Mod {
 
                 @Override
                 public String getDescription() {
-                    return "set up " + method.getClassName() + " for render";
+                    return "set up " + method.getClassName().replaceFirst("^.*\\.", "") + " for render";
                 }
 
                 @Override
@@ -209,10 +209,74 @@ public class CustomTexturesModels extends Mod {
 
         private void setupColorMaps() {
             final MethodRef useColormap = new MethodRef("ModelFace", "useColormap", "()Z");
+            final MethodRef setDirection = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "setDirection", "(LDirection;)V");
             final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(Z)Z");
             final MethodRef newColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "colorMultiplier", "(I)I");
 
             setupPreRender(getCCInstance);
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(renderBlockAO, renderBlockNonAO);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "set render direction";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // model.getFaces(direction)
+                        ALOAD_2,
+                        capture(anyALOAD),
+                        reference(INVOKEINTERFACE, IModelMod.getFaces)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // ColorizeBlock18.getInstance(this).setDirection(direction);
+                        getCCInfo(this),
+                        getCaptureGroup(1),
+                        reference(INVOKEVIRTUAL, setDirection)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(renderBlockAO, renderBlockNonAO);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "clear render direction";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // model.getDefaultFaces()
+                        ALOAD_2,
+                        reference(INVOKEINTERFACE, IModelMod.getDefaultFaces)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // ColorizeBlock18.getInstance(this).setDirection(null);
+                        getCCInfo(this),
+                        push(null),
+                        reference(INVOKEVIRTUAL, setDirection)
+                    );
+                }
+            });
 
             addPatch(new BytecodePatch() {
                 {
@@ -221,7 +285,7 @@ public class CustomTexturesModels extends Mod {
 
                 @Override
                 public String getDescription() {
-                    return "override useColormap";
+                    return "set colormap flag";
                 }
 
                 @Override
