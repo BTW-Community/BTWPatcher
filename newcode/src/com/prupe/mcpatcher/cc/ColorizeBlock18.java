@@ -20,8 +20,6 @@ public class ColorizeBlock18 {
     private static Block grassBlock;
     private static Block mycelBlock;
 
-    private final RenderBlockCustom renderBlocks;
-
     private IBlockAccess blockAccess;
     private IModel model;
     private IBlockState blockState;
@@ -58,18 +56,17 @@ public class ColorizeBlock18 {
         }
     }
 
-    public static ColorizeBlock18 getInstance(RenderBlockCustom renderBlocks) {
+    public static ColorizeBlock18 getInstance() {
         ColorizeBlock18 instance = instances.get();
         if (instance == null) {
-            instance = new ColorizeBlock18(renderBlocks);
+            instance = new ColorizeBlock18();
             instances.set(instance);
         }
         return instance;
     }
 
-    private ColorizeBlock18(RenderBlockCustom renderBlocks) {
-        this.renderBlocks = renderBlocks;
-        logger.info("new ColorizeBlock18(%s) for %s", renderBlocks, Thread.currentThread());
+    private ColorizeBlock18() {
+        logger.info("new ColorizeBlock18() for %s", Thread.currentThread());
     }
 
     public boolean preRender(IBlockAccess blockAccess, IModel model, IBlockState blockState, Position position, Block block, boolean useAO) {

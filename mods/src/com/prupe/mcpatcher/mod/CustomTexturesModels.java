@@ -13,7 +13,10 @@ import static javassist.bytecode.Opcode.*;
 public class CustomTexturesModels extends Mod {
     static final MethodRef blockColorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;LPosition;I)I");
 
-    static final MethodRef getCCInstance = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getInstance", "(LRenderBlockCustom;)L" + MCPatcherUtils.COLORIZE_BLOCK18_CLASS + ";");
+    static final MethodRef getCCInstance = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getInstance", "()L" + MCPatcherUtils.COLORIZE_BLOCK18_CLASS + ";");
+    static final MethodRef setDirection = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "setDirection", "(LDirection;)V");
+    static final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(Z)Z");
+    static final MethodRef newColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "colorMultiplier", "(I)I");
 
     public CustomTexturesModels() {
         name = MCPatcherUtils.CUSTOM_TEXTURES_MODELS;
@@ -41,9 +44,10 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new ModelFaceMod(this));
 
         addClassMod(new BlockMod());
+        addClassMod(new ModelFaceSpriteMod());
         addClassMod(new RenderBlockCustomMod());
         addClassMod(new RenderBlockCustomInnerMod());
-        addClassMod(new ModelFaceSpriteMod());
+        addClassMod(new RenderBlockFluidMod());
 
         addClassMod(new ItemMod(this));
 
@@ -71,6 +75,18 @@ public class CustomTexturesModels extends Mod {
 
             addMemberMapper(new MethodMapper(blockColorMultiplier));
         }
+    }
+
+    private class ModelFaceSpriteMod extends com.prupe.mcpatcher.basemod.ext18.ModelFaceSpriteMod {
+        ModelFaceSpriteMod() {
+            super(CustomTexturesModels.this);
+
+            addPatch(new MakeMemberPublicPatch(sprite));
+        }
+    }
+
+    private byte[] getCCInfo(PatchComponent patchComponent) {
+        return patchComponent.reference(INVOKESTATIC, getCCInstance);
     }
 
     private class RenderBlockCustomMod extends ClassMod {
@@ -177,7 +193,7 @@ public class CustomTexturesModels extends Mod {
                 public byte[] getReplacementBytes() {
                     int register = extractRegisterNum(getCaptureGroup(1));
                     return buildCode(
-                        // if (!this.field.preRender(blockAccess, model, blockState, position, block, useAO)) {
+                        // if (!method().preRender(blockAccess, model, blockState, position, block, useAO)) {
                         ALOAD_0,
                         reference(INVOKESTATIC, method),
                         ALOAD_1,
@@ -200,18 +216,8 @@ public class CustomTexturesModels extends Mod {
             });
         }
 
-        private byte[] getCCInfo(PatchComponent patchComponent) {
-            return patchComponent.buildCode(
-                ALOAD_0,
-                reference(INVOKESTATIC, getCCInstance)
-            );
-        }
-
         private void setupColorMaps() {
             final MethodRef useColormap = new MethodRef("ModelFace", "useColormap", "()Z");
-            final MethodRef setDirection = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "setDirection", "(LDirection;)V");
-            final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(Z)Z");
-            final MethodRef newColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "colorMultiplier", "(I)I");
 
             setupPreRender(getCCInstance);
 
@@ -239,7 +245,7 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // ColorizeBlock18.getInstance(this).setDirection(direction);
+                        // ColorizeBlock18.getInstance().setDirection(direction);
                         getCCInfo(this),
                         getCaptureGroup(1),
                         reference(INVOKEVIRTUAL, setDirection)
@@ -270,7 +276,7 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // ColorizeBlock18.getInstance(this).setDirection(null);
+                        // ColorizeBlock18.getInstance().setDirection(null);
                         getCCInfo(this),
                         push(null),
                         reference(INVOKEVIRTUAL, setDirection)
@@ -300,7 +306,7 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // ColorizeBlock18.getInstance(this).useColormap(face.useColorMap)
+                        // ColorizeBlock18.getInstance().useColormap(face.useColorMap)
                         getCCInfo(this),
                         getMatch(),
                         reference(INVOKEVIRTUAL, newUseColormap)
@@ -331,7 +337,7 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // color = ColorizeBlock18.getInstance(this).colorMultiplier(color)
+                        // color = ColorizeBlock18.getInstance().colorMultiplier(color)
                         getCCInfo(this),
                         flipLoadStore(getCaptureGroup(1)),
                         reference(INVOKEVIRTUAL, newColorMultiplier),
@@ -392,11 +398,79 @@ public class CustomTexturesModels extends Mod {
         }
     }
 
-    private class ModelFaceSpriteMod extends com.prupe.mcpatcher.basemod.ext18.ModelFaceSpriteMod {
-        ModelFaceSpriteMod() {
-            super(CustomTexturesModels.this);
+    private class RenderBlockFluidMod extends ClassMod {
+        private final MethodRef renderBlock = new MethodRef(getDeobfClass(), "renderBlock", "(LIBlockAccess;LIBlockState;LPosition;LTessellator;)Z");
 
-            addPatch(new MakeMemberPublicPatch(sprite));
+        RenderBlockFluidMod() {
+            addClassSignature(new ConstSignature("minecraft:blocks/lava_still"));
+            addClassSignature(new ConstSignature("minecraft:blocks/lava_flow"));
+            addClassSignature(new ConstSignature("minecraft:blocks/water_still"));
+            addClassSignature(new ConstSignature("minecraft:blocks/water_flow"));
+
+            addMemberMapper(new MethodMapper(renderBlock));
+
+            setupColorMaps();
+        }
+
+        private void setupColorMaps() {
+            final MethodRef preRender = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "preRender", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LBlock;Z)Z");
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(renderBlock);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "pre render block";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // r = (float) (color >> 16 & 255) / 255.0f;
+                        capture(anyILOAD),
+                        push(16),
+                        ISHR,
+                        push(255),
+                        IAND,
+                        I2F,
+                        push(255.0f),
+                        FDIV,
+                        anyFSTORE
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // if (!ColorizeBlock18.getInstance().preRender(blockAccess, null, blockState, position, block, false)) {
+                        getCCInfo(this),
+                        ALOAD_1,
+                        push(null),
+                        ALOAD_2,
+                        ALOAD_3,
+                        ALOAD, 5,
+                        push(false),
+                        reference(INVOKEVIRTUAL, preRender),
+                        IFNE, branch("A"),
+
+                        // return false;
+                        push(false),
+                        IRETURN,
+
+                        // }
+                        label("A"),
+
+                        // color = ColorizeBlock18.getInstance().colorMultiplier(color);
+                        getCCInfo(this),
+                        getCaptureGroup(1),
+                        reference(INVOKEVIRTUAL, newColorMultiplier),
+                        flipLoadStore(getCaptureGroup(1))
+                    );
+                }
+            });
         }
     }
 }
