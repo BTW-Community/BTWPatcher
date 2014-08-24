@@ -10,6 +10,8 @@ import static javassist.bytecode.Opcode.INVOKESTATIC;
 
 /**
  * Matches BlockModelFace class (14w06a+).
+ *
+ * @deprecated
  */
 public class BlockModelFaceMod extends ClassMod {
     public static final MethodRef getShadedIntBuffer = new MethodRef("BlockModelFace", "getShadedIntBuffer", "()[I");

@@ -2,7 +2,7 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
-import com.prupe.mcpatcher.basemod.ext18.IBlockStateMod;
+import com.prupe.mcpatcher.basemod.ext18.*;
 import com.prupe.mcpatcher.mal.TexturePackAPIMod;
 import javassist.bytecode.AccessFlag;
 
@@ -31,13 +31,13 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new TessellatorMod(this));
         addClassMod(new TessellatorFactoryMod(this));
         addClassMod(new BiomeGenBaseMod(this));
+        addClassMod(new DirectionWithAOMod(this));
+        addClassMod(new IModelMod(this));
+        addClassMod(new ModelFaceMod(this));
 
         addClassMod(new BlockMod());
         addClassMod(new RenderBlockCustomMod());
         addClassMod(new RenderBlockCustomInnerMod());
-        addClassMod(new DirectionWithAOMod());
-        addClassMod(new IModelMod());
-        addClassMod(new ModelFaceMod());
         addClassMod(new ModelFaceSpriteMod());
 
         addClassMod(new ItemMod(this));
@@ -318,78 +318,9 @@ public class CustomTexturesModels extends Mod {
         }
     }
 
-    private class DirectionWithAOMod extends ClassMod {
-        DirectionWithAOMod() {
-            final FieldRef aoMultiplier = new FieldRef(getDeobfClass(), "aoMultiplier", "F");
-
-            addClassSignature(new ConstSignature("DOWN"));
-            addClassSignature(new ConstSignature("UP"));
-            addClassSignature(new ConstSignature("NORTH"));
-            addClassSignature(new ConstSignature("SOUTH"));
-            addClassSignature(new ConstSignature("WEST"));
-            addClassSignature(new ConstSignature("EAST"));
-
-            addClassSignature(new ConstSignature(0.5f));
-            addClassSignature(new ConstSignature(0.6f));
-            addClassSignature(new ConstSignature(0.8f));
-
-            addMemberMappers("final !static", aoMultiplier);
-        }
-    }
-
-    private class IModelMod extends ClassMod {
-        IModelMod() {
-            addClassSignature(new InterfaceSignature(
-                new InterfaceMethodRef(getDeobfClass(), "getFaces", "(LDirection;)Ljava/util/List;"),
-                new InterfaceMethodRef(getDeobfClass(), "getDefaultFaces", "()Ljava/util/List;"),
-                new InterfaceMethodRef(getDeobfClass(), "useAO", "()Z"),
-                new InterfaceMethodRef(getDeobfClass(), "randomizePosition", "()Z"),
-                new InterfaceMethodRef(getDeobfClass(), "rotate180", "()Z"),
-                new InterfaceMethodRef(getDeobfClass(), "getSprite", "()LTextureAtlasSprite;"),
-                new InterfaceMethodRef(getDeobfClass(), "getBounds", "()LBoundingBox;") // TODO
-            ).setInterfaceOnly(true));
-        }
-    }
-
-    private class ModelFaceMod extends ClassMod {
-        ModelFaceMod() {
-            addPrerequisiteClass("ModelFaceSprite");
-
-            addClassSignature(new InterfaceSignature(
-                new MethodRef(getDeobfClass(), "<init>", "([IILDirection;)V"),
-                new MethodRef(getDeobfClass(), "getIntBuffer", "()[I"),
-                new MethodRef(getDeobfClass(), "useColormap", "()Z"),
-                new MethodRef(getDeobfClass(), "getColor", "()I"),
-                new MethodRef(getDeobfClass(), "getDirection", "()LDirection;")
-            ).setInterfaceOnly(false));
-        }
-    }
-
-    private class ModelFaceSpriteMod extends ClassMod {
+    private class ModelFaceSpriteMod extends com.prupe.mcpatcher.basemod.ext18.ModelFaceSpriteMod {
         ModelFaceSpriteMod() {
-            setParentClass("ModelFace");
-
-            final FieldRef sprite = new FieldRef(getDeobfClass(), "sprite", "LTextureAtlasSprite;");
-
-            addClassSignature(new ConstSignature(new MethodRef("java/util/Arrays", "copyOf", "([II)[I")));
-            addClassSignature(new ConstSignature(new MethodRef("java/lang/Float", "intBitsToFloat", "(I)F")));
-            addClassSignature(new ConstSignature(16.0f));
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // j = 7 * i;
-                        begin(),
-                        push(7),
-                        ILOAD_1,
-                        IMUL,
-                        ISTORE_2
-                    );
-                }
-            });
-
-            addMemberMapper(new FieldMapper(sprite));
+            super(CustomTexturesModels.this);
 
             addPatch(new MakeMemberPublicPatch(sprite));
         }
