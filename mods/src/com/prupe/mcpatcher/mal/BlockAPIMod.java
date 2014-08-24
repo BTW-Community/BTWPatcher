@@ -2,6 +2,10 @@ package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
+import com.prupe.mcpatcher.basemod.ext18.DirectionMod;
+import com.prupe.mcpatcher.basemod.ext18.IBlockStateMod;
+import com.prupe.mcpatcher.basemod.ext18.IBlockStatePropertyMod;
+import com.prupe.mcpatcher.basemod.ext18.PositionMod;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;

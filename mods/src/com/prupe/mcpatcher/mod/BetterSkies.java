@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
+import com.prupe.mcpatcher.basemod.ext18.RenderUtilsMod;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;

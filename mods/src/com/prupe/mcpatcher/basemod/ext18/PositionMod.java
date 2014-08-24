@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher.basemod;
+package com.prupe.mcpatcher.basemod.ext18;
 
 import com.prupe.mcpatcher.*;
 import javassist.bytecode.AccessFlag;

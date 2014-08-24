@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
+import com.prupe.mcpatcher.basemod.ext18.RenderUtilsMod;
 import javassist.bytecode.AccessFlag;
 
 import java.util.ArrayList;

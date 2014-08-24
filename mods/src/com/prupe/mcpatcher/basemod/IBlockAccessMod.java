@@ -2,6 +2,9 @@ package com.prupe.mcpatcher.basemod;
 
 import com.prupe.mcpatcher.InterfaceMethodRef;
 import com.prupe.mcpatcher.Mod;
+import com.prupe.mcpatcher.basemod.ext18.DirectionMod;
+import com.prupe.mcpatcher.basemod.ext18.IBlockStateMod;
+import com.prupe.mcpatcher.basemod.ext18.PositionMod;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,6 +4,8 @@ import com.prupe.mcpatcher.FieldRef;
 import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.MinecraftVersion;
 import com.prupe.mcpatcher.Mod;
+import com.prupe.mcpatcher.basemod.ext18.DirectionMod;
+import com.prupe.mcpatcher.basemod.ext18.PositionMod;
 import javassist.bytecode.AccessFlag;
 
 /**

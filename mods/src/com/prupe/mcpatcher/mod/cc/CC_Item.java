@@ -1,7 +1,7 @@
 package com.prupe.mcpatcher.mod.cc;
 
 import com.prupe.mcpatcher.*;
-import com.prupe.mcpatcher.basemod.IBlockStateMod;
+import com.prupe.mcpatcher.basemod.ext18.IBlockStateMod;
 import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;

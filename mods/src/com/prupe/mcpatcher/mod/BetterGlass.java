@@ -2,6 +2,9 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
+import com.prupe.mcpatcher.basemod.ext18.BlockModelFaceMod;
+import com.prupe.mcpatcher.basemod.ext18.DirectionMod;
+import com.prupe.mcpatcher.basemod.ext18.PositionMod;
 import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -947,7 +950,7 @@ public class BetterGlass extends Mod {
         }
     }
 
-    private class RenderPassEnumMod extends com.prupe.mcpatcher.basemod.RenderPassEnumMod {
+    private class RenderPassEnumMod extends com.prupe.mcpatcher.basemod.ext18.RenderPassEnumMod {
         RenderPassEnumMod() {
             super(BetterGlass.this);
 

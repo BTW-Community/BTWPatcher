@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.ClassMod;
 import com.prupe.mcpatcher.ClassRef;
 import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
+import com.prupe.mcpatcher.basemod.ext18.PositionMod;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;

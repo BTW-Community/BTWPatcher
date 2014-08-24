@@ -1,8 +1,9 @@
-package com.prupe.mcpatcher.basemod;
+package com.prupe.mcpatcher.basemod.ext18;
 
 import com.prupe.mcpatcher.ClassMod;
 import com.prupe.mcpatcher.InterfaceMethodRef;
 import com.prupe.mcpatcher.Mod;
+import com.prupe.mcpatcher.basemod.IconMod;
 
 public class IBlockStateMod extends ClassMod {
     public static final InterfaceMethodRef getProperties = new InterfaceMethodRef("IBlockState", "getProperties", "()Ljava/util/Collection;");

@@ -3,7 +3,7 @@ package com.prupe.mcpatcher.mal;
 import com.prupe.mcpatcher.FieldRef;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.Mod;
-import com.prupe.mcpatcher.basemod.IBlockStateMod;
+import com.prupe.mcpatcher.basemod.ext18.IBlockStateMod;
 import com.prupe.mcpatcher.basemod.RegistryBaseMod;
 import com.prupe.mcpatcher.basemod.RegistryMod;
 import com.prupe.mcpatcher.basemod.ResourceLocationMod;

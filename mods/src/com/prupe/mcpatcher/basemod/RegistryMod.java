@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.basemod;
 import com.prupe.mcpatcher.InterfaceMethodRef;
 import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
+import com.prupe.mcpatcher.basemod.ext18.IBlockStateMod;
 
 import static javassist.bytecode.Opcode.INVOKEVIRTUAL;
 
