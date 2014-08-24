@@ -11,6 +11,8 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class CustomTexturesModels extends Mod {
+    static final MethodRef blockColorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;LPosition;I)I");
+
     public CustomTexturesModels() {
         name = MCPatcherUtils.CUSTOM_TEXTURES_MODELS;
         author = "MCPatcher";
@@ -31,6 +33,7 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new TessellatorMod(this));
         addClassMod(new TessellatorFactoryMod(this));
         addClassMod(new BiomeGenBaseMod(this));
+        PositionMod.setup(this);
         addClassMod(new DirectionWithAOMod(this));
         addClassMod(new IModelMod(this));
         addClassMod(new ModelFaceMod(this));
@@ -64,9 +67,7 @@ public class CustomTexturesModels extends Mod {
         BlockMod() {
             super(CustomTexturesModels.this);
 
-            final MethodRef colorMultiplier = new MethodRef(getDeobfClass(), "colorMultiplier", "(LIBlockAccess;LPosition;I)I");
-
-            addMemberMapper(new MethodMapper(colorMultiplier));
+            addMemberMapper(new MethodMapper(blockColorMultiplier));
         }
     }
 
@@ -210,14 +211,16 @@ public class CustomTexturesModels extends Mod {
                 public byte[] getReplacementBytes() {
                     int register = extractRegisterNum(getCaptureGroup(1));
                     return buildCode(
-                        // if (!this.field.preRender(blockAccess, model, blockState, useAO)) {
+                        // if (!this.field.preRender(blockAccess, model, blockState, position, block, useAO)) {
                         ALOAD_0,
                         reference(GETFIELD, field),
                         ALOAD_1,
                         ALOAD_2,
                         ALOAD_3,
+                        ALOAD, 4,
+                        registerLoadStore(ALOAD, register),
                         registerLoadStore(ILOAD, register - 1),
-                        reference(INVOKEVIRTUAL, new MethodRef(type, "preRender", "(LIBlockAccess;LIModel;LIBlockState;Z)Z")),
+                        reference(INVOKEVIRTUAL, new MethodRef(type, "preRender", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LBlock;Z)Z")),
                         IFNE, branch("A"),
 
                         // return false;
@@ -235,13 +238,13 @@ public class CustomTexturesModels extends Mod {
 
         private void setupColorMaps() {
             final MethodRef useColormap = new MethodRef("ModelFace", "useColormap", "()Z");
-            final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(ZLBlock;)Z");
+            final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(Z)Z");
+            final MethodRef newColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "colorMultiplier", "(I)I");
 
-            addInitializedField("ccInfo", MCPatcherUtils.COLORIZE_BLOCK18_CLASS);
+            final FieldRef ccInfo = addInitializedField("ccInfo", MCPatcherUtils.COLORIZE_BLOCK18_CLASS);
 
             addPatch(new BytecodePatch() {
                 {
-                    setInsertAfter(true);
                     targetMethod(renderFaceAO, renderFaceNonAO);
                 }
 
@@ -253,6 +256,8 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // face.useColormap();
+                        anyALOAD,
                         reference(INVOKEVIRTUAL, useColormap)
                     );
                 }
@@ -260,8 +265,44 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        ALOAD_2,
-                        reference(INVOKESTATIC, newUseColormap)
+                        // this.ccInfo.useColormap(face.useColorMap)
+                        ALOAD_0,
+                        reference(GETFIELD, ccInfo),
+                        getMatch(),
+                        reference(INVOKEVIRTUAL, newUseColormap)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderFaceAO, renderFaceNonAO);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override color multiplier";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // color = block.colorMultiplier(blockAccess, position, index);
+                        reference(INVOKEVIRTUAL, blockColorMultiplier),
+                        capture(anyISTORE)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // color = this.ccInfo.colorMultiplier(color)
+                        ALOAD_0,
+                        reference(GETFIELD, ccInfo),
+                        flipLoadStore(getCaptureGroup(1)),
+                        reference(INVOKEVIRTUAL, newColorMultiplier),
+                        getCaptureGroup(1)
                     );
                 }
             });

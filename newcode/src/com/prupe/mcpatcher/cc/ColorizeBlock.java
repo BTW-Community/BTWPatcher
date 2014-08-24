@@ -349,7 +349,7 @@ public class ColorizeBlock {
         return null;
     }
 
-    private static IColorMap findColorMap(Block block, IBlockAccess blockAccess, int i, int j, int k) {
+    static IColorMap findColorMap(Block block, IBlockAccess blockAccess, int i, int j, int k) {
         List<BlockStateMatcher> maps = blockColorMaps.get(block);
         if (maps == null) {
             return null;
