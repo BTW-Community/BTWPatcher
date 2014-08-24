@@ -1,9 +1,6 @@
 package com.prupe.mcpatcher.mod;
 
-import com.prupe.mcpatcher.FieldRef;
-import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.MethodRef;
-import com.prupe.mcpatcher.Mod;
+import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
 import com.prupe.mcpatcher.mal.TexturePackAPIMod;
 
@@ -44,8 +41,11 @@ public class CustomTexturesModels extends Mod {
         addClassFiles("com.prupe.mcpatcher.colormap.*");
         addClassFiles("com.prupe.mcpatcher.ctm.*");
         addClassFiles("com.prupe.mcpatcher.cit.*");
+        addClassFiles(MCPatcherUtils.COLORIZE_BLOCK_CLASS + "*");
+        addClassFiles(MCPatcherUtils.COLORIZE_BLOCK18_CLASS + "*");
 
         TexturePackAPIMod.earlyInitialize(2, MCPatcherUtils.CTM_UTILS18_CLASS, "reset");
+        TexturePackAPIMod.earlyInitialize(2, MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "reset");
     }
 
     @Override

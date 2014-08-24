@@ -42,9 +42,10 @@ public class CustomColors extends Mod {
         addClassMod(new BiomeGenBaseMod(this));
 
         addClassFiles("com.prupe.mcpatcher.cc.*");
+        removeAddedClassFile(MCPatcherUtils.COLORIZE_BLOCK18_CLASS + "*");
 
         if (IBlockStateMod.haveClass()) {
-            removeAddedClassFile(MCPatcherUtils.COLORIZE_BLOCK_CLASS);
+            removeAddedClassFiles(MCPatcherUtils.COLORIZE_BLOCK_CLASS + "*");
         } else {
             CC_Block.setup(this);
         }

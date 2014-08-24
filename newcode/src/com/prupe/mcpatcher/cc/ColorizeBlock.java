@@ -25,6 +25,12 @@ import java.util.*;
 public class ColorizeBlock {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
+    private static final boolean useWaterColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "water", true);
+    private static final boolean useTreeColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "tree", true);
+    private static final boolean useRedstoneColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "redstone", true);
+    private static final boolean useStemColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "stem", true);
+    private static final boolean useBlockColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "otherBlocks", true);
+
     private static final boolean enableSmoothBiomes = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "smoothBiomes", true);
     private static final boolean enableTestColorSmoothing = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "testColorSmoothing", false);
 
@@ -171,6 +177,27 @@ public class ColorizeBlock {
         waterColorMap = null;
         resetVertexColors();
         redstoneColor = null;
+    }
+
+    static void reloadAll(PropertiesFile properties) {
+        if (useTreeColors) {
+            ColorizeBlock.reloadFoliageColors(properties);
+        }
+        if (useWaterColors) {
+            ColorizeBlock.reloadWaterColors(properties);
+        }
+        if (useBlockColors) {
+            ColorizeBlock.reloadBlockColors(properties);
+        }
+        if (ColorMap.useSwampColors) {
+            ColorizeBlock.reloadSwampColors(properties);
+        }
+        if (useRedstoneColors) {
+            ColorizeBlock.reloadRedstoneColors(properties);
+        }
+        if (useStemColors) {
+            ColorizeBlock.reloadStemColors(properties);
+        }
     }
 
     static void reloadFoliageColors(PropertiesFile properties) {

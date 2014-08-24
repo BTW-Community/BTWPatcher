@@ -17,17 +17,12 @@ public class Colorizer {
     static final ResourceLocation COLOR_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("color.properties");
     private static PropertiesFile properties;
 
-    static final boolean useWaterColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "water", true);
-    static final boolean useTreeColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "tree", true);
     static final boolean usePotionColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "potion", true);
     static final boolean useParticleColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "particle", true);
     static final boolean useFogColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "fog", true);
     static final boolean useCloudType = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "clouds", true);
-    static final boolean useRedstoneColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "redstone", true);
-    static final boolean useStemColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "stem", true);
     static final boolean useMapColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "map", true);
     static final boolean useDyeColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "dye", true);
-    static final boolean useBlockColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "otherBlocks", true);
     static final boolean useTextColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "text", true);
     static final boolean useXPOrbColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "xporb", true);
     static final boolean useEggColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "egg", true);
@@ -54,24 +49,7 @@ public class Colorizer {
                     ColorizeEntity.reloadParticleColors(properties);
                 }
                 try {
-                    if (useTreeColors) {
-                        ColorizeBlock.reloadFoliageColors(properties);
-                    }
-                    if (useWaterColors) {
-                        ColorizeBlock.reloadWaterColors(properties);
-                    }
-                    if (useBlockColors) {
-                        ColorizeBlock.reloadBlockColors(properties);
-                    }
-                    if (ColorMap.useSwampColors) {
-                        ColorizeBlock.reloadSwampColors(properties);
-                    }
-                    if (useRedstoneColors) {
-                        ColorizeBlock.reloadRedstoneColors(properties);
-                    }
-                    if (useStemColors) {
-                        ColorizeBlock.reloadStemColors(properties);
-                    }
+                    ColorizeBlock.reloadAll(properties);
                 } catch (NoClassDefFoundError e) {
                     // not present in 1.8
                 }
@@ -130,7 +108,7 @@ public class Colorizer {
 
     private static void reloadColorProperties() {
         properties = PropertiesFile.getNonNull(logger, COLOR_PROPERTIES);
-        logger.finer("reloading %s", COLOR_PROPERTIES);
+        logger.finer("reloading %s", properties);
     }
 
     static String getStringKey(String[] keys, int index) {
