@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.mod;
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
 import com.prupe.mcpatcher.mal.TexturePackAPIMod;
+import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -25,6 +26,7 @@ public class CustomTexturesModels extends Mod {
         ResourceLocationMod.setup(this);
         addClassMod(new TextureAtlasSpriteMod(this));
         addClassMod(new IBlockAccessMod(this));
+        addClassMod(new IBlockStateMod(this));
         addClassMod(new TessellatorMod(this));
         addClassMod(new TessellatorFactoryMod(this));
         addClassMod(new BiomeGenBaseMod(this));
@@ -33,6 +35,7 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new RenderBlockCustomMod());
         addClassMod(new RenderBlockCustomInnerMod());
         addClassMod(new DirectionWithAOMod());
+        addClassMod(new IModelMod());
         addClassMod(new ModelFaceMod());
         addClassMod(new ModelFaceSpriteMod());
 
@@ -67,13 +70,13 @@ public class CustomTexturesModels extends Mod {
     }
 
     private class RenderBlockCustomMod extends ClassMod {
-        RenderBlockCustomMod() {
-            final MethodRef renderBlock = new MethodRef(getDeobfClass(), "renderBlock", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LTessellator;Z)Z");
-            final MethodRef renderBlockAO = new MethodRef(getDeobfClass(), "renderBlockAO", "(LIBlockAccess;LIModel;LBlock;LPosition;LTessellator;Z)Z");
-            final MethodRef renderBlockNonAO = new MethodRef(getDeobfClass(), "renderBlockNonAO", "(LIBlockAccess;LIModel;LBlock;LPosition;LTessellator;Z)Z");
-            final MethodRef renderFaceAO = new MethodRef(getDeobfClass(), "renderFaceAO", "(LIBlockAccess;LBlock;LPosition;LTessellator;Ljava/util/List;[FLjava/util/BitSet;LRenderBlockCustomInner;)V");
-            final MethodRef renderFaceNonAO = new MethodRef(getDeobfClass(), "renderFaceNonAO", "(LIBlockAccess;LBlock;LPosition;LDirection;IZLTessellator;Ljava/util/List;Ljava/util/BitSet;)V");
+        private final MethodRef renderBlock = new MethodRef(getDeobfClass(), "renderBlock", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LTessellator;Z)Z");
+        private final MethodRef renderBlockAO = new MethodRef(getDeobfClass(), "renderBlockAO", "(LIBlockAccess;LIModel;LBlock;LPosition;LTessellator;Z)Z");
+        private final MethodRef renderBlockNonAO = new MethodRef(getDeobfClass(), "renderBlockNonAO", "(LIBlockAccess;LIModel;LBlock;LPosition;LTessellator;Z)Z");
+        private final MethodRef renderFaceAO = new MethodRef(getDeobfClass(), "renderFaceAO", "(LIBlockAccess;LBlock;LPosition;LTessellator;Ljava/util/List;[FLjava/util/BitSet;LRenderBlockCustomInner;)V");
+        private final MethodRef renderFaceNonAO = new MethodRef(getDeobfClass(), "renderFaceNonAO", "(LIBlockAccess;LBlock;LPosition;LDirection;IZLTessellator;Ljava/util/List;Ljava/util/BitSet;)V");
 
+        RenderBlockCustomMod() {
             addClassSignature(new ConstSignature(0xf000f));
 
             addClassSignature(new BytecodeSignature() {
@@ -138,6 +141,126 @@ public class CustomTexturesModels extends Mod {
                         anyALOAD,
                         anyALOAD,
                         captureReference(INVOKESPECIAL)
+                    );
+                }
+            });
+
+            setupColorMaps();
+        }
+
+        private FieldRef addInitializedField(final String name, final String type) {
+            final FieldRef field = new FieldRef(getDeobfClass(), name, "L" + type + ";");
+
+            addPatch(new AddFieldPatch(field, AccessFlag.PUBLIC | AccessFlag.FINAL));
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    matchConstructorOnly(true);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "initialize " + name;
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        RETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // this.field = new ClassName(this);
+                        ALOAD_0,
+                        reference(NEW, new ClassRef(type)),
+                        DUP,
+                        ALOAD_0,
+                        reference(INVOKESPECIAL, new MethodRef(type, "<init>", "(L" + getDeobfClass() + ";)V")),
+                        reference(PUTFIELD, field)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderBlock);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "set up " + name + " for render";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ALOAD_3,
+                        reference(INVOKEINTERFACE, IBlockStateMod.getBlock),
+                        capture(anyASTORE)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    int register = extractRegisterNum(getCaptureGroup(1));
+                    return buildCode(
+                        // if (!this.field.preRender(blockAccess, model, blockState, useAO)) {
+                        ALOAD_0,
+                        reference(GETFIELD, field),
+                        ALOAD_1,
+                        ALOAD_2,
+                        ALOAD_3,
+                        registerLoadStore(ILOAD, register - 1),
+                        reference(INVOKEVIRTUAL, new MethodRef(type, "preRender", "(LIBlockAccess;LIModel;LIBlockState;Z)Z")),
+                        IFNE, branch("A"),
+
+                        // return false;
+                        push(false),
+                        IRETURN,
+
+                        // }
+                        label("A")
+                    );
+                }
+            });
+
+            return field;
+        }
+
+        private void setupColorMaps() {
+            final MethodRef useColormap = new MethodRef("ModelFace", "useColormap", "()Z");
+            final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(ZLBlock;)Z");
+
+            addInitializedField("ccInfo", MCPatcherUtils.COLORIZE_BLOCK18_CLASS);
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderFaceAO, renderFaceNonAO);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override useColormap";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        reference(INVOKEVIRTUAL, useColormap)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        ALOAD_2,
+                        reference(INVOKESTATIC, newUseColormap)
                     );
                 }
             });
@@ -210,6 +333,20 @@ public class CustomTexturesModels extends Mod {
             addClassSignature(new ConstSignature(0.8f));
 
             addMemberMappers("final !static", aoMultiplier);
+        }
+    }
+
+    private class IModelMod extends ClassMod {
+        IModelMod() {
+            addClassSignature(new InterfaceSignature(
+                new InterfaceMethodRef(getDeobfClass(), "getFaces", "(LDirection;)Ljava/util/List;"),
+                new InterfaceMethodRef(getDeobfClass(), "getDefaultFaces", "()Ljava/util/List;"),
+                new InterfaceMethodRef(getDeobfClass(), "useAO", "()Z"),
+                new InterfaceMethodRef(getDeobfClass(), "randomizePosition", "()Z"),
+                new InterfaceMethodRef(getDeobfClass(), "rotate180", "()Z"),
+                new InterfaceMethodRef(getDeobfClass(), "getSprite", "()LTextureAtlasSprite;"),
+                new InterfaceMethodRef(getDeobfClass(), "getBounds", "()LBoundingBox;") // TODO
+            ).setInterfaceOnly(true));
         }
     }
 
