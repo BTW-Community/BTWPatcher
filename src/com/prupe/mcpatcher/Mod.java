@@ -216,7 +216,9 @@ public abstract class Mod {
      * @param filename name of file
      */
     public void addFile(String filename) {
-        filesToAdd.add(filename);
+        if (!filesToAdd.contains(filename)) {
+            filesToAdd.add(filename);
+        }
     }
 
     /**
