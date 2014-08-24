@@ -161,7 +161,7 @@ public class CustomTexturesModels extends Mod {
 
                 @Override
                 public String getDescription() {
-                    return "set up " + name + " for render";
+                    return "set up " + method.getClassName() + " for render";
                 }
 
                 @Override

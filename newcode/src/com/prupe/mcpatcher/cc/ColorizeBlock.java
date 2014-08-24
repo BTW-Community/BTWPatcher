@@ -180,14 +180,14 @@ public class ColorizeBlock {
     }
 
     static void reloadAll(PropertiesFile properties) {
+        if (useBlockColors) {
+            ColorizeBlock.reloadBlockColors(properties);
+        }
         if (useTreeColors) {
             ColorizeBlock.reloadFoliageColors(properties);
         }
         if (useWaterColors) {
             ColorizeBlock.reloadWaterColors(properties);
-        }
-        if (useBlockColors) {
-            ColorizeBlock.reloadBlockColors(properties);
         }
         if (ColorMap.useSwampColors) {
             ColorizeBlock.reloadSwampColors(properties);
