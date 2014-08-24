@@ -13,6 +13,8 @@ import static javassist.bytecode.Opcode.*;
 public class CustomTexturesModels extends Mod {
     static final MethodRef blockColorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;LPosition;I)I");
 
+    static final MethodRef getCCInstance = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getInstance", "(LRenderBlockCustom;)L" + MCPatcherUtils.COLORIZE_BLOCK18_CLASS + ";");
+
     public CustomTexturesModels() {
         name = MCPatcherUtils.CUSTOM_TEXTURES_MODELS;
         author = "MCPatcher";
@@ -150,43 +152,7 @@ public class CustomTexturesModels extends Mod {
             setupColorMaps();
         }
 
-        private FieldRef addInitializedField(final String name, final String type) {
-            final FieldRef field = new FieldRef(getDeobfClass(), name, "L" + type + ";");
-
-            addPatch(new AddFieldPatch(field, AccessFlag.PUBLIC | AccessFlag.FINAL));
-
-            addPatch(new BytecodePatch() {
-                {
-                    setInsertBefore(true);
-                    matchConstructorOnly(true);
-                }
-
-                @Override
-                public String getDescription() {
-                    return "initialize " + name;
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        RETURN
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // this.field = new ClassName(this);
-                        ALOAD_0,
-                        reference(NEW, new ClassRef(type)),
-                        DUP,
-                        ALOAD_0,
-                        reference(INVOKESPECIAL, new MethodRef(type, "<init>", "(L" + getDeobfClass() + ";)V")),
-                        reference(PUTFIELD, field)
-                    );
-                }
-            });
-
+        private void setupPreRender(final MethodRef method) {
             addPatch(new BytecodePatch() {
                 {
                     setInsertAfter(true);
@@ -213,14 +179,14 @@ public class CustomTexturesModels extends Mod {
                     return buildCode(
                         // if (!this.field.preRender(blockAccess, model, blockState, position, block, useAO)) {
                         ALOAD_0,
-                        reference(GETFIELD, field),
+                        reference(INVOKESTATIC, method),
                         ALOAD_1,
                         ALOAD_2,
                         ALOAD_3,
                         ALOAD, 4,
                         registerLoadStore(ALOAD, register),
                         registerLoadStore(ILOAD, register - 1),
-                        reference(INVOKEVIRTUAL, new MethodRef(type, "preRender", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LBlock;Z)Z")),
+                        reference(INVOKEVIRTUAL, new MethodRef(method.getClassName(), "preRender", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LBlock;Z)Z")),
                         IFNE, branch("A"),
 
                         // return false;
@@ -232,8 +198,13 @@ public class CustomTexturesModels extends Mod {
                     );
                 }
             });
+        }
 
-            return field;
+        private byte[] getCCInfo(PatchComponent patchComponent) {
+            return patchComponent.buildCode(
+                ALOAD_0,
+                reference(INVOKESTATIC, getCCInstance)
+            );
         }
 
         private void setupColorMaps() {
@@ -241,7 +212,7 @@ public class CustomTexturesModels extends Mod {
             final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(Z)Z");
             final MethodRef newColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "colorMultiplier", "(I)I");
 
-            final FieldRef ccInfo = addInitializedField("ccInfo", MCPatcherUtils.COLORIZE_BLOCK18_CLASS);
+            setupPreRender(getCCInstance);
 
             addPatch(new BytecodePatch() {
                 {
@@ -265,9 +236,8 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // this.ccInfo.useColormap(face.useColorMap)
-                        ALOAD_0,
-                        reference(GETFIELD, ccInfo),
+                        // ColorizeBlock18.getInstance(this).useColormap(face.useColorMap)
+                        getCCInfo(this),
                         getMatch(),
                         reference(INVOKEVIRTUAL, newUseColormap)
                     );
@@ -297,9 +267,8 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // color = this.ccInfo.colorMultiplier(color)
-                        ALOAD_0,
-                        reference(GETFIELD, ccInfo),
+                        // color = ColorizeBlock18.getInstance(this).colorMultiplier(color)
+                        getCCInfo(this),
                         flipLoadStore(getCaptureGroup(1)),
                         reference(INVOKEVIRTUAL, newColorMultiplier),
                         getCaptureGroup(1)

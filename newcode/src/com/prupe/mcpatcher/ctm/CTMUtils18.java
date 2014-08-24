@@ -14,10 +14,10 @@ import net.minecraft.src.Item;
 import net.minecraft.src.ResourceLocation;
 
 public class CTMUtils18 {
-    private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
+    private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CONNECTED_TEXTURES);
 
     static {
-        TexturePackChangeHandler.register(new TexturePackChangeHandler("CTM", 2) {
+        TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.CONNECTED_TEXTURES, 2) {
             @Override
             public void beforeChange() {
                 reset();

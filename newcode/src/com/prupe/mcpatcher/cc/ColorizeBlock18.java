@@ -15,6 +15,8 @@ public class ColorizeBlock18 {
 
     private static final ResourceLocation COLOR_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("color.properties");
 
+    private static final ThreadLocal<ColorizeBlock18> instances = new ThreadLocal<ColorizeBlock18>();
+
     private static Block grassBlock;
     private static Block mycelBlock;
 
@@ -54,9 +56,18 @@ public class ColorizeBlock18 {
         }
     }
 
-    public ColorizeBlock18(RenderBlockCustom renderBlocks) {
+    public static ColorizeBlock18 getInstance(RenderBlockCustom renderBlocks) {
+        ColorizeBlock18 instance = instances.get();
+        if (instance == null) {
+            instance = new ColorizeBlock18(renderBlocks);
+            instances.set(instance);
+        }
+        return instance;
+    }
+
+    private ColorizeBlock18(RenderBlockCustom renderBlocks) {
         this.renderBlocks = renderBlocks;
-        logger.info("new ColorizeBlock18(%s)", renderBlocks);
+        logger.info("new ColorizeBlock18(%s) for %s", renderBlocks, Thread.currentThread());
     }
 
     public boolean preRender(IBlockAccess blockAccess, IModel model, IBlockState blockState, Position position, Block block, boolean useAO) {
