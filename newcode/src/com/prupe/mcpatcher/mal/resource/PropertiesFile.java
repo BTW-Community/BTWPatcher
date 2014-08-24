@@ -52,7 +52,7 @@ final public class PropertiesFile {
     public PropertiesFile(MCLogger logger, ResourceLocation resource, Properties properties) {
         this.logger = logger;
         this.resource = resource;
-        prefix = (resource.toString() + ": ").replace("%", "%%");
+        prefix = resource == null ? "" : (resource.toString() + ": ").replace("%", "%%");
         this.properties = properties;
     }
 
