@@ -181,26 +181,26 @@ public class ColorizeBlock {
 
     static void reloadAll(PropertiesFile properties) {
         if (useBlockColors) {
-            ColorizeBlock.reloadBlockColors(properties);
+            reloadBlockColors(properties);
         }
         if (useTreeColors) {
-            ColorizeBlock.reloadFoliageColors(properties);
+            reloadFoliageColors(properties);
         }
         if (useWaterColors) {
-            ColorizeBlock.reloadWaterColors(properties);
+            reloadWaterColors(properties);
         }
         if (ColorMap.useSwampColors) {
-            ColorizeBlock.reloadSwampColors(properties);
+            reloadSwampColors(properties);
         }
         if (useRedstoneColors) {
-            ColorizeBlock.reloadRedstoneColors(properties);
+            reloadRedstoneColors(properties);
         }
         if (useStemColors) {
-            ColorizeBlock.reloadStemColors(properties);
+            reloadStemColors(properties);
         }
     }
 
-    static void reloadFoliageColors(PropertiesFile properties) {
+    private static void reloadFoliageColors(PropertiesFile properties) {
         IColorMap colorMap = ColorMap.loadVanillaColorMap(DEFAULT_GRASSCOLOR, SWAMPGRASSCOLOR);
         registerColorMap(colorMap, DEFAULT_GRASSCOLOR, "minecraft:grass:snowy=false minecraft:tallgrass:1,2 minecraft:double_plant:2,3:variant=double_grass minecraft:reeds");
         colorMap = ColorMap.loadVanillaColorMap(DEFAULT_FOLIAGECOLOR, SWAMPFOLIAGECOLOR);
@@ -222,7 +222,7 @@ public class ColorizeBlock {
         }
     }
 
-    static void reloadWaterColors(PropertiesFile properties) {
+    private static void reloadWaterColors(PropertiesFile properties) {
         waterColorMap = registerColorMap(WATERCOLOR, "minecraft:flowing_water minecraft:water");
         if (waterColorMap == null) {
             waterColorMap = new ColorMap.Water();
@@ -230,7 +230,7 @@ public class ColorizeBlock {
         }
     }
 
-    static void reloadSwampColors(PropertiesFile properties) {
+    private static void reloadSwampColors(PropertiesFile properties) {
         int[] lilypadColor = new int[]{0x020830};
         if (Colorizer.loadIntColor("lilypad", lilypadColor, 0)) {
             IColorMap colorMap = new ColorMap.Fixed(lilypadColor[0]);
@@ -238,7 +238,7 @@ public class ColorizeBlock {
         }
     }
 
-    static void reloadBlockColors(PropertiesFile properties) {
+    private static void reloadBlockColors(PropertiesFile properties) {
         for (Map.Entry<String, String> entry : properties.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
@@ -300,7 +300,7 @@ public class ColorizeBlock {
         return colorMap;
     }
 
-    static void reloadRedstoneColors(PropertiesFile properties) {
+    private static void reloadRedstoneColors(PropertiesFile properties) {
         int[] rgb = MCPatcherUtils.getImageRGB(TexturePackAPI.getImage(REDSTONE_COLORS));
         if (rgb != null && rgb.length >= 16) {
             redstoneColor = new float[16][];
@@ -312,7 +312,7 @@ public class ColorizeBlock {
         }
     }
 
-    static void reloadStemColors(PropertiesFile properties) {
+    private static void reloadStemColors(PropertiesFile properties) {
         ResourceLocation resource = TexturePackAPI.hasResource(PUMPKIN_STEM_COLORS) ? PUMPKIN_STEM_COLORS : STEM_COLORS;
         registerMetadataRGB("minecraft:pumpkin_stem", resource, 8);
         resource = TexturePackAPI.hasResource(MELON_STEM_COLORS) ? MELON_STEM_COLORS : STEM_COLORS;
