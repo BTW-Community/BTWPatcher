@@ -193,16 +193,14 @@ public class CustomTexturesModels extends Mod {
                 public byte[] getReplacementBytes() {
                     int register = extractRegisterNum(getCaptureGroup(1));
                     return buildCode(
-                        // if (!method().preRender(blockAccess, model, blockState, position, block, useAO)) {
-                        ALOAD_0,
-                        reference(INVOKESTATIC, method),
+                        // if (!ClassName.preRender(blockAccess, model, blockState, position, block, useAO)) {
                         ALOAD_1,
                         ALOAD_2,
                         ALOAD_3,
                         ALOAD, 4,
                         registerLoadStore(ALOAD, register),
                         registerLoadStore(ILOAD, register - 1),
-                        reference(INVOKEVIRTUAL, new MethodRef(method.getClassName(), "preRender", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LBlock;Z)Z")),
+                        reference(INVOKESTATIC, new MethodRef(method.getClassName(), "preRender", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LBlock;Z)Z")),
                         IFNE, branch("A"),
 
                         // return false;
@@ -484,15 +482,14 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (!ColorizeBlock18.getInstance().preRender(blockAccess, null, blockState, position, block, false)) {
-                        getCCInfo(this),
+                        // if (!ColorizeBlock18.preRender(blockAccess, null, blockState, position, block, false)) {
                         ALOAD_1,
                         push(null),
                         ALOAD_2,
                         ALOAD_3,
                         ALOAD, 5,
                         push(false),
-                        reference(INVOKEVIRTUAL, preRender),
+                        reference(INVOKESTATIC, preRender),
                         IFNE, branch("A"),
 
                         // return false;
