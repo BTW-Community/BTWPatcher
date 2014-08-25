@@ -4,7 +4,6 @@ import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
 import com.prupe.mcpatcher.basemod.ext18.*;
 import com.prupe.mcpatcher.mal.TexturePackAPIMod;
-import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -17,6 +16,7 @@ public class CustomTexturesModels extends Mod {
     static final MethodRef setDirection = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "setDirection", "(LDirection;)V");
     static final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(Z)Z");
     static final MethodRef newColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "colorMultiplier", "(I)I");
+    static final MethodRef newVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getVertexColor", "(FII)F");
 
     public CustomTexturesModels() {
         name = MCPatcherUtils.CUSTOM_TEXTURES_MODELS;
@@ -342,6 +342,45 @@ public class CustomTexturesModels extends Mod {
                         flipLoadStore(getCaptureGroup(1)),
                         reference(INVOKEVIRTUAL, newColorMultiplier),
                         getCaptureGroup(1)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                {
+                    targetMethod(renderFaceAO);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "set up smooth vertex colors";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // RenderBlockCustomInner.getVertexColor(inner)[0] * color
+                        lookBehind(build(
+                            ALOAD, 8,
+                            anyReference(INVOKESTATIC),
+                            any(),
+                            FALOAD
+                        ), true),
+                        capture(anyFLOAD),
+                        FMUL
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    // RenderBlockCustomInner.getVertexColor(inner)[0] * ColorizeBlock18.getInstance().getVertexColor(color, count / 3, count % 3)
+                    return buildCode(
+                        getCCInfo(this),
+                        getCaptureGroup(1),
+                        push(getMethodMatchCount() / 3),
+                        push(getMethodMatchCount() % 3),
+                        reference(INVOKEVIRTUAL, newVertexColor),
+                        FMUL
                     );
                 }
             });

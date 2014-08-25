@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.colormap.ColorUtils;
 import com.prupe.mcpatcher.colormap.IColorMap;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
@@ -30,6 +31,8 @@ public class ColorizeBlock18 {
 
     private boolean useCM;
     private IColorMap colorMap;
+    private boolean isSmooth;
+    private final float[][] vertexColors = new float[4][3];
 
     static {
         TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.CUSTOM_COLORS, 2) {
@@ -84,12 +87,47 @@ public class ColorizeBlock18 {
         } else {
             colorMap = null;
         }
+        isSmooth = false;
 
         return true;
     }
 
     public void setDirection(Direction direction) {
         this.direction = direction;
+        if (ColorizeBlock.enableSmoothBiomes && direction != null && colorMap != null) {
+            isSmooth = true;
+            int[][] offsets = ColorizeBlock.FACE_VERTICES[direction.ordinal()];
+            computeVertexColor(offsets[0], vertexColors[0]);
+            computeVertexColor(offsets[1], vertexColors[1]);
+            computeVertexColor(offsets[2], vertexColors[2]);
+            computeVertexColor(offsets[3], vertexColors[3]);
+        } else {
+            isSmooth = false;
+        }
+    }
+
+    private void computeVertexColor(int[] offsets, float[] color) {
+        int i = position.getI() + offsets[0];
+        int j = position.getJ() + offsets[1];
+        int k = position.getK() + offsets[2];
+        if (ColorizeBlock.enableTestColorSmoothing) {
+            int rgb = 0;
+            if (i % 2 == 0) {
+                rgb |= 0xff0000;
+            }
+            if (j % 2 == 0) {
+                rgb |= 0x00ff00;
+            }
+            if (k % 2 == 0) {
+                rgb |= 0x0000ff;
+            }
+            ColorUtils.intToFloat3(rgb, color);
+        } else {
+            float[] tmp = colorMap.getColorMultiplierF(blockAccess, i, j, k);
+            color[0] = tmp[0];
+            color[1] = tmp[1];
+            color[2] = tmp[2];
+        }
     }
 
     public boolean useColormap(boolean use) {
@@ -101,6 +139,14 @@ public class ColorizeBlock18 {
             return color;
         } else {
             return colorMap.getColorMultiplier(blockAccess, position.getI(), position.getJ(), position.getK());
+        }
+    }
+
+    public float getVertexColor(float color, int vertex, int channel) {
+        if (isSmooth) {
+            return vertexColors[vertex][channel];
+        } else {
+            return color;
         }
     }
 }

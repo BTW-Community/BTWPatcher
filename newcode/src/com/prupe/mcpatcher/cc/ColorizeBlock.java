@@ -31,8 +31,8 @@ public class ColorizeBlock {
     private static final boolean useStemColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "stem", true);
     private static final boolean useBlockColors = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "otherBlocks", true);
 
-    private static final boolean enableSmoothBiomes = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "smoothBiomes", true);
-    private static final boolean enableTestColorSmoothing = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "testColorSmoothing", false);
+    static final boolean enableSmoothBiomes = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "smoothBiomes", true);
+    static final boolean enableTestColorSmoothing = Config.getBoolean(MCPatcherUtils.CUSTOM_COLORS, "testColorSmoothing", false);
 
     private static final ResourceLocation REDSTONE_COLORS = TexturePackAPI.newMCPatcherResourceLocation("/misc/redstonecolor.png", "colormap/redstone.png");
     private static final ResourceLocation STEM_COLORS = TexturePackAPI.newMCPatcherResourceLocation("/misc/stemcolor.png", "colormap/stem.png");
@@ -73,7 +73,7 @@ public class ColorizeBlock {
     public static float colorBlueBottomRight;
     public static float colorBlueTopRight;
 
-    private static final int[][][] FACE_VERTICES = new int[][][]{
+    static final int[][][] FACE_VERTICES = new int[][][]{
         // bottom face (y=0)
         {
             {0, 0, 1}, // top left
