@@ -130,8 +130,8 @@ public class ColorizeBlock18 {
         }
     }
 
-    public boolean useColormap(boolean use) {
-        return useCM && (use || (colorMap != null && block != grassBlock && block != mycelBlock));
+    public boolean useColormap(ModelFace face) {
+        return useCM && (face.useColormap() || (colorMap != null && block != grassBlock && block != mycelBlock));
     }
 
     public int colorMultiplier(int color) {

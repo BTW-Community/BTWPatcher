@@ -17,7 +17,7 @@ public class CustomTexturesModels extends Mod {
 
     static final MethodRef getCCInstance = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getInstance", "()L" + MCPatcherUtils.COLORIZE_BLOCK18_CLASS + ";");
     static final MethodRef setDirection = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "setDirection", "(LDirection;)V");
-    static final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(Z)Z");
+    static final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(LModelFace;)Z");
     static final MethodRef newColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "colorMultiplier", "(I)I");
     static final MethodRef newVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getVertexColor", "(FII)F");
 
@@ -347,7 +347,7 @@ public class CustomTexturesModels extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         // face.useColormap();
-                        anyALOAD,
+                        capture(anyALOAD),
                         reference(INVOKEVIRTUAL, useColormap)
                     );
                 }
@@ -355,9 +355,9 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // colorizeBlock18.useColormap(face.useColorMap)
+                        // colorizeBlock18.useColormap(face)
                         getCCInfo(this),
-                        getMatch(),
+                        getCaptureGroup(1),
                         reference(INVOKEVIRTUAL, newUseColormap)
                     );
                 }
@@ -408,7 +408,7 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // RenderBlockCustomInner.getVertexColor(inner)[0] * color
+                        // RenderBlockCustomInner.getVertexColor(inner)[0,1,2,3] * color
                         lookBehind(build(
                             ALOAD, 8,
                             anyReference(INVOKESTATIC),
@@ -422,7 +422,7 @@ public class CustomTexturesModels extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    // RenderBlockCustomInner.getVertexColor(inner)[0] * colorizeBlock18.getVertexColor(color, count / 3, count % 3)
+                    // RenderBlockCustomInner.getVertexColor(inner)[0,1,2,3] * colorizeBlock18.getVertexColor(color, count / 3, count % 3)
                     return buildCode(
                         getCCInfo(this),
                         getCaptureGroup(1),
