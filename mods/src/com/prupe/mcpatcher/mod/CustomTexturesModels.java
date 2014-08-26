@@ -451,6 +451,7 @@ public class CustomTexturesModels extends Mod {
 
         private void setupColorMaps() {
             final MethodRef preRender = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "preRender", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LBlock;Z)Z");
+            final int[] colorRegister = new int[]{8, 9, 10};
 
             addPatch(new BytecodePatch() {
                 {
@@ -475,20 +476,23 @@ public class CustomTexturesModels extends Mod {
                         I2F,
                         push(255.0f),
                         FDIV,
-                        anyFSTORE
+                        capture(anyFSTORE)
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
+                    colorRegister[0] = extractRegisterNum(getCaptureGroup(2));
+                    colorRegister[1] = colorRegister[0] + 1;
+                    colorRegister[2] = colorRegister[0] + 2;
                     return buildCode(
-                        // if (!ColorizeBlock18.preRender(blockAccess, null, blockState, position, block, false)) {
+                        // if (!ColorizeBlock18.preRender(blockAccess, null, blockState, position, block, true)) {
                         ALOAD_1,
                         push(null),
                         ALOAD_2,
                         ALOAD_3,
                         ALOAD, 5,
-                        push(false),
+                        push(true),
                         reference(INVOKESTATIC, preRender),
                         IFNE, branch("A"),
 
@@ -504,6 +508,52 @@ public class CustomTexturesModels extends Mod {
                         getCaptureGroup(1),
                         reference(INVOKEVIRTUAL, newColorMultiplier),
                         flipLoadStore(getCaptureGroup(1))
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                {
+                    targetMethod(renderBlock);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "colorize bottom of water block";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // tessellator.setColorOpaque_F(f, f, f);
+                        ALOAD, 4,
+                        capture(anyFLOAD),
+                        backReference(1),
+                        backReference(1),
+                        reference(INVOKEVIRTUAL, TessellatorMod.setColorOpaque_F)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // ColorizeBlock18.getInstance().setDirection(Direction.DOWN);
+                        getCCInfo(this),
+                        reference(GETSTATIC, DirectionMod.DOWN),
+                        reference(INVOKEVIRTUAL, setDirection),
+
+                        // tessellator.setColorOpaque_F(f * r, f * g, f * b);
+                        ALOAD, 4,
+                        getCaptureGroup(1),
+                        colorRegister[0],
+                        FMUL,
+                        getCaptureGroup(1),
+                        colorRegister[1],
+                        FMUL,
+                        getCaptureGroup(1),
+                        colorRegister[2],
+                        FMUL,
+                        reference(INVOKEVIRTUAL, TessellatorMod.setColorOpaque_F)
                     );
                 }
             });
