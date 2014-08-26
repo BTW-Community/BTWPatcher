@@ -59,24 +59,20 @@ public class ColorizeBlock18 {
         }
     }
 
-    public static boolean preRender(IBlockAccess blockAccess, IModel model, IBlockState blockState, Position position, Block block, boolean useAO) {
-        ColorizeBlock18 instance = getInstance();
+    public static ColorizeBlock18 getInstance() {
+        ColorizeBlock18 instance = instances.get();
         if (instance == null) {
             instance = new ColorizeBlock18();
             instances.set(instance);
         }
-        return instance.preRender1(blockAccess, model, blockState, position, block, useAO);
-    }
-
-    public static ColorizeBlock18 getInstance() {
-        return instances.get();
+        return instance;
     }
 
     private ColorizeBlock18() {
         logger.info("new ColorizeBlock18() for %s", Thread.currentThread());
     }
 
-    private boolean preRender1(IBlockAccess blockAccess, IModel model, IBlockState blockState, Position position, Block block, boolean useAO) {
+    public boolean preRender(IBlockAccess blockAccess, IModel model, IBlockState blockState, Position position, Block block, boolean useAO) {
         this.blockAccess = blockAccess;
         this.model = model;
         this.blockState = blockState;

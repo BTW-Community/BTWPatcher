@@ -5,6 +5,9 @@ import com.prupe.mcpatcher.basemod.*;
 import com.prupe.mcpatcher.basemod.ext18.*;
 import com.prupe.mcpatcher.mal.TexturePackAPIMod;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
@@ -17,6 +20,8 @@ public class CustomTexturesModels extends Mod {
     static final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(Z)Z");
     static final MethodRef newColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "colorMultiplier", "(I)I");
     static final MethodRef newVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getVertexColor", "(FII)F");
+
+    private static final Map<String, Integer> ccInfoMap = new HashMap<String, Integer>();
 
     public CustomTexturesModels() {
         name = MCPatcherUtils.CUSTOM_TEXTURES_MODELS;
@@ -85,8 +90,51 @@ public class CustomTexturesModels extends Mod {
         }
     }
 
+    private String getCCKey(PatchComponent patchComponent) {
+        return patchComponent.getClassFile().getName() + ":" + patchComponent.getMethodInfo().toString();
+    }
+
+    private void initCCInfo(ClassMod classMod, final MethodRef... methods) {
+        ccInfoMap.clear();
+        classMod.addPatch(new BytecodePatch(classMod) {
+            {
+                targetMethod(methods);
+            }
+
+            @Override
+            public String getDescription() {
+                return "set render info";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    begin()
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                int register = getMethodInfo().getCodeAttribute().getMaxLocals();
+                ccInfoMap.put(getCCKey(this), register);
+                return buildCode(
+                    reference(INVOKESTATIC, getCCInstance),
+                    registerLoadStore(ASTORE, register)
+                );
+            }
+        });
+    }
+
     private byte[] getCCInfo(PatchComponent patchComponent) {
-        return patchComponent.reference(INVOKESTATIC, getCCInstance);
+        String key = getCCKey(patchComponent);
+        Integer register = ccInfoMap.get(key);
+        if (register == null) {
+            for (Map.Entry<String, Integer> entry : ccInfoMap.entrySet()) {
+                Logger.log(Logger.LOG_MAIN, "  %s -> %s", entry.getKey(), entry.getValue());
+            }
+            throw new IllegalStateException("no ccInfo for [" + key + "]");
+        }
+        return registerLoadStore(ALOAD, register);
     }
 
     private class RenderBlockCustomMod extends ClassMod {
@@ -193,14 +241,15 @@ public class CustomTexturesModels extends Mod {
                 public byte[] getReplacementBytes() {
                     int register = extractRegisterNum(getCaptureGroup(1));
                     return buildCode(
-                        // if (!ClassName.preRender(blockAccess, model, blockState, position, block, useAO)) {
+                        // if (!ClassName.getInstance().preRender(blockAccess, model, blockState, position, block, useAO)) {
+                        reference(INVOKESTATIC, method),
                         ALOAD_1,
                         ALOAD_2,
                         ALOAD_3,
                         ALOAD, 4,
                         registerLoadStore(ALOAD, register),
                         registerLoadStore(ILOAD, register - 1),
-                        reference(INVOKESTATIC, new MethodRef(method.getClassName(), "preRender", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LBlock;Z)Z")),
+                        reference(INVOKEVIRTUAL, new MethodRef(method.getClassName(), "preRender", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LBlock;Z)Z")),
                         IFNE, branch("A"),
 
                         // return false;
@@ -218,6 +267,8 @@ public class CustomTexturesModels extends Mod {
             final MethodRef useColormap = new MethodRef("ModelFace", "useColormap", "()Z");
 
             setupPreRender(getCCInstance);
+
+            initCCInfo(this, renderBlockAO, renderBlockNonAO, renderFaceAO, renderFaceNonAO);
 
             addPatch(new BytecodePatch() {
                 {
@@ -243,7 +294,7 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // ColorizeBlock18.getInstance().setDirection(direction);
+                        // colorizeBlock18.setDirection(direction);
                         getCCInfo(this),
                         getCaptureGroup(1),
                         reference(INVOKEVIRTUAL, setDirection)
@@ -274,7 +325,7 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // ColorizeBlock18.getInstance().setDirection(null);
+                        // colorizeBlock18.setDirection(null);
                         getCCInfo(this),
                         push(null),
                         reference(INVOKEVIRTUAL, setDirection)
@@ -304,7 +355,7 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // ColorizeBlock18.getInstance().useColormap(face.useColorMap)
+                        // colorizeBlock18.useColormap(face.useColorMap)
                         getCCInfo(this),
                         getMatch(),
                         reference(INVOKEVIRTUAL, newUseColormap)
@@ -335,7 +386,7 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // color = ColorizeBlock18.getInstance().colorMultiplier(color)
+                        // color = colorizeBlock18.colorMultiplier(color)
                         getCCInfo(this),
                         flipLoadStore(getCaptureGroup(1)),
                         reference(INVOKEVIRTUAL, newColorMultiplier),
@@ -371,7 +422,7 @@ public class CustomTexturesModels extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    // RenderBlockCustomInner.getVertexColor(inner)[0] * ColorizeBlock18.getInstance().getVertexColor(color, count / 3, count % 3)
+                    // RenderBlockCustomInner.getVertexColor(inner)[0] * colorizeBlock18.getVertexColor(color, count / 3, count % 3)
                     return buildCode(
                         getCCInfo(this),
                         getCaptureGroup(1),
@@ -437,8 +488,7 @@ public class CustomTexturesModels extends Mod {
 
     private class RenderBlockFluidMod extends ClassMod {
         private final MethodRef renderBlock = new MethodRef(getDeobfClass(), "renderBlock", "(LIBlockAccess;LIBlockState;LPosition;LTessellator;)Z");
-        private final int[] colorRegister = new int[]{8, 9, 10};
-        private int ccInfo;
+        private final int[] colorRegister = new int[3];
 
         RenderBlockFluidMod() {
             addClassSignature(new ConstSignature("minecraft:blocks/lava_still"));
@@ -454,6 +504,8 @@ public class CustomTexturesModels extends Mod {
         private void setupColorMaps() {
             final MethodRef preRender = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "preRender", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LBlock;Z)Z");
             final MethodRef applyVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "applyVertexColor", "(LTessellator;FI)V");
+
+            initCCInfo(this, renderBlock);
 
             addPatch(new BytecodePatch() {
                 {
@@ -484,23 +536,19 @@ public class CustomTexturesModels extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    ccInfo = getMethodInfo().getCodeAttribute().getMaxLocals();
                     colorRegister[0] = extractRegisterNum(getCaptureGroup(2));
                     colorRegister[1] = colorRegister[0] + 1;
                     colorRegister[2] = colorRegister[0] + 2;
                     return buildCode(
-                        // colorizeBlock18 = ColorizeBlock18.getInstance();
+                        // if (!colorizeBlock18.preRender(blockAccess, null, blockState, position, block, true)) {
                         getCCInfo(this),
-                        ASTORE, ccInfo,
-
-                        // if (!ColorizeBlock18.preRender(blockAccess, null, blockState, position, block, true)) {
                         ALOAD_1,
                         push(null),
                         ALOAD_2,
                         ALOAD_3,
                         ALOAD, 5,
                         push(true),
-                        reference(INVOKESTATIC, preRender),
+                        reference(INVOKEVIRTUAL, preRender),
                         IFNE, branch("A"),
 
                         // return false;
@@ -511,7 +559,7 @@ public class CustomTexturesModels extends Mod {
                         label("A"),
 
                         // color = colorizeBlock18.colorMultiplier(color);
-                        ALOAD, ccInfo,
+                        getCCInfo(this),
                         getCaptureGroup(1),
                         reference(INVOKEVIRTUAL, newColorMultiplier),
                         flipLoadStore(getCaptureGroup(1))
@@ -526,7 +574,7 @@ public class CustomTexturesModels extends Mod {
 
                 @Override
                 public boolean filterMethod() {
-                    return ccInfo > 0;
+                    return colorRegister[0] > 0;
                 }
 
                 @Override
@@ -626,7 +674,7 @@ public class CustomTexturesModels extends Mod {
 
                 @Override
                 public boolean filterMethod() {
-                    return ccInfo > 0;
+                    return colorRegister[0] > 0;
                 }
 
                 @Override
@@ -650,7 +698,7 @@ public class CustomTexturesModels extends Mod {
                         callSetDirection(),
 
                         // colorizeBlock18.applyVertexColor(tessellator, base, vertex);
-                        ALOAD, ccInfo,
+                        getCCInfo(this),
                         ALOAD, 4,
                         getBase(),
                         push(getVertex()),
@@ -664,7 +712,7 @@ public class CustomTexturesModels extends Mod {
                             case 0: // top face
                                 return buildCode(
                                     // colorizeBlock18.setDirection(Direction.UP);
-                                    ALOAD, ccInfo,
+                                    getCCInfo(this),
                                     reference(GETSTATIC, DirectionMod.UP),
                                     reference(INVOKEVIRTUAL, setDirection)
                                 );
@@ -672,7 +720,7 @@ public class CustomTexturesModels extends Mod {
                             case 2: // bottom face
                                 return buildCode(
                                     // colorizeBlock18.setDirection(Direction.DOWN);
-                                    ALOAD, ccInfo,
+                                    getCCInfo(this),
                                     reference(GETSTATIC, DirectionMod.DOWN),
                                     reference(INVOKEVIRTUAL, setDirection)
                                 );
@@ -680,7 +728,7 @@ public class CustomTexturesModels extends Mod {
                             case 3: // side faces
                                 return buildCode(
                                     // colorizeBlock18.setDirection(Direction.values()[faceIndex + 2]);
-                                    ALOAD, ccInfo,
+                                    getCCInfo(this),
                                     reference(INVOKESTATIC, DirectionMod.values),
                                     ILOAD, faceIndex,
                                     push(2),
