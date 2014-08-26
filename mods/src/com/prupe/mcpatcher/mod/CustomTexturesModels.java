@@ -437,6 +437,8 @@ public class CustomTexturesModels extends Mod {
 
     private class RenderBlockFluidMod extends ClassMod {
         private final MethodRef renderBlock = new MethodRef(getDeobfClass(), "renderBlock", "(LIBlockAccess;LIBlockState;LPosition;LTessellator;)Z");
+        private final int[] colorRegister = new int[]{8, 9, 10};
+        private int ccInfo;
 
         RenderBlockFluidMod() {
             addClassSignature(new ConstSignature("minecraft:blocks/lava_still"));
@@ -451,7 +453,7 @@ public class CustomTexturesModels extends Mod {
 
         private void setupColorMaps() {
             final MethodRef preRender = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "preRender", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LBlock;Z)Z");
-            final int[] colorRegister = new int[]{8, 9, 10};
+            final MethodRef applyVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "applyVertexColor", "(LTessellator;FI)V");
 
             addPatch(new BytecodePatch() {
                 {
@@ -482,10 +484,15 @@ public class CustomTexturesModels extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
+                    ccInfo = getMethodInfo().getCodeAttribute().getMaxLocals();
                     colorRegister[0] = extractRegisterNum(getCaptureGroup(2));
                     colorRegister[1] = colorRegister[0] + 1;
                     colorRegister[2] = colorRegister[0] + 2;
                     return buildCode(
+                        // colorizeBlock18 = ColorizeBlock18.getInstance();
+                        getCCInfo(this),
+                        ASTORE, ccInfo,
+
                         // if (!ColorizeBlock18.preRender(blockAccess, null, blockState, position, block, true)) {
                         ALOAD_1,
                         push(null),
@@ -503,8 +510,8 @@ public class CustomTexturesModels extends Mod {
                         // }
                         label("A"),
 
-                        // color = ColorizeBlock18.getInstance().colorMultiplier(color);
-                        getCCInfo(this),
+                        // color = colorizeBlock18.colorMultiplier(color);
+                        ALOAD, ccInfo,
                         getCaptureGroup(1),
                         reference(INVOKEVIRTUAL, newColorMultiplier),
                         flipLoadStore(getCaptureGroup(1))
@@ -515,6 +522,11 @@ public class CustomTexturesModels extends Mod {
             addPatch(new BytecodePatch() {
                 {
                     targetMethod(renderBlock);
+                }
+
+                @Override
+                public boolean filterMethod() {
+                    return ccInfo > 0;
                 }
 
                 @Override
@@ -537,11 +549,6 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // ColorizeBlock18.getInstance().setDirection(Direction.DOWN);
-                        getCCInfo(this),
-                        reference(GETSTATIC, DirectionMod.DOWN),
-                        reference(INVOKEVIRTUAL, setDirection),
-
                         // tessellator.setColorOpaque_F(f * r, f * g, f * b);
                         ALOAD, 4,
                         getCaptureGroup(1),
@@ -555,6 +562,168 @@ public class CustomTexturesModels extends Mod {
                         FMUL,
                         reference(INVOKEVIRTUAL, TessellatorMod.setColorOpaque_F)
                     );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                private int baseMultiplier;
+                private int faceIndex;
+
+                {
+                    setInsertBefore(true);
+                    targetMethod(renderBlock);
+
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                // tessellator.setColorOpaque(f * base * r, f * base * g, f * base * b);
+                                ALOAD, 4,
+                                capture(anyFLOAD),
+                                capture(anyFLOAD),
+                                FMUL,
+                                FLOAD, colorRegister[0],
+                                FMUL,
+                                backReference(1),
+                                backReference(2),
+                                FMUL,
+                                FLOAD, colorRegister[1],
+                                FMUL,
+                                backReference(1),
+                                backReference(2),
+                                FMUL,
+                                FLOAD, colorRegister[2],
+                                FMUL,
+                                reference(INVOKEVIRTUAL, TessellatorMod.setColorOpaque_F)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            baseMultiplier = extractRegisterNum(getCaptureGroup(2));
+                            return true;
+                        }
+                    });
+
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                // for (...; faceIndex < 4; ...)
+                                capture(anyILOAD),
+                                push(4),
+                                IF_ICMPLT_or_IF_ICMPGE
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            faceIndex = extractRegisterNum(getCaptureGroup(1));
+                            return true;
+                        }
+                    });
+                }
+
+                @Override
+                public boolean filterMethod() {
+                    return ccInfo > 0;
+                }
+
+                @Override
+                public String getDescription() {
+                    return "smooth biome colors";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // tessellator.addVertexWithUV(...);
+                        ALOAD, 4,
+                        nonGreedy(any(0, 30)),
+                        reference(INVOKEVIRTUAL, TessellatorMod.addVertexWithUV)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        callSetDirection(),
+
+                        // colorizeBlock18.applyVertexColor(tessellator, base, vertex);
+                        ALOAD, ccInfo,
+                        ALOAD, 4,
+                        getBase(),
+                        push(getVertex()),
+                        reference(INVOKEVIRTUAL, applyVertexColor)
+                    );
+                }
+
+                private byte[] callSetDirection() {
+                    if (getMethodMatchCount() % 4 == 0) {
+                        switch (getMethodMatchCount() / 4) {
+                            case 0: // top face
+                                return buildCode(
+                                    // colorizeBlock18.setDirection(Direction.UP);
+                                    ALOAD, ccInfo,
+                                    reference(GETSTATIC, DirectionMod.UP),
+                                    reference(INVOKEVIRTUAL, setDirection)
+                                );
+
+                            case 2: // bottom face
+                                return buildCode(
+                                    // colorizeBlock18.setDirection(Direction.DOWN);
+                                    ALOAD, ccInfo,
+                                    reference(GETSTATIC, DirectionMod.DOWN),
+                                    reference(INVOKEVIRTUAL, setDirection)
+                                );
+
+                            case 3: // side faces
+                                return buildCode(
+                                    // colorizeBlock18.setDirection(Direction.values()[faceIndex + 2]);
+                                    ALOAD, ccInfo,
+                                    reference(INVOKESTATIC, DirectionMod.values),
+                                    ILOAD, faceIndex,
+                                    push(2),
+                                    IADD,
+                                    AALOAD,
+                                    reference(INVOKEVIRTUAL, setDirection)
+                                );
+
+                            default:
+                                break;
+                        }
+                    }
+                    return new byte[0];
+                }
+
+                private Object getBase() {
+                    switch (getMethodMatchCount() / 4) {
+                        case 0: // top face
+                        case 1: // top face (reverse)
+                        default:
+                            return push(1.0f);
+
+                        case 2: // bottom face
+                            return push(0.5f);
+
+                        case 3: // side faces
+                        case 4: // side faces (reverse)
+                            return buildCode(
+                                FLOAD, baseMultiplier
+                            );
+                    }
+                }
+
+                private int getVertex() {
+                    int vertex = getMethodMatchCount() % 4;
+                    switch (getMethodMatchCount() / 4) {
+                        case 1: // top face (reverse)
+                        case 4: // side faces (reverse)
+                            return 3 - vertex;
+
+                        default:
+                            return vertex;
+                    }
                 }
             });
         }
