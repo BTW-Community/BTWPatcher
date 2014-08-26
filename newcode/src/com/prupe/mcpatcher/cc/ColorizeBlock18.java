@@ -90,7 +90,7 @@ public class ColorizeBlock18 {
             List<BlockStateMatcher> maps = ColorizeBlock.findColorMaps(block);
             if (maps != null) {
                 for (BlockStateMatcher matcher : maps) {
-                    if (((BlockStateMatcher.V2) matcher).match(blockState)) {
+                    if (matcher.matchBlockState(blockState)) {
                         colorMap = ColorizeBlock.getThreadLocal(matcher);
                         break;
                     }

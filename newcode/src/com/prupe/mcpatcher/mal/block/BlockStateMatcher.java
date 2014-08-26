@@ -51,6 +51,8 @@ abstract public class BlockStateMatcher {
 
     abstract public boolean match(Block block, int metadata);
 
+    abstract public boolean matchBlockState(Object blockState);
+
     abstract public boolean isUnfiltered();
 
     final static class V1 extends BlockStateMatcher {
@@ -94,6 +96,11 @@ abstract public class BlockStateMatcher {
         @Override
         public boolean match(Block block, int metadata) {
             return block == this.block && (metadataBits & (1 << metadata)) != 0;
+        }
+
+        @Override
+        public boolean matchBlockState(Object blockState) {
+            throw new UnsupportedOperationException("match by block state");
         }
 
         @Override
@@ -191,11 +198,16 @@ abstract public class BlockStateMatcher {
         }
 
         @Override
+        public boolean matchBlockState(Object blockState) {
+            return match((IBlockState) blockState);
+        }
+
+        @Override
         public boolean isUnfiltered() {
             return propertyMap.isEmpty();
         }
 
-        public boolean match(IBlockState state) {
+        private boolean match(IBlockState state) {
             if (state == null || state.getBlock() != block) {
                 return false;
             }
