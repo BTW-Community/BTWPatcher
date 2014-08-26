@@ -5,11 +5,14 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.colormap.ColorUtils;
 import com.prupe.mcpatcher.colormap.IColorMap;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
+import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
 import net.minecraft.src.*;
+
+import java.util.List;
 
 public class ColorizeBlock18 {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
@@ -81,11 +84,18 @@ public class ColorizeBlock18 {
         this.useAO = useAO;
         direction = null;
 
+        colorMap = null;
         useCM = RenderPassAPI.instance.useColorMultiplierThisPass(block);
         if (useCM) {
-            colorMap = ColorizeBlock.findColorMap(block, blockAccess, position.getI(), position.getJ(), position.getK());
-        } else {
-            colorMap = null;
+            List<BlockStateMatcher> maps = ColorizeBlock.findColorMaps(block);
+            if (maps != null) {
+                for (BlockStateMatcher matcher : maps) {
+                    if (((BlockStateMatcher.V2) matcher).match(blockState)) {
+                        colorMap = ColorizeBlock.getThreadLocal(matcher);
+                        break;
+                    }
+                }
+            }
         }
         isSmooth = false;
 

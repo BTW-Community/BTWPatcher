@@ -182,7 +182,20 @@ abstract public class BlockStateMatcher {
 
         @Override
         public boolean match(IBlockAccess blockAccess, int i, int j, int k) {
-            IBlockState state = blockAccess.getBlockState(new Position(i, j, k));
+            return match(blockAccess.getBlockState(new Position(i, j, k)));
+        }
+
+        @Override
+        public boolean match(Block block, int metadata) {
+            throw new UnsupportedOperationException("match by metadata");
+        }
+
+        @Override
+        public boolean isUnfiltered() {
+            return propertyMap.isEmpty();
+        }
+
+        public boolean match(IBlockState state) {
             if (state == null || state.getBlock() != block) {
                 return false;
             }
@@ -194,16 +207,6 @@ abstract public class BlockStateMatcher {
                 }
             }
             return true;
-        }
-
-        @Override
-        public boolean match(Block block, int metadata) {
-            throw new UnsupportedOperationException("match by metadata");
-        }
-
-        @Override
-        public boolean isUnfiltered() {
-            return propertyMap.isEmpty();
         }
     }
 }

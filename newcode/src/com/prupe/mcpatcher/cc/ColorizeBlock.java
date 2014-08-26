@@ -330,39 +330,39 @@ public class ColorizeBlock {
         }
     }
 
-    private static IColorMap findColorMap(Block block, int metadata) {
-        List<BlockStateMatcher> maps = blockColorMaps.get(block);
-        if (maps == null) {
-            return null;
+    static List<BlockStateMatcher> findColorMaps(Block block) {
+        return blockColorMaps.get(block);
+    }
+
+    static IColorMap getThreadLocal(BlockStateMatcher matcher) {
+        IColorMap newMap = (IColorMap) matcher.getThreadData();
+        if (newMap == null) {
+            IColorMap oldMap = (IColorMap) matcher.getData();
+            newMap = oldMap.copy();
+            matcher.setThreadData(newMap);
         }
-        for (BlockStateMatcher matcher : maps) {
-            if (matcher.match(block, metadata)) {
-                IColorMap newMap = (IColorMap) matcher.getThreadData();
-                if (newMap == null) {
-                    IColorMap oldMap = (IColorMap) matcher.getData();
-                    newMap = oldMap.copy();
-                    matcher.setThreadData(newMap);
+        return newMap;
+    }
+
+    private static IColorMap findColorMap(Block block, int metadata) {
+        List<BlockStateMatcher> maps = findColorMaps(block);
+        if (maps != null) {
+            for (BlockStateMatcher matcher : maps) {
+                if (matcher.match(block, metadata)) {
+                    return getThreadLocal(matcher);
                 }
-                return newMap;
             }
         }
         return null;
     }
 
-    static IColorMap findColorMap(Block block, IBlockAccess blockAccess, int i, int j, int k) {
-        List<BlockStateMatcher> maps = blockColorMaps.get(block);
-        if (maps == null) {
-            return null;
-        }
-        for (BlockStateMatcher matcher : maps) {
-            if (matcher.match(blockAccess, i, j, k)) {
-                IColorMap newMap = (IColorMap) matcher.getThreadData();
-                if (newMap == null) {
-                    IColorMap oldMap = (IColorMap) matcher.getData();
-                    newMap = oldMap.copy();
-                    matcher.setThreadData(newMap);
+    private static IColorMap findColorMap(Block block, IBlockAccess blockAccess, int i, int j, int k) {
+        List<BlockStateMatcher> maps = findColorMaps(block);
+        if (maps != null) {
+            for (BlockStateMatcher matcher : maps) {
+                if (matcher.match(blockAccess, i, j, k)) {
+                    return getThreadLocal(matcher);
                 }
-                return newMap;
             }
         }
         return null;
