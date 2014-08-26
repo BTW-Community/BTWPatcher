@@ -600,13 +600,13 @@ public class CustomTexturesModels extends Mod {
                         // tessellator.setColorOpaque_F(f * r, f * g, f * b);
                         ALOAD, 4,
                         getCaptureGroup(1),
-                        colorRegister[0],
+                        FLOAD, colorRegister[0],
                         FMUL,
                         getCaptureGroup(1),
-                        colorRegister[1],
+                        FLOAD, colorRegister[1],
                         FMUL,
                         getCaptureGroup(1),
-                        colorRegister[2],
+                        FLOAD, colorRegister[2],
                         FMUL,
                         reference(INVOKEVIRTUAL, TessellatorMod.setColorOpaque_F)
                     );
