@@ -197,8 +197,8 @@ abstract public class BlockAPI {
         if (MCPatcherUtils.isNullOrEmpty(name)) {
             return null;
         }
-        if (name.matches("\\d+")) {
-            int id = Integer.parseInt(name);
+        if (name.matches("(minecraft:)?\\d+")) {
+            int id = Integer.parseInt(name.replace("minecraft:", ""));
             return instance.getBlockById_Impl(id);
         }
         name = getFullName(name);
@@ -281,7 +281,7 @@ abstract public class BlockAPI {
             source.warning("cannot parse namespace/block name from %s", matchString);
             return null;
         }
-        Block block = BlockAPI.parseBlockName(namespace + ':' + blockName);
+        Block block = parseBlockName(namespace + ':' + blockName);
         if (block == null) {
             source.warning("unknown block %s:%s", namespace, blockName);
             return null;
