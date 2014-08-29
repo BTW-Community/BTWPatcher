@@ -73,7 +73,7 @@ public class ColorizeBlock {
     public static float colorBlueBottomRight;
     public static float colorBlueTopRight;
 
-    static final int[][][] FACE_VERTICES = new int[][][]{
+    private static final int[][][] FACE_VERTICES = new int[][][]{
         // bottom face (y=0)
         {
             {0, 0, 1}, // top left

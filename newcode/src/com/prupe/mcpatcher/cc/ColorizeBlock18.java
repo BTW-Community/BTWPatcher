@@ -10,7 +10,9 @@ import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
+import com.prupe.mcpatcher.mal.util.InputHandler;
 import net.minecraft.src.*;
+import org.lwjgl.input.Keyboard;
 
 import java.util.List;
 
@@ -37,6 +39,54 @@ public class ColorizeBlock18 {
     private boolean isSmooth;
     private final float[][] vertexColors = new float[4][3];
 
+    private static final int[][][] FACE_VERTICES = new int[][][]{
+        // bottom face (y=0)
+        {
+            {0, 0, 1}, // top left
+            {0, 0, 0}, // bottom left
+            {1, 0, 0}, // bottom right
+            {1, 0, 1}, // top right
+        },
+        // top face (y=1)
+        {
+            {1, 1, 1},
+            {1, 1, 0},
+            {0, 1, 0},
+            {0, 1, 1},
+        },
+        // north face (z=0)
+        {
+            {0, 1, 0},
+            {1, 1, 0},
+            {1, 0, 0},
+            {0, 0, 0},
+        },
+        // south face (z=1)
+        {
+            {0, 1, 1},
+            {0, 0, 1},
+            {1, 0, 1},
+            {1, 1, 1},
+        },
+        // west face (x=0)
+        {
+            {0, 1, 1},
+            {0, 1, 0},
+            {0, 0, 0},
+            {0, 0, 1},
+        },
+        // east face (x=1)
+        {
+            {1, 0, 1},
+            {1, 0, 0},
+            {1, 1, 0},
+            {1, 1, 1},
+        }
+    };
+
+    private static Thread foo;
+    private static int bar;
+
     static {
         TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.CUSTOM_COLORS, 2) {
             @Override
@@ -48,6 +98,29 @@ public class ColorizeBlock18 {
             public void afterChange() {
                 PropertiesFile properties = PropertiesFile.getNonNull(logger, COLOR_PROPERTIES);
                 ColorizeBlock.reloadAll(properties);
+                if (foo == null) {
+                    foo = new Thread(new Runnable() {
+                        private final InputHandler kk = new InputHandler("CC", true);
+
+                        @Override
+                        public void run() {
+                            try {
+                                Thread.sleep(10000);
+                                logger.info("starting * thread");
+                                while (true) {
+                                    Thread.sleep(100);
+                                    if (kk.isKeyPressed(Keyboard.KEY_MULTIPLY)) {
+                                        bar = (bar + 1) % 3;
+                                        logger.info("bar = %s", bar == 0 ? "normal" : bar == 1 ? "red,white,blue" : "red,green,blue");
+                                    }
+                                }
+                            } catch (Throwable e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                    foo.start();
+                }
             }
         });
     }
@@ -106,37 +179,63 @@ public class ColorizeBlock18 {
         this.direction = direction;
         if (ColorizeBlock.enableSmoothBiomes && direction != null && colorMap != null) {
             isSmooth = true;
-            int[][] offsets = ColorizeBlock.FACE_VERTICES[direction.ordinal()];
-            computeVertexColor(offsets[0], vertexColors[0]);
-            computeVertexColor(offsets[1], vertexColors[1]);
-            computeVertexColor(offsets[2], vertexColors[2]);
-            computeVertexColor(offsets[3], vertexColors[3]);
+            int[][] offsets = FACE_VERTICES[direction.ordinal()];
+            computeVertexColor(offsets[0], 0, vertexColors[0]);
+            computeVertexColor(offsets[1], 1, vertexColors[1]);
+            computeVertexColor(offsets[2], 2, vertexColors[2]);
+            computeVertexColor(offsets[3], 3, vertexColors[3]);
         } else {
             isSmooth = false;
         }
     }
 
-    private void computeVertexColor(int[] offsets, float[] color) {
+    private void computeVertexColor(int[] offsets, int index, float[] color) {
         int i = position.getI() + offsets[0];
         int j = position.getJ() + offsets[1];
         int k = position.getK() + offsets[2];
-        if (ColorizeBlock.enableTestColorSmoothing) {
-            int rgb = 0;
-            if (i % 2 == 0) {
-                rgb |= 0xff0000;
-            }
-            if (j % 2 == 0) {
-                rgb |= 0x00ff00;
-            }
-            if (k % 2 == 0) {
-                rgb |= 0x0000ff;
-            }
-            ColorUtils.intToFloat3(rgb, color);
-        } else {
-            float[] tmp = colorMap.getColorMultiplierF(blockAccess, i, j, k);
-            color[0] = tmp[0];
-            color[1] = tmp[1];
-            color[2] = tmp[2];
+        int rgb = 0;
+        switch (bar) {
+            case 1:
+                switch (index) {
+                    default:
+                    case 0: // top left
+                        rgb = 0x000000;
+                        break;
+
+                    case 1: // bottom left
+                        rgb = 0xff0000;
+                        break;
+
+                    case 2: // bottom right
+                        rgb = 0xffffff;
+                        break;
+
+                    case 3: // top right
+                        rgb = 0x0000ff;
+                        break;
+                }
+                ColorUtils.intToFloat3(rgb, color);
+                break;
+
+            case 2:
+                if (i % 2 == 0) {
+                    rgb |= 0xff0000;
+                }
+                if (j % 2 == 0) {
+                    rgb |= 0x00ff00;
+                }
+                if (k % 2 == 0) {
+                    rgb |= 0x0000ff;
+                }
+                ColorUtils.intToFloat3(rgb, color);
+                break;
+
+            default:
+                float[] tmp = colorMap.getColorMultiplierF(blockAccess, i, j, k);
+                color[0] = tmp[0];
+                color[1] = tmp[1];
+                color[2] = tmp[2];
+                break;
         }
     }
 
