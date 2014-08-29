@@ -205,7 +205,7 @@ public class ColorizeBlock {
         registerColorMap(colorMap, DEFAULT_GRASSCOLOR, "minecraft:grass:snowy=false minecraft:tallgrass:1,2 minecraft:double_plant:2,3:variant=double_grass minecraft:reeds");
         colorMap = ColorMap.loadVanillaColorMap(DEFAULT_FOLIAGECOLOR, SWAMPFOLIAGECOLOR);
         registerColorMap(colorMap, DEFAULT_FOLIAGECOLOR, "minecraft:leaves:0,4,8,12:variant=oak minecraft:vine");
-        registerColorMap(PINECOLOR, "minecraft:leaves:1,5,9,13:variant=pine");
+        registerColorMap(PINECOLOR, "minecraft:leaves:1,5,9,13:variant=spruce");
         registerColorMap(BIRCHCOLOR, "minecraft:leaves:2,6,10,14:variant=birch");
     }
 
