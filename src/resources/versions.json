@@ -1,9 +1,15 @@
 { 
   "latest": {
-    "snapshot": "1.8-pre2",
+    "snapshot": "1.8-pre3",
     "release": "1.7.10"
   },
   "versions": [
+    {
+      "id": "1.8-pre3",
+      "time": "2014-08-28T09:40:54+00:00",
+      "releaseTime": "2014-08-28T09:40:54+00:00",
+      "type": "snapshot"
+    },
     {
       "id": "1.8-pre2",
       "time": "2014-08-25T14:52:18+00:00",
