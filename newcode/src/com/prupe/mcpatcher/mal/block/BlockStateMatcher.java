@@ -5,10 +5,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import net.minecraft.src.*;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 abstract public class BlockStateMatcher {
     private final String fullString;
@@ -153,6 +150,7 @@ abstract public class BlockStateMatcher {
                                     source.warning("unknown value %s for block %s property %s",
                                         s, BlockAPI.getBlockName(block), property.getName()
                                     );
+                                    source.warning("must be one of:%s", getPropertyValues(property));
                                 } else {
                                     valueSet.add(propertyValue);
                                 }
@@ -185,6 +183,17 @@ abstract public class BlockStateMatcher {
                 }
             }
             return null;
+        }
+
+        @SuppressWarnings("unchecked")
+        private static String getPropertyValues(IBlockStateProperty property) {
+            StringBuilder sb = new StringBuilder();
+            List<Comparable> values = new ArrayList<Comparable>(property.getValues());
+            Collections.sort(values);
+            for (Comparable value : values) {
+                sb.append(' ').append(value.toString());
+            }
+            return sb.toString();
         }
 
         @Override
