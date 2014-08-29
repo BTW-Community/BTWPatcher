@@ -84,6 +84,51 @@ public class ColorizeBlock18 {
         }
     };
 
+    private static final int[][][] FACE_VERTICES_WATER = new int[][][]{
+        // bottom face (y=0)
+        {
+            {0, 0, 1}, // top left
+            {0, 0, 0}, // bottom left
+            {1, 0, 0}, // bottom right
+            {1, 0, 1}, // top right
+        },
+        // top face (y=1)
+        {
+            {0, 1, 0},
+            {0, 1, 1},
+            {1, 1, 1},
+            {1, 1, 0},
+        },
+        // north face (z=0)
+        {
+            {1, 1, 0},
+            {1, 0, 0},
+            {0, 0, 0},
+            {0, 1, 0},
+        },
+        // south face (z=1)
+        {
+            {0, 1, 1},
+            {0, 0, 1},
+            {1, 0, 1},
+            {1, 1, 1},
+        },
+        // west face (x=0)
+        {
+            {0, 1, 0},
+            {0, 0, 0},
+            {0, 0, 1},
+            {0, 1, 1},
+        },
+        // east face (x=1)
+        {
+            {1, 1, 1},
+            {1, 0, 1},
+            {1, 0, 0},
+            {1, 1, 0},
+        }
+    };
+
     private static Thread foo;
     private static int bar;
 
@@ -176,10 +221,18 @@ public class ColorizeBlock18 {
     }
 
     public void setDirection(Direction direction) {
+        setDirection(direction, FACE_VERTICES);
+    }
+
+    public void setDirectionWater(Direction direction) {
+        setDirection(direction, FACE_VERTICES_WATER);
+    }
+
+    private void setDirection(Direction direction, int[][][] faceVertices) {
         this.direction = direction;
         if (ColorizeBlock.enableSmoothBiomes && direction != null && colorMap != null) {
             isSmooth = true;
-            int[][] offsets = FACE_VERTICES[direction.ordinal()];
+            int[][] offsets = faceVertices[direction.ordinal()];
             computeVertexColor(offsets[0], 0, vertexColors[0]);
             computeVertexColor(offsets[1], 1, vertexColors[1]);
             computeVertexColor(offsets[2], 2, vertexColors[2]);

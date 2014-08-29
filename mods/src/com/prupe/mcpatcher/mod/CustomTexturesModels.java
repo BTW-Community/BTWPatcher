@@ -16,7 +16,6 @@ public class CustomTexturesModels extends Mod {
     static final MethodRef blockColorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;LPosition;I)I");
 
     static final MethodRef getCCInstance = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getInstance", "()L" + MCPatcherUtils.COLORIZE_BLOCK18_CLASS + ";");
-    static final MethodRef setDirection = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "setDirection", "(LDirection;)V");
     static final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(LModelFace;)Z");
     static final MethodRef newColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "colorMultiplier", "(I)I");
     static final MethodRef newVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getVertexColor", "(FII)F");
@@ -265,6 +264,7 @@ public class CustomTexturesModels extends Mod {
 
         private void setupColorMaps() {
             final MethodRef useColormap = new MethodRef("ModelFace", "useColormap", "()Z");
+            final MethodRef setDirection = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "setDirection", "(LDirection;)V");
 
             setupPreRender(getCCInstance);
 
@@ -503,6 +503,7 @@ public class CustomTexturesModels extends Mod {
 
         private void setupColorMaps() {
             final MethodRef preRender = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "preRender", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LBlock;Z)Z");
+            final MethodRef setDirection = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "setDirectionWater", "(LDirection;)V");
             final MethodRef applyVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "applyVertexColor", "(LTessellator;FI)V");
 
             initCCInfo(this, renderBlock);
@@ -711,7 +712,7 @@ public class CustomTexturesModels extends Mod {
                         switch (getMethodMatchCount() / 4) {
                             case 0: // top face
                                 return buildCode(
-                                    // colorizeBlock18.setDirection(Direction.UP);
+                                    // colorizeBlock18.setDirectionWater(Direction.UP);
                                     getCCInfo(this),
                                     reference(GETSTATIC, DirectionMod.UP),
                                     reference(INVOKEVIRTUAL, setDirection)
@@ -719,7 +720,7 @@ public class CustomTexturesModels extends Mod {
 
                             case 2: // bottom face
                                 return buildCode(
-                                    // colorizeBlock18.setDirection(Direction.DOWN);
+                                    // colorizeBlock18.setDirectionWater(Direction.DOWN);
                                     getCCInfo(this),
                                     reference(GETSTATIC, DirectionMod.DOWN),
                                     reference(INVOKEVIRTUAL, setDirection)
@@ -727,7 +728,7 @@ public class CustomTexturesModels extends Mod {
 
                             case 3: // side faces
                                 return buildCode(
-                                    // colorizeBlock18.setDirection(Direction.values()[faceIndex + 2]);
+                                    // colorizeBlock18.setDirectionWater(Direction.values()[faceIndex + 2]);
                                     getCCInfo(this),
                                     reference(INVOKESTATIC, DirectionMod.values),
                                     ILOAD, faceIndex,
