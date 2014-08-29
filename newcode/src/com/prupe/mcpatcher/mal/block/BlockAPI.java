@@ -254,23 +254,31 @@ abstract public class BlockAPI {
         String namespace = null;
         String blockName = null;
         StringBuilder metadata = new StringBuilder();
+        StringBuilder metaString = new StringBuilder();
         for (String s : matchString.split("\\s*:\\s*")) {
             if (s.equals("")) {
                 continue;
             }
+            boolean appendThis = false;
             String[] tokens = s.split("\\s*=\\s*", 2);
             if (blockName == null) {
                 blockName = s;
             } else if (tokens.length == 2) {
                 propertyMap.put(tokens[0], tokens[1]);
+                appendThis = true;
             } else if (namespace == null) {
                 namespace = blockName;
                 blockName = s;
             } else if (s.matches("\\d[-, 0-9]*")) {
                 metadata.append(' ').append(s);
+                appendThis = true;
             } else {
                 source.warning("invalid token '%s' in %s", source, s, matchString);
                 return null;
+            }
+            if (appendThis) {
+                metaString.append(':');
+                metaString.append(s);
             }
         }
 
@@ -291,7 +299,7 @@ abstract public class BlockAPI {
             return instance.getBlockStateMatcherClass_Impl().getDeclaredConstructor(
                 PropertiesFile.class, String.class, Block.class, String.class, Map.class
             ).newInstance(
-                source, matchString, block, metadata.toString(), propertyMap
+                source, metaString.toString(), block, metadata.toString(), propertyMap
             );
         } catch (Throwable e) {
             e.printStackTrace();

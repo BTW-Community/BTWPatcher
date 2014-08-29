@@ -17,8 +17,8 @@ abstract public class BlockStateMatcher {
     protected final Block block;
     protected Object data;
 
-    protected BlockStateMatcher(PropertiesFile source, String fullString, Block block, String metadataList, Map<String, String> properties) {
-        this.fullString = fullString;
+    protected BlockStateMatcher(PropertiesFile source, String metaString, Block block, String metadataList, Map<String, String> properties) {
+        this.fullString = BlockAPI.getBlockName(block) + metaString;
         this.block = block;
     }
 
@@ -63,8 +63,8 @@ abstract public class BlockStateMatcher {
 
         private static Block doublePlantBlock;
 
-        V1(PropertiesFile source, String fullString, Block block, String metadataList, Map<String, String> properties) {
-            super(source, fullString, block, metadataList, properties);
+        V1(PropertiesFile source, String metaString, Block block, String metadataList, Map<String, String> properties) {
+            super(source, metaString, block, metadataList, properties);
             if (MCPatcherUtils.isNullOrEmpty(metadataList)) {
                 metadataBits = NO_METADATA;
             } else {
@@ -127,8 +127,8 @@ abstract public class BlockStateMatcher {
             }
         }
 
-        V2(PropertiesFile source, String fullString, Block block, String metadataList, Map<String, String> properties) {
-            super(source, fullString, block, metadataList, properties);
+        V2(PropertiesFile source, String metaString, Block block, String metadataList, Map<String, String> properties) {
+            super(source, metaString, block, metadataList, properties);
             IBlockState state = block.getBlockState();
             for (Map.Entry<String, String> entry : properties.entrySet()) {
                 String name = entry.getKey();
