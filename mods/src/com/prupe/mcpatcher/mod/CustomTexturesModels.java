@@ -766,11 +766,13 @@ public class CustomTexturesModels extends Mod {
                 private int getVertex() {
                     int vertex = getMethodMatchCount() % 4;
                     switch (getMethodMatchCount() / 4) {
-                        case 1: // top face (reverse)
-                        case 4: // side faces (reverse)
+                        case 1: // top face (reverse): 0, 3, 2, 1
+                            return (4 - vertex) % 4;
+
+                        case 4: // side faces (reverse): 3, 2, 1, 0
                             return 3 - vertex;
 
-                        default:
+                        default: // 0, 1, 2, 3
                             return vertex;
                     }
                 }
