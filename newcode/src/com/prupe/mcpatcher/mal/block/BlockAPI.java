@@ -471,15 +471,6 @@ abstract public class BlockAPI {
     }
 
     final private static class V3 extends V2 {
-        private static final Direction[] DIRS = new Direction[]{
-            Direction.DOWN,
-            Direction.UP,
-            Direction.NORTH,
-            Direction.SOUTH,
-            Direction.WEST,
-            Direction.EAST
-        };
-
         V3() {
             super(Block.blockRegistry1);
         }
@@ -496,12 +487,12 @@ abstract public class BlockAPI {
 
         @Override
         protected Icon getBlockIcon_Impl(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
-            return block.getBlockIcon(blockAccess, new Position(i, j, k), DIRS[face]);
+            return block.getBlockIcon(blockAccess, new Position(i, j, k), Direction.values()[face]);
         }
 
         @Override
         protected boolean shouldSideBeRendered_Impl(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
-            return block.shouldSideBeRendered(blockAccess, new Position(i, j, k), DIRS[face]);
+            return block.shouldSideBeRendered(blockAccess, new Position(i, j, k), Direction.values()[face]);
         }
 
         @Override
