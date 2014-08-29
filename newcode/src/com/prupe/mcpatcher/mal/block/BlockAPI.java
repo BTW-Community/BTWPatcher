@@ -266,7 +266,7 @@ abstract public class BlockAPI {
             } else if (tokens.length == 2) {
                 propertyMap.put(tokens[0], tokens[1]);
                 appendThis = true;
-            } else if (namespace == null) {
+            } else if (namespace == null && !s.matches("^\\d+$")) {
                 namespace = blockName;
                 blockName = s;
             } else if (s.matches("\\d[-, 0-9]*")) {
@@ -479,8 +479,11 @@ abstract public class BlockAPI {
     }
 
     final private static class V3 extends V2 {
+        private final Block airBlock;
+
         V3() {
             super(Block.blockRegistry1);
+            airBlock = registry.getValueObject(null);
         }
 
         @Override
@@ -505,7 +508,12 @@ abstract public class BlockAPI {
 
         @Override
         protected Block getBlockByName_Impl(String name) {
-            return registry.getValueObject(TexturePackAPI.parseResourceLocation(name));
+            Block block = registry.getValueObject(TexturePackAPI.parseResourceLocation(name));
+            if (block == airBlock && !name.equals("minecraft:air")) {
+                return null;
+            } else {
+                return block;
+            }
         }
 
         @Override
