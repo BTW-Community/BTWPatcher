@@ -3,9 +3,7 @@ package com.prupe.mcpatcher.ctm;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.mal.block.BlockAPI;
-import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
-import com.prupe.mcpatcher.mal.block.RenderPassAPI;
+import com.prupe.mcpatcher.mal.block.*;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
 import com.prupe.mcpatcher.mal.resource.ResourceList;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
@@ -15,7 +13,7 @@ import net.minecraft.src.*;
 
 import java.util.*;
 
-public class CTMUtils {
+public class CTMUtils extends RenderBlockState {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CONNECTED_TEXTURES, "CTM");
 
     private static final boolean enableStandard = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "standard", true);
@@ -32,7 +30,7 @@ public class CTMUtils {
     private static final TileOverrideIterator.Metadata metadataIterator = new TileOverrideIterator.Metadata(blockOverrides, tileOverrides);
 
     private static boolean haveBlockFace;
-    private static final BlockOrientation blockOrientation = new BlockOrientation();
+    private static final CTMUtils renderBlockState = new CTMUtils();
 
     static {
         try {
@@ -53,7 +51,7 @@ public class CTMUtils {
                 } catch (Throwable e) {
                     // nothing
                 }
-                blockOrientation.clear();
+                renderBlockState.clear();
                 ijkIterator.clear();
                 metadataIterator.clear();
                 allOverrides.clear();
@@ -106,10 +104,10 @@ public class CTMUtils {
         lastOverride = null;
         if (blockAccess != null && checkFace(face)) {
             if (!haveBlockFace) {
-                blockOrientation.setBlock(block, blockAccess, i, j, k);
-                blockOrientation.setFace(face);
+                renderBlockState.setBlockPosition(block, blockAccess, i, j, k);
+                renderBlockState.setFace(face);
             }
-            lastOverride = ijkIterator.go(blockOrientation, icon);
+            lastOverride = ijkIterator.go(renderBlockState, icon);
             if (lastOverride != null) {
                 icon = ijkIterator.getIcon();
             }
@@ -121,8 +119,9 @@ public class CTMUtils {
     public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, int face, int metadata) {
         lastOverride = null;
         if (checkFace(face) && checkRenderType(block)) {
-            blockOrientation.setup(block, metadata, face);
-            lastOverride = metadataIterator.go(blockOrientation, icon);
+            renderBlockState.setBlockMetadata(block, metadata);
+            renderBlockState.setFace(face);
+            lastOverride = metadataIterator.go(renderBlockState, icon);
             if (lastOverride != null) {
                 icon = metadataIterator.getIcon();
             }
@@ -196,10 +195,113 @@ public class CTMUtils {
         RenderBlocksUtils.blankIcon = tileLoader.getIcon(RenderPassAPI.instance.getBlankResource());
     }
 
+    private int i;
+    private int j;
+    private int k;
+    private int metadata;
+    private int blockFace;
+    private int textureFace;
+    private int di;
+    private int dj;
+    private int dk;
+    private BlockStateMatcher matcher;
+
+    @Override
+    public int getI() {
+        return i;
+    }
+
+    @Override
+    public int getJ() {
+        return j;
+    }
+
+    @Override
+    public int getK() {
+        return k;
+    }
+
+    @Override
+    public int getBlockFace() {
+        return blockFace;
+    }
+
+    @Override
+    public int getTextureFace() {
+        return textureFace;
+    }
+
+    @Override
+    public int getTextureFaceOrig() {
+        return textureFace;
+    }
+
+    @Override
+    public int getFaceForHV() {
+        return blockFace;
+    }
+
+    @Override
+    public int[] getOffset(int blockFace, int relativeDirection) {
+        return new int[0];
+    }
+
+    @Override
+    public boolean setCoordOffsetsForRenderType() {
+        return false;
+    }
+
+    @Override
+    public int getDI() {
+        return di;
+    }
+
+    @Override
+    public int getDJ() {
+        return dj;
+    }
+
+    @Override
+    public int getDK() {
+        return dk;
+    }
+
+    @Override
+    public void setFilter(BlockStateMatcher matcher) {
+        this.matcher = matcher;
+    }
+
+    @Override
+    public BlockStateMatcher getFilter() {
+        return matcher;
+    }
+
+    void setBlockPosition(Block block, IBlockAccess blockAccess, int i, int j, int k) {
+        this.block = block;
+        this.blockAccess = blockAccess;
+        this.i = i;
+        this.j = j;
+        this.k = k;
+        metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
+        inWorld = true;
+    }
+
+    void setBlockMetadata(Block block, int metadata) {
+        this.block = block;
+        this.blockAccess = null;
+        this.metadata = metadata;
+        inWorld = false;
+    }
+
+    void setFace(int face) {
+        blockFace = textureFace = face;
+    }
+
+    /*
     public static class Ext18 {
         public static void setBlock(IBlockAccess blockAccess, Block block, Position position) {
-            blockOrientation.setBlock(block, blockAccess, position.getI(), position.getJ(), position.getK());
-            blockOrientation.setFakeRenderType();
+            renderBlockState.setBlockPosition(block, blockAccess, position.getI(), position.getJ(), position.getK());
+            renderBlockState.setFakeRenderType();
         }
 
         public static void setFace(Direction paramFace, Direction textureFace, Direction blockFace, BlockModelFace modelFace) {
@@ -213,21 +315,21 @@ public class CTMUtils {
                 blockFaceNum = -1;
             }
             int rotation = getRotation(modelFace, blockFaceNum);
-            blockOrientation.setFace(blockFaceNum, textureFace == null ? -1 : textureFace.ordinal(), rotation);
-            if (blockOrientation.logIt()) {
+            renderBlockState.setFace(blockFaceNum, textureFace == null ? -1 : textureFace.ordinal(), rotation);
+            if (renderBlockState.logIt()) {
                 logger.info("%s:%d @ %d,%d,%d p=%s t=%s b=%s -> %d rotation %d",
-                    BlockAPI.getBlockName(blockOrientation.block), blockOrientation.metadata,
-                    blockOrientation.i, blockOrientation.j, blockOrientation.k,
+                    BlockAPI.getBlockName(renderBlockState.block), renderBlockState.metadata,
+                    renderBlockState.i, renderBlockState.j, renderBlockState.k,
                     paramFace, textureFace, blockFace, blockFaceNum, rotation
                 );
                 logRotation(modelFace, blockFaceNum);
-                int[] offset = blockOrientation.getOffset(BlockOrientation.REL_U);
+                int[] offset = renderBlockState.getOffset(BlockOrientation.REL_U);
                 logger.info("  rel up=%d %d %d", offset[0], offset[1], offset[2]);
-                offset = blockOrientation.getOffset(BlockOrientation.REL_D);
+                offset = renderBlockState.getOffset(BlockOrientation.REL_D);
                 logger.info("  rel down=%d %d %d", offset[0], offset[1], offset[2]);
-                offset = blockOrientation.getOffset(BlockOrientation.REL_L);
+                offset = renderBlockState.getOffset(BlockOrientation.REL_L);
                 logger.info("  rel left=%d %d %d", offset[0], offset[1], offset[2]);
-                offset = blockOrientation.getOffset(BlockOrientation.REL_R);
+                offset = renderBlockState.getOffset(BlockOrientation.REL_R);
                 logger.info("  rel right=%d %d %d", offset[0], offset[1], offset[2]);
             }
         }
@@ -337,4 +439,5 @@ public class CTMUtils {
             );
         }
     }
+    */
 }

@@ -1,11 +1,12 @@
 package com.prupe.mcpatcher.ctm;
 
+import com.prupe.mcpatcher.mal.block.RenderBlockState;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.tile.TileLoader;
 import com.prupe.mcpatcher.mal.util.WeightedIndex;
 import net.minecraft.src.Icon;
 
-import static com.prupe.mcpatcher.ctm.BlockOrientation.*;
+import static com.prupe.mcpatcher.mal.block.RenderBlockState.*;
 
 class TileOverrideImpl {
     final static class CTM extends TileOverride {
@@ -56,10 +57,10 @@ class TileOverrideImpl {
         }
 
         @Override
-        Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
+        Icon getTileWorld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
             int neighborBits = 0;
             for (int bit = 0; bit < 8; bit++) {
-                if (shouldConnect(blockOrientation, origIcon, bit)) {
+                if (shouldConnect(renderBlockState, origIcon, bit)) {
                     neighborBits |= (1 << bit);
                 }
             }
@@ -67,7 +68,7 @@ class TileOverrideImpl {
         }
 
         @Override
-        Icon getTileHeld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
+        Icon getTileHeld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
             return icons[0];
         }
     }
@@ -98,23 +99,23 @@ class TileOverrideImpl {
         }
 
         @Override
-        Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
-            int face = blockOrientation.getFaceForHV();
+        Icon getTileWorld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
+            int face = renderBlockState.getFaceForHV();
             if (face < 0) {
                 return null;
             }
             int neighborBits = 0;
-            if (shouldConnect(blockOrientation, origIcon, REL_L)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_L)) {
                 neighborBits |= 1;
             }
-            if (shouldConnect(blockOrientation, origIcon, REL_R)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_R)) {
                 neighborBits |= 2;
             }
             return icons[neighborMap[neighborBits]];
         }
 
         @Override
-        Icon getTileHeld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
+        Icon getTileHeld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
             return icons[3];
         }
     }
@@ -150,28 +151,28 @@ class TileOverrideImpl {
         }
 
         @Override
-        Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
-            Icon icon = super.getTileWorld_Impl(blockOrientation, origIcon);
+        Icon getTileWorld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
+            Icon icon = super.getTileWorld_Impl(renderBlockState, origIcon);
             if (icon != icons[3]) {
                 return icon;
             }
             int neighborBits = 0;
-            if (shouldConnect(blockOrientation, origIcon, REL_DL)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_DL)) {
                 neighborBits |= 1;
             }
-            if (shouldConnect(blockOrientation, origIcon, REL_D)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_D)) {
                 neighborBits |= 2;
             }
-            if (shouldConnect(blockOrientation, origIcon, REL_DR)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_DR)) {
                 neighborBits |= 4;
             }
-            if (shouldConnect(blockOrientation, origIcon, REL_UR)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_UR)) {
                 neighborBits |= 8;
             }
-            if (shouldConnect(blockOrientation, origIcon, REL_U)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_U)) {
                 neighborBits |= 16;
             }
-            if (shouldConnect(blockOrientation, origIcon, REL_UL)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_UL)) {
                 neighborBits |= 32;
             }
             return icons[neighborMap[neighborBits]];
@@ -206,23 +207,23 @@ class TileOverrideImpl {
         }
 
         @Override
-        Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
-            int face = blockOrientation.getFaceForHV();
+        Icon getTileWorld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
+            int face = renderBlockState.getFaceForHV();
             if (face < 0) {
                 return null;
             }
             int neighborBits = 0;
-            if (shouldConnect(blockOrientation, origIcon, REL_D)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_D)) {
                 neighborBits |= 1;
             }
-            if (shouldConnect(blockOrientation, origIcon, REL_U)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_U)) {
                 neighborBits |= 2;
             }
             return icons[neighborMap[neighborBits]];
         }
 
         @Override
-        Icon getTileHeld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
+        Icon getTileHeld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
             return icons[3];
         }
     }
@@ -258,28 +259,28 @@ class TileOverrideImpl {
         }
 
         @Override
-        Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
-            Icon icon = super.getTileWorld_Impl(blockOrientation, origIcon);
+        Icon getTileWorld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
+            Icon icon = super.getTileWorld_Impl(renderBlockState, origIcon);
             if (icon != icons[3]) {
                 return icon;
             }
             int neighborBits = 0;
-            if (shouldConnect(blockOrientation, origIcon, REL_L)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_L)) {
                 neighborBits |= 1;
             }
-            if (shouldConnect(blockOrientation, origIcon, REL_DL)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_DL)) {
                 neighborBits |= 2;
             }
-            if (shouldConnect(blockOrientation, origIcon, REL_DR)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_DR)) {
                 neighborBits |= 4;
             }
-            if (shouldConnect(blockOrientation, origIcon, REL_R)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_R)) {
                 neighborBits |= 8;
             }
-            if (shouldConnect(blockOrientation, origIcon, REL_UR)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_UR)) {
                 neighborBits |= 16;
             }
-            if (shouldConnect(blockOrientation, origIcon, REL_UL)) {
+            if (shouldConnect(renderBlockState, origIcon, REL_UL)) {
                 neighborBits |= 32;
             }
             return icons[neighborMap[neighborBits]];
@@ -306,21 +307,21 @@ class TileOverrideImpl {
         }
 
         @Override
-        Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
-            int face = blockOrientation.blockFace;
+        Icon getTileWorld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
+            int face = renderBlockState.getBlockFace();
             if (face < 0) {
                 face = NORTH_FACE;
             } else if (face <= TOP_FACE) {
                 return null;
             }
-            if (shouldConnect(blockOrientation, origIcon, face, REL_U)) {
+            if (shouldConnect(renderBlockState, origIcon, face, REL_U)) {
                 return icons[0];
             }
             return null;
         }
 
         @Override
-        Icon getTileHeld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
+        Icon getTileHeld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
             return null;
         }
     }
@@ -356,18 +357,18 @@ class TileOverrideImpl {
         }
 
         @Override
-        Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
-            int face = blockOrientation.blockFace;
+        Icon getTileWorld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
+            int face = renderBlockState.getBlockFace();
             if (face < 0) {
                 face = 0;
             }
-            int i = blockOrientation.i;
-            int j = blockOrientation.j;
-            int k = blockOrientation.k;
-            if (linked && blockOrientation.setCoordOffsetsForRenderType()) {
-                i += blockOrientation.di;
-                j += blockOrientation.dj;
-                k += blockOrientation.dk;
+            int i = renderBlockState.getI();
+            int j = renderBlockState.getJ();
+            int k = renderBlockState.getK();
+            if (linked && renderBlockState.setCoordOffsetsForRenderType()) {
+                i += renderBlockState.getDI();
+                j += renderBlockState.getDJ();
+                k += renderBlockState.getDK();
             }
             long hash = WeightedIndex.hash128To64(i, j, k, face / symmetry);
             int index = chooser.choose(hash);
@@ -375,7 +376,7 @@ class TileOverrideImpl {
         }
 
         @Override
-        Icon getTileHeld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
+        Icon getTileHeld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
             return icons[0];
         }
     }
@@ -416,17 +417,17 @@ class TileOverrideImpl {
         }
 
         @Override
-        Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
-            int face = blockOrientation.blockFace;
+        Icon getTileWorld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
+            int face = renderBlockState.getBlockFace();
             if (face < 0) {
                 face = 0;
             }
             face &= symmetry;
-            int i = blockOrientation.i;
-            int j = blockOrientation.j;
-            int k = blockOrientation.k;
-            int[] xOffset = blockOrientation.getOffset(face, REL_R);
-            int[] yOffset = blockOrientation.getOffset(face, REL_D);
+            int i = renderBlockState.getI();
+            int j = renderBlockState.getJ();
+            int k = renderBlockState.getK();
+            int[] xOffset = renderBlockState.getOffset(face, REL_R);
+            int[] yOffset = renderBlockState.getOffset(face, REL_D);
             int x = i * xOffset[0] + j * xOffset[1] + k * xOffset[2];
             int y = i * yOffset[0] + j * yOffset[1] + k * yOffset[2];
             if (face == NORTH_FACE || face == EAST_FACE) {
@@ -444,7 +445,7 @@ class TileOverrideImpl {
         }
 
         @Override
-        Icon getTileHeld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
+        Icon getTileHeld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
             return icons[0];
         }
     }
@@ -469,13 +470,13 @@ class TileOverrideImpl {
         }
 
         @Override
-        Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
+        Icon getTileWorld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
             return icons[0];
         }
 
 
         @Override
-        Icon getTileHeld_Impl(BlockOrientation blockOrientation, Icon origIcon) {
+        Icon getTileHeld_Impl(RenderBlockState renderBlockState, Icon origIcon) {
             return icons[0];
         }
     }

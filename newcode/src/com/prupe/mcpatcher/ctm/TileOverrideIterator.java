@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.ctm;
 
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.block.RenderBlockState;
 import com.prupe.mcpatcher.mal.tile.IconAPI;
 import net.minecraft.src.Block;
 import net.minecraft.src.Icon;
@@ -94,9 +95,9 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
         }
     }
 
-    ITileOverride go(BlockOrientation blockOrientation, Icon origIcon) {
+    ITileOverride go(RenderBlockState renderBlockState, Icon origIcon) {
         currentIcon = origIcon;
-        blockOverrides = allBlockOverrides.get(blockOrientation.block);
+        blockOverrides = allBlockOverrides.get(renderBlockState.getBlock());
         tileOverrides = allTileOverrides.get(IconAPI.getIconName(origIcon));
         blockPos = 0;
         iconPos = 0;
@@ -109,7 +110,7 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
         for (int pass = 0; pass < MAX_RECURSION; pass++) {
             while (hasNext()) {
                 ITileOverride override = next();
-                Icon newIcon = getTile(override, blockOrientation, origIcon);
+                Icon newIcon = getTile(override, renderBlockState, origIcon);
                 if (newIcon != null) {
                     lastMatchedOverride = override;
                     skipOverrides.add(override);
@@ -127,7 +128,7 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
         return currentIcon;
     }
 
-    abstract Icon getTile(ITileOverride override, BlockOrientation blockOrientation, Icon origIcon);
+    abstract Icon getTile(ITileOverride override, RenderBlockState renderBlockState, Icon origIcon);
 
     static final class IJK extends TileOverrideIterator {
         IJK(Map<Block, List<ITileOverride>> blockOverrides, Map<String, List<ITileOverride>> tileOverrides) {
@@ -135,8 +136,8 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
         }
 
         @Override
-        Icon getTile(ITileOverride override, BlockOrientation blockOrientation, Icon origIcon) {
-            return override.getTileWorld(blockOrientation, origIcon);
+        Icon getTile(ITileOverride override, RenderBlockState renderBlockState, Icon origIcon) {
+            return override.getTileWorld(renderBlockState, origIcon);
         }
     }
 
@@ -146,8 +147,8 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
         }
 
         @Override
-        Icon getTile(ITileOverride override, BlockOrientation blockOrientation, Icon origIcon) {
-            return override.getTileHeld(blockOrientation, origIcon);
+        Icon getTile(ITileOverride override, RenderBlockState renderBlockState, Icon origIcon) {
+            return override.getTileHeld(renderBlockState, origIcon);
         }
     }
 }

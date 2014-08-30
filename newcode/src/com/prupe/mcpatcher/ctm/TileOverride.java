@@ -5,6 +5,7 @@ import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
+import com.prupe.mcpatcher.mal.block.RenderBlockState;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
@@ -18,7 +19,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.prupe.mcpatcher.ctm.BlockOrientation.*;
+import static com.prupe.mcpatcher.mal.block.RenderBlockState.*;
 
 abstract class TileOverride implements ITileOverride {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CONNECTED_TEXTURES, "CTM");
@@ -363,33 +364,31 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    final boolean shouldConnect(BlockOrientation blockOrientation, Icon icon, int relativeDirection) {
-        return shouldConnect(blockOrientation, icon, blockOrientation.getOffset(relativeDirection));
+    final boolean shouldConnect(RenderBlockState renderBlockState, Icon icon, int relativeDirection) {
+        return shouldConnect(renderBlockState, icon, renderBlockState.getOffset(renderBlockState.getBlockFace(), relativeDirection));
     }
 
-    final boolean shouldConnect(BlockOrientation blockOrientation, Icon icon, int blockFace, int relativeDirection) {
-        return shouldConnect(blockOrientation, icon, blockOrientation.getOffset(blockFace, relativeDirection));
+    final boolean shouldConnect(RenderBlockState renderBlockState, Icon icon, int blockFace, int relativeDirection) {
+        return shouldConnect(renderBlockState, icon, renderBlockState.getOffset(blockFace, relativeDirection));
     }
 
-    private boolean shouldConnect(BlockOrientation blockOrientation, Icon icon, int[] offset) {
-        IBlockAccess blockAccess = blockOrientation.blockAccess;
-        Block block = blockOrientation.block;
-        int i = blockOrientation.i;
-        int j = blockOrientation.j;
-        int k = blockOrientation.k;
-        int metadata = blockOrientation.metadata;
+    private boolean shouldConnect(RenderBlockState renderBlockState, Icon icon, int[] offset) {
+        IBlockAccess blockAccess = renderBlockState.getBlockAccess();
+        Block block = renderBlockState.getBlock();
+        int i = renderBlockState.getI();
+        int j = renderBlockState.getJ();
+        int k = renderBlockState.getK();
         i += offset[0];
         j += offset[1];
         k += offset[2];
-        int neighborMeta = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         Block neighbor = BlockAPI.getBlockAt(blockAccess, i, j, k);
         if (neighbor == null) {
             return false;
         }
-        if (block == neighbor && matchMetadata != META_MASK && metadata != neighborMeta) {
+        if (block == neighbor && renderBlockState.getFilter().match(blockAccess, i, j, k)) {
             return false;
         }
-        int blockFace = blockOrientation.blockFace;
+        int blockFace = renderBlockState.getBlockFace();
         if (blockFace >= 0 && innerSeams) {
             int[] normal = NORMALS[blockFace];
             if (!BlockAPI.shouldSideBeRendered(neighbor, blockAccess, i + normal[0], j + normal[1], k + normal[2], blockFace)) {
@@ -401,7 +400,7 @@ abstract class TileOverride implements ITileOverride {
                 return neighbor == block;
 
             case CONNECT_BY_TILE:
-                return BlockAPI.getBlockIcon(neighbor, blockAccess, i, j, k, blockOrientation.textureFaceOrig) == icon;
+                return BlockAPI.getBlockIcon(neighbor, blockAccess, i, j, k, renderBlockState.getTextureFaceOrig()) == icon;
 
             case CONNECT_BY_MATERIAL:
                 return block.blockMaterial == neighbor.blockMaterial;
@@ -411,29 +410,27 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    final boolean exclude(Block block, int face, int metadataMask) {
+    final boolean exclude(Block block, int face) {
         if (block == null) {
             return true;
         } else if ((faces & (1 << face)) == 0) {
-            return true;
-        } else if (matchMetadata != META_MASK && (matchMetadata & metadataMask) == 0) {
             return true;
         }
         return false;
     }
 
     @Override
-    public final Icon getTileWorld(BlockOrientation blockOrientation, Icon origIcon) {
+    public final Icon getTileWorld(RenderBlockState renderBlockState, Icon origIcon) {
         if (icons == null) {
             properties.error("no images loaded, disabling");
             return null;
         }
-        IBlockAccess blockAccess = blockOrientation.blockAccess;
-        Block block = blockOrientation.block;
-        int i = blockOrientation.i;
-        int j = blockOrientation.j;
-        int k = blockOrientation.k;
-        if (blockOrientation.blockFace < 0 && requiresFace()) {
+        IBlockAccess blockAccess = renderBlockState.getBlockAccess();
+        Block block = renderBlockState.getBlock();
+        int i = renderBlockState.getI();
+        int j = renderBlockState.getJ();
+        int k = renderBlockState.getK();
+        if (renderBlockState.getBlockFace() < 0 && requiresFace()) {
             properties.warning("method=%s is not supported for non-standard block %s:%d @ %d %d %d",
                 getMethod(), BlockAPI.getBlockName(block), BlockAPI.getMetadataAt(blockAccess, i, j, k), i, j, k
             );
@@ -446,6 +443,7 @@ abstract class TileOverride implements ITileOverride {
         for (BlockStateMatcher matcher : matchBlocks) {
             if (matcher.match(blockAccess, i, j, k)) {
                 matched = true;
+                renderBlockState.setFilter(matcher);
                 break;
             }
         }
@@ -455,7 +453,7 @@ abstract class TileOverride implements ITileOverride {
         //TODO
         //Integer metadataEntry = matchBlocks.get(block);
         //matchMetadata = metadataEntry == null ? META_MASK : metadataEntry;
-        if (exclude(block, blockOrientation.textureFace, blockOrientation.metadataBits)) {
+        if (exclude(block, renderBlockState.getTextureFace())) {
             return null;
         }
         if (height != null && !height.get(j)) {
@@ -464,23 +462,23 @@ abstract class TileOverride implements ITileOverride {
         if (biomes != null && !biomes.get(BiomeAPI.getBiomeIDAt(blockAccess, i, j, k))) {
             return null;
         }
-        return getTileWorld_Impl(blockOrientation, origIcon);
+        return getTileWorld_Impl(renderBlockState, origIcon);
     }
 
     @Override
-    public final Icon getTileHeld(BlockOrientation blockOrientation, Icon origIcon) {
+    public final Icon getTileHeld(RenderBlockState renderBlockState, Icon origIcon) {
         if (icons == null) {
             properties.error("no images loaded, disabling");
             return null;
         }
-        Block block = blockOrientation.block;
+        Block block = renderBlockState.getBlock();
         if (block == null || RenderPassAPI.instance.skipThisRenderPass(block, renderPass)) {
             return null;
         }
-        int face = blockOrientation.textureFace;
+        int face = renderBlockState.getTextureFace();
         if (face < 0 && requiresFace()) {
-            properties.warning("method=%s is not supported for non-standard block %s:%d",
-                getMethod(), BlockAPI.getBlockName(block), blockOrientation.metadata
+            properties.warning("method=%s is not supported for non-standard block %s",
+                getMethod(), renderBlockState
             );
             return null;
         }
@@ -490,16 +488,16 @@ abstract class TileOverride implements ITileOverride {
         //TODO
         //Integer metadataEntry = matchBlocks.get(block);
         //matchMetadata = metadataEntry == null ? defaultMetaMask : metadataEntry;
-        if (exclude(block, face, blockOrientation.metadataBits)) {
+        if (exclude(block, face)) {
             return null;
         } else {
-            return getTileHeld_Impl(blockOrientation, origIcon);
+            return getTileHeld_Impl(renderBlockState, origIcon);
         }
     }
 
     abstract String getMethod();
 
-    abstract Icon getTileWorld_Impl(BlockOrientation blockOrientation, Icon origIcon);
+    abstract Icon getTileWorld_Impl(RenderBlockState renderBlockState, Icon origIcon);
 
-    abstract Icon getTileHeld_Impl(BlockOrientation blockOrientation, Icon origIcon);
+    abstract Icon getTileHeld_Impl(RenderBlockState renderBlockState, Icon origIcon);
 }
