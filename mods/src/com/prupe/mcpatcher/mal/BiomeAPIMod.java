@@ -20,6 +20,9 @@ public class BiomeAPIMod extends Mod {
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
 
+        addDependency(MCPatcherUtils.TEXTURE_PACK_API_MOD);
+        addDependency(MCPatcherUtils.BLOCK_API_MOD);
+
         if (PositionMod.havePositionClass()) {
             malVersion = 3;
         } else if (getMinecraftVersion().compareTo("13w36a") >= 0) {
@@ -30,6 +33,7 @@ public class BiomeAPIMod extends Mod {
         version = String.valueOf(malVersion) + ".1";
         setMALVersion("biome", malVersion);
 
+        ResourceLocationMod.setup(this);
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new MinecraftMod(this).mapWorldClient());
         addClassMod(new WorldMod(this));
@@ -40,6 +44,7 @@ public class BiomeAPIMod extends Mod {
         }
 
         addClassFiles("com.prupe.mcpatcher.mal.biome.*");
+        addClassFiles("com.prupe.mcpatcher.colormap.*");
     }
 
     @Override

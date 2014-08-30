@@ -58,7 +58,6 @@ public class CustomTexturesModels extends Mod {
 
         addClassMod(new ItemMod(this));
 
-        addClassFiles("com.prupe.mcpatcher.colormap.*");
         addClassFiles("com.prupe.mcpatcher.ctm.*");
         addClassFiles("com.prupe.mcpatcher.cit.*");
         addClassFiles(MCPatcherUtils.COLORIZE_BLOCK_CLASS + "*");
