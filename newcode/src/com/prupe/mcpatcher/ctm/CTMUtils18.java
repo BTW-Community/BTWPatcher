@@ -31,5 +31,6 @@ public class CTMUtils18 {
 
     public static void reset() {
         logger.info("CTMUtils18.reset");
+        CTMUtils.reset();
     }
 }

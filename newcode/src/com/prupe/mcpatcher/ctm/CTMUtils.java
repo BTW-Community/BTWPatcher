@@ -24,7 +24,7 @@ public class CTMUtils {
     private static final List<ITileOverride> allOverrides = new ArrayList<ITileOverride>();
     private static final Map<Block, List<ITileOverride>> blockOverrides = new IdentityHashMap<Block, List<ITileOverride>>();
     private static final Map<String, List<ITileOverride>> tileOverrides = new HashMap<String, List<ITileOverride>>();
-    private static TileLoader tileLoader;
+    public static TileLoader tileLoader;
 
     private static ITileOverride lastOverride;
 

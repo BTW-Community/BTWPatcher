@@ -4,15 +4,19 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.colormap.ColorUtils;
 import com.prupe.mcpatcher.colormap.IColorMap;
+import com.prupe.mcpatcher.ctm.CTMUtils;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
+import com.prupe.mcpatcher.mal.tile.TileLoader;
 import net.minecraft.src.*;
 
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ColorizeBlock18 {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
@@ -263,5 +267,34 @@ public class ColorizeBlock18 {
             float[] rgb = vertexColors[vertex];
             tessellator.setColorOpaque_F(base * rgb[0], base * rgb[1], base * rgb[2]);
         }
+    }
+
+    private static final Map<ModelFace, TextureAtlasSprite> modelFaceSprites = new IdentityHashMap<ModelFace, TextureAtlasSprite>();
+    private static final Map<ModelFace, ModelFace> alt = new IdentityHashMap<ModelFace, ModelFace>();
+
+    private static TextureAtlasSprite getSprite(ModelFace face) {
+        if (face instanceof ModelFaceSprite) {
+            return ((ModelFaceSprite) face).sprite;
+        } else {
+            return modelFaceSprites.get(face);
+        }
+    }
+
+    public ModelFace getModelFace(ModelFace origFace) {
+        TextureAtlasSprite origIcon = getSprite(origFace);
+        if (origIcon == null) {
+            return origFace;
+        }
+        ModelFace newFace;
+        synchronized (alt) {
+            newFace = alt.get(origFace);
+            if (newFace == null) {
+                TextureAtlasSprite newIcon = (TextureAtlasSprite) CTMUtils.tileLoader.getIcon("tnt_top");
+                newFace = new ModelFaceSprite(origFace, newIcon);
+                logger.info("%s -> %s", origFace, newFace);
+                alt.put(origFace, newFace);
+            }
+        }
+        return newFace;
     }
 }

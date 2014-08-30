@@ -19,6 +19,7 @@ public class CustomTexturesModels extends Mod {
     static final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(LModelFace;)Z");
     static final MethodRef newColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "colorMultiplier", "(I)I");
     static final MethodRef newVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getVertexColor", "(FII)F");
+    static final MethodRef newModelFace = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
 
     private static final Map<String, Integer> ccInfoMap = new HashMap<String, Integer>();
 
@@ -37,6 +38,7 @@ public class CustomTexturesModels extends Mod {
 
         ResourceLocationMod.setup(this);
         addClassMod(new TextureAtlasSpriteMod(this));
+        addClassMod(new IconMod(this));
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new IBlockStateMod(this));
         addClassMod(new TessellatorMod(this));
@@ -76,6 +78,19 @@ public class CustomTexturesModels extends Mod {
     private class BlockMod extends com.prupe.mcpatcher.basemod.BlockMod {
         BlockMod() {
             super(CustomTexturesModels.this);
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // return 3;
+                        begin(),
+                        push(3),
+                        IRETURN,
+                        end()
+                    );
+                }
+            }.setMethod(getRenderType));
 
             addMemberMapper(new MethodMapper(blockColorMultiplier));
         }
@@ -213,6 +228,7 @@ public class CustomTexturesModels extends Mod {
             });
 
             setupColorMaps();
+            setupCTM();
         }
 
         private void setupPreRender(final MethodRef method) {
@@ -430,6 +446,45 @@ public class CustomTexturesModels extends Mod {
                         push(getMethodMatchCount() % 3),
                         reference(INVOKEVIRTUAL, newVertexColor),
                         FMUL
+                    );
+                }
+            });
+        }
+
+        private void setupCTM() {
+            addPatch(new BytecodePatch() {
+                private final InterfaceMethodRef iteratorNext = new InterfaceMethodRef("java/util/Iterator", "next", "()Ljava/lang/Object;");
+                private final ClassRef modelFaceClass = new ClassRef("ModelFace");
+
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderFaceAO, renderFaceNonAO);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override texture";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // face = (ModelFace) iterator.next();
+                        anyALOAD,
+                        reference(INVOKEINTERFACE, iteratorNext),
+                        reference(CHECKCAST, modelFaceClass),
+                        capture(anyASTORE)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // face = colorizeBlock18.newModelFace(face);
+                        getCCInfo(this),
+                        flipLoadStore(getCaptureGroup(1)),
+                        reference(INVOKEVIRTUAL, newModelFace),
+                        getCaptureGroup(1)
                     );
                 }
             });
