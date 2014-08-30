@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher.colormap;
+package com.prupe.mcpatcher.mal.biome;
 
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.ResourceLocation;

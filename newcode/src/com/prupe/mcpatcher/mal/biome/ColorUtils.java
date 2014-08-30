@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher.colormap;
+package com.prupe.mcpatcher.mal.biome;
 
 public class ColorUtils {
     public static void intToFloat3(int rgb, float[] f, int offset) {

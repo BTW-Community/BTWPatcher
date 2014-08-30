@@ -2,10 +2,10 @@ package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.colormap.ColorMap;
-import com.prupe.mcpatcher.colormap.ColorMapBase;
-import com.prupe.mcpatcher.colormap.ColorUtils;
-import com.prupe.mcpatcher.colormap.IColorMap;
+import com.prupe.mcpatcher.mal.biome.ColorMap;
+import com.prupe.mcpatcher.mal.biome.ColorMapBase;
+import com.prupe.mcpatcher.mal.biome.ColorUtils;
+import com.prupe.mcpatcher.mal.biome.IColorMap;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;

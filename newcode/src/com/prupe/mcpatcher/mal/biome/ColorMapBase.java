@@ -1,4 +1,4 @@
-package com.prupe.mcpatcher.colormap;
+package com.prupe.mcpatcher.mal.biome;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;

@@ -1,7 +1,7 @@
 package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.colormap.ColorUtils;
+import com.prupe.mcpatcher.mal.biome.ColorUtils;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;

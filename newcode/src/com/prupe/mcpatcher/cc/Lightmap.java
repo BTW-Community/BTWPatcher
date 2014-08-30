@@ -3,7 +3,7 @@ package com.prupe.mcpatcher.cc;
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.colormap.ColorUtils;
+import com.prupe.mcpatcher.mal.biome.ColorUtils;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.EntityRenderer;
 import net.minecraft.src.Minecraft;

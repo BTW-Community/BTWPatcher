@@ -44,7 +44,6 @@ public class BiomeAPIMod extends Mod {
         }
 
         addClassFiles("com.prupe.mcpatcher.mal.biome.*");
-        addClassFiles("com.prupe.mcpatcher.colormap.*");
     }
 
     @Override

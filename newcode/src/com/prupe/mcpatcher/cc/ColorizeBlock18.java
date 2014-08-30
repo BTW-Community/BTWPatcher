@@ -2,16 +2,14 @@ package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.colormap.ColorUtils;
-import com.prupe.mcpatcher.colormap.IColorMap;
-import com.prupe.mcpatcher.ctm.CTMUtils;
+import com.prupe.mcpatcher.mal.biome.ColorUtils;
+import com.prupe.mcpatcher.mal.biome.IColorMap;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
-import com.prupe.mcpatcher.mal.tile.TileLoader;
 import net.minecraft.src.*;
 
 import java.util.IdentityHashMap;
