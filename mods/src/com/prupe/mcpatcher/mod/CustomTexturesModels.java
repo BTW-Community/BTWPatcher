@@ -51,6 +51,7 @@ public class CustomTexturesModels extends Mod {
 
         addClassMod(new BlockMod());
         addClassMod(new ModelFaceSpriteMod());
+        addClassMod(new ModelFaceFactoryMod());
         addClassMod(new RenderBlockCustomMod());
         addClassMod(new RenderBlockCustomInnerMod());
         addClassMod(new RenderBlockFluidMod());
@@ -101,6 +102,64 @@ public class CustomTexturesModels extends Mod {
             super(CustomTexturesModels.this);
 
             addPatch(new MakeMemberPublicPatch(sprite));
+        }
+    }
+
+    private class ModelFaceFactoryMod extends ClassMod {
+        ModelFaceFactoryMod() {
+            addClassSignature(new ConstSignature(0.39269908169872414));
+            addClassSignature(new ConstSignature(0.7853981633974483));
+            addClassSignature(new ConstSignature(0.017453292519943295));
+
+            final MethodRef createFace = new MethodRef(getDeobfClass(), "createFace", "(Ljavax/vecmath/Vector3f;Ljavax/vecmath/Vector3f;LUnknownClass_clt;LTextureAtlasSprite;LDirection;LUnknownEnum_cxa;LUnknownClass_clv;ZZ)LModelFace;");
+            final MethodRef registerModelFaceSprite = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "registerModelFaceSprite", "(LModelFace;LTextureAtlasSprite;)LModelFace;");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // return new ModelFace(...);
+                        anyReference(NEW),
+                        DUP,
+                        anyALOAD,
+                        ALOAD_3,
+                        anyReference(GETFIELD),
+                        anyALOAD,
+                        anyReference(INVOKESPECIAL),
+                        ARETURN,
+                        end()
+                    );
+                }
+            }.setMethod(createFace));
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(createFace);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "register model face sprites";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // return ...;
+                        ARETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // return ColorizeBlock18.registerModelFaceSprite(..., sprite);
+                        ALOAD, 4,
+                        reference(INVOKESTATIC, registerModelFaceSprite)
+                    );
+                }
+            });
         }
     }
 

@@ -271,6 +271,14 @@ public class ColorizeBlock18 {
 
     private static final Map<ModelFace, TextureAtlasSprite> modelFaceSprites = new IdentityHashMap<ModelFace, TextureAtlasSprite>();
     private static final Map<ModelFace, ModelFace> alt = new IdentityHashMap<ModelFace, ModelFace>();
+    private static TextureAtlasSprite extIcon;
+
+    public static ModelFace registerModelFaceSprite(ModelFace face, TextureAtlasSprite sprite) {
+        //logger.info("face %s -> sprite %s", face, sprite);
+        modelFaceSprites.put(face, sprite);
+        extIcon = sprite;
+        return face;
+    }
 
     private static TextureAtlasSprite getSprite(ModelFace face) {
         if (face instanceof ModelFaceSprite) {
@@ -289,7 +297,7 @@ public class ColorizeBlock18 {
         synchronized (alt) {
             newFace = alt.get(origFace);
             if (newFace == null) {
-                TextureAtlasSprite newIcon = (TextureAtlasSprite) CTMUtils.tileLoader.getIcon("tnt_top");
+                TextureAtlasSprite newIcon = extIcon;
                 newFace = new ModelFaceSprite(origFace, newIcon);
                 logger.info("%s -> %s", origFace, newFace);
                 alt.put(origFace, newFace);
