@@ -2,21 +2,25 @@ package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.ctm.CTMUtils;
+import com.prupe.mcpatcher.ctm.TileOverrideIterator;
 import com.prupe.mcpatcher.mal.biome.ColorUtils;
 import com.prupe.mcpatcher.mal.biome.IColorMap;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
+import com.prupe.mcpatcher.mal.block.RenderBlockState;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
 import net.minecraft.src.*;
 
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ColorizeBlock18 {
+public class ColorizeBlock18 extends RenderBlockState {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
 
     private static final ResourceLocation COLOR_PROPERTIES = TexturePackAPI.newMCPatcherResourceLocation("color.properties");
@@ -38,6 +42,9 @@ public class ColorizeBlock18 {
     private IColorMap colorMap;
     private boolean isSmooth;
     private final float[][] vertexColors = new float[4][3];
+
+    private final TileOverrideIterator.IJK ijkIterator = CTMUtils.newIJKIterator();
+    private final TileOverrideIterator.Metadata metadataIterator = CTMUtils.newMetadataIterator();
 
     private static final int[][][] FACE_VERTICES = new int[][][]{
         // bottom face (y=0)
@@ -148,6 +155,7 @@ public class ColorizeBlock18 {
         try {
             grassBlock = BlockAPI.getFixedBlock("minecraft:grass");
             mycelBlock = BlockAPI.getFixedBlock("minecraft:mycelium");
+            alt.clear();
             ColorizeBlock.reset();
         } catch (Throwable e) {
             e.printStackTrace();
@@ -268,13 +276,10 @@ public class ColorizeBlock18 {
     }
 
     private static final Map<ModelFace, TextureAtlasSprite> modelFaceSprites = new IdentityHashMap<ModelFace, TextureAtlasSprite>();
-    private static final Map<ModelFace, ModelFace> alt = new IdentityHashMap<ModelFace, ModelFace>();
-    private static TextureAtlasSprite extIcon;
+    private static final Map<ModelFace, Map<Icon, ModelFace>> alt = new IdentityHashMap<ModelFace, Map<Icon, ModelFace>>();
 
     public static ModelFace registerModelFaceSprite(ModelFace face, TextureAtlasSprite sprite) {
-        //logger.info("face %s -> sprite %s", face, sprite);
         modelFaceSprites.put(face, sprite);
-        extIcon = sprite;
         return face;
     }
 
@@ -293,14 +298,83 @@ public class ColorizeBlock18 {
         }
         ModelFace newFace;
         synchronized (alt) {
-            newFace = alt.get(origFace);
+            Map<Icon, ModelFace> tmp = alt.get(origFace);
+            if (tmp == null) {
+                tmp = new HashMap<Icon, ModelFace>();
+                alt.put(origFace, tmp);
+            }
+            newFace = tmp.get(origIcon);
             if (newFace == null) {
-                TextureAtlasSprite newIcon = extIcon;
+                ijkIterator.go(this, origIcon);
+                TextureAtlasSprite newIcon = (TextureAtlasSprite) ijkIterator.getIcon();
+                if (newIcon == origIcon) {
+                    return origFace;
+                }
                 newFace = new ModelFaceSprite(origFace, newIcon);
-                logger.info("%s -> %s", origFace, newFace);
-                alt.put(origFace, newFace);
+                logger.info("%s -> %s (%s)", origFace, newFace, newIcon.getIconName());
+                tmp.put(origIcon, newFace);
             }
         }
         return newFace;
+    }
+
+    @Override
+    public int getI() {
+        return position.getI();
+    }
+
+    @Override
+    public int getJ() {
+        return position.getJ();
+    }
+
+    @Override
+    public int getK() {
+        return position.getK();
+    }
+
+    @Override
+    public int getBlockFace() {
+        return direction == null ? -1 : direction.ordinal();
+    }
+
+    @Override
+    public int getTextureFace() {
+        return getBlockFace();
+    }
+
+    @Override
+    public int getTextureFaceOrig() {
+        return getTextureFace();
+    }
+
+    @Override
+    public int getFaceForHV() {
+        return getBlockFace();
+    }
+
+    @Override
+    public int[] getOffset(int blockFace, int relativeDirection) {
+        return new int[0];
+    }
+
+    @Override
+    public boolean setCoordOffsetsForRenderType() {
+        return false;
+    }
+
+    @Override
+    public int getDI() {
+        return 0;
+    }
+
+    @Override
+    public int getDJ() {
+        return 0;
+    }
+
+    @Override
+    public int getDK() {
+        return 0;
     }
 }

@@ -22,12 +22,12 @@ public class CTMUtils extends RenderBlockState {
     private static final List<ITileOverride> allOverrides = new ArrayList<ITileOverride>();
     private static final Map<Block, List<ITileOverride>> blockOverrides = new IdentityHashMap<Block, List<ITileOverride>>();
     private static final Map<String, List<ITileOverride>> tileOverrides = new HashMap<String, List<ITileOverride>>();
-    public static TileLoader tileLoader;
+    private static TileLoader tileLoader;
 
     private static ITileOverride lastOverride;
 
-    private static final TileOverrideIterator.IJK ijkIterator = new TileOverrideIterator.IJK(blockOverrides, tileOverrides);
-    private static final TileOverrideIterator.Metadata metadataIterator = new TileOverrideIterator.Metadata(blockOverrides, tileOverrides);
+    private static final TileOverrideIterator.IJK ijkIterator = newIJKIterator();
+    private static final TileOverrideIterator.Metadata metadataIterator = newMetadataIterator();
 
     private static boolean haveBlockFace;
     private static final CTMUtils renderBlockState = new CTMUtils();
@@ -195,6 +195,14 @@ public class CTMUtils extends RenderBlockState {
         RenderBlocksUtils.blankIcon = tileLoader.getIcon(RenderPassAPI.instance.getBlankResource());
     }
 
+    public static TileOverrideIterator.IJK newIJKIterator() {
+        return new TileOverrideIterator.IJK(blockOverrides, tileOverrides);
+    }
+
+    public static TileOverrideIterator.Metadata newMetadataIterator() {
+        return new TileOverrideIterator.Metadata(blockOverrides, tileOverrides);
+    }
+
     private int i;
     private int j;
     private int k;
@@ -264,16 +272,6 @@ public class CTMUtils extends RenderBlockState {
     @Override
     public int getDK() {
         return dk;
-    }
-
-    @Override
-    public void setFilter(BlockStateMatcher matcher) {
-        this.matcher = matcher;
-    }
-
-    @Override
-    public BlockStateMatcher getFilter() {
-        return matcher;
     }
 
     void setBlockPosition(Block block, IBlockAccess blockAccess, int i, int j, int k) {

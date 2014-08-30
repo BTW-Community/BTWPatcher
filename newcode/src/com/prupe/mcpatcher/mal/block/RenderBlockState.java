@@ -39,6 +39,7 @@ abstract public class RenderBlockState {
     protected Block block;
     protected boolean useAO;
     protected boolean inWorld;
+    protected BlockStateMatcher matcher;
 
     final public IBlockAccess getBlockAccess() {
         return blockAccess;
@@ -54,6 +55,14 @@ abstract public class RenderBlockState {
 
     final public boolean isInWorld() {
         return inWorld;
+    }
+
+    final public void setFilter(BlockStateMatcher matcher) {
+        this.matcher = matcher;
+    }
+
+    final public BlockStateMatcher getFilter() {
+        return matcher;
     }
 
     public void clear() {
@@ -86,8 +95,4 @@ abstract public class RenderBlockState {
     abstract public int getDJ();
 
     abstract public int getDK();
-
-    abstract public void setFilter(BlockStateMatcher matcher);
-
-    abstract public BlockStateMatcher getFilter();
 }

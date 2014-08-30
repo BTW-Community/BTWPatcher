@@ -9,7 +9,7 @@ import net.minecraft.src.Icon;
 
 import java.util.*;
 
-abstract class TileOverrideIterator implements Iterator<ITileOverride> {
+abstract public class TileOverrideIterator implements Iterator<ITileOverride> {
     private static final int MAX_RECURSION = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "maxRecursion", 4);
 
     private final Map<Block, List<ITileOverride>> allBlockOverrides;
@@ -95,7 +95,7 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
         }
     }
 
-    ITileOverride go(RenderBlockState renderBlockState, Icon origIcon) {
+    public ITileOverride go(RenderBlockState renderBlockState, Icon origIcon) {
         currentIcon = origIcon;
         blockOverrides = allBlockOverrides.get(renderBlockState.getBlock());
         tileOverrides = allTileOverrides.get(IconAPI.getIconName(origIcon));
@@ -124,30 +124,30 @@ abstract class TileOverrideIterator implements Iterator<ITileOverride> {
         return lastMatchedOverride;
     }
 
-    Icon getIcon() {
+    public Icon getIcon() {
         return currentIcon;
     }
 
-    abstract Icon getTile(ITileOverride override, RenderBlockState renderBlockState, Icon origIcon);
+    abstract protected Icon getTile(ITileOverride override, RenderBlockState renderBlockState, Icon origIcon);
 
-    static final class IJK extends TileOverrideIterator {
+    public static final class IJK extends TileOverrideIterator {
         IJK(Map<Block, List<ITileOverride>> blockOverrides, Map<String, List<ITileOverride>> tileOverrides) {
             super(blockOverrides, tileOverrides);
         }
 
         @Override
-        Icon getTile(ITileOverride override, RenderBlockState renderBlockState, Icon origIcon) {
+        protected Icon getTile(ITileOverride override, RenderBlockState renderBlockState, Icon origIcon) {
             return override.getTileWorld(renderBlockState, origIcon);
         }
     }
 
-    static final class Metadata extends TileOverrideIterator {
+    public static final class Metadata extends TileOverrideIterator {
         Metadata(Map<Block, List<ITileOverride>> blockOverrides, Map<String, List<ITileOverride>> tileOverrides) {
             super(blockOverrides, tileOverrides);
         }
 
         @Override
-        Icon getTile(ITileOverride override, RenderBlockState renderBlockState, Icon origIcon) {
+        protected Icon getTile(ITileOverride override, RenderBlockState renderBlockState, Icon origIcon) {
             return override.getTileHeld(renderBlockState, origIcon);
         }
     }
