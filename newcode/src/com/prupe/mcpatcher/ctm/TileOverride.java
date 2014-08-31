@@ -9,6 +9,7 @@ import com.prupe.mcpatcher.mal.block.RenderBlockState;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
+import com.prupe.mcpatcher.mal.tile.IconAPI;
 import com.prupe.mcpatcher.mal.tile.TileLoader;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
@@ -338,7 +339,18 @@ abstract class TileOverride implements ITileOverride {
 
     @Override
     final public Set<String> getMatchingTiles() {
-        return matchTiles;
+        if (MCPatcherUtils.isNullOrEmpty(matchTiles)) {
+            return null;
+        } else {
+            Set<String> m = new HashSet<String>();
+            for (String s : matchTiles) {
+                if (!s.contains(":")) {
+                    s = "minecraft:blocks/" + s; // TODO
+                }
+                m.add(s);
+            }
+            return m;
+        }
     }
 
     @Override
@@ -439,16 +451,20 @@ abstract class TileOverride implements ITileOverride {
         if (block == null || RenderPassAPI.instance.skipThisRenderPass(block, renderPass)) {
             return null;
         }
-        boolean matched = false;
-        for (BlockStateMatcher matcher : matchBlocks) {
-            if (matcher.match(blockAccess, i, j, k)) {
-                matched = true;
-                renderBlockState.setFilter(matcher);
-                break;
+        if (matchBlocks.isEmpty()) {
+            renderBlockState.setFilter(null);
+        } else {
+            boolean matched = false;
+            for (BlockStateMatcher matcher : matchBlocks) {
+                if (matcher.match(blockAccess, i, j, k)) {
+                    matched = true;
+                    renderBlockState.setFilter(matcher);
+                    break;
+                }
             }
-        }
-        if (!matched) {
-            return null;
+            if (!matched) {
+                return null;
+            }
         }
         //TODO
         //Integer metadataEntry = matchBlocks.get(block);

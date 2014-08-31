@@ -158,8 +158,9 @@ public class CTMUtils extends RenderBlockState {
     private static void registerOverride(ITileOverride override) {
         if (override != null && !override.isDisabled()) {
             boolean registered = false;
-            if (override.getMatchingBlocks() != null) {
-                for (Block block : override.getMatchingBlocks()) {
+            Set<Block> matchingBlocks = override.getMatchingBlocks();
+            if (!MCPatcherUtils.isNullOrEmpty(matchingBlocks)) {
+                for (Block block : matchingBlocks) {
                     if (block == null) {
                         continue;
                     }
@@ -173,8 +174,9 @@ public class CTMUtils extends RenderBlockState {
                     registered = true;
                 }
             }
-            if (override.getMatchingTiles() != null) {
-                for (String name : override.getMatchingTiles()) {
+            Set<String> matchingTiles = override.getMatchingTiles();
+            if (!MCPatcherUtils.isNullOrEmpty(matchingTiles)) {
+                for (String name : matchingTiles) {
                     List<ITileOverride> list = tileOverrides.get(name);
                     if (list == null) {
                         list = new ArrayList<ITileOverride>();

@@ -30,12 +30,9 @@ public class ColorizeBlock18 extends RenderBlockState {
     private static Block grassBlock;
     private static Block mycelBlock;
 
-    private IBlockAccess blockAccess;
     private IModel model;
     private IBlockState blockState;
     private Position position;
-    private Block block;
-    private boolean useAO;
     private Direction direction;
 
     private boolean useCM;
@@ -183,6 +180,7 @@ public class ColorizeBlock18 extends RenderBlockState {
         this.block = block;
         this.useAO = useAO;
         direction = null;
+        inWorld = true;
 
         colorMap = null;
         useCM = RenderPassAPI.instance.useColorMultiplierThisPass(block);
@@ -303,16 +301,16 @@ public class ColorizeBlock18 extends RenderBlockState {
                 tmp = new HashMap<Icon, ModelFace>();
                 alt.put(origFace, tmp);
             }
-            newFace = tmp.get(origIcon);
+            ijkIterator.go(this, origIcon);
+            TextureAtlasSprite newIcon = (TextureAtlasSprite) ijkIterator.getIcon();
+            if (newIcon == origIcon) {
+                return origFace;
+            }
+            newFace = tmp.get(newIcon);
             if (newFace == null) {
-                ijkIterator.go(this, origIcon);
-                TextureAtlasSprite newIcon = (TextureAtlasSprite) ijkIterator.getIcon();
-                if (newIcon == origIcon) {
-                    return origFace;
-                }
                 newFace = new ModelFaceSprite(origFace, newIcon);
-                logger.info("%s -> %s (%s)", origFace, newFace, newIcon.getIconName());
-                tmp.put(origIcon, newFace);
+                logger.info("%s (%s) -> %s (%s)", origFace, origIcon.getIconName(), newFace, newIcon.getIconName());
+                tmp.put(newIcon, newFace);
             }
         }
         return newFace;
@@ -355,7 +353,7 @@ public class ColorizeBlock18 extends RenderBlockState {
 
     @Override
     public int[] getOffset(int blockFace, int relativeDirection) {
-        return new int[0];
+        return FACE_VERTICES[0][0];
     }
 
     @Override
@@ -376,5 +374,20 @@ public class ColorizeBlock18 extends RenderBlockState {
     @Override
     public int getDK() {
         return 0;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ColorizeBlock18{");
+        if (block != null) {
+            sb.append(BlockAPI.getBlockName(block)).append(" ");
+        }
+        if (position != null) {
+            sb.append(" @").append(position.getI()).append(',').append(position.getJ()).append(',').append(position.getK());
+        }
+        if (direction != null) {
+            sb.append(' ').append(direction.toString());
+        }
+        return sb.append('}').toString();
     }
 }

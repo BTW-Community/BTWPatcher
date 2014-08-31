@@ -16,19 +16,6 @@ import net.minecraft.src.ResourceLocation;
 public class CTMUtils18 {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CONNECTED_TEXTURES);
 
-    static {
-        TexturePackChangeHandler.register(new TexturePackChangeHandler(MCPatcherUtils.CONNECTED_TEXTURES, 2) {
-            @Override
-            public void beforeChange() {
-                reset();
-            }
-
-            @Override
-            public void afterChange() {
-            }
-        });
-    }
-
     public static void reset() {
         logger.info("CTMUtils18.reset");
         CTMUtils.reset();
