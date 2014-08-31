@@ -242,7 +242,7 @@ public class TileLoader {
     }
 
     protected boolean isForThisMap(String mapName) {
-        return mapName.startsWith(this.mapName);
+        return mapName.equals("textures") || mapName.startsWith(this.mapName);
     }
 
     private boolean registerDefaultIcon(String name) {
@@ -286,7 +286,15 @@ public class TileLoader {
                 return false;
             }
         }
-        Icon icon = textureMap.registerIcon(name);
+        Icon icon;
+        if (mapName.equals("textures")) { // 1.8
+            icon = map.get(name);
+            if (icon == null) {
+                icon = TextureAtlasSprite.createSprite(resource);
+            }
+        } else {
+            icon = textureMap.registerIcon(name);
+        }
         map.put(name, (TextureAtlasSprite) icon);
         iconMap.put(name, icon);
         String extra = (width == height ? "" : ", " + (height / width) + " frames");

@@ -75,4 +75,9 @@ public class TextureAtlasSprite implements Icon {
 
     public void copy(TextureAtlasSprite stitched) {
     }
+
+    // 14w25+
+    public static TextureAtlasSprite createSprite(ResourceLocation resource) {
+        return null;
+    }
 }

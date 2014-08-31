@@ -481,8 +481,12 @@ public class TilesheetAPIMod extends Mod {
 
         private void setup18() {
             final MethodRef getIconName = new MethodRef(getDeobfClass(), "getIconName", "()Ljava/lang/String;");
+            final MethodRef createSprite = new MethodRef(getDeobfClass(), "createSprite", "(LResourceLocation;)LTextureAtlasSprite;");
 
             addMemberMappers("public !static", getIconName);
+            addMemberMappers("static", createSprite);
+
+            addPatch(new MakeMemberPublicPatch(createSprite));
         }
     }
 }
