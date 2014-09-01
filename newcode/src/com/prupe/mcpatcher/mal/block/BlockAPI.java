@@ -498,7 +498,7 @@ abstract public class BlockAPI {
 
         @Override
         protected Icon getBlockIcon_Impl(Block block, IBlockAccess blockAccess, int i, int j, int k, int face) {
-            return block.getBlockIcon(blockAccess, new Position(i, j, k), Direction.values()[face]);
+            return null; // TODO
         }
 
         @Override
