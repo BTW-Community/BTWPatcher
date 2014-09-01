@@ -2,7 +2,6 @@ package com.prupe.mcpatcher.ctm;
 
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.mal.block.RenderBlockState;
 import com.prupe.mcpatcher.mal.tile.IconAPI;
 import net.minecraft.src.Block;
 import net.minecraft.src.Icon;

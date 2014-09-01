@@ -1,12 +1,11 @@
 package com.prupe.mcpatcher.ctm;
 
-import com.prupe.mcpatcher.mal.block.RenderBlockState;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.tile.TileLoader;
 import com.prupe.mcpatcher.mal.util.WeightedIndex;
 import net.minecraft.src.Icon;
 
-import static com.prupe.mcpatcher.mal.block.RenderBlockState.*;
+import static com.prupe.mcpatcher.ctm.RenderBlockState.*;
 
 class TileOverrideImpl {
     final static class CTM extends TileOverride {

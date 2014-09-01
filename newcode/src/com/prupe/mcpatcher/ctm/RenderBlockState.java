@@ -1,5 +1,6 @@
-package com.prupe.mcpatcher.mal.block;
+package com.prupe.mcpatcher.ctm;
 
+import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
 import net.minecraft.src.*;
 
 abstract public class RenderBlockState {
