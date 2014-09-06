@@ -127,6 +127,9 @@ abstract public class BlockStateMatcher {
         V2(PropertiesFile source, String metaString, Block block, String metadataList, Map<String, String> properties) {
             super(source, metaString, block, metadataList, properties);
             IBlockState state = block.getBlockState();
+            if (properties.isEmpty() && !MCPatcherUtils.isNullOrEmpty(metadataList)) {
+                translateProperties(block, metadataList, properties);
+            }
             for (Map.Entry<String, String> entry : properties.entrySet()) {
                 String name = entry.getKey();
                 boolean foundProperty = false;
@@ -161,6 +164,29 @@ abstract public class BlockStateMatcher {
                 if (!foundProperty) {
                     source.warning("unknown property %s for block %s", name, BlockAPI.getBlockName(block));
                 }
+            }
+        }
+
+        private void translateProperties(Block block, String metadataList, Map<String, String> properties) {
+            BitSet metadata = new BitSet(16);
+            for (int i : MCPatcherUtils.parseIntegerList(metadataList, 0, 15)) {
+                metadata.set(i);
+            }
+            if (BlockAPI.getBlockName(block).equals("minecraft:log")) {
+                StringBuilder sb = new StringBuilder();
+                if (metadata.get(0)) {
+                    sb.append("oak,");
+                }
+                if (metadata.get(1)) {
+                    sb.append("spruce,");
+                }
+                if (metadata.get(2)) {
+                    sb.append("birch,");
+                }
+                if (metadata.get(3)) {
+                    sb.append("jungle,");
+                }
+                properties.put("variant", sb.toString());
             }
         }
 

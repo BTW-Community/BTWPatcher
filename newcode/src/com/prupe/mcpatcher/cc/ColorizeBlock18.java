@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.cc;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.ctm.CTMUtils;
+import com.prupe.mcpatcher.ctm.CTMUtils18;
 import com.prupe.mcpatcher.ctm.TileOverrideIterator;
 import com.prupe.mcpatcher.mal.biome.ColorUtils;
 import com.prupe.mcpatcher.mal.biome.IColorMap;
@@ -34,6 +35,9 @@ public class ColorizeBlock18 extends RenderBlockState {
     private IBlockState blockState;
     private Position position;
     private Direction direction;
+    private int effectiveFace;
+    private int uvRotation;
+    private int hvFace;
 
     private boolean useCM;
     private IColorMap colorMap;
@@ -152,7 +156,6 @@ public class ColorizeBlock18 extends RenderBlockState {
         try {
             grassBlock = BlockAPI.getFixedBlock("minecraft:grass");
             mycelBlock = BlockAPI.getFixedBlock("minecraft:mycelium");
-            alt.clear();
             ColorizeBlock.reset();
         } catch (Throwable e) {
             e.printStackTrace();
@@ -273,9 +276,6 @@ public class ColorizeBlock18 extends RenderBlockState {
         }
     }
 
-    private static final Map<ModelFace, TextureAtlasSprite> modelFaceSprites = new IdentityHashMap<ModelFace, TextureAtlasSprite>();
-    private static final Map<ModelFace, Map<Icon, ModelFace>> alt = new IdentityHashMap<ModelFace, Map<Icon, ModelFace>>();
-
     private static final int[][][] NEIGHBOR_OFFSET = new int[][][]{
         makeNeighborOffset(WEST_FACE, NORTH_FACE, EAST_FACE, SOUTH_FACE), // BOTTOM_FACE - flipped n-s in 1.8 custom models
         makeNeighborOffset(WEST_FACE, SOUTH_FACE, EAST_FACE, NORTH_FACE), // TOP_FACE
@@ -285,43 +285,22 @@ public class ColorizeBlock18 extends RenderBlockState {
         makeNeighborOffset(SOUTH_FACE, BOTTOM_FACE, NORTH_FACE, TOP_FACE), // EAST_FACE
     };
 
-    public static ModelFace registerModelFaceSprite(ModelFace face, TextureAtlasSprite sprite) {
-        modelFaceSprites.put(face, sprite);
-        return face;
-    }
-
-    private static TextureAtlasSprite getSprite(ModelFace face) {
-        if (face instanceof ModelFaceSprite) {
-            return ((ModelFaceSprite) face).sprite;
-        } else {
-            return modelFaceSprites.get(face);
-        }
-    }
-
     public ModelFace getModelFace(ModelFace origFace) {
-        TextureAtlasSprite origIcon = getSprite(origFace);
-        if (origIcon == null) {
+        CTMUtils18.FaceInfo faceInfo = CTMUtils18.getFaceInfo(origFace);
+        if (faceInfo == null) {
             return origFace;
         }
-        ModelFace newFace;
-        synchronized (alt) {
-            Map<Icon, ModelFace> tmp = alt.get(origFace);
-            if (tmp == null) {
-                tmp = new HashMap<Icon, ModelFace>();
-                alt.put(origFace, tmp);
-            }
-            ijkIterator.go(this, origIcon);
-            TextureAtlasSprite newIcon = (TextureAtlasSprite) ijkIterator.getIcon();
-            if (newIcon == origIcon) {
-                return origFace;
-            }
-            newFace = tmp.get(newIcon);
-            if (newFace == null) {
-                newFace = new ModelFaceSprite(origFace, newIcon);
-                tmp.put(newIcon, newFace);
-            }
-        }
-        return newFace;
+        TextureAtlasSprite origIcon = faceInfo.getSprite();
+        setUVFace(faceInfo);
+        ijkIterator.go(this, origIcon);
+        TextureAtlasSprite newIcon = (TextureAtlasSprite) ijkIterator.getIcon();
+        return faceInfo.getAltFace(newIcon);
+    }
+
+    private void setUVFace(CTMUtils18.FaceInfo faceInfo) {
+        effectiveFace = faceInfo.getEffectiveFace();
+        uvRotation = faceInfo.getUVRotation();
+        hvFace = effectiveFace >= 0 ? effectiveFace : RenderBlockState.NORTH_FACE;
     }
 
     @Override
@@ -341,12 +320,12 @@ public class ColorizeBlock18 extends RenderBlockState {
 
     @Override
     public int getBlockFace() {
-        return direction == null ? -1 : direction.ordinal();
+        return effectiveFace;
     }
 
     @Override
     public int getTextureFace() {
-        return getBlockFace();
+        return direction == null ? -1 : direction.ordinal();
     }
 
     @Override
@@ -356,12 +335,12 @@ public class ColorizeBlock18 extends RenderBlockState {
 
     @Override
     public int getFaceForHV() {
-        return getBlockFace();
+        return hvFace;
     }
 
     @Override
     public int[] getOffset(int blockFace, int relativeDirection) {
-        return NEIGHBOR_OFFSET[blockFace][relativeDirection];
+        return NEIGHBOR_OFFSET[blockFace][(relativeDirection + uvRotation) & 7];
     }
 
     @Override

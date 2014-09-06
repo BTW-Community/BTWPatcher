@@ -111,7 +111,7 @@ public class CustomTexturesModels extends Mod {
             addClassSignature(new ConstSignature(0.017453292519943295));
 
             final MethodRef createFace = new MethodRef(getDeobfClass(), "createFace", "(Ljavax/vecmath/Vector3f;Ljavax/vecmath/Vector3f;LUnknownClass_clt;LTextureAtlasSprite;LDirection;LUnknownEnum_cxa;LUnknownClass_clv;ZZ)LModelFace;");
-            final MethodRef registerModelFaceSprite = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "registerModelFaceSprite", "(LModelFace;LTextureAtlasSprite;)LModelFace;");
+            final MethodRef registerModelFaceSprite = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "registerModelFaceSprite", "(LModelFace;LTextureAtlasSprite;)LModelFace;");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
