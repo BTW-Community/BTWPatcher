@@ -150,6 +150,8 @@ public class TexturePackAPIMod extends Mod {
             }
 
             addPatch(new BytecodePatch() {
+                private final MethodRef fmlClientHandler = new MethodRef("cpw/mods/fml/client/FMLClientHandler", "instance", "()Lcpw/mods/fml/client/FMLClientHandler;");
+
                 @Override
                 public String getDescription() {
                     return "init texture pack handlers on startup";
@@ -182,9 +184,17 @@ public class TexturePackAPIMod extends Mod {
                             // ...
                             nonGreedy(any(0, 60)),
 
-                            // this.refreshResources();
-                            ALOAD_0,
-                            anyReference(INVOKEVIRTUAL)
+                            // vanilla: this.refreshResources();
+                            // forge 1.7.10: FMLClientHandler.instance()...;
+                            or(
+                                build(
+                                    ALOAD_0,
+                                    anyReference(INVOKEVIRTUAL)
+                                ),
+                                build(
+                                    reference(INVOKESTATIC, fmlClientHandler)
+                                )
+                            )
                         )),
 
                         capture(build(
