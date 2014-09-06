@@ -342,10 +342,7 @@ abstract class TileOverride implements ITileOverride {
         } else {
             Set<String> m = new HashSet<String>();
             for (String s : matchTiles) {
-                if (!s.contains(":")) {
-                    s = "minecraft:blocks/" + s; // TODO
-                }
-                m.add(s);
+                m.add(BlockAPI.expandTileName(s));
             }
             return m;
         }
@@ -395,14 +392,17 @@ abstract class TileOverride implements ITileOverride {
         if (neighbor == null) {
             return false;
         }
-        if (block == neighbor && renderBlockState.getFilter().match(blockAccess, i, j, k)) {
+        BlockStateMatcher filter = renderBlockState.getFilter();
+        if (filter != null && !filter.match(blockAccess, i, j, k)) {
             return false;
         }
-        int blockFace = renderBlockState.getBlockFace();
-        if (blockFace >= 0 && innerSeams) {
-            int[] normal = NORMALS[blockFace];
-            if (!BlockAPI.shouldSideBeRendered(neighbor, blockAccess, i + normal[0], j + normal[1], k + normal[2], blockFace)) {
-                return false;
+        if (innerSeams) {
+            int blockFace = renderBlockState.getBlockFace();
+            if (blockFace >= 0) {
+                int[] normal = NORMALS[blockFace];
+                if (!BlockAPI.shouldSideBeRendered(neighbor, blockAccess, i + normal[0], j + normal[1], k + normal[2], blockFace)) {
+                    return false;
+                }
             }
         }
         switch (connectType) {

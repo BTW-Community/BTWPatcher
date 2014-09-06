@@ -307,6 +307,10 @@ abstract public class BlockAPI {
         }
     }
 
+    public static String expandTileName(String tileName) {
+        return instance.expandTileName_Impl(tileName);
+    }
+
     abstract protected Block getBlockAt_Impl(IBlockAccess blockAccess, int i, int j, int k);
 
     abstract protected int getMetadataAt_Impl(IBlockAccess blockAccess, int i, int j, int k);
@@ -326,6 +330,8 @@ abstract public class BlockAPI {
     abstract protected int getBlockLightValue_Impl(Block block);
 
     abstract protected Class<? extends BlockStateMatcher> getBlockStateMatcherClass_Impl();
+
+    abstract protected String expandTileName_Impl(String tileName);
 
     BlockAPI() {
     }
@@ -386,6 +392,11 @@ abstract public class BlockAPI {
         @Override
         protected Class<? extends BlockStateMatcher> getBlockStateMatcherClass_Impl() {
             return BlockStateMatcher.V1.class;
+        }
+
+        @Override
+        protected String expandTileName_Impl(String tileName) {
+            return tileName;
         }
     }
 
@@ -476,6 +487,11 @@ abstract public class BlockAPI {
         protected Class<? extends BlockStateMatcher> getBlockStateMatcherClass_Impl() {
             return BlockStateMatcher.V1.class;
         }
+
+        @Override
+        protected String expandTileName_Impl(String tileName) {
+            return tileName;
+        }
     }
 
     final private static class V3 extends V2 {
@@ -525,6 +541,14 @@ abstract public class BlockAPI {
         @Override
         protected Class<? extends BlockStateMatcher> getBlockStateMatcherClass_Impl() {
             return BlockStateMatcher.V2.class;
+        }
+
+        @Override
+        protected String expandTileName_Impl(String tileName) {
+            if (!tileName.contains(":")) {
+                tileName = "minecraft:blocks/" + tileName;
+            }
+            return tileName;
         }
     }
 }
