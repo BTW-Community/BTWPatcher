@@ -13,7 +13,7 @@ import net.minecraft.src.*;
 
 import java.util.*;
 
-public class CTMUtils extends RenderBlockState {
+public class CTMUtils {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CONNECTED_TEXTURES, "CTM");
 
     private static final boolean enableStandard = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "standard", true);
@@ -30,7 +30,7 @@ public class CTMUtils extends RenderBlockState {
     private static final TileOverrideIterator.Metadata metadataIterator = newMetadataIterator();
 
     private static boolean haveBlockFace;
-    private static final CTMUtils renderBlockState = new CTMUtils();
+    private static final BlockOrientation renderBlockState = new BlockOrientation();
 
     static {
         try {
@@ -60,7 +60,6 @@ public class CTMUtils extends RenderBlockState {
                 lastOverride = null;
                 RenderBlocksUtils.blankIcon = null;
                 tileLoader = new TileLoader("textures/blocks", logger);
-                BlockOrientation.reset();
                 RenderPassAPI.instance.refreshBlendingOptions();
 
                 if (enableStandard || enableNonStandard) {
@@ -104,7 +103,7 @@ public class CTMUtils extends RenderBlockState {
         lastOverride = null;
         if (blockAccess != null && checkFace(face)) {
             if (!haveBlockFace) {
-                renderBlockState.setBlockPosition(block, blockAccess, i, j, k);
+                renderBlockState.setBlock(block, blockAccess, i, j, k);
                 renderBlockState.setFace(face);
             }
             lastOverride = ijkIterator.go(renderBlockState, icon);
@@ -119,8 +118,7 @@ public class CTMUtils extends RenderBlockState {
     public static Icon getBlockIcon(Icon icon, RenderBlocks renderBlocks, Block block, int face, int metadata) {
         lastOverride = null;
         if (checkFace(face) && checkRenderType(block)) {
-            renderBlockState.setBlockMetadata(block, metadata);
-            renderBlockState.setFace(face);
+            renderBlockState.setBlockMetadata(block, metadata, face);
             lastOverride = metadataIterator.go(renderBlockState, icon);
             if (lastOverride != null) {
                 icon = metadataIterator.getIcon();
@@ -203,98 +201,6 @@ public class CTMUtils extends RenderBlockState {
 
     public static TileOverrideIterator.Metadata newMetadataIterator() {
         return new TileOverrideIterator.Metadata(blockOverrides, tileOverrides);
-    }
-
-    private int i;
-    private int j;
-    private int k;
-    private int metadata;
-    private int blockFace;
-    private int textureFace;
-    private int di;
-    private int dj;
-    private int dk;
-    private BlockStateMatcher matcher;
-
-    @Override
-    public int getI() {
-        return i;
-    }
-
-    @Override
-    public int getJ() {
-        return j;
-    }
-
-    @Override
-    public int getK() {
-        return k;
-    }
-
-    @Override
-    public int getBlockFace() {
-        return blockFace;
-    }
-
-    @Override
-    public int getTextureFace() {
-        return textureFace;
-    }
-
-    @Override
-    public int getTextureFaceOrig() {
-        return textureFace;
-    }
-
-    @Override
-    public int getFaceForHV() {
-        return blockFace;
-    }
-
-    @Override
-    public int[] getOffset(int blockFace, int relativeDirection) {
-        return new int[0];
-    }
-
-    @Override
-    public boolean setCoordOffsetsForRenderType() {
-        return false;
-    }
-
-    @Override
-    public int getDI() {
-        return di;
-    }
-
-    @Override
-    public int getDJ() {
-        return dj;
-    }
-
-    @Override
-    public int getDK() {
-        return dk;
-    }
-
-    void setBlockPosition(Block block, IBlockAccess blockAccess, int i, int j, int k) {
-        this.block = block;
-        this.blockAccess = blockAccess;
-        this.i = i;
-        this.j = j;
-        this.k = k;
-        metadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
-        inWorld = true;
-    }
-
-    void setBlockMetadata(Block block, int metadata) {
-        this.block = block;
-        this.blockAccess = null;
-        this.metadata = metadata;
-        inWorld = false;
-    }
-
-    void setFace(int face) {
-        blockFace = textureFace = face;
     }
 
     /*

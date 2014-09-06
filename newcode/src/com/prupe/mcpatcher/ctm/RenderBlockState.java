@@ -36,6 +36,41 @@ abstract public class RenderBlockState {
     public static final int REL_U = 6;
     public static final int REL_UL = 7;
 
+    protected static final int[][] ROTATE_UV_MAP = new int[][]{
+        {WEST_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, 2, -2, 2, -2, 0, 0},
+        {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, 2},
+        {WEST_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, 2, -2, -2, -2, 0, 0},
+        {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, -2},
+    };
+
+    protected static int[] add(int[] a, int[] b) {
+        if (a.length != b.length) {
+            throw new RuntimeException("arrays to add are not same length");
+        }
+        int[] c = new int[a.length];
+        for (int i = 0; i < c.length; i++) {
+            c[i] = a[i] + b[i];
+        }
+        return c;
+    }
+
+    protected static int[][] makeNeighborOffset(int left, int down, int right, int up) {
+        int[] l = NORMALS[left];
+        int[] d = NORMALS[down];
+        int[] r = NORMALS[right];
+        int[] u = NORMALS[up];
+        return new int[][]{
+            l,
+            add(l, d),
+            d,
+            add(d, r),
+            r,
+            add(r, u),
+            u,
+            add(u, l),
+        };
+    }
+
     protected IBlockAccess blockAccess;
     protected Block block;
     protected boolean useAO;
@@ -71,6 +106,7 @@ abstract public class RenderBlockState {
         block = null;
         useAO = false;
         inWorld = false;
+        setFilter(null);
     }
 
     abstract public int getI();
