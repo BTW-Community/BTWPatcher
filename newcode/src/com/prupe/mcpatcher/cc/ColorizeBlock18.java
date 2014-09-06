@@ -276,6 +276,15 @@ public class ColorizeBlock18 extends RenderBlockState {
     private static final Map<ModelFace, TextureAtlasSprite> modelFaceSprites = new IdentityHashMap<ModelFace, TextureAtlasSprite>();
     private static final Map<ModelFace, Map<Icon, ModelFace>> alt = new IdentityHashMap<ModelFace, Map<Icon, ModelFace>>();
 
+    private static final int[][][] NEIGHBOR_OFFSET = new int[][][]{
+        makeNeighborOffset(WEST_FACE, NORTH_FACE, EAST_FACE, SOUTH_FACE), // BOTTOM_FACE - flipped n-s in 1.8 custom models
+        makeNeighborOffset(WEST_FACE, SOUTH_FACE, EAST_FACE, NORTH_FACE), // TOP_FACE
+        makeNeighborOffset(EAST_FACE, BOTTOM_FACE, WEST_FACE, TOP_FACE), // NORTH_FACE
+        makeNeighborOffset(WEST_FACE, BOTTOM_FACE, EAST_FACE, TOP_FACE), // SOUTH_FACE
+        makeNeighborOffset(NORTH_FACE, BOTTOM_FACE, SOUTH_FACE, TOP_FACE), // WEST_FACE
+        makeNeighborOffset(SOUTH_FACE, BOTTOM_FACE, NORTH_FACE, TOP_FACE), // EAST_FACE
+    };
+
     public static ModelFace registerModelFaceSprite(ModelFace face, TextureAtlasSprite sprite) {
         modelFaceSprites.put(face, sprite);
         return face;
@@ -309,7 +318,6 @@ public class ColorizeBlock18 extends RenderBlockState {
             newFace = tmp.get(newIcon);
             if (newFace == null) {
                 newFace = new ModelFaceSprite(origFace, newIcon);
-                logger.info("%s (%s) -> %s (%s)", origFace, origIcon.getIconName(), newFace, newIcon.getIconName());
                 tmp.put(newIcon, newFace);
             }
         }
@@ -353,7 +361,7 @@ public class ColorizeBlock18 extends RenderBlockState {
 
     @Override
     public int[] getOffset(int blockFace, int relativeDirection) {
-        return FACE_VERTICES[0][0];
+        return NEIGHBOR_OFFSET[blockFace][relativeDirection];
     }
 
     @Override
