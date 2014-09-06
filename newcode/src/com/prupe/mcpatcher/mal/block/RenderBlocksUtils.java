@@ -127,11 +127,19 @@ public class RenderBlocksUtils {
 
     public static boolean useColorMultiplier(int face) {
         layerIndex = 0;
-        return colorMultiplierType[getFaceIndex(face)] != NONCOLOR;
+        return useColorMultiplier1(face);
+    }
+
+    private static boolean useColorMultiplier1(int face) {
+        if (layerIndex == 0) {
+            return colorMultiplierType[getFaceIndex(face)] == COLOR;
+        } else {
+            return colorMultiplierType[getFaceIndex(face)] != NONCOLOR;
+        }
     }
 
     public static boolean useColorMultiplier(boolean useTint, int face) {
-        return useTint || (layerIndex++ == 0 && useColorMultiplier(face));
+        return useTint || (layerIndex++ == 0 && useColorMultiplier1(face));
     }
 
     public static float getColorMultiplierRed(int face) {

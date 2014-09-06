@@ -475,6 +475,8 @@ public class ColorizeBlock {
             setupBiomeSmoothing(renderBlocks, block, blockAccess, i, j, k, face, true, topLeft, bottomLeft, bottomRight, topRight);
     }
 
+    // TODO: remove
+    @Deprecated
     public static boolean setupBlockSmoothingGrassSide(RenderBlocks renderBlocks, Block block, IBlockAccess blockAccess,
                                                        int i, int j, int k, int face,
                                                        float topLeft, float bottomLeft, float bottomRight, float topRight) {
