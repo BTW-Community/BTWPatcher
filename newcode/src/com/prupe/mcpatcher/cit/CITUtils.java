@@ -88,7 +88,7 @@ public class CITUtils {
 
                 PropertiesFile properties = PropertiesFile.get(logger, CIT_PROPERTIES1);
                 if (properties == null) {
-                    properties = PropertiesFile.get(logger, CIT_PROPERTIES2);
+                    properties = PropertiesFile.getNonNull(logger, CIT_PROPERTIES2);
                 }
                 useGlint = properties.getBoolean("useGlint", true);
                 EnchantmentList.setProperties(properties);
