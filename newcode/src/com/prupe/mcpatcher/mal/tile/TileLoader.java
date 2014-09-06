@@ -89,16 +89,18 @@ public class TileLoader {
             changeHandler.beforeChange();
         }
         for (TileLoader loader : loaders) {
-            if (loader.baseTextureMap == null && mapName.equals(loader.mapName)) {
-                loader.baseTextureMap = textureMap;
-                loader.baseTexturesByName.putAll(map);
-            }
-            if (loader.isForThisMap(mapName) && !loader.tilesToRegister.isEmpty()) {
-                loader.subLogger.fine("adding icons to %s (%d remaining)", mapName, loader.tilesToRegister.size(), mapName);
-                while (!loader.tilesToRegister.isEmpty() && loader.registerOneIcon(textureMap, mapName, map)) {
-                    // nothing
+            if (loader.isForThisMap(mapName)) {
+                if (loader.baseTextureMap == null) {
+                    loader.baseTextureMap = textureMap;
+                    loader.baseTexturesByName.putAll(map);
                 }
-                loader.subLogger.fine("done adding icons to %s (%d remaining)", mapName, loader.tilesToRegister.size(), mapName);
+                if (!loader.tilesToRegister.isEmpty()) {
+                    loader.subLogger.fine("adding icons to %s (%d remaining)", mapName, loader.tilesToRegister.size(), mapName);
+                    while (!loader.tilesToRegister.isEmpty() && loader.registerOneIcon(textureMap, mapName, map)) {
+                        // nothing
+                    }
+                    loader.subLogger.fine("done adding icons to %s (%d remaining)", mapName, loader.tilesToRegister.size(), mapName);
+                }
             }
         }
         logger.fine("after registerIcons(%s) %d icons", mapName, map.size());
