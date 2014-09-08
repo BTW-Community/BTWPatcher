@@ -2,10 +2,7 @@ package com.prupe.mcpatcher.ctm;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import net.minecraft.src.Icon;
-import net.minecraft.src.ModelFace;
-import net.minecraft.src.ModelFaceSprite;
-import net.minecraft.src.TextureAtlasSprite;
+import net.minecraft.src.*;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -40,6 +37,8 @@ public class CTMUtils18 {
         private final Map<Icon, ModelFace> altIcons = new IdentityHashMap<Icon, ModelFace>();
         private final int effectiveFace;
         private final int uvRotation;
+        private final String textureName;
+        private final int textureFacingBits;
 
         public FaceInfo(ModelFace face, TextureAtlasSprite sprite, String textureName) {
             this.face = face;
@@ -50,6 +49,19 @@ public class CTMUtils18 {
             }
             effectiveFace = computeEffectiveFace(face.getIntBuffer());
             uvRotation = computeRotation(face.getIntBuffer(), getEffectiveFace());
+            if (textureName.startsWith("#")) {
+                textureName = textureName.substring(1);
+            }
+            textureName = textureName.toLowerCase().trim();
+            this.textureName = textureName;
+            textureFacingBits = computeTextureFacing(textureName);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("FaceInfo{%s,%s/%s -> %s R%+d}",
+                face, sprite.getIconName(), textureName, Direction.values()[effectiveFace], uvRotation * 45
+            );
         }
 
         public TextureAtlasSprite getSprite() {
@@ -74,6 +86,14 @@ public class CTMUtils18 {
 
         public int getUVRotation() {
             return uvRotation;
+        }
+
+        public String getTextureName() {
+            return textureName;
+        }
+
+        public boolean isTextureFacing(int bits) {
+            return (textureFacingBits & bits) != 0;
         }
 
         private static int computeEffectiveFace(int[] b) {
@@ -207,6 +227,28 @@ public class CTMUtils18 {
             logger.info("u0,v0=%d %d, u1,v1=%d %d, u2,v2=%d %d, u3,v3=%d %d, rotation %d",
                 u0, v0, u1, v1, u2, v2, u3, v3, computeUVRotation(b)
             );
+        }
+
+        private static int computeTextureFacing(String name) {
+            int bits = ~0x3f;
+            for (Direction direction : Direction.values()) {
+                if (name.equalsIgnoreCase(direction.toString())) {
+                    bits |= (1 << direction.ordinal());
+                }
+            }
+            if (name.equals("bottom")) {
+                bits |= (1 << RenderBlockState.BOTTOM_FACE);
+            } else if (name.equals("top")) {
+                bits |= (1 << RenderBlockState.TOP_FACE);
+            } else {
+                if (name.equals("side") || name.equals("sides") || name.equals("all")) {
+                    bits |= (1 << RenderBlockState.NORTH_FACE) | (1 << RenderBlockState.SOUTH_FACE) | (1 << RenderBlockState.WEST_FACE) | (1 << RenderBlockState.EAST_FACE);
+                }
+                if (name.equals("end") || name.equals("ends") || name.equals("all")) {
+                    bits |= (1 << RenderBlockState.BOTTOM_FACE) | (1 << RenderBlockState.TOP_FACE);
+                }
+            }
+            return bits;
         }
     }
 }
