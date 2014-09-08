@@ -12,10 +12,8 @@ public class CTMUtils18 {
 
     private static final Map<ModelFace, FaceInfo> faceInfoMap = new IdentityHashMap<ModelFace, FaceInfo>();
 
-    public static void reset() {
-        logger.info("CTMUtils18.reset");
+    static void clear() {
         faceInfoMap.clear();
-        CTMUtils.reset();
     }
 
     public static ModelFace registerModelFaceSprite(ModelFace face, TextureAtlasSprite sprite, String textureName) {
@@ -128,7 +126,7 @@ public class CTMUtils18 {
         }
 
         private static int computeRotation(int[] b, int face) {
-            return computeXYZRotation(b, face) - computeUVRotation(b);
+            return (computeXYZRotation(b, face) - computeUVRotation(b)) & 0x7;
         }
 
         private static int computeUVRotation(int[] b) {

@@ -503,9 +503,6 @@ abstract class TileOverride implements ITileOverride {
         if (height != null || biomes != null) {
             return null;
         }
-        //TODO
-        //Integer metadataEntry = matchBlocks.get(block);
-        //matchMetadata = metadataEntry == null ? defaultMetaMask : metadataEntry;
         if (exclude(block, face)) {
             return null;
         } else {

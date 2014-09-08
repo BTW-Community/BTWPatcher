@@ -53,6 +53,11 @@ public class CTMUtils {
                 } catch (Throwable e) {
                     // nothing
                 }
+                try {
+                    CTMUtils18.clear();
+                } catch (Throwable e) {
+                    // nothing
+                }
                 renderBlockState.clear();
                 ijkIterator.clear();
                 metadataIterator.clear();

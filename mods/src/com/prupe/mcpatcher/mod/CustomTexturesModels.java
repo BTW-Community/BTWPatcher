@@ -65,7 +65,7 @@ public class CustomTexturesModels extends Mod {
         addClassFiles(MCPatcherUtils.COLORIZE_BLOCK_CLASS + "*");
         addClassFiles(MCPatcherUtils.COLORIZE_BLOCK18_CLASS + "*");
 
-        TexturePackAPIMod.earlyInitialize(2, MCPatcherUtils.CTM_UTILS18_CLASS, "reset");
+        TexturePackAPIMod.earlyInitialize(2, MCPatcherUtils.CTM_UTILS_CLASS, "clear");
         TexturePackAPIMod.earlyInitialize(2, MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "reset");
     }
 
