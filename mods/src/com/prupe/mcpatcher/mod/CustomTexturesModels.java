@@ -14,6 +14,7 @@ import static javassist.bytecode.Opcode.*;
 
 public class CustomTexturesModels extends Mod {
     static final MethodRef blockColorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;LPosition;I)I");
+    static final FieldRef modelFaceTextureName = new FieldRef("ModelFaceTexture", "textureName" , "Ljava/lang/String;");
 
     static final MethodRef getCCInstance = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getInstance", "()L" + MCPatcherUtils.COLORIZE_BLOCK18_CLASS + ";");
     static final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(LModelFace;)Z");
@@ -52,6 +53,7 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new BlockMod());
         addClassMod(new ModelFaceSpriteMod());
         addClassMod(new ModelFaceFactoryMod());
+        addClassMod(new ModelFaceTextureMod());
         addClassMod(new RenderBlockCustomMod());
         addClassMod(new RenderBlockCustomInnerMod());
         addClassMod(new RenderBlockFluidMod());
@@ -110,8 +112,8 @@ public class CustomTexturesModels extends Mod {
             addClassSignature(new ConstSignature(0.7853981633974483));
             addClassSignature(new ConstSignature(0.017453292519943295));
 
-            final MethodRef createFace = new MethodRef(getDeobfClass(), "createFace", "(Ljavax/vecmath/Vector3f;Ljavax/vecmath/Vector3f;LUnknownClass_clt;LTextureAtlasSprite;LDirection;LUnknownEnum_cxa;LUnknownClass_clv;ZZ)LModelFace;");
-            final MethodRef registerModelFaceSprite = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "registerModelFaceSprite", "(LModelFace;LTextureAtlasSprite;)LModelFace;");
+            final MethodRef createFace = new MethodRef(getDeobfClass(), "createFace", "(Ljavax/vecmath/Vector3f;Ljavax/vecmath/Vector3f;LModelFaceTexture;LTextureAtlasSprite;LDirection;LModelFaceUVRotation;LModelFaceBounds;ZZ)LModelFace;");
+            final MethodRef registerModelFaceSprite = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "registerModelFaceSprite", "(LModelFace;LTextureAtlasSprite;Ljava/lang/String;)LModelFace;");
 
             addClassSignature(new BytecodeSignature() {
                 @Override
@@ -153,12 +155,22 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // return ColorizeBlock18.registerModelFaceSprite(..., sprite);
+                        // return ColorizeBlock18.registerModelFaceSprite(..., sprite, faceTexture.textureName);
                         ALOAD, 4,
+                        ALOAD_3,
+                        reference(GETFIELD, modelFaceTextureName),
                         reference(INVOKESTATIC, registerModelFaceSprite)
                     );
                 }
             });
+        }
+    }
+
+    private class ModelFaceTextureMod extends ClassMod {
+        ModelFaceTextureMod() {
+            addPrerequisiteClass("ModelFaceFactory");
+
+            addMemberMapper(new FieldMapper(modelFaceTextureName));
         }
     }
 

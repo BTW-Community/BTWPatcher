@@ -21,10 +21,10 @@ public class CTMUtils18 {
         CTMUtils.reset();
     }
 
-    public static ModelFace registerModelFaceSprite(ModelFace face, TextureAtlasSprite sprite) {
+    public static ModelFace registerModelFaceSprite(ModelFace face, TextureAtlasSprite sprite, String textureName) {
         FaceInfo faceInfo = faceInfoMap.get(face);
         if (faceInfo == null) {
-            faceInfo = new FaceInfo(face, sprite);
+            faceInfo = new FaceInfo(face, sprite, textureName);
             faceInfoMap.put(face, faceInfo);
         }
         return face;
@@ -41,7 +41,7 @@ public class CTMUtils18 {
         private final int effectiveFace;
         private final int uvRotation;
 
-        public FaceInfo(ModelFace face, TextureAtlasSprite sprite) {
+        public FaceInfo(ModelFace face, TextureAtlasSprite sprite, String textureName) {
             this.face = face;
             if (face instanceof ModelFaceSprite) {
                 this.sprite = ((ModelFaceSprite) face).sprite;
