@@ -20,6 +20,7 @@ public class MCLogger {
     private long lastFloodReport;
     private int floodCount;
     private long lastMessage = System.currentTimeMillis();
+    private long lastLogEvery = lastMessage;
 
     public static MCLogger getLogger(String category) {
         return getLogger(category, category);
@@ -158,6 +159,16 @@ public class MCLogger {
 
     public void finest(String format, Object... params) {
         log(Level.FINEST, format, params);
+    }
+
+    public boolean logEvery(long milliseconds) {
+        long now = System.currentTimeMillis();
+        if (now - lastLogEvery > milliseconds) {
+            lastLogEvery = now;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private static class ErrorLevel extends Level {
