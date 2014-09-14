@@ -60,6 +60,8 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new RenderGlobalMod());
 
         addClassMod(new ItemMod(this));
+        addClassMod(new ItemStackMod(this));
+        addClassMod(new NBTTagCompoundMod(this));
 
         addClassFiles("com.prupe.mcpatcher.ctm.*");
         addClassFiles("com.prupe.mcpatcher.cit.*");

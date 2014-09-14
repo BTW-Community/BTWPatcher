@@ -30,7 +30,6 @@ public class CustomItemTextures extends Mod {
     private static final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffectVanilla", "()Z");
     private static final MethodRef hasEffectForge = new MethodRef("ItemStack", "hasEffect", "(I)Z");
     private static final MethodRef getIconFromDamageForRenderPass = new MethodRef("Item", "getIconFromDamageForRenderPass", "(II)LIcon;");
-    private static final MethodRef getItem = new MethodRef("ItemStack", "getItem", "()LItem;");
 
     private static final MethodRef getCITIcon = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getIcon", "(LIcon;LItemStack;I)LIcon;");
     private static final MethodRef getArmorTexture = new MethodRef(MCPatcherUtils.CIT_UTILS_CLASS, "getArmorTexture", "(LResourceLocation;LEntityLivingBase;LItemStack;)LResourceLocation;");
@@ -65,7 +64,7 @@ public class CustomItemTextures extends Mod {
         addClassMod(new IconMod(this));
         addClassMod(new ItemMod());
         addClassMod(new ItemArmorMod());
-        addClassMod(new ItemStackMod());
+        addClassMod(new ItemStackMod(this));
         addClassMod(new EntityItemMod());
         addClassMod(new ItemRendererMod());
         addClassMod(new RenderItemMod());
@@ -236,66 +235,6 @@ public class CustomItemTextures extends Mod {
         ItemArmorMod() {
             addClassSignature(new ConstSignature(ResourceLocationMod.select("helmetCloth_overlay", "leather_helmet_overlay")));
             addClassSignature(new ConstSignature(ResourceLocationMod.select("slot_empty_helmet", "empty_armor_slot_helmet")));
-        }
-    }
-
-    private class ItemStackMod extends ClassMod {
-        ItemStackMod() {
-            final FieldRef stackSize = new FieldRef(getDeobfClass(), "stackSize", "I");
-            final FieldRef itemDamage = new FieldRef(getDeobfClass(), "itemDamage", "I");
-            final FieldRef stackTagCompound = new FieldRef(getDeobfClass(), "stackTagCompound", "LNBTTagCompound;");
-            final MethodRef getItemDamage = new MethodRef(getDeobfClass(), "getItemDamage", "()I");
-
-            addClassSignature(new ConstSignature("id"));
-            addClassSignature(new ConstSignature("Count"));
-            addClassSignature(new ConstSignature("Damage"));
-
-            addClassSignature(new BytecodeSignature() {
-                {
-                    matchConstructorOnly(true);
-                    addXref(1, stackSize);
-                    addXref(2, itemDamage);
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        subset(true,
-                            ILOAD_1 /* pre-13w36a */,
-                            ALOAD_1 /* 13w36a+ */
-                        ),
-                        anyReference(PUTFIELD),
-                        ALOAD_0,
-                        ILOAD_2,
-                        captureReference(PUTFIELD),
-                        ALOAD_0,
-                        ILOAD_3,
-                        captureReference(PUTFIELD)
-                    );
-                }
-            });
-
-            addClassSignature(new BytecodeSignature() {
-                {
-                    setMethod(getItemDamage);
-                    addXref(1, itemDamage);
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        begin(),
-                        ALOAD_0,
-                        captureReference(GETFIELD),
-                        IRETURN,
-                        end()
-                    );
-                }
-            });
-
-            addMemberMapper(new FieldMapper(stackTagCompound));
-            addMemberMapper(new MethodMapper(getItem));
         }
     }
 
@@ -794,7 +733,7 @@ public class CustomItemTextures extends Mod {
                             build(
                                 // 1.7: itemStack.getItem()
                                 ALOAD_3,
-                                reference(INVOKEVIRTUAL, getItem)
+                                reference(INVOKEVIRTUAL, ItemStackMod.getItem)
                             )
                         ),
                         // (...).getIconFromDamageForRenderPass(itemDamage, renderPass)
@@ -828,7 +767,7 @@ public class CustomItemTextures extends Mod {
                         // -or-
                         // icon = item.getIconFromDamageForRenderPass(itemStack.getItemDamage(), renderPass);
                         anyALOAD,
-                        optional(build(reference(INVOKEVIRTUAL, getItem))),
+                        optional(build(reference(INVOKEVIRTUAL, ItemStackMod.getItem))),
                         capture(anyALOAD),
                         anyReference(INVOKEVIRTUAL),
                         capture(anyILOAD),
