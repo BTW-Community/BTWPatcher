@@ -57,6 +57,7 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new RenderBlockCustomMod());
         addClassMod(new RenderBlockCustomInnerMod());
         addClassMod(new RenderBlockFluidMod());
+        addClassMod(new RenderGlobalMod());
 
         addClassMod(new ItemMod(this));
 
@@ -902,6 +903,68 @@ public class CustomTexturesModels extends Mod {
                     }
                 }
             });
+        }
+    }
+
+    private class RenderGlobalMod extends ClassMod {
+        RenderGlobalMod() {
+            addClassSignature(new ConstSignature("textures/environment/clouds.png"));
+            addClassSignature(new ConstSignature("textures/environment/moon_phases.png"));
+
+            final MethodRef buildNear = new MethodRef(getDeobfClass(), "buildNear", "(LPosition;LUnknownClass_18_cop;)Z");
+
+            addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(new MethodRef(getDeobfClass(), "updateRenderList", "(LEntity;DLUnknownInterface_18_cox;IZ)V"));
+                    addXref(1, buildNear);
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // if (this.buildNear(position, chunk.something)) {
+                        ALOAD_0,
+                        anyALOAD,
+                        anyALOAD,
+                        anyReference(GETFIELD),
+                        captureReference(INVOKESPECIAL),
+
+                        // this.mc.profiler.startSection("build near")
+                        IFEQ, any(2),
+                        ALOAD_0,
+                        anyReference(GETFIELD),
+                        anyReference(GETFIELD),
+                        push("build near"),
+                        anyReference(INVOKEVIRTUAL)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                @Override
+                public String getDescription() {
+                    return "override build near check";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // ...
+                        begin(),
+                        any(0, 1000),
+                        end()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // *burp*
+                        push(false),
+                        IRETURN
+                    );
+                }
+            }.targetMethod(buildNear));
         }
     }
 }
