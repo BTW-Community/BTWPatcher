@@ -62,6 +62,7 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new ItemMod(this));
         addClassMod(new ItemStackMod(this));
         addClassMod(new NBTTagCompoundMod(this));
+        addClassMod(new RenderItemCustom());
 
         addClassFiles("com.prupe.mcpatcher.ctm.*");
         addClassFiles("com.prupe.mcpatcher.cit.*");
@@ -967,6 +968,13 @@ public class CustomTexturesModels extends Mod {
                     );
                 }
             }.targetMethod(buildNear));
+        }
+    }
+
+    private class RenderItemCustom extends ClassMod {
+        RenderItemCustom() {
+            addClassSignature(new ConstSignature("textures/misc/enchanted_item_glint.png"));
+            addClassSignature(new ConstSignature("inventory"));
         }
     }
 }
