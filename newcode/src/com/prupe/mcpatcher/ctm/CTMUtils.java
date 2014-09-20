@@ -50,13 +50,17 @@ public class CTMUtils {
                 RenderPassAPI.instance.clear();
                 try {
                     GlassPaneRenderer.clear();
-                } catch (Throwable e) {
+                } catch (NoClassDefFoundError e) {
                     // nothing
+                } catch (Throwable e) {
+                    e.printStackTrace();
                 }
                 try {
                     CTMUtils18.clear();
-                } catch (Throwable e) {
+                } catch (NoClassDefFoundError e) {
                     // nothing
+                } catch (Throwable e) {
+                    e.printStackTrace();
                 }
                 renderBlockState.clear();
                 ijkIterator.clear();
