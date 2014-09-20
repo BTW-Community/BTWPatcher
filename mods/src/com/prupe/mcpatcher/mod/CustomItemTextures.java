@@ -86,8 +86,8 @@ public class CustomItemTextures extends Mod {
         if (ResourceLocationMod.haveClass()) {
             addClassMod(new AbstractClientPlayerMod());
         }
-        addClassMod(new PotionMod());
-        addClassMod(new PotionHelperMod());
+        addClassMod(new PotionMod(this));
+        addClassMod(new PotionHelperMod(this));
 
         addClassFiles("com.prupe.mcpatcher.cit.*");
 
@@ -1431,37 +1431,4 @@ public class CustomItemTextures extends Mod {
         }
     }
 
-    private class PotionMod extends ClassMod {
-        PotionMod() {
-            final FieldRef potionTypes = new FieldRef(getDeobfClass(), "potionTypes", "[LPotion;");
-            final MethodRef getName = new MethodRef(getDeobfClass(), "getName", "()Ljava/lang/String;");
-
-            addClassSignature(new ConstSignature("potion.moveSpeed"));
-            addClassSignature(new ConstSignature("potion.moveSlowdown"));
-
-            addMemberMapper(new FieldMapper(potionTypes)
-                    .accessFlag(AccessFlag.PUBLIC, true)
-                    .accessFlag(AccessFlag.STATIC, true)
-            );
-
-            addMemberMapper(new MethodMapper(getName)
-                    .accessFlag(AccessFlag.PUBLIC, true)
-                    .accessFlag(AccessFlag.STATIC, false)
-            );
-        }
-    }
-
-    private class PotionHelperMod extends ClassMod {
-        PotionHelperMod() {
-            final MethodRef getMundaneName = new MethodRef(getDeobfClass(), "getMundaneName", "(I)Ljava/lang/String;");
-
-            addClassSignature(new ConstSignature("potion.prefix.mundane"));
-            addClassSignature(new ConstSignature("potion.prefix.uninteresting"));
-
-            addMemberMapper(new MethodMapper(getMundaneName)
-                    .accessFlag(AccessFlag.PUBLIC, true)
-                    .accessFlag(AccessFlag.STATIC, true)
-            );
-        }
-    }
 }

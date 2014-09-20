@@ -62,7 +62,10 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new ItemMod(this));
         addClassMod(new ItemStackMod(this));
         addClassMod(new NBTTagCompoundMod(this));
+        addClassMod(new PotionMod(this));
+        addClassMod(new PotionHelperMod(this));
         addClassMod(new RenderItemCustom());
+        addClassMod(new EntityPotionMod());
 
         addClassFiles("com.prupe.mcpatcher.ctm.*");
         addClassFiles("com.prupe.mcpatcher.cit.*");
@@ -71,6 +74,7 @@ public class CustomTexturesModels extends Mod {
 
         TexturePackAPIMod.earlyInitialize(2, MCPatcherUtils.CTM_UTILS_CLASS, "clear");
         TexturePackAPIMod.earlyInitialize(2, MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "reset");
+        TexturePackAPIMod.earlyInitialize(2, MCPatcherUtils.CIT_UTILS_CLASS, "init");
     }
 
     @Override
@@ -975,6 +979,15 @@ public class CustomTexturesModels extends Mod {
         RenderItemCustom() {
             addClassSignature(new ConstSignature("textures/misc/enchanted_item_glint.png"));
             addClassSignature(new ConstSignature("inventory"));
+        }
+    }
+
+    private class EntityPotionMod extends ClassMod {
+        EntityPotionMod() {
+            setParentClass("EntityThrowable");
+
+            addClassSignature(new ConstSignature("Potion"));
+            addClassSignature(new ConstSignature("potionValue"));
         }
     }
 }
