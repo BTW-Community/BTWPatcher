@@ -42,6 +42,11 @@ public class Config {
 
     int format = VAL_FORMAT_CURRENT;
     String patcherVersion;
+    int uiX = -1;
+    int uiY = -1;
+    int uiW = -1;
+    int uiH = -1;
+    int uiFlags;
     boolean betaWarningShown;
     boolean selectPatchedProfile = true;
     boolean fetchRemoteVersionList = true;
@@ -296,6 +301,10 @@ public class Config {
             }
         }
         return map;
+    }
+
+    boolean haveUICoords() {
+        return uiX >= 0 && uiY >= 0 && uiW > 0 && uiH > 0;
     }
 
     static class ProfileEntry {

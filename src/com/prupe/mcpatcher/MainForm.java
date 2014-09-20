@@ -151,16 +151,33 @@ class MainForm extends UserInterface {
         });
         frame.addComponentListener(new ComponentListener() {
             public void componentResized(ComponentEvent e) {
-                frameWidth = (int) ((Component) e.getSource()).getSize().getWidth();
+                updateCoords(e);
             }
 
             public void componentMoved(ComponentEvent e) {
+                updateCoords(e);
             }
 
             public void componentShown(ComponentEvent e) {
+                updateCoords(e);
             }
 
             public void componentHidden(ComponentEvent e) {
+            }
+
+            private void updateCoords(ComponentEvent e) {
+                JFrame source = (JFrame) e.getSource();
+                Config config = Config.getInstance();
+                config.uiFlags = source.getExtendedState() & JFrame.MAXIMIZED_BOTH;
+                frameWidth = (int) source.getSize().getWidth();
+                if ((config.uiFlags & JFrame.MAXIMIZED_HORIZ) == 0) {
+                    config.uiX = (int) source.getLocation().getX();
+                    config.uiW = (int) source.getSize().getWidth();
+                }
+                if ((config.uiFlags & JFrame.MAXIMIZED_VERT) == 0) {
+                    config.uiH = (int) source.getSize().getHeight();
+                    config.uiY = (int) source.getLocation().getY();
+                }
             }
         });
         frame.setMinimumSize(new Dimension(470, 488));
@@ -463,8 +480,20 @@ class MainForm extends UserInterface {
 
     void show() {
         setSelectedCheckBox.setSelected(Config.getInstance().selectPatchedProfile);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Config config = Config.getInstance();
+                if (!shift && config.haveUICoords()) {
+                    frame.setLocation(config.uiX, config.uiY);
+                    frame.setSize(config.uiW, config.uiH);
+                    frame.setExtendedState((frame.getExtendedState() & ~JFrame.MAXIMIZED_BOTH) | (config.uiFlags & JFrame.MAXIMIZED_BOTH));
+                } else {
+                    frame.setLocationRelativeTo(null);
+                }
+                frame.setVisible(true);
+            }
+        });
     }
 
     File chooseMinecraftDir(File minecraftDir) {
