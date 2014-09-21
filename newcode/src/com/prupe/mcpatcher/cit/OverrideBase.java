@@ -262,7 +262,7 @@ abstract class OverrideBase implements Comparable<OverrideBase> {
 
     private boolean matchNBT(ItemStack itemStack) {
         for (NBTRule rule : nbtRules) {
-            if (!rule.match(itemStack.stackTagCompound)) {
+            if (!rule.match(itemStack.getTagCompound())) {
                 return false;
             }
         }

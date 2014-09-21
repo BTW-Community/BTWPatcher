@@ -2,7 +2,6 @@ package net.minecraft.src;
 
 public class ItemStack {
     public int stackSize;
-    public NBTTagCompound stackTagCompound;
 
     public ItemStack copy() {
         return null;
@@ -22,5 +21,9 @@ public class ItemStack {
 
     public boolean hasEffectVanilla() {
         return false;
+    }
+
+    public NBTTagCompound getTagCompound() {
+        return null;
     }
 }

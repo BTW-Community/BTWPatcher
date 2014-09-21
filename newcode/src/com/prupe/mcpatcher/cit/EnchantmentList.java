@@ -41,7 +41,7 @@ final class EnchantmentList {
         BitSet layersPresent = new BitSet();
         Map<Integer, Layer> tmpLayers = new HashMap<Integer, Layer>();
         Item item = itemStack.getItem();
-        int[] enchantmentLevels = CITUtils.getEnchantmentLevels(item, itemStack.stackTagCompound);
+        int[] enchantmentLevels = CITUtils.getEnchantmentLevels(item, itemStack.getTagCompound());
         boolean hasEffect = itemStack.hasEffectVanilla();
         List<Enchantment> list = enchantments.get(item);
         if (list == null) {

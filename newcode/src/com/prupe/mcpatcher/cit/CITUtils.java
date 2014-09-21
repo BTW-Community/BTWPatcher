@@ -188,7 +188,7 @@ public class CITUtils {
         lastItemStack = itemStack;
         lastRenderPass = renderPass;
         if (enableItems) {
-            ItemOverride override = findMatch(items, itemStack);
+            ItemOverride override = findItemOverride(itemStack);
             if (override != null) {
                 Icon newIcon = override.getReplacementIcon(icon);
                 if (newIcon != null) {
@@ -215,7 +215,7 @@ public class CITUtils {
 
     public static ResourceLocation getArmorTexture(ResourceLocation texture, EntityLivingBase entity, ItemStack itemStack) {
         if (enableArmor) {
-            ArmorOverride override = findMatch(armors, itemStack);
+            ArmorOverride override = findArmorOverride(itemStack);
             if (override != null) {
                 ResourceLocation newTexture = override.getReplacementTexture(texture);
                 if (newTexture != null) {
@@ -230,7 +230,7 @@ public class CITUtils {
         Item item = itemStack.getItem();
         List<T> list = overrides.get(item);
         if (list != null) {
-            int[] enchantmentLevels = getEnchantmentLevels(item, itemStack.stackTagCompound);
+            int[] enchantmentLevels = getEnchantmentLevels(item, itemStack.getTagCompound());
             boolean hasEffect = itemStack.hasEffectVanilla();
             for (T override : list) {
                 if (override.match(itemStack, enchantmentLevels, hasEffect)) {
@@ -241,6 +241,18 @@ public class CITUtils {
         return null;
     }
 
+    static ItemOverride findItemOverride(ItemStack itemStack) {
+        return findMatch(items, itemStack);
+    }
+
+    static ArmorOverride findArmorOverride(ItemStack itemStack) {
+        return findMatch(armors, itemStack);
+    }
+
+    static EnchantmentList findEnchantments(ItemStack itemStack) {
+        return new EnchantmentList(enchantments, allItemEnchantments, itemStack);
+    }
+
     public static boolean renderEnchantmentHeld(ItemStack itemStack, int renderPass) {
         if (itemStack == null || renderPass != 0) {
             return true;
@@ -248,7 +260,7 @@ public class CITUtils {
         if (!enableEnchantments) {
             return false;
         }
-        EnchantmentList matches = new EnchantmentList(enchantments, allItemEnchantments, itemStack);
+        EnchantmentList matches = findEnchantments(itemStack);
         if (matches.isEmpty()) {
             return !useGlint;
         }
@@ -276,7 +288,7 @@ public class CITUtils {
         if (!enableEnchantments || itemStack == null) {
             return false;
         }
-        EnchantmentList matches = new EnchantmentList(enchantments, allItemEnchantments, itemStack);
+        EnchantmentList matches = findEnchantments(itemStack);
         if (matches.isEmpty()) {
             return !useGlint;
         }
@@ -296,7 +308,7 @@ public class CITUtils {
         armorMatches = null;
         armorMatchIndex = 0;
         if (enableEnchantments && itemStack != null) {
-            EnchantmentList tmpList = new EnchantmentList(enchantments, allItemEnchantments, itemStack);
+            EnchantmentList tmpList = findEnchantments(itemStack);
             if (!tmpList.isEmpty()) {
                 armorMatches = tmpList;
             }

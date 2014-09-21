@@ -22,7 +22,7 @@ public class CustomTexturesModels extends Mod {
     static final MethodRef newVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getVertexColor", "(FII)F");
     static final MethodRef newModelFace = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
 
-    static final MethodRef preRenderItem = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "preRender", "(LItemStack;)V");
+    static final MethodRef preRenderItem = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "preRender", "(LItemStack;I)V");
 
     private static final Map<String, Integer> ccInfoMap = new HashMap<String, Integer>();
 
@@ -983,13 +983,51 @@ public class CustomTexturesModels extends Mod {
             addClassSignature(new ConstSignature("textures/misc/enchanted_item_glint.png"));
             addClassSignature(new ConstSignature("inventory"));
 
-            final MethodRef renderItem = new MethodRef(getDeobfClass(), "renderItem", "(LIModel;ILItemStack;)V");
+            final MethodRef renderItem1 = new MethodRef(getDeobfClass(), "renderItem1", "(LIModel;ILItemStack;)V");
+            final MethodRef renderItem2 = new MethodRef(getDeobfClass(), "renderItem2", "(LItemStack;LIModel;)V");
+            final MethodRef renderEnchantment = new MethodRef(getDeobfClass(), "renderEnchantment", "(LIModel;)V");
+            final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffectVanilla", "()Z");
 
-            addMemberMapper(new MethodMapper(renderItem));
+            addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderItem2);
+                    addXref(1, hasEffect);
+                    addXref(2, renderEnchantment);
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // GL11.glTranslatef(-0.5f, -0.5f, -0.5f);
+                        push(-0.5f),
+                        push(-0.5f),
+                        push(-0.5f),
+                        anyReference(INVOKESTATIC),
+
+                        // this.xxx(model, itemStack);
+                        ALOAD_0,
+                        ALOAD_2,
+                        ALOAD_1,
+                        anyReference(INVOKESPECIAL),
+
+                        // if (itemStack.hasEffect())
+                        ALOAD_1,
+                        captureReference(INVOKEVIRTUAL),
+                        IFEQ, any(2),
+
+                        // this.renderEnchantment(model)
+                        ALOAD_0,
+                        ALOAD_2,
+                        captureReference(INVOKESPECIAL)
+                    );
+                }
+            });
+
+            addMemberMapper(new MethodMapper(renderItem1));
 
             addPatch(new BytecodePatch() {
                 {
-                    targetMethod(renderItem);
+                    targetMethod(renderItem1);
                 }
 
                 @Override
@@ -1007,8 +1045,9 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // CITUtils18.preRenderItem(itemStack);
+                        // CITUtils18.preRenderItem(itemStack, layer);
                         ALOAD_3,
+                        ILOAD_2,
                         reference(INVOKESTATIC, preRenderItem)
                     );
                 }

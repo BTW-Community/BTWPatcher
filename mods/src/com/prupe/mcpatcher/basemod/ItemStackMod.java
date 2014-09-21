@@ -15,7 +15,7 @@ import static javassist.bytecode.Opcode.*;
 public class ItemStackMod extends ClassMod {
     public static final FieldRef stackSize = new FieldRef("ItemStack", "stackSize", "I");
     public static final FieldRef itemDamage = new FieldRef("ItemStack", "itemDamage", "I");
-    public static final FieldRef stackTagCompound = new FieldRef("ItemStack", "stackTagCompound", "LNBTTagCompound;");
+    public static final MethodRef getTagCompound = new MethodRef("ItemStack", "getTagCompound", "()LNBTTagCompound;");
     public static final MethodRef getItemDamage = new MethodRef("ItemStack", "getItemDamage", "()I");
     public static final MethodRef getItem = new MethodRef("ItemStack", "getItem", "()LItem;");
 
@@ -70,7 +70,7 @@ public class ItemStackMod extends ClassMod {
             }
         });
 
-        addMemberMapper(new FieldMapper(stackTagCompound));
+        addMemberMapper(new MethodMapper(getTagCompound));
         addMemberMapper(new MethodMapper(getItem));
     }
 }
