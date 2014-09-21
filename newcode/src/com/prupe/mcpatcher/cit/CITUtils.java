@@ -76,6 +76,13 @@ public class CITUtils {
                 armors.clear();
                 lastOrigIcon = null;
                 lastIcon = null;
+                try {
+                    CITUtils18.clear();
+                } catch (NoClassDefFoundError e) {
+                    // nothing
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
 
                 BufferedImage image = TexturePackAPI.getImage(FIXED_ARMOR_RESOURCE);
                 if (image == null) {

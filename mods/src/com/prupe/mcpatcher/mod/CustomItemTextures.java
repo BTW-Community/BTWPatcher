@@ -90,6 +90,7 @@ public class CustomItemTextures extends Mod {
         addClassMod(new PotionHelperMod(this));
 
         addClassFiles("com.prupe.mcpatcher.cit.*");
+        removeAddedClassFile(MCPatcherUtils.CIT_UTILS18_CLASS);
 
         TexturePackAPIMod.earlyInitialize(2, MCPatcherUtils.CIT_UTILS_CLASS, "init");
     }

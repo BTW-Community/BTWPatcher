@@ -123,6 +123,7 @@ public class MCPatcherUtils {
     public static final String FIREWORKS_HELPER_CLASS = "com.prupe.mcpatcher.sky.FireworksHelper";
 
     public static final String CIT_UTILS_CLASS = "com.prupe.mcpatcher.cit.CITUtils";
+    public static final String CIT_UTILS18_CLASS = "com.prupe.mcpatcher.cit.CITUtils18";
     public static final String OVERRIDE_BASE_CLASS = "com.prupe.mcpatcher.cit.OverrideBase";
     public static final String ITEM_OVERRIDE_CLASS = "com.prupe.mcpatcher.cit.ItemOverride";
     public static final String ENCHANTMENT_CLASS = "com.prupe.mcpatcher.cit.Enchantment";

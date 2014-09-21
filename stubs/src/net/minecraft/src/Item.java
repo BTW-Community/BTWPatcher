@@ -5,8 +5,4 @@ public class Item {
     public static Registry<Item> itemRegistry; // 13w36a+
 
     public int itemID;
-
-    public String getItemName() {
-        return null;
-    }
 }

@@ -22,6 +22,8 @@ public class CustomTexturesModels extends Mod {
     static final MethodRef newVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getVertexColor", "(FII)F");
     static final MethodRef newModelFace = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
 
+    static final MethodRef preRenderItem = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "preRender", "(LItemStack;)V");
+
     private static final Map<String, Integer> ccInfoMap = new HashMap<String, Integer>();
 
     public CustomTexturesModels() {
@@ -65,6 +67,7 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new PotionMod(this));
         addClassMod(new PotionHelperMod(this));
         addClassMod(new RenderItemCustom());
+        addClassMod(new ItemBlockMod());
         addClassMod(new EntityPotionMod());
 
         addClassFiles("com.prupe.mcpatcher.ctm.*");
@@ -979,6 +982,48 @@ public class CustomTexturesModels extends Mod {
         RenderItemCustom() {
             addClassSignature(new ConstSignature("textures/misc/enchanted_item_glint.png"));
             addClassSignature(new ConstSignature("inventory"));
+
+            final MethodRef renderItem = new MethodRef(getDeobfClass(), "renderItem", "(LIModel;ILItemStack;)V");
+
+            addMemberMapper(new MethodMapper(renderItem));
+
+            addPatch(new BytecodePatch() {
+                {
+                    targetMethod(renderItem);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "pre render item";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        begin()
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // CITUtils18.preRenderItem(itemStack);
+                        ALOAD_3,
+                        reference(INVOKESTATIC, preRenderItem)
+                    );
+                }
+            });
+        }
+    }
+
+    private class ItemBlockMod extends ClassMod {
+        ItemBlockMod() {
+            setParentClass("Item");
+
+            addClassSignature(new ConstSignature("BlockEntityTag"));
+            addClassSignature(new ConstSignature("x"));
+            addClassSignature(new ConstSignature(0.5f));
+            addClassSignature(new ConstSignature(0.8f));
         }
     }
 
