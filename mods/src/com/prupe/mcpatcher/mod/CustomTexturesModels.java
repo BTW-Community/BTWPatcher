@@ -15,12 +15,15 @@ import static javassist.bytecode.Opcode.*;
 public class CustomTexturesModels extends Mod {
     static final MethodRef blockColorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;LPosition;I)I");
     static final FieldRef modelFaceTextureName = new FieldRef("ModelFaceTexture", "textureName" , "Ljava/lang/String;");
+    static final InterfaceMethodRef iteratorNext = new InterfaceMethodRef("java/util/Iterator", "next", "()Ljava/lang/Object;");
+    static final ClassRef modelFaceClass = new ClassRef("ModelFace");
 
     static final MethodRef getCCInstance = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getInstance", "()L" + MCPatcherUtils.COLORIZE_BLOCK18_CLASS + ";");
     static final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(LModelFace;)Z");
     static final MethodRef newColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "colorMultiplier", "(I)I");
     static final MethodRef newVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getVertexColor", "(FII)F");
-    static final MethodRef newModelFace = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
+    static final MethodRef newBlockFace = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
+    static final MethodRef newItemFace = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
 
     static final MethodRef preRenderItem = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "preRender", "(LItemStack;I)V");
 
@@ -64,6 +67,7 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new ItemMod(this));
         addClassMod(new ItemStackMod(this));
         addClassMod(new NBTTagCompoundMod(this));
+        addClassMod(new NBTTagListMod(this));
         addClassMod(new PotionMod(this));
         addClassMod(new PotionHelperMod(this));
         addClassMod(new RenderItemCustom());
@@ -534,9 +538,6 @@ public class CustomTexturesModels extends Mod {
 
         private void setupCTM() {
             addPatch(new BytecodePatch() {
-                private final InterfaceMethodRef iteratorNext = new InterfaceMethodRef("java/util/Iterator", "next", "()Ljava/lang/Object;");
-                private final ClassRef modelFaceClass = new ClassRef("ModelFace");
-
                 {
                     setInsertAfter(true);
                     targetMethod(renderFaceAO, renderFaceNonAO);
@@ -564,7 +565,7 @@ public class CustomTexturesModels extends Mod {
                         // face = colorizeBlock18.newModelFace(face);
                         getCCInfo(this),
                         flipLoadStore(getCaptureGroup(1)),
-                        reference(INVOKEVIRTUAL, newModelFace),
+                        reference(INVOKEVIRTUAL, newBlockFace),
                         getCaptureGroup(1)
                     );
                 }
@@ -986,6 +987,7 @@ public class CustomTexturesModels extends Mod {
             final MethodRef renderItem1 = new MethodRef(getDeobfClass(), "renderItem1", "(LIModel;ILItemStack;)V");
             final MethodRef renderItem2 = new MethodRef(getDeobfClass(), "renderItem2", "(LItemStack;LIModel;)V");
             final MethodRef renderEnchantment = new MethodRef(getDeobfClass(), "renderEnchantment", "(LIModel;)V");
+            final MethodRef renderFace = new MethodRef(getDeobfClass(), "renderFace", "(LTessellator;Ljava/util/List;ILItemStack;)V");
             final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffectVanilla", "()Z");
 
             addClassSignature(new BytecodeSignature() {
@@ -1024,6 +1026,7 @@ public class CustomTexturesModels extends Mod {
             });
 
             addMemberMapper(new MethodMapper(renderItem1));
+            addMemberMapper(new MethodMapper(renderFace));
 
             addPatch(new BytecodePatch() {
                 {
@@ -1049,6 +1052,39 @@ public class CustomTexturesModels extends Mod {
                         ALOAD_3,
                         ILOAD_2,
                         reference(INVOKESTATIC, preRenderItem)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderFace);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override texture";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // face = (ModelFace) iterator.next();
+                        anyALOAD,
+                        reference(INVOKEINTERFACE, iteratorNext),
+                        reference(CHECKCAST, modelFaceClass),
+                        capture(anyASTORE)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // face = CITUtils18.newModelFace(face);
+                        flipLoadStore(getCaptureGroup(1)),
+                        reference(INVOKESTATIC, newItemFace),
+                        getCaptureGroup(1)
                     );
                 }
             });

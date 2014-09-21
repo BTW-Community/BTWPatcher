@@ -133,7 +133,7 @@ public class CITUtils {
 
             @SuppressWarnings("unchecked")
             private void registerOverride(OverrideBase override) {
-                if (override != null && !override.properties.valid()) {
+                if (override != null && override.properties.valid()) {
                     Map map;
                     if (override instanceof ItemOverride) {
                         ((ItemOverride) override).preload(tileLoader);
