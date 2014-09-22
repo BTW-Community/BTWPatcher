@@ -71,6 +71,7 @@ public class MCPatcherUtils {
     public static final String FAKE_RESOURCE_LOCATION_CLASS = "com.prupe.mcpatcher.mal.resource.FakeResourceLocation";
 
     public static final String TILE_LOADER_CLASS = "com.prupe.mcpatcher.mal.tile.TileLoader";
+    public static final String FACE_INFO_CLASS = "com.prupe.mcpatcher.mal.tile.FaceInfo";
     public static final String TESSELLATOR_UTILS_CLASS = "com.prupe.mcpatcher.TessellatorUtils";
 
     public static final String AA_HELPER_CLASS = "com.prupe.mcpatcher.hd.AAHelper";

@@ -58,6 +58,13 @@ public class TileLoader {
                 changeHandlerCalled = true;
                 loaders.clear();
                 specialTextures.clear();
+                try {
+                    FaceInfo.clear();
+                } catch (NoClassDefFoundError e) {
+                    // nothing
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override

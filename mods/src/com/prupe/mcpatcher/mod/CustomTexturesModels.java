@@ -14,7 +14,6 @@ import static javassist.bytecode.Opcode.*;
 
 public class CustomTexturesModels extends Mod {
     static final MethodRef blockColorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;LPosition;I)I");
-    static final FieldRef modelFaceTextureName = new FieldRef("ModelFaceTexture", "textureName" , "Ljava/lang/String;");
     static final InterfaceMethodRef iteratorNext = new InterfaceMethodRef("java/util/Iterator", "next", "()Ljava/lang/Object;");
     static final ClassRef modelFaceClass = new ClassRef("ModelFace");
 
@@ -54,11 +53,9 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new DirectionWithAOMod(this));
         addClassMod(new IModelMod(this));
         addClassMod(new ModelFaceMod(this));
+        addClassMod(new ModelFaceSpriteMod(this));
 
         addClassMod(new BlockMod());
-        addClassMod(new ModelFaceSpriteMod());
-        addClassMod(new ModelFaceFactoryMod());
-        addClassMod(new ModelFaceTextureMod());
         addClassMod(new RenderBlockCustomMod());
         addClassMod(new RenderBlockCustomInnerMod());
         addClassMod(new RenderBlockFluidMod());
@@ -110,82 +107,6 @@ public class CustomTexturesModels extends Mod {
             }.setMethod(getRenderType));
 
             addMemberMapper(new MethodMapper(blockColorMultiplier));
-        }
-    }
-
-    private class ModelFaceSpriteMod extends com.prupe.mcpatcher.basemod.ext18.ModelFaceSpriteMod {
-        ModelFaceSpriteMod() {
-            super(CustomTexturesModels.this);
-
-            addPatch(new MakeMemberPublicPatch(sprite));
-        }
-    }
-
-    private class ModelFaceFactoryMod extends ClassMod {
-        ModelFaceFactoryMod() {
-            addClassSignature(new ConstSignature(0.39269908169872414));
-            addClassSignature(new ConstSignature(0.7853981633974483));
-            addClassSignature(new ConstSignature(0.017453292519943295));
-
-            final MethodRef createFace = new MethodRef(getDeobfClass(), "createFace", "(Ljavax/vecmath/Vector3f;Ljavax/vecmath/Vector3f;LModelFaceTexture;LTextureAtlasSprite;LDirection;LModelFaceUVRotation;LModelFaceBounds;ZZ)LModelFace;");
-            final MethodRef registerModelFaceSprite = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "registerModelFaceSprite", "(LModelFace;LTextureAtlasSprite;Ljava/lang/String;)LModelFace;");
-
-            addClassSignature(new BytecodeSignature() {
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // return new ModelFace(...);
-                        anyReference(NEW),
-                        DUP,
-                        anyALOAD,
-                        ALOAD_3,
-                        anyReference(GETFIELD),
-                        anyALOAD,
-                        anyReference(INVOKESPECIAL),
-                        ARETURN,
-                        end()
-                    );
-                }
-            }.setMethod(createFace));
-
-            addPatch(new BytecodePatch() {
-                {
-                    setInsertBefore(true);
-                    targetMethod(createFace);
-                }
-
-                @Override
-                public String getDescription() {
-                    return "register model face sprites";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // return ...;
-                        ARETURN
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // return ColorizeBlock18.registerModelFaceSprite(..., sprite, faceTexture.textureName);
-                        ALOAD, 4,
-                        ALOAD_3,
-                        reference(GETFIELD, modelFaceTextureName),
-                        reference(INVOKESTATIC, registerModelFaceSprite)
-                    );
-                }
-            });
-        }
-    }
-
-    private class ModelFaceTextureMod extends ClassMod {
-        ModelFaceTextureMod() {
-            addPrerequisiteClass("ModelFaceFactory");
-
-            addMemberMapper(new FieldMapper(modelFaceTextureName));
         }
     }
 

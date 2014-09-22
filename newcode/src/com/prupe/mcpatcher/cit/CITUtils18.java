@@ -2,7 +2,7 @@ package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.ctm.CTMUtils18;
+import com.prupe.mcpatcher.mal.tile.FaceInfo;
 import net.minecraft.src.ItemBlock;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.ModelFace;
@@ -38,7 +38,7 @@ public class CITUtils18 {
         if (itemOverride == null) {
             return origFace;
         } else {
-            CTMUtils18.FaceInfo faceInfo = CTMUtils18.getFaceInfo(origFace);
+            FaceInfo faceInfo = FaceInfo.getFaceInfo(origFace);
             TextureAtlasSprite newIcon = (TextureAtlasSprite) itemOverride.getReplacementIcon(faceInfo.getSprite());
             return faceInfo.getAltFace(newIcon);
         }

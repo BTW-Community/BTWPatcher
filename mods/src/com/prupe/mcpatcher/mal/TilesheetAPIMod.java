@@ -2,6 +2,8 @@ package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
+import com.prupe.mcpatcher.basemod.ext18.IBlockStateMod;
+import com.prupe.mcpatcher.basemod.ext18.ModelFaceMod;
 import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
@@ -9,6 +11,8 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class TilesheetAPIMod extends Mod {
+    static final FieldRef modelFaceTextureName = new FieldRef("ModelFaceTexture", "textureName" , "Ljava/lang/String;");
+
     public TilesheetAPIMod() {
         name = MCPatcherUtils.TILESHEET_API_MOD;
         author = "MCPatcher";
@@ -32,6 +36,14 @@ public class TilesheetAPIMod extends Mod {
         addClassMod(new TextureAtlasSpriteMod());
 
         addClassFiles("com.prupe.mcpatcher.mal.tile.*");
+        if (IBlockStateMod.haveClass()) {
+            addClassMod(new ModelFaceMod(this));
+            addClassMod(new ModelFaceSpriteMod());
+            addClassMod(new ModelFaceFactoryMod());
+            addClassMod(new ModelFaceTextureMod());
+        } else {
+            removeAddedClassFile(MCPatcherUtils.FACE_INFO_CLASS);
+        }
 
         TexturePackAPIMod.earlyInitialize(1, MCPatcherUtils.TILE_LOADER_CLASS, "init");
     }
@@ -487,6 +499,82 @@ public class TilesheetAPIMod extends Mod {
             addMemberMappers("static", createSprite);
 
             addPatch(new MakeMemberPublicPatch(createSprite));
+        }
+    }
+
+    private class ModelFaceSpriteMod extends com.prupe.mcpatcher.basemod.ext18.ModelFaceSpriteMod {
+        ModelFaceSpriteMod() {
+            super(TilesheetAPIMod.this);
+
+            addPatch(new MakeMemberPublicPatch(sprite));
+        }
+    }
+
+    private class ModelFaceFactoryMod extends ClassMod {
+        ModelFaceFactoryMod() {
+            addClassSignature(new ConstSignature(0.39269908169872414));
+            addClassSignature(new ConstSignature(0.7853981633974483));
+            addClassSignature(new ConstSignature(0.017453292519943295));
+
+            final MethodRef createFace = new MethodRef(getDeobfClass(), "createFace", "(Ljavax/vecmath/Vector3f;Ljavax/vecmath/Vector3f;LModelFaceTexture;LTextureAtlasSprite;LDirection;LModelFaceUVRotation;LModelFaceBounds;ZZ)LModelFace;");
+            final MethodRef registerModelFaceSprite = new MethodRef(MCPatcherUtils.FACE_INFO_CLASS, "registerModelFaceSprite", "(LModelFace;LTextureAtlasSprite;Ljava/lang/String;)LModelFace;");
+
+            addClassSignature(new BytecodeSignature() {
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // return new ModelFace(...);
+                        anyReference(NEW),
+                        DUP,
+                        anyALOAD,
+                        ALOAD_3,
+                        anyReference(GETFIELD),
+                        anyALOAD,
+                        anyReference(INVOKESPECIAL),
+                        ARETURN,
+                        end()
+                    );
+                }
+            }.setMethod(createFace));
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(createFace);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "register model face sprites";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // return ...;
+                        ARETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // return FaceInfo.registerModelFaceSprite(..., sprite, faceTexture.textureName);
+                        ALOAD, 4,
+                        ALOAD_3,
+                        reference(GETFIELD, modelFaceTextureName),
+                        reference(INVOKESTATIC, registerModelFaceSprite)
+                    );
+                }
+            });
+        }
+    }
+
+    private class ModelFaceTextureMod extends ClassMod {
+        ModelFaceTextureMod() {
+            addPrerequisiteClass("ModelFaceFactory");
+
+            addMemberMapper(new FieldMapper(modelFaceTextureName));
         }
     }
 }

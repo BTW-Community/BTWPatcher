@@ -3,23 +3,20 @@ package com.prupe.mcpatcher.cc;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.ctm.CTMUtils;
-import com.prupe.mcpatcher.ctm.CTMUtils18;
+import com.prupe.mcpatcher.ctm.RenderBlockState;
 import com.prupe.mcpatcher.ctm.TileOverrideIterator;
 import com.prupe.mcpatcher.mal.biome.ColorUtils;
 import com.prupe.mcpatcher.mal.biome.IColorMap;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
-import com.prupe.mcpatcher.ctm.RenderBlockState;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
+import com.prupe.mcpatcher.mal.tile.FaceInfo;
 import net.minecraft.src.*;
 
-import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ColorizeBlock18 extends RenderBlockState {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_COLORS);
@@ -286,7 +283,7 @@ public class ColorizeBlock18 extends RenderBlockState {
     };
 
     public ModelFace getModelFace(ModelFace origFace) {
-        CTMUtils18.FaceInfo faceInfo = CTMUtils18.getFaceInfo(origFace);
+        FaceInfo faceInfo = FaceInfo.getFaceInfo(origFace);
         if (faceInfo == null) {
             return origFace;
         }
@@ -297,7 +294,7 @@ public class ColorizeBlock18 extends RenderBlockState {
         return faceInfo.getAltFace(newIcon);
     }
 
-    private void setUVFace(CTMUtils18.FaceInfo faceInfo) {
+    private void setUVFace(FaceInfo faceInfo) {
         effectiveFace = faceInfo.getEffectiveFace();
         uvRotation = faceInfo.getUVRotation();
         hvFace = effectiveFace >= 0 ? effectiveFace : RenderBlockState.NORTH_FACE;
