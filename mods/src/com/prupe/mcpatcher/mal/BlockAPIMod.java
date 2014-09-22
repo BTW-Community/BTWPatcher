@@ -86,7 +86,9 @@ public class BlockAPIMod extends Mod {
                 mapBlockIconMethods();
             }
             addMemberMapper(new MethodMapper(shouldSideBeRendered));
-            addMemberMapper(new FieldMapper(blockRegistry));
+            if (malVersion >= 2) {
+                addMemberMapper(new FieldMapper(blockRegistry));
+            }
             if (malVersion >= 3) {
                 addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getBlockState", "()LIBlockState;")));
             }
