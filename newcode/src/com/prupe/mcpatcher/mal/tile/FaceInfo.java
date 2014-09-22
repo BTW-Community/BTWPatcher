@@ -1,7 +1,6 @@
 package com.prupe.mcpatcher.mal.tile;
 
 import com.prupe.mcpatcher.MCLogger;
-import com.prupe.mcpatcher.MCPatcherUtils;
 import net.minecraft.src.*;
 
 import java.util.IdentityHashMap;
@@ -96,6 +95,7 @@ final public class FaceInfo {
         ModelFace newFace = altIcons.get(altSprite);
         if (newFace == null) {
             newFace = new ModelFaceSprite(face, altSprite);
+            recalculateUV(sprite, face.getIntBuffer(), altSprite, newFace.getIntBuffer());
             altIcons.put(altSprite, newFace);
         }
         return newFace;
@@ -270,5 +270,14 @@ final public class FaceInfo {
             }
         }
         return bits;
+    }
+
+    private static void recalculateUV(TextureAtlasSprite origIcon, int[] a, TextureAtlasSprite newIcon, int[] b) {
+        for (int i = 0; i < 28; i += 7) {
+            float u = 16.0f * (Float.intBitsToFloat(a[i + 4]) - origIcon.getMinU()) / (origIcon.getMaxU() - origIcon.getMinU());
+            float v = 16.0f * (Float.intBitsToFloat(a[i + 5]) - origIcon.getMinV()) / (origIcon.getMaxV() - origIcon.getMinV());
+            b[i + 4] = Float.floatToIntBits(newIcon.getInterpolatedU(u));
+            b[i + 5] = Float.floatToIntBits(newIcon.getInterpolatedV(v));
+        }
     }
 }
