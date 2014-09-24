@@ -76,6 +76,24 @@ public class CITUtils18 {
         }
     }
 
+    public static boolean renderArmorEnchantments(EntityLivingBase entity, ModelBase model, ItemStack itemStack, int pass, float f1, float f2, float f3, float f4, float f5, float f6) {
+        EnchantmentList enchantments = CITUtils.findEnchantments(itemStack);
+        if (!enchantments.isEmpty()) {
+            Enchantment.beginOuter3D();
+            for (int i = 0; i < enchantments.size(); i++) {
+                Enchantment enchantment = enchantments.getEnchantment(i);
+                float intensity = enchantments.getIntensity(i);
+                if (intensity > 0.0f && enchantment.bindTexture(null)) {
+                    enchantment.begin(intensity);
+                    model.render(entity, f1, f2, f3, f4, f5, f6);
+                    enchantment.end();
+                }
+            }
+            Enchantment.endOuter3D();
+        }
+        return !CITUtils.useGlint;
+    }
+
     static void clear() {
         currentItem = null;
         itemOverride = null;
