@@ -969,7 +969,7 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // CITUtils18.preRenderItem(itemStack, layer);
+                        // CITUtils18.preRenderItem(itemStack, color);
                         ALOAD_3,
                         ILOAD_2,
                         reference(INVOKESTATIC, preRenderItem)

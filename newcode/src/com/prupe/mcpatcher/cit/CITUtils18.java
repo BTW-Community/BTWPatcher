@@ -12,14 +12,16 @@ public class CITUtils18 {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
     private static ItemStack currentItem;
-    private static int currentLayer;
+    private static int currentColor;
     private static ItemOverride itemOverride;
     private static ArmorOverride armorOverride;
     private static EnchantmentList enchantments;
 
-    public static void preRender(ItemStack itemStack, int layer) {
-        currentLayer = layer;
-        if (itemStack == null || itemStack.getItem() instanceof ItemBlock) {
+    public static void preRender(ItemStack itemStack, int color) {
+        currentColor = color;
+        if (itemStack == null) {
+            // rendering enchantment -- keep current state
+        } else if (itemStack.getItem() instanceof ItemBlock) {
             clear();
         } else {
             currentItem = itemStack;
@@ -27,8 +29,8 @@ public class CITUtils18 {
             armorOverride = CITUtils.findArmorOverride(itemStack);
             enchantments = CITUtils.findEnchantments(itemStack);
             if (logger.logEvery(5000L)) {
-                logger.info("preRender(%s, %d) -> %s %s %s",
-                    currentItem, currentLayer, itemOverride, armorOverride, enchantments
+                logger.info("preRender(%s, %08x) -> %s %s %s",
+                    currentItem, currentColor, itemOverride, armorOverride, enchantments
                 );
             }
         }

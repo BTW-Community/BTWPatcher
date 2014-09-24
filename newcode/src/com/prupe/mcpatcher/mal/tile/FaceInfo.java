@@ -37,11 +37,12 @@ final public class FaceInfo {
 
     private final ModelFace face;
     private final TextureAtlasSprite sprite;
-    private final Map<Icon, ModelFace> altIcons = new IdentityHashMap<Icon, ModelFace>();
+    private final String textureName;
     private final int effectiveFace;
     private final int uvRotation;
-    private final String textureName;
     private final int textureFacingBits;
+    private final Map<Icon, ModelFace> altIcons = new IdentityHashMap<Icon, ModelFace>();
+    private ModelFace unscaledFace;
 
     static void clear() {
         faceInfoMap.clear();
@@ -60,26 +61,26 @@ final public class FaceInfo {
         return faceInfoMap.get(face);
     }
 
-    public FaceInfo(ModelFace face, TextureAtlasSprite sprite, String textureName) {
+    private FaceInfo(ModelFace face, TextureAtlasSprite sprite, String textureName) {
         this.face = face;
         if (face instanceof ModelFaceSprite) {
             this.sprite = ((ModelFaceSprite) face).sprite;
         } else {
             this.sprite = sprite;
         }
-        effectiveFace = computeEffectiveFace(face.getIntBuffer());
-        uvRotation = computeRotation(face.getIntBuffer(), getEffectiveFace());
         if (textureName.startsWith("#")) {
             textureName = textureName.substring(1);
         }
         textureName = textureName.toLowerCase().trim();
         this.textureName = textureName;
         textureFacingBits = computeTextureFacing(textureName);
+        effectiveFace = computeEffectiveFace(face.getIntBuffer());
+        uvRotation = computeRotation(face.getIntBuffer(), getEffectiveFace());
     }
 
     @Override
     public String toString() {
-        return String.format("FaceInfo{%s,%s/%s -> %s R%+d}",
+        return String.format("FaceInfo{%s,%s#%s -> %s R%+d}",
             face, sprite.getIconName(), textureName, Direction.values()[effectiveFace], uvRotation * 45
         );
     }
@@ -88,17 +89,27 @@ final public class FaceInfo {
         return sprite;
     }
 
-    public synchronized ModelFace getAltFace(TextureAtlasSprite altSprite) {
-        if (altSprite == sprite) {
+    public ModelFace getAltFace(TextureAtlasSprite altSprite) {
+        if (altSprite == sprite || altSprite == null) {
             return face;
         }
-        ModelFace newFace = altIcons.get(altSprite);
-        if (newFace == null) {
-            newFace = new ModelFaceSprite(face, altSprite);
-            recalculateUV(sprite, face.getIntBuffer(), altSprite, newFace.getIntBuffer());
-            altIcons.put(altSprite, newFace);
+        synchronized (this) {
+            ModelFace newFace = altIcons.get(altSprite);
+            if (newFace == null) {
+                newFace = new ModelFaceSprite(face, altSprite);
+                recalculateUV(sprite, face.getIntBuffer(), altSprite, newFace.getIntBuffer());
+                altIcons.put(altSprite, newFace);
+            }
+            return newFace;
         }
-        return newFace;
+    }
+
+    public ModelFace getUnscaledFace() {
+        if (unscaledFace == null) {
+            unscaledFace = new ModelFaceSprite(face, sprite);
+            calculateUnscaledUV(sprite, face.getIntBuffer(), unscaledFace.getIntBuffer());
+        }
+        return unscaledFace;
     }
 
     public int getEffectiveFace() {
@@ -278,6 +289,15 @@ final public class FaceInfo {
             float v = 16.0f * (Float.intBitsToFloat(a[i + 5]) - origIcon.getMinV()) / (origIcon.getMaxV() - origIcon.getMinV());
             b[i + 4] = Float.floatToIntBits(newIcon.getInterpolatedU(u));
             b[i + 5] = Float.floatToIntBits(newIcon.getInterpolatedV(v));
+        }
+    }
+
+    private static void calculateUnscaledUV(TextureAtlasSprite origIcon, int[] a, int[] b) {
+        for (int i = 0; i < 28; i += 7) {
+            float u = (Float.intBitsToFloat(a[i + 4]) - origIcon.getMinU()) / (origIcon.getMaxU() - origIcon.getMinU());
+            float v = (Float.intBitsToFloat(a[i + 5]) - origIcon.getMinV()) / (origIcon.getMaxV() - origIcon.getMinV());
+            b[i + 4] = Float.floatToIntBits(u);
+            b[i + 5] = Float.floatToIntBits(v);
         }
     }
 }
