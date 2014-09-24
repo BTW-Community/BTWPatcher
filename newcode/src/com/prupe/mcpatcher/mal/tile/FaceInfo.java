@@ -42,7 +42,7 @@ final public class FaceInfo {
     private final int uvRotation;
     private final int textureFacingBits;
     private final Map<Icon, ModelFace> altIcons = new IdentityHashMap<Icon, ModelFace>();
-    private ModelFace unscaledFace;
+    private ModelFace nonAtlasFace;
 
     static void clear() {
         faceInfoMap.clear();
@@ -97,19 +97,20 @@ final public class FaceInfo {
             ModelFace newFace = altIcons.get(altSprite);
             if (newFace == null) {
                 newFace = new ModelFaceSprite(face, altSprite);
-                recalculateUV(sprite, face.getIntBuffer(), altSprite, newFace.getIntBuffer());
+                calculateSpriteUV(sprite, face.getIntBuffer(), altSprite, newFace.getIntBuffer());
                 altIcons.put(altSprite, newFace);
             }
             return newFace;
         }
     }
 
-    public ModelFace getUnscaledFace() {
-        if (unscaledFace == null) {
-            unscaledFace = new ModelFaceSprite(face, sprite);
-            calculateUnscaledUV(sprite, face.getIntBuffer(), unscaledFace.getIntBuffer());
+    // NOTE: not synchronized as item rendering is single-threaded
+    public ModelFace getNonAtlasFace() {
+        if (nonAtlasFace == null) {
+            nonAtlasFace = new ModelFaceSprite(face, sprite);
+            calculateNonAtlasUV(sprite, face.getIntBuffer(), nonAtlasFace.getIntBuffer());
         }
-        return unscaledFace;
+        return nonAtlasFace;
     }
 
     public int getEffectiveFace() {
@@ -283,7 +284,7 @@ final public class FaceInfo {
         return bits;
     }
 
-    private static void recalculateUV(TextureAtlasSprite origIcon, int[] a, TextureAtlasSprite newIcon, int[] b) {
+    private static void calculateSpriteUV(TextureAtlasSprite origIcon, int[] a, TextureAtlasSprite newIcon, int[] b) {
         for (int i = 0; i < 28; i += 7) {
             float u = 16.0f * (Float.intBitsToFloat(a[i + 4]) - origIcon.getMinU()) / (origIcon.getMaxU() - origIcon.getMinU());
             float v = 16.0f * (Float.intBitsToFloat(a[i + 5]) - origIcon.getMinV()) / (origIcon.getMaxV() - origIcon.getMinV());
@@ -292,7 +293,7 @@ final public class FaceInfo {
         }
     }
 
-    private static void calculateUnscaledUV(TextureAtlasSprite origIcon, int[] a, int[] b) {
+    private static void calculateNonAtlasUV(TextureAtlasSprite origIcon, int[] a, int[] b) {
         for (int i = 0; i < 28; i += 7) {
             float u = (Float.intBitsToFloat(a[i + 4]) - origIcon.getMinU()) / (origIcon.getMaxU() - origIcon.getMinU());
             float v = (Float.intBitsToFloat(a[i + 5]) - origIcon.getMinV()) / (origIcon.getMaxV() - origIcon.getMinV());

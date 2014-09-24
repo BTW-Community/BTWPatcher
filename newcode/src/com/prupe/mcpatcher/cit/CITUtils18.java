@@ -39,7 +39,7 @@ public class CITUtils18 {
 
     public static ModelFace getModelFace(ModelFace origFace) {
         if (renderingEnchantment) {
-            return FaceInfo.getFaceInfo(origFace).getUnscaledFace();
+            return FaceInfo.getFaceInfo(origFace).getNonAtlasFace();
         } else if (itemOverride == null) {
             return origFace;
         } else {
