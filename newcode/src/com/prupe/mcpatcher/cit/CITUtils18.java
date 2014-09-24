@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.tile.FaceInfo;
 import net.minecraft.src.*;
 
@@ -49,24 +50,23 @@ public class CITUtils18 {
     }
 
     public static boolean renderEnchantments3D(RenderItemCustom renderItem, IModel model) {
-        if (enchantments == null || enchantments.isEmpty()) {
-            return true;
-        } else {
+        if (enchantments != null && !enchantments.isEmpty()) {
             renderingEnchantment = true;
             Enchantment.beginOuter3D();
             for (int i = 0; i < enchantments.size(); i++) {
                 Enchantment enchantment = enchantments.getEnchantment(i);
                 float intensity = enchantments.getIntensity(i);
-                if (intensity > 0.0f) {
+                if (intensity > 0.0f && enchantment.bindTexture(null)) {
                     enchantment.begin(intensity);
                     renderItem.renderItem1(model, -1, null);
                     enchantment.end();
                 }
             }
             Enchantment.endOuter3D();
+            TexturePackAPI.bindTexture(TexturePackAPI.ITEMS_PNG);
             renderingEnchantment = false;
-            return !CITUtils.useGlint;
         }
+        return !CITUtils.useGlint;
     }
 
     static void clear() {
