@@ -41,7 +41,7 @@ public class CITUtils {
     private static final List<Enchantment> allItemEnchantments = new ArrayList<Enchantment>();
     private static final Map<Item, List<ArmorOverride>> armors = new IdentityHashMap<Item, List<ArmorOverride>>();
 
-    private static boolean useGlint;
+    static boolean useGlint;
 
     private static EnchantmentList armorMatches;
     private static int armorMatchIndex;

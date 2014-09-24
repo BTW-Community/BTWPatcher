@@ -3,10 +3,7 @@ package com.prupe.mcpatcher.cit;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.tile.FaceInfo;
-import net.minecraft.src.ItemBlock;
-import net.minecraft.src.ItemStack;
-import net.minecraft.src.ModelFace;
-import net.minecraft.src.TextureAtlasSprite;
+import net.minecraft.src.*;
 
 public class CITUtils18 {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
@@ -15,6 +12,8 @@ public class CITUtils18 {
     private static int currentColor;
     private static ItemOverride itemOverride;
     private static ArmorOverride armorOverride;
+
+    private static boolean renderingEnchantment;
     private static EnchantmentList enchantments;
 
     public static void preRender(ItemStack itemStack, int color) {
@@ -28,6 +27,7 @@ public class CITUtils18 {
             itemOverride = CITUtils.findItemOverride(itemStack);
             armorOverride = CITUtils.findArmorOverride(itemStack);
             enchantments = CITUtils.findEnchantments(itemStack);
+            renderingEnchantment = false;
             if (logger.logEvery(5000L)) {
                 logger.info("preRender(%s, %08x) -> %s %s %s",
                     currentItem, currentColor, itemOverride, armorOverride, enchantments
@@ -37,7 +37,9 @@ public class CITUtils18 {
     }
 
     public static ModelFace getModelFace(ModelFace origFace) {
-        if (itemOverride == null) {
+        if (renderingEnchantment) {
+            return FaceInfo.getFaceInfo(origFace).getUnscaledFace();
+        } else if (itemOverride == null) {
             return origFace;
         } else {
             FaceInfo faceInfo = FaceInfo.getFaceInfo(origFace);
@@ -46,10 +48,32 @@ public class CITUtils18 {
         }
     }
 
+    public static boolean renderEnchantments3D(RenderItemCustom renderItem, IModel model) {
+        if (enchantments == null || enchantments.isEmpty()) {
+            return true;
+        } else {
+            renderingEnchantment = true;
+            Enchantment.beginOuter3D();
+            for (int i = 0; i < enchantments.size(); i++) {
+                Enchantment enchantment = enchantments.getEnchantment(i);
+                float intensity = enchantments.getIntensity(i);
+                if (intensity > 0.0f) {
+                    enchantment.begin(intensity);
+                    renderItem.renderItem1(model, -1, null);
+                    enchantment.end();
+                }
+            }
+            Enchantment.endOuter3D();
+            renderingEnchantment = false;
+            return !CITUtils.useGlint;
+        }
+    }
+
     static void clear() {
         currentItem = null;
         itemOverride = null;
         armorOverride = null;
         enchantments = null;
+        renderingEnchantment = false;
     }
 }

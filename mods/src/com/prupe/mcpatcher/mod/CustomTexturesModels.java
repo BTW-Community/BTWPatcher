@@ -22,9 +22,10 @@ public class CustomTexturesModels extends Mod {
     static final MethodRef newColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "colorMultiplier", "(I)I");
     static final MethodRef newVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getVertexColor", "(FII)F");
     static final MethodRef newBlockFace = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
-    static final MethodRef newItemFace = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
 
     static final MethodRef preRenderItem = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "preRender", "(LItemStack;I)V");
+    static final MethodRef newItemFace = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
+    static final MethodRef newRenderEnchantments3D = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "renderEnchantments3D", "(LRenderItemCustom;LIModel;)Z");
 
     private static final Map<String, Integer> ccInfoMap = new HashMap<String, Integer>();
 
@@ -949,6 +950,8 @@ public class CustomTexturesModels extends Mod {
             addMemberMapper(new MethodMapper(renderItem1));
             addMemberMapper(new MethodMapper(renderFace));
 
+            addPatch(new MakeMemberPublicPatch(renderItem1));
+
             addPatch(new BytecodePatch() {
                 {
                     targetMethod(renderItem1);
@@ -1006,6 +1009,44 @@ public class CustomTexturesModels extends Mod {
                         flipLoadStore(getCaptureGroup(1)),
                         reference(INVOKESTATIC, newItemFace),
                         getCaptureGroup(1)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                {
+                    targetMethod(renderItem2);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "render custom enchantments";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.renderEnchantment(model);
+                        ALOAD_0,
+                        ALOAD_2,
+                        reference(INVOKESPECIAL, renderEnchantment)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // if (!CITUtils18.renderEnchantments3D(this, model)) {
+                        ALOAD_0,
+                        ALOAD_2,
+                        reference(INVOKESTATIC, newRenderEnchantments3D),
+                        IFNE, branch("A"),
+
+                        // ...
+                        getMatch(),
+
+                        // }
+                        label("A")
                     );
                 }
             });

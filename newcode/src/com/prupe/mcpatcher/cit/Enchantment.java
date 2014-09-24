@@ -180,7 +180,7 @@ final class Enchantment extends OverrideBase {
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
     }
 
-    private void begin(float intensity) {
+    void begin(float intensity) {
         blendMethod.applyBlending();
         blendMethod.applyDepthFunc();
         blendMethod.applyFade(intensity);
@@ -193,7 +193,7 @@ final class Enchantment extends OverrideBase {
         GL11.glRotatef(rotation, 0.0f, 0.0f, 1.0f);
     }
 
-    private void end() {
+    void end() {
         GL11.glPopMatrix();
     }
 
