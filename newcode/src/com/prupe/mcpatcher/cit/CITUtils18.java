@@ -12,7 +12,6 @@ public class CITUtils18 {
     private static ItemStack currentItem;
     private static int currentColor;
     private static ItemOverride itemOverride;
-    private static ArmorOverride armorOverride;
 
     private static boolean renderingEnchantment;
     private static EnchantmentList enchantments;
@@ -26,12 +25,11 @@ public class CITUtils18 {
         } else {
             currentItem = itemStack;
             itemOverride = CITUtils.findItemOverride(itemStack);
-            armorOverride = CITUtils.findArmorOverride(itemStack);
             enchantments = CITUtils.findEnchantments(itemStack);
             renderingEnchantment = false;
             if (logger.logEvery(5000L)) {
-                logger.info("preRender(%s, %08x) -> %s %s %s",
-                    currentItem, currentColor, itemOverride, armorOverride, enchantments
+                logger.info("preRender(%s, %08x) -> %s %s",
+                    currentItem, currentColor, itemOverride, enchantments
                 );
             }
         }
@@ -69,10 +67,18 @@ public class CITUtils18 {
         return !CITUtils.useGlint;
     }
 
+    public static ResourceLocation getArmorTexture(ResourceLocation origTexture, ItemStack itemStack, int pass) {
+        ArmorOverride override = CITUtils.findArmorOverride(itemStack);
+        if (override == null) {
+            return origTexture;
+        } else {
+            return override.getReplacementTexture(origTexture);
+        }
+    }
+
     static void clear() {
         currentItem = null;
         itemOverride = null;
-        armorOverride = null;
         enchantments = null;
         renderingEnchantment = false;
     }

@@ -26,6 +26,7 @@ public class CustomTexturesModels extends Mod {
     static final MethodRef preRenderItem = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "preRender", "(LItemStack;I)V");
     static final MethodRef newItemFace = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
     static final MethodRef newRenderEnchantments3D = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "renderEnchantments3D", "(LRenderItemCustom;LIModel;)Z");
+    static final MethodRef newArmorTexture = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "getArmorTexture", "(LResourceLocation;LItemStack;I)LResourceLocation;");
 
     private static final Map<String, Integer> ccInfoMap = new HashMap<String, Integer>();
 
@@ -68,7 +69,9 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new NBTTagListMod(this));
         addClassMod(new PotionMod(this));
         addClassMod(new PotionHelperMod(this));
+        addClassMod(new EntityLivingBaseMod(this));
         addClassMod(new RenderItemCustom());
+        addClassMod(new RenderArmorMod());
         addClassMod(new ItemBlockMod());
         addClassMod(new EntityPotionMod());
 
@@ -1047,6 +1050,88 @@ public class CustomTexturesModels extends Mod {
 
                         // }
                         label("A")
+                    );
+                }
+            });
+        }
+    }
+
+    private class RenderArmorMod extends ClassMod {
+        RenderArmorMod() {
+            final MethodRef renderArmor = new MethodRef(getDeobfClass(), "renderArmor", "(LEntityLivingBase;FFFFFFFI)V");
+            final MethodRef renderEnchantment = new MethodRef(getDeobfClass(), "renderEnchantment", "(LEntityLivingBase;LModelBase;FFFFFFF)V");
+            final MethodRef getArmorTexture2 = new MethodRef(getDeobfClass(), "getArmorTexture2", "(LItemArmor;Z)LResourceLocation;");
+            final MethodRef getArmorTexture3 = new MethodRef(getDeobfClass(), "getArmorTexture3", "(LItemArmor;ZLjava/lang/String;)LResourceLocation;");
+
+            addClassSignature(new ConstSignature("textures/misc/enchanted_item_glint.png"));
+            addClassSignature(new ConstSignature("textures/models/armor/%s_layer_%d%s.png"));
+
+            addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderEnchantment);
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        push(5890) // GL_TEXTURE
+                    );
+                }
+            });
+
+            addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(getArmorTexture2);
+                    addXref(1, getArmorTexture3);
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // return this.getArmorTexture(item, overlay, null);
+                        begin(),
+                        ALOAD_0,
+                        ALOAD_1,
+                        ILOAD_2,
+                        ACONST_NULL,
+                        captureReference(INVOKESPECIAL),
+                        ARETURN,
+                        end()
+                    );
+                }
+            });
+
+            addMemberMapper(new MethodMapper(renderArmor));
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderArmor);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override armor texture";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.getArmorTexture(item, overlay);
+                        ALOAD_0,
+                        anyALOAD,
+                        anyILOAD,
+                        reference(INVOKESPECIAL, getArmorTexture2)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // CITUtils18.getArmorTexture(..., itemStack, pass)
+                        ALOAD, 10,
+                        ILOAD, 9,
+                        reference(INVOKESTATIC, newArmorTexture)
                     );
                 }
             });
