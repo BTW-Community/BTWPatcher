@@ -25,7 +25,7 @@ public class CustomTexturesModels extends Mod {
 
     static final MethodRef preRenderItem = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "preRender", "(LItemStack;)V");
     static final MethodRef newItemFace = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
-    static final MethodRef newRenderEnchantments3D = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "renderEnchantments3D", "(LRenderItemCustom;LItemStack;LIModel;)Z");
+    static final MethodRef newRenderEnchantments3D = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "renderEnchantments3D", "(LRenderItemCustom;LIModel;)Z");
     static final MethodRef newArmorTexture = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "getArmorTexture", "(LResourceLocation;LItemStack;I)LResourceLocation;");
     static final MethodRef newRenderArmorEnchantments = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "renderArmorEnchantments", "(LEntityLivingBase;LModelBase;LItemStack;IFFFFFF)Z");
 
@@ -1039,9 +1039,8 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (!CITUtils18.renderEnchantments3D(this, itemStack, model)) {
+                        // if (!CITUtils18.renderEnchantments3D(this, model)) {
                         ALOAD_0,
-                        ALOAD_1,
                         ALOAD_2,
                         reference(INVOKESTATIC, newRenderEnchantments3D),
                         IFNE, branch("A"),

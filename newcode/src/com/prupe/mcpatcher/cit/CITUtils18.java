@@ -21,7 +21,6 @@ public class CITUtils18 {
         } else {
             currentItem = itemStack;
             itemOverride = CITUtils.findItemOverride(itemStack);
-            renderingEnchantment = false;
             if (logger.logEvery(5000L)) {
                 logger.info("preRender(%s) -> %s", currentItem, itemOverride);
             }
@@ -40,23 +39,25 @@ public class CITUtils18 {
         }
     }
 
-    public static boolean renderEnchantments3D(RenderItemCustom renderItem, ItemStack itemStack, IModel model) {
-        EnchantmentList enchantments = CITUtils.findEnchantments(itemStack);
-        if (!enchantments.isEmpty()) {
-            renderingEnchantment = true;
-            Enchantment.beginOuter3D();
-            for (int i = 0; i < enchantments.size(); i++) {
-                Enchantment enchantment = enchantments.getEnchantment(i);
-                float intensity = enchantments.getIntensity(i);
-                if (intensity > 0.0f && enchantment.bindTexture(null)) {
-                    enchantment.begin(intensity);
-                    renderItem.renderItem1(model, -1, null);
-                    enchantment.end();
+    public static boolean renderEnchantments3D(RenderItemCustom renderItem, IModel model) {
+        if (currentItem != null) {
+            EnchantmentList enchantments = CITUtils.findEnchantments(currentItem);
+            if (!enchantments.isEmpty()) {
+                renderingEnchantment = true;
+                Enchantment.beginOuter3D();
+                for (int i = 0; i < enchantments.size(); i++) {
+                    Enchantment enchantment = enchantments.getEnchantment(i);
+                    float intensity = enchantments.getIntensity(i);
+                    if (intensity > 0.0f && enchantment.bindTexture(null)) {
+                        enchantment.begin(intensity);
+                        renderItem.renderItem1(model, -1, null);
+                        enchantment.end();
+                    }
                 }
+                Enchantment.endOuter3D();
+                TexturePackAPI.bindTexture(TexturePackAPI.ITEMS_PNG);
+                renderingEnchantment = false;
             }
-            Enchantment.endOuter3D();
-            TexturePackAPI.bindTexture(TexturePackAPI.ITEMS_PNG);
-            renderingEnchantment = false;
         }
         return !CITUtils.useGlint;
     }
