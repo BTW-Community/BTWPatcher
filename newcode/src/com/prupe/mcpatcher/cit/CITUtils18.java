@@ -61,7 +61,7 @@ public class CITUtils18 {
         return !CITUtils.useGlint;
     }
 
-    public static ResourceLocation getArmorTexture(ResourceLocation origTexture, ItemStack itemStack, int pass) {
+    public static ResourceLocation getArmorTexture(ResourceLocation origTexture, ItemStack itemStack, int slot) {
         ArmorOverride override = CITUtils.findArmorOverride(itemStack);
         if (override == null) {
             return origTexture;
@@ -70,7 +70,7 @@ public class CITUtils18 {
         }
     }
 
-    public static boolean renderArmorEnchantments(EntityLivingBase entity, ModelBase model, ItemStack itemStack, int pass, float f1, float f2, float f3, float f4, float f5, float f6) {
+    public static boolean renderArmorEnchantments(EntityLivingBase entity, ModelBase model, ItemStack itemStack, int slot, float f1, float f2, float f3, float f4, float f5, float f6) {
         EnchantmentList enchantments = CITUtils.findEnchantments(itemStack);
         if (!enchantments.isEmpty()) {
             Enchantment.beginOuter3D();

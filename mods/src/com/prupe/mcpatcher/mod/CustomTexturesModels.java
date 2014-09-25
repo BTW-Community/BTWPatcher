@@ -1152,7 +1152,7 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // CITUtils18.getArmorTexture(..., itemStack, pass)
+                        // CITUtils18.getArmorTexture(..., itemStack, slot)
                         ALOAD, 10,
                         ILOAD, 9,
                         reference(INVOKESTATIC, newArmorTexture)
@@ -1191,7 +1191,7 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (!CITUtils18.renderArmorEnchantments(entity, model, itemStack, pass, ...,) {
+                        // if (!CITUtils18.renderArmorEnchantments(entity, model, itemStack, slot, ...,) {
                         ALOAD_1,
                         getCaptureGroup(1),
                         ALOAD, 10,
