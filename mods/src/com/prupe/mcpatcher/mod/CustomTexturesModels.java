@@ -17,11 +17,11 @@ public class CustomTexturesModels extends Mod {
     static final InterfaceMethodRef iteratorNext = new InterfaceMethodRef("java/util/Iterator", "next", "()Ljava/lang/Object;");
     static final ClassRef modelFaceClass = new ClassRef("ModelFace");
 
-    static final MethodRef getCCInstance = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getInstance", "()L" + MCPatcherUtils.COLORIZE_BLOCK18_CLASS + ";");
-    static final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "useColormap", "(LModelFace;)Z");
-    static final MethodRef newColorMultiplier = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "colorMultiplier", "(I)I");
-    static final MethodRef newVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getVertexColor", "(FII)F");
-    static final MethodRef newBlockFace = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
+    static final MethodRef getCTMInstance = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "getInstance", "()L" + MCPatcherUtils.CTM_UTILS18_CLASS + ";");
+    static final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "useColormap", "(LModelFace;)Z");
+    static final MethodRef newColorMultiplier = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "colorMultiplier", "(I)I");
+    static final MethodRef newVertexColor = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "getVertexColor", "(FII)F");
+    static final MethodRef newBlockFace = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
 
     static final MethodRef preRenderItem = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "preRender", "(LItemStack;)V");
     static final MethodRef newItemFace = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
@@ -29,7 +29,7 @@ public class CustomTexturesModels extends Mod {
     static final MethodRef newArmorTexture = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "getArmorTexture", "(LResourceLocation;LItemStack;I)LResourceLocation;");
     static final MethodRef newRenderArmorEnchantments = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "renderArmorEnchantments", "(LEntityLivingBase;LModelBase;LItemStack;IFFFFFF)Z");
 
-    private static final Map<String, Integer> ccInfoMap = new HashMap<String, Integer>();
+    private static final Map<String, Integer> ctmInfoMap = new HashMap<String, Integer>();
 
     public CustomTexturesModels() {
         name = MCPatcherUtils.CUSTOM_TEXTURES_MODELS;
@@ -115,12 +115,12 @@ public class CustomTexturesModels extends Mod {
         }
     }
 
-    private String getCCKey(PatchComponent patchComponent) {
+    private static String getCTMKey(PatchComponent patchComponent) {
         return patchComponent.getClassFile().getName() + ":" + patchComponent.getMethodInfo().toString();
     }
 
-    private void initCCInfo(ClassMod classMod, final MethodRef... methods) {
-        ccInfoMap.clear();
+    private static void initCTMInfo(ClassMod classMod, final MethodRef... methods) {
+        ctmInfoMap.clear();
         classMod.addPatch(new BytecodePatch(classMod) {
             {
                 targetMethod(methods);
@@ -141,23 +141,23 @@ public class CustomTexturesModels extends Mod {
             @Override
             public byte[] getReplacementBytes() {
                 int register = getMethodInfo().getCodeAttribute().getMaxLocals();
-                ccInfoMap.put(getCCKey(this), register);
+                ctmInfoMap.put(getCTMKey(this), register);
                 return buildCode(
-                    reference(INVOKESTATIC, getCCInstance),
+                    reference(INVOKESTATIC, getCTMInstance),
                     registerLoadStore(ASTORE, register)
                 );
             }
         });
     }
 
-    private byte[] getCCInfo(PatchComponent patchComponent) {
-        String key = getCCKey(patchComponent);
-        Integer register = ccInfoMap.get(key);
+    private static byte[] getCTMInfo(PatchComponent patchComponent) {
+        String key = getCTMKey(patchComponent);
+        Integer register = ctmInfoMap.get(key);
         if (register == null) {
-            for (Map.Entry<String, Integer> entry : ccInfoMap.entrySet()) {
+            for (Map.Entry<String, Integer> entry : ctmInfoMap.entrySet()) {
                 Logger.log(Logger.LOG_MAIN, "  %s -> %s", entry.getKey(), entry.getValue());
             }
-            throw new IllegalStateException("no ccInfo for [" + key + "]");
+            throw new IllegalStateException("no ctmInfo for [" + key + "]");
         }
         return registerLoadStore(ALOAD, register);
     }
@@ -291,11 +291,11 @@ public class CustomTexturesModels extends Mod {
 
         private void setupColorMaps() {
             final MethodRef useColormap = new MethodRef("ModelFace", "useColormap", "()Z");
-            final MethodRef setDirection = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "setDirection", "(LDirection;)V");
+            final MethodRef setDirection = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "setDirection", "(LDirection;)V");
 
-            setupPreRender(getCCInstance);
+            setupPreRender(getCTMInstance);
 
-            initCCInfo(this, renderBlockAO, renderBlockNonAO, renderFaceAO, renderFaceNonAO);
+            initCTMInfo(this, renderBlockAO, renderBlockNonAO, renderFaceAO, renderFaceNonAO);
 
             addPatch(new BytecodePatch() {
                 {
@@ -321,8 +321,8 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // colorizeBlock18.setDirection(direction);
-                        getCCInfo(this),
+                        // ctm.setDirection(direction);
+                        getCTMInfo(this),
                         getCaptureGroup(1),
                         reference(INVOKEVIRTUAL, setDirection)
                     );
@@ -352,8 +352,8 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // colorizeBlock18.setDirection(null);
-                        getCCInfo(this),
+                        // ctm.setDirection(null);
+                        getCTMInfo(this),
                         push(null),
                         reference(INVOKEVIRTUAL, setDirection)
                     );
@@ -382,8 +382,8 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // colorizeBlock18.useColormap(face)
-                        getCCInfo(this),
+                        // ctm.useColormap(face)
+                        getCTMInfo(this),
                         getCaptureGroup(1),
                         reference(INVOKEVIRTUAL, newUseColormap)
                     );
@@ -413,8 +413,8 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // color = colorizeBlock18.colorMultiplier(color)
-                        getCCInfo(this),
+                        // color = ctm.colorMultiplier(color)
+                        getCTMInfo(this),
                         flipLoadStore(getCaptureGroup(1)),
                         reference(INVOKEVIRTUAL, newColorMultiplier),
                         getCaptureGroup(1)
@@ -449,9 +449,9 @@ public class CustomTexturesModels extends Mod {
 
                 @Override
                 public byte[] getReplacementBytes() {
-                    // RenderBlockCustomInner.getVertexColor(inner)[0,1,2,3] * colorizeBlock18.getVertexColor(color, count / 3, count % 3)
+                    // RenderBlockCustomInner.getVertexColor(inner)[0,1,2,3] * ctm.getVertexColor(color, count / 3, count % 3)
                     return buildCode(
-                        getCCInfo(this),
+                        getCTMInfo(this),
                         getCaptureGroup(1),
                         push(getMethodMatchCount() / 3),
                         push(getMethodMatchCount() % 3),
@@ -488,8 +488,8 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // face = colorizeBlock18.newModelFace(face);
-                        getCCInfo(this),
+                        // face = ctm.newModelFace(face);
+                        getCTMInfo(this),
                         flipLoadStore(getCaptureGroup(1)),
                         reference(INVOKEVIRTUAL, newBlockFace),
                         getCaptureGroup(1)
@@ -565,11 +565,11 @@ public class CustomTexturesModels extends Mod {
         }
 
         private void setupColorMaps() {
-            final MethodRef preRender = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "preRender", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LBlock;Z)Z");
-            final MethodRef setDirection = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "setDirectionWater", "(LDirection;)V");
-            final MethodRef applyVertexColor = new MethodRef(MCPatcherUtils.COLORIZE_BLOCK18_CLASS, "applyVertexColor", "(LTessellator;FI)V");
+            final MethodRef preRender = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "preRender", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LBlock;Z)Z");
+            final MethodRef setDirection = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "setDirectionWater", "(LDirection;)V");
+            final MethodRef applyVertexColor = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "applyVertexColor", "(LTessellator;FI)V");
 
-            initCCInfo(this, renderBlock);
+            initCTMInfo(this, renderBlock);
 
             addPatch(new BytecodePatch() {
                 {
@@ -604,8 +604,8 @@ public class CustomTexturesModels extends Mod {
                     colorRegister[1] = colorRegister[0] + 1;
                     colorRegister[2] = colorRegister[0] + 2;
                     return buildCode(
-                        // if (!colorizeBlock18.preRender(blockAccess, null, blockState, position, block, true)) {
-                        getCCInfo(this),
+                        // if (!ctm.preRender(blockAccess, null, blockState, position, block, true)) {
+                        getCTMInfo(this),
                         ALOAD_1,
                         push(null),
                         ALOAD_2,
@@ -622,8 +622,8 @@ public class CustomTexturesModels extends Mod {
                         // }
                         label("A"),
 
-                        // color = colorizeBlock18.colorMultiplier(color);
-                        getCCInfo(this),
+                        // color = ctm.colorMultiplier(color);
+                        getCTMInfo(this),
                         getCaptureGroup(1),
                         reference(INVOKEVIRTUAL, newColorMultiplier),
                         flipLoadStore(getCaptureGroup(1))
@@ -761,8 +761,8 @@ public class CustomTexturesModels extends Mod {
                     return buildCode(
                         callSetDirection(),
 
-                        // colorizeBlock18.applyVertexColor(tessellator, base, vertex);
-                        getCCInfo(this),
+                        // ctm.applyVertexColor(tessellator, base, vertex);
+                        getCTMInfo(this),
                         ALOAD, 4,
                         getBase(),
                         push(getVertex()),
@@ -775,24 +775,24 @@ public class CustomTexturesModels extends Mod {
                         switch (getMethodMatchCount() / 4) {
                             case 0: // top face
                                 return buildCode(
-                                    // colorizeBlock18.setDirectionWater(Direction.UP);
-                                    getCCInfo(this),
+                                    // ctm.setDirectionWater(Direction.UP);
+                                    getCTMInfo(this),
                                     reference(GETSTATIC, DirectionMod.UP),
                                     reference(INVOKEVIRTUAL, setDirection)
                                 );
 
                             case 2: // bottom face
                                 return buildCode(
-                                    // colorizeBlock18.setDirectionWater(Direction.DOWN);
-                                    getCCInfo(this),
+                                    // ctm.setDirectionWater(Direction.DOWN);
+                                    getCTMInfo(this),
                                     reference(GETSTATIC, DirectionMod.DOWN),
                                     reference(INVOKEVIRTUAL, setDirection)
                                 );
 
                             case 3: // side faces
                                 return buildCode(
-                                    // colorizeBlock18.setDirectionWater(Direction.values()[faceIndex + 2]);
-                                    getCCInfo(this),
+                                    // ctm.setDirectionWater(Direction.values()[faceIndex + 2]);
+                                    getCTMInfo(this),
                                     reference(INVOKESTATIC, DirectionMod.values),
                                     ILOAD, faceIndex,
                                     push(2),
