@@ -4,11 +4,12 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.cc.ColorizeBlock18;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
-import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
 import com.prupe.mcpatcher.mal.tile.FaceInfo;
 import net.minecraft.src.*;
 
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -27,6 +28,10 @@ public class CTMUtils18 extends RenderBlockState {
     private static final ThreadLocal<CTMUtils18> instances = new ThreadLocal<CTMUtils18>();
 
     private static final Set<IBlockStateProperty> ignoredProperties = new HashSet<IBlockStateProperty>();
+    private static final Map<Block, IBlockStateProperty> halfProperties = new IdentityHashMap<Block, IBlockStateProperty>();
+    private static Block bedBlock;
+    private static IBlockStateProperty bedHeadProperty;
+    private static IBlockStateProperty bedFacingProperty;
 
     private IModel model;
     private IBlockState blockState;
@@ -37,11 +42,23 @@ public class CTMUtils18 extends RenderBlockState {
     private int hvFace;
     private String textureFaceName;
 
+    private boolean offsetsComputed;
+    private boolean haveOffsets;
+    private int di;
+    private int dj;
+    private int dk;
+
     private final TileOverrideIterator.IJK ijkIterator = CTMUtils.newIJKIterator();
 
     private final ColorizeBlock18 colorizeBlock;
 
-    static {
+    static void reset() {
+        ignoredProperties.clear();
+        halfProperties.clear();
+        bedBlock = BlockAPI.getFixedBlock("minecraft:bed");
+        bedHeadProperty = getPropertyByName(bedBlock, "part");
+        bedFacingProperty = getPropertyByName(bedBlock, "facing");
+
         for (Block block : BlockAPI.getAllBlocks()) {
             logger.config("Block %s", BlockAPI.getBlockName(block));
             IBlockState state = block.getBlockState();
@@ -49,6 +66,9 @@ public class CTMUtils18 extends RenderBlockState {
                 String name = property.getName();
                 if (name.equals("half") || name.equals("part")) {
                     ignoredProperties.add(property);
+                    if (name.equals("half")) {
+                        halfProperties.put(block, property);
+                    }
                 }
                 if (logger.isLoggable(Level.CONFIG)) {
                     StringBuilder sb = new StringBuilder();
@@ -62,8 +82,15 @@ public class CTMUtils18 extends RenderBlockState {
         }
     }
 
-    private static boolean ignoreForConnecting(IBlockStateProperty property) {
-        return ignoredProperties.contains(property);
+    private static IBlockStateProperty getPropertyByName(Block block, String propertyName) {
+        if (block != null) {
+            for (IBlockStateProperty property : block.getBlockState().getProperties()) {
+                if (propertyName.equals(property.getName())) {
+                    return property;
+                }
+            }
+        }
+        return null;
     }
 
     private static boolean comparePropertyValues(Comparable a, Comparable b) {
@@ -99,6 +126,9 @@ public class CTMUtils18 extends RenderBlockState {
         this.useAO = useAO;
         direction = null;
         inWorld = true;
+        offsetsComputed = false;
+        haveOffsets = false;
+        di = dj = dk = 0;
 
         colorizeBlock.preRender(blockAccess, model, blockState, position, block, useAO);
 
@@ -198,29 +228,69 @@ public class CTMUtils18 extends RenderBlockState {
 
     @Override
     public boolean setCoordOffsetsForRenderType() {
-        return false;
+        if (!offsetsComputed) {
+            offsetsComputed = true;
+            if (block == bedBlock) {
+                if (getEnumProperty(bedHeadProperty) > 0) { // part=foot
+                    switch (getEnumProperty(bedFacingProperty)) {
+                        case 0:
+                            dk = 1; // head is one block south
+                            break;
+
+                        case 1:
+                            di = -1; // head is one block west
+                            break;
+
+                        case 2:
+                            dk = -1; // head is one block north
+                            break;
+
+                        case 3:
+                            di = 1; // head is one block east
+                            break;
+
+                        default:
+                            return false;
+                    }
+                    haveOffsets = true;
+                }
+            } else if (getEnumProperty(halfProperties.get(block)) > 0) { // half=lower
+                di = 1;
+                haveOffsets = true;
+            }
+        }
+        return haveOffsets;
+    }
+
+    private int getEnumProperty(IBlockStateProperty property) {
+        Comparable value = blockState.getProperty(property);
+        if (value instanceof Enum) {
+            return ((Enum) value).ordinal();
+        } else {
+            return -1;
+        }
     }
 
     @Override
     public int getDI() {
-        return 0;
+        return di;
     }
 
     @Override
     public int getDJ() {
-        return 0;
+        return dj;
     }
 
     @Override
     public int getDK() {
-        return 0;
+        return dk;
     }
 
     @Override
     public boolean shouldConnect(Block neighbor, int[] offset) {
         IBlockState neighborState = blockAccess.getBlockState(new Position(position.getI() + offset[0], position.getJ() + offset[1], position.getK() + offset[2]));
         for (IBlockStateProperty property : blockState.getProperties()) {
-            if (ignoreForConnecting(property)) {
+            if (ignoredProperties.contains(property)) {
                 continue;
             }
             Comparable value = blockState.getProperty(property);

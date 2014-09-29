@@ -55,6 +55,13 @@ public class CTMUtils {
                 } catch (Throwable e) {
                     e.printStackTrace();
                 }
+                try {
+                    CTMUtils18.reset();
+                } catch (NoClassDefFoundError e) {
+                    // nothing
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
                 renderBlockState.clear();
                 ijkIterator.clear();
                 metadataIterator.clear();
