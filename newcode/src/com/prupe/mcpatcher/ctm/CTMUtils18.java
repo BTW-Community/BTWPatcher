@@ -175,6 +175,29 @@ public class CTMUtils18 extends RenderBlockState {
     }
 
     @Override
+    public boolean shouldConnect(Block neighbor, int[] offset) {
+        IBlockState neighborState = blockAccess.getBlockState(new Position(position.getI() + offset[0], position.getJ() + offset[1], position.getK() + offset[2]));
+        for (IBlockStateProperty property : blockState.getProperties()) {
+            String name = property.getName();
+            if (name.equals("half")) {
+                continue;
+            }
+            Comparable value = blockState.getProperty(property);
+            Comparable neighborValue = neighborState.getProperty(property);
+            if (value == null) {
+                if (neighborValue != null) {
+                    return false;
+                }
+            } else {
+                if (!value.equals(neighborValue)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("CTMUtils18{");
         if (block != null) {

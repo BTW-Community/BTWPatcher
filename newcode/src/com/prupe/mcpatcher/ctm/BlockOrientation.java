@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.ctm;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
+import net.minecraft.src.Icon;
 
 final class BlockOrientation extends RenderBlockState {
     // NEIGHBOR_OFFSETS[a][b][c] = offset from starting block
@@ -170,6 +171,11 @@ final class BlockOrientation extends RenderBlockState {
     @Override
     public int getDK() {
         return dk;
+    }
+
+    @Override
+    public boolean shouldConnect(Block neighbor, int[] offset) {
+        return (metadataBits & (1 << BlockAPI.getMetadataAt(blockAccess, i + offset[0], j + offset[1], k + offset[2]))) != 0;
     }
 
     void setBlock(Block block, IBlockAccess blockAccess, int i, int j, int k) {

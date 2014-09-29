@@ -25,10 +25,6 @@ abstract class TileOverride implements ITileOverride {
 
     private static final int META_MASK = 0xffff;
 
-    private static final int CONNECT_BY_BLOCK = 0;
-    private static final int CONNECT_BY_TILE = 1;
-    private static final int CONNECT_BY_MATERIAL = 2;
-
     private final PropertiesFile properties;
     private final String baseFilename;
     private final TileLoader tileLoader;
@@ -384,6 +380,9 @@ abstract class TileOverride implements ITileOverride {
                     return false;
                 }
             }
+        }
+        if (!renderBlockState.shouldConnect(neighbor, offset)) {
+            return false;
         }
         switch (connectType) {
             case CONNECT_BY_TILE:

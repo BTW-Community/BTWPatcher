@@ -43,6 +43,10 @@ abstract public class RenderBlockState {
         {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, -2},
     };
 
+    public static final int CONNECT_BY_BLOCK = 0;
+    public static final int CONNECT_BY_TILE = 1;
+    public static final int CONNECT_BY_MATERIAL = 2;
+
     protected static int[] add(int[] a, int[] b) {
         if (a.length != b.length) {
             throw new RuntimeException("arrays to add are not same length");
@@ -134,4 +138,6 @@ abstract public class RenderBlockState {
     abstract public int getDJ();
 
     abstract public int getDK();
+
+    abstract public boolean shouldConnect(Block neighbor, int[] offset);
 }
