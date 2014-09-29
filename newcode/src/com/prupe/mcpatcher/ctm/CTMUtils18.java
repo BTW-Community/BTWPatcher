@@ -4,8 +4,13 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.cc.ColorizeBlock18;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
+import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
 import com.prupe.mcpatcher.mal.tile.FaceInfo;
 import net.minecraft.src.*;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
 
 public class CTMUtils18 extends RenderBlockState {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CONNECTED_TEXTURES);
@@ -21,6 +26,8 @@ public class CTMUtils18 extends RenderBlockState {
 
     private static final ThreadLocal<CTMUtils18> instances = new ThreadLocal<CTMUtils18>();
 
+    private static final Set<IBlockStateProperty> ignoredProperties = new HashSet<IBlockStateProperty>();
+
     private IModel model;
     private IBlockState blockState;
     private Position position;
@@ -33,6 +40,41 @@ public class CTMUtils18 extends RenderBlockState {
     private final TileOverrideIterator.IJK ijkIterator = CTMUtils.newIJKIterator();
 
     private final ColorizeBlock18 colorizeBlock;
+
+    static {
+        for (Block block : BlockAPI.getAllBlocks()) {
+            logger.config("Block %s", BlockAPI.getBlockName(block));
+            IBlockState state = block.getBlockState();
+            for (IBlockStateProperty property : state.getProperties()) {
+                String name = property.getName();
+                if (name.equals("half") || name.equals("part")) {
+                    ignoredProperties.add(property);
+                }
+                if (logger.isLoggable(Level.CONFIG)) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("  ").append(name).append(" (").append(property.getValueClass().getName()).append("):");
+                    for (Comparable value : property.getValues()) {
+                        sb.append(' ').append(value.toString());
+                    }
+                    logger.info("%s", sb.toString());
+                }
+            }
+        }
+    }
+
+    private static boolean ignoreForConnecting(IBlockStateProperty property) {
+        return ignoredProperties.contains(property);
+    }
+
+    private static boolean comparePropertyValues(Comparable a, Comparable b) {
+        if (a == b) {
+            return true;
+        } else if (a == null) {
+            return false;
+        } else {
+            return a.equals(b);
+        }
+    }
 
     public static CTMUtils18 getInstance() {
         CTMUtils18 instance = instances.get();
@@ -178,20 +220,13 @@ public class CTMUtils18 extends RenderBlockState {
     public boolean shouldConnect(Block neighbor, int[] offset) {
         IBlockState neighborState = blockAccess.getBlockState(new Position(position.getI() + offset[0], position.getJ() + offset[1], position.getK() + offset[2]));
         for (IBlockStateProperty property : blockState.getProperties()) {
-            String name = property.getName();
-            if (name.equals("half")) {
+            if (ignoreForConnecting(property)) {
                 continue;
             }
             Comparable value = blockState.getProperty(property);
             Comparable neighborValue = neighborState.getProperty(property);
-            if (value == null) {
-                if (neighborValue != null) {
-                    return false;
-                }
-            } else {
-                if (!value.equals(neighborValue)) {
-                    return false;
-                }
+            if (!comparePropertyValues(value, neighborValue)) {
+                return false;
             }
         }
         return true;

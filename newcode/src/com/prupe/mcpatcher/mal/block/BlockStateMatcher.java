@@ -6,6 +6,7 @@ import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import net.minecraft.src.*;
 
 import java.util.*;
+import java.util.logging.Level;
 
 abstract public class BlockStateMatcher {
     private final String fullString;
@@ -108,21 +109,6 @@ abstract public class BlockStateMatcher {
 
     public final static class V2 extends BlockStateMatcher {
         private final Map<IBlockStateProperty, Set<Comparable>> propertyMap = new HashMap<IBlockStateProperty, Set<Comparable>>();
-
-        public static void dumpBlockStates(MCLogger logger) {
-            for (Block block : BlockAPI.getAllBlocks()) {
-                logger.info("Block %s", BlockAPI.getBlockName(block));
-                IBlockState state = block.getBlockState();
-                for (IBlockStateProperty property : state.getProperties()) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("  ").append(property.getName()).append(" (").append(property.getValueClass().getName()).append("):");
-                    for (Comparable value : property.getValues()) {
-                        sb.append(' ').append(value.toString());
-                    }
-                    logger.info("%s", sb.toString());
-                }
-            }
-        }
 
         V2(PropertiesFile source, String metaString, Block block, String metadataList, Map<String, String> properties) {
             super(source, metaString, block, metadataList, properties);
