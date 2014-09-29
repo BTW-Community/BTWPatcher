@@ -40,7 +40,6 @@ final public class FaceInfo {
     private final String textureName;
     private final int effectiveFace;
     private final int uvRotation;
-    private final int textureFacingBits;
     private final Map<Icon, ModelFace> altIcons = new IdentityHashMap<Icon, ModelFace>();
     private ModelFace nonAtlasFace;
 
@@ -73,7 +72,6 @@ final public class FaceInfo {
         }
         textureName = textureName.toLowerCase().trim();
         this.textureName = textureName;
-        textureFacingBits = computeTextureFacing(textureName);
         effectiveFace = computeEffectiveFace(face.getIntBuffer());
         uvRotation = computeRotation(face.getIntBuffer(), getEffectiveFace());
     }
@@ -123,10 +121,6 @@ final public class FaceInfo {
 
     public String getTextureName() {
         return textureName;
-    }
-
-    public boolean isTextureFacing(int bits) {
-        return (textureFacingBits & bits) != 0;
     }
 
     private static int computeEffectiveFace(int[] b) {
@@ -260,28 +254,6 @@ final public class FaceInfo {
         logger.info("u0,v0=%d %d, u1,v1=%d %d, u2,v2=%d %d, u3,v3=%d %d, rotation %d",
             u0, v0, u1, v1, u2, v2, u3, v3, computeUVRotation(b)
         );
-    }
-
-    private static int computeTextureFacing(String name) {
-        int bits = ~0x3f;
-        for (Direction direction : Direction.values()) {
-            if (name.equalsIgnoreCase(direction.toString())) {
-                bits |= (1 << direction.ordinal());
-            }
-        }
-        if (name.equals("bottom")) {
-            bits |= (1 << BOTTOM_FACE);
-        } else if (name.equals("top")) {
-            bits |= (1 << TOP_FACE);
-        } else {
-            if (name.equals("side") || name.equals("sides") || name.equals("all")) {
-                bits |= (1 << NORTH_FACE) | (1 << SOUTH_FACE) | (1 << WEST_FACE) | (1 << EAST_FACE);
-            }
-            if (name.equals("end") || name.equals("ends") || name.equals("all")) {
-                bits |= (1 << BOTTOM_FACE) | (1 << TOP_FACE);
-            }
-        }
-        return bits;
     }
 
     private static void calculateSpriteUV(TextureAtlasSprite origIcon, int[] a, TextureAtlasSprite newIcon, int[] b) {
