@@ -8,6 +8,9 @@ import com.prupe.mcpatcher.basemod.ext18.DirectionMod;
 import com.prupe.mcpatcher.basemod.ext18.PositionMod;
 import javassist.bytecode.AccessFlag;
 
+import static com.prupe.mcpatcher.BytecodeMatcher.captureReference;
+import static javassist.bytecode.Opcode.*;
+
 /**
  * Matches Block class and maps blockID and blockList fields.
  */
@@ -85,6 +88,28 @@ public class BlockMod extends com.prupe.mcpatcher.ClassMod {
             addMemberMapper(new MethodMapper(getSecondaryBlockIcon, getBlockIcon));
         }
         addMemberMapper(new MethodMapper(getBlockIconFromSideAndMetadata));
+        return this;
+    }
+
+    public BlockMod mapBlockMaterial() {
+        final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(" + (haveBlockRegistry() ? "" : "I") + "LMaterial;)V");
+
+        addClassSignature(new BytecodeSignature() {
+            {
+                setMethod(constructor);
+                addXref(1, blockMaterial);
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    ALOAD_0,
+                    haveBlockRegistry() ? ALOAD_1 : ALOAD_2,
+                    captureReference(PUTFIELD)
+                );
+            }
+        });
+
         return this;
     }
 }

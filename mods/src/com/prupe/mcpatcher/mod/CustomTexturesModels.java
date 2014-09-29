@@ -98,6 +98,8 @@ public class CustomTexturesModels extends Mod {
         BlockMod() {
             super(CustomTexturesModels.this);
 
+            mapBlockMaterial();
+
             addClassSignature(new BytecodeSignature() {
                 @Override
                 public String getMatchExpression() {
@@ -112,6 +114,8 @@ public class CustomTexturesModels extends Mod {
             }.setMethod(getRenderType));
 
             addMemberMapper(new MethodMapper(blockColorMultiplier));
+
+            addPatch(new MakeMemberPublicPatch(blockMaterial));
         }
     }
 

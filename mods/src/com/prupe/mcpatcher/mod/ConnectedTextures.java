@@ -162,9 +162,8 @@ public class ConnectedTextures extends Mod {
         BlockMod() {
             super(ConnectedTextures.this);
 
-            final MethodRef constructor = new MethodRef(getDeobfClass(), "<init>", "(" + (BlockMod.haveBlockRegistry() ? "" : "I") + "LMaterial;)V");
-
             mapBlockIconMethods();
+            mapBlockMaterial();
 
             addClassSignature(new BytecodeSignature() {
                 {
@@ -185,22 +184,6 @@ public class ConnectedTextures extends Mod {
                         captureReference(INVOKEVIRTUAL),
                         ARETURN,
                         end()
-                    );
-                }
-            });
-
-            addClassSignature(new BytecodeSignature() {
-                {
-                    setMethod(constructor);
-                    addXref(1, blockMaterial);
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        ALOAD_0,
-                        BlockMod.haveBlockRegistry() ? ALOAD_1 : ALOAD_2,
-                        captureReference(PUTFIELD)
                     );
                 }
             });
