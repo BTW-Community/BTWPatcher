@@ -42,12 +42,6 @@ public class CTMUtils18 extends RenderBlockState {
     private int hvFace;
     private String textureFaceName;
 
-    private boolean offsetsComputed;
-    private boolean haveOffsets;
-    private int di;
-    private int dj;
-    private int dk;
-
     private final TileOverrideIterator.IJK ijkIterator = CTMUtils.newIJKIterator();
 
     private final ColorizeBlock18 colorizeBlock;
@@ -269,21 +263,6 @@ public class CTMUtils18 extends RenderBlockState {
         } else {
             return -1;
         }
-    }
-
-    @Override
-    public int getDI() {
-        return di;
-    }
-
-    @Override
-    public int getDJ() {
-        return dj;
-    }
-
-    @Override
-    public int getDK() {
-        return dk;
     }
 
     @Override

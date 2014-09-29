@@ -81,6 +81,12 @@ abstract public class RenderBlockState {
     protected boolean inWorld;
     protected BlockStateMatcher matcher;
 
+    protected boolean offsetsComputed;
+    protected boolean haveOffsets;
+    protected int di;
+    protected int dj;
+    protected int dk;
+
     final public IBlockAccess getBlockAccess() {
         return blockAccess;
     }
@@ -110,6 +116,9 @@ abstract public class RenderBlockState {
         block = null;
         useAO = false;
         inWorld = false;
+        offsetsComputed = false;
+        haveOffsets = false;
+        di = dj = dk = 0;
         setFilter(null);
     }
 
@@ -133,11 +142,17 @@ abstract public class RenderBlockState {
 
     abstract public boolean setCoordOffsetsForRenderType();
 
-    abstract public int getDI();
+    final public int getDI() {
+        return di;
+    }
 
-    abstract public int getDJ();
+    final public int getDJ() {
+        return dj;
+    }
 
-    abstract public int getDK();
+    final public int getDK() {
+        return dk;
+    }
 
     abstract public boolean shouldConnect(Block neighbor, int[] offset);
 }

@@ -35,12 +35,6 @@ final class BlockOrientation extends RenderBlockState {
     private int textureFaceOrig;
     private int rotateUV;
 
-    private boolean offsetsComputed;
-    private boolean haveOffsets;
-    private int di;
-    private int dj;
-    private int dk;
-
     @Override
     public void clear() {
         super.clear();
@@ -156,21 +150,6 @@ final class BlockOrientation extends RenderBlockState {
                 break;
         }
         return haveOffsets;
-    }
-
-    @Override
-    public int getDI() {
-        return di;
-    }
-
-    @Override
-    public int getDJ() {
-        return dj;
-    }
-
-    @Override
-    public int getDK() {
-        return dk;
     }
 
     @Override
