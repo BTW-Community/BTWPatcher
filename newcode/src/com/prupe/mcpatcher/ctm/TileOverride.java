@@ -37,7 +37,7 @@ abstract class TileOverride implements ITileOverride {
     private final List<BlockStateMatcher> matchBlocks;
     private final Set<String> matchTiles;
     private final int defaultMetaMask;
-    private final int faces;
+    private final BlockFaceMatcher faceMatcher;
     private final int connectType;
     private final boolean innerSeams;
     private final BitSet biomes;
@@ -133,27 +133,7 @@ abstract class TileOverride implements ITileOverride {
         }
         defaultMetaMask = bits;
 
-        int flags = 0;
-        for (String val : properties.getString("faces", "all").toLowerCase().split("\\s+")) {
-            if (val.equals("bottom")) {
-                flags |= (1 << BOTTOM_FACE);
-            } else if (val.equals("top")) {
-                flags |= (1 << TOP_FACE);
-            } else if (val.equals("north")) {
-                flags |= (1 << NORTH_FACE);
-            } else if (val.equals("south")) {
-                flags |= (1 << SOUTH_FACE);
-            } else if (val.equals("east")) {
-                flags |= (1 << EAST_FACE);
-            } else if (val.equals("west")) {
-                flags |= (1 << WEST_FACE);
-            } else if (val.equals("side") || val.equals("sides")) {
-                flags |= (1 << NORTH_FACE) | (1 << SOUTH_FACE) | (1 << EAST_FACE) | (1 << WEST_FACE);
-            } else if (val.equals("all")) {
-                flags = -1;
-            }
-        }
-        faces = flags;
+        faceMatcher = BlockFaceMatcher.create(properties.getString("faces", ""));
 
         String connectType1 = properties.getString("connect", "").toLowerCase();
         if (connectType1.equals("")) {
@@ -424,13 +404,8 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    final boolean exclude(Block block, int face) {
-        if (block == null) {
-            return true;
-        } else if ((faces & (1 << face)) == 0) {
-            return true;
-        }
-        return false;
+    final boolean exclude(RenderBlockState renderBlockState) {
+        return faceMatcher != null && !faceMatcher.match(renderBlockState);
     }
 
     @Override
@@ -471,7 +446,7 @@ abstract class TileOverride implements ITileOverride {
         //TODO
         //Integer metadataEntry = matchBlocks.get(block);
         //matchMetadata = metadataEntry == null ? META_MASK : metadataEntry;
-        if (exclude(block, renderBlockState.getTextureFace())) {
+        if (exclude(renderBlockState)) {
             return null;
         }
         if (height != null && !height.get(j)) {
@@ -503,7 +478,7 @@ abstract class TileOverride implements ITileOverride {
         if (height != null || biomes != null) {
             return null;
         }
-        if (exclude(block, face)) {
+        if (exclude(renderBlockState)) {
             return null;
         } else {
             return getTileHeld_Impl(renderBlockState, origIcon);

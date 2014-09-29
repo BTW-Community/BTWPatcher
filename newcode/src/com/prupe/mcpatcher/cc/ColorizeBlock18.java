@@ -35,6 +35,7 @@ public class ColorizeBlock18 extends RenderBlockState {
     private int effectiveFace;
     private int uvRotation;
     private int hvFace;
+    private String textureFaceName;
 
     private boolean useCM;
     private IColorMap colorMap;
@@ -285,9 +286,11 @@ public class ColorizeBlock18 extends RenderBlockState {
     public ModelFace getModelFace(ModelFace origFace) {
         FaceInfo faceInfo = FaceInfo.getFaceInfo(origFace);
         if (faceInfo == null) {
+            textureFaceName = null;
             return origFace;
         }
         TextureAtlasSprite origIcon = faceInfo.getSprite();
+        textureFaceName = faceInfo.getTextureName();
         setUVFace(faceInfo);
         ijkIterator.go(this, origIcon);
         TextureAtlasSprite newIcon = (TextureAtlasSprite) ijkIterator.getIcon();
@@ -328,6 +331,11 @@ public class ColorizeBlock18 extends RenderBlockState {
     @Override
     public int getTextureFaceOrig() {
         return getTextureFace();
+    }
+
+    @Override
+    public String getTextureFaceName() {
+        return textureFaceName;
     }
 
     @Override

@@ -121,6 +121,8 @@ abstract public class RenderBlockState {
 
     abstract public int getTextureFaceOrig();
 
+    abstract public String getTextureFaceName();
+
     abstract public int getFaceForHV();
 
     abstract public int[] getOffset(int blockFace, int relativeDirection);

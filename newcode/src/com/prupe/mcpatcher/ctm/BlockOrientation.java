@@ -84,6 +84,11 @@ final class BlockOrientation extends RenderBlockState {
     }
 
     @Override
+    public String getTextureFaceName() {
+        throw new UnsupportedOperationException("getTextureName");
+    }
+
+    @Override
     public int getFaceForHV() {
         return blockFace;
     }
