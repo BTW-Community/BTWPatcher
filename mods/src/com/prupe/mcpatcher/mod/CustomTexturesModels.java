@@ -49,6 +49,7 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new IconMod(this));
         addClassMod(new IBlockAccessMod(this));
         addClassMod(new IBlockStateMod(this));
+        addClassMod(new IBlockStatePropertyMod(this));
         addClassMod(new TessellatorMod(this));
         addClassMod(new TessellatorFactoryMod(this));
         addClassMod(new BiomeGenBaseMod(this));
@@ -99,6 +100,7 @@ public class CustomTexturesModels extends Mod {
             super(CustomTexturesModels.this);
 
             mapBlockMaterial();
+            mapBlockState();
 
             addClassSignature(new BytecodeSignature() {
                 @Override

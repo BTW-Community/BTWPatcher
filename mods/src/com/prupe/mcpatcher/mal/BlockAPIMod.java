@@ -90,7 +90,7 @@ public class BlockAPIMod extends Mod {
                 addMemberMapper(new FieldMapper(blockRegistry));
             }
             if (malVersion >= 3) {
-                addMemberMapper(new MethodMapper(new MethodRef(getDeobfClass(), "getBlockState", "()LIBlockState;")));
+                mapBlockState();
             }
         }
     }
