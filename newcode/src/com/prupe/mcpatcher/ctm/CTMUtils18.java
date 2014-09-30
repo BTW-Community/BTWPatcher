@@ -272,6 +272,9 @@ public class CTMUtils18 extends RenderBlockState {
             if (ignoredProperties.contains(property)) {
                 continue;
             }
+            if (!neighborState.getProperties().contains(property)) {
+                return false;
+            }
             Comparable value = blockState.getProperty(property);
             Comparable neighborValue = neighborState.getProperty(property);
             if (!comparePropertyValues(value, neighborValue)) {
