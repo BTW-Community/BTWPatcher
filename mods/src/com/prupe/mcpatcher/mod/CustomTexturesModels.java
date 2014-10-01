@@ -60,6 +60,8 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new ModelFaceSpriteMod(this));
 
         addClassMod(new BlockMod());
+        addClassMod(new MinecraftMod());
+        addClassMod(new RenderBlockDispatcherMod());
         addClassMod(new RenderBlockCustomMod());
         addClassMod(new RenderBlockCustomInnerMod());
         addClassMod(new RenderBlockFluidMod());
@@ -95,6 +97,16 @@ public class CustomTexturesModels extends Mod {
         };
     }
 
+    private class MinecraftMod extends com.prupe.mcpatcher.basemod.MinecraftMod {
+        MinecraftMod() {
+            super(CustomTexturesModels.this);
+
+            final MethodRef getRenderBlockDispatcher = new MethodRef(getDeobfClass(), "getRenderBlockDispatcher", "()LRenderBlockDispatcher;");
+
+            addMemberMapper(new MethodMapper(getRenderBlockDispatcher));
+        }
+    }
+
     private class BlockMod extends com.prupe.mcpatcher.basemod.BlockMod {
         BlockMod() {
             super(CustomTexturesModels.this);
@@ -118,6 +130,17 @@ public class CustomTexturesModels extends Mod {
             addMemberMapper(new MethodMapper(blockColorMultiplier));
 
             addPatch(new MakeMemberPublicPatch(blockMaterial));
+        }
+    }
+
+    private class RenderBlockDispatcherMod extends ClassMod {
+        RenderBlockDispatcherMod() {
+            final MethodRef getModel = new MethodRef(getDeobfClass(), "getModel", "(LIBlockState;LIBlockAccess;LPosition;)LIModel;");
+
+            addClassSignature(new ConstSignature("Tesselating block in world"));
+            addClassSignature(new ConstSignature(0xf000f).negate(true));
+
+            addMemberMapper(new MethodMapper(getModel));
         }
     }
 

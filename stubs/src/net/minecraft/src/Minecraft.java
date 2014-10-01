@@ -47,4 +47,9 @@ public class Minecraft {
     public ResourceManager getResourceManager() {
         return null;
     }
+
+    // 1.8+
+    public RenderBlockDispatcher getRenderBlockDispatcher() {
+        return null;
+    }
 }
