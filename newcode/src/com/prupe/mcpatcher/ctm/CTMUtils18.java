@@ -7,10 +7,7 @@ import com.prupe.mcpatcher.mal.block.BlockAPI;
 import com.prupe.mcpatcher.mal.tile.FaceInfo;
 import net.minecraft.src.*;
 
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 
 public class CTMUtils18 extends RenderBlockState {
@@ -289,7 +286,18 @@ public class CTMUtils18 extends RenderBlockState {
 
     @Override
     public boolean shouldConnectByTile(Block neighbor, Icon origIcon, int neighborI, int neighborJ, int neighborK) {
-        return shouldConnectByBlock(neighbor, neighborI, neighborJ, neighborK); // TODO
+        Position neighborPosition = new Position(neighborI, neighborJ, neighborK);
+        IBlockState neighborState = blockAccess.getBlockState(neighborPosition);
+        IModel neighborModel = Minecraft.getInstance().getRenderBlockDispatcher().getModel(neighborState, blockAccess, neighborPosition);
+        List<ModelFace> neighborFaces = direction == null ? neighborModel.getDefaultFaces() : neighborModel.getFaces(direction);
+        if (!neighborFaces.isEmpty()) {
+            for (ModelFace neighborFace : neighborFaces) {
+                if (origIcon == FaceInfo.getFaceInfo(neighborFace).getSprite()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
