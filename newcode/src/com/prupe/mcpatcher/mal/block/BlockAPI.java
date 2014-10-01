@@ -299,7 +299,7 @@ abstract public class BlockAPI {
             return instance.getBlockStateMatcherClass_Impl().getDeclaredConstructor(
                 PropertiesFile.class, String.class, Block.class, String.class, Map.class
             ).newInstance(
-                source, metaString.toString(), block, metadata.toString(), propertyMap
+                source, metaString.toString(), block, metadata.toString().trim(), propertyMap
             );
         } catch (Throwable e) {
             e.printStackTrace();

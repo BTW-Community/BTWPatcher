@@ -5,6 +5,7 @@ import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import net.minecraft.src.*;
 
 import java.util.*;
+import java.util.logging.Level;
 
 abstract public class BlockStateMatcher {
     private final String fullString;
@@ -113,6 +114,16 @@ abstract public class BlockStateMatcher {
             IBlockState state = block.getBlockState();
             if (properties.isEmpty() && !MCPatcherUtils.isNullOrEmpty(metadataList)) {
                 translateProperties(block, MCPatcherUtils.parseIntegerList(metadataList, 0, 15), properties);
+                if (!properties.isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (Map.Entry<String, String> entry : properties.entrySet()) {
+                        if (sb.length() > 0) {
+                            sb.append(':');
+                        }
+                        sb.append(entry.getKey()).append('=').append(entry.getValue());
+                    }
+                    source.warning("expanded %s:%s to %s", BlockAPI.getBlockName(block), metadataList, sb);
+                }
             }
             for (Map.Entry<String, String> entry : properties.entrySet()) {
                 String name = entry.getKey();
@@ -181,7 +192,10 @@ abstract public class BlockStateMatcher {
                 if (values != null && values.size() > 0 && values.size() < property.getValues().size()) {
                     StringBuilder sb = new StringBuilder();
                     for (Comparable value : values) {
-                        sb.append(value.toString()).append(',');
+                        if (sb.length() > 0) {
+                            sb.append(',');
+                        }
+                        sb.append(value.toString());
                     }
                     properties.put(property.getName(), sb.toString());
                 }
