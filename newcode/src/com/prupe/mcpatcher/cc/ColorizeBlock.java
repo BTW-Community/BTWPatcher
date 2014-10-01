@@ -202,7 +202,7 @@ public class ColorizeBlock {
 
     private static void reloadFoliageColors(PropertiesFile properties) {
         IColorMap colorMap = ColorMap.loadVanillaColorMap(DEFAULT_GRASSCOLOR, SWAMPGRASSCOLOR);
-        registerColorMap(colorMap, DEFAULT_GRASSCOLOR, "minecraft:grass:snowy=false minecraft:tallgrass:1,2 minecraft:double_plant:2,3:variant=double_grass minecraft:reeds");
+        registerColorMap(colorMap, DEFAULT_GRASSCOLOR, "minecraft:grass:snowy=false minecraft:tallgrass:1,2:type=tall_grass,fern minecraft:double_plant:2,3:variant=double_grass minecraft:reeds");
         colorMap = ColorMap.loadVanillaColorMap(DEFAULT_FOLIAGECOLOR, SWAMPFOLIAGECOLOR);
         registerColorMap(colorMap, DEFAULT_FOLIAGECOLOR, "minecraft:leaves:0,4,8,12:variant=oak minecraft:vine");
         registerColorMap(PINECOLOR, "minecraft:leaves:1,5,9,13:variant=spruce");
