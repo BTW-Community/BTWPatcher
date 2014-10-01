@@ -7,6 +7,7 @@ import net.minecraft.src.ResourceLocation;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 
 final public class PropertiesFile {
     private static final MCLogger staticLogger = MCLogger.getLogger("Texture Pack");
@@ -100,6 +101,22 @@ final public class PropertiesFile {
 
     public void setProperty(String key, String value) {
         properties.setProperty(key, value);
+    }
+
+    public boolean isLoggable(Level level) {
+        return logger.isLoggable(level);
+    }
+
+    public void finest(String format, Object... params) {
+        logger.finest(prefix + format, params);
+    }
+
+    public void finer(String format, Object... params) {
+        logger.finer(prefix + format, params);
+    }
+
+    public void fine(String format, Object... params) {
+        logger.fine(prefix + format, params);
     }
 
     public void info(String format, Object... params) {
