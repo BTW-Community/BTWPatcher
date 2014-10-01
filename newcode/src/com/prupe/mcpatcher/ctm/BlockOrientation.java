@@ -153,8 +153,13 @@ final class BlockOrientation extends RenderBlockState {
     }
 
     @Override
-    public boolean shouldConnect(Block neighbor, int[] offset) {
-        return (metadataBits & (1 << BlockAPI.getMetadataAt(blockAccess, i + offset[0], j + offset[1], k + offset[2]))) != 0;
+    public boolean shouldConnectByBlock(Block neighbor, int neighborI, int neighborJ, int neighborK) {
+        return block == neighbor && (metadataBits & (1 << BlockAPI.getMetadataAt(blockAccess, neighborI, neighborJ, neighborK))) != 0;
+    }
+
+    @Override
+    public boolean shouldConnectByTile(Block neighbor, Icon origIcon, int neighborI, int neighborJ, int neighborK) {
+        return origIcon == BlockAPI.getBlockIcon(neighbor, blockAccess, neighborI, neighborJ, neighborK, getTextureFaceOrig());
     }
 
     void setBlock(Block block, IBlockAccess blockAccess, int i, int j, int k) {

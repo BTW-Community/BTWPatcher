@@ -266,8 +266,11 @@ public class CTMUtils18 extends RenderBlockState {
     }
 
     @Override
-    public boolean shouldConnect(Block neighbor, int[] offset) {
-        IBlockState neighborState = blockAccess.getBlockState(new Position(position.getI() + offset[0], position.getJ() + offset[1], position.getK() + offset[2]));
+    public boolean shouldConnectByBlock(Block neighbor, int neighborI, int neighborJ, int neighborK) {
+        if (block != neighbor) {
+            return false;
+        }
+        IBlockState neighborState = blockAccess.getBlockState(new Position(neighborI, neighborJ, neighborK));
         for (IBlockStateProperty property : blockState.getProperties()) {
             if (ignoredProperties.contains(property)) {
                 continue;
@@ -282,6 +285,11 @@ public class CTMUtils18 extends RenderBlockState {
             }
         }
         return true;
+    }
+
+    @Override
+    public boolean shouldConnectByTile(Block neighbor, Icon origIcon, int neighborI, int neighborJ, int neighborK) {
+        return shouldConnectByBlock(neighbor, neighborI, neighborJ, neighborK); // TODO
     }
 
     @Override

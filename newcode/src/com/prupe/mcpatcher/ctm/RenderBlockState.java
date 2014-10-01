@@ -1,7 +1,9 @@
 package com.prupe.mcpatcher.ctm;
 
 import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
-import net.minecraft.src.*;
+import net.minecraft.src.Block;
+import net.minecraft.src.IBlockAccess;
+import net.minecraft.src.Icon;
 
 abstract public class RenderBlockState {
     public static final int BOTTOM_FACE = 0; // 0, -1, 0
@@ -154,5 +156,7 @@ abstract public class RenderBlockState {
         return dk;
     }
 
-    abstract public boolean shouldConnect(Block neighbor, int[] offset);
+    abstract public boolean shouldConnectByBlock(Block neighbor, int neighborI, int neighborJ, int neighborK);
+
+    abstract public boolean shouldConnectByTile(Block neighbor, Icon origIcon, int neighborI, int neighborJ, int neighborK);
 }

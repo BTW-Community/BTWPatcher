@@ -381,19 +381,12 @@ abstract class TileOverride implements ITileOverride {
                 }
             }
         }
-        if (!renderBlockState.shouldConnect(neighbor, offset)) {
-            return false;
-        }
         switch (connectType) {
             case CONNECT_BY_TILE:
-                Icon neighborIcon = BlockAPI.getBlockIcon(neighbor, blockAccess, i, j, k, renderBlockState.getTextureFaceOrig());
-                if (neighborIcon != null) {
-                    return neighborIcon == icon;
-                }
-                // fall through
+                return renderBlockState.shouldConnectByTile(neighbor, icon, i, j, k);
 
             case CONNECT_BY_BLOCK:
-                return neighbor == block;
+                return renderBlockState.shouldConnectByBlock(neighbor, i, j, k);
 
             case CONNECT_BY_MATERIAL:
                 return block.blockMaterial == neighbor.blockMaterial;
