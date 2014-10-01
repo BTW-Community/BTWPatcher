@@ -30,6 +30,7 @@ public class BlockMod extends com.prupe.mcpatcher.ClassMod {
     public static final MethodRef getRenderType = new MethodRef("Block", "getRenderType", "()I");
     public static final FieldRef blockMaterial = new FieldRef("Block", "blockMaterial", "LMaterial;");
     public static final MethodRef getBlockState = new MethodRef("Block", "getBlockState", "()LIBlockState;");
+    public static final MethodRef getStateFromMetadata = new MethodRef("Block", "getStateFromMetadata", "(I)LIBlockState;");
 
     public static boolean haveBlockRegistry() {
         return Mod.getMinecraftVersion().compareTo(MIN_VERSION_REGISTRY) >= 0;
@@ -116,6 +117,7 @@ public class BlockMod extends com.prupe.mcpatcher.ClassMod {
 
     public BlockMod mapBlockState() {
         addMemberMapper(new MethodMapper(getBlockState));
+        addMemberMapper(new MethodMapper(getStateFromMetadata).accessFlag(AccessFlag.STATIC, false));
         return this;
     }
 }

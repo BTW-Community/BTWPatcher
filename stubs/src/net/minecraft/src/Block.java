@@ -70,4 +70,8 @@ public class Block {
     public IBlockState getBlockState() {
         return null;
     }
+
+    public IBlockState getStateFromMetadata(int metadata) {
+        return null;
+    }
 }
