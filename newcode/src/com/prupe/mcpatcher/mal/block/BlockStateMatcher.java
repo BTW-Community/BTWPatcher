@@ -1,12 +1,10 @@
 package com.prupe.mcpatcher.mal.block;
 
-import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import net.minecraft.src.*;
 
 import java.util.*;
-import java.util.logging.Level;
 
 abstract public class BlockStateMatcher {
     private final String fullString;
@@ -114,7 +112,7 @@ abstract public class BlockStateMatcher {
             super(source, metaString, block, metadataList, properties);
             IBlockState state = block.getBlockState();
             if (properties.isEmpty() && !MCPatcherUtils.isNullOrEmpty(metadataList)) {
-                translateProperties(block, metadataList, properties);
+                translateProperties(block, MCPatcherUtils.parseIntegerList(metadataList, 0, 15), properties);
             }
             for (Map.Entry<String, String> entry : properties.entrySet()) {
                 String name = entry.getKey();
@@ -153,30 +151,44 @@ abstract public class BlockStateMatcher {
             }
         }
 
-        private void translateProperties(Block block, String metadataList, Map<String, String> properties) {
-            BitSet metadata = new BitSet(16);
-            for (int i : MCPatcherUtils.parseIntegerList(metadataList, 0, 15)) {
-                metadata.set(i);
-            }
+        private static void translateProperties(Block block, int[] metadataList, Map<String, String> properties) {
             if (BlockAPI.getBlockName(block).equals("minecraft:log")) {
                 StringBuilder sb = new StringBuilder();
-                if (metadata.get(0)) {
-                    sb.append("oak,");
+                for (int i : metadataList) {
+                    sb.append(i).append(',');
+                    if ((i & 0xc) == 0) {
+                        i &= 0x3;
+                        sb.append(i | 0x4).append(',');
+                        sb.append(i | 0x8).append(',');
+                    }
                 }
-                if (metadata.get(1)) {
-                    sb.append("spruce,");
+                metadataList = MCPatcherUtils.parseIntegerList(sb.toString(), 0, 15);
+            }
+            Map<IBlockStateProperty, Set<Comparable>> tmpMap = new HashMap<IBlockStateProperty, Set<Comparable>>();
+            for (int i : metadataList) {
+                IBlockState blockState = block.getStateFromMetadata(i);
+                for (IBlockStateProperty property : blockState.getProperties()) {
+                    Set<Comparable> values = tmpMap.get(property);
+                    if (values == null) {
+                        values = new HashSet<Comparable>();
+                        tmpMap.put(property, values);
+                    }
+                    values.add(blockState.getProperty(property));
                 }
-                if (metadata.get(2)) {
-                    sb.append("birch,");
+            }
+            for (IBlockStateProperty property : block.getBlockState().getProperties()) {
+                Set<Comparable> values = tmpMap.get(property);
+                if (values != null && values.size() > 0 && values.size() < property.getValues().size()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (Comparable value : values) {
+                        sb.append(value.toString()).append(',');
+                    }
+                    properties.put(property.getName(), sb.toString());
                 }
-                if (metadata.get(3)) {
-                    sb.append("jungle,");
-                }
-                properties.put("variant", sb.toString());
             }
         }
 
-        private void parseIntegerValues(IBlockStateProperty property, Set<Comparable> valueSet, String values) {
+        private static void parseIntegerValues(IBlockStateProperty property, Set<Comparable> valueSet, String values) {
             int min = Integer.MAX_VALUE;
             int max = Integer.MIN_VALUE;
             for (Comparable c : valueSet) {
@@ -188,7 +200,7 @@ abstract public class BlockStateMatcher {
             }
         }
 
-        private Comparable parseNonIntegerValue(IBlockStateProperty property, String value) {
+        private static Comparable parseNonIntegerValue(IBlockStateProperty property, String value) {
             for (Comparable propertyValue : property.getValues()) {
                 if (value.equals(propertyValue.toString())) {
                     return propertyValue;
