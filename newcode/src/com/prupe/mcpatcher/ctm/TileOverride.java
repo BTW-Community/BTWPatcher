@@ -368,9 +368,11 @@ abstract class TileOverride implements ITileOverride {
         if (neighbor == null) {
             return false;
         }
-        BlockStateMatcher filter = renderBlockState.getFilter();
-        if (filter != null && !filter.match(blockAccess, i, j, k)) {
-            return false;
+        if (block == neighbor) {
+            BlockStateMatcher filter = renderBlockState.getFilter();
+            if (filter != null && !filter.match(blockAccess, i, j, k)) {
+                return false;
+            }
         }
         if (innerSeams) {
             int blockFace = renderBlockState.getBlockFace();
