@@ -177,14 +177,18 @@ abstract public class BlockStateMatcher {
             }
             Map<IBlockStateProperty, Set<Comparable>> tmpMap = new HashMap<IBlockStateProperty, Set<Comparable>>();
             for (int i : metadataList) {
-                IBlockState blockState = block.getStateFromMetadata(i);
-                for (IBlockStateProperty property : blockState.getProperties()) {
-                    Set<Comparable> values = tmpMap.get(property);
-                    if (values == null) {
-                        values = new HashSet<Comparable>();
-                        tmpMap.put(property, values);
+                try {
+                    IBlockState blockState = block.getStateFromMetadata(i);
+                    for (IBlockStateProperty property : blockState.getProperties()) {
+                        Set<Comparable> values = tmpMap.get(property);
+                        if (values == null) {
+                            values = new HashSet<Comparable>();
+                            tmpMap.put(property, values);
+                        }
+                        values.add(blockState.getProperty(property));
                     }
-                    values.add(blockState.getProperty(property));
+                } catch (IllegalArgumentException e) {
+                    // ignore invalid metadata
                 }
             }
             for (IBlockStateProperty property : block.getBlockState().getProperties()) {
