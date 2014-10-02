@@ -460,6 +460,7 @@ public class CustomItemTextures extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
+                        // 13.0 - (double) itemStack.getItemDamage() * 13.0 / (double) itemStack.getMaxDamage()
                         push(13.0),
                         ALOAD_3,
                         anyReference(INVOKEVIRTUAL),

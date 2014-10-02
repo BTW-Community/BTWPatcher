@@ -943,7 +943,9 @@ public class CustomTexturesModels extends Mod {
             final MethodRef renderItem2 = new MethodRef(getDeobfClass(), "renderItem2", "(LItemStack;LIModel;)V");
             final MethodRef renderEnchantment = new MethodRef(getDeobfClass(), "renderEnchantment", "(LIModel;)V");
             final MethodRef renderFace = new MethodRef(getDeobfClass(), "renderFace", "(LTessellator;Ljava/util/List;ILItemStack;)V");
+            final MethodRef renderItemOverlayIntoGUI = new MethodRef(getDeobfClass(), "renderItemOverlayIntoGUI", "(LFontRenderer;LItemStack;IILjava/lang/String;)V");
             final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffectVanilla", "()Z");
+            final MethodRef getMaxDamage = new MethodRef("ItemStack", "getMaxDamage", "()I");
 
             addClassSignature(new BytecodeSignature() {
                 {
@@ -976,6 +978,28 @@ public class CustomTexturesModels extends Mod {
                         ALOAD_0,
                         ALOAD_2,
                         captureReference(INVOKESPECIAL)
+                    );
+                }
+            });
+
+            addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderItemOverlayIntoGUI);
+                    addXref(1, getMaxDamage);
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // 13.0 - (double) itemStack.getItemDamage() * 13.0 / (double) itemStack.getMaxDamage()
+                        push(13.0),
+                        ALOAD_2,
+                        anyReference(INVOKEVIRTUAL),
+                        I2D,
+                        push(13.0),
+                        DMUL,
+                        ALOAD_2,
+                        captureReference(INVOKEVIRTUAL)
                     );
                 }
             });
