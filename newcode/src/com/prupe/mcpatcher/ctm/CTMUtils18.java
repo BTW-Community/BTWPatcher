@@ -254,12 +254,13 @@ public class CTMUtils18 extends RenderBlockState {
     }
 
     private int getEnumProperty(IBlockStateProperty property) {
-        Comparable value = blockState.getProperty(property);
-        if (value instanceof Enum) {
-            return ((Enum) value).ordinal();
-        } else {
-            return -1;
+        if (property != null) {
+            Comparable value = blockState.getProperty(property);
+            if (value instanceof Enum) {
+                return ((Enum) value).ordinal();
+            }
         }
+        return -1;
     }
 
     @Override
