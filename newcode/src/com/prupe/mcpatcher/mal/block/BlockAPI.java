@@ -266,7 +266,7 @@ abstract public class BlockAPI {
             } else if (tokens.length == 2) {
                 propertyMap.put(tokens[0], tokens[1]);
                 appendThis = true;
-            } else if (namespace == null && !s.matches("^\\d+$")) {
+            } else if (namespace == null && !s.matches("\\d[-, 0-9]*")) {
                 namespace = blockName;
                 blockName = s;
             } else if (s.matches("\\d[-, 0-9]*")) {
