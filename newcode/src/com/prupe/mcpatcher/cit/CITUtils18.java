@@ -15,8 +15,8 @@ public class CITUtils18 {
 
     public static void preRender(ItemStack itemStack) {
         if (renderingEnchantment) {
-            // rendering enchantment -- keep current state
-        } else if (itemStack.getItem() instanceof ItemBlock) {
+            // rendering custom enchantment -- keep current state
+        } else if (itemStack == null || itemStack.getItem() instanceof ItemBlock) {
             clear();
         } else {
             currentItem = itemStack;
