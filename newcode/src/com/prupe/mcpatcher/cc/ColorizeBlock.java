@@ -314,19 +314,20 @@ public class ColorizeBlock {
 
     private static void reloadStemColors(PropertiesFile properties) {
         ResourceLocation resource = TexturePackAPI.hasResource(PUMPKIN_STEM_COLORS) ? PUMPKIN_STEM_COLORS : STEM_COLORS;
-        registerMetadataRGB("minecraft:pumpkin_stem", resource, 8);
+        registerMetadataRGB("minecraft:pumpkin_stem", resource, "age", 8);
         resource = TexturePackAPI.hasResource(MELON_STEM_COLORS) ? MELON_STEM_COLORS : STEM_COLORS;
-        registerMetadataRGB("minecraft:melon_stem", resource, 8);
+        registerMetadataRGB("minecraft:melon_stem", resource, "age", 8);
     }
 
-    private static void registerMetadataRGB(String blockName, ResourceLocation resource, int length) {
+    private static void registerMetadataRGB(String blockName, ResourceLocation resource, String property, int length) {
         int[] rgb = MCPatcherUtils.getImageRGB(TexturePackAPI.getImage(resource));
         if (rgb == null || rgb.length < length) {
             return;
         }
         for (int i = 0; i < length; i++) {
             IColorMap colorMap = new ColorMap.Fixed(rgb[i] & 0xffffff);
-            registerColorMap(colorMap, resource, blockName + ":" + i + "," + ((i + length) & 0xf));
+            String idList = String.format("%s:%d,%d:%s=%d", blockName, i, (i + length) & 0xf, property, i);
+            registerColorMap(colorMap, resource, idList);
         }
     }
 
