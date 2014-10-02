@@ -21,9 +21,6 @@ public class CITUtils18 {
         } else {
             currentItem = itemStack;
             itemOverride = CITUtils.findItemOverride(itemStack);
-            if (logger.logEvery(5000L)) {
-                logger.info("preRender(%s) -> %s", currentItem, itemOverride);
-            }
         }
     }
 
