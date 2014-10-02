@@ -94,6 +94,14 @@ abstract public class BlockFaceMatcher {
                     break;
                 }
             }
+            if (faces.contains("down") && faces.contains("up")) {
+                faces.add("end");
+                faces.add("ends");
+            }
+            if (faces.contains("north") && faces.contains("south") && faces.contains("west") && faces.contains("east")) {
+                faces.add("side");
+                faces.add("sides");
+            }
             Collections.addAll(faces, values);
         }
 
