@@ -224,19 +224,19 @@ public class CTMUtils18 extends RenderBlockState {
             if (block == bedBlock) {
                 if (getEnumProperty(bedHeadProperty) > 0) { // part=foot
                     switch (getEnumProperty(bedFacingProperty)) {
-                        case 0:
-                            dk = 1; // head is one block south
-                            break;
-
-                        case 1:
-                            di = -1; // head is one block west
-                            break;
-
                         case 2:
                             dk = -1; // head is one block north
                             break;
 
                         case 3:
+                            dk = 1; // head is one block south
+                            break;
+
+                        case 4:
+                            di = -1; // head is one block west
+                            break;
+
+                        case 5:
                             di = 1; // head is one block east
                             break;
 
@@ -246,7 +246,7 @@ public class CTMUtils18 extends RenderBlockState {
                     haveOffsets = true;
                 }
             } else if (getEnumProperty(halfProperties.get(block)) > 0) { // half=lower
-                di = 1;
+                dj = 1;
                 haveOffsets = true;
             }
         }
