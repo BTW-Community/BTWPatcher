@@ -19,11 +19,11 @@ final public class MCPatcher {
     /**
      * Major MCPatcher version number
      */
-    public static final int MAJOR_VERSION = 4;
+    public static final int MAJOR_VERSION = 5;
     /**
      * Minor MCPatcher version number
      */
-    public static final int MINOR_VERSION = 4;
+    public static final int MINOR_VERSION = 0;
     /**
      * MCPatcher release number
      */
