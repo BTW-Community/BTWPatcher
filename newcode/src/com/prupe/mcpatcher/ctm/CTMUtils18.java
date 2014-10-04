@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.cc.ColorizeBlock18;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
+import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
 import com.prupe.mcpatcher.mal.tile.FaceInfo;
 import net.minecraft.src.*;
 
@@ -314,5 +315,16 @@ public class CTMUtils18 extends RenderBlockState {
             sb.append(' ').append(direction.toString());
         }
         return sb.append('}').toString();
+    }
+
+    public static IBlockState setBetterGrassProperty(IBlockState state, Block block, IBlockAccess blockAccess, Position position, IBlockStateProperty property, int direction) {
+        boolean isBetterGrass = false;
+        if (RenderBlocksUtils.enableBetterGrass) {
+            int[] normal = NORMALS[direction];
+            if (block == BlockAPI.getBlockAt(blockAccess, position.getI() + normal[0], position.getJ() + normal[1] - 1, position.getK() + normal[2])) {
+                isBetterGrass = true;
+            }
+        }
+        return state.setProperty(property, isBetterGrass);
     }
 }

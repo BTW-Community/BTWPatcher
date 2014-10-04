@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
 import com.prupe.mcpatcher.basemod.ext18.*;
 import com.prupe.mcpatcher.mal.TexturePackAPIMod;
+import javassist.bytecode.AccessFlag;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,6 +61,8 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new ModelFaceSpriteMod(this));
 
         addClassMod(new BlockMod());
+        addClassMod(new BetterGrassMod("BlockGrass"));
+        addClassMod(new BetterGrassMod("BlockMycel"));
         addClassMod(new MinecraftMod());
         addClassMod(new RenderBlockDispatcherMod());
         addClassMod(new RenderBlockCustomMod());
@@ -108,6 +111,8 @@ public class CustomTexturesModels extends Mod {
     }
 
     private class BlockMod extends com.prupe.mcpatcher.basemod.BlockMod {
+        private final MethodRef registerBlocks = new MethodRef(getDeobfClass(), "registerBlocks", "()V");
+
         BlockMod() {
             super(CustomTexturesModels.this);
 
@@ -127,9 +132,241 @@ public class CustomTexturesModels extends Mod {
                 }
             }.setMethod(getRenderType));
 
+            mapBlockClass(2, "grass", "BlockGrass");
+            mapBlockClass(110, "mycelium", "BlockMycel");
+
             addMemberMapper(new MethodMapper(blockColorMultiplier));
 
             addPatch(new MakeMemberPublicPatch(blockMaterial));
+        }
+
+        private void mapBlockClass(final int blockId, final String blockName, final String className) {
+            addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(registerBlocks);
+                    addXref(1, new ClassRef(className));
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // registerBlock(blockId, blockName, new BlockSubclass(...)
+                        push(blockId),
+                        push(blockName),
+                        captureReference(NEW),
+                        DUP
+                    );
+                }
+            });
+        }
+    }
+
+    private class BetterGrassMod extends ClassMod {
+        private final MethodRef createBoolProperty = new MethodRef("PropertyBool", "create", "(Ljava/lang/String;)LPropertyBool;");
+        private final String blockName;
+
+        BetterGrassMod(String blockName) {
+            setParentClass("Block");
+            addPrerequisiteClass("Block");
+            this.blockName = blockName;
+
+            final FieldRef snowyProperty = new FieldRef(getDeobfClass(), "SNOWY", "LPropertyBool;");
+            final FieldRef northProperty = addPropertyField("north");
+            final FieldRef southProperty = addPropertyField("south");
+            final FieldRef westProperty = addPropertyField("west");
+            final FieldRef eastProperty = addPropertyField("east");
+
+            addClassSignature(new BytecodeSignature() {
+                {
+                    matchStaticInitializerOnly(true);
+                    addXref(1, createBoolProperty);
+                    addXref(2, snowyProperty);
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // SNOWY = PropertyBool.create("snowy");
+                        push("snowy"),
+                        captureReference(INVOKESTATIC),
+                        captureReference(PUTSTATIC)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                private final MethodRef setBlockState = new MethodRef(getDeobfClass(), BlockMod.setBlockState.getName(), BlockMod.setBlockState.getType());
+                private final MethodRef booleanValueOf = new MethodRef("java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;");
+
+                {
+                    setInsertBefore(true);
+                    matchConstructorOnly(true);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "extend default block state";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.setBlockState(...)
+                        reference(INVOKEVIRTUAL, setBlockState)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        setProperty(northProperty),
+                        setProperty(southProperty),
+                        setProperty(westProperty),
+                        setProperty(eastProperty)
+                    );
+                }
+
+                private byte[] setProperty(FieldRef field) {
+                    return buildCode(
+                        // .setProperty(field, false)
+                        reference(GETSTATIC, field),
+                        push(false),
+                        reference(INVOKESTATIC, booleanValueOf),
+                        reference(INVOKEINTERFACE, IBlockStateMod.setProperty)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                private final ClassRef propertyClass = new ClassRef("IBlockStateProperty");
+
+                @Override
+                public String getDescription() {
+                    return "extend block properties array";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // new IBlockStateProperty[]{ SNOWY }
+                        push(1),
+                        reference(ANEWARRAY, propertyClass),
+                        DUP,
+                        push(0),
+                        reference(GETSTATIC, snowyProperty),
+                        AASTORE
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // new IBlockStateProperty[]{ SNOWY, NORTH, SOUTH, WEST, EAST }
+                        push(5),
+                        reference(ANEWARRAY, propertyClass),
+                        setArrayElement(0, snowyProperty),
+                        setArrayElement(1, northProperty),
+                        setArrayElement(2, southProperty),
+                        setArrayElement(3, westProperty),
+                        setArrayElement(4, eastProperty)
+                    );
+                }
+
+                private byte[] setArrayElement(int index, FieldRef field) {
+                    return buildCode(
+                        DUP,
+                        push(index),
+                        reference(GETSTATIC, field),
+                        AASTORE
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                private final MethodRef getBlockStateInWorld = new MethodRef(getDeobfClass(), BlockMod.getBlockStateInWorld.getName(), BlockMod.getBlockStateInWorld.getType());
+                private final MethodRef setBetterGrassProperty = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "setBetterGrassProperty", "(LIBlockState;LBlock;LIBlockAccess;LPosition;LIBlockStateProperty;I)LIBlockState;");
+
+                {
+                    setInsertBefore(true);
+                    targetMethod(getBlockStateInWorld);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "extend block state";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        ARETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        setProperty(northProperty, 2),
+                        setProperty(southProperty, 3),
+                        setProperty(westProperty, 4),
+                        setProperty(eastProperty, 5)
+                    );
+                }
+
+                private byte[] setProperty(FieldRef field, int direction) {
+                    return buildCode(
+                        // CTMUtils18.setBetterGrassProperty(..., this, blockAccess, position, field, direction)
+                        ALOAD_0,
+                        ALOAD_2,
+                        ALOAD_3,
+                        reference(GETSTATIC, field),
+                        push(direction),
+                        reference(INVOKESTATIC, setBetterGrassProperty)
+                    );
+                }
+            });
+        }
+
+        private FieldRef addPropertyField(final String name) {
+            final FieldRef field = new FieldRef(getDeobfClass(), name.toUpperCase(), "LPropertyBool;");
+
+            addPatch(new AddFieldPatch(field, AccessFlag.PUBLIC | AccessFlag.STATIC | AccessFlag.FINAL));
+
+            addPatch(new BytecodePatch() {
+                {
+                    matchStaticInitializerOnly(true);
+                    setInsertBefore(true);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "initialize field for " + name + " property";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        RETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // FIELD = PropertyBool.create("field");
+                        push(name),
+                        reference(INVOKESTATIC, createBoolProperty),
+                        reference(PUTSTATIC, field)
+                    );
+                }
+            });
+
+            return field;
+        }
+
+        @Override
+        public String getDeobfClass() {
+            return blockName;
         }
     }
 
