@@ -14,7 +14,7 @@ import static com.prupe.mcpatcher.mod.cc.CustomColors.*;
 import static javassist.bytecode.Opcode.*;
 
 class CC_Entity {
-    private static final FieldRef fleeceColorTable = new FieldRef("EntitySheep", "fleeceColorTable", "[[F");
+    private static final FieldRef fleeceColorTable = new FieldRef("RenderSheep", "fleeceColorTable", "[[F");
     private static final MethodRef ordinal = new MethodRef("java/lang/Enum", "ordinal", "()I");
 
     static void setup(Mod mod) {
@@ -35,7 +35,7 @@ class CC_Entity {
 
         mod.addClassMod(new EntityReddustFXMod(mod));
 
-        mod.addClassMod(new EntitySheepMod(mod));
+        mod.addClassMod(new RenderSheepMod(mod));
 
         mod.addClassMod(new RenderWolfMod(mod));
         mod.addClassMod(new RecipesDyedArmorMod(mod));
@@ -1398,11 +1398,12 @@ class CC_Entity {
         }
     }
 
-    private static class EntitySheepMod extends ClassMod {
-        EntitySheepMod(Mod mod) {
-            super(mod);
+    private static class RenderSheepMod extends ClassMod {
+        private final MethodRef getFleeceColor = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "getFleeceColor", "([FI)[F");
 
-            addClassSignature(new ConstSignature("mob.sheep.say"));
+        RenderSheepMod(Mod mod) {
+            super(mod);
+            RenderUtilsMod.setup(this);
 
             if (IBlockStateMod.haveClass()) {
                 setup18();
@@ -1412,40 +1413,100 @@ class CC_Entity {
         }
 
         private void setup17() {
+            addClassSignature(new ConstSignature("mob.sheep.say"));
+
             addMemberMapper(new FieldMapper(fleeceColorTable)
                     .accessFlag(AccessFlag.PUBLIC, true)
                     .accessFlag(AccessFlag.STATIC, true)
             );
-        }
-
-        // TODO
-        private void setup18() {
-            addPatch(new AddFieldPatch(fleeceColorTable, AccessFlag.PUBLIC | AccessFlag.STATIC));
 
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                }
+
                 @Override
                 public String getDescription() {
-                    return "initialize array";
+                    return "override sheep wool color";
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        begin()
+                        // RenderSheep.fleeceColorTable[index]
+                        reference(GETSTATIC, fleeceColorTable),
+                        capture(anyILOAD),
+                        AALOAD,
+
+                        getLookAheadExpression(this)
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // fleeceColorTable = new float[3][16];
-                        push(3),
-                        push(16),
-                        reference(MULTIANEWARRAY, new ClassRef("[[F")), 2,
-                        reference(PUTSTATIC, fleeceColorTable)
+                        // ColorizeEntity.getFleeceColor(..., index)
+                        getCaptureGroup(1),
+                        reference(INVOKESTATIC, getFleeceColor)
                     );
                 }
-            }.matchStaticInitializerOnly(true));
+            });
+        }
+
+        private void setup18() {
+            addClassSignature(new ConstSignature("textures/entity/sheep/sheep_fur.png"));
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override sheep wool color";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // EntitySheep.getRGB(entity.getFleeceEnum())
+                        capture(build(
+                            ALOAD_1,
+                            anyReference(INVOKEVIRTUAL)
+                        )),
+                        anyReference(INVOKESTATIC),
+
+                        getLookAheadExpression(this)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // ColorizeEntity.getFleeceColor(..., entity.getFleeceEnum().ordinal())
+                        getCaptureGroup(1),
+                        reference(INVOKEVIRTUAL, ordinal),
+                        reference(INVOKESTATIC, getFleeceColor)
+                    );
+                }
+            });
+        }
+
+        private String getLookAheadExpression(PatchComponent patchComponent) {
+            return lookAhead(build(
+                // GL11.glColor3f(rgb[0], rgb[1], rgb[2]);
+                anyASTORE,
+                anyALOAD,
+                patchComponent.push(0),
+                FALOAD,
+                anyALOAD,
+                patchComponent.push(1),
+                FALOAD,
+                anyALOAD,
+                patchComponent.push(2),
+                FALOAD,
+                RenderUtilsMod.glColor3f(patchComponent)
+            ), true);
         }
     }
 
@@ -1678,9 +1739,9 @@ class CC_Entity {
                 // (int) (rgb[0] * 255.0f)
                 anyASTORE,
                 anyALOAD,
-                push(0),
+                patchComponent.push(0),
                 FALOAD,
-                push(255.0f),
+                patchComponent.push(255.0f),
                 FMUL,
                 F2I
             ), true);
