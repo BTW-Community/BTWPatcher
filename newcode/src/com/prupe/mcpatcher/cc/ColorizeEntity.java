@@ -49,7 +49,8 @@ public class ColorizeEntity {
     private static final float[][] fleeceColors = new float[colorNames.length][]; // sheep.*
     private static final float[][] collarColors = new float[colorNames.length][]; // collar.*
     private static final float[][] armorColors = new float[colorNames.length][]; // armor.*
-    private static int undyedLeatherColor; // armor.default
+
+    public static int undyedLeatherColor; // armor.default
 
     static {
         try {

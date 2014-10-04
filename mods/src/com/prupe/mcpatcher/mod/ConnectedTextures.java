@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.*;
 import com.prupe.mcpatcher.basemod.ext18.BlockModelFaceMod;
 import com.prupe.mcpatcher.basemod.ext18.DirectionMod;
+import com.prupe.mcpatcher.basemod.ext18.IBlockStateMod;
 import com.prupe.mcpatcher.basemod.ext18.PositionMod;
 import com.prupe.mcpatcher.mal.TexturePackAPIMod;
 import javassist.bytecode.AccessFlag;
@@ -86,11 +87,10 @@ public class ConnectedTextures extends Mod {
         }
 
         addClassFiles("com.prupe.mcpatcher.ctm.*");
-        if (haveGlassPaneRenderer) {
-            removeAddedClassFile(CTM_UTILS18_CLASS);
-        } else {
+        if (!haveGlassPaneRenderer) {
             removeAddedClassFile(MCPatcherUtils.GLASS_PANE_RENDERER_CLASS);
         }
+        removeAddedClassFile(MCPatcherUtils.CTM_UTILS18_CLASS);
 
         TexturePackAPIMod.earlyInitialize(2, MCPatcherUtils.CTM_UTILS_CLASS, "reset");
     }

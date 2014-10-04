@@ -28,7 +28,7 @@ abstract public class IconAPI {
     }
 
     public static String getIconName(Icon icon) {
-        return instance.getIconName_Impl((TextureAtlasSprite) icon);
+        return instance.getIconName_Impl(icon);
     }
 
     abstract protected boolean needRegisterTileAnimations_Impl();
@@ -41,7 +41,7 @@ abstract public class IconAPI {
 
     abstract protected int getIconHeight_Impl(TextureAtlasSprite icon);
 
-    abstract protected String getIconName_Impl(TextureAtlasSprite icon);
+    abstract protected String getIconName_Impl(Icon icon);
 
     final private static class V1 extends IconAPI {
         @Override
@@ -78,7 +78,7 @@ abstract public class IconAPI {
         }
 
         @Override
-        protected String getIconName_Impl(TextureAtlasSprite icon) {
+        protected String getIconName_Impl(Icon icon) {
             return icon.getIconName();
         }
     }
@@ -110,8 +110,19 @@ abstract public class IconAPI {
         }
 
         @Override
-        protected String getIconName_Impl(TextureAtlasSprite icon) {
+        protected String getIconName_Impl(Icon icon) {
             return icon.getIconName();
+        }
+    }
+
+    final private static class V3 extends V2 {
+        @Override
+        protected String getIconName_Impl(Icon icon) {
+            return getSprite(icon).getIconName();
+        }
+
+        private TextureAtlasSprite getSprite(Icon icon) {
+            return (TextureAtlasSprite) icon;
         }
     }
 }
