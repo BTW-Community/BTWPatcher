@@ -398,10 +398,6 @@ abstract class TileOverride implements ITileOverride {
         }
     }
 
-    final boolean exclude(RenderBlockState renderBlockState) {
-        return faceMatcher != null && !faceMatcher.match(renderBlockState);
-    }
-
     @Override
     public final Icon getTileWorld(RenderBlockState renderBlockState, Icon origIcon) {
         if (icons == null) {
@@ -437,10 +433,7 @@ abstract class TileOverride implements ITileOverride {
                 return null;
             }
         }
-        //TODO
-        //Integer metadataEntry = matchBlocks.get(block);
-        //matchMetadata = metadataEntry == null ? META_MASK : metadataEntry;
-        if (exclude(renderBlockState)) {
+        if (faceMatcher != null && !faceMatcher.match(renderBlockState)) {
             return null;
         }
         if (height != null && !height.get(j)) {
@@ -472,11 +465,10 @@ abstract class TileOverride implements ITileOverride {
         if (height != null || biomes != null) {
             return null;
         }
-        if (exclude(renderBlockState)) {
+        if (faceMatcher != null && !faceMatcher.match(renderBlockState)) {
             return null;
-        } else {
-            return getTileHeld_Impl(renderBlockState, origIcon);
         }
+        return getTileHeld_Impl(renderBlockState, origIcon);
     }
 
     abstract String getMethod();

@@ -37,9 +37,9 @@ abstract public class BlockFaceMatcher {
         protected V1(String[] values) {
             int flags = 0;
             for (String face : values) {
-                if (face.equals("bottom")) {
+                if (face.equals("bottom") || face.equals("down")) {
                     flags |= (1 << BOTTOM_FACE);
-                } else if (face.equals("top")) {
+                } else if (face.equals("top") || face.equals("up")) {
                     flags |= (1 << TOP_FACE);
                 } else if (face.equals("north")) {
                     flags |= (1 << NORTH_FACE);

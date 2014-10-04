@@ -38,13 +38,6 @@ abstract public class RenderBlockState {
     public static final int REL_U = 6;
     public static final int REL_UL = 7;
 
-    protected static final int[][] ROTATE_UV_MAP = new int[][]{
-        {WEST_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, 2, -2, 2, -2, 0, 0},
-        {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, 2},
-        {WEST_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, 2, -2, -2, -2, 0, 0},
-        {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, -2},
-    };
-
     public static final int CONNECT_BY_BLOCK = 0;
     public static final int CONNECT_BY_TILE = 1;
     public static final int CONNECT_BY_MATERIAL = 2;

@@ -59,6 +59,7 @@ abstract public class BlockStateMatcher {
         private final int metadataBits;
 
         private static Block doublePlantBlock;
+        private static Block logBlock;
 
         V1(PropertiesFile source, String metaString, Block block, String metadataList, Map<String, String> properties) {
             super(source, metaString, block, metadataList, properties);
@@ -72,6 +73,7 @@ abstract public class BlockStateMatcher {
                 metadataBits = bits;
             }
             doublePlantBlock = BlockAPI.parseBlockName("minecraft:double_plant");
+            logBlock = BlockAPI.parseBlockName("minecraft:log");
         }
 
         @Override
@@ -86,6 +88,8 @@ abstract public class BlockStateMatcher {
                     metadata = BlockAPI.getMetadataAt(blockAccess, i, j - 1, k);
                 }
                 metadata &= 0x7;
+            } else if (block == logBlock) {
+                metadata &= ~0xc;
             }
             return (metadataBits & (1 << metadata)) != 0;
         }

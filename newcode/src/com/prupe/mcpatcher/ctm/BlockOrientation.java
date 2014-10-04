@@ -22,6 +22,13 @@ final class BlockOrientation extends RenderBlockState {
         makeNeighborOffset(SOUTH_FACE, BOTTOM_FACE, NORTH_FACE, TOP_FACE), // EAST_FACE
     };
 
+    private static final int[][] ROTATE_UV_MAP = new int[][]{
+        {WEST_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, 2, -2, 2, -2, 0, 0},
+        {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, 2},
+        {WEST_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, 2, -2, -2, -2, 0, 0},
+        {NORTH_FACE, SOUTH_FACE, TOP_FACE, BOTTOM_FACE, WEST_FACE, EAST_FACE, 0, 0, 0, 0, -2, -2},
+    };
+
     private int i;
     private int j;
     private int k;
@@ -172,18 +179,6 @@ final class BlockOrientation extends RenderBlockState {
         renderType = block.getRenderType();
         metadata = altMetadata = BlockAPI.getMetadataAt(blockAccess, i, j, k);
         offsetsComputed = false;
-    }
-
-    // TODO: 1.8
-    void setFace(int blockFace, int textureFace, int rotation) {
-        this.blockFace = blockFace;
-        this.textureFace = textureFaceOrig = textureFace;
-        if (blockFace < 0) {
-            this.textureFace = blockFace;
-        }
-        blockFaceToTextureFace(blockFace);
-        rotateUV = rotation;
-        metadataBits = (1 << metadata) | (1 << altMetadata);
     }
 
     void setFace(int face) {
