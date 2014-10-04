@@ -145,4 +145,24 @@ public class Colorizer {
         int intColor = ColorUtils.float3ToInt(color);
         ColorUtils.intToFloat3(loadIntColor(key, intColor), color);
     }
+
+    static Integer loadIntegerColor(String key) {
+        int[] tmp = new int[1];
+        if (loadIntColor(key, tmp, 0)) {
+            return tmp[0];
+        } else {
+            return null;
+        }
+    }
+
+    static float[] loadFloatColor(String key) {
+        Integer color = loadIntegerColor(key);
+        if (color == null) {
+            return null;
+        } else {
+            float[] rgb = new float[3];
+            ColorUtils.intToFloat3(color, rgb);
+            return rgb;
+        }
+    }
 }

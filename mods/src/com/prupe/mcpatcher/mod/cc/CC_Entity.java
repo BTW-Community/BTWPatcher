@@ -1,7 +1,9 @@
 package com.prupe.mcpatcher.mod.cc;
 
 import com.prupe.mcpatcher.*;
-import com.prupe.mcpatcher.basemod.*;
+import com.prupe.mcpatcher.basemod.ResourceLocationMod;
+import com.prupe.mcpatcher.basemod.WorldMod;
+import com.prupe.mcpatcher.basemod.WorldProviderMod;
 import com.prupe.mcpatcher.basemod.ext18.IBlockStateMod;
 import com.prupe.mcpatcher.basemod.ext18.RenderUtilsMod;
 import javassist.bytecode.AccessFlag;
@@ -13,6 +15,7 @@ import static javassist.bytecode.Opcode.*;
 
 class CC_Entity {
     private static final FieldRef fleeceColorTable = new FieldRef("EntitySheep", "fleeceColorTable", "[[F");
+    private static final MethodRef ordinal = new MethodRef("java/lang/Enum", "ordinal", "()I");
 
     static void setup(Mod mod) {
         mod.addClassMod(new EntityMod(mod));
@@ -40,6 +43,8 @@ class CC_Entity {
         mod.addClassMod(new EntityListMod(mod));
 
         mod.addClassMod(new RenderXPOrbMod(mod));
+
+        mod.setMALVersion("dyecolor", IBlockStateMod.haveClass() ? 2 : 1);
     }
 
     private static class EntityMod extends ClassMod {
@@ -1445,7 +1450,7 @@ class CC_Entity {
     }
 
     private static class RenderWolfMod extends ClassMod {
-        private final FieldRef collarColors = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "collarColors", "[[F");
+        private final MethodRef getWolfCollarColor = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "getWolfCollarColor", "([FI)[F");
 
         RenderWolfMod(Mod mod) {
             super(mod);
@@ -1463,6 +1468,10 @@ class CC_Entity {
 
         private void setup17() {
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override wolf collar colors";
@@ -1471,14 +1480,19 @@ class CC_Entity {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(GETSTATIC, fleeceColorTable)
+                        // EntitySheep.fleeceColorTable[color]
+                        reference(GETSTATIC, fleeceColorTable),
+                        capture(anyILOAD),
+                        AALOAD
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(GETSTATIC, collarColors)
+                        // ColorizeEntity.getWolfCollarColor(..., color);
+                        getCaptureGroup(1),
+                        reference(INVOKESTATIC, getWolfCollarColor)
                     );
                 }
             });
@@ -1494,20 +1508,22 @@ class CC_Entity {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // rgb = colorEnum.getRGB();
-                        capture(anyALOAD),
-                        anyReference(INVOKESTATIC),
-                        capture(anyASTORE),
+                        // rgb = EntitySheep.getRGB(dyeColorEnum);
+                        capture(build(
+                            capture(anyALOAD),
+                            anyReference(INVOKESTATIC)
+                        )),
 
                         // GL11.glColor3f(rgb[0], rgb[1], rgb[2]);
                         lookAhead(build(
+                            capture(anyASTORE),
                             capture(anyALOAD),
                             push(0),
                             FALOAD,
-                            backReference(3),
+                            backReference(4),
                             push(1),
                             FALOAD,
-                            backReference(3),
+                            backReference(4),
                             push(2),
                             FALOAD,
                             RenderUtilsMod.glColor3f(this)
@@ -1518,12 +1534,11 @@ class CC_Entity {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // rgb = ColorizeEntity.collarColors[colorEnum.ordinal()];
-                        reference(GETSTATIC, collarColors),
+                        // rgb = ColorizeEntity.getWolfCollarColor(EntitySheep.getRGB(dyeColorEnum), dyeColorEnum.ordinal())
                         getCaptureGroup(1),
-                        reference(INVOKEVIRTUAL, new MethodRef("java/lang/Enum", "ordinal", "()I")),
-                        AALOAD,
-                        getCaptureGroup(2)
+                        getCaptureGroup(2),
+                        reference(INVOKEVIRTUAL, ordinal),
+                        reference(INVOKESTATIC, getWolfCollarColor)
                     );
                 }
             });
@@ -1531,10 +1546,10 @@ class CC_Entity {
     }
 
     private static class RecipesDyedArmorMod extends ClassMod {
+        private final MethodRef getArmorDyeColor = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "getArmorDyeColor", "([FI)[F");
+
         RecipesDyedArmorMod(Mod mod) {
             super(mod);
-
-            final FieldRef armorColors = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "armorColors", "[[F");
 
             addClassSignature(new ConstSignature(255.0f));
 
@@ -1575,7 +1590,19 @@ class CC_Entity {
                 }
             });
 
+            if (IBlockStateMod.haveClass()) {
+                setup18();
+            } else {
+                setup17();
+            }
+        }
+
+        private void setup17() {
             addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                }
+
                 @Override
                 public String getDescription() {
                     return "override armor dye colors";
@@ -1584,17 +1611,79 @@ class CC_Entity {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        reference(GETSTATIC, fleeceColorTable)
+                        // EntitySheep.fleeceColorTable[BlockColored.invertIndex(itemStack.getItemDamage())]
+                        reference(GETSTATIC, fleeceColorTable),
+                        capture(build(
+                            anyALOAD,
+                            anyReference(INVOKEVIRTUAL),
+                            optional(anyReference(INVOKESTATIC))
+                        )),
+                        AALOAD,
+
+                        getLookAheadExpression(this)
                     );
                 }
 
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        reference(GETSTATIC, armorColors)
+                        // ColorizeEntity.getArmorDyeColor(..., BlockColored.invertIndex(itemStack.getItemDamage()))
+                        getCaptureGroup(1),
+                        reference(INVOKESTATIC, getArmorDyeColor)
                     );
                 }
             });
+        }
+
+        private void setup18() {
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override armor dye colors";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // EntitySheep.getRGB(EnumDyeColor.getArmorColor(itemStack.getItemDamage()));
+                        capture(build(
+                            anyALOAD,
+                            anyReference(INVOKEVIRTUAL),
+                            anyReference(INVOKESTATIC)
+                        )),
+                        anyReference(INVOKESTATIC),
+
+                        getLookAheadExpression(this)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // ColorizeEntity.getArmorDyeColor(..., EnumDyeColor.getArmorColor(itemStack.getItemDamage()).ordinal())
+                        getCaptureGroup(1),
+                        reference(INVOKEVIRTUAL, ordinal),
+                        reference(INVOKESTATIC, getArmorDyeColor)
+                    );
+                }
+            });
+        }
+
+        private String getLookAheadExpression(PatchComponent patchComponent) {
+            return lookAhead(build(
+                // (int) (rgb[0] * 255.0f)
+                anyASTORE,
+                anyALOAD,
+                push(0),
+                FALOAD,
+                push(255.0f),
+                FMUL,
+                F2I
+            ), true);
         }
     }
 

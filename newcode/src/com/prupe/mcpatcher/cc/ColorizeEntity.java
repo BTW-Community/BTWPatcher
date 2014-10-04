@@ -1,15 +1,14 @@
 package com.prupe.mcpatcher.cc;
 
 import com.prupe.mcpatcher.MCPatcherUtils;
-import com.prupe.mcpatcher.mal.biome.ColorUtils;
 import com.prupe.mcpatcher.mal.biome.BiomeAPI;
+import com.prupe.mcpatcher.mal.biome.ColorUtils;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import net.minecraft.src.EntityLivingBase;
-import net.minecraft.src.EntitySheep;
-import net.minecraft.src.ItemDye;
 import net.minecraft.src.ResourceLocation;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class ColorizeEntity {
@@ -27,21 +26,33 @@ public class ColorizeEntity {
 
     private static int[] xpOrbColors;
 
-    private static final int[] origDyeColors = ItemDye.dyeColors.clone(); // dye.*
-    private static final float[][] origFleeceColors = new float[EntitySheep.fleeceColorTable.length][]; // sheep.*
+    private static final String[] colorNames = new String[]{
+        "white",
+        "orange",
+        "magenta",
+        "lightBlue",
+        "yellow",
+        "lime",
+        "pink",
+        "gray",
+        "silver",
+        "cyan",
+        "purple",
+        "blue",
+        "brown",
+        "green",
+        "red",
+        "black",
+    };
 
-    public static final float[][] armorColors = new float[EntitySheep.fleeceColorTable.length][]; // armor.*
-    public static int undyedLeatherColor; // armor.default
-
-    public static final float[][] collarColors = new float[EntitySheep.fleeceColorTable.length][]; // collar.*
+    private static final Integer[] dyeColors = new Integer[colorNames.length]; // dye.*
+    private static final float[][] fleeceColors = new float[colorNames.length][]; // sheep.*
+    private static final float[][] collarColors = new float[colorNames.length][]; // collar.*
+    private static final float[][] armorColors = new float[colorNames.length][]; // armor.*
+    private static int undyedLeatherColor; // armor.default
 
     static {
         try {
-            for (int i = 0; i < EntitySheep.fleeceColorTable.length; i++) {
-                origFleeceColors[i] = EntitySheep.fleeceColorTable[i].clone();
-                armorColors[i] = EntitySheep.fleeceColorTable[i].clone();
-                collarColors[i] = EntitySheep.fleeceColorTable[i].clone();
-            }
             reset();
         } catch (Throwable e) {
             e.printStackTrace();
@@ -52,12 +63,10 @@ public class ColorizeEntity {
         waterBaseColor = new float[]{0.2f, 0.3f, 1.0f};
         portalColor = new float[]{1.0f, 0.3f, 0.9f};
         lavaDropColors = null;
-        System.arraycopy(origDyeColors, 0, ItemDye.dyeColors, 0, origDyeColors.length);
-        for (int i = 0; i < origFleeceColors.length; i++) {
-            EntitySheep.fleeceColorTable[i] = origFleeceColors[i].clone();
-            armorColors[i] = origFleeceColors[i].clone();
-            collarColors[i] = origFleeceColors[i].clone();
-        }
+        Arrays.fill(dyeColors, null);
+        Arrays.fill(fleeceColors, null);
+        Arrays.fill(collarColors, null);
+        Arrays.fill(armorColors, null);
         undyedLeatherColor = 0xa06540;
         myceliumColors = null;
         xpOrbColors = null;
@@ -78,14 +87,14 @@ public class ColorizeEntity {
     }
 
     static void reloadDyeColors(PropertiesFile properties) {
-        for (int i = 0; i < ItemDye.dyeColors.length; i++) {
-            Colorizer.loadIntColor("dye." + Colorizer.getStringKey(ItemDye.dyeColorNames, i), ItemDye.dyeColors, i);
+        for (int i = 0; i < colorNames.length; i++) {
+            dyeColors[i] = Colorizer.loadIntegerColor("dye." + Colorizer.getStringKey(colorNames, i));
         }
-        for (int i = 0; i < EntitySheep.fleeceColorTable.length; i++) {
-            String key = Colorizer.getStringKey(ItemDye.dyeColorNames, EntitySheep.fleeceColorTable.length - 1 - i);
-            Colorizer.loadFloatColor("sheep." + key, EntitySheep.fleeceColorTable[i]);
-            Colorizer.loadFloatColor("armor." + key, armorColors[i]);
-            Colorizer.loadFloatColor("collar." + key, collarColors[i]);
+        for (int i = 0; i < colorNames.length; i++) {
+            String key = Colorizer.getStringKey(colorNames, i);
+            fleeceColors[i] = Colorizer.loadFloatColor("sheep." + key);
+            collarColors[i] = Colorizer.loadFloatColor("collar." + key);
+            armorColors[i] = Colorizer.loadFloatColor("armor." + key);
         }
         undyedLeatherColor = Colorizer.loadIntColor("armor.default", undyedLeatherColor);
     }
@@ -130,5 +139,27 @@ public class ColorizeEntity {
             defaultColor = ColorizeWorld.underwaterColor.getColorMultiplier(BiomeAPI.getWorld(), i, j, k);
         }
         Colorizer.setColorF(defaultColor);
+    }
+
+    public static int getDyeColor(int rgb, int index) {
+        Integer newRGB = dyeColors[index];
+        return newRGB == null ? rgb : newRGB;
+    }
+
+    public static float[] getFleeceColor(float[] rgb, int index) {
+        return getArrayColor(fleeceColors, rgb, index);
+    }
+
+    public static float[] getWolfCollarColor(float[] rgb, int index) {
+        return getArrayColor(collarColors, rgb, index);
+    }
+
+    public static float[] getArmorColor(float[] rgb, int index) {
+        return getArrayColor(armorColors, rgb, index);
+    }
+
+    private static float[] getArrayColor(float[][] array, float[] rgb, int index) {
+        float[] newRGB = array[index];
+        return newRGB == null ? rgb : newRGB;
     }
 }
