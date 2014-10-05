@@ -61,8 +61,8 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new ModelFaceSpriteMod(this));
 
         addClassMod(new BlockMod());
-        addClassMod(new BetterGrassMod("BlockGrass"));
-        addClassMod(new BetterGrassMod("BlockMycel"));
+        //addClassMod(new BetterGrassMod("BlockGrass"));
+        //addClassMod(new BetterGrassMod("BlockMycel"));
         addClassMod(new MinecraftMod());
         addClassMod(new RenderBlockDispatcherMod());
         addClassMod(new RenderBlockCustomMod());
