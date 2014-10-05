@@ -236,4 +236,17 @@ public class ColorizeBlock18 {
             tessellator.setColorOpaque_F(base * rgb[0], base * rgb[1], base * rgb[2]);
         }
     }
+
+    public int getParticleColor(IBlockAccess blockAccess, IBlockState blockState, Position position, int color) {
+        List<BlockStateMatcher> maps = ColorizeBlock.findColorMaps(blockState.getBlock());
+        if (maps != null) {
+            for (BlockStateMatcher matcher : maps) {
+                if (matcher.matchBlockState(blockState)) {
+                    IColorMap colorMap = ColorizeBlock.getThreadLocal(matcher);
+                    return colorMap.getColorMultiplier(blockAccess, position.getI(), position.getJ(), position.getK());
+                }
+            }
+        }
+        return color;
+    }
 }

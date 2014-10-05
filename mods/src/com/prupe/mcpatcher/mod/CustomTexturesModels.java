@@ -69,6 +69,7 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new RenderBlockCustomInnerMod());
         addClassMod(new RenderBlockFluidMod());
         addClassMod(new RenderGlobalMod());
+        addClassMod(new EntityDiggingFXMod());
 
         addClassMod(new ItemMod(this));
         addClassMod(new ItemStackMod(this));
@@ -1168,6 +1169,64 @@ public class CustomTexturesModels extends Mod {
                     );
                 }
             }.targetMethod(buildNear));
+        }
+    }
+
+    private class EntityDiggingFXMod extends ClassMod {
+        EntityDiggingFXMod() {
+            setParentClass("EntityFX");
+
+            final MethodRef applyColorMultiplier = new MethodRef(getDeobfClass(), "applyColorMultiplier", "(LPosition;)LEntityDiggingFX;");
+            final MethodRef getParticleColor = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "getParticleColor", "(LIBlockAccess;LIBlockState;LPosition;I)I");
+
+            addClassSignature(new ConstSignature(0.015609375f));
+            addClassSignature(new ConstSignature(255.0f));
+            addClassSignature(new ConstSignature(4.0f));
+
+            addMemberMapper(new MethodMapper(applyColorMultiplier));
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(applyColorMultiplier);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override digging particle color";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // color = this.blockState.getBlock().colorMultiplier(this.worldObj, position)
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        anyReference(INVOKEINTERFACE),
+                        ALOAD_0,
+                        captureReference(GETFIELD),
+                        ALOAD_1,
+                        anyReference(INVOKEVIRTUAL),
+                        capture(anyISTORE)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // color = CTMUtils18.getInstance().getParticleColor(this.worldObj, this.blockState, position, color);
+                        reference(INVOKESTATIC, getCTMInstance),
+                        ALOAD_0,
+                        getCaptureGroup(2),
+                        ALOAD_0,
+                        getCaptureGroup(1),
+                        ALOAD_1,
+                        flipLoadStore(getCaptureGroup(3)),
+                        reference(INVOKEVIRTUAL, getParticleColor),
+                        getCaptureGroup(3)
+                    );
+                }
+            });
         }
     }
 

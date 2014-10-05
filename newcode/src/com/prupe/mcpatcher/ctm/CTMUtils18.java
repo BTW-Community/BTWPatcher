@@ -112,11 +112,7 @@ public class CTMUtils18 extends RenderBlockState {
     }
 
     public boolean preRender(IBlockAccess blockAccess, IModel model, IBlockState blockState, Position position, Block block, boolean useAO) {
-        if (block == doublePlantBlock) {
-            // for some reason, this is needed to fix the variant property on the bottom half of double grass
-            blockState = block.getBlockStateInWorld(blockState, blockAccess, position);
-        }
-
+        blockState = fixupState(blockState, blockAccess, block, position);
         this.blockAccess = blockAccess;
         this.model = model;
         this.blockState = blockState;
@@ -132,6 +128,14 @@ public class CTMUtils18 extends RenderBlockState {
         colorizeBlock.preRender(blockAccess, model, blockState, position, block, useAO);
 
         return true;
+    }
+
+    private static IBlockState fixupState(IBlockState blockState, IBlockAccess blockAccess, Block block, Position position) {
+        if (block == doublePlantBlock) {
+            // for some reason, this is needed to fix the variant property on the bottom half of double grass
+            blockState = block.getBlockStateInWorld(blockState, blockAccess, position);
+        }
+        return blockState;
     }
 
     public void setDirection(Direction direction) {
@@ -333,5 +337,10 @@ public class CTMUtils18 extends RenderBlockState {
             }
         }
         return state.setProperty(property, isBetterGrass);
+    }
+
+    public int getParticleColor(IBlockAccess blockAccess, IBlockState blockState, Position position, int color) {
+        blockState = fixupState(blockState, blockAccess, blockState.getBlock(), position);
+        return colorizeBlock.getParticleColor(blockAccess, blockState, position, color);
     }
 }
