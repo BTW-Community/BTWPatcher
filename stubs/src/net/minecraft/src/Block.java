@@ -74,4 +74,8 @@ public class Block {
     public IBlockState getStateFromMetadata(int metadata) {
         return null;
     }
+
+    public IBlockState getBlockStateInWorld(IBlockState blockState, IBlockAccess blockAccess, Position position) {
+        return null;
+    }
 }

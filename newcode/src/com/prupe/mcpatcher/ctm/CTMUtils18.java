@@ -30,6 +30,7 @@ public class CTMUtils18 extends RenderBlockState {
     private static Block bedBlock;
     private static IBlockStateProperty bedHeadProperty;
     private static IBlockStateProperty bedFacingProperty;
+    private static Block doublePlantBlock;
 
     private IModel model;
     private IBlockState blockState;
@@ -50,6 +51,7 @@ public class CTMUtils18 extends RenderBlockState {
         bedBlock = BlockAPI.getFixedBlock("minecraft:bed");
         bedHeadProperty = getPropertyByName(bedBlock, "part");
         bedFacingProperty = getPropertyByName(bedBlock, "facing");
+        doublePlantBlock = BlockAPI.getFixedBlock("minecraft:double_plant");
 
         for (Block block : BlockAPI.getAllBlocks()) {
             logger.config("Block %s", BlockAPI.getBlockName(block));
@@ -110,6 +112,11 @@ public class CTMUtils18 extends RenderBlockState {
     }
 
     public boolean preRender(IBlockAccess blockAccess, IModel model, IBlockState blockState, Position position, Block block, boolean useAO) {
+        if (block == doublePlantBlock) {
+            // for some reason, this is needed to fix the variant property on the bottom half of double grass
+            blockState = block.getBlockStateInWorld(blockState, blockAccess, position);
+        }
+
         this.blockAccess = blockAccess;
         this.model = model;
         this.blockState = blockState;
