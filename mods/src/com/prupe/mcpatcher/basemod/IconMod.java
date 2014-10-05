@@ -4,7 +4,6 @@ import com.prupe.mcpatcher.InterfaceMethodRef;
 import com.prupe.mcpatcher.JavaRef;
 import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
-import javassist.bytecode.AccessFlag;
 
 import java.util.ArrayList;
 import java.util.List;

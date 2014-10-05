@@ -1,9 +1,9 @@
 package com.prupe.mcpatcher.mod.cc;
 
 import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.basemod.ResourceLocationMod;
 import com.prupe.mcpatcher.basemod.ext18.DirectionMod;
 import com.prupe.mcpatcher.basemod.ext18.PositionMod;
-import com.prupe.mcpatcher.basemod.ResourceLocationMod;
 import com.prupe.mcpatcher.mal.BlockAPIMod;
 import javassist.bytecode.AccessFlag;
 

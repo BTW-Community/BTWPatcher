@@ -4,7 +4,6 @@ import com.prupe.mcpatcher.ClassMod;
 import com.prupe.mcpatcher.FieldRef;
 import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
-import com.prupe.mcpatcher.mod.CustomItemTextures;
 import javassist.bytecode.AccessFlag;
 
 public class PotionMod extends ClassMod {

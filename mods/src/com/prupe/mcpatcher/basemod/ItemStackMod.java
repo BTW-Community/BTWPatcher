@@ -5,9 +5,7 @@ import com.prupe.mcpatcher.FieldRef;
 import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
 
-import static com.prupe.mcpatcher.BinaryRegex.begin;
-import static com.prupe.mcpatcher.BinaryRegex.end;
-import static com.prupe.mcpatcher.BinaryRegex.subset;
+import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.anyReference;
 import static com.prupe.mcpatcher.BytecodeMatcher.captureReference;
 import static javassist.bytecode.Opcode.*;

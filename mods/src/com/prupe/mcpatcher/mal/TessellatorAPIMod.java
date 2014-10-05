@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.mal;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.Mod;
 import com.prupe.mcpatcher.basemod.TessellatorFactoryMod;
 import com.prupe.mcpatcher.basemod.TessellatorMod;
 

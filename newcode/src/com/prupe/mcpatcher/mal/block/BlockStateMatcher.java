@@ -5,7 +5,6 @@ import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import net.minecraft.src.*;
 
 import java.util.*;
-import java.util.logging.Level;
 
 abstract public class BlockStateMatcher {
     private final String fullString;

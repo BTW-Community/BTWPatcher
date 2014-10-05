@@ -2,7 +2,6 @@ package com.prupe.mcpatcher.mod;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.ResourceLocationMod;
-import com.prupe.mcpatcher.basemod.TextureAtlasMod;
 import javassist.bytecode.AccessFlag;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;

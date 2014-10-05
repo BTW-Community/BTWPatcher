@@ -11,7 +11,7 @@ import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
 public class TilesheetAPIMod extends Mod {
-    static final FieldRef modelFaceTextureName = new FieldRef("ModelFaceTexture", "textureName" , "Ljava/lang/String;");
+    static final FieldRef modelFaceTextureName = new FieldRef("ModelFaceTexture", "textureName", "Ljava/lang/String;");
 
     public TilesheetAPIMod() {
         name = MCPatcherUtils.TILESHEET_API_MOD;
