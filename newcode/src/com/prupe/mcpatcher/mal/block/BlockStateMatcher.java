@@ -202,7 +202,7 @@ abstract public class BlockStateMatcher {
                         if (sb.length() > 0) {
                             sb.append(',');
                         }
-                        sb.append(value.toString());
+                        sb.append(propertyValueToString(value));
                     }
                     properties.put(property.getName(), sb.toString());
                 }
@@ -223,7 +223,7 @@ abstract public class BlockStateMatcher {
 
         private static Comparable parseNonIntegerValue(IBlockStateProperty property, String value) {
             for (Comparable propertyValue : property.getValues()) {
-                if (value.equals(propertyValue.toString())) {
+                if (value.equals(propertyValueToString(propertyValue))) {
                     return propertyValue;
                 }
             }
@@ -231,14 +231,22 @@ abstract public class BlockStateMatcher {
         }
 
         @SuppressWarnings("unchecked")
-        private static String getPropertyValues(IBlockStateProperty property) {
+        public static String getPropertyValues(IBlockStateProperty property) {
             StringBuilder sb = new StringBuilder();
             List<Comparable> values = new ArrayList<Comparable>(property.getValues());
             Collections.sort(values);
             for (Comparable value : values) {
-                sb.append(' ').append(value.toString());
+                sb.append(' ').append(propertyValueToString(value));
             }
             return sb.toString();
+        }
+
+        public static String propertyValueToString(Comparable propertyValue) {
+            if (propertyValue instanceof INamed) {
+                return ((INamed) propertyValue).getName();
+            } else {
+                return propertyValue.toString();
+            }
         }
 
         @Override

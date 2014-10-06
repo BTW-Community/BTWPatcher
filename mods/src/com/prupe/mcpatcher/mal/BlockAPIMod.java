@@ -68,6 +68,8 @@ public class BlockAPIMod extends Mod {
         if (IBlockStateMod.haveClass()) {
             addClassMod(new IBlockStateMod(this));
             addClassMod(new IBlockStatePropertyMod(this));
+            addClassMod(new INamedMod());
+            addClassMod(new BlockQuartzTypeEnumMod());
         }
 
         addClassFiles("com.prupe.mcpatcher.mal.block.*");
@@ -747,6 +749,30 @@ public class BlockAPIMod extends Mod {
                     );
                 }
             });
+        }
+    }
+
+    private class INamedMod extends ClassMod {
+        INamedMod() {
+            final MethodRef getName = new MethodRef(getDeobfClass(), "getName", "()Ljava/lang/String;");
+
+            addPrerequisiteClass("BlockQuartzTypeEnum");
+
+            addClassSignature(new InterfaceSignature(getName)
+                    .setInterfaceOnly(true)
+                    .setExactMatch(true)
+            );
+        }
+    }
+
+    private class BlockQuartzTypeEnumMod extends ClassMod {
+        BlockQuartzTypeEnumMod() {
+            setInterfaces("INamed");
+
+            addClassSignature(new ConstSignature("chiseled"));
+            addClassSignature(new ConstSignature("lines_x"));
+            addClassSignature(new ConstSignature("lines_y"));
+            addClassSignature(new ConstSignature("lines_z"));
         }
     }
 }

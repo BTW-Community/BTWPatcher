@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.cc.ColorizeBlock18;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
+import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
 import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
 import com.prupe.mcpatcher.mal.tile.FaceInfo;
 import net.minecraft.src.*;
@@ -64,14 +65,7 @@ public class CTMUtils18 extends RenderBlockState {
                         halfProperties.put(block, property);
                     }
                 }
-                if (logger.isLoggable(Level.CONFIG)) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("  ").append(name).append(" (").append(property.getValueClass().getName()).append("):");
-                    for (Comparable value : property.getValues()) {
-                        sb.append(' ').append(value.toString());
-                    }
-                    logger.info("%s", sb.toString());
-                }
+                logger.config("  %s(%s):%s", name, property.getValueClass().getName(), BlockStateMatcher.V2.getPropertyValues(property));
             }
         }
     }
