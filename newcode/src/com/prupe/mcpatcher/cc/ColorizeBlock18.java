@@ -165,6 +165,20 @@ public class ColorizeBlock18 {
         isSmooth = false;
     }
 
+    public void preRenderHeld(IModel model, IBlockState blockState, Block block) {
+        colorMap = null;
+        isSmooth = false;
+        List<BlockStateMatcher> maps = ColorizeBlock.findColorMaps(block);
+        if (maps != null) {
+            for (BlockStateMatcher matcher : maps) {
+                if (matcher.matchBlockState(blockState)) {
+                    colorMap = ColorizeBlock.getThreadLocal(matcher);
+                    break;
+                }
+            }
+        }
+    }
+
     public void setDirection(Direction direction) {
         setDirection(direction, FACE_VERTICES);
     }
@@ -174,7 +188,7 @@ public class ColorizeBlock18 {
     }
 
     private void setDirection(Direction direction, int[][][] faceVertices) {
-        if (ColorizeBlock.enableSmoothBiomes && direction != null && colorMap != null) {
+        if (ColorizeBlock.enableSmoothBiomes && direction != null && colorMap != null && ctm.isInWorld()) {
             isSmooth = true;
             int[][] offsets = faceVertices[direction.ordinal()];
             computeVertexColor(offsets[0], vertexColors[0]);

@@ -42,6 +42,7 @@ public class CTMUtils18 extends RenderBlockState {
     private String textureFaceName;
 
     private final TileOverrideIterator.IJK ijkIterator = CTMUtils.newIJKIterator();
+    private final TileOverrideIterator.Metadata metadataIterator = CTMUtils.newMetadataIterator();
 
     private final ColorizeBlock18 colorizeBlock;
 
@@ -123,6 +124,24 @@ public class CTMUtils18 extends RenderBlockState {
         return true;
     }
 
+    public boolean preRenderHeld(IModel model, Block block, int metadata) {
+        blockAccess = null;
+        this.model = model;
+        this.blockState = block.getStateFromMetadata(metadata);
+        position = null;
+        this.block = block;
+        useAO = false;
+        direction = null;
+        inWorld = false;
+        offsetsComputed = false;
+        haveOffsets = false;
+        di = dj = dk = 0;
+
+        colorizeBlock.preRenderHeld(model, blockState, block);
+
+        return true;
+    }
+
     private static IBlockState fixupState(IBlockState blockState, IBlockAccess blockAccess, Block block, Position position) {
         if (block == doublePlantBlock) {
             // for some reason, this is needed to fix the variant property on the bottom half of double grass
@@ -134,6 +153,9 @@ public class CTMUtils18 extends RenderBlockState {
     public void setDirection(Direction direction) {
         this.direction = direction;
         colorizeBlock.setDirection(direction);
+        if (!isInWorld() && logger.logEvery(5000L)) {
+            logger.info("preRenderHeld: %s", this);
+        }
     }
 
     public void setDirectionWater(Direction direction) {
@@ -166,8 +188,9 @@ public class CTMUtils18 extends RenderBlockState {
         TextureAtlasSprite origIcon = faceInfo.getSprite();
         textureFaceName = faceInfo.getTextureName();
         setUVFace(faceInfo);
-        ijkIterator.go(this, origIcon);
-        TextureAtlasSprite newIcon = (TextureAtlasSprite) ijkIterator.getIcon();
+        TileOverrideIterator iterator = isInWorld() ? ijkIterator : metadataIterator;
+        iterator.go(this, origIcon);
+        TextureAtlasSprite newIcon = (TextureAtlasSprite) iterator.getIcon();
         return faceInfo.getAltFace(newIcon);
     }
 

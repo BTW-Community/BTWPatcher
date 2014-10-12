@@ -19,6 +19,7 @@ public class CustomTexturesModels extends Mod {
     static final ClassRef modelFaceClass = new ClassRef("ModelFace");
 
     static final MethodRef getCTMInstance = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "getInstance", "()L" + MCPatcherUtils.CTM_UTILS18_CLASS + ";");
+    static final MethodRef setDirection = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "setDirection", "(LDirection;)V");
     static final MethodRef newUseColormap = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "useColormap", "(LModelFace;)Z");
     static final MethodRef newColorMultiplier = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "colorMultiplier", "(I)I");
     static final MethodRef newVertexColor = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "getVertexColor", "(FII)F");
@@ -429,12 +430,80 @@ public class CustomTexturesModels extends Mod {
         return registerLoadStore(ALOAD, register);
     }
 
+    private static void addRenderDirectionPatches(final ClassMod classMod, final MethodRef... methods) {
+        classMod.addPatch(classMod.new BytecodePatch() {
+            {
+                setInsertBefore(true);
+                targetMethod(methods);
+            }
+
+            @Override
+            public String getDescription() {
+                return "set render direction";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // model.getFaces(direction)
+                    anyALOAD,
+                    capture(anyALOAD),
+                    reference(INVOKEINTERFACE, IModelMod.getFaces)
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                return buildCode(
+                    // ctm.setDirection(direction);
+                    getCTMInfo(this),
+                    getCaptureGroup(1),
+                    reference(INVOKEVIRTUAL, setDirection)
+                );
+            }
+        });
+
+        classMod.addPatch(classMod.new BytecodePatch() {
+            {
+                setInsertBefore(true);
+                targetMethod(methods);
+            }
+
+            @Override
+            public String getDescription() {
+                return "clear render direction";
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // model.getDefaultFaces()
+                    anyALOAD,
+                    reference(INVOKEINTERFACE, IModelMod.getDefaultFaces)
+                );
+            }
+
+            @Override
+            public byte[] getReplacementBytes() {
+                return buildCode(
+                    // ctm.setDirection(null);
+                    getCTMInfo(this),
+                    push(null),
+                    reference(INVOKEVIRTUAL, setDirection)
+                );
+            }
+        });
+    }
+
     private class RenderBlockCustomMod extends ClassMod {
         private final MethodRef renderBlock = new MethodRef(getDeobfClass(), "renderBlock", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LTessellator;Z)Z");
         private final MethodRef renderBlockAO = new MethodRef(getDeobfClass(), "renderBlockAO", "(LIBlockAccess;LIModel;LBlock;LPosition;LTessellator;Z)Z");
         private final MethodRef renderBlockNonAO = new MethodRef(getDeobfClass(), "renderBlockNonAO", "(LIBlockAccess;LIModel;LBlock;LPosition;LTessellator;Z)Z");
         private final MethodRef renderFaceAO = new MethodRef(getDeobfClass(), "renderFaceAO", "(LIBlockAccess;LBlock;LPosition;LTessellator;Ljava/util/List;[FLjava/util/BitSet;LRenderBlockCustomInner;)V");
         private final MethodRef renderFaceNonAO = new MethodRef(getDeobfClass(), "renderFaceNonAO", "(LIBlockAccess;LBlock;LPosition;LDirection;IZLTessellator;Ljava/util/List;Ljava/util/BitSet;)V");
+        private final MethodRef renderBlockHeld1 = new MethodRef(getDeobfClass(), "renderBlockHeld1", "(LIModel;LIBlockState;FZ)V");
+        private final MethodRef renderBlockHeld2 = new MethodRef(getDeobfClass(), "renderBlockHeld2", "(LIModel;FFFF)V");
+        private final MethodRef renderFaceHeld = new MethodRef(getDeobfClass(), "renderFaceHeld", "(FFFFLjava/util/List;)V");
 
         RenderBlockCustomMod() {
             addClassSignature(new ConstSignature(0xf000f));
@@ -505,8 +574,11 @@ public class CustomTexturesModels extends Mod {
                 }
             });
 
+            initCTMInfo(this, renderBlockAO, renderBlockNonAO, renderFaceAO, renderFaceNonAO, renderBlockHeld1, renderBlockHeld2, renderFaceHeld);
+
             setupColorMaps();
             setupCTM();
+            setupHeldCTM();
         }
 
         private void setupPreRender(final MethodRef method) {
@@ -518,7 +590,7 @@ public class CustomTexturesModels extends Mod {
 
                 @Override
                 public String getDescription() {
-                    return "set up " + method.getClassName().replaceFirst("^.*\\.", "") + " for render";
+                    return "set up for render";
                 }
 
                 @Override
@@ -558,74 +630,9 @@ public class CustomTexturesModels extends Mod {
 
         private void setupColorMaps() {
             final MethodRef useColormap = new MethodRef("ModelFace", "useColormap", "()Z");
-            final MethodRef setDirection = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "setDirection", "(LDirection;)V");
 
             setupPreRender(getCTMInstance);
-
-            initCTMInfo(this, renderBlockAO, renderBlockNonAO, renderFaceAO, renderFaceNonAO);
-
-            addPatch(new BytecodePatch() {
-                {
-                    setInsertBefore(true);
-                    targetMethod(renderBlockAO, renderBlockNonAO);
-                }
-
-                @Override
-                public String getDescription() {
-                    return "set render direction";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // model.getFaces(direction)
-                        ALOAD_2,
-                        capture(anyALOAD),
-                        reference(INVOKEINTERFACE, IModelMod.getFaces)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // ctm.setDirection(direction);
-                        getCTMInfo(this),
-                        getCaptureGroup(1),
-                        reference(INVOKEVIRTUAL, setDirection)
-                    );
-                }
-            });
-
-            addPatch(new BytecodePatch() {
-                {
-                    setInsertBefore(true);
-                    targetMethod(renderBlockAO, renderBlockNonAO);
-                }
-
-                @Override
-                public String getDescription() {
-                    return "clear render direction";
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // model.getDefaultFaces()
-                        ALOAD_2,
-                        reference(INVOKEINTERFACE, IModelMod.getDefaultFaces)
-                    );
-                }
-
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // ctm.setDirection(null);
-                        getCTMInfo(this),
-                        push(null),
-                        reference(INVOKEVIRTUAL, setDirection)
-                    );
-                }
-            });
+            addRenderDirectionPatches(this, renderFaceAO, renderBlockNonAO, renderBlockHeld2);
 
             addPatch(new BytecodePatch() {
                 {
@@ -730,15 +737,19 @@ public class CustomTexturesModels extends Mod {
         }
 
         private void setupCTM() {
+            setupCTM("", renderFaceAO, renderFaceNonAO);
+        }
+
+        private void setupCTM(final String text, final MethodRef... methods) {
             addPatch(new BytecodePatch() {
                 {
                     setInsertAfter(true);
-                    targetMethod(renderFaceAO, renderFaceNonAO);
+                    targetMethod(methods);
                 }
 
                 @Override
                 public String getDescription() {
-                    return "override texture";
+                    return "override texture" + text;
                 }
 
                 @Override
@@ -763,6 +774,66 @@ public class CustomTexturesModels extends Mod {
                     );
                 }
             });
+        }
+
+        private void setupHeldCTM() {
+            final MethodRef preRenderHeld = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "preRenderHeld", "(LIModel;LIBlockState;LBlock;)Z");
+
+            addMemberMapper(new MethodMapper(renderBlockHeld1));
+            addMemberMapper(new MethodMapper(renderBlockHeld2));
+            addMemberMapper(new MethodMapper(renderFaceHeld));
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderBlockHeld1);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "set up for render (held blocks)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // rgb = block.getRenderColor(block.getStateForEntityRender(blockState));
+                        capture(anyALOAD),
+                        backReference(1),
+                        ALOAD_2,
+                        anyReference(INVOKEVIRTUAL),
+                        anyReference(INVOKEVIRTUAL),
+                        capture(anyISTORE)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // if (!ctm.preRenderHeld(model, blockState, block)) {
+                        getCTMInfo(this),
+                        ALOAD_1,
+                        ALOAD_2,
+                        getCaptureGroup(1),
+                        reference(INVOKESTATIC, preRenderHeld),
+                        IFNE, branch("A"),
+
+                        // return;
+                        RETURN,
+
+                        // }
+                        label("A"),
+
+                        // color = ctm.colorMultiplier(color);
+                        getCTMInfo(this),
+                        flipLoadStore(getCaptureGroup(2)),
+                        reference(INVOKEVIRTUAL, newColorMultiplier),
+                        getCaptureGroup(2)
+                    );
+                }
+            });
+
+            setupCTM(" (held blocks)", renderFaceHeld);
         }
     }
 
@@ -1237,11 +1308,14 @@ public class CustomTexturesModels extends Mod {
 
             final MethodRef renderItem1 = new MethodRef(getDeobfClass(), "renderItem1", "(LIModel;ILItemStack;)V");
             final MethodRef renderItem2 = new MethodRef(getDeobfClass(), "renderItem2", "(LItemStack;LIModel;)V");
+            final MethodRef renderItemFace = new MethodRef(getDeobfClass(), "renderItemFace", "(LIModel;ILItemStack;)V");
             final MethodRef renderEnchantment = new MethodRef(getDeobfClass(), "renderEnchantment", "(LIModel;)V");
             final MethodRef renderFace = new MethodRef(getDeobfClass(), "renderFace", "(LTessellator;Ljava/util/List;ILItemStack;)V");
             final MethodRef renderItemOverlayIntoGUI = new MethodRef(getDeobfClass(), "renderItemOverlayIntoGUI", "(LFontRenderer;LItemStack;IILjava/lang/String;)V");
             final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffectVanilla", "()Z");
             final MethodRef getMaxDamage = new MethodRef("ItemStack", "getMaxDamage", "()I");
+
+            initCTMInfo(this, renderItemFace);
 
             addClassSignature(new BytecodeSignature() {
                 {
@@ -1302,6 +1376,7 @@ public class CustomTexturesModels extends Mod {
 
             addMemberMapper(new MethodMapper(renderItem1));
             addMemberMapper(new MethodMapper(renderFace));
+            addMemberMapper(new MethodMapper(renderItemFace));
 
             addPatch(new MakeMemberPublicPatch(renderItem1));
 
@@ -1402,6 +1477,8 @@ public class CustomTexturesModels extends Mod {
                     );
                 }
             });
+
+            addRenderDirectionPatches(this, renderItemFace);
         }
     }
 
@@ -1567,12 +1644,16 @@ public class CustomTexturesModels extends Mod {
 
     private class ItemBlockMod extends ClassMod {
         ItemBlockMod() {
+            final MethodRef getBlock = new MethodRef(getDeobfClass(), "getBlock", "()LBlock;");
+
             setParentClass("Item");
 
             addClassSignature(new ConstSignature("BlockEntityTag"));
             addClassSignature(new ConstSignature("x"));
             addClassSignature(new ConstSignature(0.5f));
             addClassSignature(new ConstSignature(0.8f));
+
+            addMemberMapper(new MethodMapper(getBlock));
         }
     }
 

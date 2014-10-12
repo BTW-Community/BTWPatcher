@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.ctm.CTMUtils18;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.tile.FaceInfo;
 import net.minecraft.src.*;
@@ -10,15 +11,21 @@ public class CITUtils18 {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
     private static ItemStack currentItem;
+    private static boolean isBlock;
     private static ItemOverride itemOverride;
     private static boolean renderingEnchantment;
 
     public static void preRender(ItemStack itemStack) {
         if (renderingEnchantment) {
             // rendering custom enchantment -- keep current state
-        } else if (itemStack == null || itemStack.getItem() instanceof ItemBlock) {
+        } else if (itemStack == null) {
             clear();
+        } else if (itemStack.getItem() instanceof ItemBlock) {
+            clear();
+            isBlock = true;
+            CTMUtils18.getInstance().preRenderHeld(null, ((ItemBlock) itemStack.getItem()).getBlock(), itemStack.getItemDamage());
         } else {
+            isBlock = false;
             currentItem = itemStack;
             itemOverride = CITUtils.findItemOverride(itemStack);
         }
@@ -27,6 +34,8 @@ public class CITUtils18 {
     public static ModelFace getModelFace(ModelFace origFace) {
         if (renderingEnchantment) {
             return FaceInfo.getFaceInfo(origFace).getNonAtlasFace();
+        } else if (isBlock) {
+            return CTMUtils18.getInstance().getModelFace(origFace);
         } else if (itemOverride == null) {
             return origFace;
         } else {
@@ -88,6 +97,7 @@ public class CITUtils18 {
 
     static void clear() {
         currentItem = null;
+        isBlock = false;
         itemOverride = null;
         renderingEnchantment = false;
     }
