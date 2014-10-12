@@ -632,7 +632,7 @@ public class CustomTexturesModels extends Mod {
             final MethodRef useColormap = new MethodRef("ModelFace", "useColormap", "()Z");
 
             setupPreRender(getCTMInstance);
-            addRenderDirectionPatches(this, renderFaceAO, renderBlockNonAO, renderBlockHeld2);
+            addRenderDirectionPatches(this, renderBlockAO, renderBlockNonAO, renderBlockHeld2);
 
             addPatch(new BytecodePatch() {
                 {

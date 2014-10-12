@@ -153,9 +153,6 @@ public class CTMUtils18 extends RenderBlockState {
     public void setDirection(Direction direction) {
         this.direction = direction;
         colorizeBlock.setDirection(direction);
-        if (!isInWorld() && logger.logEvery(5000L)) {
-            logger.info("preRenderHeld: %s", this);
-        }
     }
 
     public void setDirectionWater(Direction direction) {
