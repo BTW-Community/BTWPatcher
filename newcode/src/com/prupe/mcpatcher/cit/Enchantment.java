@@ -20,6 +20,8 @@ final class Enchantment extends OverrideBase {
     static float baseArmorWidth;
     static float baseArmorHeight;
 
+    private static boolean lightingWasEnabled;
+
     final int layer;
     final BlendMethod blendMethod;
     private final float rotation;
@@ -54,6 +56,7 @@ final class Enchantment extends OverrideBase {
         GLAPI.glAlphaFunc(GL11.GL_GREATER, 0.01f);
         GL11.glEnable(GL11.GL_BLEND);
         GLAPI.glDepthFunc(GL11.GL_EQUAL);
+        lightingWasEnabled = GL11.glGetBoolean(GL11.GL_LIGHTING);
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glMatrixMode(GL11.GL_TEXTURE);
     }
@@ -62,7 +65,9 @@ final class Enchantment extends OverrideBase {
         GLAPI.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
         GL11.glDisable(GL11.GL_BLEND);
         GLAPI.glDepthFunc(GL11.GL_LEQUAL);
-        GL11.glEnable(GL11.GL_LIGHTING);
+        if (lightingWasEnabled) {
+            GL11.glEnable(GL11.GL_LIGHTING);
+        }
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
     }
 

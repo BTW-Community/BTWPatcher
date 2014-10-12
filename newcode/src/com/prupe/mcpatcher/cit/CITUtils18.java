@@ -33,8 +33,10 @@ public class CITUtils18 {
     }
 
     public static void postRender() {
+        if (ctm != null) {
+            ctm.clear();
+        }
         clear();
-        CTMUtils18.postRender();
     }
 
     public static ModelFace getModelFace(ModelFace origFace) {
