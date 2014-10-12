@@ -26,6 +26,7 @@ public class CustomTexturesModels extends Mod {
     static final MethodRef newBlockFace = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
 
     static final MethodRef preRenderItem = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "preRender", "(LItemStack;)V");
+    static final MethodRef postRenderItem = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "postRender", "()V");
     static final MethodRef newItemFace = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "getModelFace", "(LModelFace;)LModelFace;");
     static final MethodRef newRenderEnchantments3D = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "renderEnchantments3D", "(LRenderItemCustom;LIModel;)Z");
     static final MethodRef newArmorTexture = new MethodRef(MCPatcherUtils.CIT_UTILS18_CLASS, "getArmorTexture", "(LResourceLocation;LItemStack;I)LResourceLocation;");
@@ -590,7 +591,7 @@ public class CustomTexturesModels extends Mod {
 
                 @Override
                 public String getDescription() {
-                    return "set up for render";
+                    return "pre render";
                 }
 
                 @Override
@@ -814,7 +815,7 @@ public class CustomTexturesModels extends Mod {
 
                 @Override
                 public String getDescription() {
-                    return "set up for render (held blocks)";
+                    return "pre render (held blocks)";
                 }
 
                 @Override
@@ -1369,8 +1370,6 @@ public class CustomTexturesModels extends Mod {
             final MethodRef hasEffect = new MethodRef("ItemStack", "hasEffectVanilla", "()Z");
             final MethodRef getMaxDamage = new MethodRef("ItemStack", "getMaxDamage", "()I");
 
-            initCTMInfo(this, renderItemFace);
-
             addClassSignature(new BytecodeSignature() {
                 {
                     setMethod(renderItem2);
@@ -1463,6 +1462,33 @@ public class CustomTexturesModels extends Mod {
 
             addPatch(new BytecodePatch() {
                 {
+                    setInsertBefore(true);
+                    targetMethod(renderItem2);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "post render item";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        RETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // CITUtils18.postRender();
+                        reference(INVOKESTATIC, postRenderItem)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                {
                     setInsertAfter(true);
                     targetMethod(renderFace);
                 }
@@ -1531,8 +1557,6 @@ public class CustomTexturesModels extends Mod {
                     );
                 }
             });
-
-            addRenderDirectionPatches(this, renderItemFace);
         }
     }
 
@@ -1777,6 +1801,33 @@ public class CustomTexturesModels extends Mod {
                         // CITUtils18.preRender(itemStack);
                         ALOAD_2,
                         reference(INVOKESTATIC, preRenderItem)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(renderContents);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "post render";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        RETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // CITUtils18.postRender();
+                        reference(INVOKESTATIC, postRenderItem)
                     );
                 }
             });

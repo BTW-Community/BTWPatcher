@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.cit;
 
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.ctm.CTMUtils;
 import com.prupe.mcpatcher.ctm.CTMUtils18;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.tile.FaceInfo;
@@ -11,7 +12,7 @@ public class CITUtils18 {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CUSTOM_ITEM_TEXTURES, "CIT");
 
     private static ItemStack currentItem;
-    private static boolean isBlock;
+    private static CTMUtils18 ctm;
     private static ItemOverride itemOverride;
     private static boolean renderingEnchantment;
 
@@ -22,20 +23,24 @@ public class CITUtils18 {
             clear();
         } else if (itemStack.getItem() instanceof ItemBlock) {
             clear();
-            isBlock = true;
-            CTMUtils18.getInstance().preRenderHeld(null, ((ItemBlock) itemStack.getItem()).getBlock(), itemStack.getItemDamage());
+            ctm = CTMUtils18.getInstance();
+            ctm.preRenderHeld(null, ((ItemBlock) itemStack.getItem()).getBlock(), itemStack.getItemDamage());
         } else {
-            isBlock = false;
+            ctm = null;
             currentItem = itemStack;
             itemOverride = CITUtils.findItemOverride(itemStack);
         }
     }
 
+    public static void postRender() {
+        clear();
+        CTMUtils18.postRender();
+    }
+
     public static ModelFace getModelFace(ModelFace origFace) {
         if (renderingEnchantment) {
             return FaceInfo.getFaceInfo(origFace).getNonAtlasFace();
-        } else if (isBlock) {
-            CTMUtils18 ctm = CTMUtils18.getInstance();
+        } else if (ctm != null) {
             int face = FaceInfo.getFaceInfo(origFace).getEffectiveFace();
             ctm.setDirection(face < 0 ? null : Direction.values()[face]);
             return ctm.getModelFace(origFace);
@@ -100,7 +105,7 @@ public class CITUtils18 {
 
     static void clear() {
         currentItem = null;
-        isBlock = false;
+        ctm = null;
         itemOverride = null;
         renderingEnchantment = false;
     }

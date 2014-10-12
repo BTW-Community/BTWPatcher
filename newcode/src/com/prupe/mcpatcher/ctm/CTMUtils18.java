@@ -100,8 +100,12 @@ public class CTMUtils18 extends RenderBlockState {
         return instance;
     }
 
-    public static boolean postRender(boolean b) {
+    public static void postRender() {
         getInstance().clear();
+    }
+
+    public static boolean postRender(boolean b) {
+        postRender();
         return b;
     }
 
