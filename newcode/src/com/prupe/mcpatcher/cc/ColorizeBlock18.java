@@ -179,6 +179,11 @@ public class ColorizeBlock18 {
         }
     }
 
+    public void clear() {
+        colorMap = null;
+        isSmooth = false;
+    }
+
     public void setDirection(Direction direction) {
         setDirection(direction, FACE_VERTICES);
     }

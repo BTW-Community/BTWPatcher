@@ -100,6 +100,11 @@ public class CTMUtils18 extends RenderBlockState {
         return instance;
     }
 
+    public static boolean postRender(boolean b) {
+        getInstance().clear();
+        return b;
+    }
+
     private CTMUtils18() {
         logger.info("new CTMUtils18() for %s", Thread.currentThread());
         colorizeBlock = new ColorizeBlock18(this);
@@ -195,6 +200,15 @@ public class CTMUtils18 extends RenderBlockState {
         effectiveFace = faceInfo.getEffectiveFace();
         uvRotation = faceInfo.getUVRotation();
         hvFace = effectiveFace >= 0 ? effectiveFace : RenderBlockState.NORTH_FACE;
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        model = null;
+        blockState = null;
+        position = null;
+        colorizeBlock.clear();
     }
 
     @Override

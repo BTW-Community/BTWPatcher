@@ -626,6 +626,34 @@ public class CustomTexturesModels extends Mod {
                     );
                 }
             });
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(renderBlock);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "post render";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // return ...;
+                        IRETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // return CTMUtils18.postRender(...);
+                        reference(INVOKESTATIC, new MethodRef(method.getClassName(), "postRender", "(Z)Z"))
+                    );
+                }
+            });
         }
 
         private void setupColorMaps() {
