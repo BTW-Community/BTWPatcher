@@ -245,6 +245,9 @@ class MinecraftJar {
             String mem = "32".equals(System.getProperty("sun.arch.data.model")) ? "512M" : "1G";
             cmdLine.add("-Xmx" + mem);
         }
+        cmdLine.add("-XX:+UseConcMarkSweepGC");
+        cmdLine.add("-XX:+CMSIncrementalMode");
+        cmdLine.add("-XX:-UseAdaptiveSizePolicy");
 
         profile.setGameArguments(gameArgs, profileManager.getProfileList());
         version.setGameArguments(gameArgs);
