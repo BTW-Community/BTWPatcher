@@ -83,6 +83,7 @@ public class CustomTexturesModels extends Mod {
         addClassMod(new RenderArmorMod());
         addClassMod(new ItemBlockMod());
         addClassMod(new EntityPotionMod());
+        addClassMod(new RenderItemFrameMod());
 
         addClassFiles("com.prupe.mcpatcher.ctm.*");
         addClassFiles("com.prupe.mcpatcher.cit.*");
@@ -501,8 +502,7 @@ public class CustomTexturesModels extends Mod {
         private final MethodRef renderBlockNonAO = new MethodRef(getDeobfClass(), "renderBlockNonAO", "(LIBlockAccess;LIModel;LBlock;LPosition;LTessellator;Z)Z");
         private final MethodRef renderFaceAO = new MethodRef(getDeobfClass(), "renderFaceAO", "(LIBlockAccess;LBlock;LPosition;LTessellator;Ljava/util/List;[FLjava/util/BitSet;LRenderBlockCustomInner;)V");
         private final MethodRef renderFaceNonAO = new MethodRef(getDeobfClass(), "renderFaceNonAO", "(LIBlockAccess;LBlock;LPosition;LDirection;IZLTessellator;Ljava/util/List;Ljava/util/BitSet;)V");
-        private final MethodRef renderBlockHeld1 = new MethodRef(getDeobfClass(), "renderBlockHeld1", "(LIModel;LIBlockState;FZ)V");
-        private final MethodRef renderBlockHeld2 = new MethodRef(getDeobfClass(), "renderBlockHeld2", "(LIModel;FFFF)V");
+        private final MethodRef renderBlockHeld = new MethodRef(getDeobfClass(), "renderBlockHeld", "(LIModel;LIBlockState;FZ)V");
         private final MethodRef renderFaceHeld = new MethodRef(getDeobfClass(), "renderFaceHeld", "(FFFFLjava/util/List;)V");
 
         RenderBlockCustomMod() {
@@ -574,7 +574,7 @@ public class CustomTexturesModels extends Mod {
                 }
             });
 
-            initCTMInfo(this, renderBlockAO, renderBlockNonAO, renderFaceAO, renderFaceNonAO, renderBlockHeld1, renderBlockHeld2, renderFaceHeld);
+            initCTMInfo(this, renderBlockAO, renderBlockNonAO, renderFaceAO, renderFaceNonAO, renderBlockHeld, renderFaceHeld);
 
             setupColorMaps();
             setupCTM();
@@ -660,7 +660,7 @@ public class CustomTexturesModels extends Mod {
             final MethodRef useColormap = new MethodRef("ModelFace", "useColormap", "()Z");
 
             setupPreRender(getCTMInstance);
-            addRenderDirectionPatches(this, renderBlockAO, renderBlockNonAO, renderBlockHeld2);
+            addRenderDirectionPatches(this, renderBlockAO, renderBlockNonAO, renderBlockHeld);
 
             addPatch(new BytecodePatch() {
                 {
@@ -765,19 +765,15 @@ public class CustomTexturesModels extends Mod {
         }
 
         private void setupCTM() {
-            setupCTM("", renderFaceAO, renderFaceNonAO);
-        }
-
-        private void setupCTM(final String text, final MethodRef... methods) {
             addPatch(new BytecodePatch() {
                 {
                     setInsertAfter(true);
-                    targetMethod(methods);
+                    targetMethod(renderFaceAO, renderFaceNonAO);
                 }
 
                 @Override
                 public String getDescription() {
-                    return "override texture" + text;
+                    return "override texture";
                 }
 
                 @Override
@@ -807,14 +803,13 @@ public class CustomTexturesModels extends Mod {
         private void setupHeldCTM() {
             final MethodRef preRenderHeld = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "preRenderHeld", "(LIModel;LIBlockState;LBlock;)Z");
 
-            addMemberMapper(new MethodMapper(renderBlockHeld1));
-            addMemberMapper(new MethodMapper(renderBlockHeld2));
+            addMemberMapper(new MethodMapper(renderBlockHeld));
             addMemberMapper(new MethodMapper(renderFaceHeld));
 
             addPatch(new BytecodePatch() {
                 {
                     setInsertAfter(true);
-                    targetMethod(renderBlockHeld1);
+                    targetMethod(renderBlockHeld);
                 }
 
                 @Override
@@ -861,7 +856,38 @@ public class CustomTexturesModels extends Mod {
                 }
             });
 
-            setupCTM(" (held blocks)", renderFaceHeld);
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderFaceHeld);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override texture (held blocks)";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // face = (ModelFace) iterator.next();
+                        anyALOAD,
+                        reference(INVOKEINTERFACE, iteratorNext),
+                        reference(CHECKCAST, modelFaceClass),
+                        capture(anyASTORE)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // face = CITUtils18.newModelFace(face);
+                        flipLoadStore(getCaptureGroup(1)),
+                        reference(INVOKESTATIC, newItemFace),
+                        getCaptureGroup(1)
+                    );
+                }
+            });
         }
     }
 
@@ -1691,6 +1717,69 @@ public class CustomTexturesModels extends Mod {
 
             addClassSignature(new ConstSignature("Potion"));
             addClassSignature(new ConstSignature("potionValue"));
+        }
+    }
+
+    private class RenderItemFrameMod extends ClassMod {
+        RenderItemFrameMod() {
+            final MethodRef renderContents = new MethodRef(getDeobfClass(), "renderContents", "(LEntityItemFrame;)V");
+            final MethodRef getDisplayedItem = new MethodRef("EntityItemFrame", "getDisplayedItem", "()LItemStack;");
+
+            setParentClass("Render");
+
+            addClassSignature(new ConstSignature("textures/map/map_background.png"));
+            addClassSignature(new ConstSignature("item_frame"));
+            addClassSignature(new ConstSignature("normal"));
+
+            addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(renderContents);
+                    addXref(1, getDisplayedItem);
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // itemStack = entity.getDisplayedItem();
+                        begin(),
+                        ALOAD_1,
+                        captureReference(INVOKEVIRTUAL),
+                        ASTORE_2
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(renderContents);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "pre render";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // itemStack = entity.getDisplayedItem();
+                        begin(),
+                        ALOAD_1,
+                        captureReference(INVOKEVIRTUAL),
+                        ASTORE_2
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // CITUtils18.preRender(itemStack);
+                        ALOAD_2,
+                        reference(INVOKESTATIC, preRenderItem)
+                    );
+                }
+            });
         }
     }
 }

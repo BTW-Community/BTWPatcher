@@ -35,7 +35,10 @@ public class CITUtils18 {
         if (renderingEnchantment) {
             return FaceInfo.getFaceInfo(origFace).getNonAtlasFace();
         } else if (isBlock) {
-            return CTMUtils18.getInstance().getModelFace(origFace);
+            CTMUtils18 ctm = CTMUtils18.getInstance();
+            int face = FaceInfo.getFaceInfo(origFace).getEffectiveFace();
+            ctm.setDirection(face < 0 ? null : Direction.values()[face]);
+            return ctm.getModelFace(origFace);
         } else if (itemOverride == null) {
             return origFace;
         } else {
