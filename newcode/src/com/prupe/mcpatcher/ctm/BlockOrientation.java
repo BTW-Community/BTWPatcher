@@ -96,6 +96,11 @@ final class BlockOrientation extends RenderBlockState {
     }
 
     @Override
+    public int getMetadata() {
+        return metadata;
+    }
+
+    @Override
     public int[] getOffset(int blockFace, int relativeDirection) {
         return NEIGHBOR_OFFSET[blockFace][rotateUV(relativeDirection)];
     }

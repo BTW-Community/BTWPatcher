@@ -465,6 +465,18 @@ abstract class TileOverride implements ITileOverride {
         if (height != null || biomes != null) {
             return null;
         }
+        if (!matchBlocks.isEmpty()) {
+            boolean matched = false;
+            for (BlockStateMatcher matcher : matchBlocks) {
+                if (matcher.match(block, renderBlockState.getMetadata())) {
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                return null;
+            }
+        }
         if (faceMatcher != null && !faceMatcher.match(renderBlockState)) {
             return null;
         }

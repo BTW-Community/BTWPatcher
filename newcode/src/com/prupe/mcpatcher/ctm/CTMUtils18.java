@@ -219,6 +219,11 @@ public class CTMUtils18 extends RenderBlockState {
     }
 
     @Override
+    public int getMetadata() {
+        throw new UnsupportedOperationException("getMetadata");
+    }
+
+    @Override
     public int[] getOffset(int blockFace, int relativeDirection) {
         return NEIGHBOR_OFFSET[blockFace][(relativeDirection + uvRotation) & 7];
     }
