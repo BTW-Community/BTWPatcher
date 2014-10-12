@@ -133,7 +133,7 @@ abstract public class RenderBlockState {
 
     abstract public int getFaceForHV();
 
-    abstract public int getMetadata();
+    abstract public boolean match(BlockStateMatcher matcher);
 
     abstract public int[] getOffset(int blockFace, int relativeDirection);
 

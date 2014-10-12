@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.ctm;
 
 import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
 import com.prupe.mcpatcher.mal.tile.IconAPI;
 import net.minecraft.src.Block;
 import net.minecraft.src.Icon;
@@ -11,22 +12,23 @@ import java.util.*;
 abstract public class TileOverrideIterator implements Iterator<ITileOverride> {
     private static final int MAX_RECURSION = Config.getInt(MCPatcherUtils.CONNECTED_TEXTURES, "maxRecursion", 4);
 
-    private final Map<Block, List<ITileOverride>> allBlockOverrides;
+    private final Map<Block, List<BlockStateMatcher>> allBlockOverrides;
     private final Map<String, List<ITileOverride>> allTileOverrides;
 
     protected Icon currentIcon;
 
-    private List<ITileOverride> blockOverrides;
+    private List<BlockStateMatcher> blockOverrides;
     private List<ITileOverride> tileOverrides;
     private final Set<ITileOverride> skipOverrides = new HashSet<ITileOverride>();
 
+    private RenderBlockState renderBlockState;
     private int blockPos;
     private int iconPos;
     private boolean foundNext;
     private ITileOverride nextOverride;
     private ITileOverride lastMatchedOverride;
 
-    protected TileOverrideIterator(Map<Block, List<ITileOverride>> allBlockOverrides, Map<String, List<ITileOverride>> allTileOverrides) {
+    protected TileOverrideIterator(Map<Block, List<BlockStateMatcher>> allBlockOverrides, Map<String, List<ITileOverride>> allTileOverrides) {
         this.allBlockOverrides = allBlockOverrides;
         this.allTileOverrides = allTileOverrides;
     }
@@ -56,13 +58,16 @@ abstract public class TileOverrideIterator implements Iterator<ITileOverride> {
         if (tileOverrides != null) {
             while (iconPos < tileOverrides.size()) {
                 if (checkOverride(tileOverrides.get(iconPos++))) {
+                    renderBlockState.setFilter(null);
                     return true;
                 }
             }
         }
         if (blockOverrides != null) {
             while (blockPos < blockOverrides.size()) {
-                if (checkOverride(blockOverrides.get(blockPos++))) {
+                BlockStateMatcher matcher = blockOverrides.get(blockPos++);
+                if (renderBlockState.match(matcher) && checkOverride((ITileOverride) matcher.getData())) {
+                    renderBlockState.setFilter(matcher);
                     return true;
                 }
             }
@@ -95,6 +100,8 @@ abstract public class TileOverrideIterator implements Iterator<ITileOverride> {
     }
 
     public ITileOverride go(RenderBlockState renderBlockState, Icon origIcon) {
+        this.renderBlockState = renderBlockState;
+        renderBlockState.setFilter(null);
         currentIcon = origIcon;
         blockOverrides = allBlockOverrides.get(renderBlockState.getBlock());
         tileOverrides = allTileOverrides.get(IconAPI.getIconName(origIcon));
@@ -130,7 +137,7 @@ abstract public class TileOverrideIterator implements Iterator<ITileOverride> {
     abstract protected Icon getTile(ITileOverride override, RenderBlockState renderBlockState, Icon origIcon);
 
     public static final class IJK extends TileOverrideIterator {
-        IJK(Map<Block, List<ITileOverride>> blockOverrides, Map<String, List<ITileOverride>> tileOverrides) {
+        IJK(Map<Block, List<BlockStateMatcher>> blockOverrides, Map<String, List<ITileOverride>> tileOverrides) {
             super(blockOverrides, tileOverrides);
         }
 
@@ -141,7 +148,7 @@ abstract public class TileOverrideIterator implements Iterator<ITileOverride> {
     }
 
     public static final class Metadata extends TileOverrideIterator {
-        Metadata(Map<Block, List<ITileOverride>> blockOverrides, Map<String, List<ITileOverride>> tileOverrides) {
+        Metadata(Map<Block, List<BlockStateMatcher>> blockOverrides, Map<String, List<ITileOverride>> tileOverrides) {
             super(blockOverrides, tileOverrides);
         }
 

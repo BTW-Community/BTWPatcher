@@ -10,7 +10,6 @@ import com.prupe.mcpatcher.mal.tile.FaceInfo;
 import net.minecraft.src.*;
 
 import java.util.*;
-import java.util.logging.Level;
 
 public class CTMUtils18 extends RenderBlockState {
     private static final MCLogger logger = MCLogger.getLogger(MCPatcherUtils.CONNECTED_TEXTURES);
@@ -219,8 +218,8 @@ public class CTMUtils18 extends RenderBlockState {
     }
 
     @Override
-    public int getMetadata() {
-        throw new UnsupportedOperationException("getMetadata");
+    public boolean match(BlockStateMatcher matcher) {
+        return matcher.matchBlockState(blockState);
     }
 
     @Override

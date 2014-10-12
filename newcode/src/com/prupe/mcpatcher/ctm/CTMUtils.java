@@ -4,6 +4,7 @@ import com.prupe.mcpatcher.Config;
 import com.prupe.mcpatcher.MCLogger;
 import com.prupe.mcpatcher.MCPatcherUtils;
 import com.prupe.mcpatcher.mal.block.BlockAPI;
+import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
 import com.prupe.mcpatcher.mal.block.RenderBlocksUtils;
 import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import com.prupe.mcpatcher.mal.resource.BlendMethod;
@@ -22,7 +23,7 @@ public class CTMUtils {
     private static final boolean enableNonStandard = Config.getBoolean(MCPatcherUtils.CONNECTED_TEXTURES, "nonStandard", true);
 
     private static final List<ITileOverride> allOverrides = new ArrayList<ITileOverride>();
-    private static final Map<Block, List<ITileOverride>> blockOverrides = new IdentityHashMap<Block, List<ITileOverride>>();
+    private static final Map<Block, List<BlockStateMatcher>> blockOverrides = new IdentityHashMap<Block, List<BlockStateMatcher>>();
     private static final Map<String, List<ITileOverride>> tileOverrides = new HashMap<String, List<ITileOverride>>();
     private static TileLoader tileLoader;
 
@@ -88,15 +89,23 @@ public class CTMUtils {
                 for (ITileOverride override : allOverrides) {
                     override.registerIcons();
                 }
-                for (Map.Entry<Block, List<ITileOverride>> entry : blockOverrides.entrySet()) {
-                    for (ITileOverride override : entry.getValue()) {
+                for (Map.Entry<Block, List<BlockStateMatcher>> entry : blockOverrides.entrySet()) {
+                    for (BlockStateMatcher matcher : entry.getValue()) {
+                        ITileOverride override = (ITileOverride) matcher.getData();
                         if (override.getRenderPass() >= 0) {
                             RenderPassAPI.instance.setRenderPassForBlock(entry.getKey(), override.getRenderPass());
                         }
                     }
                 }
-                for (List<ITileOverride> overrides : blockOverrides.values()) {
-                    Collections.sort(overrides);
+                for (List<BlockStateMatcher> overrides : blockOverrides.values()) {
+                    Collections.sort(overrides, new Comparator<BlockStateMatcher>() {
+                        @Override
+                        public int compare(BlockStateMatcher m1, BlockStateMatcher m2) {
+                            ITileOverride o1 = (ITileOverride) m1.getData();
+                            ITileOverride o2 = (ITileOverride) m2.getData();
+                            return o1.compareTo(o2);
+                        }
+                    });
                 }
                 for (List<ITileOverride> overrides : tileOverrides.values()) {
                     Collections.sort(overrides);
@@ -167,18 +176,19 @@ public class CTMUtils {
     private static void registerOverride(ITileOverride override) {
         if (override != null && !override.isDisabled()) {
             boolean registered = false;
-            Set<Block> matchingBlocks = override.getMatchingBlocks();
+            List<BlockStateMatcher> matchingBlocks = override.getMatchingBlocks();
             if (!MCPatcherUtils.isNullOrEmpty(matchingBlocks)) {
-                for (Block block : matchingBlocks) {
-                    if (block == null) {
+                for (BlockStateMatcher matcher : matchingBlocks) {
+                    if (matcher == null) {
                         continue;
                     }
-                    List<ITileOverride> list = blockOverrides.get(block);
+                    Block block = matcher.getBlock();
+                    List<BlockStateMatcher> list = blockOverrides.get(block);
                     if (list == null) {
-                        list = new ArrayList<ITileOverride>();
+                        list = new ArrayList<BlockStateMatcher>();
                         blockOverrides.put(block, list);
                     }
-                    list.add(override);
+                    list.add(matcher);
                     logger.fine("using %s for block %s", override, BlockAPI.getBlockName(block));
                     registered = true;
                 }

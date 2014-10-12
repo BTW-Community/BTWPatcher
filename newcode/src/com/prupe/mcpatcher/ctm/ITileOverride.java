@@ -1,8 +1,10 @@
 package com.prupe.mcpatcher.ctm;
 
+import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
 import net.minecraft.src.Block;
 import net.minecraft.src.Icon;
 
+import java.util.List;
 import java.util.Set;
 
 interface ITileOverride extends Comparable<ITileOverride> {
@@ -10,7 +12,7 @@ interface ITileOverride extends Comparable<ITileOverride> {
 
     void registerIcons();
 
-    Set<Block> getMatchingBlocks();
+    List<BlockStateMatcher> getMatchingBlocks();
 
     Set<String> getMatchingTiles();
 

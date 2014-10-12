@@ -248,6 +248,9 @@ abstract class TileOverride implements ITileOverride {
                 }
             }
         }
+        for (BlockStateMatcher matcher : blocks) {
+            matcher.setData(this);
+        }
         return blocks;
     }
 
@@ -303,12 +306,8 @@ abstract class TileOverride implements ITileOverride {
     }
 
     @Override
-    final public Set<Block> getMatchingBlocks() {
-        Set<Block> blocks = new HashSet<Block>();
-        for (BlockStateMatcher matcher : matchBlocks) {
-            blocks.add(matcher.getBlock());
-        }
-        return blocks;
+    final public List<BlockStateMatcher> getMatchingBlocks() {
+        return matchBlocks;
     }
 
     @Override
@@ -418,20 +417,9 @@ abstract class TileOverride implements ITileOverride {
         if (block == null || RenderPassAPI.instance.skipThisRenderPass(block, renderPass)) {
             return null;
         }
-        if (matchBlocks.isEmpty()) {
-            renderBlockState.setFilter(null);
-        } else {
-            boolean matched = false;
-            for (BlockStateMatcher matcher : matchBlocks) {
-                if (matcher.match(blockAccess, i, j, k)) {
-                    matched = true;
-                    renderBlockState.setFilter(matcher);
-                    break;
-                }
-            }
-            if (!matched) {
-                return null;
-            }
+        BlockStateMatcher filter = renderBlockState.getFilter();
+        if (filter != null && !filter.match(blockAccess, i, j, k)) {
+            return null;
         }
         if (faceMatcher != null && !faceMatcher.match(renderBlockState)) {
             return null;
@@ -464,18 +452,6 @@ abstract class TileOverride implements ITileOverride {
         }
         if (height != null || biomes != null) {
             return null;
-        }
-        if (!matchBlocks.isEmpty()) {
-            boolean matched = false;
-            for (BlockStateMatcher matcher : matchBlocks) {
-                if (matcher.match(block, renderBlockState.getMetadata())) {
-                    matched = true;
-                    break;
-                }
-            }
-            if (!matched) {
-                return null;
-            }
         }
         if (faceMatcher != null && !faceMatcher.match(renderBlockState)) {
             return null;

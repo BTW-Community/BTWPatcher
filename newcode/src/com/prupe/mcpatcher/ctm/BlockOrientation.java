@@ -1,6 +1,7 @@
 package com.prupe.mcpatcher.ctm;
 
 import com.prupe.mcpatcher.mal.block.BlockAPI;
+import com.prupe.mcpatcher.mal.block.BlockStateMatcher;
 import net.minecraft.src.Block;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.Icon;
@@ -96,8 +97,8 @@ final class BlockOrientation extends RenderBlockState {
     }
 
     @Override
-    public int getMetadata() {
-        return metadata;
+    public boolean match(BlockStateMatcher matcher) {
+        return isInWorld() ? matcher.match(blockAccess, i, j, k) : matcher.match(block, metadata);
     }
 
     @Override
