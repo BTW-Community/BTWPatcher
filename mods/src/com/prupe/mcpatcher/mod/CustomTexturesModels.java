@@ -432,71 +432,6 @@ public class CustomTexturesModels extends Mod {
         return registerLoadStore(ALOAD, register);
     }
 
-    private static void addRenderDirectionPatches(final ClassMod classMod, final MethodRef... methods) {
-        classMod.addPatch(classMod.new BytecodePatch() {
-            {
-                setInsertBefore(true);
-                targetMethod(methods);
-            }
-
-            @Override
-            public String getDescription() {
-                return "set render direction";
-            }
-
-            @Override
-            public String getMatchExpression() {
-                return buildExpression(
-                    // model.getFaces(direction)
-                    anyALOAD,
-                    capture(anyALOAD),
-                    reference(INVOKEINTERFACE, IModelMod.getFaces)
-                );
-            }
-
-            @Override
-            public byte[] getReplacementBytes() {
-                return buildCode(
-                    // ctm.setDirection(direction);
-                    getCTMInfo(this),
-                    getCaptureGroup(1),
-                    reference(INVOKEVIRTUAL, setDirection)
-                );
-            }
-        });
-
-        classMod.addPatch(classMod.new BytecodePatch() {
-            {
-                setInsertBefore(true);
-                targetMethod(methods);
-            }
-
-            @Override
-            public String getDescription() {
-                return "clear render direction";
-            }
-
-            @Override
-            public String getMatchExpression() {
-                return buildExpression(
-                    // model.getDefaultFaces()
-                    anyALOAD,
-                    reference(INVOKEINTERFACE, IModelMod.getDefaultFaces)
-                );
-            }
-
-            @Override
-            public byte[] getReplacementBytes() {
-                return buildCode(
-                    // ctm.setDirection(null);
-                    getCTMInfo(this),
-                    push(null),
-                    reference(INVOKEVIRTUAL, setDirection)
-                );
-            }
-        });
-    }
-
     private class RenderBlockCustomMod extends ClassMod {
         private final MethodRef renderBlock = new MethodRef(getDeobfClass(), "renderBlock", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LTessellator;Z)Z");
         private final MethodRef renderBlockAO = new MethodRef(getDeobfClass(), "renderBlockAO", "(LIBlockAccess;LIModel;LBlock;LPosition;LTessellator;Z)Z");
@@ -661,7 +596,69 @@ public class CustomTexturesModels extends Mod {
             final MethodRef useColormap = new MethodRef("ModelFace", "useColormap", "()Z");
 
             setupPreRender(getCTMInstance);
-            addRenderDirectionPatches(this, renderBlockAO, renderBlockNonAO, renderBlockHeld);
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(renderBlockAO, renderBlockNonAO, renderBlockHeld);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "set render direction";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // model.getFaces(direction)
+                        anyALOAD,
+                        capture(anyALOAD),
+                        reference(INVOKEINTERFACE, IModelMod.getFaces)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // ctm.setDirection(direction);
+                        getCTMInfo(this),
+                        getCaptureGroup(1),
+                        reference(INVOKEVIRTUAL, setDirection)
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    targetMethod(renderBlockAO, renderBlockNonAO, renderBlockHeld);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "clear render direction";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // model.getDefaultFaces()
+                        anyALOAD,
+                        reference(INVOKEINTERFACE, IModelMod.getDefaultFaces)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // ctm.setDirection(null);
+                        getCTMInfo(this),
+                        push(null),
+                        reference(INVOKEVIRTUAL, setDirection)
+                    );
+                }
+            });
 
             addPatch(new BytecodePatch() {
                 {
