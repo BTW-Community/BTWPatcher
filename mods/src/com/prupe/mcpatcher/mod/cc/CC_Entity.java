@@ -913,53 +913,57 @@ class CC_Entity {
                 {
                     setMethod(updateLightmap);
                     addXref(1, new MethodRef("World", "getSunAngle", "(F)F"));
-                    addXref(2, new FieldRef("World", "worldProvider", "LWorldProvider;"));
-                    addXref(3, new FieldRef(getDeobfClass(), "torchFlickerX", "F"));
-                    addXref(4, WorldMod.getLightningFlashRef());
-                    addXref(5, WorldProviderMod.getWorldTypeRef());
-                    addXref(6, mc);
-                    addXref(7, new FieldRef("Minecraft", "gameSettings", "LGameSettings;"));
-                    addXref(8, new FieldRef("GameSettings", "gammaSetting", "F"));
+                    addXref(3, new FieldRef("World", "worldProvider", "LWorldProvider;"));
+                    addXref(5, new FieldRef(getDeobfClass(), "torchFlickerX", "F"));
+                    addXref(6, WorldMod.getLightningFlashRef());
+                    addXref(7, WorldProviderMod.getWorldTypeRef());
+                    addXref(8, mc);
+                    addXref(9, new FieldRef("Minecraft", "gameSettings", "LGameSettings;"));
+                    addXref(10, new FieldRef("GameSettings", "gammaSetting", "F"));
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // sun = world.func_35464_b(1.0F) * 0.95F + 0.05F;
+                        // sun = world.getSunAngle(1.0f) * 0.95f + 0.05f;
                         ALOAD_2,
                         push(1.0f),
                         captureReference(INVOKEVIRTUAL),
+                        optional(build(anyFSTORE, anyFLOAD)), // 1.8.1-pre1
                         push(0.95f),
                         FMUL,
                         push(0.05f),
                         FADD,
-                        FSTORE, 4,
+                        FSTORE, capture(any()),
+
+                        // ... (1.8.1-pre1+)
+                        any(0, 20),
 
                         // older: lightsun = world.worldProvider.lightBrightnessTable[i / 16] * sun;
                         // 14w02a+: lightsun = world.worldProvider.getLightBrightnessTable()[i / 16] * sun;
                         ALOAD_2,
                         captureReference(GETFIELD),
-                        or(anyReference(GETFIELD), anyReference(INVOKEVIRTUAL)),
-                        ILOAD_3,
-                        BIPUSH, 16,
+                        anyReference(GETFIELD, INVOKEVIRTUAL),
+                        capture(anyILOAD),
+                        push(16),
                         IDIV,
                         FALOAD,
-                        FLOAD, 4,
+                        FLOAD, backReference(2),
                         FMUL,
-                        FSTORE, 5,
+                        anyFSTORE,
 
                         // older: lighttorch = world.worldProvider.lightBrightnessTable[i % 16] * (torchFlickerX * 0.1f + 1.5f);
                         // 14w02a+: lighttorch = world.worldProvider.getLightBrightnessTable()[i % 16] * (torchFlickerX * 0.1f + 1.5f);
                         any(0, 20),
-                        ILOAD_3,
-                        BIPUSH, 16,
+                        backReference(4),
+                        push(16),
                         IREM,
                         FALOAD,
                         ALOAD_0,
                         captureReference(GETFIELD),
 
                         // ...
-                        any(0, 200),
+                        any(0, 30),
 
                         // older: if (world.lightningFlash > 0)
                         // 14w02a+: if (world.getLightningFlash() > 0)
@@ -973,9 +977,9 @@ class CC_Entity {
                         // older: if (world.worldProvider.worldType == 1) {
                         // 14w02a+: if (world.worldProvider.getWorldType() == 1) {
                         ALOAD_2,
-                        backReference(2),
+                        backReference(3),
                         captureReference(WorldProviderMod.getWorldTypeOpcode()),
-                        ICONST_1,
+                        push(1),
                         IF_ICMPNE, any(2),
 
                         // ...
@@ -986,25 +990,25 @@ class CC_Entity {
                         captureReference(GETFIELD),
                         captureReference(GETFIELD),
                         captureReference(GETFIELD),
-                        FSTORE, 16,
+                        anyFSTORE,
 
                         // ...
                         any(0, 300),
 
-                        ResourceLocationMod.haveClass() ? getSubExpression16() : getSubExpression15(),
+                        ResourceLocationMod.haveClass() ? getSubExpression16(10) : getSubExpression15(10),
                         RETURN
                     );
                 }
 
-                private String getSubExpression15() {
-                    addXref(9, renderEngine);
-                    addXref(10, lightmapColors);
-                    addXref(11, lightmapTexture);
-                    addXref(12, createTextureFromBytes);
+                private String getSubExpression15(int xref) {
+                    addXref(xref + 1, renderEngine);
+                    addXref(xref + 2, lightmapColors);
+                    addXref(xref + 3, lightmapTexture);
+                    addXref(xref + 4, createTextureFromBytes);
                     return buildExpression(
                         // this.mc.renderEngine.createTextureFromBytes(this.lightmapColors, 16, 16, this.lightmapTexture);
                         ALOAD_0,
-                        backReference(6),
+                        backReference(xref - 2),
                         captureReference(GETFIELD),
                         ALOAD_0,
                         captureReference(GETFIELD),
@@ -1016,11 +1020,11 @@ class CC_Entity {
                     );
                 }
 
-                private String getSubExpression16() {
-                    addXref(9, lightmapColors);
-                    addXref(10, lightmapTexture);
-                    addXref(11, reloadTexture);
-                    addXref(12, needLightmapUpdate);
+                private String getSubExpression16(int xref) {
+                    addXref(xref + 1, lightmapColors);
+                    addXref(xref + 2, lightmapTexture);
+                    addXref(xref + 3, reloadTexture);
+                    addXref(xref + 4, needLightmapUpdate);
                     return buildExpression(
                         // this.lightmapColors[i] = ...;
                         ALOAD_0,

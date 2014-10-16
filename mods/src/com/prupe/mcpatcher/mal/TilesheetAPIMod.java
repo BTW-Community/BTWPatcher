@@ -518,11 +518,19 @@ public class TilesheetAPIMod extends Mod {
 
     private class ModelFaceFactoryMod extends ClassMod {
         ModelFaceFactoryMod() {
-            addClassSignature(new ConstSignature(0.39269908169872414));
-            addClassSignature(new ConstSignature(0.7853981633974483));
-            addClassSignature(new ConstSignature(0.017453292519943295));
+            final MethodRef createFace;
+            if (getMinecraftVersion().compareTo("1.8") <= 0) {
+                addClassSignature(new ConstSignature(0.39269908169872414));
+                addClassSignature(new ConstSignature(0.7853981633974483));
+                addClassSignature(new ConstSignature(0.017453292519943295));
+                createFace = new MethodRef(getDeobfClass(), "createFace", "(Ljavax/vecmath/Vector3f;Ljavax/vecmath/Vector3f;LModelFaceTexture;LTextureAtlasSprite;LDirection;LModelFaceUVRotation;LModelFaceBounds;ZZ)LModelFace;");
+            } else {
+                addClassSignature(new ConstSignature(0.39269909262657166));
+                addClassSignature(new ConstSignature(0.7853981852531433));
+                addClassSignature(new ConstSignature(0.017453292f));
+                createFace = new MethodRef(getDeobfClass(), "createFace", "(Lorg/lwjgl/util/vector/Vector3f;Lorg/lwjgl/util/vector/Vector3f;LModelFaceTexture;LTextureAtlasSprite;LDirection;LModelFaceUVRotation;LModelFaceBounds;ZZ)LModelFace;");
+            }
 
-            final MethodRef createFace = new MethodRef(getDeobfClass(), "createFace", "(Ljavax/vecmath/Vector3f;Ljavax/vecmath/Vector3f;LModelFaceTexture;LTextureAtlasSprite;LDirection;LModelFaceUVRotation;LModelFaceBounds;ZZ)LModelFace;");
             final MethodRef registerModelFaceSprite = new MethodRef(MCPatcherUtils.FACE_INFO_CLASS, "registerModelFaceSprite", "(LModelFace;LTextureAtlasSprite;Ljava/lang/String;)LModelFace;");
 
             addClassSignature(new BytecodeSignature() {
