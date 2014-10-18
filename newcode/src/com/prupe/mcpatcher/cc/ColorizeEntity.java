@@ -155,7 +155,7 @@ public class ColorizeEntity {
         return getArrayColor(collarColors, rgb, index);
     }
 
-    public static float[] getArmorColor(float[] rgb, int index) {
+    public static float[] getArmorDyeColor(float[] rgb, int index) {
         return getArrayColor(armorColors, rgb, index);
     }
 
