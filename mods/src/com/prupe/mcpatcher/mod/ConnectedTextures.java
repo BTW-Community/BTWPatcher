@@ -482,6 +482,18 @@ public class ConnectedTextures extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
+                        // if (this.blockAccess == null) {
+                        ALOAD_0,
+                        reference(GETFIELD, RenderBlocksMod.blockAccess),
+                        IFNONNULL, branch("A"),
+
+                        // ...
+                        getMatch(),
+                        GOTO, branch("B"),
+
+                        // } else {
+                        label("A"),
+
                         // this.getBlockIconFromPosition(block, this.blockAccess, (int) Math.round(x), (int) Math.round(y), (int) Math.round(z), -1);
                         ALOAD_0,
                         ALOAD_1,
@@ -497,7 +509,10 @@ public class ConnectedTextures extends Mod {
                         reference(INVOKESTATIC, round),
                         L2I,
                         push(-1),
-                        reference(INVOKEVIRTUAL, RenderBlocksMod.getBlockIconFromPosition)
+                        reference(INVOKEVIRTUAL, RenderBlocksMod.getBlockIconFromPosition),
+
+                        // }
+                        label("B")
                     );
                 }
             }.targetMethod(drawCrossedSquares));
