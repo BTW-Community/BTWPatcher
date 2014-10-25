@@ -483,13 +483,10 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
             return version;
         }
         versionString = shortenVersionString(versionString);
-        int preRelease = NOT_PRERELEASE;
+        String preRelease = null;
         Matcher preMatcher = PRERELEASE_PATTERN.matcher(versionString);
         if (preMatcher.find()) {
-            try {
-                preRelease = Integer.parseInt(preMatcher.group(1));
-            } catch (NumberFormatException e) {
-            }
+            preRelease = preMatcher.group();
             if (preMatcher.start() > 0) {
                 versionString = preMatcher.replaceFirst("");
             }
@@ -531,13 +528,24 @@ final public class MinecraftVersion implements Comparable<MinecraftVersion> {
         return numbers;
     }
 
-    private MinecraftVersion(Era era, Matcher matcher, int preRelease) {
+    private static int parsePreRelease(String preRelease) {
+        if (!MCPatcherUtils.isNullOrEmpty(preRelease)) {
+            preRelease = preRelease.replaceAll("\\D", "");
+            try {
+                return Integer.parseInt(preRelease);
+            } catch (NumberFormatException e) {
+            }
+        }
+        return NOT_PRERELEASE;
+    }
+
+    private MinecraftVersion(Era era, Matcher matcher, String preRelease) {
         this(era, matcher.group(0), matcher.group(1), preRelease);
     }
 
-    private MinecraftVersion(Era era, String versionString, String versionNumbers, int preRelease) {
-        this.versionString = versionString;
-        this.preRelease = preRelease;
+    private MinecraftVersion(Era era, String versionString, String versionNumbers, String preRelease) {
+        this.versionString = versionString + (preRelease == null ? "" : preRelease);
+        this.preRelease = parsePreRelease(preRelease);
         this.versionNumbers = splitVersionNumbers(era, versionNumbers);
         snapshot = era.isSnapshot();
     }
