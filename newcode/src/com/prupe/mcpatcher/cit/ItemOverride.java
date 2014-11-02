@@ -1,5 +1,6 @@
 package com.prupe.mcpatcher.cit;
 
+import com.prupe.mcpatcher.mal.item.ItemAPI;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.tile.TileLoader;
 import net.minecraft.src.Icon;
@@ -79,6 +80,6 @@ final class ItemOverride extends OverrideBase {
                 name = name.substring(0, name.length() - 4);
             }
         }
-        return name;
+        return ItemAPI.expandTileName(name);
     }
 }

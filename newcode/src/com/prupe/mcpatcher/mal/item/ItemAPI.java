@@ -228,6 +228,10 @@ abstract public class ItemAPI {
         return name == null ? null : name.indexOf(':') >= 0 ? name : "minecraft:" + name;
     }
 
+    public static String expandTileName(String tileName) {
+        return instance.expandTileName_Impl(tileName);
+    }
+
     abstract protected Iterator<Item> iterator_Impl();
 
     abstract protected Item getItemById_Impl(int id);
@@ -235,6 +239,8 @@ abstract public class ItemAPI {
     abstract protected Item getItemByName_Impl(String name);
 
     abstract protected String getItemName_Impl(Item item);
+
+    abstract protected String expandTileName_Impl(String tileName);
 
     ItemAPI() {
     }
@@ -265,6 +271,11 @@ abstract public class ItemAPI {
                 }
             }
             return String.valueOf(id);
+        }
+
+        @Override
+        protected String expandTileName_Impl(String tileName) {
+            return tileName;
         }
     }
 
@@ -318,6 +329,11 @@ abstract public class ItemAPI {
             String name = Item.itemRegistry.getKey(item);
             return name == null ? String.valueOf(Item.itemRegistry.getId(item)) : name;
         }
+
+        @Override
+        protected String expandTileName_Impl(String tileName) {
+            return tileName;
+        }
     }
 
     final private static class V3 extends V2 {
@@ -330,6 +346,14 @@ abstract public class ItemAPI {
         protected String getItemName_Impl(Item item) {
             Object name = Item.itemRegistry.getKeyObject(item);
             return name == null ? String.valueOf(Item.itemRegistry.getId(item)) : name.toString();
+        }
+
+        @Override
+        protected String expandTileName_Impl(String tileName) {
+            if (!tileName.contains(":")) {
+                tileName = "minecraft:items/" + tileName;
+            }
+            return tileName;
         }
     }
 }
