@@ -188,7 +188,7 @@ class PotionReplacer {
     private void addOverride(ResourceLocation path, Properties properties) {
         ResourceLocation propertiesName = TexturePackAPI.transformResourceLocation(path, ".png", ".properties");
         ItemOverride override = new ItemOverride(new PropertiesFile(logger, propertiesName, properties));
-        if (!override.properties.valid()) {
+        if (override.properties.valid()) {
             overrides.add(override);
         }
     }
