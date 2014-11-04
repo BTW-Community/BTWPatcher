@@ -75,6 +75,10 @@ public class Block {
         return null;
     }
 
+    public int getMetadataFromState(IBlockState blockState) {
+        return 0;
+    }
+
     public IBlockState getBlockStateInWorld(IBlockState blockState, IBlockAccess blockAccess, Position position) {
         return null;
     }

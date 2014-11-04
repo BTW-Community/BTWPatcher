@@ -33,6 +33,7 @@ public class BlockMod extends com.prupe.mcpatcher.ClassMod {
     public static final MethodRef setBlockState = new MethodRef("Block", "setBlockState", "(LIBlockState;)V");
     public static final MethodRef getBlockStateInWorld = new MethodRef("Block", "getBlockStateInWorld", "(LIBlockState;LIBlockAccess;LPosition;)LIBlockState;");
     public static final MethodRef getStateFromMetadata = new MethodRef("Block", "getStateFromMetadata", "(I)LIBlockState;");
+    public static final MethodRef getMetadataFromState = new MethodRef("Block", "getMetadataFromState", "(LIBlockState;)I");
 
     public static boolean haveBlockRegistry() {
         return Mod.getMinecraftVersion().compareTo(MIN_VERSION_REGISTRY) >= 0;
@@ -122,6 +123,7 @@ public class BlockMod extends com.prupe.mcpatcher.ClassMod {
         addMemberMapper(new MethodMapper(setBlockState));
         addMemberMapper(new MethodMapper(getBlockStateInWorld));
         addMemberMapper(new MethodMapper(getStateFromMetadata).accessFlag(AccessFlag.STATIC, false));
+        addMemberMapper(new MethodMapper(getMetadataFromState).accessFlag(AccessFlag.STATIC, false));
 
         return this;
     }
