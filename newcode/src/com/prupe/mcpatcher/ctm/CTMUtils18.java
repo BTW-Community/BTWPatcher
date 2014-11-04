@@ -134,9 +134,13 @@ public class CTMUtils18 extends RenderBlockState {
     }
 
     public boolean preRenderHeld(IModel model, Block block, int metadata) {
+        return preRenderHeld(model, block.getStateFromMetadata(metadata), block);
+    }
+
+    public boolean preRenderHeld(IModel model, IBlockState blockState, Block block) {
         blockAccess = null;
         this.model = model;
-        this.blockState = block.getStateFromMetadata(metadata);
+        this.blockState = blockState;
         position = null;
         this.block = block;
         useAO = false;
