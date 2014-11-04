@@ -495,7 +495,7 @@ public class RandomMobs extends Mod {
             final FieldRef blocksAtlas = new FieldRef("TextureAtlas", "blocks", "LResourceLocation;");
             final MethodRef renderBlockAsItem = RenderBlocksMod.haveSubclasses() ? RenderBlockManagerMod.renderBlockAsItem : RenderBlocksMod.renderBlockAsItem;
             final MethodRef setupMooshroom = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "setupMooshroom", "(LEntityLivingBase;LResourceLocation;)LResourceLocation;");
-            final MethodRef renderMooshroomOverlay = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "renderMooshroomOverlay", "()Z");
+            final MethodRef renderMooshroomOverlay = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "renderMooshroomOverlay", "(D)Z");
             final MethodRef finishMooshroom = new MethodRef(MCPatcherUtils.MOB_OVERLAY_CLASS, "finishMooshroom", "()V");
 
             if (haveOverlayRenderer) {
@@ -626,7 +626,8 @@ public class RandomMobs extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // if (!MobOverlay.renderMooshroomOverlay()) {
+                        // if (!MobOverlay.renderMooshroomOverlay(0.5 or 0.0)) {
+                        push(getMinecraftVersion().compareTo("14w32a") >= 0 ? 0.5 : 0.0),
                         reference(INVOKESTATIC, renderMooshroomOverlay),
                         IFNE, branch("A"),
 

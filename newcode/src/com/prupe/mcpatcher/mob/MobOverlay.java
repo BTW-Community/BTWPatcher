@@ -45,29 +45,29 @@ public class MobOverlay {
         }
     }
 
-    public static boolean renderMooshroomOverlay() {
+    public static boolean renderMooshroomOverlay(double offset) {
         if (overlayActive && overlayCounter < 3) {
             float tileX0 = overlayCounter / 3.0f;
             float tileX1 = ++overlayCounter / 3.0f;
 
             Tessellator tessellator = TessellatorAPI.getTessellator();
             tessellator.startDrawingQuads();
-            tessellator.addVertexWithUV(MOO_X0, MOO_Y1, MOO_Z0, tileX0, 0.0);
-            tessellator.addVertexWithUV(MOO_X0, MOO_Y0, MOO_Z0, tileX0, 1.0);
-            tessellator.addVertexWithUV(MOO_X1, MOO_Y0, MOO_Z1, tileX1, 1.0);
-            tessellator.addVertexWithUV(MOO_X1, MOO_Y1, MOO_Z1, tileX1, 0.0);
-            tessellator.addVertexWithUV(MOO_X1, MOO_Y1, MOO_Z1, tileX0, 0.0);
-            tessellator.addVertexWithUV(MOO_X1, MOO_Y0, MOO_Z1, tileX0, 1.0);
-            tessellator.addVertexWithUV(MOO_X0, MOO_Y0, MOO_Z0, tileX1, 1.0);
-            tessellator.addVertexWithUV(MOO_X0, MOO_Y1, MOO_Z0, tileX1, 0.0);
-            tessellator.addVertexWithUV(MOO_X0, MOO_Y1, MOO_Z1, tileX0, 0.0);
-            tessellator.addVertexWithUV(MOO_X0, MOO_Y0, MOO_Z1, tileX0, 1.0);
-            tessellator.addVertexWithUV(MOO_X1, MOO_Y0, MOO_Z0, tileX1, 1.0);
-            tessellator.addVertexWithUV(MOO_X1, MOO_Y1, MOO_Z0, tileX1, 0.0);
-            tessellator.addVertexWithUV(MOO_X1, MOO_Y1, MOO_Z0, tileX0, 0.0);
-            tessellator.addVertexWithUV(MOO_X1, MOO_Y0, MOO_Z0, tileX0, 1.0);
-            tessellator.addVertexWithUV(MOO_X0, MOO_Y0, MOO_Z1, tileX1, 1.0);
-            tessellator.addVertexWithUV(MOO_X0, MOO_Y1, MOO_Z1, tileX1, 0.0);
+            tessellator.addVertexWithUV(MOO_X0 + offset, MOO_Y1 + offset, MOO_Z0 - offset, tileX0, 0.0);
+            tessellator.addVertexWithUV(MOO_X0 + offset, MOO_Y0 + offset, MOO_Z0 - offset, tileX0, 1.0);
+            tessellator.addVertexWithUV(MOO_X1 + offset, MOO_Y0 + offset, MOO_Z1 - offset, tileX1, 1.0);
+            tessellator.addVertexWithUV(MOO_X1 + offset, MOO_Y1 + offset, MOO_Z1 - offset, tileX1, 0.0);
+            tessellator.addVertexWithUV(MOO_X1 + offset, MOO_Y1 + offset, MOO_Z1 - offset, tileX0, 0.0);
+            tessellator.addVertexWithUV(MOO_X1 + offset, MOO_Y0 + offset, MOO_Z1 - offset, tileX0, 1.0);
+            tessellator.addVertexWithUV(MOO_X0 + offset, MOO_Y0 + offset, MOO_Z0 - offset, tileX1, 1.0);
+            tessellator.addVertexWithUV(MOO_X0 + offset, MOO_Y1 + offset, MOO_Z0 - offset, tileX1, 0.0);
+            tessellator.addVertexWithUV(MOO_X0 + offset, MOO_Y1 + offset, MOO_Z1 - offset, tileX0, 0.0);
+            tessellator.addVertexWithUV(MOO_X0 + offset, MOO_Y0 + offset, MOO_Z1 - offset, tileX0, 1.0);
+            tessellator.addVertexWithUV(MOO_X1 + offset, MOO_Y0 + offset, MOO_Z0 - offset, tileX1, 1.0);
+            tessellator.addVertexWithUV(MOO_X1 + offset, MOO_Y1 + offset, MOO_Z0 - offset, tileX1, 0.0);
+            tessellator.addVertexWithUV(MOO_X1 + offset, MOO_Y1 + offset, MOO_Z0 - offset, tileX0, 0.0);
+            tessellator.addVertexWithUV(MOO_X1 + offset, MOO_Y0 + offset, MOO_Z0 - offset, tileX0, 1.0);
+            tessellator.addVertexWithUV(MOO_X0 + offset, MOO_Y0 + offset, MOO_Z1 - offset, tileX1, 1.0);
+            tessellator.addVertexWithUV(MOO_X0 + offset, MOO_Y1 + offset, MOO_Z1 - offset, tileX1, 0.0);
             TessellatorAPI.draw(tessellator);
         }
         return overlayActive;
