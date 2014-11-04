@@ -836,7 +836,7 @@ public class CustomTexturesModels extends Mod {
                         ALOAD_1,
                         ALOAD_2,
                         getCaptureGroup(1),
-                        reference(INVOKESTATIC, preRenderHeld),
+                        reference(INVOKEVIRTUAL, preRenderHeld),
                         IFNE, branch("A"),
 
                         // return;
