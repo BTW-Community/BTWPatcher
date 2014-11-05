@@ -1,4 +1,4 @@
-MCPatcher version is 5.0.0
+MCPatcher version is 5.0.0_01
 OS: Linux 3.16.6-203.fc20.x86_64 amd64
 JVM: Sun Microsystems Inc. 1.6.0_45 (64 bit)
 Classpath: out/artifacts/mcpatcher/mcpatcher.jar
@@ -801,6 +801,7 @@ Analyzing /home/prupe/.minecraft/versions/1.8/1.8.jar (methods and fields)
    method setBlockState matches j (Lbec;)V
    method getBlockStateInWorld matches a (Lbec;Lard;Ldt;)Lbec;
    method getStateFromMetadata matches a (I)Lbec;
+   method getMetadataFromState matches c (Lbec;)I
   IBlockAccess (ard.class)
   Icon (cue.class)
    method getX0 matches a ()I
@@ -1055,6 +1056,7 @@ Analyzing /home/prupe/.minecraft/versions/1.8/1.8.jar (methods and fields)
    method setBlockState matches j (Lbec;)V
    method getBlockStateInWorld matches a (Lbec;Lard;Ldt;)Lbec;
    method getStateFromMetadata matches a (I)Lbec;
+   method getMetadataFromState matches c (Lbec;)I
    method colorMultiplier matches a (Lard;Ldt;I)I
   Minecraft (bsu.class)
    method getInstance matches z ()Lbsu;
@@ -1681,6 +1683,7 @@ __BlockAPI
     class Block (atr.class)
         method getBlockState -> P ()Lbec;
         method getBlockStateInWorld -> a (Lbec;Lard;Ldt;)Lbec;
+        method getMetadataFromState -> c (Lbec;)I
         method getShortName -> a ()Ljava/lang/String;
         method getStateFromMetadata -> a (I)Lbec;
         method setBlockState -> j (Lbec;)V
@@ -2518,6 +2521,7 @@ Custom Textures and Models
         method colorMultiplier -> a (Lard;Ldt;I)I
         method getBlockState -> P ()Lbec;
         method getBlockStateInWorld -> a (Lbec;Lard;Ldt;)Lbec;
+        method getMetadataFromState -> c (Lbec;)I
         method getRenderType -> b ()I
         method getShortName -> a ()Ljava/lang/String;
         method getStateFromMetadata -> a (I)Lbec;
@@ -4478,14 +4482,13 @@ Patching...
                                ALOAD_1
                                ALOAD_2
                                ALOAD 0x05
-                               INVOKESTATIC 0x01 0x86
+                               INVOKEVIRTUAL 0x01 0x86
                                IFNE 0x00 0x04
                                RETURN
                                ALOAD 0x0a
                                ILOAD 0x06
                                INVOKEVIRTUAL 0x01 0x7a
                                ISTORE 0x06
-   increasing stack size from 6 to 7
     override texture (held blocks) a(FFFFLjava/util/List;)V@36
      ALOAD 0x08                ALOAD 0x08
      INVOKEINTERFACE 0x00 0x8e 0x01 0x00  INVOKEINTERFACE 0x00 0x8e 0x01 0x00
@@ -4927,40 +4930,43 @@ Patching...
                                GETSTATIC 0x00 0x1d
                                INVOKESTATIC 0x00 0x7d
     render mooshroom overlay a(Labx;FFFFFFF)V@79
-     label A -> instruction 97
-     branch offset IFNE A -> +15 @82
-     ALOAD 0x09                INVOKESTATIC 0x00 0x80
-     GETSTATIC 0x00 0x1a       IFNE 0x00 0x0f
-     INVOKEVIRTUAL 0x00 0x20   ALOAD 0x09
-     FCONST_1                  GETSTATIC 0x00 0x1a
-     INVOKEVIRTUAL 0x00 0x2b   INVOKEVIRTUAL 0x00 0x20
+     label A -> instruction 100
+     branch offset IFNE A -> +15 @85
+     ALOAD 0x09                LDC2_W 0x00 0x7e
+     GETSTATIC 0x00 0x1a       INVOKESTATIC 0x00 0x83
+     INVOKEVIRTUAL 0x00 0x20   IFNE 0x00 0x0f
+     FCONST_1                  ALOAD 0x09
+     INVOKEVIRTUAL 0x00 0x2b   GETSTATIC 0x00 0x1a
+                               INVOKEVIRTUAL 0x00 0x20
                                FCONST_1
                                INVOKEVIRTUAL 0x00 0x2b
-    render mooshroom overlay a(Labx;FFFFFFF)V@128
-     label A -> instruction 146
-     branch offset IFNE A -> +15 @131
-     ALOAD 0x09                INVOKESTATIC 0x00 0x80
-     GETSTATIC 0x00 0x1a       IFNE 0x00 0x0f
-     INVOKEVIRTUAL 0x00 0x20   ALOAD 0x09
-     FCONST_1                  GETSTATIC 0x00 0x1a
-     INVOKEVIRTUAL 0x00 0x2b   INVOKEVIRTUAL 0x00 0x20
+    render mooshroom overlay a(Labx;FFFFFFF)V@131
+     label A -> instruction 152
+     branch offset IFNE A -> +15 @137
+     ALOAD 0x09                LDC2_W 0x00 0x7e
+     GETSTATIC 0x00 0x1a       INVOKESTATIC 0x00 0x83
+     INVOKEVIRTUAL 0x00 0x20   IFNE 0x00 0x0f
+     FCONST_1                  ALOAD 0x09
+     INVOKEVIRTUAL 0x00 0x2b   GETSTATIC 0x00 0x1a
+                               INVOKEVIRTUAL 0x00 0x20
                                FCONST_1
                                INVOKEVIRTUAL 0x00 0x2b
-    render mooshroom overlay a(Labx;FFFFFFF)V@205
-     label A -> instruction 223
-     branch offset IFNE A -> +15 @208
-     ALOAD 0x09                INVOKESTATIC 0x00 0x80
-     GETSTATIC 0x00 0x1a       IFNE 0x00 0x0f
-     INVOKEVIRTUAL 0x00 0x20   ALOAD 0x09
-     FCONST_1                  GETSTATIC 0x00 0x1a
-     INVOKEVIRTUAL 0x00 0x2b   INVOKEVIRTUAL 0x00 0x20
+    render mooshroom overlay a(Labx;FFFFFFF)V@211
+     label A -> instruction 232
+     branch offset IFNE A -> +15 @217
+     ALOAD 0x09                LDC2_W 0x00 0x7e
+     GETSTATIC 0x00 0x1a       INVOKESTATIC 0x00 0x83
+     INVOKEVIRTUAL 0x00 0x20   IFNE 0x00 0x0f
+     FCONST_1                  ALOAD 0x09
+     INVOKEVIRTUAL 0x00 0x2b   GETSTATIC 0x00 0x1a
+                               INVOKEVIRTUAL 0x00 0x20
                                FCONST_1
                                INVOKEVIRTUAL 0x00 0x2b
     finish mooshroom overlay a(Labx;FFFFFFF)V@14
-     RETURN                    INVOKESTATIC 0x00 0x83
+     RETURN                    INVOKESTATIC 0x00 0x86
                                RETURN
-    finish mooshroom overlay a(Labx;FFFFFFF)V@232
-                               INVOKESTATIC 0x00 0x83
+    finish mooshroom overlay a(Labx;FFFFFFF)V@241
+                               INVOKESTATIC 0x00 0x86
  applying RenderSheep patch to csr.class for mod Random Mobs
     randomize textures/entity/sheep/sheep_fur.png a(Lacl;FFFFFFF)V@19
      GETSTATIC 0x00 0x0f       ALOAD_1
@@ -7793,124 +7799,124 @@ Patching...
    field signature Lnet/minecraft/src/ResourceLocation; -> Loa;
    field signature Lnet/minecraft/src/ResourceLocation; -> Loa;
     field ref com/prupe/mcpatcher/mob/MobOverlay.MOOSHROOM_OVERLAY Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/mob/MobOverlay.MOOSHROOM_OVERLAY Loa; reset()V@0
-     GETSTATIC 0x00 0x02       GETSTATIC 0x00 0x8d
+     GETSTATIC 0x00 0x02       GETSTATIC 0x00 0x8e
     field ref com/prupe/mcpatcher/mob/MobOverlay.MOOSHROOM_OVERLAY Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/mob/MobOverlay.MOOSHROOM_OVERLAY Loa; setupMooshroom(Lxm;Loa;)Loa;@15
-     GETSTATIC 0x00 0x02       GETSTATIC 0x00 0x8d
+     GETSTATIC 0x00 0x02       GETSTATIC 0x00 0x8e
     field ref com/prupe/mcpatcher/mob/MobOverlay.MOOSHROOM_OVERLAY Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/mob/MobOverlay.MOOSHROOM_OVERLAY Loa; <clinit>()V@7
-     PUTSTATIC 0x00 0x02       PUTSTATIC 0x00 0x8d
+     PUTSTATIC 0x00 0x02       PUTSTATIC 0x00 0x8e
     method ref com/prupe/mcpatcher/mal/resource/TexturePackAPI.hasResource (Lnet/minecraft/src/ResourceLocation;)Z -> com/prupe/mcpatcher/mal/resource/TexturePackAPI.hasResource (Loa;)Z reset()V@3
-     INVOKESTATIC 0x00 0x03    INVOKESTATIC 0x00 0x90
+     INVOKESTATIC 0x00 0x03    INVOKESTATIC 0x00 0x91
     method ref com/prupe/mcpatcher/mal/resource/TexturePackAPI.hasResource (Lnet/minecraft/src/ResourceLocation;)Z -> com/prupe/mcpatcher/mal/resource/TexturePackAPI.hasResource (Loa;)Z reset()V@12
-     INVOKESTATIC 0x00 0x03    INVOKESTATIC 0x00 0x90
+     INVOKESTATIC 0x00 0x03    INVOKESTATIC 0x00 0x91
     field ref com/prupe/mcpatcher/mob/MobOverlay.SNOWMAN_OVERLAY Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/mob/MobOverlay.SNOWMAN_OVERLAY Loa; reset()V@9
-     GETSTATIC 0x00 0x05       GETSTATIC 0x00 0x92
+     GETSTATIC 0x00 0x05       GETSTATIC 0x00 0x93
     field ref com/prupe/mcpatcher/mob/MobOverlay.SNOWMAN_OVERLAY Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/mob/MobOverlay.SNOWMAN_OVERLAY Loa; renderSnowmanOverlay(Lxm;)Z@9
-     GETSTATIC 0x00 0x05       GETSTATIC 0x00 0x92
+     GETSTATIC 0x00 0x05       GETSTATIC 0x00 0x93
     field ref com/prupe/mcpatcher/mob/MobOverlay.SNOWMAN_OVERLAY Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/mob/MobOverlay.SNOWMAN_OVERLAY Loa; <clinit>()V@17
-     PUTSTATIC 0x00 0x05       PUTSTATIC 0x00 0x92
+     PUTSTATIC 0x00 0x05       PUTSTATIC 0x00 0x93
     method ref com/prupe/mcpatcher/mob/MobRandomizer.randomTexture (Lnet/minecraft/src/EntityLivingBase;Lnet/minecraft/src/ResourceLocation;)Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/mob/MobRandomizer.randomTexture (Lxm;Loa;)Loa; setupMooshroom(Lxm;Loa;)Loa;@18
-     INVOKESTATIC 0x00 0x09    INVOKESTATIC 0x00 0x94
+     INVOKESTATIC 0x00 0x09    INVOKESTATIC 0x00 0x95
     method ref com/prupe/mcpatcher/mob/MobRandomizer.randomTexture (Lnet/minecraft/src/EntityLivingBase;Lnet/minecraft/src/ResourceLocation;)Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/mob/MobRandomizer.randomTexture (Lxm;Loa;)Loa; renderSnowmanOverlay(Lxm;)Z@12
-     INVOKESTATIC 0x00 0x09    INVOKESTATIC 0x00 0x94
-    method ref com/prupe/mcpatcher/mal/tessellator/TessellatorAPI.getTessellator ()Lnet/minecraft/src/Tessellator; -> com/prupe/mcpatcher/mal/tessellator/TessellatorAPI.getTessellator ()Lciv; renderMooshroomOverlay()Z@35
-     INVOKESTATIC 0x00 0x0b    INVOKESTATIC 0x00 0x97
+     INVOKESTATIC 0x00 0x09    INVOKESTATIC 0x00 0x95
+    method ref com/prupe/mcpatcher/mal/tessellator/TessellatorAPI.getTessellator ()Lnet/minecraft/src/Tessellator; -> com/prupe/mcpatcher/mal/tessellator/TessellatorAPI.getTessellator ()Lciv; renderMooshroomOverlay(D)Z@35
+     INVOKESTATIC 0x00 0x0b    INVOKESTATIC 0x00 0x98
     method ref com/prupe/mcpatcher/mal/tessellator/TessellatorAPI.getTessellator ()Lnet/minecraft/src/Tessellator; -> com/prupe/mcpatcher/mal/tessellator/TessellatorAPI.getTessellator ()Lciv; renderSnowmanOverlay(Lxm;)Z@18
-     INVOKESTATIC 0x00 0x0b    INVOKESTATIC 0x00 0x97
-    method ref net/minecraft/src/Tessellator.startDrawingQuads ()V -> civ.b ()V renderMooshroomOverlay()Z@40
-     INVOKEVIRTUAL 0x00 0x0c   INVOKEVIRTUAL 0x00 0x9c
+     INVOKESTATIC 0x00 0x0b    INVOKESTATIC 0x00 0x98
+    method ref net/minecraft/src/Tessellator.startDrawingQuads ()V -> civ.b ()V renderMooshroomOverlay(D)Z@42
+     INVOKEVIRTUAL 0x00 0x0c   INVOKEVIRTUAL 0x00 0x9d
     method ref net/minecraft/src/Tessellator.startDrawingQuads ()V -> civ.b ()V renderSnowmanOverlay(Lxm;)Z@23
-     INVOKEVIRTUAL 0x00 0x0c   INVOKEVIRTUAL 0x00 0x9c
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@56
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@72
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@88
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@104
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@120
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@136
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@152
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@168
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@184
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@200
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@216
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@232
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@248
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@264
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@280
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay()Z@296
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x0c   INVOKEVIRTUAL 0x00 0x9d
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@65
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@88
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@111
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@134
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@157
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@180
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@203
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@226
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@249
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@272
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@295
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@318
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@341
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@364
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@387
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderMooshroomOverlay(D)Z@410
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@51
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@70
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@89
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@108
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@132
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@151
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@170
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@189
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@213
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@232
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@251
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@270
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@294
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@313
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@332
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@351
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@375
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@394
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@413
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@432
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@456
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@475
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@494
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
     method ref net/minecraft/src/Tessellator.addVertexWithUV (DDDDD)V -> civ.a (DDDDD)V renderSnowmanOverlay(Lxm;)Z@513
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0x9f
-    method ref com/prupe/mcpatcher/mal/tessellator/TessellatorAPI.draw (Lnet/minecraft/src/Tessellator;)I -> com/prupe/mcpatcher/mal/tessellator/TessellatorAPI.draw (Lciv;)I renderMooshroomOverlay()Z@300
-     INVOKESTATIC 0x00 0x16    INVOKESTATIC 0x00 0xa2
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x00 0xa0
+    method ref com/prupe/mcpatcher/mal/tessellator/TessellatorAPI.draw (Lnet/minecraft/src/Tessellator;)I -> com/prupe/mcpatcher/mal/tessellator/TessellatorAPI.draw (Lciv;)I renderMooshroomOverlay(D)Z@415
+     INVOKESTATIC 0x00 0x16    INVOKESTATIC 0x00 0xa3
     method ref com/prupe/mcpatcher/mal/tessellator/TessellatorAPI.draw (Lnet/minecraft/src/Tessellator;)I -> com/prupe/mcpatcher/mal/tessellator/TessellatorAPI.draw (Lciv;)I renderSnowmanOverlay(Lxm;)Z@517
-     INVOKESTATIC 0x00 0x16    INVOKESTATIC 0x00 0xa2
+     INVOKESTATIC 0x00 0x16    INVOKESTATIC 0x00 0xa3
     method ref com/prupe/mcpatcher/mal/resource/TexturePackAPI.bindTexture (Lnet/minecraft/src/ResourceLocation;)V -> com/prupe/mcpatcher/mal/resource/TexturePackAPI.bindTexture (Loa;)V renderSnowmanOverlay(Lxm;)Z@15
-     INVOKESTATIC 0x00 0x17    INVOKESTATIC 0x00 0xa5
+     INVOKESTATIC 0x00 0x17    INVOKESTATIC 0x00 0xa6
     method ref com/prupe/mcpatcher/mal/resource/TexturePackAPI.newMCPatcherResourceLocation (Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/mal/resource/TexturePackAPI.newMCPatcherResourceLocation (Ljava/lang/String;Ljava/lang/String;)Loa; <clinit>()V@4
-     INVOKESTATIC 0x00 0x21    INVOKESTATIC 0x00 0xa8
+     INVOKESTATIC 0x00 0x21    INVOKESTATIC 0x00 0xa9
     method ref com/prupe/mcpatcher/mal/resource/TexturePackAPI.newMCPatcherResourceLocation (Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/mal/resource/TexturePackAPI.newMCPatcherResourceLocation (Ljava/lang/String;Ljava/lang/String;)Loa; <clinit>()V@14
-     INVOKESTATIC 0x00 0x21    INVOKESTATIC 0x00 0xa8
-   string replace Lnet/minecraft/src/Tessellator; -> Lciv; @751
+     INVOKESTATIC 0x00 0x21    INVOKESTATIC 0x00 0xa9
+   string replace Lnet/minecraft/src/Tessellator; -> Lciv; @752
    string replace Lnet/minecraft/src/ResourceLocation; -> Loa; @503
    string replace Lnet/minecraft/src/EntityLivingBase; -> Lxm; @447
   adding com/prupe/mcpatcher/mob/MobRandomizer.class for Random Mobs
@@ -8776,6 +8782,7 @@ Patching...
    method signature (Lnet/minecraft/src/Block;Ljava/lang/String;)Lnet/minecraft/src/IBlockStateProperty; -> (Latr;Ljava/lang/String;)Lbex;
    method signature (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/IModel;Lnet/minecraft/src/IBlockState;Lnet/minecraft/src/Position;Lnet/minecraft/src/Block;Z)Z -> (Lard;Lcxe;Lbec;Ldt;Latr;Z)Z
    method signature (Lnet/minecraft/src/IModel;Lnet/minecraft/src/Block;I)Z -> (Lcxe;Latr;I)Z
+   method signature (Lnet/minecraft/src/IModel;Lnet/minecraft/src/IBlockState;Lnet/minecraft/src/Block;)Z -> (Lcxe;Lbec;Latr;)Z
    method signature (Lnet/minecraft/src/IBlockState;Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Position;)Lnet/minecraft/src/IBlockState; -> (Lbec;Lard;Latr;Ldt;)Lbec;
    method signature (Lnet/minecraft/src/Direction;)V -> (Lej;)V
    method signature (Lnet/minecraft/src/Direction;)V -> (Lej;)V
@@ -8796,276 +8803,276 @@ Patching...
    field signature Lnet/minecraft/src/Position; -> Ldt;
    field signature Lnet/minecraft/src/Direction; -> Lej;
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.getFixedBlock (Ljava/lang/String;)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getFixedBlock (Ljava/lang/String;)Latr; reset()V@18
-     INVOKESTATIC 0x00 0x06    INVOKESTATIC 0x02 0x83
+     INVOKESTATIC 0x00 0x06    INVOKESTATIC 0x02 0x87
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.getFixedBlock (Ljava/lang/String;)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getFixedBlock (Ljava/lang/String;)Latr; reset()V@48
-     INVOKESTATIC 0x00 0x06    INVOKESTATIC 0x02 0x83
+     INVOKESTATIC 0x00 0x06    INVOKESTATIC 0x02 0x87
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.bedBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.bedBlock Latr; reset()V@21
-     PUTSTATIC 0x00 0x07       PUTSTATIC 0x02 0x85
+     PUTSTATIC 0x00 0x07       PUTSTATIC 0x02 0x89
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.bedBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.bedBlock Latr; reset()V@24
-     GETSTATIC 0x00 0x07       GETSTATIC 0x02 0x85
+     GETSTATIC 0x00 0x07       GETSTATIC 0x02 0x89
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.bedBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.bedBlock Latr; reset()V@35
-     GETSTATIC 0x00 0x07       GETSTATIC 0x02 0x85
+     GETSTATIC 0x00 0x07       GETSTATIC 0x02 0x89
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.bedBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.bedBlock Latr; setCoordOffsetsForRenderType()Z@16
-     GETSTATIC 0x00 0x07       GETSTATIC 0x02 0x85
+     GETSTATIC 0x00 0x07       GETSTATIC 0x02 0x89
     method ref com/prupe/mcpatcher/ctm/CTMUtils18.getPropertyByName (Lnet/minecraft/src/Block;Ljava/lang/String;)Lnet/minecraft/src/IBlockStateProperty; -> com/prupe/mcpatcher/ctm/CTMUtils18.getPropertyByName (Latr;Ljava/lang/String;)Lbex; reset()V@29
-     INVOKESTATIC 0x00 0x09    INVOKESTATIC 0x02 0x87
+     INVOKESTATIC 0x00 0x09    INVOKESTATIC 0x02 0x8b
     method ref com/prupe/mcpatcher/ctm/CTMUtils18.getPropertyByName (Lnet/minecraft/src/Block;Ljava/lang/String;)Lnet/minecraft/src/IBlockStateProperty; -> com/prupe/mcpatcher/ctm/CTMUtils18.getPropertyByName (Latr;Ljava/lang/String;)Lbex; reset()V@40
-     INVOKESTATIC 0x00 0x09    INVOKESTATIC 0x02 0x87
+     INVOKESTATIC 0x00 0x09    INVOKESTATIC 0x02 0x8b
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.bedHeadProperty Lnet/minecraft/src/IBlockStateProperty; -> com/prupe/mcpatcher/ctm/CTMUtils18.bedHeadProperty Lbex; reset()V@32
-     PUTSTATIC 0x00 0x0a       PUTSTATIC 0x02 0x89
+     PUTSTATIC 0x00 0x0a       PUTSTATIC 0x02 0x8d
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.bedHeadProperty Lnet/minecraft/src/IBlockStateProperty; -> com/prupe/mcpatcher/ctm/CTMUtils18.bedHeadProperty Lbex; setCoordOffsetsForRenderType()Z@23
-     GETSTATIC 0x00 0x0a       GETSTATIC 0x02 0x89
+     GETSTATIC 0x00 0x0a       GETSTATIC 0x02 0x8d
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.bedFacingProperty Lnet/minecraft/src/IBlockStateProperty; -> com/prupe/mcpatcher/ctm/CTMUtils18.bedFacingProperty Lbex; reset()V@43
-     PUTSTATIC 0x00 0x0c       PUTSTATIC 0x02 0x8b
+     PUTSTATIC 0x00 0x0c       PUTSTATIC 0x02 0x8f
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.bedFacingProperty Lnet/minecraft/src/IBlockStateProperty; -> com/prupe/mcpatcher/ctm/CTMUtils18.bedFacingProperty Lbex; setCoordOffsetsForRenderType()Z@33
-     GETSTATIC 0x00 0x0c       GETSTATIC 0x02 0x8b
+     GETSTATIC 0x00 0x0c       GETSTATIC 0x02 0x8f
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.doublePlantBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.doublePlantBlock Latr; reset()V@51
-     PUTSTATIC 0x00 0x0e       PUTSTATIC 0x02 0x8d
+     PUTSTATIC 0x00 0x0e       PUTSTATIC 0x02 0x91
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.doublePlantBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.doublePlantBlock Latr; fixupState(Lbec;Lard;Latr;Ldt;)Lbec;@1
-     GETSTATIC 0x00 0x0e       GETSTATIC 0x02 0x8d
+     GETSTATIC 0x00 0x0e       GETSTATIC 0x02 0x91
     class ref net/minecraft/src/Block -> atr reset()V@78
-     CHECKCAST 0x00 0x13       CHECKCAST 0x02 0x8f
+     CHECKCAST 0x00 0x13       CHECKCAST 0x02 0x93
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockName (Lnet/minecraft/src/Block;)Ljava/lang/String; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockName (Latr;)Ljava/lang/String; reset()V@94
-     INVOKESTATIC 0x00 0x17    INVOKESTATIC 0x02 0x92
+     INVOKESTATIC 0x00 0x17    INVOKESTATIC 0x02 0x96
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockName (Lnet/minecraft/src/Block;)Ljava/lang/String; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockName (Latr;)Ljava/lang/String; toString()Ljava/lang/String;@22
-     INVOKESTATIC 0x00 0x17    INVOKESTATIC 0x02 0x92
+     INVOKESTATIC 0x00 0x17    INVOKESTATIC 0x02 0x96
     method ref net/minecraft/src/Block.getBlockState ()Lnet/minecraft/src/IBlockState; -> atr.P ()Lbec; reset()V@102
-     INVOKEVIRTUAL 0x00 0x19   INVOKEVIRTUAL 0x02 0x96
+     INVOKEVIRTUAL 0x00 0x19   INVOKEVIRTUAL 0x02 0x9a
     method ref net/minecraft/src/Block.getBlockState ()Lnet/minecraft/src/IBlockState; -> atr.P ()Lbec; getPropertyByName(Latr;Ljava/lang/String;)Lbex;@5
-     INVOKEVIRTUAL 0x00 0x19   INVOKEVIRTUAL 0x02 0x96
+     INVOKEVIRTUAL 0x00 0x19   INVOKEVIRTUAL 0x02 0x9a
     interface method ref net/minecraft/src/IBlockState.getProperties ()Ljava/util/Collection; -> bec.a ()Ljava/util/Collection; reset()V@107
-     INVOKEINTERFACE 0x00 0x1a 0x01 0x00  INVOKEINTERFACE 0x02 0x9a 0x01 0x00
+     INVOKEINTERFACE 0x00 0x1a 0x01 0x00  INVOKEINTERFACE 0x02 0x9e 0x01 0x00
     interface method ref net/minecraft/src/IBlockState.getProperties ()Ljava/util/Collection; -> bec.a ()Ljava/util/Collection; getPropertyByName(Latr;Ljava/lang/String;)Lbex;@8
-     INVOKEINTERFACE 0x00 0x1a 0x01 0x00  INVOKEINTERFACE 0x02 0x9a 0x01 0x00
+     INVOKEINTERFACE 0x00 0x1a 0x01 0x00  INVOKEINTERFACE 0x02 0x9e 0x01 0x00
     interface method ref net/minecraft/src/IBlockState.getProperties ()Ljava/util/Collection; -> bec.a ()Ljava/util/Collection; shouldConnectByBlock(Latr;III)Z@36
-     INVOKEINTERFACE 0x00 0x1a 0x01 0x00  INVOKEINTERFACE 0x02 0x9a 0x01 0x00
+     INVOKEINTERFACE 0x00 0x1a 0x01 0x00  INVOKEINTERFACE 0x02 0x9e 0x01 0x00
     interface method ref net/minecraft/src/IBlockState.getProperties ()Ljava/util/Collection; -> bec.a ()Ljava/util/Collection; shouldConnectByBlock(Latr;III)Z@88
-     INVOKEINTERFACE 0x00 0x1a 0x01 0x00  INVOKEINTERFACE 0x02 0x9a 0x01 0x00
+     INVOKEINTERFACE 0x00 0x1a 0x01 0x00  INVOKEINTERFACE 0x02 0x9e 0x01 0x00
     class ref net/minecraft/src/IBlockStateProperty -> bex reset()V@133
-     CHECKCAST 0x00 0x1c       CHECKCAST 0x02 0x9c
+     CHECKCAST 0x00 0x1c       CHECKCAST 0x02 0xa0
     class ref net/minecraft/src/IBlockStateProperty -> bex getPropertyByName(Latr;Ljava/lang/String;)Lbex;@34
-     CHECKCAST 0x00 0x1c       CHECKCAST 0x02 0x9c
+     CHECKCAST 0x00 0x1c       CHECKCAST 0x02 0xa0
     class ref net/minecraft/src/IBlockStateProperty -> bex setCoordOffsetsForRenderType()Z@123
-     CHECKCAST 0x00 0x1c       CHECKCAST 0x02 0x9c
+     CHECKCAST 0x00 0x1c       CHECKCAST 0x02 0xa0
     class ref net/minecraft/src/IBlockStateProperty -> bex shouldConnectByBlock(Latr;III)Z@65
-     CHECKCAST 0x00 0x1c       CHECKCAST 0x02 0x9c
+     CHECKCAST 0x00 0x1c       CHECKCAST 0x02 0xa0
     interface method ref net/minecraft/src/IBlockStateProperty.getName ()Ljava/lang/String; -> bex.a ()Ljava/lang/String; reset()V@140
-     INVOKEINTERFACE 0x00 0x1d 0x01 0x00  INVOKEINTERFACE 0x02 0x9e 0x01 0x00
+     INVOKEINTERFACE 0x00 0x1d 0x01 0x00  INVOKEINTERFACE 0x02 0xa2 0x01 0x00
     interface method ref net/minecraft/src/IBlockStateProperty.getName ()Ljava/lang/String; -> bex.a ()Ljava/lang/String; getPropertyByName(Latr;Ljava/lang/String;)Lbex;@40
-     INVOKEINTERFACE 0x00 0x1d 0x01 0x00  INVOKEINTERFACE 0x02 0x9e 0x01 0x00
+     INVOKEINTERFACE 0x00 0x1d 0x01 0x00  INVOKEINTERFACE 0x02 0xa2 0x01 0x00
     interface method ref net/minecraft/src/IBlockStateProperty.getValueClass ()Ljava/lang/Class; -> bex.b ()Ljava/lang/Class; reset()V@218
-     INVOKEINTERFACE 0x00 0x23 0x01 0x00  INVOKEINTERFACE 0x02 0xa0 0x01 0x00
+     INVOKEINTERFACE 0x00 0x23 0x01 0x00  INVOKEINTERFACE 0x02 0xa4 0x01 0x00
     method ref com/prupe/mcpatcher/mal/block/BlockStateMatcher$V2.getPropertyValues (Lnet/minecraft/src/IBlockStateProperty;)Ljava/lang/String; -> com/prupe/mcpatcher/mal/block/BlockStateMatcher$V2.getPropertyValues (Lbex;)Ljava/lang/String; reset()V@231
-     INVOKESTATIC 0x00 0x25    INVOKESTATIC 0x02 0xa3
+     INVOKESTATIC 0x00 0x25    INVOKESTATIC 0x02 0xa7
     method ref com/prupe/mcpatcher/ctm/CTMUtils18.fixupState (Lnet/minecraft/src/IBlockState;Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Position;)Lnet/minecraft/src/IBlockState; -> com/prupe/mcpatcher/ctm/CTMUtils18.fixupState (Lbec;Lard;Latr;Ldt;)Lbec; preRender(Lard;Lcxe;Lbec;Ldt;Latr;Z)Z@6
-     INVOKESTATIC 0x00 0x3a    INVOKESTATIC 0x02 0xa5
+     INVOKESTATIC 0x00 0x3a    INVOKESTATIC 0x02 0xa9
     method ref com/prupe/mcpatcher/ctm/CTMUtils18.fixupState (Lnet/minecraft/src/IBlockState;Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Block;Lnet/minecraft/src/Position;)Lnet/minecraft/src/IBlockState; -> com/prupe/mcpatcher/ctm/CTMUtils18.fixupState (Lbec;Lard;Latr;Ldt;)Lbec; getParticleColor(Lard;Lbec;Ldt;I)I@9
-     INVOKESTATIC 0x00 0x3a    INVOKESTATIC 0x02 0xa5
+     INVOKESTATIC 0x00 0x3a    INVOKESTATIC 0x02 0xa9
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.blockAccess Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/CTMUtils18.blockAccess Lard; preRender(Lard;Lcxe;Lbec;Ldt;Latr;Z)Z@12
-     PUTFIELD 0x00 0x3b        PUTFIELD 0x02 0xa8
-    field ref com/prupe/mcpatcher/ctm/CTMUtils18.blockAccess Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/CTMUtils18.blockAccess Lard; preRenderHeld(Lcxe;Latr;I)Z@2
-     PUTFIELD 0x00 0x3b        PUTFIELD 0x02 0xa8
+     PUTFIELD 0x00 0x3b        PUTFIELD 0x02 0xac
+    field ref com/prupe/mcpatcher/ctm/CTMUtils18.blockAccess Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/CTMUtils18.blockAccess Lard; preRenderHeld(Lcxe;Lbec;Latr;)Z@2
+     PUTFIELD 0x00 0x3b        PUTFIELD 0x02 0xac
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.blockAccess Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/CTMUtils18.blockAccess Lard; shouldConnectByBlock(Latr;III)Z@11
-     GETFIELD 0x00 0x3b        GETFIELD 0x02 0xa8
+     GETFIELD 0x00 0x3b        GETFIELD 0x02 0xac
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.blockAccess Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/CTMUtils18.blockAccess Lard; shouldConnectByTile(Latr;Lcue;III)Z@15
-     GETFIELD 0x00 0x3b        GETFIELD 0x02 0xa8
+     GETFIELD 0x00 0x3b        GETFIELD 0x02 0xac
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.blockAccess Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/CTMUtils18.blockAccess Lard; shouldConnectByTile(Latr;Lcue;III)Z@36
-     GETFIELD 0x00 0x3b        GETFIELD 0x02 0xa8
+     GETFIELD 0x00 0x3b        GETFIELD 0x02 0xac
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.model Lnet/minecraft/src/IModel; -> com/prupe/mcpatcher/ctm/CTMUtils18.model Lcxe; preRender(Lard;Lcxe;Lbec;Ldt;Latr;Z)Z@17
-     PUTFIELD 0x00 0x3c        PUTFIELD 0x02 0xaa
-    field ref com/prupe/mcpatcher/ctm/CTMUtils18.model Lnet/minecraft/src/IModel; -> com/prupe/mcpatcher/ctm/CTMUtils18.model Lcxe; preRenderHeld(Lcxe;Latr;I)Z@7
-     PUTFIELD 0x00 0x3c        PUTFIELD 0x02 0xaa
+     PUTFIELD 0x00 0x3c        PUTFIELD 0x02 0xae
+    field ref com/prupe/mcpatcher/ctm/CTMUtils18.model Lnet/minecraft/src/IModel; -> com/prupe/mcpatcher/ctm/CTMUtils18.model Lcxe; preRenderHeld(Lcxe;Lbec;Latr;)Z@7
+     PUTFIELD 0x00 0x3c        PUTFIELD 0x02 0xae
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.model Lnet/minecraft/src/IModel; -> com/prupe/mcpatcher/ctm/CTMUtils18.model Lcxe; clear()V@6
-     PUTFIELD 0x00 0x3c        PUTFIELD 0x02 0xaa
+     PUTFIELD 0x00 0x3c        PUTFIELD 0x02 0xae
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lnet/minecraft/src/IBlockState; -> com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lbec; preRender(Lard;Lcxe;Lbec;Ldt;Latr;Z)Z@22
-     PUTFIELD 0x00 0x3d        PUTFIELD 0x02 0xac
-    field ref com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lnet/minecraft/src/IBlockState; -> com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lbec; preRenderHeld(Lcxe;Latr;I)Z@16
-     PUTFIELD 0x00 0x3d        PUTFIELD 0x02 0xac
-    field ref com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lnet/minecraft/src/IBlockState; -> com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lbec; preRenderHeld(Lcxe;Latr;I)Z@75
-     GETFIELD 0x00 0x3d        GETFIELD 0x02 0xac
+     PUTFIELD 0x00 0x3d        PUTFIELD 0x02 0xb0
+    field ref com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lnet/minecraft/src/IBlockState; -> com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lbec; preRenderHeld(Lcxe;Lbec;Latr;)Z@12
+     PUTFIELD 0x00 0x3d        PUTFIELD 0x02 0xb0
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lnet/minecraft/src/IBlockState; -> com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lbec; clear()V@11
-     PUTFIELD 0x00 0x3d        PUTFIELD 0x02 0xac
+     PUTFIELD 0x00 0x3d        PUTFIELD 0x02 0xb0
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lnet/minecraft/src/IBlockState; -> com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lbec; match(Lcom/prupe/mcpatcher/mal/block/BlockStateMatcher;)Z@2
-     GETFIELD 0x00 0x3d        GETFIELD 0x02 0xac
+     GETFIELD 0x00 0x3d        GETFIELD 0x02 0xb0
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lnet/minecraft/src/IBlockState; -> com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lbec; getEnumProperty(Lbex;)I@5
-     GETFIELD 0x00 0x3d        GETFIELD 0x02 0xac
+     GETFIELD 0x00 0x3d        GETFIELD 0x02 0xb0
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lnet/minecraft/src/IBlockState; -> com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lbec; shouldConnectByBlock(Latr;III)Z@33
-     GETFIELD 0x00 0x3d        GETFIELD 0x02 0xac
+     GETFIELD 0x00 0x3d        GETFIELD 0x02 0xb0
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lnet/minecraft/src/IBlockState; -> com/prupe/mcpatcher/ctm/CTMUtils18.blockState Lbec; shouldConnectByBlock(Latr;III)Z@106
-     GETFIELD 0x00 0x3d        GETFIELD 0x02 0xac
+     GETFIELD 0x00 0x3d        GETFIELD 0x02 0xb0
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.position Lnet/minecraft/src/Position; -> com/prupe/mcpatcher/ctm/CTMUtils18.position Ldt; preRender(Lard;Lcxe;Lbec;Ldt;Latr;Z)Z@28
-     PUTFIELD 0x00 0x3e        PUTFIELD 0x02 0xae
-    field ref com/prupe/mcpatcher/ctm/CTMUtils18.position Lnet/minecraft/src/Position; -> com/prupe/mcpatcher/ctm/CTMUtils18.position Ldt; preRenderHeld(Lcxe;Latr;I)Z@21
-     PUTFIELD 0x00 0x3e        PUTFIELD 0x02 0xae
+     PUTFIELD 0x00 0x3e        PUTFIELD 0x02 0xb2
+    field ref com/prupe/mcpatcher/ctm/CTMUtils18.position Lnet/minecraft/src/Position; -> com/prupe/mcpatcher/ctm/CTMUtils18.position Ldt; preRenderHeld(Lcxe;Lbec;Latr;)Z@17
+     PUTFIELD 0x00 0x3e        PUTFIELD 0x02 0xb2
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.position Lnet/minecraft/src/Position; -> com/prupe/mcpatcher/ctm/CTMUtils18.position Ldt; clear()V@16
-     PUTFIELD 0x00 0x3e        PUTFIELD 0x02 0xae
+     PUTFIELD 0x00 0x3e        PUTFIELD 0x02 0xb2
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.position Lnet/minecraft/src/Position; -> com/prupe/mcpatcher/ctm/CTMUtils18.position Ldt; getI()I@1
-     GETFIELD 0x00 0x3e        GETFIELD 0x02 0xae
+     GETFIELD 0x00 0x3e        GETFIELD 0x02 0xb2
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.position Lnet/minecraft/src/Position; -> com/prupe/mcpatcher/ctm/CTMUtils18.position Ldt; getJ()I@1
-     GETFIELD 0x00 0x3e        GETFIELD 0x02 0xae
+     GETFIELD 0x00 0x3e        GETFIELD 0x02 0xb2
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.position Lnet/minecraft/src/Position; -> com/prupe/mcpatcher/ctm/CTMUtils18.position Ldt; getK()I@1
-     GETFIELD 0x00 0x3e        GETFIELD 0x02 0xae
+     GETFIELD 0x00 0x3e        GETFIELD 0x02 0xb2
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.position Lnet/minecraft/src/Position; -> com/prupe/mcpatcher/ctm/CTMUtils18.position Ldt; toString()Ljava/lang/String;@35
-     GETFIELD 0x00 0x3e        GETFIELD 0x02 0xae
+     GETFIELD 0x00 0x3e        GETFIELD 0x02 0xb2
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.position Lnet/minecraft/src/Position; -> com/prupe/mcpatcher/ctm/CTMUtils18.position Ldt; toString()Ljava/lang/String;@48
-     GETFIELD 0x00 0x3e        GETFIELD 0x02 0xae
+     GETFIELD 0x00 0x3e        GETFIELD 0x02 0xb2
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.position Lnet/minecraft/src/Position; -> com/prupe/mcpatcher/ctm/CTMUtils18.position Ldt; toString()Ljava/lang/String;@63
-     GETFIELD 0x00 0x3e        GETFIELD 0x02 0xae
+     GETFIELD 0x00 0x3e        GETFIELD 0x02 0xb2
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.position Lnet/minecraft/src/Position; -> com/prupe/mcpatcher/ctm/CTMUtils18.position Ldt; toString()Ljava/lang/String;@78
-     GETFIELD 0x00 0x3e        GETFIELD 0x02 0xae
+     GETFIELD 0x00 0x3e        GETFIELD 0x02 0xb2
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.block Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.block Latr; preRender(Lard;Lcxe;Lbec;Ldt;Latr;Z)Z@34
-     PUTFIELD 0x00 0x3f        PUTFIELD 0x02 0xb0
-    field ref com/prupe/mcpatcher/ctm/CTMUtils18.block Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.block Latr; preRenderHeld(Lcxe;Latr;I)Z@26
-     PUTFIELD 0x00 0x3f        PUTFIELD 0x02 0xb0
+     PUTFIELD 0x00 0x3f        PUTFIELD 0x02 0xb4
+    field ref com/prupe/mcpatcher/ctm/CTMUtils18.block Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.block Latr; preRenderHeld(Lcxe;Lbec;Latr;)Z@22
+     PUTFIELD 0x00 0x3f        PUTFIELD 0x02 0xb4
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.block Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.block Latr; setCoordOffsetsForRenderType()Z@13
-     GETFIELD 0x00 0x3f        GETFIELD 0x02 0xb0
+     GETFIELD 0x00 0x3f        GETFIELD 0x02 0xb4
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.block Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.block Latr; setCoordOffsetsForRenderType()Z@115
-     GETFIELD 0x00 0x3f        GETFIELD 0x02 0xb0
+     GETFIELD 0x00 0x3f        GETFIELD 0x02 0xb4
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.block Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.block Latr; shouldConnectByBlock(Latr;III)Z@1
-     GETFIELD 0x00 0x3f        GETFIELD 0x02 0xb0
+     GETFIELD 0x00 0x3f        GETFIELD 0x02 0xb4
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.block Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.block Latr; toString()Ljava/lang/String;@11
-     GETFIELD 0x00 0x3f        GETFIELD 0x02 0xb0
+     GETFIELD 0x00 0x3f        GETFIELD 0x02 0xb4
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.block Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.block Latr; toString()Ljava/lang/String;@19
-     GETFIELD 0x00 0x3f        GETFIELD 0x02 0xb0
+     GETFIELD 0x00 0x3f        GETFIELD 0x02 0xb4
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.direction Lnet/minecraft/src/Direction; -> com/prupe/mcpatcher/ctm/CTMUtils18.direction Lej; preRender(Lard;Lcxe;Lbec;Ldt;Latr;Z)Z@45
-     PUTFIELD 0x00 0x41        PUTFIELD 0x02 0xb2
-    field ref com/prupe/mcpatcher/ctm/CTMUtils18.direction Lnet/minecraft/src/Direction; -> com/prupe/mcpatcher/ctm/CTMUtils18.direction Lej; preRenderHeld(Lcxe;Latr;I)Z@36
-     PUTFIELD 0x00 0x41        PUTFIELD 0x02 0xb2
+     PUTFIELD 0x00 0x41        PUTFIELD 0x02 0xb6
+    field ref com/prupe/mcpatcher/ctm/CTMUtils18.direction Lnet/minecraft/src/Direction; -> com/prupe/mcpatcher/ctm/CTMUtils18.direction Lej; preRenderHeld(Lcxe;Lbec;Latr;)Z@32
+     PUTFIELD 0x00 0x41        PUTFIELD 0x02 0xb6
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.direction Lnet/minecraft/src/Direction; -> com/prupe/mcpatcher/ctm/CTMUtils18.direction Lej; setDirection(Lej;)V@2
-     PUTFIELD 0x00 0x41        PUTFIELD 0x02 0xb2
+     PUTFIELD 0x00 0x41        PUTFIELD 0x02 0xb6
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.direction Lnet/minecraft/src/Direction; -> com/prupe/mcpatcher/ctm/CTMUtils18.direction Lej; setDirectionWater(Lej;)V@2
-     PUTFIELD 0x00 0x41        PUTFIELD 0x02 0xb2
+     PUTFIELD 0x00 0x41        PUTFIELD 0x02 0xb6
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.direction Lnet/minecraft/src/Direction; -> com/prupe/mcpatcher/ctm/CTMUtils18.direction Lej; getTextureFace()I@1
-     GETFIELD 0x00 0x41        GETFIELD 0x02 0xb2
+     GETFIELD 0x00 0x41        GETFIELD 0x02 0xb6
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.direction Lnet/minecraft/src/Direction; -> com/prupe/mcpatcher/ctm/CTMUtils18.direction Lej; getTextureFace()I@12
-     GETFIELD 0x00 0x41        GETFIELD 0x02 0xb2
+     GETFIELD 0x00 0x41        GETFIELD 0x02 0xb6
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.direction Lnet/minecraft/src/Direction; -> com/prupe/mcpatcher/ctm/CTMUtils18.direction Lej; shouldConnectByTile(Latr;Lcue;III)Z@47
-     GETFIELD 0x00 0x41        GETFIELD 0x02 0xb2
+     GETFIELD 0x00 0x41        GETFIELD 0x02 0xb6
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.direction Lnet/minecraft/src/Direction; -> com/prupe/mcpatcher/ctm/CTMUtils18.direction Lej; shouldConnectByTile(Latr;Lcue;III)Z@66
-     GETFIELD 0x00 0x41        GETFIELD 0x02 0xb2
+     GETFIELD 0x00 0x41        GETFIELD 0x02 0xb6
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.direction Lnet/minecraft/src/Direction; -> com/prupe/mcpatcher/ctm/CTMUtils18.direction Lej; toString()Ljava/lang/String;@89
-     GETFIELD 0x00 0x41        GETFIELD 0x02 0xb2
+     GETFIELD 0x00 0x41        GETFIELD 0x02 0xb6
     field ref com/prupe/mcpatcher/ctm/CTMUtils18.direction Lnet/minecraft/src/Direction; -> com/prupe/mcpatcher/ctm/CTMUtils18.direction Lej; toString()Ljava/lang/String;@102
-     GETFIELD 0x00 0x41        GETFIELD 0x02 0xb2
+     GETFIELD 0x00 0x41        GETFIELD 0x02 0xb6
     method ref com/prupe/mcpatcher/cc/ColorizeBlock18.preRender (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/IModel;Lnet/minecraft/src/IBlockState;Lnet/minecraft/src/Position;Lnet/minecraft/src/Block;Z)V -> com/prupe/mcpatcher/cc/ColorizeBlock18.preRender (Lard;Lcxe;Lbec;Ldt;Latr;Z)V preRender(Lard;Lcxe;Lbec;Ldt;Latr;Z)Z@91
-     INVOKEVIRTUAL 0x00 0x48   INVOKEVIRTUAL 0x02 0xb5
-    method ref net/minecraft/src/Block.getStateFromMetadata (I)Lnet/minecraft/src/IBlockState; -> atr.a (I)Lbec; preRenderHeld(Lcxe;Latr;I)Z@13
-     INVOKEVIRTUAL 0x00 0x49   INVOKEVIRTUAL 0x02 0xb8
-    method ref com/prupe/mcpatcher/cc/ColorizeBlock18.preRenderHeld (Lnet/minecraft/src/IModel;Lnet/minecraft/src/IBlockState;Lnet/minecraft/src/Block;)V -> com/prupe/mcpatcher/cc/ColorizeBlock18.preRenderHeld (Lcxe;Lbec;Latr;)V preRenderHeld(Lcxe;Latr;I)Z@79
-     INVOKEVIRTUAL 0x00 0x4a   INVOKEVIRTUAL 0x02 0xbb
+     INVOKEVIRTUAL 0x00 0x48   INVOKEVIRTUAL 0x02 0xb9
+    method ref net/minecraft/src/Block.getStateFromMetadata (I)Lnet/minecraft/src/IBlockState; -> atr.a (I)Lbec; preRenderHeld(Lcxe;Latr;I)Z@4
+     INVOKEVIRTUAL 0x00 0x49   INVOKEVIRTUAL 0x02 0xbc
+    method ref com/prupe/mcpatcher/ctm/CTMUtils18.preRenderHeld (Lnet/minecraft/src/IModel;Lnet/minecraft/src/IBlockState;Lnet/minecraft/src/Block;)Z -> com/prupe/mcpatcher/ctm/CTMUtils18.preRenderHeld (Lcxe;Lbec;Latr;)Z preRenderHeld(Lcxe;Latr;I)Z@8
+     INVOKEVIRTUAL 0x00 0x4a   INVOKEVIRTUAL 0x02 0xbe
+    method ref com/prupe/mcpatcher/cc/ColorizeBlock18.preRenderHeld (Lnet/minecraft/src/IModel;Lnet/minecraft/src/IBlockState;Lnet/minecraft/src/Block;)V -> com/prupe/mcpatcher/cc/ColorizeBlock18.preRenderHeld (Lcxe;Lbec;Latr;)V preRenderHeld(Lcxe;Lbec;Latr;)Z@72
+     INVOKEVIRTUAL 0x00 0x4b   INVOKEVIRTUAL 0x02 0xc1
     method ref net/minecraft/src/Block.getBlockStateInWorld (Lnet/minecraft/src/IBlockState;Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Position;)Lnet/minecraft/src/IBlockState; -> atr.a (Lbec;Lard;Ldt;)Lbec; fixupState(Lbec;Lard;Latr;Ldt;)Lbec;@11
-     INVOKEVIRTUAL 0x00 0x4b   INVOKEVIRTUAL 0x02 0xbe
+     INVOKEVIRTUAL 0x00 0x4c   INVOKEVIRTUAL 0x02 0xc4
     method ref com/prupe/mcpatcher/cc/ColorizeBlock18.setDirection (Lnet/minecraft/src/Direction;)V -> com/prupe/mcpatcher/cc/ColorizeBlock18.setDirection (Lej;)V setDirection(Lej;)V@10
-     INVOKEVIRTUAL 0x00 0x4c   INVOKEVIRTUAL 0x02 0xc0
+     INVOKEVIRTUAL 0x00 0x4d   INVOKEVIRTUAL 0x02 0xc6
     method ref com/prupe/mcpatcher/cc/ColorizeBlock18.setDirectionWater (Lnet/minecraft/src/Direction;)V -> com/prupe/mcpatcher/cc/ColorizeBlock18.setDirectionWater (Lej;)V setDirectionWater(Lej;)V@10
-     INVOKEVIRTUAL 0x00 0x4d   INVOKEVIRTUAL 0x02 0xc2
+     INVOKEVIRTUAL 0x00 0x4e   INVOKEVIRTUAL 0x02 0xc8
     method ref com/prupe/mcpatcher/cc/ColorizeBlock18.useColormap (Lnet/minecraft/src/ModelFace;)Z -> com/prupe/mcpatcher/cc/ColorizeBlock18.useColormap (Lclt;)Z useColormap(Lclt;)Z@5
-     INVOKEVIRTUAL 0x00 0x4e   INVOKEVIRTUAL 0x02 0xc4
+     INVOKEVIRTUAL 0x00 0x4f   INVOKEVIRTUAL 0x02 0xca
     method ref com/prupe/mcpatcher/cc/ColorizeBlock18.applyVertexColor (Lnet/minecraft/src/Tessellator;FI)V -> com/prupe/mcpatcher/cc/ColorizeBlock18.applyVertexColor (Lciv;FI)V applyVertexColor(Lciv;FI)V@7
-     INVOKEVIRTUAL 0x00 0x51   INVOKEVIRTUAL 0x02 0xc6
+     INVOKEVIRTUAL 0x00 0x52   INVOKEVIRTUAL 0x02 0xcc
     method ref com/prupe/mcpatcher/mal/tile/FaceInfo.getFaceInfo (Lnet/minecraft/src/ModelFace;)Lcom/prupe/mcpatcher/mal/tile/FaceInfo; -> com/prupe/mcpatcher/mal/tile/FaceInfo.getFaceInfo (Lclt;)Lcom/prupe/mcpatcher/mal/tile/FaceInfo; getModelFace(Lclt;)Lclt;@1
-     INVOKESTATIC 0x00 0x52    INVOKESTATIC 0x02 0xc9
+     INVOKESTATIC 0x00 0x53    INVOKESTATIC 0x02 0xcf
     method ref com/prupe/mcpatcher/mal/tile/FaceInfo.getFaceInfo (Lnet/minecraft/src/ModelFace;)Lcom/prupe/mcpatcher/mal/tile/FaceInfo; -> com/prupe/mcpatcher/mal/tile/FaceInfo.getFaceInfo (Lclt;)Lcom/prupe/mcpatcher/mal/tile/FaceInfo; shouldConnectByTile(Latr;Lcue;III)Z@120
-     INVOKESTATIC 0x00 0x52    INVOKESTATIC 0x02 0xc9
+     INVOKESTATIC 0x00 0x53    INVOKESTATIC 0x02 0xcf
     method ref com/prupe/mcpatcher/mal/tile/FaceInfo.getSprite ()Lnet/minecraft/src/TextureAtlasSprite; -> com/prupe/mcpatcher/mal/tile/FaceInfo.getSprite ()Lcue; getModelFace(Lclt;)Lclt;@17
-     INVOKEVIRTUAL 0x00 0x54   INVOKEVIRTUAL 0x02 0xcc
+     INVOKEVIRTUAL 0x00 0x55   INVOKEVIRTUAL 0x02 0xd2
     method ref com/prupe/mcpatcher/mal/tile/FaceInfo.getSprite ()Lnet/minecraft/src/TextureAtlasSprite; -> com/prupe/mcpatcher/mal/tile/FaceInfo.getSprite ()Lcue; shouldConnectByTile(Latr;Lcue;III)Z@123
-     INVOKEVIRTUAL 0x00 0x54   INVOKEVIRTUAL 0x02 0xcc
+     INVOKEVIRTUAL 0x00 0x55   INVOKEVIRTUAL 0x02 0xd2
     method ref com/prupe/mcpatcher/ctm/TileOverrideIterator.go (Lcom/prupe/mcpatcher/ctm/RenderBlockState;Lnet/minecraft/src/Icon;)Lcom/prupe/mcpatcher/ctm/ITileOverride; -> com/prupe/mcpatcher/ctm/TileOverrideIterator.go (Lcom/prupe/mcpatcher/ctm/RenderBlockState;Lcue;)Lcom/prupe/mcpatcher/ctm/ITileOverride; getModelFace(Lclt;)Lclt;@58
-     INVOKEVIRTUAL 0x00 0x58   INVOKEVIRTUAL 0x02 0xcf
+     INVOKEVIRTUAL 0x00 0x59   INVOKEVIRTUAL 0x02 0xd5
     method ref com/prupe/mcpatcher/ctm/TileOverrideIterator.getIcon ()Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/TileOverrideIterator.getIcon ()Lcue; getModelFace(Lclt;)Lclt;@64
-     INVOKEVIRTUAL 0x00 0x59   INVOKEVIRTUAL 0x02 0xd1
+     INVOKEVIRTUAL 0x00 0x5a   INVOKEVIRTUAL 0x02 0xd7
     class ref net/minecraft/src/TextureAtlasSprite -> cue getModelFace(Lclt;)Lclt;@67
-     CHECKCAST 0x00 0x5a       CHECKCAST 0x02 0xd3
+     CHECKCAST 0x00 0x5b       CHECKCAST 0x02 0xd9
     method ref com/prupe/mcpatcher/mal/tile/FaceInfo.getAltFace (Lnet/minecraft/src/TextureAtlasSprite;)Lnet/minecraft/src/ModelFace; -> com/prupe/mcpatcher/mal/tile/FaceInfo.getAltFace (Lcue;)Lclt; getModelFace(Lclt;)Lclt;@75
-     INVOKEVIRTUAL 0x00 0x5b   INVOKEVIRTUAL 0x02 0xd6
+     INVOKEVIRTUAL 0x00 0x5c   INVOKEVIRTUAL 0x02 0xdc
     method ref net/minecraft/src/Position.getI ()I -> dt.n ()I getI()I@4
-     INVOKEVIRTUAL 0x00 0x63   INVOKEVIRTUAL 0x02 0xdb
+     INVOKEVIRTUAL 0x00 0x64   INVOKEVIRTUAL 0x02 0xe1
     method ref net/minecraft/src/Position.getI ()I -> dt.n ()I toString()Ljava/lang/String;@51
-     INVOKEVIRTUAL 0x00 0x63   INVOKEVIRTUAL 0x02 0xdb
+     INVOKEVIRTUAL 0x00 0x64   INVOKEVIRTUAL 0x02 0xe1
     method ref net/minecraft/src/Position.getI ()I -> dt.n ()I setBetterGrassProperty(Lbec;Latr;Lard;Ldt;Lbex;I)Lbec;@20
-     INVOKEVIRTUAL 0x00 0x63   INVOKEVIRTUAL 0x02 0xdb
+     INVOKEVIRTUAL 0x00 0x64   INVOKEVIRTUAL 0x02 0xe1
     method ref net/minecraft/src/Position.getJ ()I -> dt.o ()I getJ()I@4
-     INVOKEVIRTUAL 0x00 0x64   INVOKEVIRTUAL 0x02 0xde
+     INVOKEVIRTUAL 0x00 0x65   INVOKEVIRTUAL 0x02 0xe4
     method ref net/minecraft/src/Position.getJ ()I -> dt.o ()I toString()Ljava/lang/String;@66
-     INVOKEVIRTUAL 0x00 0x64   INVOKEVIRTUAL 0x02 0xde
+     INVOKEVIRTUAL 0x00 0x65   INVOKEVIRTUAL 0x02 0xe4
     method ref net/minecraft/src/Position.getJ ()I -> dt.o ()I setBetterGrassProperty(Lbec;Latr;Lard;Ldt;Lbex;I)Lbec;@29
-     INVOKEVIRTUAL 0x00 0x64   INVOKEVIRTUAL 0x02 0xde
+     INVOKEVIRTUAL 0x00 0x65   INVOKEVIRTUAL 0x02 0xe4
     method ref net/minecraft/src/Position.getK ()I -> dt.p ()I getK()I@4
-     INVOKEVIRTUAL 0x00 0x65   INVOKEVIRTUAL 0x02 0xe1
+     INVOKEVIRTUAL 0x00 0x66   INVOKEVIRTUAL 0x02 0xe7
     method ref net/minecraft/src/Position.getK ()I -> dt.p ()I toString()Ljava/lang/String;@81
-     INVOKEVIRTUAL 0x00 0x65   INVOKEVIRTUAL 0x02 0xe1
+     INVOKEVIRTUAL 0x00 0x66   INVOKEVIRTUAL 0x02 0xe7
     method ref net/minecraft/src/Position.getK ()I -> dt.p ()I setBetterGrassProperty(Lbec;Latr;Lard;Ldt;Lbex;I)Lbec;@40
-     INVOKEVIRTUAL 0x00 0x65   INVOKEVIRTUAL 0x02 0xe1
+     INVOKEVIRTUAL 0x00 0x66   INVOKEVIRTUAL 0x02 0xe7
     method ref net/minecraft/src/Direction.ordinal ()I -> ej.ordinal ()I getTextureFace()I@15
-     INVOKEVIRTUAL 0x00 0x66   INVOKEVIRTUAL 0x02 0xe4
+     INVOKEVIRTUAL 0x00 0x67   INVOKEVIRTUAL 0x02 0xea
     method ref com/prupe/mcpatcher/ctm/CTMUtils18.getEnumProperty (Lnet/minecraft/src/IBlockStateProperty;)I -> com/prupe/mcpatcher/ctm/CTMUtils18.getEnumProperty (Lbex;)I setCoordOffsetsForRenderType()Z@26
-     INVOKESPECIAL 0x00 0x6a   INVOKESPECIAL 0x02 0xe6
+     INVOKESPECIAL 0x00 0x6b   INVOKESPECIAL 0x02 0xec
     method ref com/prupe/mcpatcher/ctm/CTMUtils18.getEnumProperty (Lnet/minecraft/src/IBlockStateProperty;)I -> com/prupe/mcpatcher/ctm/CTMUtils18.getEnumProperty (Lbex;)I setCoordOffsetsForRenderType()Z@36
-     INVOKESPECIAL 0x00 0x6a   INVOKESPECIAL 0x02 0xe6
+     INVOKESPECIAL 0x00 0x6b   INVOKESPECIAL 0x02 0xec
     method ref com/prupe/mcpatcher/ctm/CTMUtils18.getEnumProperty (Lnet/minecraft/src/IBlockStateProperty;)I -> com/prupe/mcpatcher/ctm/CTMUtils18.getEnumProperty (Lbex;)I setCoordOffsetsForRenderType()Z@126
-     INVOKESPECIAL 0x00 0x6a   INVOKESPECIAL 0x02 0xe6
+     INVOKESPECIAL 0x00 0x6b   INVOKESPECIAL 0x02 0xec
     interface method ref net/minecraft/src/IBlockState.getProperty (Lnet/minecraft/src/IBlockStateProperty;)Ljava/lang/Comparable; -> bec.b (Lbex;)Ljava/lang/Comparable; getEnumProperty(Lbex;)I@9
-     INVOKEINTERFACE 0x00 0x6c 0x02 0x00  INVOKEINTERFACE 0x02 0xe9 0x02 0x00
+     INVOKEINTERFACE 0x00 0x6d 0x02 0x00  INVOKEINTERFACE 0x02 0xef 0x02 0x00
     interface method ref net/minecraft/src/IBlockState.getProperty (Lnet/minecraft/src/IBlockStateProperty;)Ljava/lang/Comparable; -> bec.b (Lbex;)Ljava/lang/Comparable; shouldConnectByBlock(Latr;III)Z@111
-     INVOKEINTERFACE 0x00 0x6c 0x02 0x00  INVOKEINTERFACE 0x02 0xe9 0x02 0x00
+     INVOKEINTERFACE 0x00 0x6d 0x02 0x00  INVOKEINTERFACE 0x02 0xef 0x02 0x00
     interface method ref net/minecraft/src/IBlockState.getProperty (Lnet/minecraft/src/IBlockStateProperty;)Ljava/lang/Comparable; -> bec.b (Lbex;)Ljava/lang/Comparable; shouldConnectByBlock(Latr;III)Z@122
-     INVOKEINTERFACE 0x00 0x6c 0x02 0x00  INVOKEINTERFACE 0x02 0xe9 0x02 0x00
+     INVOKEINTERFACE 0x00 0x6d 0x02 0x00  INVOKEINTERFACE 0x02 0xef 0x02 0x00
     class ref net/minecraft/src/Position -> dt shouldConnectByBlock(Latr;III)Z@14
-     NEW 0x00 0x6f             NEW 0x02 0xd8
+     NEW 0x00 0x70             NEW 0x02 0xde
     class ref net/minecraft/src/Position -> dt shouldConnectByTile(Latr;Lcue;III)Z@0
-     NEW 0x00 0x6f             NEW 0x02 0xd8
+     NEW 0x00 0x70             NEW 0x02 0xde
     method ref net/minecraft/src/Position.<init> (III)V -> dt.<init> (III)V shouldConnectByBlock(Latr;III)Z@22
-     INVOKESPECIAL 0x00 0x70   INVOKESPECIAL 0x02 0xea
+     INVOKESPECIAL 0x00 0x71   INVOKESPECIAL 0x02 0xf0
     method ref net/minecraft/src/Position.<init> (III)V -> dt.<init> (III)V shouldConnectByTile(Latr;Lcue;III)Z@9
-     INVOKESPECIAL 0x00 0x70   INVOKESPECIAL 0x02 0xea
+     INVOKESPECIAL 0x00 0x71   INVOKESPECIAL 0x02 0xf0
     interface method ref net/minecraft/src/IBlockAccess.getBlockState (Lnet/minecraft/src/Position;)Lnet/minecraft/src/IBlockState; -> ard.p (Ldt;)Lbec; shouldConnectByBlock(Latr;III)Z@25
-     INVOKEINTERFACE 0x00 0x71 0x02 0x00  INVOKEINTERFACE 0x02 0xef 0x02 0x00
+     INVOKEINTERFACE 0x00 0x72 0x02 0x00  INVOKEINTERFACE 0x02 0xf5 0x02 0x00
     interface method ref net/minecraft/src/IBlockAccess.getBlockState (Lnet/minecraft/src/Position;)Lnet/minecraft/src/IBlockState; -> ard.p (Ldt;)Lbec; shouldConnectByTile(Latr;Lcue;III)Z@20
-     INVOKEINTERFACE 0x00 0x71 0x02 0x00  INVOKEINTERFACE 0x02 0xef 0x02 0x00
+     INVOKEINTERFACE 0x00 0x72 0x02 0x00  INVOKEINTERFACE 0x02 0xf5 0x02 0x00
     method ref net/minecraft/src/Minecraft.getInstance ()Lnet/minecraft/src/Minecraft; -> bsu.z ()Lbsu; shouldConnectByTile(Latr;Lcue;III)Z@27
-     INVOKESTATIC 0x00 0x75    INVOKESTATIC 0x02 0xf5
+     INVOKESTATIC 0x00 0x76    INVOKESTATIC 0x02 0xfb
     method ref net/minecraft/src/Minecraft.getRenderBlockDispatcher ()Lnet/minecraft/src/RenderBlockDispatcher; -> bsu.ab ()Lcll; shouldConnectByTile(Latr;Lcue;III)Z@30
-     INVOKEVIRTUAL 0x00 0x76   INVOKEVIRTUAL 0x02 0xf9
+     INVOKEVIRTUAL 0x00 0x77   INVOKEVIRTUAL 0x02 0xff
     method ref net/minecraft/src/RenderBlockDispatcher.getModel (Lnet/minecraft/src/IBlockState;Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/Position;)Lnet/minecraft/src/IModel; -> cll.a (Lbec;Lard;Ldt;)Lcxe; shouldConnectByTile(Latr;Lcue;III)Z@41
-     INVOKEVIRTUAL 0x00 0x77   INVOKEVIRTUAL 0x02 0xfe
+     INVOKEVIRTUAL 0x00 0x78   INVOKEVIRTUAL 0x03 0x04
     interface method ref net/minecraft/src/IModel.getDefaultFaces ()Ljava/util/List; -> cxe.a ()Ljava/util/List; shouldConnectByTile(Latr;Lcue;III)Z@55
-     INVOKEINTERFACE 0x00 0x78 0x01 0x00  INVOKEINTERFACE 0x03 0x02 0x01 0x00
+     INVOKEINTERFACE 0x00 0x79 0x01 0x00  INVOKEINTERFACE 0x03 0x08 0x01 0x00
     interface method ref net/minecraft/src/IModel.getFaces (Lnet/minecraft/src/Direction;)Ljava/util/List; -> cxe.a (Lej;)Ljava/util/List; shouldConnectByTile(Latr;Lcue;III)Z@69
-     INVOKEINTERFACE 0x00 0x79 0x02 0x00  INVOKEINTERFACE 0x03 0x05 0x02 0x00
+     INVOKEINTERFACE 0x00 0x7a 0x02 0x00  INVOKEINTERFACE 0x03 0x0b 0x02 0x00
     class ref net/minecraft/src/ModelFace -> clt shouldConnectByTile(Latr;Lcue;III)Z@112
-     CHECKCAST 0x00 0x7b       CHECKCAST 0x03 0x07
+     CHECKCAST 0x00 0x7c       CHECKCAST 0x03 0x0d
     method ref net/minecraft/src/Direction.toString ()Ljava/lang/String; -> ej.toString ()Ljava/lang/String; toString()Ljava/lang/String;@105
-     INVOKEVIRTUAL 0x00 0x84   INVOKEVIRTUAL 0x03 0x08
+     INVOKEVIRTUAL 0x00 0x85   INVOKEVIRTUAL 0x03 0x0e
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lnet/minecraft/src/IBlockAccess;III)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getBlockAt (Lard;III)Latr; setBetterGrassProperty(Lbec;Latr;Lard;Ldt;Lbex;I)Lbec;@48
-     INVOKESTATIC 0x00 0x88    INVOKESTATIC 0x03 0x0b
+     INVOKESTATIC 0x00 0x89    INVOKESTATIC 0x03 0x11
     interface method ref net/minecraft/src/IBlockState.setProperty (Lnet/minecraft/src/IBlockStateProperty;Ljava/lang/Comparable;)Lnet/minecraft/src/IBlockState; -> bec.a (Lbex;Ljava/lang/Comparable;)Lbec; setBetterGrassProperty(Lbec;Latr;Lard;Ldt;Lbex;I)Lbec;@65
-     INVOKEINTERFACE 0x00 0x8a 0x03 0x00  INVOKEINTERFACE 0x03 0x0e 0x03 0x00
+     INVOKEINTERFACE 0x00 0x8b 0x03 0x00  INVOKEINTERFACE 0x03 0x14 0x03 0x00
     interface method ref net/minecraft/src/IBlockState.getBlock ()Lnet/minecraft/src/Block; -> bec.c ()Latr; getParticleColor(Lard;Lbec;Ldt;I)I@3
-     INVOKEINTERFACE 0x00 0x8b 0x01 0x00  INVOKEINTERFACE 0x03 0x12 0x01 0x00
+     INVOKEINTERFACE 0x00 0x8c 0x01 0x00  INVOKEINTERFACE 0x03 0x18 0x01 0x00
     method ref com/prupe/mcpatcher/cc/ColorizeBlock18.getParticleColor (Lnet/minecraft/src/IBlockAccess;Lnet/minecraft/src/IBlockState;Lnet/minecraft/src/Position;I)I -> com/prupe/mcpatcher/cc/ColorizeBlock18.getParticleColor (Lard;Lbec;Ldt;I)I getParticleColor(Lard;Lbec;Ldt;I)I@22
-     INVOKEVIRTUAL 0x00 0x8c   INVOKEVIRTUAL 0x03 0x14
-   string replace Lnet/minecraft/src/ModelFace; -> Lclt; @3822
-   string replace Ljava/util/List<Lnet/minecraft/src/ModelFace;>; -> Ljava/util/List<Lclt;>; @6034
+     INVOKEVIRTUAL 0x00 0x8d   INVOKEVIRTUAL 0x03 0x1a
+   string replace Lnet/minecraft/src/ModelFace; -> Lclt; @3853
+   string replace Ljava/util/List<Lnet/minecraft/src/ModelFace;>; -> Ljava/util/List<Lclt;>; @6065
    string replace Lnet/minecraft/src/Position; -> Ldt; @3190
-   string replace net/minecraft/src/Position -> dt @6038
-   string replace Lnet/minecraft/src/Icon; -> Lcue; @5864
-   string replace Lnet/minecraft/src/TextureAtlasSprite; -> Lcue; @4120
-   string replace net/minecraft/src/TextureAtlasSprite -> cue @4265
+   string replace net/minecraft/src/Position -> dt @6069
+   string replace Lnet/minecraft/src/Icon; -> Lcue; @5895
+   string replace Lnet/minecraft/src/TextureAtlasSprite; -> Lcue; @4151
+   string replace net/minecraft/src/TextureAtlasSprite -> cue @4296
    string replace Lnet/minecraft/src/IBlockAccess; -> Lard; @3094
    string replace Lnet/minecraft/src/IBlockState; -> Lbec; @274
    string replace net/minecraft/src/IBlockState -> bec @399
    string replace Lnet/minecraft/src/Block; -> Latr; @290
    string replace net/minecraft/src/Block -> atr @344
-   string replace Ljava/util/Map<Lnet/minecraft/src/Block;Lnet/minecraft/src/IBlockStateProperty;>; -> Ljava/util/Map<Latr;Lnet/minecraft/src/IBlockStateProperty;>; @7162
+   string replace Ljava/util/Map<Lnet/minecraft/src/Block;Lnet/minecraft/src/IBlockStateProperty;>; -> Ljava/util/Map<Latr;Lnet/minecraft/src/IBlockStateProperty;>; @7193
    string replace Lnet/minecraft/src/IModel; -> Lcxe; @3018
-   string replace net/minecraft/src/IModel -> cxe @5818
-   string replace Lnet/minecraft/src/Direction; -> Lej; @3554
-   string replace Lnet/minecraft/src/Tessellator; -> Lciv; @3799
+   string replace net/minecraft/src/IModel -> cxe @5849
+   string replace Lnet/minecraft/src/Direction; -> Lej; @3585
+   string replace Lnet/minecraft/src/Tessellator; -> Lciv; @3830
    string replace Lnet/minecraft/src/IBlockStateProperty; -> Lbex; @196
    string replace net/minecraft/src/IBlockStateProperty -> bex @342
-   string replace Ljava/util/Set<Lnet/minecraft/src/IBlockStateProperty;>; -> Ljava/util/Set<Lbex;>; @6970
-   string replace Ljava/util/Map<Latr;Lnet/minecraft/src/IBlockStateProperty;>; -> Ljava/util/Map<Latr;Lbex;>; @7029
+   string replace Ljava/util/Set<Lnet/minecraft/src/IBlockStateProperty;>; -> Ljava/util/Set<Lbex;>; @7001
+   string replace Ljava/util/Map<Latr;Lnet/minecraft/src/IBlockStateProperty;>; -> Ljava/util/Map<Latr;Lbex;>; @7060
   adding com/prupe/mcpatcher/ctm/TileOverrideIterator$IJK.class for Custom Textures and Models
    method signature (Lcom/prupe/mcpatcher/ctm/ITileOverride;Lcom/prupe/mcpatcher/ctm/RenderBlockState;Lnet/minecraft/src/Icon;)Lnet/minecraft/src/Icon; -> (Lcom/prupe/mcpatcher/ctm/ITileOverride;Lcom/prupe/mcpatcher/ctm/RenderBlockState;Lcue;)Lcue;
     interface method ref com/prupe/mcpatcher/ctm/ITileOverride.getTileWorld (Lcom/prupe/mcpatcher/ctm/RenderBlockState;Lnet/minecraft/src/Icon;)Lnet/minecraft/src/Icon; -> com/prupe/mcpatcher/ctm/ITileOverride.getTileWorld (Lcom/prupe/mcpatcher/ctm/RenderBlockState;Lcue;)Lcue; getTile(Lcom/prupe/mcpatcher/ctm/ITileOverride;Lcom/prupe/mcpatcher/ctm/RenderBlockState;Lcue;)Lcue;@3
