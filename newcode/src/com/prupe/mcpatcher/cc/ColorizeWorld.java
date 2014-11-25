@@ -22,7 +22,8 @@ public class ColorizeWorld {
     private static final String TEXT_KEY = "text.";
     private static final String TEXT_CODE_KEY = TEXT_KEY + "code.";
 
-    private static final int CLOUDS_DEFAULT = 0;
+    private static final int CLOUDS_DEFAULT = -1;
+    private static final int CLOUDS_NONE = 0;
     private static final int CLOUDS_FAST = 1;
     private static final int CLOUDS_FANCY = 2;
     private static int cloudType = CLOUDS_DEFAULT;
@@ -98,6 +99,8 @@ public class ColorizeWorld {
             cloudType = CLOUDS_FAST;
         } else if (value.equals("fancy")) {
             cloudType = CLOUDS_FANCY;
+        } else if (value.equals("none")) {
+            cloudType = CLOUDS_NONE;
         }
     }
 
@@ -178,11 +181,24 @@ public class ColorizeWorld {
 
     public static boolean drawFancyClouds(boolean fancyGraphics) {
         switch (cloudType) {
+            case CLOUDS_NONE:
             case CLOUDS_FAST:
                 return false;
 
             case CLOUDS_FANCY:
                 return true;
+
+            default:
+                return fancyGraphics;
+        }
+    }
+
+    public static int drawFancyClouds(int fancyGraphics) {
+        switch (cloudType) {
+            case CLOUDS_NONE:
+            case CLOUDS_FAST:
+            case CLOUDS_FANCY:
+                return cloudType;
 
             default:
                 return fancyGraphics;

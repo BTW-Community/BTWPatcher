@@ -420,11 +420,24 @@ class CC_World {
             final FieldRef clouds;
             final FieldRef mc = new FieldRef(getDeobfClass(), "mc", "LMinecraft;");
             final FieldRef gameSettings = new FieldRef("Minecraft", "gameSettings", "LGameSettings;");
-            final FieldRef fancyGraphics = new FieldRef("GameSettings", "fancyGraphics", "Z");
+            final JavaRef fancyGraphics;
+            final int fancyGraphicsOp;
+            final String fancyGraphicsIf;
+            final MethodRef drawFancyClouds;
+            if (getMinecraftVersion().compareTo("1.8.1-pre4") < 0) {
+                fancyGraphics = new FieldRef("GameSettings", "fancyGraphics", "Z");
+                fancyGraphicsOp = GETFIELD;
+                fancyGraphicsIf = buildExpression(IFEQ, any(2));
+                drawFancyClouds = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "drawFancyClouds", "(Z)Z");
+            } else {
+                fancyGraphics = new MethodRef("GameSettings", "fancyGraphics", "()I");
+                fancyGraphicsOp = INVOKEVIRTUAL;
+                fancyGraphicsIf = buildExpression(ICONST_2, IF_ICMPNE_or_IF_ICMPEQ, any(2));
+                drawFancyClouds = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "drawFancyClouds", "(I)I");
+            }
             final boolean intParam = getMinecraftVersion().compareTo("14w25a") >= 0;
             final MethodRef renderClouds = new MethodRef(getDeobfClass(), "renderClouds", "(F" + (intParam ? "I" : "") + ")V");
             final MethodRef renderCloudsFancy = new MethodRef(getDeobfClass(), "renderCloudsFancy", renderClouds.getType());
-            final MethodRef drawFancyClouds = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "drawFancyClouds", "(Z)Z");
             final FieldRef endSkyColor = new FieldRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "endSkyColor", "I");
 
             RenderUtilsMod.setup(this);
@@ -452,12 +465,13 @@ class CC_World {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // if (mc.gameSettings.fancyGraphics) {
+                        // 1.8.1-pre4+: if (mc.gameSettings.fancyGraphics() == 2) {
+                        // earlier: if (mc.gameSettings.fancyGraphics) {
                         ALOAD_0,
                         captureReference(GETFIELD),
                         captureReference(GETFIELD),
-                        captureReference(GETFIELD),
-                        IFEQ, any(2),
+                        captureReference(fancyGraphicsOp),
+                        fancyGraphicsIf,
 
                         // this.renderCloudsFancy(...);
                         ALOAD_0,
@@ -489,11 +503,9 @@ class CC_World {
                             ALOAD_0,
                             reference(GETFIELD, mc),
                             reference(GETFIELD, gameSettings),
-                            reference(GETFIELD, fancyGraphics)
+                            reference(fancyGraphicsOp, fancyGraphics)
                         )),
-                        capture(build(
-                            IFEQ, any(2)
-                        ))
+                        capture(fancyGraphicsIf)
                     );
                 }
 
