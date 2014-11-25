@@ -236,8 +236,10 @@ public class ColorizeBlock18 {
     public int colorMultiplier(int color) {
         if (colorMap == null) {
             return color;
-        } else {
+        } else if (ctm.isInWorld()) {
             return colorMap.getColorMultiplier(ctm.getBlockAccess(), ctm.getI(), ctm.getJ(), ctm.getK());
+        } else {
+            return colorMap.getColorMultiplier();
         }
     }
 

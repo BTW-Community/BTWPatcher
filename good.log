@@ -1,4 +1,4 @@
-MCPatcher version is 5.0.0_01
+MCPatcher version is 5.0.0_02
 OS: Linux 3.17.3-200.fc20.x86_64 amd64
 JVM: Sun Microsystems Inc. 1.6.0_45 (64 bit)
 Classpath: out/artifacts/mcpatcher/mcpatcher.jar
@@ -9721,63 +9721,63 @@ Patching...
    field signature Lnet/minecraft/src/Block; -> Lato;
    field signature Lnet/minecraft/src/Block; -> Lato;
     field ref com/prupe/mcpatcher/cc/ColorizeBlock18.COLOR_PROPERTIES Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/cc/ColorizeBlock18.COLOR_PROPERTIES Lob; access$100()Lob;@0
-     GETSTATIC 0x00 0x01       GETSTATIC 0x01 0x35
+     GETSTATIC 0x00 0x01       GETSTATIC 0x01 0x37
     field ref com/prupe/mcpatcher/cc/ColorizeBlock18.COLOR_PROPERTIES Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/cc/ColorizeBlock18.COLOR_PROPERTIES Lob; <clinit>()V@13
-     PUTSTATIC 0x00 0x01       PUTSTATIC 0x01 0x35
+     PUTSTATIC 0x00 0x01       PUTSTATIC 0x01 0x37
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.getFixedBlock (Ljava/lang/String;)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getFixedBlock (Ljava/lang/String;)Lato; reset()V@2
-     INVOKESTATIC 0x00 0x04    INVOKESTATIC 0x01 0x38
+     INVOKESTATIC 0x00 0x04    INVOKESTATIC 0x01 0x3a
     method ref com/prupe/mcpatcher/mal/block/BlockAPI.getFixedBlock (Ljava/lang/String;)Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/mal/block/BlockAPI.getFixedBlock (Ljava/lang/String;)Lato; reset()V@10
-     INVOKESTATIC 0x00 0x04    INVOKESTATIC 0x01 0x38
+     INVOKESTATIC 0x00 0x04    INVOKESTATIC 0x01 0x3a
     field ref com/prupe/mcpatcher/cc/ColorizeBlock18.grassBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/cc/ColorizeBlock18.grassBlock Lato; reset()V@5
-     PUTSTATIC 0x00 0x05       PUTSTATIC 0x01 0x3a
+     PUTSTATIC 0x00 0x05       PUTSTATIC 0x01 0x3c
     field ref com/prupe/mcpatcher/cc/ColorizeBlock18.grassBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/cc/ColorizeBlock18.grassBlock Lato; useColormap(Lclt;)Z@28
-     GETSTATIC 0x00 0x05       GETSTATIC 0x01 0x3a
+     GETSTATIC 0x00 0x05       GETSTATIC 0x01 0x3c
     field ref com/prupe/mcpatcher/cc/ColorizeBlock18.mycelBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/cc/ColorizeBlock18.mycelBlock Lato; reset()V@13
-     PUTSTATIC 0x00 0x07       PUTSTATIC 0x01 0x3c
+     PUTSTATIC 0x00 0x07       PUTSTATIC 0x01 0x3e
     field ref com/prupe/mcpatcher/cc/ColorizeBlock18.mycelBlock Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/cc/ColorizeBlock18.mycelBlock Lato; useColormap(Lclt;)Z@41
-     GETSTATIC 0x00 0x07       GETSTATIC 0x01 0x3c
+     GETSTATIC 0x00 0x07       GETSTATIC 0x01 0x3e
     method ref com/prupe/mcpatcher/mal/block/RenderPassAPI.useColorMultiplierThisPass (Lnet/minecraft/src/Block;)Z -> com/prupe/mcpatcher/mal/block/RenderPassAPI.useColorMultiplierThisPass (Lato;)Z preRender(Lara;Lcxe;Lbea;Ldt;Lato;Z)V@11
-     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x01 0x3f
+     INVOKEVIRTUAL 0x00 0x11   INVOKEVIRTUAL 0x01 0x41
     method ref com/prupe/mcpatcher/cc/ColorizeBlock.findColorMaps (Lnet/minecraft/src/Block;)Ljava/util/List; -> com/prupe/mcpatcher/cc/ColorizeBlock.findColorMaps (Lato;)Ljava/util/List; preRender(Lara;Lcxe;Lbea;Ldt;Lato;Z)V@26
-     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x01 0x42
+     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x01 0x44
     method ref com/prupe/mcpatcher/cc/ColorizeBlock.findColorMaps (Lnet/minecraft/src/Block;)Ljava/util/List; -> com/prupe/mcpatcher/cc/ColorizeBlock.findColorMaps (Lato;)Ljava/util/List; preRenderHeld(Lcxe;Lbea;Lato;)V@11
-     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x01 0x42
+     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x01 0x44
     method ref com/prupe/mcpatcher/cc/ColorizeBlock.findColorMaps (Lnet/minecraft/src/Block;)Ljava/util/List; -> com/prupe/mcpatcher/cc/ColorizeBlock.findColorMaps (Lato;)Ljava/util/List; getParticleColor(Lara;Lbea;Ldt;I)I@6
-     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x01 0x42
+     INVOKESTATIC 0x00 0x13    INVOKESTATIC 0x01 0x44
     method ref com/prupe/mcpatcher/cc/ColorizeBlock18.setDirection (Lnet/minecraft/src/Direction;[[[I)V -> com/prupe/mcpatcher/cc/ColorizeBlock18.setDirection (Lej;[[[I)V setDirection(Lej;)V@5
-     INVOKESPECIAL 0x00 0x1c   INVOKESPECIAL 0x01 0x44
+     INVOKESPECIAL 0x00 0x1c   INVOKESPECIAL 0x01 0x46
     method ref com/prupe/mcpatcher/cc/ColorizeBlock18.setDirection (Lnet/minecraft/src/Direction;[[[I)V -> com/prupe/mcpatcher/cc/ColorizeBlock18.setDirection (Lej;[[[I)V setDirectionWater(Lej;)V@5
-     INVOKESPECIAL 0x00 0x1c   INVOKESPECIAL 0x01 0x44
+     INVOKESPECIAL 0x00 0x1c   INVOKESPECIAL 0x01 0x46
     method ref net/minecraft/src/Direction.ordinal ()I -> ej.ordinal ()I setDirection(Lej;[[[I)V@34
-     INVOKEVIRTUAL 0x00 0x20   INVOKEVIRTUAL 0x01 0x47
+     INVOKEVIRTUAL 0x00 0x20   INVOKEVIRTUAL 0x01 0x49
     method ref com/prupe/mcpatcher/ctm/CTMUtils18.getBlockAccess ()Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/CTMUtils18.getBlockAccess ()Lara; computeVertexColor([I[F)V@106
-     INVOKEVIRTUAL 0x00 0x29   INVOKEVIRTUAL 0x01 0x4a
-    method ref com/prupe/mcpatcher/ctm/CTMUtils18.getBlockAccess ()Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/CTMUtils18.getBlockAccess ()Lara; colorMultiplier(I)I@17
-     INVOKEVIRTUAL 0x00 0x29   INVOKEVIRTUAL 0x01 0x4a
+     INVOKEVIRTUAL 0x00 0x29   INVOKEVIRTUAL 0x01 0x4c
+    method ref com/prupe/mcpatcher/ctm/CTMUtils18.getBlockAccess ()Lnet/minecraft/src/IBlockAccess; -> com/prupe/mcpatcher/ctm/CTMUtils18.getBlockAccess ()Lara; colorMultiplier(I)I@27
+     INVOKEVIRTUAL 0x00 0x29   INVOKEVIRTUAL 0x01 0x4c
     interface method ref com/prupe/mcpatcher/mal/biome/IColorMap.getColorMultiplierF (Lnet/minecraft/src/IBlockAccess;III)[F -> com/prupe/mcpatcher/mal/biome/IColorMap.getColorMultiplierF (Lara;III)[F computeVertexColor([I[F)V@114
-     INVOKEINTERFACE 0x00 0x2a 0x05 0x00  INVOKEINTERFACE 0x01 0x4d 0x05 0x00
+     INVOKEINTERFACE 0x00 0x2a 0x05 0x00  INVOKEINTERFACE 0x01 0x4f 0x05 0x00
     method ref net/minecraft/src/ModelFace.useColormap ()Z -> clt.b ()Z useColormap(Lclt;)Z@8
-     INVOKEVIRTUAL 0x00 0x2b   INVOKEVIRTUAL 0x01 0x52
+     INVOKEVIRTUAL 0x00 0x2b   INVOKEVIRTUAL 0x01 0x54
     method ref com/prupe/mcpatcher/ctm/CTMUtils18.getBlock ()Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.getBlock ()Lato; useColormap(Lclt;)Z@25
-     INVOKEVIRTUAL 0x00 0x2c   INVOKEVIRTUAL 0x01 0x55
+     INVOKEVIRTUAL 0x00 0x2c   INVOKEVIRTUAL 0x01 0x57
     method ref com/prupe/mcpatcher/ctm/CTMUtils18.getBlock ()Lnet/minecraft/src/Block; -> com/prupe/mcpatcher/ctm/CTMUtils18.getBlock ()Lato; useColormap(Lclt;)Z@38
-     INVOKEVIRTUAL 0x00 0x2c   INVOKEVIRTUAL 0x01 0x55
-    interface method ref com/prupe/mcpatcher/mal/biome/IColorMap.getColorMultiplier (Lnet/minecraft/src/IBlockAccess;III)I -> com/prupe/mcpatcher/mal/biome/IColorMap.getColorMultiplier (Lara;III)I colorMultiplier(I)I@41
-     INVOKEINTERFACE 0x00 0x2d 0x05 0x00  INVOKEINTERFACE 0x01 0x58 0x05 0x00
+     INVOKEVIRTUAL 0x00 0x2c   INVOKEVIRTUAL 0x01 0x57
+    interface method ref com/prupe/mcpatcher/mal/biome/IColorMap.getColorMultiplier (Lnet/minecraft/src/IBlockAccess;III)I -> com/prupe/mcpatcher/mal/biome/IColorMap.getColorMultiplier (Lara;III)I colorMultiplier(I)I@51
+     INVOKEINTERFACE 0x00 0x2d 0x05 0x00  INVOKEINTERFACE 0x01 0x5a 0x05 0x00
     interface method ref com/prupe/mcpatcher/mal/biome/IColorMap.getColorMultiplier (Lnet/minecraft/src/IBlockAccess;III)I -> com/prupe/mcpatcher/mal/biome/IColorMap.getColorMultiplier (Lara;III)I getParticleColor(Lara;Lbea;Ldt;I)I@78
-     INVOKEINTERFACE 0x00 0x2d 0x05 0x00  INVOKEINTERFACE 0x01 0x58 0x05 0x00
+     INVOKEINTERFACE 0x00 0x2d 0x05 0x00  INVOKEINTERFACE 0x01 0x5a 0x05 0x00
     method ref net/minecraft/src/Tessellator.setColorOpaque_F (FFF)V -> ciu.b (FFF)V applyVertexColor(Lciu;FI)V@34
-     INVOKEVIRTUAL 0x00 0x2e   INVOKEVIRTUAL 0x01 0x5c
+     INVOKEVIRTUAL 0x00 0x2f   INVOKEVIRTUAL 0x01 0x5e
     interface method ref net/minecraft/src/IBlockState.getBlock ()Lnet/minecraft/src/Block; -> bea.c ()Lato; getParticleColor(Lara;Lbea;Ldt;I)I@1
-     INVOKEINTERFACE 0x00 0x2f 0x01 0x00  INVOKEINTERFACE 0x01 0x61 0x01 0x00
+     INVOKEINTERFACE 0x00 0x30 0x01 0x00  INVOKEINTERFACE 0x01 0x63 0x01 0x00
     method ref net/minecraft/src/Position.getI ()I -> dt.n ()I getParticleColor(Lara;Lbea;Ldt;I)I@67
-     INVOKEVIRTUAL 0x00 0x30   INVOKEVIRTUAL 0x01 0x66
+     INVOKEVIRTUAL 0x00 0x31   INVOKEVIRTUAL 0x01 0x68
     method ref net/minecraft/src/Position.getJ ()I -> dt.o ()I getParticleColor(Lara;Lbea;Ldt;I)I@71
-     INVOKEVIRTUAL 0x00 0x31   INVOKEVIRTUAL 0x01 0x69
+     INVOKEVIRTUAL 0x00 0x32   INVOKEVIRTUAL 0x01 0x6b
     method ref net/minecraft/src/Position.getK ()I -> dt.p ()I getParticleColor(Lara;Lbea;Ldt;I)I@75
-     INVOKEVIRTUAL 0x00 0x32   INVOKEVIRTUAL 0x01 0x6c
+     INVOKEVIRTUAL 0x00 0x33   INVOKEVIRTUAL 0x01 0x6e
     method ref com/prupe/mcpatcher/mal/resource/TexturePackAPI.newMCPatcherResourceLocation (Ljava/lang/String;)Lnet/minecraft/src/ResourceLocation; -> com/prupe/mcpatcher/mal/resource/TexturePackAPI.newMCPatcherResourceLocation (Ljava/lang/String;)Lob; <clinit>()V@10
-     INVOKESTATIC 0x00 0x36    INVOKESTATIC 0x01 0x6f
+     INVOKESTATIC 0x00 0x37    INVOKESTATIC 0x01 0x71
    string replace Lnet/minecraft/src/ModelFace; -> Lclt; @2679
    string replace Lnet/minecraft/src/Position; -> Ldt; @986
    string replace Lnet/minecraft/src/IBlockAccess; -> Lara; @856
@@ -9785,7 +9785,7 @@ Patching...
    string replace Lnet/minecraft/src/Block; -> Lato; @948
    string replace Lnet/minecraft/src/IModel; -> Lcxe; @872
    string replace Lnet/minecraft/src/Direction; -> Lej; @1831
-   string replace Lnet/minecraft/src/Tessellator; -> Lciu; @2763
+   string replace Lnet/minecraft/src/Tessellator; -> Lciu; @2773
   adding com/prupe/mcpatcher/cc/ColorizeBlock.class for Custom Textures and Models
    method signature (Lnet/minecraft/src/ResourceLocation;)Ljava/lang/String; -> (Lob;)Ljava/lang/String;
    method signature (Lnet/minecraft/src/ResourceLocation;Ljava/lang/String;)Lcom/prupe/mcpatcher/mal/biome/IColorMap; -> (Lob;Ljava/lang/String;)Lcom/prupe/mcpatcher/mal/biome/IColorMap;
