@@ -10,7 +10,12 @@ public class TessellatorFactory {
         return null;
     }
 
-    public int draw() {
+    // before 1.8.2-pre1
+    public int drawInt() {
         return 0;
+    }
+
+    // 1.8.2-pre1+
+    public void drawVoid() {
     }
 }

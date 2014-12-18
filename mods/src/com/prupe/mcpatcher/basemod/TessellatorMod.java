@@ -12,7 +12,7 @@ import static javassist.bytecode.Opcode.*;
  * Matches Tessellator class and instance and maps several commonly used rendering methods.
  */
 public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
-    public static final MethodRef draw = new MethodRef("Tessellator", "draw", "()I");
+    public static MethodRef draw;
     public static final MethodRef startDrawingQuads = new MethodRef("Tessellator", "startDrawingQuads", "()V");
     public static final MethodRef startDrawing = new MethodRef("Tessellator", "startDrawing", "(I)V");
     public static final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
@@ -21,8 +21,14 @@ public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
     public static final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
     public static FieldRef instance;
 
+    public static boolean drawReturnsInt() {
+        return Mod.getMinecraftVersion().compareTo("1.8.2-pre1") < 0;
+    }
+
     public TessellatorMod(Mod mod) {
         super(mod);
+
+        draw = new MethodRef("Tessellator", "draw", "()" + (drawReturnsInt() ? "I" : "V"));
 
         addClassSignature(new BytecodeSignature() {
             @Override

@@ -19,7 +19,13 @@ public class TessellatorFactoryMod extends ClassMod {
         final FieldRef instance = new FieldRef(getDeobfClass(), "instance", "LTessellatorFactory;");
         final MethodRef getInstance = new MethodRef(getDeobfClass(), "getInstance", "()LTessellatorFactory;");
         final MethodRef getTessellator = new MethodRef(getDeobfClass(), "getTessellator", "()LTessellator;");
-        final MethodRef draw = new MethodRef(getDeobfClass(), "draw", "()I");
+        final MethodRef draw;
+
+        if (TessellatorMod.drawReturnsInt()) {
+            draw = new MethodRef(getDeobfClass(), "drawInt", "()I");
+        } else {
+            draw = new MethodRef(getDeobfClass(), "drawVoid", "()V");
+        }
 
         addClassSignature(new BytecodeSignature() {
             {

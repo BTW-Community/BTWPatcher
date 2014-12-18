@@ -10,12 +10,12 @@ public class TessellatorAPIMod extends Mod {
         name = MCPatcherUtils.TESSELLATOR_API_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
-        version = "1.0";
+        version = "1.1";
 
         addClassMod(new TessellatorMod(this));
         if (TessellatorFactoryMod.haveClass()) {
             addClassMod(new TessellatorFactoryMod(this));
-            setMALVersion("tessellator", 2);
+            setMALVersion("tessellator", TessellatorMod.drawReturnsInt() ? 2 : 3);
         } else {
             setMALVersion("tessellator", 1);
         }

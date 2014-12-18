@@ -11,13 +11,13 @@ abstract public class TessellatorAPI {
         return instance.getTessellator_Impl();
     }
 
-    public static int draw(Tessellator tessellator) {
-        return instance.draw_Impl(tessellator);
+    public static void draw(Tessellator tessellator) {
+        instance.draw_Impl(tessellator);
     }
 
     abstract protected Tessellator getTessellator_Impl();
 
-    abstract protected int draw_Impl(Tessellator tessellator);
+    abstract protected void draw_Impl(Tessellator tessellator);
 
     final private static class V1 extends TessellatorAPI {
         @Override
@@ -26,8 +26,8 @@ abstract public class TessellatorAPI {
         }
 
         @Override
-        protected int draw_Impl(Tessellator tessellator) {
-            return tessellator.draw();
+        protected void draw_Impl(Tessellator tessellator) {
+            tessellator.draw();
         }
     }
 
@@ -38,8 +38,20 @@ abstract public class TessellatorAPI {
         }
 
         @Override
-        protected int draw_Impl(Tessellator tessellator) {
-            return TessellatorFactory.getInstance().draw();
+        protected void draw_Impl(Tessellator tessellator) {
+            TessellatorFactory.getInstance().drawInt();
+        }
+    }
+
+    final private static class V3 extends TessellatorAPI {
+        @Override
+        protected Tessellator getTessellator_Impl() {
+            return TessellatorFactory.getInstance().getTessellator();
+        }
+
+        @Override
+        protected void draw_Impl(Tessellator tessellator) {
+            TessellatorFactory.getInstance().drawVoid();
         }
     }
 }
