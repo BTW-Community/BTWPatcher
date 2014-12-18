@@ -89,6 +89,10 @@ public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
             addMemberMapper(new FieldMapper(instance).accessFlag(AccessFlag.STATIC, true));
         }
 
-        addMemberMapper(new MethodMapper(setColorOpaque_F));
+        if (drawReturnsInt()) {
+            addMemberMapper(new MethodMapper(setColorOpaque_F));
+        } else {
+            addMemberMapper(new MethodMapper(null, setColorOpaque_F));
+        }
     }
 }
