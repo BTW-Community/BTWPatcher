@@ -258,7 +258,12 @@ public class ColorizeBlock18 {
         }
     }
 
-    public int getParticleColor(IBlockAccess blockAccess, IBlockState blockState, Position position, int color) {
+    public int getParticleColor(IBlockAccess blockAccess, IBlockState blockState, Position position, int defaultColor) {
+        return getColorMultiplier(blockAccess, blockState, position, defaultColor);
+    }
+
+    // public static methods requested by MamiyaOtaru for VoxelMap
+    public static int getColorMultiplier(IBlockAccess blockAccess, IBlockState blockState, Position position, int defaultColor) {
         List<BlockStateMatcher> maps = ColorizeBlock.findColorMaps(blockState.getBlock());
         if (maps != null) {
             for (BlockStateMatcher matcher : maps) {
@@ -268,6 +273,10 @@ public class ColorizeBlock18 {
                 }
             }
         }
-        return color;
+        return defaultColor;
+    }
+
+    public static int getColorMultiplier(IBlockAccess blockAccess, IBlockState blockState, Position position) {
+        return getColorMultiplier(blockAccess, blockState, position, 0xffffff);
     }
 }
