@@ -906,6 +906,7 @@ class CC_Entity {
             final MethodRef getNightVisionStrength = new MethodRef(getDeobfClass(), "getNightVisionStrength", "(F)F");
             final MethodRef reloadTexture = new MethodRef("DynamicTexture", "reload", "()V");
             final MethodRef computeUnderwaterColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeUnderwaterColor", "()Z");
+            final MethodRef computeUnderlavaColor = new MethodRef(MCPatcherUtils.COLORIZE_WORLD_CLASS, "computeUnderlavaColor", "()Z");
 
             addClassSignature(new ConstSignature("ambient.weather.rain"));
 
@@ -1282,6 +1283,71 @@ class CC_Entity {
                         push(2),
                         FALOAD,
                         getCaptureGroup(1),
+                        reference(PUTFIELD, fogColorBlue),
+
+                        // }
+                        label("A")
+                    );
+                }
+            });
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertAfter(true);
+                    targetMethod(updateFogColor);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "override underlava ambient color";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // this.fogColorRed = 0.6f;
+                        ALOAD_0,
+                        push(0.6f),
+                        reference(PUTFIELD, fogColorRed),
+
+                        // this.fogColorGreen = 0.1f;
+                        ALOAD_0,
+                        push(0.1f),
+                        reference(PUTFIELD, fogColorGreen),
+
+                        // this.fogColorBlue = 0.0f;
+                        ALOAD_0,
+                        push(0.0f),
+                        reference(PUTFIELD, fogColorBlue)
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // if (ColorizeWorld.computeUnderlavaColor()) {
+                        reference(INVOKESTATIC, computeUnderlavaColor),
+                        IFEQ, branch("A"),
+
+                        // fogColorRed = Colorizer.setColor[0];
+                        ALOAD_0,
+                        reference(GETSTATIC, setColor),
+                        push(0),
+                        FALOAD,
+                        reference(PUTFIELD, fogColorRed),
+
+                        // fogColorGreen = Colorizer.setColor[1];
+                        ALOAD_0,
+                        reference(GETSTATIC, setColor),
+                        push(1),
+                        FALOAD,
+                        reference(PUTFIELD, fogColorGreen),
+
+                        // fogColorBlue = Colorizer.setColor[2];
+                        ALOAD_0,
+                        reference(GETSTATIC, setColor),
+                        push(2),
+                        FALOAD,
                         reference(PUTFIELD, fogColorBlue),
 
                         // }

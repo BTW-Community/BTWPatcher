@@ -16,6 +16,7 @@ public class ColorizeWorld {
     private static final int fogBlendRadius = Config.getInt(MCPatcherUtils.CUSTOM_COLORS, "fogBlendRadius", 7);
 
     private static final ResourceLocation UNDERWATERCOLOR = TexturePackAPI.newMCPatcherResourceLocation("/misc/underwatercolor.png", "colormap/underwater.png");
+    private static final ResourceLocation UNDERLAVACOLOR = TexturePackAPI.newMCPatcherResourceLocation("/misc/underlavacolor.png", "colormap/underlava.png");
     private static final ResourceLocation FOGCOLOR0 = TexturePackAPI.newMCPatcherResourceLocation("/misc/fogcolor0.png", "colormap/fog0.png");
     private static final ResourceLocation SKYCOLOR0 = TexturePackAPI.newMCPatcherResourceLocation("/misc/skycolor0.png", "colormap/sky0.png");
 
@@ -36,6 +37,7 @@ public class ColorizeWorld {
     private static int signTextColor; // text.sign
 
     static IColorMap underwaterColor;
+    private static IColorMap underlavaColor;
     private static IColorMap fogColorMap;
     private static IColorMap skyColorMap;
 
@@ -53,6 +55,7 @@ public class ColorizeWorld {
 
     static void reset() {
         underwaterColor = null;
+        underlavaColor = null;
         fogColorMap = null;
         skyColorMap = null;
 
@@ -71,6 +74,7 @@ public class ColorizeWorld {
 
     static void reloadFogColors(PropertiesFile properties) {
         underwaterColor = wrapFogMap(ColorMap.loadFixedColorMap(Colorizer.useFogColors, UNDERWATERCOLOR));
+        underlavaColor = wrapFogMap(ColorMap.loadFixedColorMap(Colorizer.useFogColors, UNDERLAVACOLOR));
         fogColorMap = wrapFogMap(ColorMap.loadFixedColorMap(Colorizer.useFogColors, FOGCOLOR0));
         skyColorMap = wrapFogMap(ColorMap.loadFixedColorMap(Colorizer.useFogColors, SKYCOLOR0));
 
@@ -168,6 +172,10 @@ public class ColorizeWorld {
 
     public static boolean computeUnderwaterColor() {
         return computeFogColor(BiomeAPI.getWorld(), underwaterColor);
+    }
+
+    public static boolean computeUnderlavaColor() {
+        return computeFogColor(BiomeAPI.getWorld(), underlavaColor);
     }
 
     private static void computeLightningFlash(World world, float f) {
