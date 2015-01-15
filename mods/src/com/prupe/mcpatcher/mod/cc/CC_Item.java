@@ -187,10 +187,18 @@ class CC_Item {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // PotionHelper.potionColorCache.containsKey(id)
+                        // 1.8.2-pre2+: PotionHelper.potionColorCache.containsKey(integer)
+                        // older: PotionHelper.potionColorCache.containsKey(Integer.valueOf(id))
                         captureReference(GETSTATIC),
-                        ILOAD_0,
-                        reference(INVOKESTATIC, integerValueOf),
+                        or(
+                            build(
+                                ILOAD_0,
+                                reference(INVOKESTATIC, integerValueOf)
+                            ),
+                            build(
+                                ALOAD_2
+                            )
+                        ),
                         reference(mapOpcode, mapContains)
                     );
                 }

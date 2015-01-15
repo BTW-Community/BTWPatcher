@@ -16,6 +16,7 @@ import static javassist.bytecode.Opcode.*;
 public class CustomTexturesModels extends Mod {
     static final MethodRef blockColorMultiplier = new MethodRef("Block", "colorMultiplier", "(LIBlockAccess;LPosition;I)I");
     static final InterfaceMethodRef iteratorNext = new InterfaceMethodRef("java/util/Iterator", "next", "()Ljava/lang/Object;");
+    static final InterfaceMethodRef listGet = new InterfaceMethodRef("java/util/List", "get", "(I)Ljava/lang/Object;");
     static final ClassRef modelFaceClass = new ClassRef("ModelFace");
 
     static final MethodRef getCTMInstance = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "getInstance", "()L" + MCPatcherUtils.CTM_UTILS18_CLASS + ";");
@@ -1498,9 +1499,18 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // face = (ModelFace) iterator.next();
+                        // 1.8.2-pre2+: face = (ModelFace) list.get(i);
+                        // older: face = (ModelFace) iterator.next();
                         anyALOAD,
-                        reference(INVOKEINTERFACE, iteratorNext),
+                        or(
+                            build(
+                                reference(INVOKEINTERFACE, iteratorNext)
+                            ),
+                            build(
+                                anyILOAD,
+                                reference(INVOKEINTERFACE, listGet)
+                            )
+                        ),
                         reference(CHECKCAST, modelFaceClass),
                         capture(anyASTORE)
                     );
