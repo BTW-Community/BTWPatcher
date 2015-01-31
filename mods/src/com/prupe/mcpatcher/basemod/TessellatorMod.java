@@ -55,7 +55,7 @@ public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
         }
 
         if (haveVertexFormatClass()) {
-            // nothing
+            addMemberMapper(new MethodMapper(setColorF));
         } else if (drawReturnsInt()) {
             addMemberMapper(new MethodMapper(setColorOpaque_F));
         } else {

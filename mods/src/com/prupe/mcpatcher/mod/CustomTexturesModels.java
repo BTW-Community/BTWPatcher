@@ -1048,12 +1048,20 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // tessellator.setColorOpaque_F(f, f, f);
-                        ALOAD, 4,
+                        // 1.8.2-pre5+: .setColor(f, f, f, 1.0f)
+                        // older: tessellator.setColorOpaque_F(f, f, f);
                         capture(anyFLOAD),
                         backReference(1),
                         backReference(1),
-                        reference(INVOKEVIRTUAL, TessellatorMod.setColorOpaque_F)
+                        lookAhead(TessellatorMod.haveVertexFormatClass() ?
+                                build(
+                                    push(1.0f),
+                                    reference(INVOKEVIRTUAL, TessellatorMod.setColorF)
+                                ) :
+                                build(
+                                    reference(INVOKEVIRTUAL, TessellatorMod.setColorOpaque_F)
+                                ),
+                            true)
                     );
                 }
 
@@ -1061,7 +1069,6 @@ public class CustomTexturesModels extends Mod {
                 public byte[] getReplacementBytes() {
                     return buildCode(
                         // tessellator.setColorOpaque_F(f * r, f * g, f * b);
-                        ALOAD, 4,
                         getCaptureGroup(1),
                         FLOAD, colorRegister[0],
                         FMUL,
@@ -1070,8 +1077,7 @@ public class CustomTexturesModels extends Mod {
                         FMUL,
                         getCaptureGroup(1),
                         FLOAD, colorRegister[2],
-                        FMUL,
-                        reference(INVOKEVIRTUAL, TessellatorMod.setColorOpaque_F)
+                        FMUL
                     );
                 }
             });
