@@ -108,7 +108,7 @@ public class InterfaceSignature extends ClassSignature {
                 deobfClass = ClassMap.descriptorToClassName(deobfClass);
                 obfClass = ClassMap.descriptorToClassName(obfClass);
                 boolean deobfIsMC = !deobfClass.contains(".") || deobfClass.startsWith("net.minecraft.");
-                boolean obfIsMC = !obfClass.matches(".*[^a-z].*") || obfClass.startsWith("net.minecraft.");
+                boolean obfIsMC = !obfClass.matches(".*[^a-z$0-9].*") || obfClass.startsWith("net.minecraft.");
                 if (deobfIsMC != obfIsMC) {
                     return false;
                 } else if (deobfIsMC) {
