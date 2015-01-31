@@ -2,7 +2,6 @@ package com.prupe.mcpatcher.mal;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.TessellatorFactoryMod;
-import com.prupe.mcpatcher.basemod.ext18.VertexFormatMod;
 
 import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
@@ -16,10 +15,11 @@ public class TessellatorAPIMod extends Mod {
         version = "1.1";
 
         addClassMod(new TessellatorMod());
-        if (VertexFormatMod.haveClass()) {
+        if (TessellatorMod.haveVertexFormatClass()) {
             setMALVersion("tessellator", 4);
             addClassMod(new TessellatorFactoryMod(this));
-            addClassMod(new VertexFormatMod(this));
+            addClassMod(new VertexFormatMod());
+            addClassMod(new MinecraftMod());
         } else if (TessellatorFactoryMod.haveClass()) {
             addClassMod(new TessellatorFactoryMod(this));
             setMALVersion("tessellator", TessellatorMod.drawReturnsInt() ? 2 : 3);
@@ -39,7 +39,7 @@ public class TessellatorAPIMod extends Mod {
         TessellatorMod() {
             super(TessellatorAPIMod.this);
 
-            if (VertexFormatMod.haveClass()) {
+            if (TessellatorMod.haveVertexFormatClass()) {
                 setupV4();
             } else {
                 setupV123();
@@ -47,13 +47,10 @@ public class TessellatorAPIMod extends Mod {
         }
 
         private void setupV123() {
-            final MethodRef startDrawingQuads = new MethodRef("Tessellator", "startDrawingQuads", "()V");
-            final MethodRef startDrawing = new MethodRef("Tessellator", "startDrawing", "(I)V");
-
             addClassSignature(new BytecodeSignature() {
                 {
                     setMethod(startDrawingQuads);
-                    addXref(1, startDrawing);
+                    addXref(1, startDrawing1);
                 }
 
                 @Override
@@ -95,14 +92,9 @@ public class TessellatorAPIMod extends Mod {
         }
 
         private void setupV4() {
-            final MethodRef startDrawing = new MethodRef(getDeobfClass(), "startDrawing", "(ILVertexFormat;)V");
-            final MethodRef addXYZ = new MethodRef(getDeobfClass(), "addXYZ", "(DDD)LTessellator;");
-            final MethodRef addUV = new MethodRef(getDeobfClass(), "addUV", "(DD)LTessellator;");
-            final MethodRef setColorF = new MethodRef(getDeobfClass(), "setColorF", "(FFFF)LTessellator;");
-
             addClassSignature(new BytecodeSignature() {
                 {
-                    setMethod(startDrawing);
+                    setMethod(startDrawing2);
                 }
 
                 @Override
@@ -147,6 +139,61 @@ public class TessellatorAPIMod extends Mod {
                         ALOAD_0,
                         ARETURN,
                         end()
+                    );
+                }
+            });
+        }
+    }
+
+    private class VertexFormatMod extends ClassMod {
+        VertexFormatMod() {
+            final MethodRef addElement = new MethodRef("VertexFormat", "addElement", "(LVertexFormatElement;)LVertexFormat;");
+
+            addClassSignature(new ConstSignature("format: "));
+            addClassSignature(new ConstSignature(" elements: "));
+
+            addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(addElement);
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // switch (...[...])
+                        anyReference(GETSTATIC),
+                        ALOAD_1,
+                        anyReference(INVOKEVIRTUAL),
+                        anyReference(INVOKEVIRTUAL),
+                        IALOAD,
+                        TABLESWITCH
+                    );
+                }
+            });
+        }
+    }
+
+    private class MinecraftMod extends com.prupe.mcpatcher.basemod.MinecraftMod {
+        MinecraftMod() {
+            super(TessellatorAPIMod.this);
+
+            final MethodRef drawLogo = new MethodRef(getDeobfClass(), "drawLogo", "(LTextureManager;)V");
+            final FieldRef standardQuadFormat = new FieldRef("VertexFormats", "standardQuadFormat", "LVertexFormat;");
+
+            addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(drawLogo);
+                    addXref(1, standardQuadFormat);
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // tessellator.startDrawing(7, VertexFormats.standardQuadFormat);
+                        anyALOAD,
+                        push(7),
+                        captureReference(GETSTATIC),
+                        anyReference(INVOKEVIRTUAL)
                     );
                 }
             });

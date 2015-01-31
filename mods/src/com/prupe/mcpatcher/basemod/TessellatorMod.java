@@ -5,9 +5,6 @@ import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
 import javassist.bytecode.AccessFlag;
 
-import static com.prupe.mcpatcher.BytecodeMatcher.captureReference;
-import static javassist.bytecode.Opcode.*;
-
 /**
  * Matches Tessellator class and instance and maps several commonly used rendering methods.
  */
@@ -17,10 +14,23 @@ public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
     public static final MethodRef addVertex = new MethodRef("Tessellator", "addVertex", "(DDD)V");
     public static final MethodRef setTextureUV = new MethodRef("Tessellator", "setTextureUV", "(DD)V");
     public static final MethodRef setColorOpaque_F = new MethodRef("Tessellator", "setColorOpaque_F", "(FFF)V");
+    public static final MethodRef startDrawingQuads = new MethodRef("Tessellator", "startDrawingQuads", "()V");
+    public static final MethodRef startDrawing1 = new MethodRef("Tessellator", "startDrawing", "(I)V");
+
     public static FieldRef instance;
+
+    // 1.8.2-pre5+ methods
+    public static final MethodRef startDrawing2 = new MethodRef("Tessellator", "startDrawing", "(ILVertexFormat;)V");
+    public static final MethodRef addXYZ = new MethodRef("Tessellator", "addXYZ", "(DDD)LTessellator;");
+    public static final MethodRef addUV = new MethodRef("Tessellator", "addUV", "(DD)LTessellator;");
+    public static final MethodRef setColorF = new MethodRef("Tessellator", "setColorF", "(FFFF)LTessellator;");
 
     public static boolean drawReturnsInt() {
         return Mod.getMinecraftVersion().compareTo("1.8.2-pre1") < 0;
+    }
+
+    public static boolean haveVertexFormatClass() {
+        return Mod.getMinecraftVersion().compareTo("1.8.2-pre5") >= 0;
     }
 
     public TessellatorMod(Mod mod) {
@@ -44,7 +54,9 @@ public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
             addMemberMapper(new FieldMapper(instance).accessFlag(AccessFlag.STATIC, true));
         }
 
-        if (drawReturnsInt()) {
+        if (haveVertexFormatClass()) {
+            // nothing
+        } else if (drawReturnsInt()) {
             addMemberMapper(new MethodMapper(setColorOpaque_F));
         } else {
             addMemberMapper(new MethodMapper(null, setColorOpaque_F));
