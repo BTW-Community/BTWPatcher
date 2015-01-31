@@ -48,7 +48,7 @@ public class Tessellator {
     public void startDrawing(int drawMode, VertexFormat vertexFormat) {
     }
 
-    public Tessellator addVertex(double x, double y, double z) {
+    public Tessellator addXYZ(double x, double y, double z) {
         return this;
     }
 
