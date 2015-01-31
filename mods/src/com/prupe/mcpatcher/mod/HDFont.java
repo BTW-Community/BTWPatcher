@@ -424,7 +424,8 @@ public class HDFont extends Mod {
         }
 
         private void setupFontHack() {
-            final MethodRef renderDefaultChar = new MethodRef(getDeobfClass(), "renderDefaultChar", "(IZ)F");
+            final String renderDefaultCharArg = getMinecraftVersion().compareTo("1.8.2-pre5") >= 0 ? "C" : "I";
+            final MethodRef renderDefaultChar = new MethodRef(getDeobfClass(), "renderDefaultChar", "(" + renderDefaultCharArg + "Z)F");
             final MethodRef glTexCoord2f = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexCoord2f", "(FF)V");
 
             addClassSignature(new BytecodeSignature() {

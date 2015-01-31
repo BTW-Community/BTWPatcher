@@ -2,6 +2,8 @@ package com.prupe.mcpatcher.basemod;
 
 import com.prupe.mcpatcher.*;
 
+import static com.prupe.mcpatcher.BinaryRegex.begin;
+import static com.prupe.mcpatcher.BinaryRegex.end;
 import static javassist.bytecode.Opcode.*;
 
 /**
@@ -14,6 +16,7 @@ public class NBTTagListMod extends com.prupe.mcpatcher.ClassMod {
 
         final boolean haveTagAt = Mod.getMinecraftVersion().compareTo("13w36a") < 0;
 
+        final MethodRef getId = new MethodRef(getDeobfClass(), "getId", "()B");
         final FieldRef data = new FieldRef(getDeobfClass(), "data", "Ljava/util/List;");
         final MethodRef tagCount = new MethodRef(getDeobfClass(), "tagCount", "()I");
         final MethodRef removeTag = new MethodRef(getDeobfClass(), "removeTag", "(I)LNBTBase;");
@@ -22,12 +25,22 @@ public class NBTTagListMod extends com.prupe.mcpatcher.ClassMod {
         final InterfaceMethodRef listRemove = new InterfaceMethodRef("java/util/List", "remove", "(I)Ljava/lang/Object;");
         final InterfaceMethodRef listGet = new InterfaceMethodRef("java/util/List", "get", "(I)Ljava/lang/Object;");
 
-        if (haveTagAt) {
-            addClassSignature(new ConstSignature(" entries of type "));
-        } else {
-            addClassSignature(new ConstSignature("["));
-            addClassSignature(new ConstSignature("]"));
-        }
+        addClassSignature(new BytecodeSignature() {
+            {
+                setMethod(getId);
+            }
+
+            @Override
+            public String getMatchExpression() {
+                return buildExpression(
+                    // return (byte) 9;
+                    begin(),
+                    push(9),
+                    IRETURN,
+                    end()
+                );
+            }
+        });
 
         addClassSignature(new BytecodeSignature() {
             @Override
