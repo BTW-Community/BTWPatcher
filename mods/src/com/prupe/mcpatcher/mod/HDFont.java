@@ -12,6 +12,8 @@ import static javassist.bytecode.Opcode.*;
 public class HDFont extends Mod {
     private static boolean haveReadFontData;
     private static boolean haveFontWidthHack;
+    private static boolean renderDefaultCharTakesChar;
+    private static MethodRef renderDefaultChar;
 
     public HDFont() {
         name = MCPatcherUtils.HD_FONT;
@@ -27,6 +29,8 @@ public class HDFont extends Mod {
     static void setupMod(Mod mod, MinecraftVersion minecraftVersion, boolean addFiles) {
         haveReadFontData = minecraftVersion.compareTo("1.6.2") < 0;
         haveFontWidthHack = minecraftVersion.compareTo("1.6.2") >= 0;
+        renderDefaultCharTakesChar = getMinecraftVersion().compareTo("1.8.2-pre5") >= 0;
+        renderDefaultChar = new MethodRef("FontRenderer", "renderDefaultChar", "(" + (renderDefaultCharTakesChar ? "C" : "I") + "Z)F");
 
         mod.addClassMod(new FontRendererMod(mod));
 
@@ -262,38 +266,72 @@ public class HDFont extends Mod {
                 }
             });
 
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "use charWidthf instead of charWidth";
-                }
+            if (renderDefaultCharTakesChar) {
+                addPatch(new BytecodePatch() {
+                    {
+                        targetMethod(renderDefaultChar);
+                    }
 
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // return (float) this.charWidth[...];
-                        ALOAD_0,
-                        reference(GETFIELD, charWidth),
-                        capture(any(1, 4)),
-                        IALOAD,
-                        I2F,
-                        FRETURN
-                    );
-                }
+                    @Override
+                    public String getDescription() {
+                        return "use charWidthf instead of charWidth";
+                    }
 
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        // return FontUtils.getCharWidthf(this, this.charWidth, ...);
-                        ALOAD_0,
-                        ALOAD_0,
-                        reference(GETFIELD, charWidth),
-                        getCaptureGroup(1),
-                        reference(INVOKESTATIC, getCharWidthf),
-                        FRETURN
-                    );
-                }
-            });
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // (float) char1
+                            ILOAD, 6,
+                            I2F
+                        );
+                    }
+
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            // FontUtils.getCharWidthf(this, this.charWidth, char1)
+                            ALOAD_0,
+                            ALOAD_0,
+                            reference(GETFIELD, charWidth),
+                            ILOAD_1,
+                            reference(INVOKESTATIC, getCharWidthf)
+                        );
+                    }
+                });
+            } else {
+                addPatch(new BytecodePatch() {
+                    @Override
+                    public String getDescription() {
+                        return "use charWidthf instead of charWidth";
+                    }
+
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // return (float) this.charWidth[...];
+                            ALOAD_0,
+                            reference(GETFIELD, charWidth),
+                            capture(any(1, 4)),
+                            IALOAD,
+                            I2F,
+                            FRETURN
+                        );
+                    }
+
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            // return FontUtils.getCharWidthf(this, this.charWidth, ...);
+                            ALOAD_0,
+                            ALOAD_0,
+                            reference(GETFIELD, charWidth),
+                            getCaptureGroup(1),
+                            reference(INVOKESTATIC, getCharWidthf),
+                            FRETURN
+                        );
+                    }
+                });
+            }
 
             addPatch(new BytecodePatch() {
                 @Override
@@ -424,8 +462,6 @@ public class HDFont extends Mod {
         }
 
         private void setupFontHack() {
-            final String renderDefaultCharArg = getMinecraftVersion().compareTo("1.8.2-pre5") >= 0 ? "C" : "I";
-            final MethodRef renderDefaultChar = new MethodRef(getDeobfClass(), "renderDefaultChar", "(" + renderDefaultCharArg + "Z)F");
             final MethodRef glTexCoord2f = new MethodRef(MCPatcherUtils.GL11_CLASS, "glTexCoord2f", "(FF)V");
 
             addClassSignature(new BytecodeSignature() {

@@ -149,7 +149,7 @@ public class FontUtils {
 
     private static float getCharWidthf(FontRenderer fontRenderer, char ch) {
         float width = fontRenderer.getCharWidth(ch);
-        if (width < 0 || fontRenderer.charWidthf == null || ch >= fontRenderer.charWidthf.length || ch < 0) {
+        if (width < 0 || fontRenderer.charWidthf == null || ch >= fontRenderer.charWidthf.length) {
             return width;
         } else {
             return fontRenderer.charWidthf[ch];
