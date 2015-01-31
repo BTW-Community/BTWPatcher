@@ -121,7 +121,7 @@ public class LineRenderer {
         }
         TexturePackAPI.bindTexture(texture);
         Tessellator tessellator = TessellatorAPI.getTessellator();
-        tessellator.startDrawingQuads();
+        TessellatorAPI.startDrawingQuads(tessellator);
         GL11.glDisable(GL11.GL_CULL_FACE);
         GLAPI.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
         dx += sx + plusSX;
@@ -152,15 +152,15 @@ public class LineRenderer {
             double z1 = z + s * dz;
             double u1 = (segments - i) * len;
 
-            tessellator.addVertexWithUV(x0, y0, z0, u0, 1.0);
-            tessellator.addVertexWithUV(x1, y1, z1, u1, 1.0);
-            tessellator.addVertexWithUV(x1 + w, y1 + w, z1, u1, 0.0);
-            tessellator.addVertexWithUV(x0 + w, y0 + w, z0, u0, 0.0);
+            TessellatorAPI.addVertexWithUV(tessellator, x0, y0, z0, u0, 1.0);
+            TessellatorAPI.addVertexWithUV(tessellator, x1, y1, z1, u1, 1.0);
+            TessellatorAPI.addVertexWithUV(tessellator, x1 + w, y1 + w, z1, u1, 0.0);
+            TessellatorAPI.addVertexWithUV(tessellator, x0 + w, y0 + w, z0, u0, 0.0);
 
-            tessellator.addVertexWithUV(x0, y0 + w, z0, u0, 1.0);
-            tessellator.addVertexWithUV(x1, y1 + w, z1, u1, 1.0);
-            tessellator.addVertexWithUV(x1 + w, y1, z1 + w, u1, 0.0);
-            tessellator.addVertexWithUV(x0 + w, y0, z0 + w, u0, 0.0);
+            TessellatorAPI.addVertexWithUV(tessellator, x0, y0 + w, z0, u0, 1.0);
+            TessellatorAPI.addVertexWithUV(tessellator, x1, y1 + w, z1, u1, 1.0);
+            TessellatorAPI.addVertexWithUV(tessellator, x1 + w, y1, z1 + w, u1, 0.0);
+            TessellatorAPI.addVertexWithUV(tessellator, x0 + w, y0, z0 + w, u0, 0.0);
 
             x0 = x1;
             y0 = y1;

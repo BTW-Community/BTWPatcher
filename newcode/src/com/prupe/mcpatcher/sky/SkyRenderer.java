@@ -410,11 +410,11 @@ public class SkyRenderer {
         private static void drawTile(Tessellator tessellator, int tile) {
             double tileX = (tile % 3) / 3.0;
             double tileY = (tile / 3) / 2.0;
-            tessellator.startDrawingQuads();
-            tessellator.addVertexWithUV(-SKY_DISTANCE, -SKY_DISTANCE, -SKY_DISTANCE, tileX, tileY);
-            tessellator.addVertexWithUV(-SKY_DISTANCE, -SKY_DISTANCE, SKY_DISTANCE, tileX, tileY + 0.5);
-            tessellator.addVertexWithUV(SKY_DISTANCE, -SKY_DISTANCE, SKY_DISTANCE, tileX + 1.0 / 3.0, tileY + 0.5);
-            tessellator.addVertexWithUV(SKY_DISTANCE, -SKY_DISTANCE, -SKY_DISTANCE, tileX + 1.0 / 3.0, tileY);
+            TessellatorAPI.startDrawingQuads(tessellator);
+            TessellatorAPI.addVertexWithUV(tessellator, -SKY_DISTANCE, -SKY_DISTANCE, -SKY_DISTANCE, tileX, tileY);
+            TessellatorAPI.addVertexWithUV(tessellator, -SKY_DISTANCE, -SKY_DISTANCE, SKY_DISTANCE, tileX, tileY + 0.5);
+            TessellatorAPI.addVertexWithUV(tessellator, SKY_DISTANCE, -SKY_DISTANCE, SKY_DISTANCE, tileX + 1.0 / 3.0, tileY + 0.5);
+            TessellatorAPI.addVertexWithUV(tessellator, SKY_DISTANCE, -SKY_DISTANCE, -SKY_DISTANCE, tileX + 1.0 / 3.0, tileY);
             TessellatorAPI.draw(tessellator);
         }
 

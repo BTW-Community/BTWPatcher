@@ -11,11 +11,29 @@ abstract public class TessellatorAPI {
         return instance.getTessellator_Impl();
     }
 
+    public static void startDrawingQuads(Tessellator tessellator) {
+        instance.startDrawingQuads_Impl(tessellator);
+    }
+
+    public static void addVertexWithUV(Tessellator tessellator, double x, double y, double z, double u, double v) {
+        instance.addVertexWithUV_Impl(tessellator, x, y, z, u, v);
+    }
+
+    public static void setColorOpaque_F(Tessellator tessellator, float r, float g, float b) {
+        instance.setColorOpaque_F_Impl(tessellator, r, g, b);
+    }
+
     public static void draw(Tessellator tessellator) {
         instance.draw_Impl(tessellator);
     }
 
     abstract protected Tessellator getTessellator_Impl();
+
+    abstract protected void startDrawingQuads_Impl(Tessellator tessellator);
+
+    abstract protected void addVertexWithUV_Impl(Tessellator tessellator, double x, double y, double z, double u, double v);
+
+    abstract protected void setColorOpaque_F_Impl(Tessellator tessellator, float r, float g, float b);
 
     abstract protected void draw_Impl(Tessellator tessellator);
 
@@ -23,6 +41,21 @@ abstract public class TessellatorAPI {
         @Override
         protected Tessellator getTessellator_Impl() {
             return Tessellator.instance;
+        }
+
+        @Override
+        protected void startDrawingQuads_Impl(Tessellator tessellator) {
+            tessellator.startDrawingQuads();
+        }
+
+        @Override
+        protected void addVertexWithUV_Impl(Tessellator tessellator, double x, double y, double z, double u, double v) {
+            tessellator.addVertexWithUV(x, y, z, u, v);
+        }
+
+        @Override
+        protected void setColorOpaque_F_Impl(Tessellator tessellator, float r, float g, float b) {
+            tessellator.setColorOpaque_F(r, g, b);
         }
 
         @Override
@@ -38,6 +71,21 @@ abstract public class TessellatorAPI {
         }
 
         @Override
+        protected void startDrawingQuads_Impl(Tessellator tessellator) {
+            tessellator.startDrawingQuads();
+        }
+
+        @Override
+        protected void addVertexWithUV_Impl(Tessellator tessellator, double x, double y, double z, double u, double v) {
+            tessellator.addVertexWithUV(x, y, z, u, v);
+        }
+
+        @Override
+        protected void setColorOpaque_F_Impl(Tessellator tessellator, float r, float g, float b) {
+            tessellator.setColorOpaque_F(r, g, b);
+        }
+
+        @Override
         protected void draw_Impl(Tessellator tessellator) {
             TessellatorFactory.getInstance().drawInt();
         }
@@ -47,6 +95,21 @@ abstract public class TessellatorAPI {
         @Override
         protected Tessellator getTessellator_Impl() {
             return TessellatorFactory.getInstance().getTessellator();
+        }
+
+        @Override
+        protected void startDrawingQuads_Impl(Tessellator tessellator) {
+            tessellator.startDrawingQuads();
+        }
+
+        @Override
+        protected void addVertexWithUV_Impl(Tessellator tessellator, double x, double y, double z, double u, double v) {
+            tessellator.addVertexWithUV(x, y, z, u, v);
+        }
+
+        @Override
+        protected void setColorOpaque_F_Impl(Tessellator tessellator, float r, float g, float b) {
+            tessellator.setColorOpaque_F(r, g, b);
         }
 
         @Override

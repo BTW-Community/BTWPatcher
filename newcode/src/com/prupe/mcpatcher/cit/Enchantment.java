@@ -117,11 +117,11 @@ final class Enchantment extends OverrideBase {
             return;
         }
         begin(intensity);
-        tessellator.startDrawingQuads();
-        tessellator.addVertexWithUV(x0, y0, z, 0.0f, 0.0f);
-        tessellator.addVertexWithUV(x0, y1, z, 0.0f, 1.0f);
-        tessellator.addVertexWithUV(x1, y1, z, 1.0f, 1.0f);
-        tessellator.addVertexWithUV(x1, y0, z, 1.0f, 0.0f);
+        TessellatorAPI.startDrawingQuads(tessellator);
+        TessellatorAPI.addVertexWithUV(tessellator, x0, y0, z, 0.0f, 0.0f);
+        TessellatorAPI.addVertexWithUV(tessellator, x0, y1, z, 0.0f, 1.0f);
+        TessellatorAPI.addVertexWithUV(tessellator, x1, y1, z, 1.0f, 1.0f);
+        TessellatorAPI.addVertexWithUV(tessellator, x1, y0, z, 1.0f, 0.0f);
         TessellatorAPI.draw(tessellator);
         end();
     }

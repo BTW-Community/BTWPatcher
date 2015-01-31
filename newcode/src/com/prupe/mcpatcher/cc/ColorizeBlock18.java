@@ -11,6 +11,7 @@ import com.prupe.mcpatcher.mal.block.RenderPassAPI;
 import com.prupe.mcpatcher.mal.resource.PropertiesFile;
 import com.prupe.mcpatcher.mal.resource.TexturePackAPI;
 import com.prupe.mcpatcher.mal.resource.TexturePackChangeHandler;
+import com.prupe.mcpatcher.mal.tessellator.TessellatorAPI;
 import net.minecraft.src.*;
 
 import java.util.List;
@@ -254,7 +255,7 @@ public class ColorizeBlock18 {
     public void applyVertexColor(Tessellator tessellator, float base, int vertex) {
         if (isSmooth) {
             float[] rgb = vertexColors[vertex];
-            tessellator.setColorOpaque_F(base * rgb[0], base * rgb[1], base * rgb[2]);
+            TessellatorAPI.setColorOpaque_F(tessellator, base * rgb[0], base * rgb[1], base * rgb[2]);
         }
     }
 
