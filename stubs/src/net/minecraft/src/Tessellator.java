@@ -38,12 +38,25 @@ public class Tessellator {
     public void startDrawingQuads() {
     }
 
-    public void addVertex(double x, double y, double z) {
-    }
-
     public void addVertexWithUV(double x, double y, double z, double u, double v) {
     }
 
     public void setColorOpaque_F(float r, float g, float b) {
+    }
+
+    // 1.8.2-pre5+
+    public void startDrawing(int drawMode, VertexFormat vertexFormat) {
+    }
+
+    public Tessellator addVertex(double x, double y, double z) {
+        return this;
+    }
+
+    public Tessellator addUV(double u, double v) {
+        return this;
+    }
+
+    public Tessellator setColorF(float r, float g, float b, float a) {
+        return this;
     }
 }

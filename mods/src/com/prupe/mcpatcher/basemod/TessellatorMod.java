@@ -13,8 +13,6 @@ import static javassist.bytecode.Opcode.*;
  */
 public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
     public static MethodRef draw;
-    public static final MethodRef startDrawingQuads = new MethodRef("Tessellator", "startDrawingQuads", "()V");
-    public static final MethodRef startDrawing = new MethodRef("Tessellator", "startDrawing", "(I)V");
     public static final MethodRef addVertexWithUV = new MethodRef("Tessellator", "addVertexWithUV", "(DDDDD)V");
     public static final MethodRef addVertex = new MethodRef("Tessellator", "addVertex", "(DDD)V");
     public static final MethodRef setTextureUV = new MethodRef("Tessellator", "setTextureUV", "(DD)V");
@@ -38,49 +36,6 @@ public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
                 );
             }
         }.setMethod(draw));
-
-        addClassSignature(new BytecodeSignature() {
-            {
-                setMethod(startDrawingQuads);
-                addXref(1, startDrawing);
-            }
-
-            @Override
-            public String getMatchExpression() {
-                return buildExpression(
-                    ALOAD_0,
-                    push(7),
-                    captureReference(INVOKEVIRTUAL),
-                    RETURN
-                );
-            }
-        });
-
-        addClassSignature(new BytecodeSignature() {
-            {
-                setMethod(addVertexWithUV);
-                addXref(1, setTextureUV);
-                addXref(2, addVertex);
-            }
-
-            @Override
-            public String getMatchExpression() {
-                return buildExpression(
-                    ALOAD_0,
-                    DLOAD, 7,
-                    DLOAD, 9,
-                    captureReference(INVOKEVIRTUAL),
-
-                    ALOAD_0,
-                    DLOAD_1,
-                    DLOAD_3,
-                    DLOAD, 5,
-                    captureReference(INVOKEVIRTUAL),
-
-                    RETURN
-                );
-            }
-        });
 
         if (TessellatorFactoryMod.haveClass()) {
             instance = null;
