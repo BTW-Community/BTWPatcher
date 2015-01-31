@@ -25,6 +25,9 @@ public class ColorizeEntity {
     private static int[] myceliumColors;
 
     private static int[] xpOrbColors;
+    public static int xpOrbRed;
+    public static int xpOrbGreen;
+    public static int xpOrbBlue;
 
     private static final String[] colorNames = new String[]{
         "white",
@@ -110,6 +113,14 @@ public class ColorizeEntity {
         } else {
             return xpOrbColors[(int) ((Math.sin(timer / 4.0) + 1.0) * (xpOrbColors.length - 1) / 2.0)];
         }
+    }
+
+    public static int colorizeXPOrb(int origRed, int origBlue, float timer) {
+        int color = colorizeXPOrb((origRed << 16) | 255 | origBlue, timer);
+        xpOrbRed = (color >> 16) & 0xff;
+        xpOrbGreen = (color >> 8) & 0xff;
+        xpOrbBlue = color & 0xff;
+        return xpOrbRed;
     }
 
     public static boolean computeLavaDropColor(int age) {

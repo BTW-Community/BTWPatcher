@@ -3,6 +3,7 @@ package com.prupe.mcpatcher.mod.cc;
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.ResourceLocationMod;
 import com.prupe.mcpatcher.basemod.ResourceLocationSignature;
+import com.prupe.mcpatcher.basemod.TessellatorMod;
 import com.prupe.mcpatcher.basemod.WorldClientMod;
 import com.prupe.mcpatcher.basemod.ext18.IBlockStateMod;
 import com.prupe.mcpatcher.basemod.ext18.PositionMod;
@@ -520,27 +521,74 @@ class CC_World {
                 }
             }.targetMethod(renderClouds));
 
-            addPatch(new BytecodePatch() {
-                @Override
-                public String getDescription() {
-                    return "override end sky color";
-                }
+            if (TessellatorMod.haveVertexFormatClass()) {
+                addPatch(new BytecodePatch() {
+                    @Override
+                    public String getDescription() {
+                        return "override end sky color";
+                    }
 
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(or(
-                        build(push(0x181818)), // pre-12w23a
-                        build(push(0x282828))  // 12w23a+
-                    ));
-                }
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(
+                            // 40, 40, 40, 255
+                            push(40),
+                            push(40),
+                            push(40),
+                            push(255)
+                        );
+                    }
 
-                @Override
-                public byte[] getReplacementBytes() {
-                    return buildCode(
-                        reference(GETSTATIC, endSkyColor)
-                    );
-                }
-            });
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            // (ColorizeWorld.endSkyColor >> 16) & 0xff
+                            reference(GETSTATIC, endSkyColor),
+                            push(16),
+                            ISHR,
+                            push(0xff),
+                            IAND,
+
+                            // (ColorizeWorld.endSkyColor >> 8) & 0xff
+                            reference(GETSTATIC, endSkyColor),
+                            push(8),
+                            ISHR,
+                            push(0xff),
+                            IAND,
+
+                            // ColorizeWorld.endSkyColor & 0xff
+                            reference(GETSTATIC, endSkyColor),
+                            push(0xff),
+                            IAND,
+
+                            // 255
+                            push(255)
+                        );
+                    }
+                });
+            } else {
+                addPatch(new BytecodePatch() {
+                    @Override
+                    public String getDescription() {
+                        return "override end sky color";
+                    }
+
+                    @Override
+                    public String getMatchExpression() {
+                        return buildExpression(or(
+                            build(push(0x181818)), // pre-12w23a
+                            build(push(0x282828))  // 12w23a+
+                        ));
+                    }
+
+                    @Override
+                    public byte[] getReplacementBytes() {
+                        return buildCode(
+                            reference(GETSTATIC, endSkyColor)
+                        );
+                    }
+                });
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package com.prupe.mcpatcher.mod.cc;
 
 import com.prupe.mcpatcher.*;
 import com.prupe.mcpatcher.basemod.ResourceLocationMod;
+import com.prupe.mcpatcher.basemod.TessellatorMod;
 import com.prupe.mcpatcher.basemod.ext18.IBlockStateMod;
 import com.prupe.mcpatcher.basemod.ext18.RenderUtilsMod;
 import javassist.bytecode.AccessFlag;
@@ -1345,11 +1346,38 @@ class CC_Entity {
         RenderXPOrbMod(Mod mod) {
             super(mod);
 
-            final MethodRef colorizeXPOrb = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "colorizeXPOrb", "(IF)I");
+            final MethodRef colorizeXPOrb1 = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "colorizeXPOrb", "(IF)I");
+            final MethodRef colorizeXPOrb2 = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "colorizeXPOrb", "(IIF)F");
+            final FieldRef xpOrbRed = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "xpOrbRed", "I");
+            final FieldRef xpOrbGreen = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "xpOrbGreen", "I");
+            final FieldRef xpOrbBlue = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "xpOrbBlue", "I");
 
             addClassSignature(new ConstSignature(ResourceLocationMod.select("/item/xporb.png", "textures/entity/experience_orb.png")));
 
             addPatch(new BytecodePatch() {
+                private int timer;
+
+                {
+                    addPreMatchSignature(new BytecodeSignature() {
+                        @Override
+                        public String getMatchExpression() {
+                            return buildExpression(
+                                // MathHelper.sin(f8 + 0.0f)
+                                capture(anyFLOAD),
+                                push(0.0f),
+                                FADD,
+                                anyReference(INVOKESTATIC)
+                            );
+                        }
+
+                        @Override
+                        public boolean afterMatch() {
+                            timer = extractRegisterNum(getCaptureGroup(1));
+                            return true;
+                        }
+                    });
+                }
+
                 @Override
                 public String getDescription() {
                     return "override xp orb color";
@@ -1357,18 +1385,24 @@ class CC_Entity {
 
                 @Override
                 public String getMatchExpression() {
+                    if (TessellatorMod.haveVertexFormatClass()) {
+                        return getMatchExpression2();
+                    } else {
+                        return getMatchExpression1();
+                    }
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    if (TessellatorMod.haveVertexFormatClass()) {
+                        return getReplacementBytes2();
+                    } else {
+                        return getReplacementBytes1();
+                    }
+                }
+
+                private String getMatchExpression1() {
                     return buildExpression(
-                        lookBehind(build(
-                            // MathHelper.sin(f8 + 0.0F)
-                            capture(anyFLOAD),
-                            push(0.0f),
-                            FADD,
-                            anyReference(INVOKESTATIC),
-
-                            // ...
-                            any(0, 200)
-                        ), true),
-
                         // tessellator.setColorRGBA_I(i1, 128);
                         capture(anyILOAD),
                         lookAhead(build(
@@ -1378,12 +1412,41 @@ class CC_Entity {
                     );
                 }
 
-                @Override
-                public byte[] getReplacementBytes() {
+                private byte[] getReplacementBytes1() {
                     return buildCode(
-                        getCaptureGroup(2),
                         getCaptureGroup(1),
-                        reference(INVOKESTATIC, colorizeXPOrb)
+                        registerLoadStore(FLOAD, timer),
+                        reference(INVOKESTATIC, colorizeXPOrb1)
+                    );
+                }
+
+                private String getMatchExpression2() {
+                    return buildExpression(
+                        // r, 255, b, 128
+                        capture(anyILOAD),
+                        push(255),
+                        capture(anyILOAD),
+                        push(128)
+                    );
+                }
+
+                private byte[] getReplacementBytes2() {
+                    return buildCode(
+                        getMethodMatchCount() == 0 ?
+                            buildCode(
+                                // ColorizeEntity.colorizeXPOrb(r, b, timer)
+                                getCaptureGroup(1),
+                                getCaptureGroup(2),
+                                registerLoadStore(FLOAD, timer),
+                                reference(INVOKESTATIC, colorizeXPOrb2)
+                            ) :
+                            buildCode(
+                                // ColorizeEntity.xpOrbRed
+                                reference(GETSTATIC, xpOrbRed)
+                            ),
+                        reference(GETSTATIC, xpOrbGreen),
+                        reference(GETSTATIC, xpOrbBlue),
+                        push(128)
                     );
                 }
             });
