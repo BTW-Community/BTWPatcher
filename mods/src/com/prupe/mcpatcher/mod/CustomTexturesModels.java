@@ -443,7 +443,9 @@ public class CustomTexturesModels extends Mod {
         private final MethodRef renderFaceHeld = new MethodRef(getDeobfClass(), "renderFaceHeld", "(FFFFLjava/util/List;)V");
 
         RenderBlockCustomMod() {
-            addClassSignature(new ConstSignature(0xf000f));
+            if (getMinecraftVersion().compareTo("1.8.2-pre5") < 0) {
+                addClassSignature(new ConstSignature(0xf000f));
+            }
 
             addClassSignature(new BytecodeSignature() {
                 {
@@ -467,7 +469,13 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        push(0xf000f),
+                        // array = new float[Direction.values().length * 2];
+                        anyReference(INVOKESTATIC),
+                        ARRAYLENGTH,
+                        push(2),
+                        IMUL,
+                        NEWARRAY, T_FLOAT,
+                        anyASTORE,
 
                         any(0, 500),
 
