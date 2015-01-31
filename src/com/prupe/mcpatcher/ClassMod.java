@@ -177,7 +177,7 @@ abstract public class ClassMod implements PatchComponent {
                 !className.startsWith("com.fasterxml.") &&
                 !className.startsWith("javax.");
         } else {
-            return className.startsWith("net.minecraft.") || className.matches("^[a-z]{1,4}$");
+            return className.startsWith("net.minecraft.") || className.matches("[a-z]{1,4}(\\$(\\d{1,4}|[a-z]{1,4}))*");
         }
     }
 
