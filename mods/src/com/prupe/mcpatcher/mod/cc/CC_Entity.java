@@ -1347,7 +1347,7 @@ class CC_Entity {
             super(mod);
 
             final MethodRef colorizeXPOrb1 = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "colorizeXPOrb", "(IF)I");
-            final MethodRef colorizeXPOrb2 = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "colorizeXPOrb", "(IIF)F");
+            final MethodRef colorizeXPOrb2 = new MethodRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "colorizeXPOrb", "(IIF)I");
             final FieldRef xpOrbRed = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "xpOrbRed", "I");
             final FieldRef xpOrbGreen = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "xpOrbGreen", "I");
             final FieldRef xpOrbBlue = new FieldRef(MCPatcherUtils.COLORIZE_ENTITY_CLASS, "xpOrbBlue", "I");
