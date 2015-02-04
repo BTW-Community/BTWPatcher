@@ -1,9 +1,11 @@
 package com.prupe.mcpatcher.mal;
 
-import com.prupe.mcpatcher.*;
+import com.prupe.mcpatcher.FieldRef;
+import com.prupe.mcpatcher.MCPatcherUtils;
+import com.prupe.mcpatcher.MethodRef;
+import com.prupe.mcpatcher.Mod;
 import com.prupe.mcpatcher.basemod.TessellatorFactoryMod;
 
-import static com.prupe.mcpatcher.BinaryRegex.*;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
@@ -12,14 +14,14 @@ public class TessellatorAPIMod extends Mod {
         name = MCPatcherUtils.TESSELLATOR_API_MOD;
         author = "MCPatcher";
         description = "Internal mod required by the patcher.";
-        version = "1.1";
+        version = "1.2";
 
         addClassMod(new TessellatorMod());
         if (TessellatorMod.haveVertexFormatClass()) {
-            setMALVersion("tessellator", 4);
             addClassMod(new TessellatorFactoryMod(this));
             addClassMod(new VertexFormatMod());
             addClassMod(new MinecraftMod());
+            setMALVersion("tessellator", 4);
         } else if (TessellatorFactoryMod.haveClass()) {
             addClassMod(new TessellatorFactoryMod(this));
             setMALVersion("tessellator", TessellatorMod.drawReturnsInt() ? 2 : 3);
@@ -101,44 +103,6 @@ public class TessellatorAPIMod extends Mod {
                 public String getMatchExpression() {
                     return buildExpression(
                         push("Already building!")
-                    );
-                }
-            });
-
-            addClassSignature(new BytecodeSignature() {
-                {
-                    setMethod(setColorF);
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // (int) (r * 255.0f)
-                        FLOAD_1,
-                        push(255.0f),
-                        FMUL,
-                        F2I
-                    );
-                }
-            });
-
-            addReturnThisMethodSignature(addXYZ);
-            addReturnThisMethodSignature(addUV);
-        }
-
-        private void addReturnThisMethodSignature(final MethodRef method) {
-            addClassSignature(new BytecodeSignature() {
-                {
-                    setMethod(method);
-                }
-
-                @Override
-                public String getMatchExpression() {
-                    return buildExpression(
-                        // return this;
-                        ALOAD_0,
-                        ARETURN,
-                        end()
                     );
                 }
             });

@@ -5,6 +5,8 @@ import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
 import javassist.bytecode.AccessFlag;
 
+import static javassist.bytecode.Opcode.*;
+
 /**
  * Matches Tessellator class and instance and maps several commonly used rendering methods.
  */
@@ -55,11 +57,33 @@ public class TessellatorMod extends com.prupe.mcpatcher.ClassMod {
         }
 
         if (haveVertexFormatClass()) {
-            addMemberMapper(new MethodMapper(setColorF));
+            addClassSignature(new BytecodeSignature() {
+                {
+                    setMethod(setColorF);
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        // (int) (r * 255.0f)
+                        FLOAD_1,
+                        push(255.0f),
+                        FMUL,
+                        F2I
+                    );
+                }
+            });
         } else if (drawReturnsInt()) {
             addMemberMapper(new MethodMapper(setColorOpaque_F));
         } else {
             addMemberMapper(new MethodMapper(null, setColorOpaque_F));
+        }
+
+        if (haveVertexFormatClass()) {
+            addMemberMapper(new MethodMapper(addXYZ));
+            addMemberMapper(new MethodMapper(addUV));
+        } else {
+            addMemberMapper(new MethodMapper(addVertexWithUV));
         }
     }
 }
