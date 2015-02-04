@@ -29,6 +29,7 @@ public class ColorizeBlock18 {
     private IColorMap colorMap;
     private boolean isSmooth;
     private final float[][] vertexColors = new float[4][3];
+    public final float[] vertexColor = new float[3];
 
     private static final int[][][] FACE_VERTICES = new int[][][]{
         // bottom face (y=0)
@@ -257,6 +258,24 @@ public class ColorizeBlock18 {
             float[] rgb = vertexColors[vertex];
             TessellatorAPI.setColorOpaque_F(tessellator, base * rgb[0], base * rgb[1], base * rgb[2]);
         }
+    }
+
+    public float applyVertexColor(float base, int vertex, float r, float g, float b) {
+        if (isSmooth) {
+            float[] rgb = vertexColors[vertex];
+            vertexColor[0] = base * rgb[0];
+            vertexColor[1] = base * rgb[1];
+            vertexColor[2] = base * rgb[2];
+        } else {
+            vertexColor[0] = r;
+            vertexColor[1] = g;
+            vertexColor[2] = b;
+        }
+        return vertexColor[0];
+    }
+
+    public float getVertexColor(int index) {
+        return vertexColor[index];
     }
 
     public int getParticleColor(IBlockAccess blockAccess, IBlockState blockState, Position position, int defaultColor) {

@@ -189,6 +189,14 @@ public class CTMUtils18 extends RenderBlockState {
         colorizeBlock.applyVertexColor(tessellator, base, vertex);
     }
 
+    public float applyVertexColor(float base, int vertex, float r, float g, float b) {
+        return colorizeBlock.applyVertexColor(base, vertex, r, g, b);
+    }
+
+    public float getVertexColor(int index) {
+        return colorizeBlock.getVertexColor(index);
+    }
+
     public ModelFace getModelFace(ModelFace origFace) {
         FaceInfo faceInfo = FaceInfo.getFaceInfo(origFace);
         if (faceInfo == null) {

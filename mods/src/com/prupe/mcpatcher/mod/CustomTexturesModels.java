@@ -39,7 +39,7 @@ public class CustomTexturesModels extends Mod {
         name = MCPatcherUtils.CUSTOM_TEXTURES_MODELS;
         author = "MCPatcher";
         description = "Allows custom block and item rendering.";
-        version = "1.0";
+        version = "1.1";
 
         addDependency(MCPatcherUtils.TEXTURE_PACK_API_MOD);
         addDependency(MCPatcherUtils.TILESHEET_API_MOD);
@@ -966,7 +966,9 @@ public class CustomTexturesModels extends Mod {
         private void setupColorMaps() {
             final MethodRef preRender = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "preRender", "(LIBlockAccess;LIModel;LIBlockState;LPosition;LBlock;Z)Z");
             final MethodRef setDirection = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "setDirectionWater", "(LDirection;)V");
-            final MethodRef applyVertexColor = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "applyVertexColor", "(LTessellator;FI)V");
+            final MethodRef applyVertexColor1 = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "applyVertexColor", "(LTessellator;FI)V");
+            final MethodRef applyVertexColor2 = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "applyVertexColor", "(FIFFF)F");
+            final MethodRef getVertexColor = new MethodRef(MCPatcherUtils.CTM_UTILS18_CLASS, "getVertexColor", "(I)F");
 
             initCTMInfo(this, renderBlock);
 
@@ -1087,12 +1089,22 @@ public class CustomTexturesModels extends Mod {
                 private int faceIndex;
 
                 {
-                    setInsertBefore(true);
+                    if (!TessellatorMod.haveVertexFormatClass()) {
+                        setInsertBefore(true);
+                    }
                     targetMethod(renderBlock);
 
                     addPreMatchSignature(new BytecodeSignature() {
                         @Override
                         public String getMatchExpression() {
+                            if (TessellatorMod.haveVertexFormatClass()) {
+                                return getMatchExpression2();
+                            } else {
+                                return getMatchExpression1();
+                            }
+                        }
+
+                        private String getMatchExpression1() {
                             return buildExpression(
                                 // tessellator.setColorOpaque(f * base * r, f * base * g, f * base * b);
                                 ALOAD, 4,
@@ -1112,6 +1124,34 @@ public class CustomTexturesModels extends Mod {
                                 FLOAD, colorRegister[2],
                                 FMUL,
                                 reference(INVOKEVIRTUAL, TessellatorMod.setColorOpaque_F)
+                            );
+                        }
+
+                        private String getMatchExpression2() {
+                            return buildExpression(
+                                // r1 = f * base * r;
+                                capture(anyFLOAD),
+                                capture(anyFLOAD),
+                                FMUL,
+                                FLOAD, colorRegister[0],
+                                FMUL,
+                                anyFSTORE,
+
+                                // g1 = f * base * g;
+                                backReference(1),
+                                backReference(2),
+                                FMUL,
+                                FLOAD, colorRegister[1],
+                                FMUL,
+                                anyFSTORE,
+
+                                // b1 = f * base * b;
+                                backReference(1),
+                                backReference(2),
+                                FMUL,
+                                FLOAD, colorRegister[2],
+                                FMUL,
+                                anyFSTORE
                             );
                         }
 
@@ -1153,6 +1193,23 @@ public class CustomTexturesModels extends Mod {
 
                 @Override
                 public String getMatchExpression() {
+                    if (TessellatorMod.haveVertexFormatClass()) {
+                        return getMatchExpression2();
+                    } else {
+                        return getMatchExpression1();
+                    }
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    if (TessellatorMod.haveVertexFormatClass()) {
+                        return getReplacementBytes2();
+                    } else {
+                        return getReplacementBytes1();
+                    }
+                }
+
+                private String getMatchExpression1() {
                     return buildExpression(
                         // tessellator.addVertexWithUV(...);
                         ALOAD, 4,
@@ -1161,8 +1218,7 @@ public class CustomTexturesModels extends Mod {
                     );
                 }
 
-                @Override
-                public byte[] getReplacementBytes() {
+                private byte[] getReplacementBytes1() {
                     return buildCode(
                         callSetDirection(),
 
@@ -1171,7 +1227,48 @@ public class CustomTexturesModels extends Mod {
                         ALOAD, 4,
                         getBase(),
                         push(getVertex()),
-                        reference(INVOKEVIRTUAL, applyVertexColor)
+                        reference(INVOKEVIRTUAL, applyVertexColor1)
+                    );
+                }
+
+                private String getMatchExpression2() {
+                    return buildExpression(
+                        // ...(r, g, b, 1.0f)
+                        // -or-
+                        // ...(f * r, f * g, f * b, 1.0f)
+                        capture(repeat(build(
+                            anyFLOAD,
+                            optional(build(
+                                anyFLOAD,
+                                FMUL
+                            ))
+                        ), 3)),
+                        push(1.0f)
+                    );
+                }
+
+                private byte[] getReplacementBytes2() {
+                    return buildCode(
+                        callSetDirection(),
+
+                        // ctm.applyVertexColor(base, vertex, r, g, b)
+                        getCTMInfo(this),
+                        getBase(),
+                        push(getVertex()),
+                        getCaptureGroup(1),
+                        reference(INVOKEVIRTUAL, applyVertexColor2),
+
+                        // ctm.getVertexColor(1)
+                        getCTMInfo(this),
+                        push(1),
+                        reference(INVOKEVIRTUAL, getVertexColor),
+
+                        // ctm.getVertexColor(2)
+                        getCTMInfo(this),
+                        push(2),
+                        reference(INVOKEVIRTUAL, getVertexColor),
+
+                        push(1.0f)
                     );
                 }
 
