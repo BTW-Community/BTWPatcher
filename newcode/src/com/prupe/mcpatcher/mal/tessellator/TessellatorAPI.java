@@ -132,7 +132,7 @@ abstract public class TessellatorAPI {
 
         @Override
         protected void addVertexWithUV_Impl(Tessellator tessellator, double x, double y, double z, double u, double v) {
-            tessellator.addXYZ(x, y, z).addUV(u, v);
+            tessellator.addXYZ(x, y, z).addUV(u, v).next();
         }
 
         @Override

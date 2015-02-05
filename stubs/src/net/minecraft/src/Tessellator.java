@@ -1,23 +1,7 @@
 package net.minecraft.src;
 
-import java.util.Map;
-
 public class Tessellator {
     public static Tessellator instance;
-
-    public static boolean convertQuadsToTriangles;
-
-    public int rawBuffer[];
-    public int rawBufferIndex;
-    public int addedVertices;
-    public int vertexCount;
-    public int bufferSize;
-    public int drawMode;
-    public boolean isDrawing;
-
-    // added by ctm
-    public TextureAtlas textureMap;
-    public Map<TextureAtlas, Tessellator> children;
 
     public Tessellator(int bufferSize) {
     }
@@ -58,5 +42,8 @@ public class Tessellator {
 
     public Tessellator setColorF(float r, float g, float b, float a) {
         return this;
+    }
+
+    public void next() {
     }
 }

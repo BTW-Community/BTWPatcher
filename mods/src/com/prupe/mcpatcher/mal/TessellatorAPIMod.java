@@ -6,6 +6,8 @@ import com.prupe.mcpatcher.MethodRef;
 import com.prupe.mcpatcher.Mod;
 import com.prupe.mcpatcher.basemod.TessellatorFactoryMod;
 
+import static com.prupe.mcpatcher.BinaryRegex.backReference;
+import static com.prupe.mcpatcher.BinaryRegex.capture;
 import static com.prupe.mcpatcher.BytecodeMatcher.*;
 import static javassist.bytecode.Opcode.*;
 
@@ -20,7 +22,7 @@ public class TessellatorAPIMod extends Mod {
         if (TessellatorMod.haveVertexFormatClass()) {
             addClassMod(new TessellatorFactoryMod(this));
             addClassMod(new VertexFormatMod());
-            addClassMod(new MinecraftMod());
+            addClassMod(new RenderGlobalMod());
             setMALVersion("tessellator", 4);
         } else if (TessellatorFactoryMod.haveClass()) {
             addClassMod(new TessellatorFactoryMod(this));
@@ -137,27 +139,49 @@ public class TessellatorAPIMod extends Mod {
         }
     }
 
-    private class MinecraftMod extends com.prupe.mcpatcher.basemod.MinecraftMod {
-        MinecraftMod() {
-            super(TessellatorAPIMod.this);
+    private class RenderGlobalMod extends ClassMod {
+        RenderGlobalMod() {
+            addPrerequisiteClass("Tessellator");
 
-            final MethodRef drawLogo = new MethodRef(getDeobfClass(), "drawLogo", "(LTextureManager;)V");
+            final MethodRef renderSky = new MethodRef(getDeobfClass(), "renderSky", "(FI)V");
             final FieldRef standardQuadFormat = new FieldRef("VertexFormats", "standardQuadFormat", "LVertexFormat;");
+            final MethodRef next = new MethodRef("Tessellator", "next", "()V");
+
+            addClassSignature(new ConstSignature("textures/environment/clouds.png"));
 
             addClassSignature(new BytecodeSignature() {
                 {
-                    setMethod(drawLogo);
-                    addXref(1, standardQuadFormat);
+                    setMethod(renderSky);
+                    addXref(2, standardQuadFormat);
+                    addXref(3, TessellatorMod.startDrawing2);
+                    addXref(4, TessellatorMod.addXYZ);
+                    addXref(5, TessellatorMod.addUV);
+                    addXref(6, next);
                 }
 
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
                         // tessellator.startDrawing(7, VertexFormats.standardQuadFormat);
-                        anyALOAD,
+                        capture(anyALOAD),
                         push(7),
                         captureReference(GETSTATIC),
-                        anyReference(INVOKEVIRTUAL)
+                        captureReference(INVOKEVIRTUAL),
+
+                        // tessellator.addXYZ((double) -f, 100.0, (double) -f).addUV(0.0, 0.0).next();
+                        backReference(1),
+                        anyFLOAD,
+                        FNEG,
+                        F2D,
+                        push(100.0),
+                        anyFLOAD,
+                        FNEG,
+                        F2D,
+                        captureReference(INVOKEVIRTUAL),
+                        push(0.0),
+                        push(0.0),
+                        captureReference(INVOKEVIRTUAL),
+                        captureReference(INVOKEVIRTUAL)
                     );
                 }
             });
