@@ -29,7 +29,7 @@ public class HDFont extends Mod {
     static void setupMod(Mod mod, MinecraftVersion minecraftVersion, boolean addFiles) {
         haveReadFontData = minecraftVersion.compareTo("1.6.2") < 0;
         haveFontWidthHack = minecraftVersion.compareTo("1.6.2") >= 0;
-        renderDefaultCharTakesChar = getMinecraftVersion().compareTo("1.8.2-pre5") >= 0;
+        renderDefaultCharTakesChar = getMinecraftVersion().compareTo("1.8.2-pre5") >= 0 && getMinecraftVersion().compareTo("1.8.2-pre6") <= 0;
         renderDefaultChar = new MethodRef("FontRenderer", "renderDefaultChar", "(" + (renderDefaultCharTakesChar ? "C" : "I") + "Z)F");
 
         mod.addClassMod(new FontRendererMod(mod));
@@ -266,7 +266,7 @@ public class HDFont extends Mod {
                 }
             });
 
-            if (renderDefaultCharTakesChar) {
+            if (getMinecraftVersion().compareTo("1.8.2-pre5") >= 0) {
                 addPatch(new BytecodePatch() {
                     {
                         targetMethod(renderDefaultChar);
