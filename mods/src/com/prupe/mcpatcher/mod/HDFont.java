@@ -11,7 +11,8 @@ import static javassist.bytecode.Opcode.*;
 
 public class HDFont extends Mod {
     private static boolean haveReadFontData;
-    private static boolean haveFontWidthHack;
+    private static boolean haveFontWidthHack1;
+    private static boolean haveFontWidthHack2;
     private static boolean renderDefaultCharTakesChar;
     private static MethodRef renderDefaultChar;
 
@@ -28,8 +29,9 @@ public class HDFont extends Mod {
 
     static void setupMod(Mod mod, MinecraftVersion minecraftVersion, boolean addFiles) {
         haveReadFontData = minecraftVersion.compareTo("1.6.2") < 0;
-        haveFontWidthHack = minecraftVersion.compareTo("1.6.2") >= 0;
-        renderDefaultCharTakesChar = getMinecraftVersion().compareTo("1.8.2-pre5") >= 0 && getMinecraftVersion().compareTo("1.8.2-pre6") <= 0;
+        haveFontWidthHack1 = minecraftVersion.compareTo("1.6.2") >= 0;
+        haveFontWidthHack2 = haveFontWidthHack1 && minecraftVersion.compareTo("1.8.2-pre6") < 0;
+        renderDefaultCharTakesChar = minecraftVersion.compareTo("1.8.2-pre5") >= 0 && minecraftVersion.compareTo("1.8.2-pre6") <= 0;
         renderDefaultChar = new MethodRef("FontRenderer", "renderDefaultChar", "(" + (renderDefaultCharTakesChar ? "C" : "I") + "Z)F");
 
         mod.addClassMod(new FontRendererMod(mod));
@@ -64,8 +66,8 @@ public class HDFont extends Mod {
             final MethodRef getResourceAsStream = new MethodRef("java/lang/Class", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
             final MethodRef readImage = new MethodRef("javax/imageio/ImageIO", "read", "(Ljava/io/InputStream;)Ljava/awt/image/BufferedImage;");
             final MethodRef getImageWidth = new MethodRef("java/awt/image/BufferedImage", "getWidth", "()I");
-            final MethodRef getFontName = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getFontName", "(LFontRenderer;LResourceLocation;)LResourceLocation;");
-            final MethodRef computeCharWidthsf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "computeCharWidthsf", "(LFontRenderer;LResourceLocation;Ljava/awt/image/BufferedImage;[I[IF)[F");
+            final MethodRef getFontName = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getFontName", "(LFontRenderer;LResourceLocation;F)LResourceLocation;");
+            final MethodRef computeCharWidthsf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "computeCharWidthsf", "(LFontRenderer;LResourceLocation;Ljava/awt/image/BufferedImage;[I[I)[F");
             final MethodRef getCharWidthf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getCharWidthf", "(LFontRenderer;[II)F");
             final MethodRef getStringWidthf = new MethodRef(MCPatcherUtils.FONT_UTILS_CLASS, "getStringWidthf", "(LFontRenderer;Ljava/lang/String;)F");
             final MethodRef getNewImage = new MethodRef(MCPatcherUtils.TEXTURE_PACK_API_CLASS, "getImage", "(LResourceLocation;)Ljava/awt/image/BufferedImage;");
@@ -153,12 +155,13 @@ public class HDFont extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // this.fontResource = FontUtils.getFontName(this, this.fontResource);
+                        // this.fontResource = FontUtils.getFontName(this, this.fontResource, hdFontAdj);
                         ALOAD_0,
                         ALOAD_0,
                         ALOAD_0,
                         reference(GETFIELD, fontResource),
                         ResourceLocationMod.wrap(this),
+                        push(haveFontWidthHack2 ? 0.0f : 1.0f),
                         reference(INVOKESTATIC, getFontName),
                         ResourceLocationMod.unwrap(this),
                         reference(PUTFIELD, fontResource),
@@ -249,7 +252,7 @@ public class HDFont extends Mod {
                 @Override
                 public byte[] getReplacementBytes() {
                     return buildCode(
-                        // this.charWidthf = FontUtils.computeCharWidthsf(this, filename, image, rgb, this.charWidth, fontAdj);
+                        // this.charWidthf = FontUtils.computeCharWidthsf(this, filename, image, rgb, this.charWidth);
                         ALOAD_0,
                         ALOAD_0,
                         ALOAD_0,
@@ -259,7 +262,6 @@ public class HDFont extends Mod {
                         ALOAD, rgbRegister,
                         ALOAD_0,
                         reference(GETFIELD, charWidth),
-                        push(haveFontWidthHack ? 1.0f : 0.0f),
                         reference(INVOKESTATIC, computeCharWidthsf),
                         reference(PUTFIELD, charWidthf)
                     );
@@ -396,7 +398,7 @@ public class HDFont extends Mod {
             if (ResourceLocationMod.haveClass()) {
                 setupUnicode();
             }
-            if (haveFontWidthHack) {
+            if (haveFontWidthHack1) {
                 setupFontHack();
             }
         }

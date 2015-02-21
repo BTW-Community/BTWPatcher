@@ -52,7 +52,7 @@ public class FontUtils {
     static void init() {
     }
 
-    public static ResourceLocation getFontName(FontRenderer fontRenderer, ResourceLocation font) {
+    public static ResourceLocation getFontName(FontRenderer fontRenderer, ResourceLocation font, float hdFontAdj) {
         if (fontRenderer.getDefaultFont() == null) {
             fontRenderer.setDefaultFont(font);
         }
@@ -75,14 +75,13 @@ public class FontUtils {
             fontRenderer.isHD = enable && enableNonHD;
             newFont = defaultFont;
         }
-        fontRenderer.fontAdj = fontRenderer.isHD ? 0.0f : 1.0f;
+        fontRenderer.fontAdj = fontRenderer.isHD ? hdFontAdj : 1.0f;
         return newFont;
     }
 
-    public static float[] computeCharWidthsf(FontRenderer fontRenderer, ResourceLocation filename, BufferedImage image, int[] rgb, int[] charWidth, float fontAdj) {
+    public static float[] computeCharWidthsf(FontRenderer fontRenderer, ResourceLocation filename, BufferedImage image, int[] rgb, int[] charWidth) {
         float[] charWidthf = new float[charWidth.length];
         if (!fontRenderer.isHD) {
-            fontRenderer.fontAdj = fontAdj;
             for (int i = 0; i < charWidth.length; i++) {
                 charWidthf[i] = charWidth[i];
             }
