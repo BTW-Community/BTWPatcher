@@ -28,7 +28,10 @@ class ForgeAdapter extends Mod {
     private static final int FML_MIN_VERSION = 787;
     private static final String FML_MIN_VERSION_STR = "6.4.41.787";
 
-    private static final String GDIFF_CLASS = "cpw.mods.fml.repackage.com.nothome.delta.GDiffPatcher";
+    private static final String[] GDIFF_CLASSES = new String[]{
+        "cpw.mods.fml.repackage.com.nothome.delta.GDiffPatcher",
+        "net.minecraftforge.fml.repackage.com.nothome.delta.GDiffPatcher", // 1.8+
+    };
     private static final String GDIFF_PATCH_METHOD = "patch";
 
     private static final String LZMA_PACKAGE = "lzma";
@@ -153,7 +156,19 @@ class ForgeAdapter extends Mod {
             forgeJarPath.toURI().toURL()
         }, getClass().getClassLoader());
 
-        Class<?> gdiffClass = classLoader.loadClass(GDIFF_CLASS);
+        Class<?> gdiffClass = null;
+        Exception savedException = null;
+        for (String gdiffClassName : GDIFF_CLASSES) {
+            try {
+                gdiffClass = classLoader.loadClass(gdiffClassName);
+                break;
+            } catch (ClassNotFoundException e) {
+                savedException = e;
+            }
+        }
+        if (gdiffClass == null) {
+            throw savedException;
+        }
         try {
             gdiffConstructor1 = gdiffClass.getDeclaredConstructor();
             gdiffPatchMethod = gdiffClass.getDeclaredMethod(GDIFF_PATCH_METHOD, byte[].class, InputStream.class, OutputStream.class);

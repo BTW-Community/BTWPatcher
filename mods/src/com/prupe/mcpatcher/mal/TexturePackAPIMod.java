@@ -150,7 +150,8 @@ public class TexturePackAPIMod extends Mod {
             }
 
             addPatch(new BytecodePatch() {
-                private final MethodRef fmlClientHandler = new MethodRef("cpw/mods/fml/client/FMLClientHandler", "instance", "()Lcpw/mods/fml/client/FMLClientHandler;");
+                private final MethodRef fmlClientHandler1 = new MethodRef("cpw/mods/fml/client/FMLClientHandler", "instance", "()Lcpw/mods/fml/client/FMLClientHandler;");
+                private final MethodRef fmlClientHandler2 = new MethodRef("net/minecraftforge/fml/client/FMLClientHandler", "instance", "()Lnet/minecraftforge/fml/client/FMLClientHandler;");
 
                 @Override
                 public String getDescription() {
@@ -186,13 +187,17 @@ public class TexturePackAPIMod extends Mod {
 
                             // vanilla: this.refreshResources();
                             // forge 1.7.10: FMLClientHandler.instance()...;
+                            // forge 1.8: FMLClientHandler.instance()...; (repackaged to net.minecraftforge)
                             or(
                                 build(
                                     ALOAD_0,
                                     anyReference(INVOKEVIRTUAL)
                                 ),
                                 build(
-                                    reference(INVOKESTATIC, fmlClientHandler)
+                                    reference(INVOKESTATIC, fmlClientHandler1)
+                                ),
+                                build(
+                                    reference(INVOKESTATIC, fmlClientHandler2)
                                 )
                             )
                         )),
