@@ -965,7 +965,11 @@ final public class MCPatcher {
                 cm.addToConstPool = true;
                 cm.classFile = classFile;
                 cm.methodInfo = null;
-                cm.prePatch(filename, classFile);
+                try {
+                    cm.prePatch(filename, classFile);
+                } finally {
+                    cm.addToConstPool = false;
+                }
                 if (cm.patches.size() > 0) {
                     Logger.log(Logger.LOG_MOD, "applying %s patch to %s for mod %s", cm.getDeobfClass(), filename, cm.mod.getName());
                 }
@@ -976,7 +980,11 @@ final public class MCPatcher {
                     }
                 }
                 cm.addToConstPool = true;
-                cm.postPatch(filename, classFile);
+                try {
+                    cm.postPatch(filename, classFile);
+                } finally {
+                    cm.addToConstPool = false;
+                }
             }
         }
         return patched;
