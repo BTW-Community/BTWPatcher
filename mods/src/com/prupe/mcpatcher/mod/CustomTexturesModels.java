@@ -1684,6 +1684,7 @@ public class CustomTexturesModels extends Mod {
             final MethodRef renderEnchantment = new MethodRef(getDeobfClass(), "renderEnchantment", "(LEntityLivingBase;LModelBase;FFFFFFF)V");
             final MethodRef getArmorTexture2 = new MethodRef(getDeobfClass(), "getArmorTexture2", "(LItemArmor;Z)LResourceLocation;");
             final MethodRef getArmorTexture3 = new MethodRef(getDeobfClass(), "getArmorTexture3", "(LItemArmor;ZLjava/lang/String;)LResourceLocation;");
+            final MethodRef forgeGetArmorResource = new MethodRef(getDeobfClass(), "getArmorResource", "(LEntity;LItemStack;ILjava/lang/String;)LResourceLocation;");
             final MethodRef renderModel = new MethodRef("ModelBase", "render", "(LEntity;FFFFFF)V");
 
             addClassSignature(new ConstSignature("textures/misc/enchanted_item_glint.png"));
@@ -1762,11 +1763,25 @@ public class CustomTexturesModels extends Mod {
                 @Override
                 public String getMatchExpression() {
                     return buildExpression(
-                        // this.getArmorTexture(item, overlay);
-                        ALOAD_0,
-                        anyALOAD,
-                        anyILOAD,
-                        reference(INVOKESPECIAL, getArmorTexture2)
+                        or(
+                            build(
+                                // vanilla: this.getArmorTexture(item, overlay);
+                                ALOAD_0,
+                                anyALOAD,
+                                anyILOAD,
+                                reference(INVOKESPECIAL, getArmorTexture2)
+                            ),
+                            build(
+                                // forge 1.8: this.getArmorResource(entity, item, overlay, flag ? 2 : 1, null)
+                                ALOAD_0,
+                                ALOAD_1,
+                                anyALOAD,
+                                anyILOAD,
+                                any(0, 10),
+                                ACONST_NULL,
+                                reference(INVOKEVIRTUAL, forgeGetArmorResource)
+                            )
+                        )
                     );
                 }
 
