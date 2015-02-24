@@ -21,6 +21,7 @@ public class Version implements Comparable<Version> {
     private static final String TAG_RELEASE_TIME = "releaseTime";
     private static final String TAG_LIBRARIES = "libraries";
     private static final String TAG_NAME = "name";
+    private static final String TAG_JAR = "jar";
 
     private static final String LEGACY = "legacy";
     private static final String LEGACY_VALUE = "${auth_player_name} ${auth_session}";
@@ -41,7 +42,10 @@ public class Version implements Comparable<Version> {
     String processArguments = USERNAME_SESSION_VERSION;
     String minecraftArguments = "";
     String mainClass = "net.minecraft.client.main.Main";
+    int minimumLauncherVersion;
     String assets = "";
+    String inheritsFrom;
+    String jar;
     List<Library> libraries = new ArrayList<Library>();
 
     public static Version getLocalVersion(String id) {
@@ -149,11 +153,32 @@ public class Version implements Comparable<Version> {
     }
 
     public File getJarPath() {
-        return getJarPath(id);
+        if (MCPatcherUtils.isNullOrEmpty(jar)) {
+            return getJarPath(id);
+        } else {
+            return getJarPath(jar);
+        }
     }
 
     public List<Library> getLibraries() {
-        return libraries;
+        if (MCPatcherUtils.isNullOrEmpty(inheritsFrom)) {
+            return libraries;
+        } else {
+            return addLibraries(new ArrayList<Library>());
+        }
+    }
+
+    private List<Library> addLibraries(List<Library> allLibraries) {
+        if (libraries != null) {
+            allLibraries.addAll(libraries);
+        }
+        if (!MCPatcherUtils.isNullOrEmpty(inheritsFrom)) {
+            Version parentVersion = getLocalVersion(inheritsFrom);
+            if (parentVersion != null) {
+                parentVersion.addLibraries(allLibraries);
+            }
+        }
+        return allLibraries;
     }
 
     public boolean isComplete() {
@@ -190,6 +215,7 @@ public class Version implements Comparable<Version> {
         json.addProperty(TAG_ID, newid);
         updateDateField(json, TAG_TIME);
         updateDateField(json, TAG_RELEASE_TIME);
+        json.remove(TAG_JAR);
         if (extraLibraries != null) {
             for (Library library : extraLibraries) {
                 addLibrary(json, library);
@@ -258,25 +284,28 @@ public class Version implements Comparable<Version> {
     }
 
     public void addToClassPath(File libDir, List<File> jars) {
-        if (libraries != null) {
-            for (Library l : libraries) {
+        List<Library> allLibraries = getLibraries();
+        if (!MCPatcherUtils.isNullOrEmpty(allLibraries)) {
+            for (Library l : allLibraries) {
                 l.addToClassPath(libDir, jars);
             }
         }
     }
 
     public void unpackNatives(File libDir, File destDir) throws IOException {
-        if (libraries != null && !libraries.isEmpty()) {
+        List<Library> allLibraries = getLibraries();
+        if (!MCPatcherUtils.isNullOrEmpty(allLibraries)) {
             destDir.mkdirs();
-            for (Library l : libraries) {
+            for (Library l : allLibraries) {
                 l.unpackNatives(libDir, destDir);
             }
         }
     }
 
     public void fetchLibraries(File libDir) throws PatcherException {
-        if (!MCPatcherUtils.isNullOrEmpty(libraries)) {
-            for (Library l : libraries) {
+        List<Library> allLibraries = getLibraries();
+        if (!MCPatcherUtils.isNullOrEmpty(allLibraries)) {
+            for (Library l : allLibraries) {
                 if (!l.exclude()) {
                     l.fetch(libDir);
                 }
