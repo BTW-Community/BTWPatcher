@@ -530,6 +530,7 @@ public class TilesheetAPIMod extends Mod {
                 addClassSignature(new ConstSignature(0.017453292f));
                 createFace = new MethodRef(getDeobfClass(), "createFace", "(Lorg/lwjgl/util/vector/Vector3f;Lorg/lwjgl/util/vector/Vector3f;LModelFaceTexture;LTextureAtlasSprite;LDirection;LModelFaceUVRotation;LModelFaceBounds;ZZ)LModelFace;");
             }
+            final MethodRef forgeMakeBakedQuad = new MethodRef(getDeobfClass(), "makeBakedQuad", createFace.getType().replace("LModelFaceUVRotation;", "Lnet/minecraftforge/client/model/ITransformation;"));
 
             final MethodRef registerModelFaceSprite = new MethodRef(MCPatcherUtils.FACE_INFO_CLASS, "registerModelFaceSprite", "(LModelFace;LTextureAtlasSprite;Ljava/lang/String;)LModelFace;");
 
@@ -554,7 +555,7 @@ public class TilesheetAPIMod extends Mod {
             addPatch(new BytecodePatch() {
                 {
                     setInsertBefore(true);
-                    targetMethod(createFace);
+                    targetMethod(createFace, forgeMakeBakedQuad);
                 }
 
                 @Override
