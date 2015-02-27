@@ -512,7 +512,38 @@ public class TilesheetAPIMod extends Mod {
         ModelFaceSpriteMod() {
             super(TilesheetAPIMod.this);
 
+            final MethodRef registerModelFaceSprite = new MethodRef(MCPatcherUtils.FACE_INFO_CLASS, "registerModelFaceSprite", "(LModelFace;LTextureAtlasSprite;)V");
+
             addPatch(new MakeMemberPublicPatch(sprite));
+
+            addPatch(new BytecodePatch() {
+                {
+                    setInsertBefore(true);
+                    matchConstructorOnly(true);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "register model face sprites";
+                }
+
+                @Override
+                public String getMatchExpression() {
+                    return buildExpression(
+                        RETURN
+                    );
+                }
+
+                @Override
+                public byte[] getReplacementBytes() {
+                    return buildCode(
+                        // FaceInfo.registerModelFaceSprite(this, sprite);
+                        ALOAD_0,
+                        ALOAD_2,
+                        reference(INVOKESTATIC, registerModelFaceSprite)
+                    );
+                }
+            });
         }
     }
 

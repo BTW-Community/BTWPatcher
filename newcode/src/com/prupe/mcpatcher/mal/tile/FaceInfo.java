@@ -56,6 +56,10 @@ final public class FaceInfo {
         return face;
     }
 
+    public static void registerModelFaceSprite(ModelFace face, TextureAtlasSprite sprite) {
+        registerModelFaceSprite(face, sprite, IconAPI.getIconName(sprite));
+    }
+
     public static FaceInfo getFaceInfo(ModelFace face) {
         return faceInfoMap.get(face);
     }
