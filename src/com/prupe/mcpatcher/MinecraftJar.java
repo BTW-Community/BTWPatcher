@@ -241,13 +241,22 @@ class MinecraftJar {
         } else if ("windows".equals(Library.getOSType())) {
             cmdLine.add("-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump");
         }
-        if (!profile.getJavaArguments(cmdLine)) {
-            String mem = "32".equals(System.getProperty("sun.arch.data.model")) ? "512M" : "1G";
-            cmdLine.add("-Xmx" + mem);
-        }
+        profile.getJavaArguments(cmdLine);
         cmdLine.add("-XX:+UseConcMarkSweepGC");
         cmdLine.add("-XX:+CMSIncrementalMode");
         cmdLine.add("-XX:-UseAdaptiveSizePolicy");
+
+        boolean found = false;
+        for (String arg : cmdLine) {
+            if (arg.startsWith("-Xmx")) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            String mem = "32".equals(System.getProperty("sun.arch.data.model")) ? "512M" : "1G";
+            cmdLine.add("-Xmx" + mem);
+        }
 
         profile.setGameArguments(gameArgs, profileManager.getProfileList());
         version.setGameArguments(gameArgs);
