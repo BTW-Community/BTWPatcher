@@ -1,5 +1,5 @@
-MCPatcher version is 5.0.2
-OS: Linux 3.18.7-200.fc21.x86_64 amd64
+MCPatcher version is 5.0.3
+OS: Linux 3.19.3-200.fc21.x86_64 amd64
 JVM: Sun Microsystems Inc. 1.6.0_45 (64 bit)
 Classpath: out/artifacts/mcpatcher/mcpatcher.jar
 Minecraft version is 1.8.3 (md5 9437b48e051b0ce8817c989e59e7994f)
@@ -4542,6 +4542,10 @@ Patching...
                                ASTORE 0x09
  applying ModelFaceSprite patch to bgo.class for mod __TilesheetAPI
     make field sprite public
+    register model face sprites <init>(Lbgh;Lbmj;)V@36
+                               ALOAD_0
+                               ALOAD_2
+                               INVOKESTATIC 0x00 0x59
  applying ModelFaceFactory patch to bgp.class for mod __TilesheetAPI
     register model face sprites a(Lorg/lwjgl/util/vector/Vector3f;Lorg/lwjgl/util/vector/Vector3f;Lbgj;Lbmj;Lcr;Lbos;Lbgk;ZZ)Lbgh;@79
                                ALOAD 0x04
@@ -6165,6 +6169,7 @@ Patching...
    string replace Lnet/minecraft/src/Tessellator; -> Lbfe; @391
   adding com/prupe/mcpatcher/mal/tile/FaceInfo.class for __TilesheetAPI
    method signature (Lnet/minecraft/src/ModelFace;Lnet/minecraft/src/TextureAtlasSprite;Ljava/lang/String;)Lnet/minecraft/src/ModelFace; -> (Lbgh;Lbmj;Ljava/lang/String;)Lbgh;
+   method signature (Lnet/minecraft/src/ModelFace;Lnet/minecraft/src/TextureAtlasSprite;)V -> (Lbgh;Lbmj;)V
    method signature (Lnet/minecraft/src/ModelFace;)Lcom/prupe/mcpatcher/mal/tile/FaceInfo; -> (Lbgh;)Lcom/prupe/mcpatcher/mal/tile/FaceInfo;
    method signature (Lnet/minecraft/src/ModelFace;Lnet/minecraft/src/TextureAtlasSprite;Ljava/lang/String;)V -> (Lbgh;Lbmj;Ljava/lang/String;)V
    method signature ()Lnet/minecraft/src/TextureAtlasSprite; -> ()Lbmj;
@@ -6176,116 +6181,120 @@ Patching...
    field signature Lnet/minecraft/src/TextureAtlasSprite; -> Lbmj;
    field signature Lnet/minecraft/src/ModelFace; -> Lbgh;
     method ref com/prupe/mcpatcher/mal/tile/FaceInfo.<init> (Lnet/minecraft/src/ModelFace;Lnet/minecraft/src/TextureAtlasSprite;Ljava/lang/String;)V -> com/prupe/mcpatcher/mal/tile/FaceInfo.<init> (Lbgh;Lbmj;Ljava/lang/String;)V registerModelFaceSprite(Lbgh;Lbmj;Ljava/lang/String;)Lbgh;@24
-     INVOKESPECIAL 0x00 0x05   INVOKESPECIAL 0x01 0x54
+     INVOKESPECIAL 0x00 0x05   INVOKESPECIAL 0x01 0x5c
+    method ref com/prupe/mcpatcher/mal/tile/IconAPI.getIconName (Lnet/minecraft/src/Icon;)Ljava/lang/String; -> com/prupe/mcpatcher/mal/tile/IconAPI.getIconName (Lbmj;)Ljava/lang/String; registerModelFaceSprite(Lbgh;Lbmj;)V@3
+     INVOKESTATIC 0x00 0x07    INVOKESTATIC 0x01 0x5f
+    method ref com/prupe/mcpatcher/mal/tile/FaceInfo.registerModelFaceSprite (Lnet/minecraft/src/ModelFace;Lnet/minecraft/src/TextureAtlasSprite;Ljava/lang/String;)Lnet/minecraft/src/ModelFace; -> com/prupe/mcpatcher/mal/tile/FaceInfo.registerModelFaceSprite (Lbgh;Lbmj;Ljava/lang/String;)Lbgh; registerModelFaceSprite(Lbgh;Lbmj;)V@6
+     INVOKESTATIC 0x00 0x08    INVOKESTATIC 0x01 0x61
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.face Lnet/minecraft/src/ModelFace; -> com/prupe/mcpatcher/mal/tile/FaceInfo.face Lbgh; <init>(Lbgh;Lbmj;Ljava/lang/String;)V@17
-     PUTFIELD 0x00 0x0b        PUTFIELD 0x01 0x56
+     PUTFIELD 0x00 0x0d        PUTFIELD 0x01 0x63
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.face Lnet/minecraft/src/ModelFace; -> com/prupe/mcpatcher/mal/tile/FaceInfo.face Lbgh; toString()Ljava/lang/String;@9
-     GETFIELD 0x00 0x0b        GETFIELD 0x01 0x56
+     GETFIELD 0x00 0x0d        GETFIELD 0x01 0x63
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.face Lnet/minecraft/src/ModelFace; -> com/prupe/mcpatcher/mal/tile/FaceInfo.face Lbgh; getAltFace(Lbmj;)Lbgh;@13
-     GETFIELD 0x00 0x0b        GETFIELD 0x01 0x56
+     GETFIELD 0x00 0x0d        GETFIELD 0x01 0x63
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.face Lnet/minecraft/src/ModelFace; -> com/prupe/mcpatcher/mal/tile/FaceInfo.face Lbgh; getAltFace(Lbmj;)Lbgh;@44
-     GETFIELD 0x00 0x0b        GETFIELD 0x01 0x56
+     GETFIELD 0x00 0x0d        GETFIELD 0x01 0x63
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.face Lnet/minecraft/src/ModelFace; -> com/prupe/mcpatcher/mal/tile/FaceInfo.face Lbgh; getAltFace(Lbmj;)Lbgh;@57
-     GETFIELD 0x00 0x0b        GETFIELD 0x01 0x56
+     GETFIELD 0x00 0x0d        GETFIELD 0x01 0x63
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.face Lnet/minecraft/src/ModelFace; -> com/prupe/mcpatcher/mal/tile/FaceInfo.face Lbgh; getNonAtlasFace()Lbgh;@13
-     GETFIELD 0x00 0x0b        GETFIELD 0x01 0x56
+     GETFIELD 0x00 0x0d        GETFIELD 0x01 0x63
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.face Lnet/minecraft/src/ModelFace; -> com/prupe/mcpatcher/mal/tile/FaceInfo.face Lbgh; getNonAtlasFace()Lbgh;@31
-     GETFIELD 0x00 0x0b        GETFIELD 0x01 0x56
+     GETFIELD 0x00 0x0d        GETFIELD 0x01 0x63
     class ref net/minecraft/src/ModelFaceSprite -> bgo <init>(Lbgh;Lbmj;Ljava/lang/String;)V@21
-     INSTANCEOF 0x00 0x0c      INSTANCEOF 0x01 0x58
+     INSTANCEOF 0x00 0x0e      INSTANCEOF 0x01 0x65
     class ref net/minecraft/src/ModelFaceSprite -> bgo <init>(Lbgh;Lbmj;Ljava/lang/String;)V@29
-     CHECKCAST 0x00 0x0c       CHECKCAST 0x01 0x58
+     CHECKCAST 0x00 0x0e       CHECKCAST 0x01 0x65
     class ref net/minecraft/src/ModelFaceSprite -> bgo getAltFace(Lbmj;)Lbgh;@39
-     NEW 0x00 0x0c             NEW 0x01 0x58
+     NEW 0x00 0x0e             NEW 0x01 0x65
     class ref net/minecraft/src/ModelFaceSprite -> bgo getNonAtlasFace()Lbgh;@8
-     NEW 0x00 0x0c             NEW 0x01 0x58
+     NEW 0x00 0x0e             NEW 0x01 0x65
     field ref net/minecraft/src/ModelFaceSprite.sprite Lnet/minecraft/src/TextureAtlasSprite; -> bgo.d Lbmj; <init>(Lbgh;Lbmj;Ljava/lang/String;)V@32
-     GETFIELD 0x00 0x0d        GETFIELD 0x01 0x5b
+     GETFIELD 0x00 0x0f        GETFIELD 0x01 0x68
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lnet/minecraft/src/TextureAtlasSprite; -> com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lbmj; <init>(Lbgh;Lbmj;Ljava/lang/String;)V@35
-     PUTFIELD 0x00 0x0e        PUTFIELD 0x01 0x5d
+     PUTFIELD 0x00 0x10        PUTFIELD 0x01 0x6a
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lnet/minecraft/src/TextureAtlasSprite; -> com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lbmj; <init>(Lbgh;Lbmj;Ljava/lang/String;)V@43
-     PUTFIELD 0x00 0x0e        PUTFIELD 0x01 0x5d
+     PUTFIELD 0x00 0x10        PUTFIELD 0x01 0x6a
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lnet/minecraft/src/TextureAtlasSprite; -> com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lbmj; toString()Ljava/lang/String;@16
-     GETFIELD 0x00 0x0e        GETFIELD 0x01 0x5d
+     GETFIELD 0x00 0x10        GETFIELD 0x01 0x6a
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lnet/minecraft/src/TextureAtlasSprite; -> com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lbmj; getSprite()Lbmj;@1
-     GETFIELD 0x00 0x0e        GETFIELD 0x01 0x5d
+     GETFIELD 0x00 0x10        GETFIELD 0x01 0x6a
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lnet/minecraft/src/TextureAtlasSprite; -> com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lbmj; getAltFace(Lbmj;)Lbgh;@2
-     GETFIELD 0x00 0x0e        GETFIELD 0x01 0x5d
+     GETFIELD 0x00 0x10        GETFIELD 0x01 0x6a
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lnet/minecraft/src/TextureAtlasSprite; -> com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lbmj; getAltFace(Lbmj;)Lbgh;@53
-     GETFIELD 0x00 0x0e        GETFIELD 0x01 0x5d
+     GETFIELD 0x00 0x10        GETFIELD 0x01 0x6a
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lnet/minecraft/src/TextureAtlasSprite; -> com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lbmj; getNonAtlasFace()Lbgh;@17
-     GETFIELD 0x00 0x0e        GETFIELD 0x01 0x5d
+     GETFIELD 0x00 0x10        GETFIELD 0x01 0x6a
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lnet/minecraft/src/TextureAtlasSprite; -> com/prupe/mcpatcher/mal/tile/FaceInfo.sprite Lbmj; getNonAtlasFace()Lbgh;@27
-     GETFIELD 0x00 0x0e        GETFIELD 0x01 0x5d
+     GETFIELD 0x00 0x10        GETFIELD 0x01 0x6a
     method ref net/minecraft/src/ModelFace.getIntBuffer ()[I -> bgh.a ()[I <init>(Lbgh;Lbmj;Ljava/lang/String;)V@76
-     INVOKEVIRTUAL 0x00 0x15   INVOKEVIRTUAL 0x01 0x61
+     INVOKEVIRTUAL 0x00 0x17   INVOKEVIRTUAL 0x01 0x6e
     method ref net/minecraft/src/ModelFace.getIntBuffer ()[I -> bgh.a ()[I <init>(Lbgh;Lbmj;Ljava/lang/String;)V@87
-     INVOKEVIRTUAL 0x00 0x15   INVOKEVIRTUAL 0x01 0x61
+     INVOKEVIRTUAL 0x00 0x17   INVOKEVIRTUAL 0x01 0x6e
     method ref net/minecraft/src/ModelFace.getIntBuffer ()[I -> bgh.a ()[I getAltFace(Lbmj;)Lbgh;@60
-     INVOKEVIRTUAL 0x00 0x15   INVOKEVIRTUAL 0x01 0x61
+     INVOKEVIRTUAL 0x00 0x17   INVOKEVIRTUAL 0x01 0x6e
     method ref net/minecraft/src/ModelFace.getIntBuffer ()[I -> bgh.a ()[I getAltFace(Lbmj;)Lbgh;@65
-     INVOKEVIRTUAL 0x00 0x15   INVOKEVIRTUAL 0x01 0x61
+     INVOKEVIRTUAL 0x00 0x17   INVOKEVIRTUAL 0x01 0x6e
     method ref net/minecraft/src/ModelFace.getIntBuffer ()[I -> bgh.a ()[I getNonAtlasFace()Lbgh;@34
-     INVOKEVIRTUAL 0x00 0x15   INVOKEVIRTUAL 0x01 0x61
+     INVOKEVIRTUAL 0x00 0x17   INVOKEVIRTUAL 0x01 0x6e
     method ref net/minecraft/src/ModelFace.getIntBuffer ()[I -> bgh.a ()[I getNonAtlasFace()Lbgh;@41
-     INVOKEVIRTUAL 0x00 0x15   INVOKEVIRTUAL 0x01 0x61
+     INVOKEVIRTUAL 0x00 0x17   INVOKEVIRTUAL 0x01 0x6e
     method ref net/minecraft/src/TextureAtlasSprite.getIconName ()Ljava/lang/String; -> bmj.i ()Ljava/lang/String; toString()Ljava/lang/String;@19
-     INVOKEVIRTUAL 0x00 0x1d   INVOKEVIRTUAL 0x01 0x65
+     INVOKEVIRTUAL 0x00 0x1f   INVOKEVIRTUAL 0x01 0x72
     method ref net/minecraft/src/Direction.values ()[Lnet/minecraft/src/Direction; -> cr.values ()[Lcr; toString()Ljava/lang/String;@32
-     INVOKESTATIC 0x00 0x1e    INVOKESTATIC 0x01 0x6a
+     INVOKESTATIC 0x00 0x20    INVOKESTATIC 0x01 0x77
     class ref net/minecraft/src/ModelFace -> bgh getAltFace(Lbmj;)Lbgh;@31
-     CHECKCAST 0x00 0x21       CHECKCAST 0x01 0x5f
+     CHECKCAST 0x00 0x23       CHECKCAST 0x01 0x6c
     method ref net/minecraft/src/ModelFaceSprite.<init> (Lnet/minecraft/src/ModelFace;Lnet/minecraft/src/TextureAtlasSprite;)V -> bgo.<init> (Lbgh;Lbmj;)V getAltFace(Lbmj;)Lbgh;@48
-     INVOKESPECIAL 0x00 0x22   INVOKESPECIAL 0x01 0x6d
+     INVOKESPECIAL 0x00 0x24   INVOKESPECIAL 0x01 0x79
     method ref net/minecraft/src/ModelFaceSprite.<init> (Lnet/minecraft/src/ModelFace;Lnet/minecraft/src/TextureAtlasSprite;)V -> bgo.<init> (Lbgh;Lbmj;)V getNonAtlasFace()Lbgh;@20
-     INVOKESPECIAL 0x00 0x22   INVOKESPECIAL 0x01 0x6d
+     INVOKESPECIAL 0x00 0x24   INVOKESPECIAL 0x01 0x79
     method ref com/prupe/mcpatcher/mal/tile/FaceInfo.calculateSpriteUV (Lnet/minecraft/src/TextureAtlasSprite;[ILnet/minecraft/src/TextureAtlasSprite;[I)V -> com/prupe/mcpatcher/mal/tile/FaceInfo.calculateSpriteUV (Lbmj;[ILbmj;[I)V getAltFace(Lbmj;)Lbgh;@68
-     INVOKESTATIC 0x00 0x23    INVOKESTATIC 0x01 0x6f
+     INVOKESTATIC 0x00 0x25    INVOKESTATIC 0x01 0x7b
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.nonAtlasFace Lnet/minecraft/src/ModelFace; -> com/prupe/mcpatcher/mal/tile/FaceInfo.nonAtlasFace Lbgh; getNonAtlasFace()Lbgh;@1
-     GETFIELD 0x00 0x24        GETFIELD 0x01 0x71
+     GETFIELD 0x00 0x26        GETFIELD 0x01 0x7d
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.nonAtlasFace Lnet/minecraft/src/ModelFace; -> com/prupe/mcpatcher/mal/tile/FaceInfo.nonAtlasFace Lbgh; getNonAtlasFace()Lbgh;@23
-     PUTFIELD 0x00 0x24        PUTFIELD 0x01 0x71
+     PUTFIELD 0x00 0x26        PUTFIELD 0x01 0x7d
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.nonAtlasFace Lnet/minecraft/src/ModelFace; -> com/prupe/mcpatcher/mal/tile/FaceInfo.nonAtlasFace Lbgh; getNonAtlasFace()Lbgh;@38
-     GETFIELD 0x00 0x24        GETFIELD 0x01 0x71
+     GETFIELD 0x00 0x26        GETFIELD 0x01 0x7d
     field ref com/prupe/mcpatcher/mal/tile/FaceInfo.nonAtlasFace Lnet/minecraft/src/ModelFace; -> com/prupe/mcpatcher/mal/tile/FaceInfo.nonAtlasFace Lbgh; getNonAtlasFace()Lbgh;@48
-     GETFIELD 0x00 0x24        GETFIELD 0x01 0x71
+     GETFIELD 0x00 0x26        GETFIELD 0x01 0x7d
     method ref com/prupe/mcpatcher/mal/tile/FaceInfo.calculateNonAtlasUV (Lnet/minecraft/src/TextureAtlasSprite;[I[I)V -> com/prupe/mcpatcher/mal/tile/FaceInfo.calculateNonAtlasUV (Lbmj;[I[I)V getNonAtlasFace()Lbgh;@44
-     INVOKESTATIC 0x00 0x25    INVOKESTATIC 0x01 0x73
+     INVOKESTATIC 0x00 0x27    INVOKESTATIC 0x01 0x7f
     method ref net/minecraft/src/TextureAtlasSprite.getMinU ()F -> bmj.e ()F calculateSpriteUV(Lbmj;[ILbmj;[I)V@22
-     INVOKEVIRTUAL 0x00 0x36   INVOKEVIRTUAL 0x01 0x76
+     INVOKEVIRTUAL 0x00 0x38   INVOKEVIRTUAL 0x01 0x82
     method ref net/minecraft/src/TextureAtlasSprite.getMinU ()F -> bmj.e ()F calculateSpriteUV(Lbmj;[ILbmj;[I)V@32
-     INVOKEVIRTUAL 0x00 0x36   INVOKEVIRTUAL 0x01 0x76
+     INVOKEVIRTUAL 0x00 0x38   INVOKEVIRTUAL 0x01 0x82
     method ref net/minecraft/src/TextureAtlasSprite.getMinU ()F -> bmj.e ()F calculateNonAtlasUV(Lbmj;[I[I)V@17
-     INVOKEVIRTUAL 0x00 0x36   INVOKEVIRTUAL 0x01 0x76
+     INVOKEVIRTUAL 0x00 0x38   INVOKEVIRTUAL 0x01 0x82
     method ref net/minecraft/src/TextureAtlasSprite.getMinU ()F -> bmj.e ()F calculateNonAtlasUV(Lbmj;[I[I)V@26
-     INVOKEVIRTUAL 0x00 0x36   INVOKEVIRTUAL 0x01 0x76
+     INVOKEVIRTUAL 0x00 0x38   INVOKEVIRTUAL 0x01 0x82
     method ref net/minecraft/src/TextureAtlasSprite.getMaxU ()F -> bmj.f ()F calculateSpriteUV(Lbmj;[ILbmj;[I)V@28
-     INVOKEVIRTUAL 0x00 0x37   INVOKEVIRTUAL 0x01 0x79
+     INVOKEVIRTUAL 0x00 0x39   INVOKEVIRTUAL 0x01 0x85
     method ref net/minecraft/src/TextureAtlasSprite.getMaxU ()F -> bmj.f ()F calculateNonAtlasUV(Lbmj;[I[I)V@22
-     INVOKEVIRTUAL 0x00 0x37   INVOKEVIRTUAL 0x01 0x79
+     INVOKEVIRTUAL 0x00 0x39   INVOKEVIRTUAL 0x01 0x85
     method ref net/minecraft/src/TextureAtlasSprite.getMinV ()F -> bmj.g ()F calculateSpriteUV(Lbmj;[ILbmj;[I)V@51
-     INVOKEVIRTUAL 0x00 0x38   INVOKEVIRTUAL 0x01 0x7c
+     INVOKEVIRTUAL 0x00 0x3a   INVOKEVIRTUAL 0x01 0x88
     method ref net/minecraft/src/TextureAtlasSprite.getMinV ()F -> bmj.g ()F calculateSpriteUV(Lbmj;[ILbmj;[I)V@61
-     INVOKEVIRTUAL 0x00 0x38   INVOKEVIRTUAL 0x01 0x7c
+     INVOKEVIRTUAL 0x00 0x3a   INVOKEVIRTUAL 0x01 0x88
     method ref net/minecraft/src/TextureAtlasSprite.getMinV ()F -> bmj.g ()F calculateNonAtlasUV(Lbmj;[I[I)V@42
-     INVOKEVIRTUAL 0x00 0x38   INVOKEVIRTUAL 0x01 0x7c
+     INVOKEVIRTUAL 0x00 0x3a   INVOKEVIRTUAL 0x01 0x88
     method ref net/minecraft/src/TextureAtlasSprite.getMinV ()F -> bmj.g ()F calculateNonAtlasUV(Lbmj;[I[I)V@51
-     INVOKEVIRTUAL 0x00 0x38   INVOKEVIRTUAL 0x01 0x7c
+     INVOKEVIRTUAL 0x00 0x3a   INVOKEVIRTUAL 0x01 0x88
     method ref net/minecraft/src/TextureAtlasSprite.getMaxV ()F -> bmj.h ()F calculateSpriteUV(Lbmj;[ILbmj;[I)V@57
-     INVOKEVIRTUAL 0x00 0x39   INVOKEVIRTUAL 0x01 0x7f
+     INVOKEVIRTUAL 0x00 0x3b   INVOKEVIRTUAL 0x01 0x8b
     method ref net/minecraft/src/TextureAtlasSprite.getMaxV ()F -> bmj.h ()F calculateNonAtlasUV(Lbmj;[I[I)V@47
-     INVOKEVIRTUAL 0x00 0x39   INVOKEVIRTUAL 0x01 0x7f
+     INVOKEVIRTUAL 0x00 0x3b   INVOKEVIRTUAL 0x01 0x8b
     method ref net/minecraft/src/TextureAtlasSprite.getInterpolatedU (D)F -> bmj.a (D)F calculateSpriteUV(Lbmj;[ILbmj;[I)V@77
-     INVOKEVIRTUAL 0x00 0x3a   INVOKEVIRTUAL 0x01 0x81
+     INVOKEVIRTUAL 0x00 0x3c   INVOKEVIRTUAL 0x01 0x8d
     method ref net/minecraft/src/TextureAtlasSprite.getInterpolatedV (D)F -> bmj.b (D)F calculateSpriteUV(Lbmj;[ILbmj;[I)V@93
-     INVOKEVIRTUAL 0x00 0x3c   INVOKEVIRTUAL 0x01 0x83
+     INVOKEVIRTUAL 0x00 0x3e   INVOKEVIRTUAL 0x01 0x8f
    string replace Lnet/minecraft/src/TextureAtlasSprite; -> Lbmj; @319
-   string replace net/minecraft/src/TextureAtlasSprite -> bmj @754
+   string replace net/minecraft/src/TextureAtlasSprite -> bmj @874
    string replace Lnet/minecraft/src/ModelFace; -> Lbgh; @278
-   string replace net/minecraft/src/ModelFace -> bgh @688
-   string replace Ljava/util/Map<Lnet/minecraft/src/ModelFace;Lcom/prupe/mcpatcher/mal/tile/FaceInfo;>; -> Ljava/util/Map<Lbgh;Lcom/prupe/mcpatcher/mal/tile/FaceInfo;>; @3169
-   string replace Ljava/util/Map<Lnet/minecraft/src/Icon;Lnet/minecraft/src/ModelFace;>; -> Ljava/util/Map<Lnet/minecraft/src/Icon;Lbgh;>; @3257
-   string replace Ljava/util/Map<Lnet/minecraft/src/Icon;Lbgh;>; -> Ljava/util/Map<Lbmj;Lbgh;>; @3185
+   string replace net/minecraft/src/ModelFace -> bgh @808
+   string replace Ljava/util/Map<Lnet/minecraft/src/ModelFace;Lcom/prupe/mcpatcher/mal/tile/FaceInfo;>; -> Ljava/util/Map<Lbgh;Lcom/prupe/mcpatcher/mal/tile/FaceInfo;>; @3273
+   string replace Ljava/util/Map<Lnet/minecraft/src/Icon;Lnet/minecraft/src/ModelFace;>; -> Ljava/util/Map<Lnet/minecraft/src/Icon;Lbgh;>; @3361
+   string replace Ljava/util/Map<Lnet/minecraft/src/Icon;Lbgh;>; -> Ljava/util/Map<Lbmj;Lbgh;>; @3289
   adding com/prupe/mcpatcher/mal/tile/IconAPI.class for __TilesheetAPI
    method signature (Lnet/minecraft/src/TextureAtlasSprite;)I -> (Lbmj;)I
    method signature (Lnet/minecraft/src/TextureAtlasSprite;)I -> (Lbmj;)I
@@ -10353,6 +10362,7 @@ __TilesheetAPI
         [1] register model face sprites
     ModelFaceSprite (bgo.class)
         [1] make field sprite public
+        [1] register model face sprites
     ModelFaceTexture (bgj.class)
     ResourceLocation (jz.class)
     Tessellator (bfe.class)
