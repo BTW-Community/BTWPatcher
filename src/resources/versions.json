@@ -1,14 +1,14 @@
-{ 
+{
   "latest": {
-    "snapshot": "15w14a",
-    "release": "1.8.3"
+    "snapshot": "1.8.4",
+    "release": "1.8.4"
   },
   "versions": [
     {
-      "id": "15w14a",
-      "time": "2015-04-01T07:08:00+00:00",
-      "releaseTime": "2015-04-01T07:08:00+00:00",
-      "type": "snapshot"
+      "id": "1.8.4",
+      "time": "2015-04-17T11:37:50+00:00",
+      "releaseTime": "2015-04-17T11:37:50+00:00",
+      "type": "release"
     },
     {
       "id": "1.8.3",
