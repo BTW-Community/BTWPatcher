@@ -9,3 +9,4 @@ profile.txt
 profile.xml
 test.log
 *.log.1
+/bin/

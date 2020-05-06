@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="mods/src"/>
+	<classpathentry kind="src" path="newcode/src"/>
+	<classpathentry kind="src" path="shared/src"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="stubs/src"/>
+	<classpathentry kind="lib" path="B:/Data/Documents/Better than wolves patcher/jboss-javassist-javassist-5e3b6a8/javassist.jar"/>
+	<classpathentry kind="lib" path="B:/Data/Documents/Better than wolves patcher/lwjgl.jar"/>
+	<classpathentry kind="lib" path="B:/Data/Documents/Better than wolves patcher/lwjgl_util.jar"/>
+	<classpathentry kind="lib" path="B:/Data/Documents/Better than wolves patcher/gson-2.8.6.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
